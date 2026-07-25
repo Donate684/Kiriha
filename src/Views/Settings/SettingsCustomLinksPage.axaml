@@ -1,0 +1,126 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:vm="using:Kiriha.ViewModels"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+             xmlns:vmHistory="using:Kiriha.ViewModels.History"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
+             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
+             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
+             xmlns:models="using:Kiriha.Models"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.Settings.SettingsCustomLinksPage"
+             x:DataType="vmSettings:SettingsViewModel">
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+
+                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.custom_links.title}"/>
+
+                    <!-- Help / placeholder cheat sheet + one-click examples. -->
+                    <Border Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
+                        <StackPanel Spacing="6">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Text="{DynamicResource l.settings.custom_links.help_title}"/>
+                            <TextBlock FontSize="11" Opacity="0.7" TextWrapping="Wrap" Text="{DynamicResource l.settings.custom_links.help_body}"/>
+                            <TextBlock FontSize="11" Opacity="0.55" FontFamily="Consolas,Menlo,monospace"
+                                       TextWrapping="Wrap"
+                                       Text="{}{title}, {english}, {russian}, {japanese}, {id}, {malId}, {shikiId}"/>
+
+                            <!-- Examples: one-click presets that drop a fully-formed
+                                 link into the list below. The favicon hook then
+                                 fills the icon automatically. WrapPanel so the
+                                 row collapses onto multiple lines on narrow widths. -->
+                            <WrapPanel Orientation="Horizontal" Margin="0,8,0,0" ItemSpacing="8" LineSpacing="6">
+                                <TextBlock FontSize="11" Opacity="0.7" VerticalAlignment="Center"
+                                           Text="{DynamicResource l.settings.custom_links.examples}"/>
+
+                                <Button Command="{Binding AddPresetLinkCommand}"
+                                        CommandParameter="RuTracker|https://rutracker.org/forum/tracker.php?nm={title}"
+                                        Padding="10,4" CornerRadius="6" FontSize="11"
+                                        Background="{DynamicResource SubtleFillColorSecondary}"
+                                        Content="RuTracker"
+                                        ToolTip.Tip="https://rutracker.org/forum/tracker.php?nm={}{title}"/>
+
+                                <Button Command="{Binding AddPresetLinkCommand}"
+                                        CommandParameter="NNM-Club|https://nnmclub.to/forum/tracker.php?nm={title}"
+                                        Padding="10,4" CornerRadius="6" FontSize="11"
+                                        Background="{DynamicResource SubtleFillColorSecondary}"
+                                        Content="NNM-Club"
+                                        ToolTip.Tip="https://nnmclub.to/forum/tracker.php?nm={}{title}"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- List of custom links -->
+                    <ItemsControl ItemsSource="{Binding CustomLinks}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Spacing="10"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:CustomShareLink">
+                                <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10" Padding="12">
+                                    <Grid ColumnDefinitions="Auto,8,*,8,2*,8,Auto">
+                                        <!-- Read-only icon preview. Shows the auto-fetched favicon for
+                                             the URL's host when available; otherwise the default globe.
+                                             No interaction — the icon is derived purely from the URL. -->
+                                        <Border Grid.Column="0"
+                                                Width="40" Height="40" CornerRadius="6"
+                                                Background="{DynamicResource SubtleFillColorTertiary}"
+                                                VerticalAlignment="Center">
+                                            <Panel>
+                                                <material:MaterialIcon Kind="Web" Width="20" Height="20"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                       IsVisible="{Binding HasNoIconPath}"/>
+                                                <Image Source="{Binding IconPath, Converter={StaticResource FilePathToBitmapConverter}}"
+                                                       Width="28" Height="28" Stretch="UniformToFill"
+                                                       IsVisible="{Binding HasIconPath}"/>
+                                            </Panel>
+                                        </Border>
+                                        <!-- MinWidth=0 lets the TextBoxes shrink below their natural
+                                             content width so a long URL doesn't push the whole settings
+                                             page wider than the viewport (which would defeat TextWrapping
+                                             on the "How it works" help block). -->
+                                        <TextBox Grid.Column="2"
+                                                 PlaceholderText="{DynamicResource l.settings.custom_links.name_placeholder}"
+                                                 Text="{Binding Name}"
+                                                 MinWidth="0"
+                                                 VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="4"
+                                                 PlaceholderText="https://example.com/?q={title}"
+                                                 Text="{Binding UrlTemplate}"
+                                                 MinWidth="0"
+                                                 VerticalAlignment="Center"/>
+                                        <Button Grid.Column="6"
+                                                Padding="8" CornerRadius="6"
+                                                Background="{DynamicResource SubtleFillColorTertiary}" BorderThickness="0"
+                                                ToolTip.Tip="{DynamicResource l.common.actions.remove}"
+                                                Command="{Binding $parent[ItemsControl].((vmSettings:SettingsViewModel)DataContext).RemoveCustomLinkCommand}"
+                                                CommandParameter="{Binding}">
+                                            <material:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#ff5555"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Add button -->
+                    <Button Margin="0,14,0,0" HorizontalAlignment="Left"
+                            Command="{Binding AddCustomLinkCommand}"
+                            Padding="14,8" CornerRadius="6"
+                            Background="{DynamicResource SystemAccentColor}" Foreground="White">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <material:MaterialIcon Kind="Plus" Width="14" Height="14"/>
+                            <TextBlock Text="{DynamicResource l.settings.custom_links.add}" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+</StackPanel>
+</UserControl>
+

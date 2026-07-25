@@ -1,14 +1,48 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
+using Kiriha.Services;
 using Serilog;
 
 namespace Kiriha.ViewModels.Settings;
 
-public partial class SettingsViewModel
+public partial class SettingsUpdateViewModel : ObservableObject
 {
+    private readonly UpdateService _updateService;
+
+    public SettingsUpdateViewModel(UpdateService updateService)
+    {
+        _updateService = updateService;
+        IsUpdateAvailable = _updateService.IsUpdateAvailable;
+        NewVersion = _updateService.NewVersion;
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDownloadReady))]
+    private bool _isUpdateAvailable;
+
+    [ObservableProperty]
+    private string? _newVersion;
+
+    [ObservableProperty]
+    private bool _isCheckingUpdates;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDownloading))]
+    [NotifyPropertyChangedFor(nameof(IsDownloadReady))]
+    private int _updateProgress;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDownloadReady))]
+    [NotifyPropertyChangedFor(nameof(IsDownloading))]
+    private bool _isUpdateDownloaded;
+
+    public bool IsDownloadReady => IsUpdateAvailable && !IsUpdateDownloaded && UpdateProgress == 0;
+    public bool IsDownloading => UpdateProgress > 0 && !IsUpdateDownloaded;
+
     [RelayCommand]
     private void OpenReleasesPage()
     {
@@ -47,7 +81,7 @@ public partial class SettingsViewModel
     {
         if (!IsUpdateAvailable || IsUpdateDownloaded || _updateService.IsDownloading) return;
 
-        UpdateProgress = 1; // Show progress bar immediately
+        UpdateProgress = 1;
         try
         {
             using var cts = new CancellationTokenSource();

@@ -93,26 +93,26 @@
                                 <Separator Background="{DynamicResource DividerStrokeColorDefault}"/>
 
                                 <StackPanel Spacing="12">
-                                    <TextBlock IsVisible="{Binding SettingsVm.IsLoggedIn}" 
+                                    <TextBlock IsVisible="{Binding SettingsVm.Auth.IsLoggedIn}" 
                                                Text="{DynamicResource l.settings.mal.connected}" 
                                                Foreground="#4CAF50" 
                                                HorizontalAlignment="Center"
                                                FontWeight="SemiBold"/>
-                                    <TextBlock IsVisible="{Binding !SettingsVm.IsLoggedIn}" 
+                                    <TextBlock IsVisible="{Binding !SettingsVm.Auth.IsLoggedIn}" 
                                                Text="{DynamicResource l.settings.mal.disconnected}" 
                                                Opacity="0.5" 
                                                HorizontalAlignment="Center"/>
                                     
-                                    <Button Command="{Binding SettingsVm.MalLoginCommand}" 
-                                            IsVisible="{Binding !SettingsVm.IsLoggedIn}"
+                                    <Button Command="{Binding SettingsVm.Auth.MalLoginCommand}" 
+                                            IsVisible="{Binding !SettingsVm.Auth.IsLoggedIn}"
                                             Background="{DynamicResource SystemAccentColor}"
                                             Foreground="White"
                                             HorizontalAlignment="Center"
                                             Padding="32,10" CornerRadius="10">
                                         <TextBlock Text="{DynamicResource l.common.actions.login}" FontWeight="Bold"/>
                                     </Button>
-                                    <Button Command="{Binding SettingsVm.MalLogoutCommand}" 
-                                            IsVisible="{Binding SettingsVm.IsLoggedIn}"
+                                    <Button Command="{Binding SettingsVm.Auth.MalLogoutCommand}" 
+                                            IsVisible="{Binding SettingsVm.Auth.IsLoggedIn}"
                                             HorizontalAlignment="Center"
                                             Padding="32,10" CornerRadius="10">
                                         <TextBlock Text="{DynamicResource l.common.actions.logout}"/>

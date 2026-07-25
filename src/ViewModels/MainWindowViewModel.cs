@@ -290,28 +290,7 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
     [RelayCommand]
     public void TestPlayer()
     {
-        var assemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
-        var processPath = Environment.ProcessPath;
-        if (string.IsNullOrEmpty(assemblyPath) || string.IsNullOrEmpty(processPath)) return;
-
-        var isDotnet = System.IO.Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
-
-        var startInfo = new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = processPath,
-            Arguments = isDotnet ? $"\"{assemblyPath}\" --player" : "--player",
-            UseShellExecute = true,
-            WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
-        };
-
-        try
-        {
-            System.Diagnostics.Process.Start(startInfo);
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Error(ex, "Failed to launch player process");
-        }
+        Kiriha.Utils.PlayerProcessHelper.LaunchPlayer();
     }
 
     protected virtual void Dispose(bool disposing)
