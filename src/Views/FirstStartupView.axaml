@@ -41,8 +41,8 @@
 
                     <!-- Step 1: Language Selection -->
                     <StackPanel IsVisible="{Binding IsLanguageStep}" Spacing="8">
-                        <ListBox ItemsSource="{Binding SettingsVm.AvailableLanguages}" 
-                                 SelectedItem="{Binding SettingsVm.SelectedLanguage}"
+                        <ListBox ItemsSource="{Binding SettingsVm.Ui.AvailableLanguages}" 
+                                 SelectedItem="{Binding SettingsVm.Ui.SelectedLanguage}"
                                  Background="Transparent" BorderThickness="0">
                             <ListBox.Styles>
                                 <Style Selector="ListBoxItem">
@@ -61,8 +61,8 @@
 
                     <!-- Step 2: Theme Selection -->
                     <StackPanel IsVisible="{Binding IsThemeStep}" Spacing="8">
-                         <ListBox ItemsSource="{Binding SettingsVm.AvailableThemes}" 
-                                 SelectedItem="{Binding SettingsVm.SelectedTheme}"
+                         <ListBox ItemsSource="{Binding SettingsVm.Ui.AvailableThemes}" 
+                                 SelectedItem="{Binding SettingsVm.Ui.SelectedTheme}"
                                  Background="Transparent" BorderThickness="0">
                             <ListBox.Styles>
                                 <Style Selector="ListBoxItem">
@@ -131,14 +131,14 @@
                                         <TextBlock Text="{DynamicResource l.scrobbler.enable.title}" FontSize="14" FontWeight="Medium"/>
                                         <TextBlock Text="{DynamicResource l.scrobbler.enable.subtitle}" FontSize="11" Opacity="0.5" TextWrapping="Wrap" MaxWidth="320"/>
                                     </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.EnableScrobbler}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.System.EnableScrobbler}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <Separator Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,4"/>
 
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="14" FontWeight="Medium"/>
-                                    <Button Command="{Binding SettingsVm.ManagePlayersCommand}" 
+                                    <Button Command="{Binding SettingsVm.Playback.ManagePlayersCommand}" 
                                             HorizontalAlignment="Stretch"
                                             Padding="16,12" CornerRadius="12" Background="{DynamicResource SubtleFillColorSecondary}">
                                         <Grid ColumnDefinitions="*, Auto">
@@ -146,7 +146,7 @@
                                                 <material:MaterialIcon Kind="CogOutline" Width="20" Height="20" Opacity="0.7"/>
                                                 <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding SettingsVm.EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter='format:l.scrobbler.rules.active_count'}" FontSize="12" Opacity="0.5" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding SettingsVm.Playback.EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter='format:l.scrobbler.rules.active_count'}" FontSize="12" Opacity="0.5" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Button>
                                 </StackPanel>
@@ -168,22 +168,22 @@
                             <StackPanel Spacing="8">
                                 <Grid ColumnDefinitions="*, Auto">
                                     <TextBlock Text="{DynamicResource l.settings.tray.close_to_tray}" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.CloseToTray}" OnContent="" OffContent="" MinWidth="0"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.System.CloseToTray}" OnContent="" OffContent="" MinWidth="0"/>
                                 </Grid>
                                 <Grid ColumnDefinitions="*, Auto">
                                     <TextBlock Text="{DynamicResource l.settings.tray.minimize_to_tray}" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.MinimizeToTray}" OnContent="" OffContent="" MinWidth="0"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.System.MinimizeToTray}" OnContent="" OffContent="" MinWidth="0"/>
                                 </Grid>
                                 
                                 <Separator Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,4"/>
                                 
                                 <Grid ColumnDefinitions="*, Auto">
                                     <TextBlock Text="{DynamicResource l.settings.auto_launch.title}" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.AutoLaunch}" OnContent="" OffContent="" MinWidth="0"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.System.AutoLaunch}" OnContent="" OffContent="" MinWidth="0"/>
                                 </Grid>
                                 <Grid ColumnDefinitions="*, Auto">
                                     <TextBlock Text="{DynamicResource l.settings.launch_minimized.title}" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.LaunchMinimized}" OnContent="" OffContent="" MinWidth="0"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.System.LaunchMinimized}" OnContent="" OffContent="" MinWidth="0"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -198,7 +198,7 @@
                                         <TextBlock Text="{DynamicResource l.settings.shikimori.russian_titles}" FontSize="14" FontWeight="Medium"/>
                                         <TextBlock Text="{DynamicResource l.settings.shikimori.russian_titles_sub}" FontSize="11" Opacity="0.5" TextWrapping="Wrap" MaxWidth="320"/>
                                     </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.UseRussianTitles}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.Ui.UseRussianTitles}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <Separator Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,4"/>
@@ -208,7 +208,7 @@
                                         <TextBlock Text="{DynamicResource l.settings.shikimori.russian_descriptions}" FontSize="14" FontWeight="Medium"/>
                                         <TextBlock Text="{DynamicResource l.settings.shikimori.russian_descriptions_sub}" FontSize="11" Opacity="0.5" TextWrapping="Wrap" MaxWidth="320"/>
                                     </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.UseRussianDescriptions}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"/>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding SettingsVm.Ui.UseRussianDescriptions}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"/>
                                 </Grid>
                             </StackPanel>
                         </Border>

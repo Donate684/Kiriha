@@ -96,6 +96,7 @@ internal static class TrackingServicesRegistration
 
         // --- RSS ---
         services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));
+        services.AddSingleton<NyaaFeedClient>();
         services.AddSingleton<RssFeedService>();
 
         // --- Cross-tracker orchestration ---

@@ -377,7 +377,7 @@
                     <StackPanel Margin="24,18,24,20" Spacing="16">
 
                         <!-- ══ IN LIST: User editing controls ══ -->
-                        <StackPanel IsVisible="{Binding IsInList}" Spacing="14">
+                        <StackPanel IsVisible="{Binding Editor.IsInList}" Spacing="14">
 
                             <!-- Header: "В моём списке" + Delete -->
                             <Grid ColumnDefinitions="*, Auto">
@@ -387,9 +387,9 @@
                                     <TextBlock Text="{DynamicResource l.anime.list_actions.in_my_list}"
                                                FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <Button Grid.Column="1" Command="{Binding RemoveFromListCommand}"
+                                <Button Grid.Column="1" Command="{Binding Editor.RemoveFromListCommand}"
                                         CommandParameter="{Binding $parent[Window]}"
-                                        Classes.confirm="{Binding IsDeleteConfirmationVisible}"
+                                        Classes.confirm="{Binding Editor.IsDeleteConfirmationVisible}"
                                         ToolTip.Tip="{DynamicResource l.anime.list_actions.remove_from_list}"
                                         Padding="6" CornerRadius="6"
                                         VerticalAlignment="Center">
@@ -419,13 +419,13 @@
                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <material:MaterialIcon Width="16" Height="16" VerticalAlignment="Center"
                                                                Kind="DeleteOutline"
-                                                               IsVisible="{Binding !IsDeleteConfirmationVisible}"/>
+                                                               IsVisible="{Binding !Editor.IsDeleteConfirmationVisible}"/>
                                         <material:MaterialIcon Width="16" Height="16" VerticalAlignment="Center"
                                                                Kind="AlertOutline"
-                                                               IsVisible="{Binding IsDeleteConfirmationVisible}"/>
+                                                               IsVisible="{Binding Editor.IsDeleteConfirmationVisible}"/>
                                         <TextBlock Text="{DynamicResource l.anime.list_actions.confirm_delete}"
                                                    FontSize="11" FontWeight="Bold" VerticalAlignment="Center"
-                                                   IsVisible="{Binding IsDeleteConfirmationVisible}"/>
+                                                   IsVisible="{Binding Editor.IsDeleteConfirmationVisible}"/>
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -435,7 +435,7 @@
                             <!-- STATUS -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="{DynamicResource l.anime.labels.status}" Classes="SidebarLabel"/>
-                                <ComboBox ItemsSource="{Binding AvailableStatuses}"
+                                <ComboBox ItemsSource="{Binding Editor.AvailableStatuses}"
                                           SelectedItem="{Binding Anime.Status}"
                                           HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBox.ItemTemplate>
@@ -449,7 +449,7 @@
                             <!-- SCORE -->
                             <StackPanel Spacing="4">
                                 <TextBlock Text="{DynamicResource l.anime.labels.your_score}" Classes="SidebarLabel"/>
-                                <ComboBox ItemsSource="{Binding AvailableScores}"
+                                <ComboBox ItemsSource="{Binding Editor.AvailableScores}"
                                           SelectedItem="{Binding Anime.Score, Converter={StaticResource RatingConverter}}"
                                           HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBox.ItemTemplate>
@@ -475,7 +475,7 @@
                                         <TextBlock Text="{Binding Anime.TotalEpisodes}" FontSize="13" Opacity="0.7" FontWeight="SemiBold"/>
                                     </StackPanel>
                                     
-                                    <Button Grid.Column="2" Command="{Binding IncrementProgressCommand}"
+                                    <Button Grid.Column="2" Command="{Binding Editor.IncrementProgressCommand}"
                                             ToolTip.Tip="+1"
                                             Width="32" Height="32" Padding="0" CornerRadius="6"
                                             Background="{DynamicResource SystemAccentColor}" Foreground="White"
@@ -508,7 +508,7 @@
                                             <TextBlock Text="{Binding Anime.Chapters}" FontSize="13" Opacity="0.7" FontWeight="SemiBold"/>
                                         </StackPanel>
                                         
-                                        <Button Grid.Column="2" Command="{Binding IncrementProgressCommand}"
+                                        <Button Grid.Column="2" Command="{Binding Editor.IncrementProgressCommand}"
                                                 ToolTip.Tip="+1"
                                                 Width="32" Height="32" Padding="0" CornerRadius="6"
                                                 Background="{DynamicResource SystemAccentColor}" Foreground="White"
@@ -539,7 +539,7 @@
                                             <TextBlock Text="{Binding Anime.Volumes}" FontSize="13" Opacity="0.7" FontWeight="SemiBold"/>
                                         </StackPanel>
                                         
-                                        <Button Grid.Column="2" Command="{Binding IncrementVolumesCommand}"
+                                        <Button Grid.Column="2" Command="{Binding Editor.IncrementVolumesCommand}"
                                                 ToolTip.Tip="+1"
                                                 Width="32" Height="32" Padding="0" CornerRadius="6"
                                                 Background="{DynamicResource SystemAccentColor}" Foreground="White"
@@ -564,8 +564,8 @@
                         </StackPanel>
 
                         <!-- ══ NOT IN LIST: Add to List button ══ -->
-                        <StackPanel IsVisible="{Binding !IsInList}" Spacing="0">
-                            <Button Classes="AddButton" Command="{Binding AddToListCommand}" HorizontalAlignment="Stretch" Margin="0,10,0,0">
+                        <StackPanel IsVisible="{Binding !Editor.IsInList}" Spacing="0">
+                            <Button Classes="AddButton" Command="{Binding Editor.AddToListCommand}" HorizontalAlignment="Stretch" Margin="0,10,0,0">
                                 <Grid ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">
                                     <material:MaterialIcon Grid.Column="0" Kind="PlaylistPlus" Width="22" Height="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                     <TextBlock Grid.Column="1" Text="{DynamicResource l.anime.list_actions.add_to_list}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
@@ -574,7 +574,7 @@
                         </StackPanel>
 
                         <!-- Save changes button inside Sidebar -->
-                        <Button Command="{Binding SaveCommand}"
+                        <Button Command="{Binding Editor.SaveCommand}"
                                 CommandParameter="{Binding $parent[Window]}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,-12,0,0"
@@ -665,7 +665,7 @@
 
                                 <!-- Alt titles -->
                                 <StackPanel IsVisible="{Binding #TabAltTitles.IsChecked}">
-                                    <ItemsControl ItemsSource="{Binding AllAlternativeTitles}">
+                                    <ItemsControl ItemsSource="{Binding Metadata.AllAlternativeTitles}">
                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -675,7 +675,7 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    <TextBlock Text="{DynamicResource l.anime.labels.no_alternative_titles}" FontSize="13" Opacity="0.5" IsVisible="{Binding !HasAlternativeTitles}"/>
+                                    <TextBlock Text="{DynamicResource l.anime.labels.no_alternative_titles}" FontSize="13" Opacity="0.5" IsVisible="{Binding !Metadata.HasAlternativeTitles}"/>
                                 </StackPanel>
                             </Panel>
                         </StackPanel>

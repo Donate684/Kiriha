@@ -271,7 +271,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.language.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.language.subtitle}"/>
                         </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding AvailableLanguages}" SelectedItem="{Binding SelectedLanguage}" Width="160" CornerRadius="6">
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Ui.AvailableLanguages}" SelectedItem="{Binding Ui.SelectedLanguage}" Width="160" CornerRadius="6">
                             <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
                         </ComboBox>
                     </Grid>
@@ -281,7 +281,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.theme.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.theme.subtitle}"/>
                         </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding AvailableThemes}" SelectedItem="{Binding SelectedTheme}" Width="160" CornerRadius="6">
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Ui.AvailableThemes}" SelectedItem="{Binding Ui.SelectedTheme}" Width="160" CornerRadius="6">
                             <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
                         </ComboBox>
                     </Grid>
@@ -291,7 +291,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.tray.close_to_tray}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.tray.close_to_tray_sub}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding CloseToTray}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.CloseToTray}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -299,7 +299,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.tray.minimize_to_tray}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.tray.minimize_to_tray_sub}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding MinimizeToTray}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.MinimizeToTray}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -307,7 +307,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.auto_launch.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.auto_launch.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding AutoLaunch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.AutoLaunch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -315,7 +315,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.launch_minimized.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.launch_minimized.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding LaunchMinimized}" IsEnabled="{Binding AutoLaunch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.LaunchMinimized}" IsEnabled="{Binding System.AutoLaunch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -323,7 +323,7 @@
                             <TextBlock Classes="Title" Text="Фоновая загрузка метаданных"/>
                             <TextBlock Classes="Sub" Text="Скачивать постеры и описания в свёрнутом режиме"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding EnableBackgroundMetadataFetch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableBackgroundMetadataFetch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -331,7 +331,7 @@
                             <TextBlock Classes="Title" Text="Запись логов"/>
                             <TextBlock Classes="Sub" Text="Вести лог работы приложения в файл (нужно для отладки)"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding EnableLogging}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableLogging}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <!-- invisible spacer to compensate viewport/visible area mismatch -->
                     <Border Height="110" IsHitTestVisible="False"/>
@@ -342,12 +342,12 @@
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=1}">
                     <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.appearance}"/>
 
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding IsMicaSupported}">
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding Ui.IsMicaSupported}">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.mica.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mica.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding EnableMica}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.EnableMica}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -355,7 +355,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_titles}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.russian_titles_sub}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding UseRussianTitles}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.UseRussianTitles}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -363,7 +363,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_descriptions}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.russian_descriptions_sub}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding UseRussianDescriptions}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.UseRussianDescriptions}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -371,14 +371,14 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.airing_info.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.airing_info.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ShowAiringInfo}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.ShowAiringInfo}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.scale}"/>
                         </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding AvailableUiScales}" SelectedItem="{Binding UiScale}" Width="160" CornerRadius="6">
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Ui.AvailableUiScales}" SelectedItem="{Binding Ui.UiScale}" Width="160" CornerRadius="6">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding StringFormat={}{0:P0}}"/>
@@ -399,15 +399,15 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.new_episodes.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.new_episodes.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding NotifyNewEpisodes}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.NotifyNewEpisodes}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding NotifyNewEpisodes}">
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.NotifyNewEpisodes}">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.delay.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.delay.subtitle}"/>
                         </StackPanel>
-                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding NewEpisodeNotificationDelayMinutes}" Minimum="0" Maximum="1440" Increment="1" Width="80" ShowButtonSpinner="False"/>
+                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding System.NewEpisodeNotificationDelayMinutes}" Minimum="0" Maximum="1440" Increment="1" Width="80" ShowButtonSpinner="False"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -415,7 +415,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.app_update.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.app_update.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding NotifyAppUpdate}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.NotifyAppUpdate}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
@@ -537,15 +537,15 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.enable.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.enable.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding EnableScrobbler}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableScrobbler}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.processes.tracked_apps}"/>
-                            <TextBlock Classes="Sub" Text="{Binding EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter=scrobbler.rules.active_count}"/>
+                            <TextBlock Classes="Sub" Text="{Binding Playback.EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter=scrobbler.rules.active_count}"/>
                         </StackPanel>
-                        <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding ManagePlayersCommand}" Padding="14,6" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}">
+                        <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding Playback.ManagePlayersCommand}" Padding="14,6" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <material:MaterialIcon Kind="CogOutline" Width="14" Height="14"/>
                                 <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="12" FontWeight="SemiBold"/>
@@ -553,19 +553,19 @@
                         </Button>
                     </Grid>
                     <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding EnableScrobbler}">
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.subtitle}"/>
                         </StackPanel>
-                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding ScrobbleDelaySeconds}" Minimum="10" Maximum="3600" Increment="10" Width="80" ShowButtonSpinner="False"/>
+                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding System.ScrobbleDelaySeconds}" Minimum="10" Maximum="3600" Increment="10" Width="80" ShowButtonSpinner="False"/>
                     </Grid>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding EnableScrobbler}">
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.skip_notify.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.skip_notify.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding ScrobbleNotifyOnSkip}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.ScrobbleNotifyOnSkip}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -573,7 +573,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.discord.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.discord.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding EnableDiscordRPC}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableDiscordRPC}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
@@ -632,7 +632,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.updates.check_on_launch}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.updates.check_on_launch_sub}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding AutoCheckUpdates}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.AutoCheckUpdates}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -640,7 +640,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.updates.download_in_background}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.updates.download_in_background_sub}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding AutoDownloadUpdates}" IsEnabled="{Binding AutoCheckUpdates}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.AutoDownloadUpdates}" IsEnabled="{Binding System.AutoCheckUpdates}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <!-- Mirror of the same toggle in the Notifications page; both bind to NotifyAppUpdate
@@ -650,7 +650,7 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.app_update.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.app_update.subtitle}"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding NotifyAppUpdate}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.NotifyAppUpdate}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -744,14 +744,14 @@
                             <TextBlock Classes="Sub" Text="Открывать поддерживаемые видеофайлы через это приложение"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border IsVisible="{Binding IsSystemPlayer}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                            <Border IsVisible="{Binding Playback.IsSystemPlayer}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
                                     <TextBlock Text="Интегрировано" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
                                 </StackPanel>
                             </Border>
-                            <Button Content="Интегрировать" Command="{Binding RegisterSystemPlayerCommand}" IsVisible="{Binding !IsSystemPlayer}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
-                            <Button Command="{Binding UnregisterSystemPlayerCommand}" IsVisible="{Binding IsSystemPlayer}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0" ToolTip.Tip="Удалить интеграцию">
+                            <Button Content="Интегрировать" Command="{Binding Playback.RegisterSystemPlayerCommand}" IsVisible="{Binding !Playback.IsSystemPlayer}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+                            <Button Command="{Binding Playback.UnregisterSystemPlayerCommand}" IsVisible="{Binding Playback.IsSystemPlayer}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0" ToolTip.Tip="Удалить интеграцию">
                                 <material:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#ff5555"/>
                             </Button>
                         </StackPanel>
@@ -761,14 +761,14 @@
                             <TextBlock Classes="Title" Text="Держать плеер в фоне"/>
                             <TextBlock Classes="Sub" Text="Заранее запускать отдельный процесс плеера, чтобы видео открывалось быстрее"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding KeepPlayerProcessAlive}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Playback.KeepPlayerProcessAlive}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="Одно окно плеера"/>
                             <TextBlock Classes="Sub" Text="При открытии нового видео заменять файл в уже открытом окне"/>
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding SinglePlayerWindow}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Playback.SinglePlayerWindow}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <TextBlock Classes="Title" Text="mpv video pipeline" Margin="0,18,0,4"/>
@@ -778,28 +778,28 @@
                             <TextBlock Classes="Title" Text="hwdec"/>
                             <TextBlock Classes="Sub" Text="Hardware video decoding: auto, auto-copy, d3d11va, nvdec, vulkan, no"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding MpvHwdec}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvHwdec}" VerticalAlignment="Center" PlaceholderText="auto"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="vo"/>
                             <TextBlock Classes="Sub" Text="Video output driver: gpu-next, gpu, d3d11, vulkan, opengl"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding MpvVideoOutput}" VerticalAlignment="Center" PlaceholderText="gpu-next"/>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvVideoOutput}" VerticalAlignment="Center" PlaceholderText="gpu-next"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="gpu-api"/>
                             <TextBlock Classes="Sub" Text="Graphics API priority: auto, d3d11, vulkan, opengl"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding MpvGpuApi}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvGpuApi}" VerticalAlignment="Center" PlaceholderText="auto"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="gpu-context"/>
                             <TextBlock Classes="Sub" Text="Windowing/GPU context: auto, d3d11, win, angle, x11, wayland, cocoa"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding MpvGpuContext}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvGpuContext}" VerticalAlignment="Center" PlaceholderText="auto"/>
                     </Grid>
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>

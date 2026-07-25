@@ -29,10 +29,13 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly MappingService _mappingService;
     private readonly SeasonalViewModel _seasonalViewModel;
 
-    public record ThemeOption(string Name, ThemeType Value);
-
+    
     // Per-mirror connection state. Only one Shiki mirror can be active at a time
     // (because their accounts/tokens are independent OAuth realms).
+        public SettingsPlaybackViewModel Playback { get; }
+    public SettingsUiViewModel Ui { get; }
+    public SettingsSystemViewModel System { get; }
+
     public bool IsShikiOneConnected => _settingsService.Current.Api.Shiki?.Mirror == ShikiMirror.One;
     public bool IsShikiNetConnected => _settingsService.Current.Api.Shiki?.Mirror == ShikiMirror.Net;
 
@@ -42,16 +45,8 @@ public partial class SettingsViewModel : ViewModelBase
     public bool CanLoginShikiOne => IsLoggedIn && !IsShikiNetConnected;
     public bool CanLoginShikiNet => IsLoggedIn && !IsShikiOneConnected;
 
-    public List<ThemeOption> AvailableThemes => new()
-    {
-        new ThemeOption(UIUtils.GetLoc("settings.theme.default"), ThemeType.System),
-        new ThemeOption(UIUtils.GetLoc("settings.theme.light"), ThemeType.Light),
-        new ThemeOption(UIUtils.GetLoc("settings.theme.dark"), ThemeType.Dark)
-    };
-
-    [ObservableProperty]
-    private ThemeOption _selectedTheme;
-
+    
+    
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanLoginShikiOne))]
@@ -69,28 +64,13 @@ public partial class SettingsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(ShikiLoginNetCommand))]
     private bool _isShikiLoggedIn;
 
-    [ObservableProperty]
-    private bool _useRussianTitles;
-
-    [ObservableProperty]
-    private bool _useRussianDescriptions;
-
-    [ObservableProperty]
-    private bool _showAiringInfo;
-
-    [ObservableProperty]
-    private bool _enableMica;
-
-    [ObservableProperty]
-    private double _uiScale;
-
-    public List<double> AvailableUiScales { get; } = new()
-    {
-        0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0
-    };
-
-    public bool IsMicaSupported => Platform.IsMicaSupported;
-
+    
+    
+    
+    
+    
+    
+    
     // Updates
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDownloadReady))]
@@ -116,36 +96,16 @@ public partial class SettingsViewModel : ViewModelBase
     public bool IsDownloading => UpdateProgress > 0 && !IsUpdateDownloaded;
 
     // System
-    [ObservableProperty]
-    private bool _closeToTray;
-
-    [ObservableProperty]
-    private bool _minimizeToTray;
-
-    [ObservableProperty]
-    private bool _enableScrobbler;
-
-    [ObservableProperty]
-    private decimal? _scrobbleDelaySeconds;
-
-    [ObservableProperty]
-    private bool _scrobbleNotifyOnSkip;
-
-    [ObservableProperty]
-    private bool _enableDiscordRPC;
-
-    [ObservableProperty]
-    private bool _enableBackgroundMetadataFetch;
-
-    [ObservableProperty]
-    private bool _enableLogging;
-
-    [ObservableProperty]
-    private bool _autoCheckUpdates;
-
-    [ObservableProperty]
-    private bool _autoDownloadUpdates;
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanClearSelectedCache))]
     [NotifyCanExecuteChangedFor(nameof(ClearSelectedCacheCommand))]
@@ -167,38 +127,16 @@ public partial class SettingsViewModel : ViewModelBase
     public bool CanClearSelectedCache => !IsCacheBusy && CacheItems.Any(x => x.IsSelected);
 
     // Notifications
-    [ObservableProperty]
-    private bool _notifyNewEpisodes;
-
-    [ObservableProperty]
-    private bool _notifyAppUpdate;
-
-    [ObservableProperty]
-    private decimal? _newEpisodeNotificationDelayMinutes;
-
-    public int EnabledPlayersCount => _settingsService.Current.System.Scrobbler.AllowedProcesses.Count;
-
-    public List<LanguageOption> AvailableLanguages { get; } = new()
-    {
-        new LanguageOption(Constants.Languages.EnName, Constants.Languages.En),
-        new LanguageOption(Constants.Languages.RuName, Constants.Languages.Ru)
-    };
-
-    [ObservableProperty]
-    private LanguageOption? _selectedLanguage;
-
-    [ObservableProperty]
-    private bool _autoLaunch;
-
-    [ObservableProperty]
-    private bool _launchMinimized;
-
-    [ObservableProperty]
-    private bool _isSystemPlayer;
-
-    [ObservableProperty]
-    private bool _keepPlayerProcessAlive;
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     [ObservableProperty]
     private bool _singlePlayerWindow = true;
 
@@ -265,44 +203,12 @@ public partial class SettingsViewModel : ViewModelBase
         IsUpdateAvailable = _updateService.IsUpdateAvailable;
         NewVersion = _updateService.NewVersion;
 
-        // Load existing settings
-        AutoLaunch = _settingsService.Current.System.AutoLaunch;
-        LaunchMinimized = _settingsService.Current.System.LaunchMinimized;
-
-        _selectedLanguage = AvailableLanguages.FirstOrDefault(x => x.Code == _settingsService.Current.UI.LanguageCode) ?? AvailableLanguages[0];
-        _selectedTheme = AvailableThemes.FirstOrDefault(x => x.Value == _settingsService.Current.UI.Theme) ?? AvailableThemes[0];
-
-
-        IsLoggedIn = _settingsService.Current.Api.Mal != null;
-        IsShikiLoggedIn = _settingsService.Current.Api.Shiki != null;
-        UseRussianTitles = _settingsService.Current.UI.UseRussianTitles;
-        UseRussianDescriptions = _settingsService.Current.UI.UseRussianDescriptions;
-        ShowAiringInfo = _settingsService.Current.UI.ShowAiringInfo;
-        CloseToTray = _settingsService.Current.System.CloseToTray;
-        MinimizeToTray = _settingsService.Current.System.MinimizeToTray;
-        EnableScrobbler = _settingsService.Current.System.Scrobbler.Enabled;
-        ScrobbleDelaySeconds = _settingsService.Current.System.Scrobbler.DelaySeconds;
-        ScrobbleNotifyOnSkip = _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode;
-        EnableDiscordRPC = _settingsService.Current.System.EnableDiscordRPC;
-        EnableBackgroundMetadataFetch = _settingsService.Current.System.EnableBackgroundMetadataFetch;
-        EnableLogging = _settingsService.Current.System.EnableLogging;
-        AutoCheckUpdates = _settingsService.Current.System.AutoCheckUpdates;
-        AutoDownloadUpdates = _settingsService.Current.System.AutoDownloadUpdates;
-        NotifyNewEpisodes = _settingsService.Current.System.NotifyNewEpisodes;
-        NotifyAppUpdate = _settingsService.Current.System.NotifyAppUpdate;
-        NewEpisodeNotificationDelayMinutes = _settingsService.Current.System.NewEpisodeNotificationDelayMinutes;
-        EnableMica = _settingsService.Current.UI.EnableMica;
-        UiScale = _settingsService.Current.UI.UiScale;
-        KeepPlayerProcessAlive = _settingsService.Current.System.KeepPlayerProcessAlive;
-        SinglePlayerWindow = _settingsService.Current.Player.SingleWindow;
-        MpvHwdec = NormalizeMpvOption(_settingsService.Current.Player.MpvHwdec, "auto");
-        MpvVideoOutput = NormalizeMpvOption(_settingsService.Current.Player.MpvVideoOutput, "gpu-next");
-        MpvGpuApi = NormalizeMpvOption(_settingsService.Current.Player.MpvGpuApi, "auto");
-        MpvGpuContext = NormalizeMpvOption(_settingsService.Current.Player.MpvGpuContext, "auto");
-
-        IsSystemPlayer = _systemIntegrationService.IsRegistered();
-
-        InitializeCustomLinks();
+                // Load existing settings
+        Playback = new SettingsPlaybackViewModel(_settingsService, _systemIntegrationService, _anisthesiaService);
+        Ui = new SettingsUiViewModel(_settingsService, _animeListViewModel, _localizationService);
+        System = new SettingsSystemViewModel(_settingsService, _discordService);
+        
+InitializeCustomLinks();
         InitializeCacheItems();
         _ = RefreshCacheStats();
     }

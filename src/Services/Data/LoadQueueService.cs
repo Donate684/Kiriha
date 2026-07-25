@@ -10,7 +10,7 @@ namespace Kiriha.Services.Data;
 
 public class LoadQueueService : IDisposable
 {
-    private readonly ImageCacheService _imageCache;
+    private readonly PosterBatchDownloader _posterBatchDownloader;
     private readonly ShikiMetadataService _shikiMetadata;
     private readonly SettingsService _settings;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
@@ -27,12 +27,12 @@ public class LoadQueueService : IDisposable
     private readonly Channel<AnimeItem> _shikiQueue = CreateQueue(ShikiQueueCapacity);
 
     public LoadQueueService(
-        ImageCacheService imageCache,
+        PosterBatchDownloader posterBatchDownloader,
         ShikiMetadataService shikiMetadata,
         SettingsService settings,
         IBackgroundTaskSupervisor backgroundTasks)
     {
-        _imageCache = imageCache;
+        _posterBatchDownloader = posterBatchDownloader;
         _shikiMetadata = shikiMetadata;
         _settings = settings;
         _backgroundTasks = backgroundTasks;
@@ -115,7 +115,7 @@ public class LoadQueueService : IDisposable
         {
             try
             {
-                await _imageCache.CacheBatchAsync(new[] { item }, ct: ct);
+                await _posterBatchDownloader.CacheBatchAsync(new[] { item }, ct: ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {

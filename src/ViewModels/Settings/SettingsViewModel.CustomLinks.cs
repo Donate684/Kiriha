@@ -22,7 +22,7 @@ public partial class SettingsViewModel
 
             // Backfill icon for legacy links that were saved before the
             // auto-favicon feature, or whose cached file got cleaned up.
-            if (string.IsNullOrWhiteSpace(link.IconPath) || !System.IO.File.Exists(link.IconPath))
+            if (string.IsNullOrWhiteSpace(link.IconPath) || !global::System.IO.File.Exists(link.IconPath))
             {
                 ScheduleFaviconFetch(link, delayMs: 0);
             }

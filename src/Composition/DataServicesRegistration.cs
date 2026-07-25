@@ -68,6 +68,7 @@ internal static class DataServicesRegistration
             c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent);
         });
         services.AddSingleton<ImageCacheService>();
+        services.AddSingleton<PosterBatchDownloader>();
         services.AddSingleton<SeasonalCacheStore>();
         services.AddSingleton<HistoryService>();
         services.AddSingleton<ManualMappingService>();

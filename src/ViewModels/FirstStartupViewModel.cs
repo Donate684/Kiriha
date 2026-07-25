@@ -36,10 +36,18 @@ public partial class FirstStartupViewModel : ViewModelBase
         _localizationService = localizationService;
         _settingsViewModel = settingsViewModel;
 
-        _settingsViewModel.PropertyChanged += (s, e) =>
+        _settingsViewModel.System.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(SettingsViewModel.EnableScrobbler) ||
-                e.PropertyName == nameof(SettingsViewModel.EnabledPlayersCount))
+            if (e.PropertyName == nameof(SettingsSystemViewModel.EnableScrobbler))
+            {
+                NextStepCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(CanGoNext));
+            }
+        };
+
+        _settingsViewModel.Playback.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(SettingsPlaybackViewModel.EnabledPlayersCount))
             {
                 NextStepCommand.NotifyCanExecuteChanged();
                 OnPropertyChanged(nameof(CanGoNext));
@@ -86,7 +94,7 @@ public partial class FirstStartupViewModel : ViewModelBase
     {
         if (CurrentStep?.Key == "scrobbler")
         {
-            if (_settingsViewModel.EnableScrobbler && _settingsViewModel.EnabledPlayersCount == 0)
+            if (_settingsViewModel.System.EnableScrobbler && _settingsViewModel.Playback.EnabledPlayersCount == 0)
                 return false;
         }
         return true;
@@ -122,10 +130,10 @@ public partial class FirstStartupViewModel : ViewModelBase
             _settingsService.CompleteSetupStep(CurrentStep.Key);
 
             // AUTO-ENABLE Russian features if 'ru' was chosen in step 1
-            if (CurrentStep.Key == "language" && _settingsViewModel.SelectedLanguage?.Code == "ru")
+            if (CurrentStep.Key == "language" && _settingsViewModel.Ui.SelectedLanguage?.Code == "ru")
             {
-                _settingsViewModel.UseRussianTitles = true;
-                _settingsViewModel.UseRussianDescriptions = true;
+                _settingsViewModel.Ui.UseRussianTitles = true;
+                _settingsViewModel.Ui.UseRussianDescriptions = true;
             }
         }
 

@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Win32;
 using Serilog;
+using static Kiriha.Services.Windows.WindowsRegistryHelper;
 
 namespace Kiriha.Services;
 
@@ -137,46 +138,4 @@ public class SystemIntegrationService
         }
     }
 
-    private static void RegAdd(RegistryKey hive, string keyPath, string valueName, object value, RegistryValueKind kind = RegistryValueKind.String)
-    {
-        using var key = hive.CreateSubKey(keyPath, true);
-        if (key != null)
-        {
-            key.SetValue(valueName, value, kind);
-        }
-    }
-
-    private static void RegSetDefault(RegistryKey hive, string keyPath, object value)
-    {
-        using var key = hive.CreateSubKey(keyPath, true);
-        if (key != null)
-        {
-            key.SetValue("", value);
-        }
-    }
-
-    private static void DeleteKeyTree(RegistryKey hive, string keyPath)
-    {
-        try
-        {
-            hive.DeleteSubKeyTree(keyPath, false);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "Failed to delete registry key tree: {KeyPath}", keyPath);
-        }
-    }
-
-    private static void DeleteValueSafe(RegistryKey hive, string keyPath, string valueName)
-    {
-        try
-        {
-            using var key = hive.OpenSubKey(keyPath, true);
-            key?.DeleteValue(valueName, false);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "Failed to delete registry value: {KeyPath}\\{ValueName}", keyPath, valueName);
-        }
-    }
 }

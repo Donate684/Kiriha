@@ -39,18 +39,31 @@ public sealed class AvaloniaDialogService : IDialogService
         // Resolve dependencies via DI scope. Note the dialog's VM is currently
         // not registered in the container (it carries a load of per-call state),
         // so we new it up explicitly with services pulled from the provider.
-        var vm = new AnimeDetailsViewModel(
+        var clone = item.Clone();
+
+        var editVm = new AnimeEditViewModel(
             item,
-            _services.GetRequiredService<MalApiService>(),
-            _services.GetRequiredService<ShikiApiService>(),
-            _services.GetRequiredService<JikanApiService>(),
+            clone,
             _services.GetRequiredService<SyncManager>(),
             _services.GetRequiredService<AnimeRepository>(),
             _services.GetRequiredService<AnimeProgressService>(),
-            _services.GetRequiredService<AiringInfoService>(),
+            _services.GetRequiredService<HistoryService>());
+            
+        var metaVm = new AnimeMetadataViewModel(
+            clone,
+            _services.GetRequiredService<MalApiService>(),
+            _services.GetRequiredService<ShikiApiService>());
+
+        var vm = new AnimeDetailsViewModel(
+            clone,
+            editVm,
+            metaVm,
+            _services.GetRequiredService<JikanApiService>(),
             _services.GetRequiredService<SettingsService>(),
-            _services.GetRequiredService<HistoryService>(),
-            this);
+            this,
+            _services.GetRequiredService<ShikiApiService>(),
+            _services.GetRequiredService<AnimeRepository>(),
+            _services.GetRequiredService<MalApiService>());
 
         var window = new Views.AnimeDetailsWindow(_services.GetRequiredService<SettingsService>()) { DataContext = vm };
 

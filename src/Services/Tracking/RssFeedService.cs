@@ -17,60 +17,23 @@ namespace Kiriha.Services.Tracking;
 
 public partial class RssFeedService
 {
-    private readonly HttpClient _httpClient;
+    private readonly NyaaFeedClient _nyaaClient;
     private readonly AnimeRepository _animeRepo;
     private readonly MappingService _mappingService;
-    private readonly HttpConditionalCache _httpCache;
     private readonly IUiDispatcher _uiDispatcher;
 
     public System.Collections.ObjectModel.ObservableCollection<Kiriha.Models.TorrentItem> TorrentItems { get; } = new();
 
-    private const string NyaaRssUrl = "https://nyaa.si/?page=rss&c=1_2"; // Anime - English-translated
-
     public RssFeedService(
-        IHttpClientFactory httpClientFactory,
+        NyaaFeedClient nyaaClient,
         AnimeRepository animeRepo,
         MappingService mappingService,
-        IHttpCacheRepository httpCacheRepo,
         IUiDispatcher uiDispatcher)
     {
-        _httpClient = httpClientFactory.CreateClient("RssClient");
+        _nyaaClient = nyaaClient;
         _animeRepo = animeRepo;
         _mappingService = mappingService;
         _uiDispatcher = uiDispatcher;
-        _httpCache = new HttpConditionalCache(_httpClient, httpCacheRepo, "Nyaa");
-    }
-
-    /// <summary>
-    /// Conditional GET for a Nyaa RSS URL. Nyaa returns ETag / Last-Modified
-    /// for both the global feed and per-query search RSS, so a 304 round-trip
-    /// is essentially free body-wise. The 30-day http_response_cache TTL means
-    /// even after a long offline gap we still get correct data — the conditional
-    /// GET validates against the origin every call.
-    /// </summary>
-    private async Task<XDocument?> FetchRssAsync(string url, CancellationToken ct)
-    {
-        var bytes = await _httpCache.SendAsync(
-            requestFactory: innerCt =>
-            {
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-                // RssClient already sets User-Agent globally; no extra headers needed.
-                return Task.FromResult(request);
-            },
-            ct: ct);
-
-        if (bytes == null || bytes.Length == 0) return null;
-
-        try
-        {
-            using var ms = new MemoryStream(bytes, writable: false);
-            return XDocument.Load(ms);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "RssFeedService: failed to parse Nyaa RSS XML for {Url}", url);
-            return null;
-        }
     }
 
 
@@ -98,8 +61,7 @@ public partial class RssFeedService
         try
         {
             Log.Debug("RssFeedService: Syncing {Title} from Nyaa.si search...", anime.Title);
-            string url = $"https://nyaa.si/?page=rss&q={Uri.EscapeDataString(anime.Title)}&c=1_2";
-            var doc = await FetchRssAsync(url, ct);
+            var doc = await _nyaaClient.FetchSearchAsync(anime.Title, ct);
             if (doc == null) return null;
 
             var items = doc.Descendants("item").Take(20).ToList(); // Top 20 results are enough
@@ -136,11 +98,10 @@ public partial class RssFeedService
     {
         try
         {
-            string url = $"https://nyaa.si/?page=rss&q={Uri.EscapeDataString(query)}&c=1_2";
-            Log.Information("Torrents: Fetching RSS from Nyaa: {Url}", url);
+            Log.Information("Torrents: Fetching RSS search for: {Query}", query);
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-            var doc = await FetchRssAsync(url, cts.Token);
+            var doc = await _nyaaClient.FetchSearchAsync(query, cts.Token);
             if (doc == null) return new List<Kiriha.Models.TorrentItem>();
 
             Log.Information("Torrents: Parsing XML response...");
@@ -202,7 +163,7 @@ public partial class RssFeedService
 
         try
         {
-            var doc = await FetchRssAsync(NyaaRssUrl, CancellationToken.None);
+            var doc = await _nyaaClient.FetchGlobalFeedAsync(CancellationToken.None);
             if (doc == null) return;
 
             var items = doc.Descendants("item").ToList();

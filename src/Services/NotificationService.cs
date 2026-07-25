@@ -157,11 +157,11 @@ public class NotificationService
             }
             xmlString += "</binding></visual></toast>";
 
-            var xmlDoc = new Windows.Data.Xml.Dom.XmlDocument();
+            var xmlDoc = new global::Windows.Data.Xml.Dom.XmlDocument();
             xmlDoc.LoadXml(xmlString);
 
-            var toast = new Windows.UI.Notifications.ToastNotification(xmlDoc);
-            Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier(AumId).Show(toast);
+            var toast = new global::Windows.UI.Notifications.ToastNotification(xmlDoc);
+            global::Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier(AumId).Show(toast);
 #else
             Log.Debug("NotificationService: Toast not shown (non-Windows build): {Lines}", string.Join(" | ", lines));
 #endif
