@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Models;
@@ -60,7 +60,7 @@ public static class AnimeFilterEngine
                     return s;
                 return 0.0;
             }),
-            "Progress" => query.OrderByDescending(x => x.ProgressValue),
+            "Progress" => query.OrderByDescending(x => x.Presentation.ProgressValue),
             "Date" => query.OrderByDescending(x => x.AiringDate ?? DateTime.MinValue),
             "Popularity" => query.OrderBy(x => x.Popularity <= 0 ? int.MaxValue : x.Popularity),
             "EnglishTitle" => query.OrderBy(x => !string.IsNullOrEmpty(x.EnglishTitle) ? x.EnglishTitle : x.Title),

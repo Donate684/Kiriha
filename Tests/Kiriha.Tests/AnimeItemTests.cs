@@ -1,4 +1,4 @@
-using Kiriha.Models;
+﻿using Kiriha.Models;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.Tests;
@@ -16,8 +16,8 @@ public sealed class AnimeItemTests
             RussianSynopsis = "Russian synopsis"
         };
 
-        Assert.Equal("Провожающая в последний путь Фрирен", item.DisplayTitle);
-        Assert.Equal("Russian synopsis", item.DisplaySynopsis);
+        Assert.Equal("Провожающая в последний путь Фрирен", item.Presentation.DisplayTitle);
+        Assert.Equal("Russian synopsis", item.Presentation.DisplaySynopsis);
     }
 
     [Theory]
@@ -29,7 +29,7 @@ public sealed class AnimeItemTests
     {
         var item = new AnimeItem { Progress = progress, TotalEpisodes = total };
 
-        Assert.Equal(expected, item.ProgressValue, precision: 6);
+        Assert.Equal(expected, item.Presentation.ProgressValue, precision: 6);
     }
 
     [Fact]
@@ -44,9 +44,9 @@ public sealed class AnimeItemTests
             StatusDetailed = "currently_airing"
         };
 
-        Assert.True(item.ShowAiredProgressBar);
-        Assert.Equal(2, item.UnseenEpisodesCount);
-        Assert.Equal(5d / 12d, item.AiredValueFraction, precision: 6);
+        Assert.True(item.Presentation.ShowAiredProgressBar);
+        Assert.Equal(2, item.Presentation.UnseenEpisodesCount);
+        Assert.Equal(5d / 12d, item.Presentation.AiredValueFraction, precision: 6);
     }
 
     [Fact]
@@ -69,14 +69,14 @@ public sealed class AnimeItemTests
 
         var presentation = item.Presentation;
 
-        Assert.Equal(item.DisplayTitle, presentation.DisplayTitle);
-        Assert.Equal(item.DisplaySynopsis, presentation.DisplaySynopsis);
-        Assert.Equal(item.ProgressValue, presentation.ProgressValue);
-        Assert.Equal(item.AiredValueFraction, presentation.AiredValueFraction);
-        Assert.Equal(item.ShowAiredProgressBar, presentation.ShowAiredProgressBar);
-        Assert.Equal(item.UnseenEpisodesCount, presentation.UnseenEpisodesCount);
-        Assert.Equal(item.TopGenres, presentation.TopGenres);
-        Assert.Equal(item.HasStudios, presentation.HasStudios);
+        Assert.Equal(item.Presentation.DisplayTitle, presentation.DisplayTitle);
+        Assert.Equal(item.Presentation.DisplaySynopsis, presentation.DisplaySynopsis);
+        Assert.Equal(item.Presentation.ProgressValue, presentation.ProgressValue);
+        Assert.Equal(item.Presentation.AiredValueFraction, presentation.AiredValueFraction);
+        Assert.Equal(item.Presentation.ShowAiredProgressBar, presentation.ShowAiredProgressBar);
+        Assert.Equal(item.Presentation.UnseenEpisodesCount, presentation.UnseenEpisodesCount);
+        Assert.Equal(item.Presentation.TopGenres, presentation.TopGenres);
+        Assert.Equal(item.Presentation.HasStudios, presentation.HasStudios);
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public sealed class AnimeItemTests
         item.Progress = 3;
 
         Assert.Contains(nameof(AnimeItem.Presentation), changed);
-        Assert.DoesNotContain(nameof(AnimeItem.ProgressValue), changed);
-        Assert.DoesNotContain(nameof(AnimeItem.ProgressValueFraction), changed);
+        Assert.DoesNotContain(nameof(AnimeItemPresentation.ProgressValue), changed);
+        Assert.DoesNotContain(nameof(AnimeItemPresentation.ProgressValueFraction), changed);
     }
 
     [Fact]

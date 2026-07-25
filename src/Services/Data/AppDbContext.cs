@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Kiriha.Models;
@@ -63,12 +63,12 @@ public class AppDbContext : DbContext
             ConfigureJsonList(entity, e => e.AlternativeTitles);
 
             // Ignored UI/Calculated properties
-            entity.Ignore(e => e.DisplayTitle);
-            entity.Ignore(e => e.DisplaySynopsis);
-            entity.Ignore(e => e.ProgressValue);
-            entity.Ignore(e => e.ProgressDisplay);
+
+
+
+
             entity.Ignore(e => e.Season);
-            entity.Ignore(e => e.AiringBadgeText);
+
 
             entity.HasIndex(e => e.RussianTitle).HasDatabaseName("idx_user_anime_russian_title");
         });

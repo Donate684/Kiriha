@@ -39,11 +39,13 @@ internal static class TrackingServicesRegistration
         services.AddSingleton<MalAuthService>(sp =>
             new MalAuthService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient")));
 
+        services.AddSingleton<MalTokenManager>();
+
         services.AddSingleton<MalApiService>(sp =>
             new MalApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient"),
                 sp.GetRequiredService<SettingsService>(),
-                sp.GetRequiredService<MalAuthService>(),
+                sp.GetRequiredService<MalTokenManager>(),
                 sp.GetRequiredService<JikanApiService>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
@@ -68,6 +70,8 @@ internal static class TrackingServicesRegistration
                     AutomaticDecompression = DecompressionMethods.All,
                 })
                 .AddHttpMessageHandler<ResilientHttpHandler>();
+
+        services.AddSingleton<ShikiRateLimiter>();
 
         services.AddSingleton<ShikiAuthService>(sp =>
             new ShikiAuthService(

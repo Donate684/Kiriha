@@ -146,7 +146,7 @@ public partial class ShikiMetadataService
                     request.Headers.Add("User-Agent", Core.AppInfo.UserAgent);
                     return Task.FromResult(request);
                 },
-                throttle: ShikiThrottleAsync,
+                throttle: ct => _rateLimiter.ThrottleAsync(ct),
                 ct: ct);
 
             if (bytes == null) return null;

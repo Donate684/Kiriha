@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -86,7 +86,7 @@ public partial class AnimeMetadataViewModel : ObservableObject
 
     public async Task LoadFullDetailsAsync()
     {
-        var full = _anime.IsManga
+        var full = _anime.Presentation.IsManga
             ? await _malApiService.GetMangaDetailsAsync(_anime.Id)
             : await _malApiService.GetAnimeDetailsAsync(_anime.Id);
 

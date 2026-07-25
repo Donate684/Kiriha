@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -197,7 +197,7 @@ public partial class AnimeListView
                 item,
                 item.NextEpisodeAt.Value,
                 nextEpisode > 0 ? $"{nextEpisode} серия" : "следующая серия",
-                item.AiringBadgeText,
+                item.Presentation.AiringBadgeText,
                 item.MainPictureUrl);
         }
 
@@ -220,6 +220,6 @@ public partial class AnimeListView
         if (!string.IsNullOrWhiteSpace(item.EnglishTitle))
             return item.EnglishTitle;
 
-        return !string.IsNullOrWhiteSpace(item.Title) ? item.Title : item.DisplayTitle;
+        return !string.IsNullOrWhiteSpace(item.Title) ? item.Title : item.Presentation.DisplayTitle;
     }
 }

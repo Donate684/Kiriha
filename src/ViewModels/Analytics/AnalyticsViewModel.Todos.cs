@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -14,14 +14,14 @@ public partial class AnalyticsViewModel
     {
         var now = DateTime.Now;
         foreach (var item in items
-                     .Where(x => IsCurrentOngoing(x, now) && x.ShowAiredProgressBar && x.UnseenEpisodesCount > 0)
-                     .OrderByDescending(x => x.UnseenEpisodesCount)
+                     .Where(x => IsCurrentOngoing(x, now) && x.Presentation.ShowAiredProgressBar && x.Presentation.UnseenEpisodesCount > 0)
+                     .OrderByDescending(x => x.Presentation.UnseenEpisodesCount)
                      .ThenByDescending(x => x.NextEpisodeAt ?? DateTime.MinValue)
                      .Take(6))
         {
             WatchTodo.Add(ToTodo(
                 item,
-                $"{item.UnseenEpisodesCount} эп.",
+                $"{item.Presentation.UnseenEpisodesCount} эп.",
                 $"Просмотрено {item.Progress}/{DisplayTotal(item)}",
                 "#FFE53935"));
         }
@@ -29,15 +29,15 @@ public partial class AnalyticsViewModel
         foreach (var item in items
                      .Where(x => !IsCurrentOngoing(x, now)
                                  && x.Status == UserAnimeStatus.Watching
-                                 && x.ShowAiredProgressBar
-                                 && x.UnseenEpisodesCount > 0)
-                     .OrderByDescending(x => x.UnseenEpisodesCount)
+                                 && x.Presentation.ShowAiredProgressBar
+                                 && x.Presentation.UnseenEpisodesCount > 0)
+                     .OrderByDescending(x => x.Presentation.UnseenEpisodesCount)
                      .ThenByDescending(ParsedMeanScore)
                      .Take(6))
         {
             FinishedWatchTodo.Add(ToTodo(
                 item,
-                $"{item.UnseenEpisodesCount} эп.",
+                $"{item.Presentation.UnseenEpisodesCount} эп.",
                 $"Просмотрено {item.Progress}/{DisplayTotal(item)}",
                 "#FF7B61FF"));
         }
@@ -49,7 +49,7 @@ public partial class AnalyticsViewModel
         {
             UpcomingTodo.Add(ToTodo(
                 item,
-                item.AiringBadgeText,
+                item.Presentation.AiringBadgeText,
                 FormatUpcomingDetail(item),
                 "#FF2D7DD2"));
         }
@@ -87,7 +87,7 @@ public partial class AnalyticsViewModel
     {
         return new ProfileTodoItem
         {
-            Title = item.DisplayTitle,
+            Title = item.Presentation.DisplayTitle,
             Subtitle = item.RussianTitle != null ? item.Title : null,
             Badge = badge,
             Detail = detail,

@@ -25,11 +25,9 @@ public partial class ShikiMetadataService : IDisposable
     private readonly ShikiHostResolver _hostResolver;
     private readonly IUiDispatcher _uiDispatcher;
 
-    private readonly SemaphoreSlim _rateLimitLock = new(1, 1);
+    private readonly ShikiRateLimiter _rateLimiter;
     private readonly SemaphoreSlim _concurrentFetches = new(2, 2);
     private readonly ConcurrentDictionary<int, byte> _activeFetches = new();
-    private DateTime _lastRequest = DateTime.MinValue;
-    private readonly TimeSpan _minInterval = TimeSpan.FromMilliseconds(250);
 
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
@@ -38,7 +36,8 @@ public partial class ShikiMetadataService : IDisposable
         Repositories.IUserAnimeRepository userAnimeRepo,
         Repositories.IHttpCacheRepository httpCacheRepo,
         ShikiHostResolver hostResolver,
-        IUiDispatcher uiDispatcher)
+        IUiDispatcher uiDispatcher,
+        ShikiRateLimiter rateLimiter)
     {
         _httpClient = httpClientFactory.CreateClient("ShikiClient");
         _settingsService = settingsService;
@@ -46,6 +45,7 @@ public partial class ShikiMetadataService : IDisposable
         _userAnimeRepo = userAnimeRepo;
         _hostResolver = hostResolver;
         _uiDispatcher = uiDispatcher;
+        _rateLimiter = rateLimiter;
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,
@@ -155,7 +155,7 @@ public partial class ShikiMetadataService : IDisposable
                     request.Headers.Add("User-Agent", AppInfo.UserAgent);
                     return Task.FromResult(request);
                 },
-                throttle: ShikiThrottleAsync,
+                throttle: ct => _rateLimiter.ThrottleAsync(ct),
                 ct: ct);
 
             // 404: anime not on Shikimori. Persist a sentinel so we don't
@@ -181,31 +181,8 @@ public partial class ShikiMetadataService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Shikimori rate limit: 5 RPS. We pace at 250 ms between requests
-    /// (≈4 RPS) to leave headroom for transient bursts.
-    /// </summary>
-    private async Task ShikiThrottleAsync(CancellationToken ct)
-    {
-        await _rateLimitLock.WaitAsync(ct);
-        try
-        {
-            var elapsed = DateTime.UtcNow - _lastRequest;
-            if (elapsed < _minInterval)
-                await Task.Delay(_minInterval - elapsed, ct);
-            _lastRequest = DateTime.UtcNow;
-        }
-        finally
-        {
-            _rateLimitLock.Release();
-        }
-    }
-
-
-
     public void Dispose()
     {
-        _rateLimitLock.Dispose();
         _concurrentFetches.Dispose();
     }
 }

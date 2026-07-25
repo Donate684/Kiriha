@@ -29,10 +29,9 @@ public partial class MalApiService : ITrackerService, IDisposable
 
     private readonly HttpClient _httpClient;
     private readonly SettingsService _settingsService;
-    private readonly MalAuthService _authService;
+    private readonly MalTokenManager _tokenManager;
     private readonly JikanApiService _jikanApi;
     private readonly HttpConditionalCache _httpCache;
-    private readonly SemaphoreSlim _tokenRefreshLock = new(1, 1);
     // Outbound throttle: ~3.3 req/s (one token every 300 ms). MAL doesn't publish a
     // hard rate-limit but Cloudflare in front of api.myanimelist.net bites at ~5 req/s
     // sustained; 300 ms keeps us comfortably below that and avoids 429 storms when
@@ -47,19 +46,14 @@ public partial class MalApiService : ITrackerService, IDisposable
         AutoReplenishment = true,
     });
 
-    // Consecutive refresh failures. After hitting the threshold we clear the saved token so
-    // SyncManager stops generating doomed retry tasks against a revoked refresh token.
-    private int _refreshFailures;
-    private const int MaxRefreshFailures = 3;
-
     public string Name => "MyAnimeList";
     public bool IsEnabled => _settingsService.Current.Api.Mal != null;
 
-    public MalApiService(HttpClient httpClient, SettingsService settingsService, MalAuthService authService, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
+    public MalApiService(HttpClient httpClient, SettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
-        _authService = authService;
+        _tokenManager = tokenManager;
         _jikanApi = jikanApi;
         _httpCache = new HttpConditionalCache(httpClient, httpCacheRepo, "MalApi");
     }
@@ -161,48 +155,9 @@ public partial class MalApiService : ITrackerService, IDisposable
         if (!lease.IsAcquired) throw new HttpRequestException("Rate limit queue exceeded.");
     }
 
-    /// <summary>
-    /// Returns a usable access token, refreshing if it is expired (or if
-    /// <paramref name="forceRefresh"/> is set, e.g. after a 401 from the server).
-    /// Coordinates concurrent refreshes through <see cref="_tokenRefreshLock"/> so
-    /// a burst of API calls only triggers one refresh round-trip.
-    /// </summary>
     private async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false)
     {
-        var tokens = _settingsService.Current.Api.Mal;
-        if (tokens == null) return null;
-        if (!forceRefresh && !tokens.IsExpired) return tokens.AccessToken;
-
-        await _tokenRefreshLock.WaitAsync(ct);
-        try
-        {
-            tokens = _settingsService.Current.Api.Mal;
-            if (tokens == null) return null;
-            // Double-check: another caller may have already refreshed while we waited.
-            if (!forceRefresh && !tokens.IsExpired) return tokens.AccessToken;
-
-            var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);
-            if (newTokens != null)
-            {
-                _refreshFailures = 0;
-                _settingsService.Update(settings => settings.Api.Mal = newTokens, SettingsSection.Api, save: false);
-                _settingsService.SaveImmediate();
-                return newTokens.AccessToken;
-            }
-
-            // Transient errors should not nuke the user's tokens — but a sustained streak
-            // (revoked refresh, deleted MAL app, etc.) means the saved token is dead weight.
-            _refreshFailures++;
-            if (_refreshFailures >= MaxRefreshFailures)
-            {
-                Log.Warning("MalApiService: clearing saved tokens after {Count} consecutive refresh failures. User must re-authenticate.", _refreshFailures);
-                _settingsService.Update(settings => settings.Api.Mal = null, SettingsSection.Api, save: false);
-                _settingsService.SaveImmediate();
-                _refreshFailures = 0;
-            }
-            return null;
-        }
-        finally { _tokenRefreshLock.Release(); }
+        return await _tokenManager.EnsureValidTokenAsync(ct, forceRefresh);
     }
 
     private async Task<HttpResponseMessage> GetAsync(string url, CancellationToken ct = default)
@@ -269,7 +224,6 @@ public partial class MalApiService : ITrackerService, IDisposable
 
     public void Dispose()
     {
-        _tokenRefreshLock.Dispose();
         _rateLimiter.Dispose();
     }
 }

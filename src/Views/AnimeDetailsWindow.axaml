@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Kiriha.ViewModels"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
@@ -461,7 +461,7 @@
                             </StackPanel>
 
                             <!-- PROGRESS: Episodes (Anime) -->
-                            <StackPanel Spacing="6" IsVisible="{Binding Anime.IsAnime}">
+                            <StackPanel Spacing="6" IsVisible="{Binding Anime.Presentation.IsAnime}">
                                 <TextBlock Text="{DynamicResource l.anime.labels.watched_episodes}" Classes="SidebarLabel"/>
                                 <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="8">
                                     <NumericUpDown Grid.Column="0" Value="{Binding Anime.Progress}"
@@ -492,7 +492,7 @@
                             </StackPanel>
 
                             <!-- PROGRESS: Chapters & Volumes (Manga) -->
-                            <StackPanel Spacing="12" IsVisible="{Binding Anime.IsManga}">
+                            <StackPanel Spacing="12" IsVisible="{Binding Anime.Presentation.IsManga}">
                                 <!-- Chapters -->
                                 <StackPanel Spacing="6">
                                     <TextBlock Text="{DynamicResource l.anime.labels.chapters}" Classes="SidebarLabel"/>
@@ -630,28 +630,28 @@
                                       Classes="DetailsGrid" ColumnDefinitions="Auto, *"
                                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource l.anime.labels.status}" Classes="Label"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Anime.DisplayAiringStatus}" FontWeight="Medium"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.episodes}" Classes="Label" IsVisible="{Binding Anime.IsAnime}"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Anime.EpisodesDisplay}" IsVisible="{Binding Anime.IsAnime}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Anime.Presentation.DisplayAiringStatus}" FontWeight="Medium"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.episodes}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Anime.Presentation.EpisodesDisplay}" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
                                     
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.chapters}" Classes="Label" IsVisible="{Binding Anime.IsManga}"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Anime.ChaptersDisplay}" IsVisible="{Binding Anime.IsManga}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.chapters}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Anime.Presentation.ChaptersDisplay}" IsVisible="{Binding Anime.Presentation.IsManga}"/>
                                     
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource l.anime.labels.volumes}" Classes="Label" IsVisible="{Binding Anime.IsManga}"/>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Anime.VolumesDisplay}" IsVisible="{Binding Anime.IsManga}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource l.anime.labels.volumes}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Anime.Presentation.VolumesDisplay}" IsVisible="{Binding Anime.Presentation.IsManga}"/>
                                     
                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource l.anime.labels.aired_episodes}" Classes="Label">
-                                        <TextBlock.IsVisible><MultiBinding Converter="{x:Static BoolConverters.And}"><Binding Path="Settings.Current.UI.ShowAiringInfo"/><Binding Path="Anime.ShowAiredInfo"/></MultiBinding></TextBlock.IsVisible>
+                                        <TextBlock.IsVisible><MultiBinding Converter="{x:Static BoolConverters.And}"><Binding Path="Settings.Current.UI.ShowAiringInfo"/><Binding Path="Anime.Presentation.ShowAiredInfo"/></MultiBinding></TextBlock.IsVisible>
                                     </TextBlock>
                                     <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Anime, Converter={StaticResource LocConverter}, ConverterParameter='format:l.anime.labels.aired_format'}">
-                                        <TextBlock.IsVisible><MultiBinding Converter="{x:Static BoolConverters.And}"><Binding Path="Settings.Current.UI.ShowAiringInfo"/><Binding Path="Anime.ShowAiredInfo"/></MultiBinding></TextBlock.IsVisible>
+                                        <TextBlock.IsVisible><MultiBinding Converter="{x:Static BoolConverters.And}"><Binding Path="Settings.Current.UI.ShowAiringInfo"/><Binding Path="Anime.Presentation.ShowAiredInfo"/></MultiBinding></TextBlock.IsVisible>
                                     </TextBlock>
                                     <TextBlock Grid.Row="4" Grid.Column="0" Text="{DynamicResource l.anime.labels.next_episode}" Classes="Label" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Anime.NextEpisodeAtDisplay}" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Anime.Presentation.NextEpisodeAtDisplay}" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.genres}" Classes="Label"/>
                                     <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Anime.Genres, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
-                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding Anime.IsAnime}"/>
-                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding Anime.IsManga}"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
                                     <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Anime.Studios, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
                                     <TextBlock Grid.Row="7" Grid.Column="0" Text="{DynamicResource l.anime.labels.score}" Classes="Label"/>
                                     <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Anime.MeanScore}"/>
@@ -659,8 +659,8 @@
 
                                 <!-- Synopsis -->
                                 <StackPanel IsVisible="{Binding #TabSynopsis.IsChecked}">
-                                    <TextBlock Text="{Binding Anime.DisplaySynopsis}" TextWrapping="Wrap" Opacity="0.85" LineHeight="22" FontSize="13"/>
-                                    <TextBlock Text="{DynamicResource l.anime.labels.no_synopsis}" FontSize="13" Opacity="0.5" IsVisible="{Binding Anime.DisplaySynopsis, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                                    <TextBlock Text="{Binding Anime.Presentation.DisplaySynopsis}" TextWrapping="Wrap" Opacity="0.85" LineHeight="22" FontSize="13"/>
+                                    <TextBlock Text="{DynamicResource l.anime.labels.no_synopsis}" FontSize="13" Opacity="0.5" IsVisible="{Binding Anime.Presentation.DisplaySynopsis, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                                 </StackPanel>
 
                                 <!-- Alt titles -->

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Kiriha.ViewModels"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
@@ -159,7 +159,7 @@
                         <!-- Row 1: Genre pills -->
                         <ItemsRepeater Grid.Row="1" ItemsSource="{Binding Genres}"
                                        Margin="0,7,0,0"
-                                       IsVisible="{Binding HasGenres}">
+                                       IsVisible="{Binding Presentation.HasGenres}">
                             <ItemsRepeater.Layout>
                                 <WrapLayout Orientation="Horizontal" HorizontalSpacing="4" VerticalSpacing="4"/>
                             </ItemsRepeater.Layout>

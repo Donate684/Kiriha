@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
@@ -43,7 +43,7 @@ public partial class NowPlayingViewModel
         if (parameter is not AnimeItem suggestion) return;
 
         Log.Information("Selecting anime suggestion: {Title} (ID: {Id})", suggestion.Title, suggestion.Id);
-        LogDetection(CurrentMedia ?? new Kiriha.Models.ParsedMedia { AnimeTitle = suggestion.Title }, UIUtils.GetLoc("scrobbler.status.mapped_by") + " " + suggestion.DisplayTitle);
+        LogDetection(CurrentMedia ?? new Kiriha.Models.ParsedMedia { AnimeTitle = suggestion.Title }, UIUtils.GetLoc("scrobbler.status.mapped_by") + " " + suggestion.Presentation.DisplayTitle);
 
         Volatile.Write(ref _pendingManualMatchId, suggestion.Id);
         ShowSuggestions = false;
