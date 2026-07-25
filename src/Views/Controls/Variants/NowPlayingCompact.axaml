@@ -1,5 +1,9 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+        xmlns:vmMain="using:Kiriha.ViewModels.Main"
              xmlns:vm="using:Kiriha.ViewModels"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
@@ -18,7 +22,7 @@
              xmlns:u="using:Kiriha.Utils.UI"
              x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompact"
              x:Name="Root"
-             x:DataType="vm:NowPlayingViewModel">
+             x:DataType="vmNowPlaying:NowPlayingViewModel">
 
     <UserControl.Resources>
         <conv:LocConverter x:Key="LocConverter"/>
@@ -268,7 +272,7 @@
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:CustomShareLinkRuntime">
+                                        <DataTemplate x:DataType="vmSettings:CustomShareLinkRuntime">
                                             <Border Background="#20FFFFFF" CornerRadius="6" Width="28" Height="28" ToolTip.Tip="{Binding Name}">
                                                 <Border.Styles><Style Selector="Border:pointerover"><Setter Property="Background" Value="#35FFFFFF"/></Style></Border.Styles>
                                                 <Button Background="Transparent" Padding="0" CornerRadius="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Command="{Binding OpenCommand}">
@@ -332,7 +336,7 @@
                                                                 <ItemsPanelTemplate><StackPanel Spacing="4"/></ItemsPanelTemplate>
                                                             </ItemsControl.ItemsPanel>
                                                             <ItemsControl.ItemTemplate>
-                                                                <DataTemplate x:DataType="vm:CustomShareLinkRuntime">
+                                                                <DataTemplate x:DataType="vmSettings:CustomShareLinkRuntime">
                                                                     <Button Classes="ShareRow" Command="{Binding CopyCommand}" Click="ShareRow_Click">
                                                                         <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
                                                                             <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6"
@@ -520,7 +524,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:AnimeItem">
                                     <Button Classes="Card"
-                                            Command="{Binding #Root.((vm:NowPlayingViewModel)DataContext).SelectSuggestionCommand}"
+                                            Command="{Binding #Root.((vmNowPlaying:NowPlayingViewModel)DataContext).SelectSuggestionCommand}"
                                             CommandParameter="{Binding}"
                                             Margin="0,0,10,10" Width="380">
                                         <Border CornerRadius="10" Padding="10"

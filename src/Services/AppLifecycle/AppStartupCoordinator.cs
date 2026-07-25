@@ -1,3 +1,6 @@
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Image;
+using Kiriha.Services.Data.Settings;
 using System;
 using System.Diagnostics;
 using AsyncImageLoader;

@@ -1,3 +1,5 @@
+using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -35,7 +37,7 @@ public partial class ShikiAuthService
     public string GetAuthUrl()
     {
         // Shikimori redirect URI must match exactly what's in the application settings on Shikimori website
-        return $"{AuthBase}?client_id={ClientId}&redirect_uri={Constants.Api.RedirectUri}&response_type=code&scope=user_rates";
+        return $"{AuthBase}?client_id={ClientId}&redirect_uri={AppConstants.Api.RedirectUri}&response_type=code&scope=user_rates";
     }
 
     public async Task<ShikiTokens?> LoginAsync()
@@ -49,7 +51,7 @@ public partial class ShikiAuthService
         var mirror = ActiveMirror;
         var authUrl = GetAuthUrl();
         string successMessage = UIUtils.GetLoc("auth.success", "Shikimori");
-        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, Constants.Api.RedirectUri, successMessage);
+        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage);
 
         if (string.IsNullOrEmpty(code)) return null;
 

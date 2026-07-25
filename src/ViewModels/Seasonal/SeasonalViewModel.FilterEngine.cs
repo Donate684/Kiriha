@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,7 +111,7 @@ internal sealed class SeasonalCategoryBuckets
         foreach (var item in source)
         {
             string type = (item.Type ?? "").ToLowerInvariant();
-            if (type == Constants.AnimeTypes.Tv || type == Constants.AnimeTypes.TvSpecial)
+            if (type == AppConstants.AnimeTypes.Tv || type == AppConstants.AnimeTypes.TvSpecial)
             {
                 if (item.StartYear == currentYear &&
                     string.Equals(item.StartSeason, currentSeason, StringComparison.OrdinalIgnoreCase))
@@ -118,10 +119,10 @@ internal sealed class SeasonalCategoryBuckets
                 else
                     buckets["Continuing"].Add(item);
             }
-            else if (type.Contains(Constants.AnimeTypes.Movie)) buckets["Movies"].Add(item);
-            else if (type == Constants.AnimeTypes.Ova) buckets["OVA"].Add(item);
-            else if (type == Constants.AnimeTypes.Ona) buckets["ONA"].Add(item);
-            else if (type == Constants.AnimeTypes.Special) buckets["Specials"].Add(item);
+            else if (type.Contains(AppConstants.AnimeTypes.Movie)) buckets["Movies"].Add(item);
+            else if (type == AppConstants.AnimeTypes.Ova) buckets["OVA"].Add(item);
+            else if (type == AppConstants.AnimeTypes.Ona) buckets["ONA"].Add(item);
+            else if (type == AppConstants.AnimeTypes.Special) buckets["Specials"].Add(item);
             else buckets["Other"].Add(item);
         }
 

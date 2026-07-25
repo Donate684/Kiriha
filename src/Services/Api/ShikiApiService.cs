@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Settings;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -42,7 +43,7 @@ public partial class ShikiApiService : ITrackerService
 
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    public ShikiApiService(HttpClient httpClient, SettingsService settingsService, ShikiAuthService authService, ShikiHostResolver hostResolver, Kiriha.Services.Data.Repositories.IHttpCacheRepository httpCacheRepo)
+    public ShikiApiService(HttpClient httpClient, SettingsService settingsService, ShikiAuthService authService, ShikiHostResolver hostResolver, Kiriha.Services.Data.Repository.IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;

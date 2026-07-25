@@ -1,3 +1,9 @@
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Startup;
+using Kiriha.ViewModels.Settings;
+using Kiriha.Services.Data.Settings;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

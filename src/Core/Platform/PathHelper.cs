@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.IO;
 
@@ -12,19 +13,19 @@ public static class PathHelper
 
     private static string BasePath => IsPortable
         ? PortableDataDir
-        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.System.AppName);
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppConstants.System.AppName);
 
-    public static string GetDbPath() => Path.Combine(BasePath, Constants.System.FileNames.Database);
+    public static string GetDbPath() => Path.Combine(BasePath, AppConstants.System.FileNames.Database);
 
-    public static string GetLogsPath() => Path.Combine(BasePath, Constants.System.FileNames.LogsDir);
+    public static string GetLogsPath() => Path.Combine(BasePath, AppConstants.System.FileNames.LogsDir);
 
-    public static string GetImageCachePath() => Path.Combine(BasePath, Constants.System.FileNames.CacheDir);
+    public static string GetImageCachePath() => Path.Combine(BasePath, AppConstants.System.FileNames.CacheDir);
 
-    public static string GetMappingFilePath() => Path.Combine(BasePath, Constants.System.FileNames.Mappings);
+    public static string GetMappingFilePath() => Path.Combine(BasePath, AppConstants.System.FileNames.Mappings);
 
-    public static string GetSettingsPath() => Path.Combine(BasePath, Constants.System.FileNames.Settings);
+    public static string GetSettingsPath() => Path.Combine(BasePath, AppConstants.System.FileNames.Settings);
 
-    public static string GetTempPath() => Path.Combine(Path.GetTempPath(), Constants.System.AppName);
+    public static string GetTempPath() => Path.Combine(Path.GetTempPath(), AppConstants.System.AppName);
 
     /// <summary>
     /// Folder where user-supplied icons for custom share links are copied.

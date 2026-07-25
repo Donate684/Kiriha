@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Core;
 using System;
 using System.Linq;
 using Kiriha.Models;

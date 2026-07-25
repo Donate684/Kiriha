@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using Kiriha.Core;
 using Kiriha.Models;
 
@@ -46,7 +47,7 @@ public sealed class AnimeFilterEngineTests
     [Fact]
     public void ApplySorting_PopularityTreatsZeroAsUnknownAndMovesItLast()
     {
-        var sorted = SampleItems().ApplySorting(Constants.Sorting.Popularity).Select(x => x.Id).ToArray();
+        var sorted = SampleItems().ApplySorting(AppConstants.Sorting.Popularity).Select(x => x.Id).ToArray();
 
         Assert.Equal(new[] { 2, 1, 3, 4 }, sorted);
     }
@@ -54,7 +55,7 @@ public sealed class AnimeFilterEngineTests
     [Fact]
     public void ApplySorting_ScoreUsesUserScoreForPersonalList()
     {
-        var sorted = SampleItems().ApplySorting(Constants.Sorting.Score, isSeasonal: false).Select(x => x.Id).ToArray();
+        var sorted = SampleItems().ApplySorting(AppConstants.Sorting.Score, isSeasonal: false).Select(x => x.Id).ToArray();
 
         Assert.Equal(new[] { 2, 1, 3, 4 }, sorted);
     }
@@ -62,7 +63,7 @@ public sealed class AnimeFilterEngineTests
     [Fact]
     public void ApplySorting_ScoreUsesMeanScoreForSeasonal()
     {
-        var sorted = SampleItems().ApplySorting(Constants.Sorting.Score, isSeasonal: true).Select(x => x.Id).ToArray();
+        var sorted = SampleItems().ApplySorting(AppConstants.Sorting.Score, isSeasonal: true).Select(x => x.Id).ToArray();
 
         Assert.Equal(new[] { 1, 3, 2, 4 }, sorted);
     }

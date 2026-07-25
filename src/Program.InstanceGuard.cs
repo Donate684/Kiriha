@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using Kiriha.Core.Player;
 
@@ -10,7 +11,7 @@ partial class Program
         bool createdNew = true;
         mutex = isPlayer
             ? null
-            : new System.Threading.Mutex(true, Kiriha.Core.Constants.System.MutexName, out createdNew);
+            : new System.Threading.Mutex(true, Kiriha.Core.Constants.AppConstants.System.MutexName, out createdNew);
         playerMutex = null;
 
         if (isPlayer)

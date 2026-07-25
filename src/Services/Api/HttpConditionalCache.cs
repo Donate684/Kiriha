@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models.Entities;
-using Kiriha.Services.Data.Repositories;
+using Kiriha.Services.Data.Repository;
 using Serilog;
 
 namespace Kiriha.Services.Api;

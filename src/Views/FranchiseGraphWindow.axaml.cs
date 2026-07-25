@@ -1,3 +1,4 @@
+using Kiriha.ViewModels.Dialogs;
 using System;
 using Avalonia.Input;
 using Kiriha.ViewModels;

@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -124,7 +125,7 @@ public partial class AnimeItem : ObservableObject
         set => SetProperty(ref _score, value);
     }
 
-    private string _type = Constants.AnimeTypes.Tv;
+    private string _type = AppConstants.AnimeTypes.Tv;
     public string Type
     {
         get => _type;

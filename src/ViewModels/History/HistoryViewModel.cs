@@ -1,3 +1,6 @@
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Repository;
+using Kiriha.Services.Data.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

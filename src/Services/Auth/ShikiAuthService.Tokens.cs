@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -20,7 +21,7 @@ public partial class ShikiAuthService
             { "grant_type", "authorization_code" },
             { "client_id", ShikiEndpoints.ClientId(mirror) },
             { "code", code },
-            { "redirect_uri", Kiriha.Core.Constants.Api.RedirectUri }
+            { "redirect_uri", Kiriha.Core.Constants.AppConstants.Api.RedirectUri }
         };
         // Confidential OAuth app: Doorkeeper requires client_secret on every token call.
         // See ApiKeys.cs for why these are embedded instead of proxied.

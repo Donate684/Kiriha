@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;

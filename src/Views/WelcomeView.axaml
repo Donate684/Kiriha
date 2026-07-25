@@ -1,5 +1,9 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+        xmlns:vmMain="using:Kiriha.ViewModels.Main"
              xmlns:vm="using:Kiriha.ViewModels"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
@@ -13,7 +17,7 @@
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:controls="using:Kiriha.Views.Controls"
              x:Class="Kiriha.Views.WelcomeView"
-             x:DataType="vm:WelcomeViewModel">
+             x:DataType="vmStartup:WelcomeViewModel">
 
     <UserControl.Styles>
         <!-- Spinner Arc rotation: kept at the UserControl level (not inline on

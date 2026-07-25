@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +93,7 @@ public partial class HistoryViewModel
         if (date == now) return UIUtils.GetLoc("common.time.today");
         if (date == now.AddDays(-1)) return UIUtils.GetLoc("common.time.yesterday");
 
-        var culture = _settings.Current.UI.LanguageCode == Constants.Languages.Ru ? new System.Globalization.CultureInfo("ru-RU") : new System.Globalization.CultureInfo("en-US");
+        var culture = _settings.Current.UI.LanguageCode == AppConstants.Languages.Ru ? new System.Globalization.CultureInfo("ru-RU") : new System.Globalization.CultureInfo("en-US");
         return date.ToString("d MMMM", culture);
     }
 }

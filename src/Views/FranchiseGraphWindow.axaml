@@ -1,5 +1,9 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+        xmlns:vmMain="using:Kiriha.ViewModels.Main"
         xmlns:vm="using:Kiriha.ViewModels"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
@@ -15,7 +19,7 @@
         xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
         xmlns:material="using:Material.Icons.Avalonia"
         x:Class="Kiriha.Views.FranchiseGraphWindow"
-        x:DataType="vm:FranchiseGraphViewModel"
+        x:DataType="vmDialogs:FranchiseGraphViewModel"
         x:Name="Root"
         Title="Граф франшизы"
         Width="1000" Height="700"
@@ -85,7 +89,7 @@
                     </ItemsControl.Styles>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="u:FranchiseGraphVisualNode">
-                            <Button Command="{Binding #Root.((vm:FranchiseGraphViewModel)DataContext).NodeClickedCommand}"
+                            <Button Command="{Binding #Root.((vmDialogs:FranchiseGraphViewModel)DataContext).NodeClickedCommand}"
                                     CommandParameter="{Binding}"
                                     Width="200" Height="90" Padding="0" CornerRadius="8"
                                     Background="{DynamicResource CardBackgroundFillDefault}"

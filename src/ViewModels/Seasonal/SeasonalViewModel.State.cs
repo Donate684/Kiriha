@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -48,11 +49,11 @@ public partial class SeasonalViewModel
 
     public List<string> SortOptions { get; } = new()
     {
-        Constants.Sorting.Popularity,
-        Constants.Sorting.Score,
-        Constants.Sorting.Title,
-        Constants.Sorting.RussianTitle,
-        Constants.Sorting.Date
+        AppConstants.Sorting.Popularity,
+        AppConstants.Sorting.Score,
+        AppConstants.Sorting.Title,
+        AppConstants.Sorting.RussianTitle,
+        AppConstants.Sorting.Date
     };
 
     [ObservableProperty] private string? _searchQuery;
@@ -96,9 +97,9 @@ public partial class SeasonalViewModel
 
     public List<string> Seasons { get; } = new()
     {
-        Constants.Seasons.Winter,
-        Constants.Seasons.Spring,
-        Constants.Seasons.Summer,
-        Constants.Seasons.Fall
+        AppConstants.Seasons.Winter,
+        AppConstants.Seasons.Spring,
+        AppConstants.Seasons.Summer,
+        AppConstants.Seasons.Fall
     };
 }

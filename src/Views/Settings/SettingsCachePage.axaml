@@ -1,5 +1,9 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+        xmlns:vmMain="using:Kiriha.ViewModels.Main"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vm="using:Kiriha.ViewModels"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
@@ -47,7 +51,7 @@
                                 <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:CacheCleanupItem">
+                                <DataTemplate x:DataType="vmSettings:CacheCleanupItem">
                                     <Grid MinHeight="44" ColumnDefinitions="*,Auto">
                                         <CheckBox Grid.Column="0"
                                                   IsChecked="{Binding IsSelected}"

@@ -1,3 +1,4 @@
+using Kiriha.Services.Sync;
 using System;
 using System.Net;
 using System.Net.Http;

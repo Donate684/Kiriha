@@ -8,7 +8,7 @@ using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models.Entities;
-using Kiriha.Services.Data.Repositories;
+using Kiriha.Services.Data.Repository;
 using Serilog;
 
 namespace Kiriha.Services.Api;

@@ -1,10 +1,15 @@
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Image;
+using Kiriha.Services.Data.Mapping;
+using Kiriha.Services.Data.Settings;
 using System;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Services;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repositories;
+using Kiriha.Services.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

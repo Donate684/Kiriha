@@ -1,3 +1,5 @@
+using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using Kiriha.Core;
@@ -32,10 +34,10 @@ public partial class SeasonalViewModel
 
         _currentSeason = month switch
         {
-            1 or 2 or 12 => Constants.Seasons.Winter,
-            3 or 4 or 5 => Constants.Seasons.Spring,
-            6 or 7 or 8 => Constants.Seasons.Summer,
-            _ => Constants.Seasons.Fall
+            1 or 2 or 12 => AppConstants.Seasons.Winter,
+            3 or 4 or 5 => AppConstants.Seasons.Spring,
+            6 or 7 or 8 => AppConstants.Seasons.Summer,
+            _ => AppConstants.Seasons.Fall
         };
     }
 

@@ -1,0 +1,322 @@
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Startup;
+using Kiriha.ViewModels.Settings;
+using Kiriha.Services.Data.Settings;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Navigation;
+using Kiriha.Models;
+using Kiriha.Services.Data;
+using Kiriha.Utils.Async;
+using Kiriha.ViewModels.Analytics;
+using Kiriha.ViewModels.AnimeList;
+using Kiriha.ViewModels.History;
+using Kiriha.ViewModels.Search;
+using Kiriha.ViewModels.Seasonal;
+using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Torrents;
+
+namespace Kiriha.ViewModels.Main;
+
+public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationMessage>, IDisposable
+{
+    [ObservableProperty]
+    private bool _isPaneOpen = true;
+
+    [ObservableProperty]
+    private bool _isSettingsOpen;
+
+    [ObservableProperty]
+    private bool _isUpdateDialogOpen;
+
+    [ObservableProperty]
+    private UpdateDialogViewModel? _updateDialog;
+
+    public SettingsViewModel? SettingsViewModel => _settingsViewModel;
+
+    private readonly HashSet<ViewModelBase> _cachedVms = new();
+
+    private AnimeListViewModel? _animeListViewModel;
+    private SettingsViewModel? _settingsViewModel;
+    private NowPlayingViewModel? _nowPlayingViewModel;
+    private HistoryViewModel? _historyViewModel;
+    private TorrentsViewModel? _torrentsViewModel;
+    private SeasonalViewModel? _seasonalViewModel;
+    private AnalyticsViewModel? _analyticsViewModel;
+
+    // IViewModelFactory delivers a fresh transient instance on each navigation —
+    // see DI registrations: WelcomeViewModel and SearchViewModel are AddTransient.
+    private readonly IViewModelFactory _viewModelFactory;
+
+    private readonly Kiriha.Services.Data.Settings.SettingsService _settingsService;
+
+    [ObservableProperty]
+    private ViewModelBase _currentPage = null!;
+
+    public MainWindowViewModel(
+        IViewModelFactory viewModelFactory,
+        Kiriha.Services.Data.Settings.SettingsService settingsService)
+    {
+        _viewModelFactory = viewModelFactory;
+        _settingsService = settingsService;
+
+        // Load saved sidebar state
+        IsPaneOpen = _settingsService.Current.UI.IsPaneOpen;
+
+        // Register for navigation messages
+        WeakReferenceMessenger.Default.Register(this);
+
+        // Start on Welcome page
+        NavigateWelcome();
+    }
+
+    public void Receive(NavigationMessage message)
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            switch (message.Page)
+            {
+                case NavigationPage.Home: NavigateHome(); break;
+                case NavigationPage.AnimeList: NavigateAnimeList(); break;
+                case NavigationPage.Profile: NavigateAnalytics(); break;
+                case NavigationPage.Seasonal: _ = NavigateSeasonal(); break;
+                case NavigationPage.History: NavigateHistory(); break;
+                case NavigationPage.Torrents: NavigateTorrents(); break;
+                case NavigationPage.Search: NavigateSearch(); break;
+                case NavigationPage.Settings: NavigateSettings(); break;
+                case NavigationPage.Welcome: NavigateWelcome(); break;
+            }
+        });
+    }
+
+    partial void OnIsPaneOpenChanged(bool value)
+    {
+        _settingsService.Update(settings => settings.UI.IsPaneOpen = value, SettingsSection.UI);
+    }
+
+    [ObservableProperty]
+    private int _selectedNavigationIndex = 0;
+
+    [ObservableProperty]
+    private bool _isSettingsSelected = false;
+
+    [ObservableProperty]
+    private bool _isNavigationBlocked = false;
+
+    private void SetCurrentPage(ViewModelBase page)
+    {
+        if (CurrentPage is IDisposable disposable && !_cachedVms.Contains(CurrentPage))
+        {
+            disposable.Dispose();
+        }
+        CurrentPage = page;
+    }
+
+    private T EnsureCachedViewModel<T>(ref T? backingField) where T : ViewModelBase
+    {
+        if (backingField == null)
+        {
+            backingField = _viewModelFactory.Create<T>();
+            _cachedVms.Add(backingField);
+        }
+        return backingField;
+    }
+
+    private SettingsViewModel EnsureSettingsViewModel()
+    {
+        if (_settingsViewModel != null)
+            return _settingsViewModel;
+
+        _settingsViewModel = _viewModelFactory.Create<SettingsViewModel>();
+        _cachedVms.Add(_settingsViewModel);
+        OnPropertyChanged(nameof(SettingsViewModel));
+        return _settingsViewModel;
+    }
+
+    private AnimeListViewModel EnsureAnimeListViewModel() =>
+        EnsureCachedViewModel(ref _animeListViewModel);
+
+    private NowPlayingViewModel EnsureNowPlayingViewModel() =>
+        EnsureCachedViewModel(ref _nowPlayingViewModel);
+
+    private HistoryViewModel EnsureHistoryViewModel() =>
+        EnsureCachedViewModel(ref _historyViewModel);
+
+    private TorrentsViewModel EnsureTorrentsViewModel() =>
+        EnsureCachedViewModel(ref _torrentsViewModel);
+
+    private SeasonalViewModel EnsureSeasonalViewModel() =>
+        EnsureCachedViewModel(ref _seasonalViewModel);
+
+    private AnalyticsViewModel EnsureAnalyticsViewModel() =>
+        EnsureCachedViewModel(ref _analyticsViewModel);
+
+    partial void OnSelectedNavigationIndexChanged(int value)
+    {
+        if (IsNavigationBlocked)
+        {
+            // Revert selection if blocked
+            return;
+        }
+
+        if (value >= 0) IsSettingsSelected = false;
+
+        switch (value)
+        {
+            case 0: NavigateAnalytics(); break;
+            case 1: NavigateHome(); break;
+            case 2: NavigateAnimeList(); break;
+            case 3: _ = NavigateSeasonal(); break;
+            case 4: NavigateHistory(); break;
+            case 5: NavigateTorrents(); break;
+            case 6: NavigateSearch(); break;
+        }
+    }
+
+    [RelayCommand]
+    public void TriggerPane()
+    {
+        if (IsNavigationBlocked) return;
+        IsPaneOpen = !IsPaneOpen;
+    }
+
+    [RelayCommand]
+    public void NavigateWelcome()
+    {
+        SelectedNavigationIndex = -1;
+        IsSettingsSelected = false;
+        SetCurrentPage(_viewModelFactory.Create<WelcomeViewModel>());
+    }
+
+    [RelayCommand]
+    public void NavigateHome()
+    {
+        SetCurrentPage(EnsureNowPlayingViewModel());
+    }
+
+    [RelayCommand]
+    public void NavigateSettings()
+    {
+        if (IsNavigationBlocked) return;
+        EnsureSettingsViewModel();
+        IsSettingsOpen = true;
+        IsSettingsSelected = true;
+    }
+
+    [RelayCommand]
+    public void CloseSettings()
+    {
+        IsSettingsOpen = false;
+        IsSettingsSelected = false;
+    }
+
+    public void ShowUpdateDialog(bool isDownloaded = false)
+    {
+        if (IsUpdateDialogOpen) return;
+        UpdateDialog = _viewModelFactory.CreateWithArgs<UpdateDialogViewModel>((Action)CloseUpdateDialog, isDownloaded);
+        IsUpdateDialogOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseUpdateDialog()
+    {
+        IsUpdateDialogOpen = false;
+        UpdateDialog = null;
+    }
+
+    [RelayCommand]
+    public void NavigateAnimeList()
+    {
+        var animeList = EnsureAnimeListViewModel();
+        animeList.RefreshLocalization();
+        SetCurrentPage(animeList);
+    }
+
+    [RelayCommand]
+    public async Task NavigateSeasonal()
+    {
+        var animeList = EnsureAnimeListViewModel();
+        var seasonal = EnsureSeasonalViewModel();
+
+        var itemsSnapshot = animeList.AnimeItems.ToArray();
+        var userStore = await Task.Run(() => itemsSnapshot
+            .GroupBy(x => x.Id)
+            .ToDictionary(x => x.Key, x => x.First().Status));
+
+        seasonal.UpdateUserList(userStore);
+        // Trigger the initial Shikimori/MAL load on the very first navigation
+        // (no-op on subsequent navigations - the call is idempotent). This
+        // replaces an eager preload in SeasonalViewModel's ctor, which used
+        // to fire HTTP requests during the app's first render frames.
+        seasonal.EnsureInitialLoad();
+        SetCurrentPage(seasonal);
+    }
+
+    [RelayCommand]
+    public void NavigateHistory()
+    {
+        var history = EnsureHistoryViewModel();
+        history.RefreshHistory().SafeFireAndForget("NavigateHistory");
+        SetCurrentPage(history);
+    }
+
+    [RelayCommand]
+    public void NavigateTorrents()
+    {
+        var torrents = EnsureTorrentsViewModel();
+        torrents.RefreshWatchingList();
+        SetCurrentPage(torrents);
+    }
+
+    [RelayCommand]
+    public void NavigateSearch()
+    {
+        SetCurrentPage(_viewModelFactory.Create<SearchViewModel>());
+    }
+
+    [RelayCommand]
+    public void NavigateAnalytics()
+    {
+        if (IsNavigationBlocked) return;
+        SelectedNavigationIndex = 0;
+        IsSettingsSelected = false;
+        IsSettingsOpen = false;
+        var analytics = EnsureAnalyticsViewModel();
+        analytics.Refresh().SafeFireAndForget("NavigateAnalytics");
+        SetCurrentPage(analytics);
+    }
+
+    [RelayCommand]
+    public void TestPlayer()
+    {
+        Kiriha.Utils.PlayerProcessHelper.LaunchPlayer();
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            if (CurrentPage is IDisposable disposable && !_cachedVms.Contains(CurrentPage))
+            {
+                disposable.Dispose();
+            }
+
+            (UpdateDialog as IDisposable)?.Dispose();
+
+            WeakReferenceMessenger.Default.UnregisterAll(this);
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}

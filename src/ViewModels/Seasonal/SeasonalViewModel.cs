@@ -1,3 +1,7 @@
+using Kiriha.Services.Sync;
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Repository;
+using Kiriha.Services.Data.Settings;
 using System;
 using System.Linq;
 using Avalonia.Threading;

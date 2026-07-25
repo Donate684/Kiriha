@@ -1,3 +1,4 @@
+using Kiriha.ViewModels.Dialogs;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Kiriha.ViewModels;

@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System.Reflection;
 
 namespace Kiriha.Core;
@@ -22,7 +23,7 @@ public static class AppInfo
     /// HTTP User-Agent for every Kiriha-originated request.
     /// Format: "Kiriha/&lt;version&gt;" — short, parseable, identifiable in upstream logs.
     /// </summary>
-    public static string UserAgent { get; } = $"{Constants.System.AppName}/{Version}";
+    public static string UserAgent { get; } = $"{AppConstants.System.AppName}/{Version}";
 
     private static string ResolveVersion()
     {

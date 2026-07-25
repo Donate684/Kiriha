@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -35,7 +36,7 @@ public partial class AnalyticsViewModel
     {
         return items.Sum(item =>
         {
-            var episodeMinutes = string.Equals(item.Type, Constants.AnimeTypes.Movie, StringComparison.OrdinalIgnoreCase)
+            var episodeMinutes = string.Equals(item.Type, AppConstants.AnimeTypes.Movie, StringComparison.OrdinalIgnoreCase)
                 ? 95
                 : 24;
             return Math.Max(0, item.Progress) * episodeMinutes / 60.0;

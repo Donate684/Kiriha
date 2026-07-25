@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Repository;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 

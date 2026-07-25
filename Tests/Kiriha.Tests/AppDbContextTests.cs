@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Core;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
 using Kiriha.Services.Data;

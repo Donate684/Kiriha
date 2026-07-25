@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ public partial class SettingsUpdateViewModel : ObservableObject
     [RelayCommand]
     private void OpenReleasesPage()
     {
-        UIUtils.OpenUrl(Constants.Links.GitHubReleases);
+        UIUtils.OpenUrl(AppConstants.Links.GitHubReleases);
     }
 
     [RelayCommand]

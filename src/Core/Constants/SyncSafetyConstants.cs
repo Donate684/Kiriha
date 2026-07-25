@@ -1,4 +1,4 @@
-namespace Kiriha.Core;
+namespace Kiriha.Core.Constants;
 
 public static class SyncSafetyConstants
 {

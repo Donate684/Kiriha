@@ -1,6 +1,11 @@
+using Kiriha.Services.Tracking.Integration;
+using Kiriha.Services.Tracking.Feed;
+using Kiriha.Services.Tracking.Core;
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repositories;
+using Kiriha.Services.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;

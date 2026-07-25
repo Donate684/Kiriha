@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Settings;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -28,7 +29,7 @@ public partial class WelcomeView : UserControl
 
     private void OnAboutClick(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is Kiriha.ViewModels.WelcomeViewModel vm)
+        if (DataContext is Kiriha.ViewModels.Startup.WelcomeViewModel vm)
         {
             var owner = this.VisualRoot as Window;
             var dlg = new AboutWindow(vm.SettingsService);

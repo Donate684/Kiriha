@@ -1,3 +1,4 @@
+using Kiriha.Services.Data.Settings;
 using Kiriha.Models.Api;
 using Kiriha.Services.Data;
 
@@ -97,10 +98,10 @@ public sealed class SettingsServiceTests
             using (var mainProcess = new SettingsService(path))
             using (var playerProcess = new SettingsService(path))
             {
-                playerProcess.Update(settings => settings.Player.Volume = 33, Kiriha.Services.Data.SettingsSection.Player, save: false);
+                playerProcess.Update(settings => settings.Player.Volume = 33, Kiriha.Services.Data.Settings.SettingsSection.Player, save: false);
                 playerProcess.SaveImmediate();
 
-                mainProcess.Update(settings => settings.UI.LanguageCode = "ru", Kiriha.Services.Data.SettingsSection.UI, save: false);
+                mainProcess.Update(settings => settings.UI.LanguageCode = "ru", Kiriha.Services.Data.Settings.SettingsSection.UI, save: false);
                 mainProcess.SaveImmediate();
             }
 

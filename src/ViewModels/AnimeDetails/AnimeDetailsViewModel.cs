@@ -1,3 +1,13 @@
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Startup;
+using Kiriha.ViewModels.Settings;
+using Kiriha.Services.Tracking.Integration;
+using Kiriha.Services.Tracking.Feed;
+using Kiriha.Services.Tracking.Core;
+using Kiriha.Services.Data.Repository;
+using Kiriha.Services.Data.Settings;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;

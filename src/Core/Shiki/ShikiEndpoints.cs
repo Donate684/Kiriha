@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
 
@@ -17,8 +18,8 @@ public static class ShikiEndpoints
     /// </summary>
     public static ShikiHost Host(ShikiMirror mirror) => mirror switch
     {
-        ShikiMirror.Net => Constants.Api.Shiki.Net,
-        _ => Constants.Api.Shiki.One,
+        ShikiMirror.Net => AppConstants.Api.Shiki.Net,
+        _ => AppConstants.Api.Shiki.One,
     };
 
     public static string BaseUrl(ShikiMirror mirror) => Host(mirror).BaseUrl;

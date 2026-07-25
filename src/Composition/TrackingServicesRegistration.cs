@@ -1,3 +1,11 @@
+using Kiriha.Services.Tracking.Integration;
+using Kiriha.Services.Tracking.Feed;
+using Kiriha.Services.Tracking.Core;
+using Kiriha.Services.Sync;
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Sync;
+using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Constants;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -7,7 +15,7 @@ using Kiriha.Services;
 using Kiriha.Services.Api;
 using Kiriha.Services.Auth;
 using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repositories;
+using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Tracking;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,7 +41,7 @@ internal static class TrackingServicesRegistration
         services.AddTransient<ResilientHttpHandler>();
 
         // --- MyAnimeList ---
-        services.AddHttpClient("MalClient", c => { c.BaseAddress = new Uri(Constants.Api.Mal.BaseUrl); })
+        services.AddHttpClient("MalClient", c => { c.BaseAddress = new Uri(AppConstants.Api.Mal.BaseUrl); })
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
         services.AddSingleton<MalAuthService>(sp =>

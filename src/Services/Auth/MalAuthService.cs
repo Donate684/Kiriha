@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -24,7 +25,7 @@ public class MalAuthService
 
     public string GetAuthUrl(string codeVerifier)
     {
-        return $"{Constants.Api.Mal.AuthUrl}?response_type=code&client_id={ApiKeys.MalClientId}&code_challenge={codeVerifier}&redirect_uri={Constants.Api.RedirectUri}&scope=write:users";
+        return $"{AppConstants.Api.Mal.AuthUrl}?response_type=code&client_id={ApiKeys.MalClientId}&code_challenge={codeVerifier}&redirect_uri={AppConstants.Api.RedirectUri}&scope=write:users";
     }
 
     public async Task<MalTokens?> LoginWithCodeAsync(string code, string codeVerifier)
@@ -37,7 +38,7 @@ public class MalAuthService
         var codeVerifier = GenerateCodeVerifier();
         var authUrl = GetAuthUrl(codeVerifier);
         string successMessage = UIUtils.GetLoc("auth.success", "MyAnimeList");
-        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, Constants.Api.RedirectUri, successMessage);
+        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage);
 
         if (string.IsNullOrEmpty(code)) return null;
 
@@ -61,7 +62,7 @@ public class MalAuthService
 
         try
         {
-            var response = await _httpClient.PostAsync(Constants.Api.Mal.TokenUrl, content, ct);
+            var response = await _httpClient.PostAsync(AppConstants.Api.Mal.TokenUrl, content, ct);
             var json = await response.Content.ReadAsStringAsync(ct);
 
             if (response.IsSuccessStatusCode)
@@ -91,10 +92,10 @@ public class MalAuthService
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
             new KeyValuePair<string, string>("code", code),
             new KeyValuePair<string, string>("code_verifier", codeVerifier),
-            new KeyValuePair<string, string>("redirect_uri", Constants.Api.RedirectUri)
+            new KeyValuePair<string, string>("redirect_uri", AppConstants.Api.RedirectUri)
         });
 
-        var response = await _httpClient.PostAsync(Constants.Api.Mal.TokenUrl, content);
+        var response = await _httpClient.PostAsync(AppConstants.Api.Mal.TokenUrl, content);
         var json = await response.Content.ReadAsStringAsync();
 
         if (response.IsSuccessStatusCode)

@@ -1,3 +1,7 @@
+using Kiriha.Services.Tracking.Integration;
+using Kiriha.Services.Tracking.Feed;
+using Kiriha.Services.Tracking.Core;
+using Kiriha.Services.Data.Settings;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;

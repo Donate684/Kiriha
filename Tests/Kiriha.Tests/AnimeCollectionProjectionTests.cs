@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System.Collections.Specialized;
 using Kiriha.Core;
 using Kiriha.Models;
@@ -35,8 +36,8 @@ public sealed class AnimeCollectionProjectionTests
             Item(3, "Frieren Completed", UserAnimeStatus.Completed),
         ]);
 
-        var sfw = projection.Query(UserAnimeStatus.Watching, "volshebnitsa", filterNsfw: false, sortBy: Constants.Sorting.Title, kind: MediaKind.Anime);
-        var nsfw = projection.Query(UserAnimeStatus.Watching, "frieren", filterNsfw: true, sortBy: Constants.Sorting.Title, kind: MediaKind.Anime);
+        var sfw = projection.Query(UserAnimeStatus.Watching, "volshebnitsa", filterNsfw: false, sortBy: AppConstants.Sorting.Title, kind: MediaKind.Anime);
+        var nsfw = projection.Query(UserAnimeStatus.Watching, "frieren", filterNsfw: true, sortBy: AppConstants.Sorting.Title, kind: MediaKind.Anime);
 
         Assert.Equal(new[] { 1 }, sfw.Select(x => x.Id));
         Assert.Equal(new[] { 2 }, nsfw.Select(x => x.Id));

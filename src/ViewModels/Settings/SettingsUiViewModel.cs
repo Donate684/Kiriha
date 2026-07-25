@@ -1,3 +1,6 @@
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Constants;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
@@ -39,8 +42,8 @@ public partial class SettingsUiViewModel : ObservableObject
 
     public List<LanguageOption> AvailableLanguages { get; } = new()
     {
-        new LanguageOption(Constants.Languages.EnName, Constants.Languages.En),
-        new LanguageOption(Constants.Languages.RuName, Constants.Languages.Ru)
+        new LanguageOption(AppConstants.Languages.EnName, AppConstants.Languages.En),
+        new LanguageOption(AppConstants.Languages.RuName, AppConstants.Languages.Ru)
     };
 
     [ObservableProperty] private LanguageOption? _selectedLanguage;

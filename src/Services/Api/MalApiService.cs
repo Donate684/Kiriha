@@ -1,3 +1,6 @@
+using Kiriha.Services.Sync;
+using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -10,7 +13,7 @@ using Kiriha.Models;
 using Kiriha.Models.Entities;
 using Kiriha.Services.Auth;
 using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repositories;
+using Kiriha.Services.Data.Repository;
 using Serilog;
 
 namespace Kiriha.Services.Api;
@@ -19,7 +22,7 @@ public partial class MalApiService : ITrackerService, IDisposable
 {
     // Resolved once from Constants — no parallel const that can drift from the URL
     // wired into the IHttpClientFactory "MalClient" registration.
-    private static readonly string MalBaseUrl = Constants.Api.Mal.BaseUrl;
+    private static readonly string MalBaseUrl = AppConstants.Api.Mal.BaseUrl;
 
     private static readonly string ListStatusFields = "num_episodes_watched,score,status,num_times_rewatched,is_rewatching,notes,start_date,finish_date";
     private static readonly string AnimeFields = $"list_status{{{ListStatusFields}}},my_list_status{{{ListStatusFields}}},main_picture,synopsis,mean,rank,popularity,num_episodes,start_season,genres,studios,alternative_titles,status,start_date,nsfw,rating,media_type,broadcast,external_links";

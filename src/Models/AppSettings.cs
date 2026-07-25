@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System.Collections.Generic;
 using Kiriha.Core;
 using Kiriha.Models.Api;
@@ -22,13 +23,13 @@ public partial class AppSettings
     {
         public ThemeType Theme { get; set; } = ThemeType.System;
 
-        public string LanguageCode { get; set; } = Constants.Languages.En;
+        public string LanguageCode { get; set; } = AppConstants.Languages.En;
         public bool UseRussianTitles { get; set; } = false;
         public bool UseRussianDescriptions { get; set; } = false;
         public bool EnableMica { get; set; } = true;
         public bool ShowAiringInfo { get; set; } = true;
-        public string SeasonalSortBy { get; set; } = Constants.Sorting.Popularity;
-        public string ListSortBy { get; set; } = Constants.Sorting.Title;
+        public string SeasonalSortBy { get; set; } = AppConstants.Sorting.Popularity;
+        public string ListSortBy { get; set; } = AppConstants.Sorting.Title;
         public List<string> SeasonalStatusFilters { get; set; } = new() { "All" };
         public bool ShowNsfw { get; set; } = false;
         public bool ListShowNsfw { get; set; } = false;

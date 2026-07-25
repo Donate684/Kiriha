@@ -1,3 +1,4 @@
+using Kiriha.Core.Constants;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ public class UpdateService
     public UpdateService()
     {
         // GitHubSource is used to check for updates from a GitHub repository
-        _updateManager = new UpdateManager(new GithubSource(Constants.Links.GitHubRepo, null, false));
+        _updateManager = new UpdateManager(new GithubSource(AppConstants.Links.GitHubRepo, null, false));
         Log.Information("UpdateService initialized. Installed: {IsInstalled}, Current Version: {Version}",
             _updateManager.IsInstalled, _updateManager.CurrentVersion);
     }
@@ -47,7 +48,7 @@ public class UpdateService
             }
 
             Log.Information("UpdateService: Checking GitHub ({RepoUrl}) for updates. Current version: {CurrentVersion}...",
-                Constants.Links.GitHubRepo, _updateManager.CurrentVersion);
+                AppConstants.Links.GitHubRepo, _updateManager.CurrentVersion);
 
             _updateInfo = await _updateManager.CheckForUpdatesAsync().WaitAsync(ct);
 
@@ -68,7 +69,7 @@ public class UpdateService
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "UpdateService: Error during update check from {RepoUrl}.", Constants.Links.GitHubRepo);
+            Log.Error(ex, "UpdateService: Error during update check from {RepoUrl}.", AppConstants.Links.GitHubRepo);
             return false;
         }
         finally
