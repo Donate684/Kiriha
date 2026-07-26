@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using System;
 using Avalonia;
 using Avalonia.Controls;
@@ -21,11 +21,6 @@ public partial class AnimeDetailsWindow : KirihaWindowBase
         Opened += OnOpened;
     }
 
-    private void ShareRow_Click(object? sender, RoutedEventArgs e)
-    {
-        var btn = this.FindControl<Button>("ShareMainButton");
-        btn?.Flyout?.Hide();
-    }
 
     private void OnOpened(object? sender, EventArgs e)
     {

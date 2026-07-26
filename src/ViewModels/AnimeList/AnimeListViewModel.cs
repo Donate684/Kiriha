@@ -68,31 +68,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     private Kiriha.Utils.Async.Debouncer? _filterRefreshDebouncer;
     private int _filterRefreshVersion;
 
-    private object[]? _availableScores;
-    public object[] AvailableScores => _availableScores ??= CreateAvailableScores();
 
-    private static object[] CreateAvailableScores() =>
-    [
-        RatingHelper.GetRatingOption("-"),
-        RatingHelper.GetRatingOption("10"),
-        RatingHelper.GetRatingOption("9"),
-        RatingHelper.GetRatingOption("8"),
-        RatingHelper.GetRatingOption("7"),
-        RatingHelper.GetRatingOption("6"),
-        RatingHelper.GetRatingOption("5"),
-        RatingHelper.GetRatingOption("4"),
-        RatingHelper.GetRatingOption("3"),
-        RatingHelper.GetRatingOption("2"),
-        RatingHelper.GetRatingOption("1")
-    ];
-
-    private string GetLoc(string key) => UIUtils.GetLoc(key);
-
-    public void RefreshAvailableScores()
-    {
-        _availableScores = CreateAvailableScores();
-        OnPropertyChanged(nameof(AvailableScores));
-    }
 
     [ObservableProperty] private AnimeItem? _activeItem;
 
@@ -202,12 +178,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         ScheduleFilterRefresh();
     }
 
-    public void RefreshLocalization()
-    {
-        RefreshAvailableScores();
-        UpdateCountsAsync().SafeFireAndForget("RefreshLocalization");
-        foreach (var item in AnimeItems) item.RefreshMetadata();
-    }
+
 
     public void Dispose()
     {

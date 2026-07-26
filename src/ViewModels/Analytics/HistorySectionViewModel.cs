@@ -1,15 +1,55 @@
-﻿using System;
+using Kiriha.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using Kiriha.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
 
-public partial class AnalyticsViewModel
+public partial class HistorySectionViewModel : ViewModelBase
 {
+    private const int RecentHistoryDays = 14;
+
+    public ObservableCollection<AnalyticsDailyHistoryPoint> RecentHistory { get; } = new();
+    public ObservableCollection<AnalyticsMonthlyHistoryRow> MonthlyHistory { get; } = new();
+    public ObservableCollection<AnalyticsBar> YearDistribution { get; } = new();
+    public ObservableCollection<AnalyticsBar> ReleaseYearCompletions { get; } = new();
+    
+    public IReadOnlyList<string> MonthHeaders { get; } = new[]
+    {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+
+    [ObservableProperty] private int _recentHistoryEpisodes;
+    [ObservableProperty] private int _recentHistoryTitles;
+    [ObservableProperty] private bool _hasMonthlyHistory;
+
+    [ObservableProperty] private bool _isHistoryPopupOpen;
+    [ObservableProperty] private string _historyPopupTitle = string.Empty;
+    [ObservableProperty] private string _historyPopupSubtitle = string.Empty;
+
+    public ObservableCollection<AnalyticsHistoryEntry> HistoryPopupEntries { get; } = new();
+
+    public void Refresh(IReadOnlyCollection<HistoryItem> history, IReadOnlyCollection<AnimeItem> items, IReadOnlyCollection<AnimeItem> completed)
+    {
+        RecentHistory.Clear();
+        MonthlyHistory.Clear();
+        YearDistribution.Clear();
+        ReleaseYearCompletions.Clear();
+
+        if (items.Count == 0) return;
+
+        AddRecentHistory(history, items);
+        AddMonthlyHistory(completed);
+        AddYearDistribution(completed);
+        AddReleaseYearCompletions(completed);
+    }
+
     private void AddRecentHistory(IEnumerable<HistoryItem> history, IReadOnlyCollection<AnimeItem> items)
     {
         var today = DateTime.Now.Date;
@@ -129,108 +169,110 @@ public partial class AnalyticsViewModel
                 row.Months.Add(cell);
             }
 
-
             MonthlyHistory.Add(row);
         }
     }
 
-    private static void AddFavoriteRows(
-        ObservableCollection<AnalyticsFavoriteRow> target,
-        IEnumerable<AnimeItem> items,
-        Func<AnimeItem, IEnumerable<string>> selector,
-        Func<string, string>? nameFormatter = null)
+    [RelayCommand]
+    public void OpenFavorite(AnalyticsFavoriteRow? row)
     {
-        var groups = items
-            .SelectMany(item => selector(item)
-                .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Select(value => new { Key = value.Trim(), Item = item }))
-            .GroupBy(x => x.Key)
-            .Select(group =>
-            {
-                var entries = group.Select(x => x.Item).DistinctBy(x => x.Id).ToList();
-                var scores = entries
-                    .Select(x => int.TryParse(x.Score, out var score) ? score : 0)
-                    .Where(x => x > 0)
-                    .ToList();
-                var mean = scores.Count > 0 ? scores.Average() : 0;
-                var weighted = scores.Count > 0 ? FavoriteScore(mean, entries.Count) : 0;
-                var hours = EstimateHoursWatched(entries);
+        if (row == null || row.Entries.Count == 0) return;
 
-                return new
-                {
-                    Name = group.Key,
-                    Count = entries.Count,
-                    Mean = mean,
-                    Weighted = weighted,
-                    Hours = hours,
-                    Entries = entries
-                };
-            })
-            .OrderByDescending(x => x.Weighted)
-            .ThenByDescending(x => x.Count)
-            .ThenBy(x => x.Name)
-            .Take(30)
+        HistoryPopupTitle = row.Name;
+        HistoryPopupSubtitle = $"{row.Count} тайтл. • средняя {row.MeanScore} • вес {row.WeightedScore}";
+        ShowHistoryPopup(row.Entries);
+    }
+
+    [RelayCommand]
+    public void OpenDailyHistory(AnalyticsDailyHistoryPoint? point)
+    {
+        if (point == null || point.Count == 0) return;
+
+        HistoryPopupTitle = point.DaysAgo == 1
+            ? "Вчера"
+            : $"{point.DaysAgo} дн. назад";
+        HistoryPopupSubtitle = $"{point.DateLabel} · {point.Count} эп. · {point.Entries.Select(x => x.Title).Distinct().Count()} тайтл(ов)";
+        ShowHistoryPopup(point.Entries);
+    }
+
+    [RelayCommand]
+    public void OpenMonthlyHistory(AnalyticsMonthlyHistoryCell? cell)
+    {
+        if (cell == null || cell.Count == 0) return;
+
+        HistoryPopupTitle = $"{cell.MonthName} · завершено";
+        HistoryPopupSubtitle = $"{cell.Count} тайтл(ов)";
+        ShowHistoryPopup(cell.Entries);
+    }
+
+    [RelayCommand]
+    public void CloseHistoryPopup()
+    {
+        IsHistoryPopupOpen = false;
+        HistoryPopupEntries.Clear();
+    }
+
+    private void ShowHistoryPopup(IEnumerable<AnalyticsHistoryEntry> entries)
+    {
+        HistoryPopupEntries.Clear();
+        foreach (var entry in entries)
+        {
+            HistoryPopupEntries.Add(entry);
+        }
+
+        IsHistoryPopupOpen = true;
+    }
+
+    private void AddYearDistribution(IEnumerable<AnimeItem> completed)
+    {
+        var groups = completed
+            .Where(x => x.StartYear.HasValue)
+            .GroupBy(x => x.StartYear!.Value)
+            .Select(x => new { Year = x.Key, Count = x.Count() })
+            .OrderByDescending(x => x.Year)
+            .Take(12)
+            .OrderBy(x => x.Year)
             .ToList();
 
-        var totalCompleted = items.Count(x => x.Status == UserAnimeStatus.Completed);
-        if (totalCompleted <= 0) totalCompleted = 1;
-
-        var rank = 1;
+        var max = groups.Count == 0 ? 1 : groups.Max(x => x.Count);
         foreach (var group in groups)
         {
-            var name = nameFormatter?.Invoke(group.Name) ?? group.Name;
-            var mean = group.Mean > 0 ? group.Mean.ToString("0.00") : "-";
-            var weighted = group.Weighted > 0 ? group.Weighted.ToString("0.00") : "-";
-            var hours = $"{group.Hours:0.0} ч";
-
-            var completedInGroup = group.Entries.Count(x => x.Status == UserAnimeStatus.Completed);
-            var percentCompleted = totalCompleted > 0 ? (completedInGroup * 100.0 / totalCompleted) : 0;
-
-            var row = new AnalyticsFavoriteRow
+            YearDistribution.Add(new AnalyticsBar
             {
-                Rank = rank++,
-                Name = name,
+                Label = group.Year.ToString(),
+                Value = group.Count.ToString("N0"),
                 Count = group.Count,
-                MeanScore = mean,
-                WeightedScore = weighted,
-                TimeSpent = hours,
-                Summary = $"{group.Count} тайтл. • оценка {mean} • {hours}",
-                Percent = percentCompleted,
-                Accent = GetAccent(group.Name)
-            };
-
-            foreach (var entry in group.Entries
-                         .OrderByDescending(x => int.TryParse(x.Score, out var score) ? score : 0)
-                         .ThenBy(x => x.Presentation.DisplayTitle)
-                         .Select(x => new AnalyticsHistoryEntry
-                         {
-                             Title = x.Presentation.DisplayTitle,
-                             Subtitle = x.RussianTitle != null ? x.Title : null,
-                             Detail = int.TryParse(x.Score, out var score) && score > 0
-                                 ? $"Оценка {score}"
-                                 : DisplayTotal(x),
-                             PosterUrl = x.MainPictureUrl
-                         }))
-            {
-                row.Entries.Add(entry);
-            }
-
-            target.Add(row);
+                Percent = AnalyticsHelpers.Percent(group.Count, max)
+            });
         }
     }
 
-    private static double FavoriteScore(double meanScore, int count)
+    private void AddReleaseYearCompletions(IEnumerable<AnimeItem> completed)
     {
-        const double globalMean = 5.5;
-        const double smoothing = 10.0;
+        var groups = completed
+            .Where(x => x.StartYear.HasValue)
+            .GroupBy(x => x.StartYear!.Value)
+            .Select(x => new { Year = x.Key, Count = x.Count() })
+            .OrderByDescending(x => x.Year)
+            .ToList();
 
-        // 1. Байесовское среднее (отсекает жанры с 1-2 тайтлами на 10/10)
-        var bayesianMean = (meanScore * count + globalMean * smoothing) / (count + smoothing);
-
-        // 2. Логарифмический бонус за количество просмотренного
-        // Log10(10) = 1, Log10(100) = 2. Плавно награждает за объём.
-        var volumeBonus = Math.Log10(Math.Max(1, count));
-
-        return bayesianMean + volumeBonus;
+        var max = groups.Count == 0 ? 1 : groups.Max(x => x.Count);
+        foreach (var group in groups)
+        {
+            var intensity = group.Count / (double)max;
+            var alpha = (byte)Math.Round(0x24 + intensity * (0xFF - 0x24));
+            ReleaseYearCompletions.Add(new AnalyticsBar
+            {
+                Label = group.Year.ToString(CultureInfo.InvariantCulture),
+                Value = group.Count.ToString("N0"),
+                Count = group.Count,
+                Percent = AnalyticsHelpers.Percent(group.Count, max),
+                Alpha = 0.16 + intensity * 0.84,
+                ShareText = $"{group.Count:N0} тайтл.",
+                Accent = $"#{alpha:X2}2D7DD2",
+                TextColor = intensity >= 0.48 ? "#FFFFFFFF" : "#FF1F2937"
+            });
+        }
     }
 }
+

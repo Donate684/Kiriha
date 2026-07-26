@@ -37,7 +37,6 @@ public partial class PlayerOverlayWindow
 
         if (_subscribedViewModel != null)
         {
-            _subscribedViewModel.Chapters.CollectionChanged -= OnChaptersChanged;
             if (_viewModelPropertyChanged != null)
                 _subscribedViewModel.PropertyChanged -= _viewModelPropertyChanged;
         }
@@ -60,11 +59,7 @@ public partial class PlayerOverlayWindow
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PlayerViewModel.Duration))
-            DrawChapterMarkers();
-        else if (e.PropertyName == nameof(PlayerViewModel.ShowChapterMarkers))
-            DrawChapterMarkers();
-        else if (e.PropertyName == nameof(PlayerViewModel.AutoHideControls)
+        if (e.PropertyName == nameof(PlayerViewModel.AutoHideControls)
                  && sender is PlayerViewModel { AutoHideControls: false })
             ShowControls();
     }
@@ -118,120 +113,6 @@ public partial class PlayerOverlayWindow
         }
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Chapter markers
-    // ──────────────────────────────────────────────────────────
-
-    private void OnChaptersChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        DrawChapterMarkers();
-    }
-
-
-
-    private void OnChapterCanvasSizeChanged(object? sender, SizeChangedEventArgs e)
-    {
-        DrawChapterMarkers();
-    }
-
-    private static readonly Geometry s_chapterMarkerGeometry = Geometry.Parse("M0,0 L6,0 L3,3 Z M0,10 L6,10 L3,7 Z");
-
-    private void OnChapterMarkerPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (sender is Control control && control.Tag is double chapterTime && DataContext is PlayerViewModel playerVm)
-        {
-            playerVm.SeekTo(chapterTime);
-            e.Handled = true;
-        }
-    }
-
-    private void DrawChapterMarkers()
-    {
-        if (_chapterCanvas == null) return;
-
-        if (DataContext is not PlayerViewModel vm || !vm.ShowChapterMarkers || vm.Duration <= 0 || vm.Chapters.Count == 0)
-        {
-            foreach (var child in _chapterCanvas.Children)
-            {
-                child.IsVisible = false;
-            }
-            return;
-        }
-
-        double trackWidth = _chapterCanvas.Bounds.Width;
-        double trackHeight = _chapterCanvas.Bounds.Height;
-        if (trackWidth <= 0 || trackHeight <= 0) return;
-
-        // Color matching the timeline thumb/track
-        IBrush markerFill = Brushes.White;
-        if (Application.Current!.TryGetResource("SystemAccentColor", out var res) && res is Color accentColor)
-        {
-            markerFill = new SolidColorBrush(accentColor);
-        }
-
-        int childIndex = 0;
-        double duration = vm.Duration;
-        double centerY = trackHeight / 2.0;
-
-        foreach (var chapter in vm.Chapters)
-        {
-            // Skip the very first chapter (always at t=0)
-            if (chapter.Time <= 0) continue;
-
-            Border hitArea;
-            if (childIndex < _chapterCanvas.Children.Count)
-            {
-                hitArea = (Border)_chapterCanvas.Children[childIndex];
-                hitArea.IsVisible = true;
-            }
-            else
-            {
-                // Two small triangles flanking the 4px timeline track.
-                var marker = new Path
-                {
-                    Data = s_chapterMarkerGeometry,
-                    Opacity = 0.90,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                };
-
-                // Wrap in a border to provide a larger hit-test area for easier clicking
-                hitArea = new Border
-                {
-                    Background = Brushes.Transparent, // Transparent but hit-testable
-                    Cursor = new Cursor(StandardCursorType.Hand),
-                    Width = 32, // Match the new 32px height of the Slider
-                    Height = 32,
-                    Child = marker
-                };
-
-                hitArea.PointerPressed += OnChapterMarkerPointerPressed;
-                _chapterCanvas.Children.Add(hitArea);
-            }
-
-            hitArea.Tag = chapter.Time;
-
-            if (hitArea.Child is Path path)
-            {
-                path.Fill = markerFill;
-            }
-
-            double ratio = Math.Clamp(chapter.Time / duration, 0.0, 1.0);
-            double x = ratio * trackWidth;
-
-            // Center the 32x32 hit area on the track
-            Canvas.SetLeft(hitArea, x - 16.0);
-            Canvas.SetTop(hitArea, centerY - 16.0);
-
-            childIndex++;
-        }
-
-        // Hide any extra existing markers
-        for (int i = childIndex; i < _chapterCanvas.Children.Count; i++)
-        {
-            _chapterCanvas.Children[i].IsVisible = false;
-        }
-    }
 
     // ──────────────────────────────────────────────────────────
     // Auto-hide logic

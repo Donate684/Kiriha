@@ -1,0 +1,116 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Analytics.AnalyticsOverviewSection"
+             x:DataType="vmAnalytics:AnalyticsViewModel">
+                    <StackPanel Spacing="16"
+                                HorizontalAlignment="Stretch"
+                                IsVisible="{Binding IsOverviewSelected}">
+
+                        <!-- Мой список + Распределение оценок -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+
+                            <!-- Мой список -->
+                            <Border Classes="AnalyticsPanel" VerticalAlignment="Top">
+                                <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Width="30" Height="30" CornerRadius="8"
+                                                Background="{DynamicResource SystemAccentColor}"
+                                                VerticalAlignment="Center">
+                                            <material:MaterialIcon Kind="PlaylistCheck"
+                                                                   Width="16" Height="16"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="Мой список" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="По статусам просмотра" FontSize="10.5" Opacity="0.45"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding Overview.StatusDistribution}" ItemTemplate="{StaticResource StatusTileTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="2"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Распределение оценок — вертикальный гистограмм -->
+                            <Border Grid.Column="1" Classes="AnalyticsPanel" VerticalAlignment="Top">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Width="30" Height="30" CornerRadius="8"
+                                                Background="#FF2E9D62"
+                                                VerticalAlignment="Center">
+                                            <material:MaterialIcon Kind="StarOutline"
+                                                                   Width="16" Height="16"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="Оценки" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Распределение по баллам" FontSize="10.5" Opacity="0.45"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Вертикальный chart —  10 → 1 слева направо -->
+                                    <ItemsControl ItemsSource="{Binding Overview.ScoreDistribution}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="1"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vmAnalytics:AnalyticsBar">
+                                                <Grid RowDefinitions="Auto,72,Auto" Margin="2,0">
+
+                                                    <!-- Кол-во сверху -->
+                                                    <TextBlock Text="{Binding Value}"
+                                                               FontSize="9"
+                                                               HorizontalAlignment="Center"
+                                                               Opacity="0.6"
+                                                               Margin="0,0,0,3"/>
+
+                                                    <!-- Область бара фиксированной высоты -->
+                                                    <Grid Grid.Row="1">
+                                                        <!-- Фоновый трек -->
+                                                        <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                                                                CornerRadius="4"
+                                                                VerticalAlignment="Stretch"/>
+                                                        <!-- Цветной бар от низа -->
+                                                        <Border Background="{Binding Accent}"
+                                                                Height="{Binding BarHeight}"
+                                                                VerticalAlignment="Bottom"
+                                                                CornerRadius="4,4,0,0"/>
+                                                    </Grid>
+
+                                                    <!-- Оценка снизу -->
+                                                    <TextBlock Grid.Row="2"
+                                                               Text="{Binding Label}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,5,0,0"
+                                                               Opacity="0.7"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Height="110" IsHitTestVisible="False"/>
+                    </StackPanel>
+
+                    <!-- ══════════ СЕКЦИЯ: ВКУСЫ ══════════ -->
+</UserControl>
+
+

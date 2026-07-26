@@ -1,0 +1,309 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+                    xmlns:core="using:Kiriha.Core"
+                    xmlns:u="using:Kiriha.Utils.UI"
+                    xmlns:material="using:Material.Icons.Avalonia">
+
+        <!-- â•â•â• MetricTemplate â€” ÐºÑ€ÑƒÐ¿Ð½Ð°Ñ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ° Ñ Ð¸ÐºÐ¾Ð½ÐºÐ¾Ð¹ Ð¸ Ð±Ð¾Ð»ÑŒÑˆÐ¾Ð¹ Ñ†Ð¸Ñ„Ñ€Ð¾Ð¹ â•â•â• -->
+        <DataTemplate x:Key="MetricTemplate" x:DataType="vmAnalytics:AnalyticsMetric">
+            <Border Classes="AnalyticsPanel MetricPanel" Margin="0,0,10,0">
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="6">
+                    <TextBlock Text="{Binding Label}"
+                               FontSize="11"
+                               FontWeight="Medium"
+                               Opacity="0.55"
+                               LetterSpacing="0.5"/>
+                    <TextBlock Grid.Row="1"
+                               Text="{Binding Value}"
+                               FontSize="32"
+                               FontWeight="Light"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="2"
+                               Text="{Binding Hint}"
+                               FontSize="10.5"
+                               Opacity="0.42"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- â•â•â• BarTemplate â€” ÑÑ‚Ñ€Ð¾ÐºÐ° Ð¿Ñ€Ð¾Ð³Ñ€ÐµÑÑÐ° â•â•â• -->
+        <DataTemplate x:Key="BarTemplate" x:DataType="vmAnalytics:AnalyticsBar">
+            <Grid RowDefinitions="Auto,Auto" Margin="0,0,0,11">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Label}" FontSize="12" MaxLines="1" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" Opacity="0.65"/>
+                </Grid>
+                <ProgressBar Grid.Row="1" Classes="AnalyticsBar" Value="{Binding Percent}" Margin="0,5,0,0"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- â•â•â• StatusTileTemplate â€” Ð¿Ð»Ð¸Ñ‚ÐºÐ° ÑÑ‚Ð°Ñ‚ÑƒÑÐ° Ñ Ð°ÐºÑ†ÐµÐ½Ñ‚-Ð¿Ð¾Ð»Ð¾ÑÐ¾Ð¹ â•â•â• -->
+        <DataTemplate x:Key="StatusTileTemplate" x:DataType="vmAnalytics:AnalyticsBar">
+            <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                    CornerRadius="10"
+                    Padding="0"
+                    Margin="0,0,8,8"
+                    ClipToBounds="True">
+                <Grid ColumnDefinitions="4,*">
+                    <!-- Ð¦Ð²ÐµÑ‚Ð½Ð°Ñ Ð¿Ð¾Ð»Ð¾ÑÐ° Ð°ÐºÑ†ÐµÐ½Ñ‚Ð° ÑÐ»ÐµÐ²Ð° -->
+                    <Border Grid.Column="0"
+                            Background="{Binding Accent}"
+                            CornerRadius="10,0,0,10"/>
+
+                    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="5" Margin="10,10,10,10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding Label}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       MaxLines="1"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <Border Grid.Column="1"
+                                    Background="{Binding Accent}"
+                                    CornerRadius="8"
+                                    Padding="8,2">
+                                <TextBlock Text="{Binding Value}"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="White"/>
+                            </Border>
+                        </Grid>
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding ShareText}"
+                                   FontSize="10.5"
+                                   Opacity="0.52"/>
+                        <ProgressBar Grid.Row="2"
+                                     Classes="AnalyticsBar"
+                                     Value="{Binding Percent}"
+                                     Foreground="{Binding Accent}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- â•â•â• TasteHighlightTemplate â•â•â• -->
+        <DataTemplate x:Key="TasteHighlightTemplate" x:DataType="vmAnalytics:AnalyticsBar">
+            <Border Classes="AnalyticsPanel" Margin="0,0,10,0" MinHeight="112">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Border Width="30" Height="4" CornerRadius="2"
+                            Background="{Binding Accent}"
+                            HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="1"
+                               Text="{Binding Label}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               MaxLines="2"
+                               TextWrapping="Wrap"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center"/>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Value, StringFormat='{}{0} Ñ‚Ð°Ð¹Ñ‚Ð».'}"
+                                   FontSize="11"
+                                   Opacity="0.62"/>
+                        <TextBlock Text="{Binding ShareText, StringFormat='Ð»Ð¸Ð´ÐµÑ€ {0}'}"
+                                   FontSize="11"
+                                   Opacity="0.42"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- â•â•â• TasteRowTemplate â€” ranked-ÑÑ‚Ñ€Ð¾ÐºÐ° Ð¶Ð°Ð½Ñ€Ð°/ÑÑ‚ÑƒÐ´Ð¸Ð¸ â•â•â• -->
+        <DataTemplate x:Key="TasteRowTemplate" x:DataType="vmAnalytics:AnalyticsBar">
+            <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                    CornerRadius="10"
+                    Padding="10,9"
+                    Margin="0,0,0,8">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Border Width="8"
+                            Height="34"
+                            CornerRadius="4"
+                            Background="{Binding Accent}"
+                            VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Spacing="5">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding Label}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       MaxLines="1"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Value}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Opacity="0.65"/>
+                        </Grid>
+                        <ProgressBar Classes="AnalyticsBar"
+                                     Value="{Binding Percent}"
+                                     Foreground="{Binding Accent}"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding ShareText}"
+                               FontSize="11"
+                               Opacity="0.45"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- â•â•â• ReleaseYearTemplate â•â•â• -->
+        <DataTemplate x:Key="ReleaseYearTemplate" x:DataType="vmAnalytics:AnalyticsBar">
+            <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                    CornerRadius="8"
+                    Margin="2"
+                    Height="62"
+                    ClipToBounds="True">
+                <Grid ColumnDefinitions="4,*">
+                    <Border Grid.Column="0" Background="{Binding Accent}" CornerRadius="8,0,0,8"/>
+                    <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="8,6,8,4">
+                        <TextBlock Text="{Binding Label}"
+                                   FontSize="10.5"
+                                   FontWeight="SemiBold"
+                                   Opacity="0.55"/>
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding Value}"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- â•â•â• FavoriteRowTemplate â€” ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑŒÐ½Ð°Ñ ranked-ÑÑ‚Ñ€Ð¾ÐºÐ° â•â•â• -->
+        <DataTemplate x:Key="FavoriteRowTemplate" x:DataType="vmAnalytics:AnalyticsFavoriteRow">
+            <Button Classes="FavoriteRowButton"
+                    Command="{Binding $parent[UserControl].((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenFavoriteCommand}"
+                    CommandParameter="{Binding}"
+                    ToolTip.Tip="ÐŸÐ¾ÐºÐ°Ð·Ð°Ñ‚ÑŒ Ñ‚Ð°Ð¹Ñ‚Ð»Ñ‹">
+                <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                        CornerRadius="10"
+                        Padding="0"
+                        Margin="0,0,0,8"
+                        ClipToBounds="True">
+                    <Grid ColumnDefinitions="4,*">
+                        <!-- Ð¦Ð²ÐµÑ‚Ð½Ð°Ñ Ð¿Ð¾Ð»Ð¾ÑÐ° Ð°ÐºÑ†ÐµÐ½Ñ‚Ð° ÑÐ»ÐµÐ²Ð° -->
+                        <Border Grid.Column="0"
+                                Background="{Binding Accent}"
+                                CornerRadius="10,0,0,10"/>
+
+                        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="5" Margin="10,10,10,10">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <TextBlock Text="{Binding Rank, StringFormat='{}#{0}'}"
+                                           FontSize="12.5"
+                                           FontWeight="Bold"
+                                           Foreground="{Binding Accent}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Name}"
+                                           FontSize="12.5"
+                                           FontWeight="SemiBold"
+                                           MaxLines="1"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="2"
+                                        Background="{Binding Accent}"
+                                        CornerRadius="8"
+                                        Padding="8,2">
+                                    <TextBlock Text="{Binding WeightedScore}"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Grid.Row="1"
+                                       Text="{Binding Summary}"
+                                       FontSize="10.5"
+                                       Opacity="0.52"
+                                       MaxLines="1"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <ProgressBar Grid.Row="2"
+                                         Classes="AnalyticsBar"
+                                         Value="{Binding Percent}"
+                                         Foreground="{Binding Accent}"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+
+        <!-- â•â•â• ProfileTodoTemplate â€” ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ° Â«Ñ‡Ñ‚Ð¾ Ð¿Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ÐµÑ‚ÑŒÂ» â•â•â• -->
+        <DataTemplate x:Key="ProfileTodoTemplate" x:DataType="vmAnalytics:ProfileTodoItem">
+            <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                    CornerRadius="10"
+                    Padding="0"
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Stretch"
+                    ClipToBounds="True">
+                <Grid ColumnDefinitions="4,*">
+                    <!-- Ð¦Ð²ÐµÑ‚Ð½Ð°Ñ Ð¿Ð¾Ð»Ð¾ÑÐ° Ð°ÐºÑ†ÐµÐ½Ñ‚Ð° ÑÐ»ÐµÐ²Ð° -->
+                    <Border Grid.Column="0"
+                            Background="{Binding Accent}"
+                            CornerRadius="10,0,0,10"/>
+
+                    <Grid Grid.Column="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="10" MinWidth="0">
+                        <!-- ÐŸÐ¾ÑÑ‚ÐµÑ€ Ñ Ð·Ð°ÐºÑ€ÑƒÐ³Ð»Ñ‘Ð½Ð½Ñ‹Ð¼Ð¸ ÐºÑ€Ð°ÑÐ¼Ð¸ -->
+                        <Border Width="44"
+                                Height="62"
+                                CornerRadius="8"
+                                ClipToBounds="True"
+                                Background="{DynamicResource SubtleFillColorSecondary}">
+                            <Panel>
+                                <material:MaterialIcon Kind="ImageOutline"
+                                                       Width="18"
+                                                       Height="18"
+                                                       Opacity="0.22"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                <Image core:CachedImage.Source="{Binding PosterUrl}"
+                                       Stretch="UniformToFill"/>
+                            </Panel>
+                        </Border>
+
+                        <!-- Ð˜Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ñ -->
+                        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" MinWidth="0">
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       MaxLines="1"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,0,0,3"/>
+                            <TextBlock Grid.Row="1"
+                                       Text="{Binding Subtitle}"
+                                       FontSize="10.5"
+                                       Foreground="{DynamicResource SystemAccentColor}"
+                                       Opacity="0.75"
+                                       MaxLines="1"
+                                       TextTrimming="CharacterEllipsis"
+                                       IsVisible="{Binding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                       Margin="0,0,0,3"/>
+                            <TextBlock Grid.Row="2"
+                                       Text="{Binding Detail}"
+                                       FontSize="11"
+                                       Opacity="0.52"
+                                       MaxLines="1"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </Grid>
+
+                        <!-- Ð‘ÐµÐ¹Ð´Ð¶ -->
+                        <Border Grid.Column="2"
+                                Background="{Binding Accent}"
+                                CornerRadius="8"
+                                Padding="9,4"
+                                VerticalAlignment="Center"
+                                Margin="6,0,0,0">
+                            <TextBlock Text="{Binding Badge}"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       Foreground="White"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+</ResourceDictionary>
+
+

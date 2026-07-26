@@ -278,98 +278,9 @@ public partial class MpvPlayer : IDisposable
         _commandQueue.Enqueue(action, coalescingKey);
     }
 
-    internal T Read<T>(Func<IntPtr, T> read, T defaultValue)
-    {
-        IntPtr handle;
-        lock (_gate)
-        {
-            if (_disposed || _mpvHandle == IntPtr.Zero) return defaultValue;
-            handle = _mpvHandle;
-        }
-
-        return read(handle);
-    }
-
-    internal T ReadNodeProperty<T>(string name, Func<MpvNode, T> parse, T defaultValue)
-    {
-        return Read(handle =>
-        {
-            int result = LibMpvNative.mpv_get_property_node(handle, name, LibMpvNative.MPV_FORMAT_NODE, out var node);
-            if (result < 0)
-                return defaultValue;
-
-            try
-            {
-                return parse(node);
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Failed to parse mpv node property {PropertyName}", name);
-                return defaultValue;
-            }
-            finally
-            {
-                LibMpvNative.mpv_free_node_contents(ref node);
-            }
-        }, defaultValue);
-    }
-
-    internal static void Check(int result, string action)
-    {
-        if (result < 0)
-            throw new InvalidOperationException($"mpv failed to {action}: {LibMpvNative.GetErrorString(result)}");
-    }
-
-    internal static string? GetPropertyString(IntPtr handle, string name)
-    {
-        IntPtr ptr = LibMpvNative.mpv_get_property_string(handle, name);
-        if (ptr == IntPtr.Zero)
-            return null;
-
-        try
-        {
-            return Marshal.PtrToStringUTF8(ptr);
-        }
-        finally
-        {
-            LibMpvNative.mpv_free(ptr);
-        }
-    }
-
-    internal double ReadDoubleProperty(string name, double defaultValue)
-    {
-        return Read(handle =>
-        {
-            var result = LibMpvNative.mpv_get_property(handle, name, LibMpvNative.MPV_FORMAT_DOUBLE, out var value);
-            return result < 0 ? defaultValue : value;
-        }, defaultValue);
-    }
-
     internal void InvalidateRuntimeVideoInfo()
     {
         _propertyCache.InvalidateRuntimeVideoInfo();
-    }
-
-    private static string FormatRuntimeVideoInfo(
-        string? hwdec,
-        string? interop,
-        string? vo,
-        string? gpuContext,
-        string? decoder)
-    {
-        static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
-
-        return $"hwdec: {ValueOrDash(hwdec)}, interop: {ValueOrDash(interop)}, vo: {ValueOrDash(vo)}, context: {ValueOrDash(gpuContext)}, decoder: {ValueOrDash(decoder)}";
-    }
-
-    internal static void SetMpvOption(IntPtr handle, string name, string value, string action)
-    {
-        Check(LibMpvNative.mpv_set_property_string(handle, name, value), action);
-    }
-
-    internal static string FormatDouble(double value)
-    {
-        return value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
     }
 
 }

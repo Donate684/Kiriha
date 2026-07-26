@@ -1,0 +1,49 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:models="using:Kiriha.Models"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:core="using:Kiriha.Core"
+             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsRelations"
+             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+                    <Border Classes="ContentCard" IsVisible="{Binding Relations.Count, Converter={StaticResource IntToBoolConverter}}">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
+                                <TextBlock Grid.Column="0" Text="Связанное" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="Граф франшизы" Command="{Binding ShowFranchiseGraphCommand}" 
+                                        FontSize="11" Padding="10,5" CornerRadius="6" 
+                                        Background="{DynamicResource SubtleFillColorSecondary}" />
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Relations}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vmAnimeDetails:RelationItemVm">
+                                        <Button Classes="RelationCardButton" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                                Command="{Binding $parent[Window].((vmAnimeDetails:AnimeDetailsViewModel)DataContext).NavigateToRelationCommand}"
+                                                CommandParameter="{Binding Relation}">
+                                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                                <!-- Image -->
+                                                <Border Grid.Column="0" Width="42" Height="58" CornerRadius="6" Margin="0,0,12,0" ClipToBounds="True">
+                                                    <Panel>
+                                                        <Border Background="{DynamicResource CardBackgroundBrush}"/>
+                                                        <Image asyncImageLoader:ImageLoader.Source="{Binding ImageUrl}" Stretch="UniformToFill"/>
+                                                    </Panel>
+                                                </Border>
+                                                
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Relation.TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
+                                                    <TextBlock Text="{Binding Relation.RelationType}" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                                
+                                                <Border Grid.Column="2" Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" IsVisible="{Binding DisplayTargetType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="{Binding DisplayTargetType}" FontSize="10" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis"/>
+                                                </Border>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+</UserControl>

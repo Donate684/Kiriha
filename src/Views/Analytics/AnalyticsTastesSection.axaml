@@ -1,0 +1,72 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Analytics.AnalyticsTastesSection"
+             x:DataType="vmAnalytics:AnalyticsViewModel">
+                    <StackPanel Spacing="16"
+                                HorizontalAlignment="Stretch"
+                                IsVisible="{Binding IsTasteSelected}">
+
+                        <ItemsControl ItemsSource="{Binding Tastes.TasteHighlights}" ItemTemplate="{StaticResource TasteHighlightTemplate}" IsVisible="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+
+                            <!-- Любимые жанры -->
+                            <Border Classes="AnalyticsPanel">
+                                <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Width="30" Height="30" CornerRadius="8"
+                                                Background="#FFE53935"
+                                                VerticalAlignment="Center">
+                                            <material:MaterialIcon Kind="ShapeOutline"
+                                                                   Width="16" Height="16"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="Любимые жанры" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="По взвешенной оценке" FontSize="10.5" Opacity="0.45"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding Tastes.FavoriteGenres}" ItemTemplate="{StaticResource FavoriteRowTemplate}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Любимые студии -->
+                            <Border Grid.Column="1" Classes="AnalyticsPanel">
+                                <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Width="30" Height="30" CornerRadius="8"
+                                                Background="#FF2D7DD2"
+                                                VerticalAlignment="Center">
+                                            <material:MaterialIcon Kind="MovieOpenOutline"
+                                                                   Width="16" Height="16"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="Любимые студии" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="По взвешенной оценке" FontSize="10.5" Opacity="0.45"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding Tastes.FavoriteStudios}" ItemTemplate="{StaticResource FavoriteRowTemplate}"/>
+                                </StackPanel>
+                            </Border>
+
+                        </Grid>
+                        <Border Height="150" IsHitTestVisible="False"/>
+                    </StackPanel>
+
+                    <!-- ══════════ СЕКЦИЯ: ЧТО ПОСМОТРЕТЬ ══════════ -->
+</UserControl>
+
+

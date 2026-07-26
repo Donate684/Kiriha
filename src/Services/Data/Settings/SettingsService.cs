@@ -16,11 +16,10 @@ using Serilog;
 
 namespace Kiriha.Services.Data.Settings;
 
-
 public partial class SettingsService : IDisposable
 {
     private readonly string _settingsPath;
-    private readonly Debouncer _debouncer;
+
     private readonly SemaphoreSlim _saveLock = new(1, 1);
     private readonly object _stateLock = new();
     private long _uiVersion;
@@ -42,50 +41,6 @@ public partial class SettingsService : IDisposable
         Log.Information("StartupTiming: settings service initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
     }
 
-    public void Load()
-    {
-        var sw = Stopwatch.StartNew();
-        try
-        {
-            if (!File.Exists(_settingsPath))
-            {
-                Log.Information("Settings file not found, creating new one");
-                SaveImmediate();
-                return;
-            }
-
-            var loaded = LoadSettingsFile(_settingsPath)
-                ?? throw new JsonException("Settings file contained null JSON");
-            SetCurrent(loaded);
-
-            Log.Information("Settings loaded from {Path} elapsedMs={ElapsedMs}", _settingsPath, sw.ElapsedMilliseconds);
-        }
-        catch (IOException ex)
-        {
-            Log.Error(ex, "Error loading settings; file is temporarily unavailable, fallback will not be saved automatically");
-            SetCurrent(new AppSettings());
-            Log.Information("Settings fallback initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-        }
-        catch (Exception ex)
-        {
-            var backup = TryLoadBackupSettings(ex);
-            if (backup != null)
-            {
-                SetCurrent(backup);
-                MarkAllSectionsChanged();
-                Log.Information("Settings restored from backup elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-                return;
-            }
-
-            Log.Error(ex, "Error loading settings");
-            SetCurrent(new AppSettings());
-            MarkAllSectionsChanged();
-            Log.Information("Settings fallback initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-        }
-    }
-
-    public void Save() => _debouncer.Invoke();
-
     public void Update(Action<AppSettings> update, bool save = true)
     {
         if (update == null) throw new ArgumentNullException(nameof(update));
@@ -97,7 +52,7 @@ public partial class SettingsService : IDisposable
             Volatile.Write(ref _current, clone);
             MarkAllSectionsChanged();
         }
-
+        
         if (save) Save();
     }
 
@@ -112,7 +67,7 @@ public partial class SettingsService : IDisposable
             Volatile.Write(ref _current, clone);
             MarkChangedSections(changedSections);
         }
-
+        
         if (save) Save();
     }
 
@@ -190,19 +145,9 @@ public partial class SettingsService : IDisposable
         }
     }
 
-    public void Dispose()
+    private static AppSettings CloneSettings(AppSettings settings)
     {
-        try
-        {
-            _debouncer.CancelPending();
-            SaveImmediate();
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "SettingsService: final save failed during dispose");
-        }
-
-        _debouncer.Dispose();
-        _saveLock.Dispose();
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(settings, AppSettingsJsonContext.Default.AppSettings);
+        return JsonSerializer.Deserialize(bytes, AppSettingsJsonContext.Default.AppSettings)!;
     }
 }

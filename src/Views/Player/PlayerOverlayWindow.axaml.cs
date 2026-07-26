@@ -34,9 +34,9 @@ public partial class PlayerOverlayWindow : Window
     // Chapter markers
     private Border? _topBar;
     private Border? _bottomBar;
-    private Border? _settingsOverlayBackdrop;
+
     private Slider? _timelineSlider;
-    private Canvas? _chapterCanvas;
+
     private Button? _settingsButton;
     private Button? _screenshotButton;
     private Button? _closeButton;
@@ -88,7 +88,7 @@ public partial class PlayerOverlayWindow : Window
         {
             _subscribedViewModel = vm;
             _viewModelPropertyChanged = OnViewModelPropertyChanged;
-            vm.Chapters.CollectionChanged += OnChaptersChanged;
+
             vm.PropertyChanged += _viewModelPropertyChanged;
         }
 
@@ -106,9 +106,9 @@ public partial class PlayerOverlayWindow : Window
     {
         _topBar = this.FindControl<Border>("TopBar");
         _bottomBar = this.FindControl<Border>("BottomBar");
-        _settingsOverlayBackdrop = this.FindControl<Border>("SettingsOverlayBackdrop");
+
         _timelineSlider = this.FindControl<Slider>("TimelineSlider");
-        _chapterCanvas = this.FindControl<Canvas>("ChapterCanvas");
+
         _settingsButton = this.FindControl<Button>("SettingsButton");
         _screenshotButton = this.FindControl<Button>("ScreenshotButton");
         _closeButton = this.FindControl<Button>("CloseButton");
@@ -159,5 +159,20 @@ public partial class PlayerOverlayWindow : Window
 
         path = localPath;
         return true;
+    }
+
+    private void OnSettingsClicked(object? sender, EventArgs e)
+    {
+        ShowSettingsOverlay();
+    }
+
+    private void OnActionExecuted(object? sender, EventArgs e)
+    {
+        ShowControls();
+    }
+
+    private void OnSettingsOverlayClosed(object? sender, EventArgs e)
+    {
+        Focus();
     }
 }

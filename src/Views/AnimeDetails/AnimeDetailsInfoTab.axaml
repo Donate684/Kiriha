@@ -1,0 +1,85 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:models="using:Kiriha.Models"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:core="using:Kiriha.Core"
+             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsInfoTab"
+             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+                    <!-- ══ TABBED INFO CARD (Details / Synopsis / Alt Titles) ══ -->
+                    <Border Classes="ContentCard" Padding="0">
+                        <StackPanel>
+                            <!-- Tabs header -->
+                            <Border BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="20,14,20,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="TabDetails" Classes="Tab" GroupName="DetailsTab"
+                                                 IsChecked="True"
+                                                 Content="{DynamicResource l.common.actions.details}"/>
+                                    <RadioButton x:Name="TabSynopsis" Classes="Tab" GroupName="DetailsTab"
+                                                 Content="{DynamicResource l.anime.labels.synopsis}"/>
+                                    <RadioButton x:Name="TabAltTitles" Classes="Tab" GroupName="DetailsTab"
+                                                 Content="{DynamicResource l.anime.labels.alternative_titles}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Panel Margin="20,16">
+                                <!-- Details -->
+                                <Grid IsVisible="{Binding #TabDetails.IsChecked}"
+                                      Classes="DetailsGrid" ColumnDefinitions="Auto, *"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource l.anime.labels.status}" Classes="Label"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Anime.Presentation.DisplayAiringStatus}" FontWeight="Medium"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.episodes}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Anime.Presentation.EpisodesDisplay}" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
+                                    
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.chapters}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Anime.Presentation.ChaptersDisplay}" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource l.anime.labels.volumes}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Anime.Presentation.VolumesDisplay}" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource l.anime.labels.aired_episodes}" Classes="Label">
+                                        <TextBlock.IsVisible><MultiBinding Converter="{x:Static BoolConverters.And}"><Binding Path="Settings.Current.UI.ShowAiringInfo"/><Binding Path="Anime.Presentation.ShowAiredInfo"/></MultiBinding></TextBlock.IsVisible>
+                                    </TextBlock>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Anime, Converter={StaticResource LocConverter}, ConverterParameter='format:l.anime.labels.aired_format'}">
+                                        <TextBlock.IsVisible><MultiBinding Converter="{x:Static BoolConverters.And}"><Binding Path="Settings.Current.UI.ShowAiringInfo"/><Binding Path="Anime.Presentation.ShowAiredInfo"/></MultiBinding></TextBlock.IsVisible>
+                                    </TextBlock>
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{DynamicResource l.anime.labels.next_episode}" Classes="Label" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Anime.Presentation.NextEpisodeAtDisplay}" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.genres}" Classes="Label"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Anime.Genres, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Anime.Studios, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="{DynamicResource l.anime.labels.score}" Classes="Label"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Anime.MeanScore}"/>
+                                </Grid>
+
+                                <!-- Synopsis -->
+                                <StackPanel IsVisible="{Binding #TabSynopsis.IsChecked}">
+                                    <TextBlock Text="{Binding Anime.Presentation.DisplaySynopsis}" TextWrapping="Wrap" Opacity="0.85" LineHeight="22" FontSize="13"/>
+                                    <TextBlock Text="{DynamicResource l.anime.labels.no_synopsis}" FontSize="13" Opacity="0.5" IsVisible="{Binding Anime.Presentation.DisplaySynopsis, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                                </StackPanel>
+
+                                <!-- Alt titles -->
+                                <StackPanel IsVisible="{Binding #TabAltTitles.IsChecked}">
+                                    <ItemsControl ItemsSource="{Binding Metadata.AllAlternativeTitles}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8" Padding="10,6" Margin="0,0,8,8">
+                                                    <TextBlock Text="{Binding}" FontSize="12" Opacity="0.8"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="{DynamicResource l.anime.labels.no_alternative_titles}" FontSize="13" Opacity="0.5" IsVisible="{Binding !Metadata.HasAlternativeTitles}"/>
+                                </StackPanel>
+                            </Panel>
+                        </StackPanel>
+                    </Border>
+</UserControl>

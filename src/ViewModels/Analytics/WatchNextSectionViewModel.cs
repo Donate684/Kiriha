@@ -1,18 +1,34 @@
-using Kiriha.Core.Constants;
+﻿using Kiriha.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
-using Kiriha.Models;
+using Kiriha.Core.Constants;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
 
-public partial class AnalyticsViewModel
+public partial class WatchNextSectionViewModel : ViewModelBase
 {
-    private void AddProfileTodos(IReadOnlyCollection<AnimeItem> items)
+    public ObservableCollection<ProfileTodoItem> WatchTodo { get; } = new();
+    public ObservableCollection<ProfileTodoItem> FinishedWatchTodo { get; } = new();
+    public ObservableCollection<ProfileTodoItem> UpcomingTodo { get; } = new();
+    public ObservableCollection<ProfileTodoItem> PlanTodo { get; } = new();
+    public ObservableCollection<ProfileTodoItem> StaleTodo { get; } = new();
+
+    public void Refresh(IReadOnlyCollection<AnimeItem> items)
     {
+        WatchTodo.Clear();
+        FinishedWatchTodo.Clear();
+        UpcomingTodo.Clear();
+        PlanTodo.Clear();
+        StaleTodo.Clear();
+
+        if (items.Count == 0) return;
+
         var now = DateTime.Now;
         foreach (var item in items
                      .Where(x => IsCurrentOngoing(x, now) && x.Presentation.ShowAiredProgressBar && x.Presentation.UnseenEpisodesCount > 0)
@@ -206,3 +222,4 @@ public partial class AnalyticsViewModel
             ? score
             : 0;
 }
+

@@ -1,8 +1,6 @@
-using Kiriha.Services.Data.Core;
+﻿using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Repository;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -10,54 +8,24 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models.Entities;
-using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Analytics;
 
-
 public partial class AnalyticsViewModel : ViewModelBase
 {
-    private const int RecentHistoryDays = 14;
-
     private readonly AnimeRepository _animeRepo;
     private readonly HistoryService _historyService;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
 
-    public ObservableCollection<AnalyticsMetric> Metrics { get; } = new();
-    public ObservableCollection<AnalyticsBar> StatusDistribution { get; } = new();
-    public ObservableCollection<AnalyticsBar> ScoreDistribution { get; } = new();
-    public ObservableCollection<AnalyticsBar> GenreDistribution { get; } = new();
-    public ObservableCollection<AnalyticsBar> StudioDistribution { get; } = new();
-    public ObservableCollection<AnalyticsBar> YearDistribution { get; } = new();
-    public ObservableCollection<AnalyticsBar> ReleaseYearCompletions { get; } = new();
-    public ObservableCollection<AnalyticsBar> TasteHighlights { get; } = new();
-    public ObservableCollection<AnalyticsFavoriteRow> FavoriteGenres { get; } = new();
-    public ObservableCollection<AnalyticsFavoriteRow> FavoriteStudios { get; } = new();
-    public ObservableCollection<ProfileTodoItem> WatchTodo { get; } = new();
-    public ObservableCollection<ProfileTodoItem> FinishedWatchTodo { get; } = new();
-    public ObservableCollection<ProfileTodoItem> UpcomingTodo { get; } = new();
-    public ObservableCollection<ProfileTodoItem> PlanTodo { get; } = new();
-    public ObservableCollection<ProfileTodoItem> StaleTodo { get; } = new();
-    public ObservableCollection<AnalyticsDailyHistoryPoint> RecentHistory { get; } = new();
-    public ObservableCollection<AnalyticsMonthlyHistoryRow> MonthlyHistory { get; } = new();
-    public IReadOnlyList<string> MonthHeaders { get; } = new[]
-    {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
+    public OverviewSectionViewModel Overview { get; } = new();
+    public TastesSectionViewModel Tastes { get; } = new();
+    public WatchNextSectionViewModel WatchNext { get; } = new();
+    public HistorySectionViewModel History { get; } = new();
 
     [ObservableProperty] private bool _hasData;
     [ObservableProperty] private bool _isRefreshing;
     [ObservableProperty] private string _updatedAt = string.Empty;
     [ObservableProperty] private int _selectedSection;
-    [ObservableProperty] private int _recentHistoryEpisodes;
-    [ObservableProperty] private int _recentHistoryTitles;
-    [ObservableProperty] private bool _hasMonthlyHistory;
-    [ObservableProperty] private bool _isHistoryPopupOpen;
-    [ObservableProperty] private string _historyPopupTitle = string.Empty;
-    [ObservableProperty] private string _historyPopupSubtitle = string.Empty;
-
-    public ObservableCollection<AnalyticsHistoryEntry> HistoryPopupEntries { get; } = new();
 
     public bool IsOverviewSelected
     {
@@ -118,9 +86,9 @@ public partial class AnalyticsViewModel : ViewModelBase
 
             var items = _animeRepo.Collection.ToList();
             var history = await _historyService.GetHistoryAsync(5000);
+            
             HasData = items.Count > 0;
             UpdatedAt = DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture);
-            ClearAnalyticsCollections();
 
             if (!HasData)
             {
@@ -134,28 +102,10 @@ public partial class AnalyticsViewModel : ViewModelBase
                 .Where(x => x > 0)
                 .ToList();
 
-            var totalEpisodes = items.Sum(x => Math.Max(0, x.Progress));
-            var approximateHours = EstimateHoursWatched(items);
-            var meanScore = scored.Count > 0 ? scored.Average() : 0;
-            var completionRate = items.Count > 0 ? completed.Count * 100.0 / items.Count : 0;
-
-            Metrics.Add(new AnalyticsMetric { Label = "Всего тайтлов", Value = items.Count.ToString("N0"), Hint = "в локальной библиотеке" });
-            Metrics.Add(new AnalyticsMetric { Label = "Завершено", Value = completed.Count.ToString("N0"), Hint = $"{completionRate:0.#}% списка" });
-            Metrics.Add(new AnalyticsMetric { Label = "Средняя оценка", Value = scored.Count > 0 ? meanScore.ToString("0.00") : "-", Hint = $"{scored.Count:N0} оценок" });
-            Metrics.Add(new AnalyticsMetric { Label = "Эпизодов", Value = totalEpisodes.ToString("N0"), Hint = $"примерно {approximateHours:N0} ч" });
-
-            AddStatusDistribution(items);
-            AddScoreDistribution(scored);
-            AddTopDistribution(GenreDistribution, nonPlanned.SelectMany(x => x.Genres), 8);
-            AddTopDistribution(StudioDistribution, nonPlanned.SelectMany(x => x.Studios), 8);
-            AddTasteHighlights();
-            AddFavoriteRows(FavoriteGenres, nonPlanned, x => x.Genres, LocalizeGenre);
-            AddFavoriteRows(FavoriteStudios, nonPlanned, x => x.Studios);
-            AddProfileTodos(items);
-            AddYearDistribution(completed);
-            AddReleaseYearCompletions(completed);
-            AddRecentHistory(history, items);
-            AddMonthlyHistory(completed);
+            Overview.Refresh(items, nonPlanned, completed, scored);
+            Tastes.Refresh(items, nonPlanned);
+            WatchNext.Refresh(items);
+            History.Refresh(history, items, completed);
         }
         finally
         {
@@ -163,5 +113,5 @@ public partial class AnalyticsViewModel : ViewModelBase
             _refreshGate.Release();
         }
     }
-
 }
+

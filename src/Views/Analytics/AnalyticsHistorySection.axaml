@@ -1,0 +1,261 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Analytics.AnalyticsHistorySection"
+             x:DataType="vmAnalytics:AnalyticsViewModel" x:Name="analyticsRoot">
+                    <StackPanel Spacing="16"
+                                HorizontalAlignment="Stretch"
+                                IsVisible="{Binding IsHistorySelected}">
+
+                        <!-- График активности + статистика -->
+                        <Grid ColumnDefinitions="*,175" ColumnSpacing="16">
+
+                            <!-- График -->
+                            <Border Classes="AnalyticsPanel" MinHeight="238">
+                                <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Width="30" Height="30" CornerRadius="8"
+                                                Background="#FF7B61FF"
+                                                VerticalAlignment="Center">
+                                            <material:MaterialIcon Kind="ChartBar"
+                                                                   Width="16" Height="16"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="Недавняя активность" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Эпизодов за 14 дней" FontSize="10.5" Opacity="0.45"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto,*" MinHeight="178">
+                                        <TextBlock Text="Эпизоды"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Opacity="0.65"
+                                                   VerticalAlignment="Center"
+                                                   RenderTransform="rotate(-90deg)"/>
+
+                                        <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="0,0,0,0">
+                                            <ItemsControl ItemsSource="{Binding History.RecentHistory}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Rows="1"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vmAnalytics:AnalyticsDailyHistoryPoint">
+                                                        <Button Classes="ChartPointButton"
+                                                                Command="{Binding #analyticsRoot.((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenDailyHistoryCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                HorizontalAlignment="Stretch"
+                                                                ToolTip.Tip="{Binding Tooltip}">
+                                                            <Grid RowDefinitions="Auto,122,Auto" Margin="2,0" VerticalAlignment="Center">
+
+                                                                <!-- Кол-во сверху (только если > 0) -->
+                                                                <TextBlock Text="{Binding Count}"
+                                                                           FontSize="9"
+                                                                           HorizontalAlignment="Center"
+                                                                           Opacity="0.6"
+                                                                           Margin="0,0,0,3"
+                                                                           MinHeight="13"
+                                                                           IsVisible="{Binding HasCount}"/>
+                                                                <!-- Распорка для дней где 0 -->
+                                                                <Border MinHeight="13" Margin="0,0,0,3" IsVisible="{Binding !HasCount}"/>
+
+                                                                <!-- Область бара фиксированной высоты -->
+                                                                <Grid Grid.Row="1">
+                                                                    <!-- Фоновый трек -->
+                                                                    <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                                                                            CornerRadius="4"
+                                                                            VerticalAlignment="Stretch"/>
+                                                                    <!-- Цветной бар от низа -->
+                                                                    <Border Background="{DynamicResource SystemAccentColor}"
+                                                                            Height="{Binding BarHeight}"
+                                                                            VerticalAlignment="Bottom"
+                                                                            Opacity="{Binding Alpha}"
+                                                                            CornerRadius="4,4,0,0"/>
+                                                                </Grid>
+
+                                                                <!-- Метка дня снизу -->
+                                                                <TextBlock Grid.Row="2"
+                                                                           Text="{Binding Label}"
+                                                                           FontSize="9"
+                                                                           HorizontalAlignment="Center"
+                                                                           Margin="0,5,0,0"
+                                                                           Opacity="0.65"/>
+                                                            </Grid>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <TextBlock Grid.Row="1"
+                                                       Text="Дней назад"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.65"
+                                                       Margin="0,8,0,0"/>
+                                        </Grid>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Статистика 14 дней -->
+                            <Border Grid.Column="1" Classes="AnalyticsPanel" Padding="0" ClipToBounds="True">
+                                <Grid ColumnDefinitions="4,*">
+                                    <Border Grid.Column="0" Background="#FF7B61FF" CornerRadius="10,0,0,10"/>
+                                    <Border Grid.Column="1">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                                <GradientStop Color="#1A7B61FF" Offset="0"/>
+                                                <GradientStop Color="#00000000" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <StackPanel VerticalAlignment="Center" Spacing="24" Margin="16">
+                                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                                <TextBlock Text="За 14 дней" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding History.RecentHistoryEpisodes}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center" Foreground="#FF7B61FF"/>
+                                                <TextBlock Text="эпизодов" FontSize="11" HorizontalAlignment="Center" Opacity="0.65"/>
+                                            </StackPanel>
+                                            <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="10,0"/>
+                                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                                <TextBlock Text="Разных тайтлов" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding History.RecentHistoryTitles}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Просмотрено по году выхода -->
+                        <Border Classes="AnalyticsPanel">
+                            <StackPanel Spacing="14">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Border Width="30" Height="30" CornerRadius="8"
+                                            Background="#FF7B61FF"
+                                            VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="CalendarRange"
+                                                               Width="16" Height="16"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="По году выхода" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Завершённые тайтлы по году премьеры" FontSize="10.5" Opacity="0.45"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding History.ReleaseYearCompletions}"
+                                              ItemTemplate="{StaticResource ReleaseYearTemplate}"
+                                              ToolTip.Tip="Насыщенность показывает, сколько завершённых тайтлов вышло в этом году">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="12"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Завершения по месяцам (heatmap) -->
+                        <Border Classes="AnalyticsPanel" IsVisible="{Binding History.HasMonthlyHistory}">
+                            <StackPanel Spacing="14">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Border Width="30" Height="30" CornerRadius="8"
+                                            Background="#FF0F7B83"
+                                            VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="CalendarMonthOutline"
+                                                               Width="16" Height="16"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="Завершения по месяцам" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Тепловая карта завершённых тайтлов" FontSize="10.5" Opacity="0.45"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="52,*">
+                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding History.MonthHeaders}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="12"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" FontSize="11" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,6" Opacity="0.6"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+
+                                <ItemsControl ItemsSource="{Binding History.MonthlyHistory}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vmAnalytics:AnalyticsMonthlyHistoryRow">
+                                            <Grid ColumnDefinitions="52,*" Margin="0,0,0,2">
+                                                <TextBlock Text="{Binding Year}" FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
+                                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Months}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="12"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vmAnalytics:AnalyticsMonthlyHistoryCell">
+                                                            <Button Classes="ChartPointButton"
+                                                                    Command="{Binding #analyticsRoot.((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenMonthlyHistoryCommand}"
+                                                                    CommandParameter="{Binding}"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    ToolTip.Tip="{Binding Tooltip}">
+                                                                <Border Classes="MonthCell"
+                                                                        Classes.current="{Binding IsCurrentMonth}"
+                                                                        Background="{Binding Fill}"
+                                                                        HorizontalAlignment="Stretch"
+                                                                        Margin="1">
+                                                                    <TextBlock Text="{Binding Count}"
+                                                                               FontSize="10"
+                                                                               Foreground="{Binding TextColor}"
+                                                                               FontWeight="SemiBold"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Center"
+                                                                               IsVisible="{Binding HasCount}"/>
+                                                                </Border>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Заглушка если нет дат -->
+                        <Border Classes="AnalyticsPanel" IsVisible="{Binding !History.HasMonthlyHistory}">
+                            <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8">
+                                <material:MaterialIcon Kind="CalendarBlankOutline" Width="32" Height="32" Opacity="0.25" HorizontalAlignment="Center"/>
+                                <TextBlock Text="У завершённых тайтлов пока нет дат завершения, поэтому месячная карта пустая."
+                                           FontSize="13"
+                                           Opacity="0.55"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Height="110" IsHitTestVisible="False"/>
+                    </StackPanel>
+
+</UserControl>
+
+
+
+

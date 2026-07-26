@@ -1,0 +1,488 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:mpv="clr-namespace:Kiriha.Core.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.Player.Controls.PlayerControlBar"
+             x:DataType="vmPlayer:PlayerViewModel">
+                <Grid Margin="14,0,14,8">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*">
+
+                    <!-- Play/Pause -->
+                    <Border Grid.Column="0" Classes="control-pill" Padding="2,0">
+                        <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+                            <Button Classes="icon-btn"
+                                    Command="{Binding OpenPreviousMediaCommand}"
+                                    IsEnabled="{Binding CanOpenPreviousMedia}"
+                                    ToolTip.Tip="ÐŸÑ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰Ð¸Ð¹ Ñ„Ð°Ð¹Ð»">
+                                <material:MaterialIcon Kind="SkipPrevious" Width="20" Height="20" Foreground="White"/>
+                            </Button>
+                            <Button Classes="icon-btn"
+                                    Command="{Binding TogglePlayPauseCommand}"
+                                    IsVisible="{Binding ShowPlayPauseButton}"
+                                    ToolTip.Tip="ÐŸÐ°ÑƒÐ·Ð° / Ð²Ð¾ÑÐ¿Ñ€Ð¾Ð¸Ð·Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ">
+                                <Panel>
+                                    <material:MaterialIcon Kind="Pause" Width="28" Height="28" Foreground="White"
+                                                           IsVisible="{Binding IsPlaying}"/>
+                                    <material:MaterialIcon Kind="Play"  Width="28" Height="28" Foreground="White"
+                                                           IsVisible="{Binding !IsPlaying}"/>
+                                </Panel>
+                            </Button>
+                            <Button Classes="icon-btn"
+                                    Command="{Binding OpenNextMediaCommand}"
+                                    IsEnabled="{Binding CanOpenNextMedia}"
+                                    ToolTip.Tip="Ð¡Ð»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ð¹ Ñ„Ð°Ð¹Ð»">
+                                <material:MaterialIcon Kind="SkipNext" Width="20" Height="20" Foreground="White"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Skip controls -->
+                    <Border Grid.Column="1" Classes="control-pill" Margin="2,0,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+                        <Button Classes="icon-btn"
+                                Command="{Binding SkipCommand}"
+                                CommandParameter="-10"
+                                IsVisible="{Binding ShowSkipButtons}"
+                                ToolTip.Tip="ÐÐ°Ð·Ð°Ð´ 10 ÑÐµÐºÑƒÐ½Ð´">
+                            <material:MaterialIcon Kind="Rewind10" Width="21" Height="21" Foreground="White"/>
+                        </Button>
+                        <Button Classes="icon-btn"
+                                Command="{Binding SkipCommand}"
+                                CommandParameter="10"
+                                IsVisible="{Binding ShowSkipButtons}"
+                                ToolTip.Tip="Ð’Ð¿ÐµÑ€ÐµÐ´ 10 ÑÐµÐºÑƒÐ½Ð´">
+                            <material:MaterialIcon Kind="FastForward10" Width="21" Height="21" Foreground="White"/>
+                        </Button>
+                    </StackPanel>
+                    </Border>
+
+                    <!-- Volume -->
+                    <Border Grid.Column="2" Classes="control-pill" Margin="4,0,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+                        <Button Classes="icon-btn"
+                                Command="{Binding ToggleMuteCommand}"
+                                IsVisible="{Binding ShowMuteButton}"
+                                ToolTip.Tip="Ð—Ð²ÑƒÐº (M)">
+                            <Panel>
+                                <material:MaterialIcon Kind="VolumeHigh" Width="20" Height="20" Foreground="White"
+                                                       IsVisible="{Binding !IsMuted}"/>
+                                <material:MaterialIcon Kind="VolumeOff"  Width="20" Height="20" Foreground="White"
+                                                       IsVisible="{Binding IsMuted}"/>
+                            </Panel>
+                        </Button>
+                        <Slider Classes="volume"
+                                Width="80"
+                                Minimum="0" Maximum="100"
+                                Value="{Binding Volume}"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding ShowVolumeSlider}"/>
+                    </StackPanel>
+                    </Border>
+
+                    <!-- Time display -->
+                    <Border Grid.Column="3" Classes="control-pill time-pill" Margin="8,0,0,0" VerticalAlignment="Center" IsVisible="{Binding ShowTimeDisplay}">
+                        <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                            <TextBlock Classes="overlay-text"
+                                       Text="{Binding CurrentTimeString}"
+                                       Foreground="#F0FFFFFF" FontSize="12.5" FontWeight="SemiBold" FontFamily="Consolas,Courier New,monospace"/>
+                            <TextBlock Classes="overlay-secondary-text" Text="/" Foreground="#80FFFFFF" FontSize="12.5" FontWeight="Medium"/>
+                            <TextBlock Classes="overlay-secondary-text"
+                                       Text="{Binding DurationString}"
+                                       Foreground="#B0FFFFFF" FontSize="12.5" FontWeight="SemiBold" FontFamily="Consolas,Courier New,monospace"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RIGHT: speed + subtitles + audio + settings -->
+                    <Border Grid.Column="4" Classes="control-pill" HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal" Spacing="0"
+                                VerticalAlignment="Center">
+
+                        <!-- Playback speed -->
+                        <Button Name="SpeedButton"
+                                Classes="icon-btn"
+                                IsVisible="{Binding ShowSpeedButton}"
+                                ToolTip.Tip="Ð¡ÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ">
+                            <Button.Flyout>
+                                <MenuFlyout Placement="Top">
+                                    <MenuItem Header="0.25Ã—" Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="0.25"/>
+                                    <MenuItem Header="0.5Ã—"  Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="0.5"/>
+                                    <MenuItem Header="0.75Ã—" Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="0.75"/>
+                                    <MenuItem Header="1Ã—" Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="1"/>
+                                    <MenuItem Header="1.25Ã—" Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="1.25"/>
+                                    <MenuItem Header="1.5Ã—"  Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="1.5"/>
+                                    <MenuItem Header="1.75Ã—" Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="1.75"/>
+                                    <MenuItem Header="2Ã—"    Classes="speed-item"
+                                              Command="{Binding SetSpeedCommand}" CommandParameter="2"/>
+                                </MenuFlyout>
+                            </Button.Flyout>
+                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                <material:MaterialIcon Kind="SpeedometerMedium" Width="18" Height="18" Foreground="White"/>
+                                <TextBlock Text="{Binding PlaybackSpeed, StringFormat='{}{0}Ã—'}"
+                                           Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Subtitles -->
+                        <Button Name="SubtitleButton"
+                                Classes="icon-btn"
+                                IsVisible="{Binding ShowSubtitleButton}"
+                                ToolTip.Tip="Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹ (V)">
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <Border Width="240"
+                                            MaxHeight="330"
+                                            CornerRadius="14"
+                                            Background="#E6181818"
+                                            BorderBrush="#22FFFFFF"
+                                            BorderThickness="1"
+                                            Padding="6">
+                                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                                      VerticalScrollBarVisibility="Auto">
+                                            <ItemsControl ItemsSource="{Binding SubtitleTracks}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="2"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="mpv:TrackInfo">
+                                                        <Button Classes="track-menu-item"
+                                                                Click="OnTrackMenuItemClick">
+                                                            <Grid ColumnDefinitions="20,*">
+                                                                <material:MaterialIcon Grid.Column="0"
+                                                                                       Kind="Check"
+                                                                                       Width="14"
+                                                                                       Height="14"
+                                                                                       Foreground="White"
+                                                                                       VerticalAlignment="Center"
+                                                                                       IsVisible="{Binding Selected}"/>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding DisplayName}"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Flyout>
+                            </Button.Flyout>
+                            <material:MaterialIcon Kind="SubtitlesOutline" Width="21" Height="21" Foreground="White"/>
+                        </Button>
+
+                        <!-- Audio tracks -->
+                        <Button Name="AudioButton"
+                                Classes="icon-btn"
+                                IsVisible="{Binding ShowAudioButton}"
+                                ToolTip.Tip="ÐÑƒÐ´Ð¸Ð¾Ð´Ð¾Ñ€Ð¾Ð¶ÐºÐ° (A)">
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <Border Width="240"
+                                            MaxHeight="330"
+                                            CornerRadius="14"
+                                            Background="#E6181818"
+                                            BorderBrush="#22FFFFFF"
+                                            BorderThickness="1"
+                                            Padding="6">
+                                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                                      VerticalScrollBarVisibility="Auto">
+                                            <ItemsControl ItemsSource="{Binding AudioTracks}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="2"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="mpv:TrackInfo">
+                                                        <Button Classes="track-menu-item"
+                                                                Click="OnTrackMenuItemClick">
+                                                            <Grid ColumnDefinitions="20,*">
+                                                                <material:MaterialIcon Grid.Column="0"
+                                                                                       Kind="Check"
+                                                                                       Width="14"
+                                                                                       Height="14"
+                                                                                       Foreground="White"
+                                                                                       VerticalAlignment="Center"
+                                                                                       IsVisible="{Binding Selected}"/>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding DisplayName}"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Flyout>
+                            </Button.Flyout>
+                            <material:MaterialIcon Kind="MusicNote" Width="21" Height="21" Foreground="White"/>
+                        </Button>
+
+                        <!-- Subtitle position -->
+                        <Button Name="SubtitlePositionButton"
+                                Classes="icon-btn"
+                                ToolTip.Tip="Ð›ÐšÐœ: ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹ Ð²Ñ‹ÑˆÐµ. ÐŸÐšÐœ: Ð½Ð¸Ð¶Ðµ"
+                                IsVisible="{Binding ShowSubtitlePositionButton}">
+                            <material:MaterialIcon Kind="FormatLineSpacing" Width="21" Height="21" Foreground="White"/>
+                        </Button>
+
+                        <!-- Subtitle style override -->
+                        <Button Classes="icon-btn"
+                                ToolTip.Tip="Ð¡Ñ‚Ð¸Ð»ÑŒ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð² (U)"
+                                Command="{Binding ToggleSubtitleStyleOverrideCommand}"
+                                IsVisible="{Binding ShowSubtitleStyleButton}">
+                            <material:MaterialIcon Kind="FormatPaint" Width="21" Height="21" Foreground="White"/>
+                        </Button>
+
+                        <!-- Screenshot -->
+                            <Button Name="ScreenshotButton"
+                                    Classes="icon-btn"
+                                    ToolTip.Tip="Ð¡ÐºÑ€Ð¸Ð½ÑˆÐ¾Ñ‚"
+                                    IsVisible="{Binding ShowScreenshotButton}">
+                                <material:MaterialIcon Kind="CameraOutline" Width="21" Height="21" Foreground="White"/>
+                            </Button>
+
+                        <!-- Player settings -->
+                        <Button Name="SettingsButton"
+                                Classes="icon-btn"
+                                Click="OnSettingsButtonClick"
+                                ToolTip.Tip="ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸">
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <Border Width="620"
+                                            MaxHeight="470"
+                                            CornerRadius="14"
+                                            Background="#E6181818"
+                                            BorderBrush="#22FFFFFF"
+                                            BorderThickness="1">
+                                        <Grid ColumnDefinitions="180,*">
+                                            <Border Grid.Column="0"
+                                                    Background="#18000000"
+                                                    BorderBrush="#22FFFFFF"
+                                                    BorderThickness="0,0,1,0"
+                                                    Padding="0,10">
+                                                <DockPanel LastChildFill="True">
+                                                    <StackPanel DockPanel.Dock="Top" Margin="16,6,16,10">
+                                                        <TextBlock Text="ÐŸÐ»ÐµÐµÑ€"
+                                                                   Foreground="White"
+                                                                   FontSize="15"
+                                                                   FontWeight="SemiBold"/>
+                                                        <TextBlock Text="ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸"
+                                                                   Foreground="#80FFFFFF"
+                                                                   FontSize="11"/>
+                                                    </StackPanel>
+
+                                                    <ListBox Name="PlayerSettingsNav"
+                                                             Classes="player-settings-nav"
+                                                             SelectedIndex="0">
+                                                        <ListBoxItem>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <material:MaterialIcon Kind="PlayCircleOutline" Width="17" Height="17" Foreground="White"/>
+                                                                <TextBlock Text="Ð’Ð¾ÑÐ¿Ñ€Ð¾Ð¸Ð·Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ" Foreground="White" FontSize="12"/>
+                                                            </StackPanel>
+                                                        </ListBoxItem>
+                                                        <ListBoxItem>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <material:MaterialIcon Kind="VolumeHigh" Width="17" Height="17" Foreground="White"/>
+                                                                <TextBlock Text="Ð—Ð²ÑƒÐº" Foreground="White" FontSize="12"/>
+                                                            </StackPanel>
+                                                        </ListBoxItem>
+                                                        <ListBoxItem>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <material:MaterialIcon Kind="ViewDashboardOutline" Width="17" Height="17" Foreground="White"/>
+                                                                <TextBlock Text="Ð˜Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹Ñ" Foreground="White" FontSize="12"/>
+                                                            </StackPanel>
+                                                        </ListBoxItem>
+                                                        <ListBoxItem>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <material:MaterialIcon Kind="SubtitlesOutline" Width="17" Height="17" Foreground="White"/>
+                                                                <TextBlock Text="Ð”Ð¾Ñ€Ð¾Ð¶ÐºÐ¸" Foreground="White" FontSize="12"/>
+                                                            </StackPanel>
+                                                        </ListBoxItem>
+                                                        <ListBoxItem>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <material:MaterialIcon Kind="Tune" Width="17" Height="17" Foreground="White"/>
+                                                                <TextBlock Text="Ð Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð½Ñ‹Ðµ" Foreground="White" FontSize="12"/>
+                                                            </StackPanel>
+                                                        </ListBoxItem>
+                                                    </ListBox>
+                                                </DockPanel>
+                                            </Border>
+
+                                            <ScrollViewer Grid.Column="1"
+                                                          Padding="20,18"
+                                                          HorizontalScrollBarVisibility="Disabled"
+                                                          VerticalScrollBarVisibility="Auto">
+                                                <Panel>
+                                                    <StackPanel Spacing="10"
+                                                                IsVisible="{Binding ElementName=PlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
+                                                        <TextBlock Classes="player-settings-title" Text="Ð’Ð¾ÑÐ¿Ñ€Ð¾Ð¸Ð·Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ"/>
+
+                                                        <Grid ColumnDefinitions="*,Auto" MinHeight="52">
+                                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                                <TextBlock Classes="player-settings-row-title" Text="ÐÐ²Ñ‚Ð¾Ð²Ð¾ÑÐ¿Ñ€Ð¾Ð¸Ð·Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ"/>
+                                                                <TextBlock Classes="player-settings-row-sub" Text="ÐÐ°Ñ‡Ð¸Ð½Ð°Ñ‚ÑŒ Ð¿Ñ€Ð¾Ð¸Ð³Ñ€Ñ‹Ð²Ð°Ð½Ð¸Ðµ ÑÑ€Ð°Ð·Ñƒ Ð¿Ð¾ÑÐ»Ðµ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸Ñ Ñ„Ð°Ð¹Ð»Ð°"/>
+                                                            </StackPanel>
+                                                            <ToggleSwitch Grid.Column="1"
+                                                                          VerticalAlignment="Center"
+                                                                          IsChecked="{Binding PlayerAutoPlay}"
+                                                                          OnContent="Ð’ÐºÐ»"
+                                                                          OffContent="Ð’Ñ‹ÐºÐ»"/>
+                                                        </Grid>
+                                                        <Border Classes="player-settings-divider"/>
+
+                                                        <Grid ColumnDefinitions="*,Auto" MinHeight="52">
+                                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                                <TextBlock Classes="player-settings-row-title" Text="ÐžÐ´Ð½Ð¾ Ð¾ÐºÐ½Ð¾ Ð¿Ð»ÐµÐµÑ€Ð°"/>
+                                                                <TextBlock Classes="player-settings-row-sub" Text="ÐžÑ‚ÐºÑ€Ñ‹Ð²Ð°Ñ‚ÑŒ Ð½Ð¾Ð²Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð² Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¼ Ð¾ÐºÐ½Ðµ"/>
+                                                            </StackPanel>
+                                                            <ToggleSwitch Grid.Column="1"
+                                                                          VerticalAlignment="Center"
+                                                                          IsChecked="{Binding SinglePlayerWindow}"
+                                                                          OnContent="Ð’ÐºÐ»"
+                                                                          OffContent="Ð’Ñ‹ÐºÐ»"/>
+                                                        </Grid>
+                                                        <Border Classes="player-settings-divider"/>
+
+                                                        <StackPanel Spacing="6" Margin="0,4,0,0">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                                    <TextBlock Classes="player-settings-row-title" Text="Ð¡ÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ"/>
+                                                                    <TextBlock Classes="player-settings-row-sub" Text="ÐŸÑ€Ð¸Ð¼ÐµÐ½ÑÐµÑ‚ÑÑ Ðº Ð½Ð¾Ð²Ñ‹Ð¼ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ñ‹Ð¼ Ð²Ð¸Ð´ÐµÐ¾"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}Ã—'}"
+                                                                           Foreground="#99FFFFFF"
+                                                                           FontSize="12"
+                                                                           VerticalAlignment="Top"/>
+                                                            </Grid>
+                                                            <Slider Minimum="0.25" Maximum="2"
+                                                                    TickFrequency="0.25"
+                                                                    IsSnapToTickEnabled="True"
+                                                                    Value="{Binding PlaybackSpeed}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="10"
+                                                                IsVisible="{Binding ElementName=PlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=1}">
+                                                        <TextBlock Classes="player-settings-title" Text="Ð—Ð²ÑƒÐº"/>
+
+                                                        <Grid ColumnDefinitions="*,Auto" MinHeight="52">
+                                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                                <TextBlock Classes="player-settings-row-title" Text="Ð—Ð°Ð¿Ð¾Ð¼Ð¸Ð½Ð°Ñ‚ÑŒ Ð³Ñ€Ð¾Ð¼ÐºÐ¾ÑÑ‚ÑŒ"/>
+                                                                <TextBlock Classes="player-settings-row-sub" Text="Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÑ‚ÑŒ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð³Ñ€Ð¾Ð¼ÐºÐ¾ÑÑ‚Ð¸ Ð´Ð»Ñ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ñ… Ð·Ð°Ð¿ÑƒÑÐºÐ¾Ð²"/>
+                                                            </StackPanel>
+                                                            <ToggleSwitch Grid.Column="1"
+                                                                          VerticalAlignment="Center"
+                                                                          IsChecked="{Binding RememberPlayerVolume}"
+                                                                          OnContent="Ð’ÐºÐ»"
+                                                                          OffContent="Ð’Ñ‹ÐºÐ»"/>
+                                                        </Grid>
+                                                        <Border Classes="player-settings-divider"/>
+
+                                                        <StackPanel Spacing="6" Margin="0,4,0,0">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                                    <TextBlock Classes="player-settings-row-title" Text="Ð“Ñ€Ð¾Ð¼ÐºÐ¾ÑÑ‚ÑŒ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ"/>
+                                                                    <TextBlock Classes="player-settings-row-sub" Text="Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÑ‚ÑÑ, ÐºÐ¾Ð³Ð´Ð° Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾ Ð·Ð°Ð¿Ð¾Ð¼Ð¸Ð½Ð°Ð½Ð¸Ðµ Ð³Ñ€Ð¾Ð¼ÐºÐ¾ÑÑ‚Ð¸"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding Volume, StringFormat='{}{0:0}%'}"
+                                                                           Foreground="#99FFFFFF"
+                                                                           FontSize="12"
+                                                                           VerticalAlignment="Top"/>
+                                                            </Grid>
+                                                            <Slider Minimum="0" Maximum="100"
+                                                                    Value="{Binding Volume}"
+                                                                    IsEnabled="{Binding RememberPlayerVolume}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="10"
+                                                                IsVisible="{Binding ElementName=PlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=2}">
+                                                        <TextBlock Classes="player-settings-title" Text="Ð˜Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹Ñ"/>
+
+                                                        <Grid ColumnDefinitions="*,Auto" MinHeight="52">
+                                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                                <TextBlock Classes="player-settings-row-title" Text="Ð¡ÐºÑ€Ñ‹Ð²Ð°Ñ‚ÑŒ Ð¿Ð°Ð½ÐµÐ»ÑŒ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ñ"/>
+                                                                <TextBlock Classes="player-settings-row-sub" Text="ÐŸÑ€ÑÑ‚Ð°Ñ‚ÑŒ Ð²ÐµÑ€Ñ…Ð½ÑŽÑŽ Ð¸ Ð½Ð¸Ð¶Ð½ÑŽÑŽ Ð¿Ð°Ð½ÐµÐ»Ð¸, ÐºÐ¾Ð³Ð´Ð° Ð¼Ñ‹ÑˆÑŒ Ð½Ðµ Ð´Ð²Ð¸Ð³Ð°ÐµÑ‚ÑÑ"/>
+                                                            </StackPanel>
+                                                            <ToggleSwitch Grid.Column="1"
+                                                                          VerticalAlignment="Center"
+                                                                          IsChecked="{Binding AutoHideControls}"
+                                                                          OnContent="Ð’ÐºÐ»"
+                                                                          OffContent="Ð’Ñ‹ÐºÐ»"/>
+                                                        </Grid>
+                                                        <Border Classes="player-settings-divider"/>
+
+                                                        <Grid ColumnDefinitions="*,Auto" MinHeight="52">
+                                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                                <TextBlock Classes="player-settings-row-title" Text="ÐœÐ°Ñ€ÐºÐµÑ€Ñ‹ Ð³Ð»Ð°Ð²"/>
+                                                                <TextBlock Classes="player-settings-row-sub" Text="ÐŸÐ¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÐ¸ Ð³Ð»Ð°Ð² Ð½Ð° Ñ‚Ð°Ð¹Ð¼Ð»Ð°Ð¹Ð½Ðµ"/>
+                                                            </StackPanel>
+                                                            <ToggleSwitch Grid.Column="1"
+                                                                          VerticalAlignment="Center"
+                                                                          IsChecked="{Binding ShowChapterMarkers}"
+                                                                          OnContent="Ð’ÐºÐ»"
+                                                                          OffContent="Ð’Ñ‹ÐºÐ»"/>
+                                                        </Grid>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="10"
+                                                                IsVisible="{Binding ElementName=PlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=3}">
+                                                        <TextBlock Classes="player-settings-title" Text="Ð”Ð¾Ñ€Ð¾Ð¶ÐºÐ¸"/>
+                                                        <TextBlock Classes="player-settings-row-sub"
+                                                                   Text="Ð—Ð´ÐµÑÑŒ Ð¿Ð¾Ð·Ð¶Ðµ Ð¼Ð¾Ð¶Ð½Ð¾ Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð¿Ñ€ÐµÐ´Ð¿Ð¾Ñ‡Ñ‚ÐµÐ½Ð¸Ñ Ð°ÑƒÐ´Ð¸Ð¾ Ð¸ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð²: ÑÐ·Ñ‹Ðº, Ð°Ð²Ñ‚Ð¾Ð¿Ð¾Ð´Ð±Ð¾Ñ€, Ð¿Ð¾Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ Ð¿Ñ€Ð¸ Ð¾Ñ‚ÑÑƒÑ‚ÑÑ‚Ð²Ð¸Ð¸ Ð´Ð¾Ñ€Ð¾Ð¶ÐºÐ¸."
+                                                                   Margin="0,0,0,4"/>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="10"
+                                                                IsVisible="{Binding ElementName=PlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=4}">
+                                                        <TextBlock Classes="player-settings-title" Text="Ð Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð½Ñ‹Ðµ"/>
+                                                        <TextBlock Classes="player-settings-row-sub"
+                                                                   Text="{Binding MpvRuntimeInfo}"
+                                                                   FontFamily="Consolas,Courier New,monospace"
+                                                                   Margin="0,0,0,4"/>
+                                                        <Grid ColumnDefinitions="*,130" MinHeight="36">
+                                                            <TextBlock Classes="player-settings-row-title" Text="hwdec" VerticalAlignment="Center"/>
+                                                            <TextBox Grid.Column="1" Text="{Binding MpvHwdec}" PlaceholderText="auto"/>
+                                                        </Grid>
+                                                        <Grid ColumnDefinitions="*,130" MinHeight="36">
+                                                            <TextBlock Classes="player-settings-row-title" Text="vo" VerticalAlignment="Center"/>
+                                                            <TextBox Grid.Column="1" Text="{Binding MpvVideoOutput}" PlaceholderText="gpu-next"/>
+                                                        </Grid>
+                                                        <Grid ColumnDefinitions="*,130" MinHeight="36">
+                                                            <TextBlock Classes="player-settings-row-title" Text="gpu-api" VerticalAlignment="Center"/>
+                                                            <TextBox Grid.Column="1" Text="{Binding MpvGpuApi}" PlaceholderText="auto"/>
+                                                        </Grid>
+                                                        <Grid ColumnDefinitions="*,130" MinHeight="36">
+                                                            <TextBlock Classes="player-settings-row-title" Text="gpu-context" VerticalAlignment="Center"/>
+                                                            <TextBox Grid.Column="1" Text="{Binding MpvGpuContext}" PlaceholderText="auto"/>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Panel>
+                                            </ScrollViewer>
+                                        </Grid>
+                                    </Border>
+                                </Flyout>
+                            </Button.Flyout>
+                            <material:MaterialIcon Kind="Cog" Width="22" Height="22" Foreground="White"/>
+                        </Button>
+
+                    </StackPanel>
+                    </Border>
+                    </Grid>
+                </Grid>
+</UserControl>
+
