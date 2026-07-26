@@ -1,0 +1,103 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===== Minimal icon buttons ===== -->
+    <Style Selector="Button.icon-btn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="7"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      Margin="{TemplateBinding Padding}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.08"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.icon-btn:pointerover /template/ Border">
+        <Setter Property="Background" Value="#1CFFFFFF"/>
+    </Style>
+    <Style Selector="Button.icon-btn:pressed /template/ Border">
+        <Setter Property="Background" Value="#38FFFFFF"/>
+    </Style>
+    <Style Selector="Button.icon-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.93)"/>
+    </Style>
+    <Style Selector="Button.icon-btn:disabled">
+        <Setter Property="Opacity" Value="0.38"/>
+    </Style>
+    <Style Selector="Button.state-action">
+        <Setter Property="Background" Value="#22FFFFFF"/>
+        <Setter Property="Padding" Value="8"/>
+    </Style>
+
+    <!-- ===== Top right window buttons ===== -->
+    <Style Selector="Button.wnd-btn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="52"/>
+        <Setter Property="Height" Value="38"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.wnd-btn:pointerover /template/ Border">
+        <Setter Property="Background" Value="#25FFFFFF"/>
+    </Style>
+    <Style Selector="Button.wnd-btn.close">
+        <Setter Property="CornerRadius" Value="0,8,0,0"/>
+    </Style>
+    <Style Selector="Button.wnd-btn.close:pointerover /template/ Border">
+        <Setter Property="Background" Value="#E81123"/>
+    </Style>
+    <Style Selector="Button.wnd-btn:pressed /template/ Border">
+        <Setter Property="Background" Value="#40FFFFFF"/>
+    </Style>
+
+    <!-- ===== Speed menu & track menu items ===== -->
+    <Style Selector="MenuItem.speed-item">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="12,6"/>
+    </Style>
+    <Style Selector="Button.track-menu-item">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    </Style>
+    <Style Selector="Button.track-menu-item:pointerover">
+        <Setter Property="Background" Value="#22FFFFFF"/>
+    </Style>
+    <Style Selector="Button.track-menu-item TextBlock">
+        <Setter Property="Foreground" Value="#E6FFFFFF"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+</Styles>

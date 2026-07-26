@@ -49,24 +49,4 @@ public partial class PlayerSettingsOverlay : UserControl
         HideOverlay();
     }
 
-    private async void OnChooseScreenshotDirectoryClick(object? sender, RoutedEventArgs e)
-    {
-        e.Handled = true;
-        if (DataContext is not PlayerViewModel vm)
-            return;
-
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = "Папка для скриншотов",
-            AllowMultiple = false
-        });
-
-        var folder = folders.FirstOrDefault();
-        var path = folder?.TryGetLocalPath();
-        if (!string.IsNullOrWhiteSpace(path))
-            vm.ScreenshotDirectory = path;
-    }
 }

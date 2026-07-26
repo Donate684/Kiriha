@@ -1,0 +1,136 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Analytics.AnalyticsHeroBanner"
+             x:DataType="vmAnalytics:AnalyticsViewModel">
+            <Border Margin="20,8,20,14" CornerRadius="14"
+                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                    BorderThickness="1"
+                    Background="{DynamicResource CardBackgroundFillDefault}"
+                    ClipToBounds="True">
+                <Panel>
+                    <!-- Градиентный тинт слева -->
+                    <Border CornerRadius="14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="85%,100%">
+                                <GradientStop Color="#1A2D7DD2" Offset="0"/>
+                                <GradientStop Color="#007B61FF" Offset="0.6"/>
+                                <GradientStop Color="#00000000" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!-- Акцентная полоса сверху -->
+                    <Border Height="3" VerticalAlignment="Top" CornerRadius="14,14,0,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                <GradientStop Color="#FF7B61FF" Offset="0"/>
+                                <GradientStop Color="#FF2D7DD2" Offset="0.5"/>
+                                <GradientStop Color="#FF2E9D62" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!-- Основной контент -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="20,18,20,18" ColumnSpacing="18">
+
+                        <!-- Аватар с градиентным кольцом -->
+                        <Panel Width="62" Height="62" VerticalAlignment="Center">
+                            <!-- Кольцо (градиентный фон) -->
+                            <Border CornerRadius="31">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                        <GradientStop Color="#FF7B61FF" Offset="0"/>
+                                        <GradientStop Color="#FF2D7DD2" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <!-- Внутренний круг -->
+                            <Border Width="54" Height="54" CornerRadius="27"
+                                    Background="{DynamicResource CardBackgroundFillDefault}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <material:MaterialIcon Kind="AccountCircle"
+                                                       Width="30" Height="30"
+                                                       Foreground="{DynamicResource SystemAccentColor}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                            </Border>
+                        </Panel>
+
+                        <!-- Заголовок -->
+                        <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="Мой профиль"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="Статистика аниме-библиотеки"
+                                       FontSize="12"
+                                       Opacity="0.5"/>
+                        </StackPanel>
+
+                        <!-- Декоративные стат-пузыри (2 ключевых показателя) -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+
+                            <!-- Всего тайтлов -->
+                            <Border CornerRadius="12" Padding="14,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                        <GradientStop Color="#1A7B61FF" Offset="0"/>
+                                        <GradientStop Color="#0D2D7DD2" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel Spacing="2" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Overview.Metrics[0].Value}"
+                                               FontSize="22" FontWeight="Light"
+                                               HorizontalAlignment="Center"
+                                               Foreground="#FF7B61FF"/>
+                                    <TextBlock Text="{Binding Overview.Metrics[0].Label}"
+                                               FontSize="10" Opacity="0.55"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Завершено -->
+                            <Border CornerRadius="12" Padding="14,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                        <GradientStop Color="#162E9D62" Offset="0"/>
+                                        <GradientStop Color="#0D2D7DD2" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel Spacing="2" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Overview.Metrics[1].Value}"
+                                               FontSize="22" FontWeight="Light"
+                                               HorizontalAlignment="Center"
+                                               Foreground="#FF2E9D62"/>
+                                    <TextBlock Text="{Binding Overview.Metrics[1].Label}"
+                                               FontSize="10" Opacity="0.55"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Средняя оценка -->
+                            <Border CornerRadius="12" Padding="14,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                        <GradientStop Color="#1AD17A22" Offset="0"/>
+                                        <GradientStop Color="#00000000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel Spacing="2" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Overview.Metrics[2].Value}"
+                                               FontSize="22" FontWeight="Light"
+                                               HorizontalAlignment="Center"
+                                               Foreground="#FFD17A22"/>
+                                    <TextBlock Text="{Binding Overview.Metrics[2].Label}"
+                                               FontSize="10" Opacity="0.55"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </Grid>
+                </Panel>
+            </Border>
+</UserControl>

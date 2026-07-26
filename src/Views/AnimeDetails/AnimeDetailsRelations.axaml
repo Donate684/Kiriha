@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
@@ -6,8 +6,12 @@
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              xmlns:core="using:Kiriha.Core"
+             xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsRelations"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+    <UserControl.Resources>
+        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+    </UserControl.Resources>
                     <Border Classes="ContentCard" IsVisible="{Binding Relations.Count, Converter={StaticResource IntToBoolConverter}}">
                         <StackPanel>
                             <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">

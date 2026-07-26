@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -18,7 +18,7 @@ public partial class AnimeItem
         get
         {
             if (!string.IsNullOrEmpty(StartSeason) && StartYear.HasValue)
-                return "$StartSeason $StartYear";
+                return $"{StartSeason} {StartYear}";
             if (!string.IsNullOrEmpty(StartSeason))
                 return StartSeason;
             if (StartYear.HasValue)

@@ -40,13 +40,32 @@ public partial class AnimeListView : UserControl
             _gridRepeater.ElementPrepared += OnGridElementPrepared;
             _gridRepeater.ElementClearing += OnGridElementClearing;
         }
+
+        var map = this.FindControl<AnimeReleaseMapView>("ReleaseMapView");
+        if (map != null)
+        {
+            map.IsMapVisibleChanged += (s, isVisible) =>
+            {
+                var scroll = this.FindControl<ScrollViewer>("AnimeListScrollViewer");
+                var tabs = this.FindControl<Border>("StatusTabsPanel");
+                if (scroll != null) scroll.IsVisible = !isVisible;
+                if (tabs != null) tabs.IsVisible = !isVisible;
+
+                // Also notify header
+                var header = this.FindControl<AnimeListHeader>("AnimeListHeader");
+                if (header != null)
+                {
+                    header.SetReleaseMapButtonState(isVisible);
+                }
+            };
+        }
     }
 
     private void OnViewKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.F12)
         {
-            ToggleReleaseMap();
+            this.FindControl<AnimeReleaseMapView>("ReleaseMapView")?.ToggleReleaseMap();
             e.Handled = true;
             return;
         }
@@ -177,34 +196,8 @@ public partial class AnimeListView : UserControl
         base.OnAttachedToVisualTree(e);
     }
 
-    private async void Poster_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    private void AnimeListHeader_ReleaseMapRequested(object? sender, EventArgs e)
     {
-        // async void event handler: any leaked exception kills the process. Wrap defensively.
-        try
-        {
-            if (sender is Control c && c.DataContext is Models.AnimeItem item)
-            {
-                if (DataContext is AnimeListViewModel vm)
-                {
-                    if (await vm.DialogService.ShowAnimeDetailsAsync(this, item))
-                    {
-                        // The details dialog might have mutated the item's Status or Rewatching state.
-                        // Refresh the view model to apply filters and counts.
-                        vm.RefreshAfterDetailsEdit();
-                    }
-                }
-                e.Handled = true;
-            }
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Error(ex, "AnimeListView.Poster_DoubleTapped failed");
-        }
+        this.FindControl<AnimeReleaseMapView>("ReleaseMapView")?.ToggleReleaseMap();
     }
-
-
-
-
-
-
 }

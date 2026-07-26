@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Player.Controls.PlayerPlaybackButtons"
+             x:DataType="vmPlayer:PlayerViewModel">
+    <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+        <Button Classes="icon-btn"
+                Command="{Binding OpenPreviousMediaCommand}"
+                IsEnabled="{Binding CanOpenPreviousMedia}"
+                ToolTip.Tip="Предыдущий файл">
+            <material:MaterialIcon Kind="SkipPrevious" Width="20" Height="20" Foreground="White"/>
+        </Button>
+        <Button Classes="icon-btn"
+                Command="{Binding TogglePlayPauseCommand}"
+                IsVisible="{Binding ShowPlayPauseButton}"
+                ToolTip.Tip="Пауза / воспроизведение">
+            <Panel>
+                <material:MaterialIcon Kind="Pause" Width="28" Height="28" Foreground="White"
+                                       IsVisible="{Binding IsPlaying}"/>
+                <material:MaterialIcon Kind="Play"  Width="28" Height="28" Foreground="White"
+                                       IsVisible="{Binding !IsPlaying}"/>
+            </Panel>
+        </Button>
+        <Button Classes="icon-btn"
+                Command="{Binding OpenNextMediaCommand}"
+                IsEnabled="{Binding CanOpenNextMedia}"
+                ToolTip.Tip="Следующий файл">
+            <material:MaterialIcon Kind="SkipNext" Width="20" Height="20" Foreground="White"/>
+        </Button>
+    </StackPanel>
+</UserControl>

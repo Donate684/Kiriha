@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Seasonal.SeasonalFilters"
+             x:DataType="vmSeasonal:SeasonalViewModel">
+    <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Classes.active="{Binding IsFilterActive}" Background="Transparent" VerticalAlignment="Center"
+                            BorderThickness="0" Padding="8,6" CornerRadius="6">
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Style>
+                            <Style Selector="Button.active">
+                                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+                                <Setter Property="Opacity" Value="1"/>
+                            </Style>
+                            <Style Selector="Button.active TextBlock">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                        </Button.Styles>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <material:MaterialIcon Kind="FilterVariant" Width="16" Height="16"
+                                                  Foreground="{Binding $parent[Button].Foreground}"/>
+                            <TextBlock Text="{DynamicResource l.filters.header}" VerticalAlignment="Center" FontSize="12"
+                                       Foreground="{Binding $parent[Button].Foreground}"/>
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
+                                <StackPanel Spacing="4" Margin="10">
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterNotInList}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.filters.options.not_in_list}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterWatching}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.status.watching}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterCompleted}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.status.completed}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterOnHold}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.status.on_hold}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterPlanToWatch}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.status.plan_to_watch}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterDropped}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.status.dropped}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding ShowHidden}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.filters.options.show_hidden}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+
+                                    <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="2,4"/>
+
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterNsfw}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                            <Border Grid.Column="0" Width="22" Height="22" CornerRadius="6"
+                                                    Background="#1FF44336" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <material:MaterialIcon Kind="AlertOctagonOutline" Width="13" Height="13"
+                                                                      Foreground="#FFF44336"
+                                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.adult.only}"
+                                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+
+                                    <Button Classes="FilterReset" Command="{Binding ClearFiltersCommand}" Margin="0,4,0,0"
+                                            Content="{DynamicResource l.common.actions.reset}"/>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
+    </StackPanel>
+</UserControl>

@@ -115,35 +115,12 @@ internal static class TrackingServicesRegistration
         services.AddSingleton<SmtcService>(sp => new SmtcService(sp.GetRequiredService<SettingsService>()));
         services.AddSingleton<DiscordService>();
         services.AddSingleton<AnisthesiaService>();
-        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<AnisthesiaService>());
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<TrackingService>();
         services.AddSingleton<AnimeRepository>();
         services.AddSingleton<AnimeSyncOrchestrator>();
         services.AddSingleton<AnimeProgressService>();
         services.AddSingleton<SyncManager>();
-        services.AddSingleton<InternalPlayerServer>();
-        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<InternalPlayerServer>());
-
-        services.AddSingleton<InstanceServer>();
-        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<InstanceServer>());
-
-        // Same instance, second registration: lets the app lifecycle resolve every
-        // IHostedService and Start/Stop them uniformly without naming each service.
-        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => sp.GetRequiredService<SyncManager>());
-        services.AddSingleton<LoadQueueService>();
-        services.AddSingleton<UpdateService>();
-        services.AddSingleton<NotificationService>();
-        services.AddSingleton<AiringInfoService>();
-
-        // Maintenance tasks
-        services.AddSingleton<Kiriha.Services.Maintenance.IMaintenanceTask, Kiriha.Services.Maintenance.RssMaintenanceTask>();
-        services.AddSingleton<Kiriha.Services.Maintenance.IMaintenanceTask, Kiriha.Services.Maintenance.AiringSyncMaintenanceTask>();
-        services.AddSingleton<Kiriha.Services.Maintenance.IMaintenanceTask, Kiriha.Services.Maintenance.UpdateMaintenanceTask>();
-        services.AddSingleton<Kiriha.Services.Maintenance.IMaintenanceTask, Kiriha.Services.Maintenance.DatabaseMaintenanceTask>();
-        services.AddSingleton<Kiriha.Services.Maintenance.IMaintenanceTask, Kiriha.Services.Maintenance.MetadataFetchMaintenanceTask>();
-
-        services.AddSingleton<MaintenanceService>();
 
         return services;
     }

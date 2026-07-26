@@ -1,8 +1,3 @@
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -11,15 +6,24 @@ using Kiriha.ViewModels;
 using Kiriha.ViewModels.Analytics;
 using Kiriha.ViewModels.AnimeDetails;
 using Kiriha.ViewModels.AnimeList;
+using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.History;
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Player;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Seasonal;
 using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Startup;
 using Kiriha.ViewModels.Torrents;
 using Kiriha.Views;
+using Kiriha.Views.Analytics;
 using Kiriha.Views.AnimeList;
+using Kiriha.Views.History;
 using Kiriha.Views.Player;
+using Kiriha.Views.Search;
+using Kiriha.Views.Seasonal;
+using Kiriha.Views.Torrents;
 
 namespace Kiriha.Core.Infrastructure;
 

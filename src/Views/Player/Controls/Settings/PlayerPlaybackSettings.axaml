@@ -1,0 +1,58 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:mpv="clr-namespace:Kiriha.Core.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Views.Player.Controls.Settings.PlayerPlaybackSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="Ãâ€™ÃÂ¾Ã‘ÂÃÂ¿Ã‘â‚¬ÃÂ¾ÃÂ¸ÃÂ·ÃÂ²ÃÂµÃÂ´ÃÂµÃÂ½ÃÂ¸ÃÂµ"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="ÃÂÃÂ²Ã‘â€šÃÂ¾ÃÂ²ÃÂ¾Ã‘ÂÃÂ¿Ã‘â‚¬ÃÂ¾ÃÂ¸ÃÂ·ÃÂ²ÃÂµÃÂ´ÃÂµÃÂ½ÃÂ¸ÃÂµ"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="ÃÂÃÂ°Ã‘â€¡ÃÂ¸ÃÂ½ÃÂ°Ã‘â€šÃ‘Å’ ÃÂ¿Ã‘â‚¬ÃÂ¾ÃÂ¸ÃÂ³Ã‘â‚¬Ã‘â€¹ÃÂ²ÃÂ°ÃÂ½ÃÂ¸ÃÂµ Ã‘ÂÃ‘â‚¬ÃÂ°ÃÂ·Ã‘Æ’ ÃÂ¿ÃÂ¾Ã‘ÂÃÂ»ÃÂµ ÃÂ¾Ã‘â€šÃÂºÃ‘â‚¬Ã‘â€¹Ã‘â€šÃÂ¸Ã‘Â Ã‘â€žÃÂ°ÃÂ¹ÃÂ»ÃÂ°"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding PlayerAutoPlay}"
+                                                  OnContent="Ãâ€™ÃÂºÃÂ»"
+                                                  OffContent="Ãâ€™Ã‘â€¹ÃÂºÃÂ»"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="ÃÅ¾ÃÂ´ÃÂ½ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ¾ ÃÂ¿ÃÂ»ÃÂµÃÂµÃ‘â‚¬ÃÂ°"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="ÃÅ¾Ã‘â€šÃÂºÃ‘â‚¬Ã‘â€¹ÃÂ²ÃÂ°Ã‘â€šÃ‘Å’ ÃÂ½ÃÂ¾ÃÂ²ÃÂ¾ÃÂµ ÃÂ²ÃÂ¸ÃÂ´ÃÂµÃÂ¾ ÃÂ² Ã‘â€šÃÂµÃÂºÃ‘Æ’Ã‘â€°ÃÂµÃÂ¼ ÃÂ¾ÃÂºÃÂ½ÃÂµ"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding SinglePlayerWindow}"
+                                                  OnContent="Ãâ€™ÃÂºÃÂ»"
+                                                  OffContent="Ãâ€™Ã‘â€¹ÃÂºÃÂ»"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <StackPanel Spacing="6" Margin="0,4,0,0">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Classes="player-settings-row-title" Text="ÃÂ¡ÃÂºÃÂ¾Ã‘â‚¬ÃÂ¾Ã‘ÂÃ‘â€šÃ‘Å’ ÃÂ¿ÃÂ¾ Ã‘Æ’ÃÂ¼ÃÂ¾ÃÂ»Ã‘â€¡ÃÂ°ÃÂ½ÃÂ¸Ã‘Å½"/>
+                                            <TextBlock Classes="player-settings-row-sub" Text="ÃÅ¸Ã‘â‚¬ÃÂ¸ÃÂ¼ÃÂµÃÂ½Ã‘ÂÃÂµÃ‘â€šÃ‘ÂÃ‘Â ÃÂº ÃÂ½ÃÂ¾ÃÂ²Ã‘â€¹ÃÂ¼ ÃÂ¾Ã‘â€šÃÂºÃ‘â‚¬Ã‘â€¹Ã‘â€šÃ‘â€¹ÃÂ¼ ÃÂ²ÃÂ¸ÃÂ´ÃÂµÃÂ¾"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}Ãƒâ€”'}"
+                                                   Foreground="#99FFFFFF"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Top"/>
+                                    </Grid>
+                                    <Slider Minimum="0.25" Maximum="2"
+                                            TickFrequency="0.25"
+                                            IsSnapToTickEnabled="True"
+                                            Value="{Binding PlaybackSpeed}"/>
+                                </StackPanel>
+
+                                <Border Height="110" IsHitTestVisible="False"/>
+                            </StackPanel>
+</UserControl>

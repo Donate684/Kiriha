@@ -1,12 +1,20 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompactSections.NowPlayingCompactHeader"
              x:DataType="vmNowPlaying:NowPlayingViewModel">
-                <Border Grid.Row="0" Margin="32,0,24,0" CornerRadius="14" Padding="18,14" ClipToBounds="True">
+
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+    </UserControl.Resources>
+
+                <Border Margin="32,0,24,0" CornerRadius="14" Padding="18,14" ClipToBounds="True">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
                             <GradientStop Color="{DynamicResource SystemAccentColor}" Offset="0"/>

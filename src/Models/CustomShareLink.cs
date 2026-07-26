@@ -16,28 +16,49 @@ public partial class CustomShareLink : ObservableObject
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
-    [ObservableProperty]
     private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
 
-    [ObservableProperty]
     private string _urlTemplate = string.Empty;
+    public string UrlTemplate
+    {
+        get => _urlTemplate;
+        set => SetProperty(ref _urlTemplate, value);
+    }
 
     /// <summary>
     /// Material Icons name (e.g. "Web", "Magnify", "Television"). Used only
     /// when <see cref="IconPath"/> is empty. Defaults to "Web".
     /// </summary>
-    [ObservableProperty]
     private string _iconKind = "Web";
+    public string IconKind
+    {
+        get => _iconKind;
+        set => SetProperty(ref _iconKind, value);
+    }
 
     /// <summary>
     /// Optional path to a user-supplied icon file (PNG/JPG/SVG/etc.). When
     /// set, the UI shows this image instead of <see cref="IconKind"/>.
     /// Stored as an absolute path under <see cref="Kiriha.Core.PathHelper.GetCustomIconsPath"/>.
     /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasIconPath))]
-    [NotifyPropertyChangedFor(nameof(HasNoIconPath))]
     private string? _iconPath;
+    public string? IconPath
+    {
+        get => _iconPath;
+        set
+        {
+            if (SetProperty(ref _iconPath, value))
+            {
+                OnPropertyChanged(nameof(HasIconPath));
+                OnPropertyChanged(nameof(HasNoIconPath));
+            }
+        }
+    }
 
     /// <summary>True when the user has assigned a custom image. Drives UI visibility.</summary>
     public bool HasIconPath => !string.IsNullOrWhiteSpace(IconPath);

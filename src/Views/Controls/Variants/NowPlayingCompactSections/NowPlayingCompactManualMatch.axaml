@@ -1,11 +1,19 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:models="clr-namespace:Kiriha.Models"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompactSections.NowPlayingCompactManualMatch"
              x:DataType="vmNowPlaying:NowPlayingViewModel" x:Name="Root">
+
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+    </UserControl.Resources>
+
     <StackPanel>
                 <Border Classes="Section" Padding="20,18">
                     <Border.IsVisible>

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
@@ -6,8 +6,14 @@
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              xmlns:core="using:Kiriha.Core"
+             xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsHeroBanner"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+    </UserControl.Resources>
         <Border Grid.Row="0" ClipToBounds="True" Padding="28,40,28,20">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">

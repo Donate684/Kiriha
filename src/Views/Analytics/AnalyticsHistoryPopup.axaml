@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:core="using:Kiriha.Core"
+             xmlns:u="using:Kiriha.Utils.UI"
+             x:Class="Kiriha.Views.Analytics.AnalyticsHistoryPopup"
+             x:DataType="vmAnalytics:AnalyticsViewModel">
+        <!-- ═══ ИСТОРИЯ POPUP ═══ -->
+        <Border IsVisible="{Binding History.IsHistoryPopupOpen}"
+                Background="#80000000"
+                ZIndex="50">
+            <Grid>
+                <Button Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding History.CloseHistoryPopupCommand}"/>
+
+                <Border Width="560"
+                        MaxHeight="640"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource ModalBackgroundFill}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="0"
+                        ClipToBounds="True"
+                        BoxShadow="0 20 60 0 #70000000">
+                    <Grid RowDefinitions="Auto,*">
+
+                        <!-- Шапка попапа -->
+                        <Border Grid.Row="0"
+                                Padding="20,16"
+                                Background="{DynamicResource SubtleFillColorSecondary}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="{Binding History.HistoryPopupTitle}"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding History.HistoryPopupSubtitle}"
+                                               FontSize="12"
+                                               Opacity="0.52"/>
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Width="32" Height="32"
+                                        Padding="0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        CornerRadius="16"
+                                        Command="{Binding History.CloseHistoryPopupCommand}">
+                                    <material:MaterialIcon Kind="Close" Width="18" Height="18" Opacity="0.65"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Список записей -->
+                        <ScrollViewer Grid.Row="1"
+                                      Padding="16"
+                                      VerticalScrollBarVisibility="Auto"
+                                      u:SmoothScroll.IsEnabled="True">
+                            <ItemsControl ItemsSource="{Binding History.HistoryPopupEntries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vmAnalytics:AnalyticsHistoryEntry">
+                                        <Border Background="{DynamicResource CardBackgroundFillDefault}"
+                                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                Padding="12"
+                                                Margin="0,0,0,8">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                <Border Width="44"
+                                                        Height="60"
+                                                        CornerRadius="7"
+                                                        ClipToBounds="True"
+                                                        Background="{DynamicResource SubtleFillColorSecondary}">
+                                                    <Panel>
+                                                        <material:MaterialIcon Kind="ImageOutline"
+                                                                               Width="18" Height="18"
+                                                                               Opacity="0.22"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Center"/>
+                                                        <Image core:CachedImage.Source="{Binding PosterUrl}"
+                                                               Stretch="UniformToFill"/>
+                                                    </Panel>
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1"
+                                                            Spacing="3"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontSize="13"
+                                                               FontWeight="SemiBold"
+                                                               MaxLines="1"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource SystemAccentColor}"
+                                                               Opacity="0.75"
+                                                               MaxLines="1"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               IsVisible="{Binding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                </StackPanel>
+
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding Detail}"
+                                                           FontSize="12"
+                                                           Opacity="0.58"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+</UserControl>

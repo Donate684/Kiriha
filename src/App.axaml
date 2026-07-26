@@ -28,6 +28,8 @@
                 <ResourceInclude Source="avares://Kiriha/Styles/Themes.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:LocConverter x:Key="LocConverter"/>
+            <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+            <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 

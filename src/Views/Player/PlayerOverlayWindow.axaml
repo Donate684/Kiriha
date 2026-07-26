@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
@@ -30,7 +30,10 @@
     </Window.Resources>
 
     <Window.Styles>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerOverlayWindowStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerSliderStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerControlStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerSettingsStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerOsdStyles.axaml"/>
     </Window.Styles>
 
     <Grid Background="Transparent" Name="MainGrid"

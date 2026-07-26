@@ -43,6 +43,7 @@ public sealed partial class AppStartupCoordinator
         services
             .AddKirihaData(PathHelper.GetDbPath())
             .AddKirihaTracking()
+            .AddKirihaBackgroundServices()
             .AddKirihaUi();
     }
 

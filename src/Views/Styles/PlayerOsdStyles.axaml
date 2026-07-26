@@ -1,0 +1,81 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===== Tooltip & Flyout ===== -->
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="#E61A1A1A"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="FlyoutPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <!-- ===== OSD text shadows ===== -->
+    <Style Selector="TextBlock.overlay-text">
+        <Setter Property="Effect">
+            <DropShadowEffect Color="#78000000" BlurRadius="2" OffsetX="0" OffsetY="1"/>
+        </Setter>
+    </Style>
+    <Style Selector="TextBlock.overlay-secondary-text">
+        <Setter Property="Effect">
+            <DropShadowEffect Color="#68000000" BlurRadius="2" OffsetX="0" OffsetY="1"/>
+        </Setter>
+    </Style>
+
+    <!-- ===== Control pill & time pill ===== -->
+    <Style Selector="Border.control-pill">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="Border.time-pill">
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Padding" Value="6,0"/>
+    </Style>
+
+    <!-- ===== OSD panel ===== -->
+    <Style Selector="Border.osd-panel">
+        <Setter Property="Background" Value="#CC101010"/>
+        <Setter Property="BorderBrush" Value="#2FFFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="18,12"/>
+        <Setter Property="MinWidth" Value="150"/>
+        <Setter Property="BoxShadow" Value="0 8 24 0 #70000000"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ===== Player state panel ===== -->
+    <Style Selector="Border.player-state-panel">
+        <Setter Property="Background" Value="#D9121212"/>
+        <Setter Property="BorderBrush" Value="#36FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="18,16"/>
+        <Setter Property="MinWidth" Value="260"/>
+        <Setter Property="BoxShadow" Value="0 12 32 0 #80000000"/>
+    </Style>
+    <Style Selector="Border.player-state-panel.error">
+        <Setter Property="Background" Value="#E0141414"/>
+        <Setter Property="BorderBrush" Value="#44FFD166"/>
+    </Style>
+
+    <!-- ===== ProgressBar ===== -->
+    <Style Selector="ProgressBar">
+        <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+        <Setter Property="Background" Value="#24FFFFFF"/>
+    </Style>
+
+</Styles>

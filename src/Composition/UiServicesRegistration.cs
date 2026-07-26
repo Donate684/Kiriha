@@ -2,7 +2,6 @@ using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Navigation;
 using Kiriha.ViewModels;

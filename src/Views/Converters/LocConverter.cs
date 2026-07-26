@@ -95,62 +95,7 @@ public class LocConverter : IValueConverter
             // Handle prefix if parameter is provided
             string keyToUse = (param != null && param != "Adult") ? s : (param == "Adult" ? $"Adult{s}" : s);
 
-            // Case 1: Try lowercase version first (matches ru.json keys)
-            string lowerKey = keyToUse.ToLowerInvariant().Replace(" ", "");
-            // PascalCase -> snake_case fallback: "OnHold" -> "on_hold", "PlanToWatch" -> "plan_to_watch"
-            string snakeKey = PascalToSnake(keyToUse);
-            if (Application.Current != null)
-            {
-                if (Application.Current.Resources.TryGetValue($"l.{lowerKey}", out var translatedLower))
-                    return translatedLower;
-                if (snakeKey != lowerKey &&
-                    Application.Current.Resources.TryGetValue($"l.{snakeKey}", out var translatedSnake))
-                    return translatedSnake;
-
-                // Case 1b: Try common prefixes for nested keys
-                string[] commonPrefixes = { "anime.types.", "anime.seasons.", "anime.status.", "common.actions.", "common.status.", "filters.sort.", "genres.", "torrents.sort." };
-                foreach (var prefix in commonPrefixes)
-                {
-                    if (Application.Current.Resources.TryGetValue($"l.{prefix}{lowerKey}", out var translatedNested))
-                        return translatedNested;
-                    if (snakeKey != lowerKey &&
-                        Application.Current.Resources.TryGetValue($"l.{prefix}{snakeKey}", out var translatedNestedSnake))
-                        return translatedNestedSnake;
-                }
-            }
-
-            // Case 2: Handle "Winter 2026" -> localized season name + year.
-            var parts = s.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 2)
-            {
-                string firstPartKey = parts[0].ToLowerInvariant();
-                if (Application.Current != null)
-                {
-                    if (Application.Current.Resources.TryGetValue($"l.{firstPartKey}", out var firstTranslated))
-                    {
-                        return $"{firstTranslated} {parts[1]}";
-                    }
-                    if (Application.Current.Resources.TryGetValue($"l.anime.seasons.{firstPartKey}", out var firstTranslatedSeason))
-                    {
-                        return $"{firstTranslatedSeason} {parts[1]}";
-                    }
-                }
-            }
-
-            // Case 3: Simple exact match with "l." prefix
-            string key = keyToUse.Replace(" ", "");
-            if (Application.Current != null && Application.Current.Resources.TryGetValue($"l.{key}", out var translatedExact))
-            {
-                return translatedExact;
-            }
-
-            // Case 3: Just capitalize first letter if nothing found
-            if (!string.IsNullOrEmpty(s))
-            {
-                return char.ToUpper(s[0]) + (s.Length > 1 ? s.Substring(1) : "");
-            }
-
-            return s;
+            return Kiriha.Core.Localization.LocalizationStore.Translate(keyToUse);
         }
 
         if (value is Avalonia.Styling.ThemeVariant t)
@@ -171,26 +116,7 @@ public class LocConverter : IValueConverter
         return value;
     }
 
-    private static string PascalToSnake(string input)
-    {
-        if (string.IsNullOrEmpty(input)) return input;
-        var sb = new System.Text.StringBuilder(input.Length + 4);
-        for (int i = 0; i < input.Length; i++)
-        {
-            char c = input[i];
-            if (char.IsWhiteSpace(c) || c == '_' || c == '-')
-            {
-                if (sb.Length > 0 && sb[sb.Length - 1] != '_') sb.Append('_');
-                continue;
-            }
 
-            if (char.IsUpper(c) && i > 0 && sb.Length > 0 && sb[sb.Length - 1] != '_')
-                sb.Append('_');
-
-            sb.Append(char.ToLowerInvariant(c));
-        }
-        return sb.ToString();
-    }
 }
 
 

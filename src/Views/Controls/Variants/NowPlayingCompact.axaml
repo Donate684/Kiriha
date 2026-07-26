@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -141,7 +141,7 @@
         <Grid IsVisible="{Binding IsMediaDetected}" RowDefinitions="Auto,*" Margin="0,12,0,0">
 
                 <!-- ═══════ PLAYER BAR (sticky, styled like AnimeDetails hero) ═══════ -->
-                <sections:NowPlayingCompactHeader />
+                <sections:NowPlayingCompactHeader Grid.Row="0"/>
                 <!-- ═══════ SCROLLABLE CONTENT ═══════ -->
                 <ScrollViewer Grid.Row="1" Margin="0,18,0,0"
                               HorizontalScrollBarVisibility="Disabled"

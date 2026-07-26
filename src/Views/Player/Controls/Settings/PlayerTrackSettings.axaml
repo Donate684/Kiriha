@@ -1,0 +1,33 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:mpv="clr-namespace:Kiriha.Core.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Views.Player.Controls.Settings.PlayerTrackSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="Ãâ€ÃÂ¾Ã‘â‚¬ÃÂ¾ÃÂ¶ÃÂºÃÂ¸"/>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="ÃÅ¸Ã‘â‚¬ÃÂµÃÂ´ÃÂ¿ÃÂ¾Ã‘â€¡Ã‘â€šÃÂ¸Ã‘â€šÃÂµÃÂ»Ã‘Å’ÃÂ½Ã‘â€¹ÃÂ¹ ÃÂ·ÃÂ²Ã‘Æ’ÃÂº"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="mpv alang, Ã‘â€¡ÃÂµÃ‘â‚¬ÃÂµÃÂ· ÃÂ·ÃÂ°ÃÂ¿Ã‘ÂÃ‘â€šÃ‘Æ’Ã‘Å½"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding PreferredAudioLanguages}"
+                                             PlaceholderText="Japanese,jpn,ja"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="ÃÅ¸Ã‘â‚¬ÃÂµÃÂ´ÃÂ¿ÃÂ¾Ã‘â€¡Ã‘â€šÃÂ¸Ã‘â€šÃÂµÃÂ»Ã‘Å’ÃÂ½Ã‘â€¹ÃÂµ Ã‘ÂÃ‘Æ’ÃÂ±Ã‘â€šÃÂ¸Ã‘â€šÃ‘â‚¬Ã‘â€¹"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="mpv slang, Ã‘â€¡ÃÂµÃ‘â‚¬ÃÂµÃÂ· ÃÂ·ÃÂ°ÃÂ¿Ã‘ÂÃ‘â€šÃ‘Æ’Ã‘Å½"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding PreferredSubtitleLanguages}"
+                                             PlaceholderText="Russian,rus,ru"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+                                <Border Height="110" IsHitTestVisible="False"/>
+                            </StackPanel>
+</UserControl>

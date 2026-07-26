@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.Seasonal.SeasonalNavigation"
+             x:DataType="vmSeasonal:SeasonalViewModel">
+    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+    </StackPanel>
+</UserControl>
