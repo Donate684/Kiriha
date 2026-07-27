@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
              xmlns:mpv="clr-namespace:Kiriha.Core.Mpv"
@@ -7,39 +7,39 @@
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Views.Player.Controls.Settings.PlayerAudioSettings">
     <StackPanel Spacing="10">
-                                <TextBlock Classes="player-settings-title" Text="Ãâ€”ÃÂ²Ã‘Æ’ÃÂº"/>
+                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.audio}"/>
 
                                 <Grid ColumnDefinitions="*,Auto" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="Ãâ€”ÃÂ°ÃÂ¿ÃÂ¾ÃÂ¼ÃÂ¸ÃÂ½ÃÂ°Ã‘â€šÃ‘Å’ ÃÂ³Ã‘â‚¬ÃÂ¾ÃÂ¼ÃÂºÃÂ¾Ã‘ÂÃ‘â€šÃ‘Å’"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="ÃÂ¡ÃÂ¾Ã‘â€¦Ã‘â‚¬ÃÂ°ÃÂ½Ã‘ÂÃ‘â€šÃ‘Å’ ÃÂ¿ÃÂ¾Ã‘ÂÃÂ»ÃÂµÃÂ´ÃÂ½ÃÂµÃÂµ ÃÂ·ÃÂ½ÃÂ°Ã‘â€¡ÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ³Ã‘â‚¬ÃÂ¾ÃÂ¼ÃÂºÃÂ¾Ã‘ÂÃ‘â€šÃÂ¸ ÃÂ´ÃÂ»Ã‘Â Ã‘ÂÃÂ»ÃÂµÃÂ´Ã‘Æ’Ã‘Å½Ã‘â€°ÃÂ¸Ã‘â€¦ ÃÂ·ÃÂ°ÃÂ¿Ã‘Æ’Ã‘ÂÃÂºÃÂ¾ÃÂ²"/>
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.remember_volume}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.remember_volume_sub}"/>
                                     </StackPanel>
                                     <ToggleSwitch Grid.Column="1"
                                                   VerticalAlignment="Center"
                                                   IsChecked="{Binding RememberPlayerVolume}"
-                                                  OnContent="Ãâ€™ÃÂºÃÂ»"
-                                                  OffContent="Ãâ€™Ã‘â€¹ÃÂºÃÂ»"/>
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
                                 <Grid ColumnDefinitions="*,Auto" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="ÃÂÃÂ¾Ã‘â‚¬ÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°Ã‘â€ ÃÂ¸Ã‘Â ÃÂ³Ã‘â‚¬ÃÂ¾ÃÂ¼ÃÂºÃÂ¾Ã‘ÂÃ‘â€šÃÂ¸"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="Ãâ€™Ã‘â€¹Ã‘â‚¬ÃÂ°ÃÂ²ÃÂ½ÃÂ¸ÃÂ²ÃÂ°Ã‘â€šÃ‘Å’ ÃÂ³Ã‘â‚¬ÃÂ¾ÃÂ¼ÃÂºÃÂ¾Ã‘ÂÃ‘â€šÃ‘Å’ Ã‘â€¡ÃÂµÃ‘â‚¬ÃÂµÃÂ· loudnorm: I=-16, TP=-1.5, LRA=11"/>
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.normalize_audio}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.normalize_audio_sub}"/>
                                     </StackPanel>
                                     <ToggleSwitch Grid.Column="1"
                                                   VerticalAlignment="Center"
                                                   IsChecked="{Binding NormalizeAudio}"
-                                                  OnContent="Ãâ€™ÃÂºÃÂ»"
-                                                  OffContent="Ãâ€™Ã‘â€¹ÃÂºÃÂ»"/>
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
                                 <StackPanel Spacing="6" Margin="0,4,0,0">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <StackPanel Grid.Column="0" Spacing="2">
-                                            <TextBlock Classes="player-settings-row-title" Text="Ãâ€œÃ‘â‚¬ÃÂ¾ÃÂ¼ÃÂºÃÂ¾Ã‘ÂÃ‘â€šÃ‘Å’ ÃÂ¿ÃÂ¾ Ã‘Æ’ÃÂ¼ÃÂ¾ÃÂ»Ã‘â€¡ÃÂ°ÃÂ½ÃÂ¸Ã‘Å½"/>
-                                            <TextBlock Classes="player-settings-row-sub" Text="ÃËœÃ‘ÂÃÂ¿ÃÂ¾ÃÂ»Ã‘Å’ÃÂ·Ã‘Æ’ÃÂµÃ‘â€šÃ‘ÂÃ‘Â, ÃÂºÃÂ¾ÃÂ³ÃÂ´ÃÂ° ÃÂ²ÃÂºÃÂ»Ã‘Å½Ã‘â€¡ÃÂµÃÂ½ÃÂ¾ ÃÂ·ÃÂ°ÃÂ¿ÃÂ¾ÃÂ¼ÃÂ¸ÃÂ½ÃÂ°ÃÂ½ÃÂ¸ÃÂµ ÃÂ³Ã‘â‚¬ÃÂ¾ÃÂ¼ÃÂºÃÂ¾Ã‘ÂÃ‘â€šÃÂ¸"/>
+                                            <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.default_volume}"/>
+                                            <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.default_volume_sub}"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding Volume, StringFormat='{}{0:0}%'}"

@@ -1,4 +1,5 @@
 using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Metadata;
 using System;
 using System.Linq;
 using Avalonia;
@@ -41,6 +42,10 @@ public sealed class PlayerModeCoordinator
         desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
         desktop.ShutdownRequested += OnShutdownRequested;
         StartPlayerCommandServer();
+
+        var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
+        var localization = _serviceProvider.GetRequiredService<LocalizationService>();
+        localization.LoadLanguage(settingsService.Current.UI.LanguageCode);
 
         if (!PlayerProcessBridge.IsResident(args))
             desktop.MainWindow = CreatePlayerWindow(args);

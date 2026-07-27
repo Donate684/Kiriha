@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
              xmlns:mpv="clr-namespace:Kiriha.Core.Mpv"
@@ -8,6 +8,13 @@
              x:DataType="vmPlayer:PlayerViewModel"
              xmlns:controls="using:Kiriha.Views.Player.Controls"
              xmlns:settings="using:Kiriha.Views.Player.Controls.Settings">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Kiriha/Views/Styles/PlayerOverlayWindowResources.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
                 <Grid Margin="14,0,14,8">
                     <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*">
 
@@ -23,14 +30,14 @@
                                 Command="{Binding SkipCommand}"
                                 CommandParameter="-10"
                                 IsVisible="{Binding ShowSkipButtons}"
-                                ToolTip.Tip="ÃÂÃÂ°ÃÂ·ÃÂ°ÃÂ´ 10 Ã‘ÂÃÂµÃÂºÃ‘Æ’ÃÂ½ÃÂ´">
+                                ToolTip.Tip="{DynamicResource l.player.controls.back_10s}">
                             <material:MaterialIcon Kind="Rewind10" Width="21" Height="21" Foreground="White"/>
                         </Button>
                         <Button Classes="icon-btn"
                                 Command="{Binding SkipCommand}"
                                 CommandParameter="10"
                                 IsVisible="{Binding ShowSkipButtons}"
-                                ToolTip.Tip="Ãâ€™ÃÂ¿ÃÂµÃ‘â‚¬ÃÂµÃÂ´ 10 Ã‘ÂÃÂµÃÂºÃ‘Æ’ÃÂ½ÃÂ´">
+                                ToolTip.Tip="{DynamicResource l.player.controls.forward_10s}">
                             <material:MaterialIcon Kind="FastForward10" Width="21" Height="21" Foreground="White"/>
                         </Button>
                     </StackPanel>
@@ -63,30 +70,30 @@
                         <Button Name="SpeedButton"
                                 Classes="icon-btn"
                                 IsVisible="{Binding ShowSpeedButton}"
-                                ToolTip.Tip="ÃÂ¡ÃÂºÃÂ¾Ã‘â‚¬ÃÂ¾Ã‘ÂÃ‘â€šÃ‘Å’">
+                                ToolTip.Tip="{DynamicResource l.player.controls.speed}">
                             <Button.Flyout>
                                 <MenuFlyout Placement="Top">
-                                    <MenuItem Header="0.25Ãƒâ€”" Classes="speed-item"
+                                    <MenuItem Header="0.25x" Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="0.25"/>
-                                    <MenuItem Header="0.5Ãƒâ€”"  Classes="speed-item"
+                                    <MenuItem Header="0.5x"  Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="0.5"/>
-                                    <MenuItem Header="0.75Ãƒâ€”" Classes="speed-item"
+                                    <MenuItem Header="0.75x" Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="0.75"/>
-                                    <MenuItem Header="1Ãƒâ€”" Classes="speed-item"
+                                    <MenuItem Header="1x" Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="1"/>
-                                    <MenuItem Header="1.25Ãƒâ€”" Classes="speed-item"
+                                    <MenuItem Header="1.25x" Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="1.25"/>
-                                    <MenuItem Header="1.5Ãƒâ€”"  Classes="speed-item"
+                                    <MenuItem Header="1.5x"  Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="1.5"/>
-                                    <MenuItem Header="1.75Ãƒâ€”" Classes="speed-item"
+                                    <MenuItem Header="1.75x" Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="1.75"/>
-                                    <MenuItem Header="2Ãƒâ€”"    Classes="speed-item"
+                                    <MenuItem Header="2x"    Classes="speed-item"
                                               Command="{Binding SetSpeedCommand}" CommandParameter="2"/>
                                 </MenuFlyout>
                             </Button.Flyout>
                             <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
                                 <material:MaterialIcon Kind="SpeedometerMedium" Width="18" Height="18" Foreground="White"/>
-                                <TextBlock Text="{Binding PlaybackSpeed, StringFormat='{}{0}Ãƒâ€”'}"
+                                <TextBlock Text="{Binding PlaybackSpeed, StringFormat='{}{0}x'}"
                                            Foreground="White" FontSize="12" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
@@ -95,7 +102,7 @@
                         <Button Name="SubtitleButton"
                                 Classes="icon-btn"
                                 IsVisible="{Binding ShowSubtitleButton}"
-                                ToolTip.Tip="ÃÂ¡Ã‘Æ’ÃÂ±Ã‘â€šÃÂ¸Ã‘â€šÃ‘â‚¬Ã‘â€¹ (V)">
+                                ToolTip.Tip="{DynamicResource l.player.controls.subtitles_toggle}">
                             <Button.Flyout>
                                 <Flyout Placement="Top">
                                     <Border Width="240"
@@ -144,7 +151,7 @@
                         <Button Name="AudioButton"
                                 Classes="icon-btn"
                                 IsVisible="{Binding ShowAudioButton}"
-                                ToolTip.Tip="ÃÂÃ‘Æ’ÃÂ´ÃÂ¸ÃÂ¾ÃÂ´ÃÂ¾Ã‘â‚¬ÃÂ¾ÃÂ¶ÃÂºÃÂ° (A)">
+                                ToolTip.Tip="{DynamicResource l.player.controls.audio_track_toggle}">
                             <Button.Flyout>
                                 <Flyout Placement="Top">
                                     <Border Width="240"
@@ -192,14 +199,14 @@
                         <!-- Subtitle position -->
                         <Button Name="SubtitlePositionButton"
                                 Classes="icon-btn"
-                                ToolTip.Tip="Ãâ€ºÃÅ¡ÃÅ“: Ã‘ÂÃ‘Æ’ÃÂ±Ã‘â€šÃÂ¸Ã‘â€šÃ‘â‚¬Ã‘â€¹ ÃÂ²Ã‘â€¹Ã‘Ë†ÃÂµ. ÃÅ¸ÃÅ¡ÃÅ“: ÃÂ½ÃÂ¸ÃÂ¶ÃÂµ"
+                                ToolTip.Tip="{DynamicResource l.player.controls.subtitles_position_tip}"
                                 IsVisible="{Binding ShowSubtitlePositionButton}">
                             <material:MaterialIcon Kind="FormatLineSpacing" Width="21" Height="21" Foreground="White"/>
                         </Button>
 
                         <!-- Subtitle style override -->
                         <Button Classes="icon-btn"
-                                ToolTip.Tip="ÃÂ¡Ã‘â€šÃÂ¸ÃÂ»Ã‘Å’ Ã‘ÂÃ‘Æ’ÃÂ±Ã‘â€šÃÂ¸Ã‘â€šÃ‘â‚¬ÃÂ¾ÃÂ² (U)"
+                                ToolTip.Tip="{DynamicResource l.player.controls.subtitles_style}"
                                 Command="{Binding ToggleSubtitleStyleOverrideCommand}"
                                 IsVisible="{Binding ShowSubtitleStyleButton}">
                             <material:MaterialIcon Kind="FormatPaint" Width="21" Height="21" Foreground="White"/>
@@ -208,7 +215,7 @@
                         <!-- Screenshot -->
                             <Button Name="ScreenshotButton"
                                     Classes="icon-btn"
-                                    ToolTip.Tip="ÃÂ¡ÃÂºÃ‘â‚¬ÃÂ¸ÃÂ½Ã‘Ë†ÃÂ¾Ã‘â€š"
+                                    ToolTip.Tip="{DynamicResource l.player.controls.screenshot}"
                                     IsVisible="{Binding ShowScreenshotButton}">
                                 <material:MaterialIcon Kind="CameraOutline" Width="21" Height="21" Foreground="White"/>
                             </Button>
@@ -217,7 +224,7 @@
                         <Button Name="SettingsButton"
                                 Classes="icon-btn"
                                 Click="OnSettingsButtonClick"
-                                ToolTip.Tip="ÃÂÃÂ°Ã‘ÂÃ‘â€šÃ‘â‚¬ÃÂ¾ÃÂ¹ÃÂºÃÂ¸">
+                                ToolTip.Tip="{DynamicResource l.player.settings}">
                             <Button.Flyout>
                                 <Flyout Placement="Top">
                                     <Border Width="620"
@@ -234,11 +241,11 @@
                                                     Padding="0,10">
                                                 <DockPanel LastChildFill="True">
                                                     <StackPanel DockPanel.Dock="Top" Margin="16,6,16,10">
-                                                        <TextBlock Text="ÃÅ¸ÃÂ»ÃÂµÃÂµÃ‘â‚¬"
+                                                        <TextBlock Text="{DynamicResource l.player.title}"
                                                                    Foreground="White"
                                                                    FontSize="15"
                                                                    FontWeight="SemiBold"/>
-                                                        <TextBlock Text="ÃÂÃÂ°Ã‘ÂÃ‘â€šÃ‘â‚¬ÃÂ¾ÃÂ¹ÃÂºÃÂ¸"
+                                                        <TextBlock Text="{DynamicResource l.player.settings}"
                                                                    Foreground="#80FFFFFF"
                                                                    FontSize="11"/>
                                                     </StackPanel>
@@ -249,31 +256,31 @@
                                                         <ListBoxItem>
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <material:MaterialIcon Kind="PlayCircleOutline" Width="17" Height="17" Foreground="White"/>
-                                                                <TextBlock Text="Ãâ€™ÃÂ¾Ã‘ÂÃÂ¿Ã‘â‚¬ÃÂ¾ÃÂ¸ÃÂ·ÃÂ²ÃÂµÃÂ´ÃÂµÃÂ½ÃÂ¸ÃÂµ" Foreground="White" FontSize="12"/>
+                                                                <TextBlock Text="{DynamicResource l.player.playback}" Foreground="White" FontSize="12"/>
                                                             </StackPanel>
                                                         </ListBoxItem>
                                                         <ListBoxItem>
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <material:MaterialIcon Kind="VolumeHigh" Width="17" Height="17" Foreground="White"/>
-                                                                <TextBlock Text="Ãâ€”ÃÂ²Ã‘Æ’ÃÂº" Foreground="White" FontSize="12"/>
+                                                                <TextBlock Text="{DynamicResource l.player.audio}" Foreground="White" FontSize="12"/>
                                                             </StackPanel>
                                                         </ListBoxItem>
                                                         <ListBoxItem>
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <material:MaterialIcon Kind="ViewDashboardOutline" Width="17" Height="17" Foreground="White"/>
-                                                                <TextBlock Text="ÃËœÃÂ½Ã‘â€šÃÂµÃ‘â‚¬Ã‘â€žÃÂµÃÂ¹Ã‘Â" Foreground="White" FontSize="12"/>
+                                                                <TextBlock Text="{DynamicResource l.player.interface}" Foreground="White" FontSize="12"/>
                                                             </StackPanel>
                                                         </ListBoxItem>
                                                         <ListBoxItem>
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <material:MaterialIcon Kind="SubtitlesOutline" Width="17" Height="17" Foreground="White"/>
-                                                                <TextBlock Text="Ãâ€ÃÂ¾Ã‘â‚¬ÃÂ¾ÃÂ¶ÃÂºÃÂ¸" Foreground="White" FontSize="12"/>
+                                                                <TextBlock Text="{DynamicResource l.player.tracks}" Foreground="White" FontSize="12"/>
                                                             </StackPanel>
                                                         </ListBoxItem>
                                                         <ListBoxItem>
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <material:MaterialIcon Kind="Tune" Width="17" Height="17" Foreground="White"/>
-                                                                <TextBlock Text="ÃÂ ÃÂ°Ã‘ÂÃ‘Ë†ÃÂ¸Ã‘â‚¬ÃÂµÃÂ½ÃÂ½Ã‘â€¹ÃÂµ" Foreground="White" FontSize="12"/>
+                                                                <TextBlock Text="{DynamicResource l.player.advanced}" Foreground="White" FontSize="12"/>
                                                             </StackPanel>
                                                         </ListBoxItem>
                                                     </ListBox>

@@ -16,7 +16,7 @@ public class LocalizationService
         "common", "navigation", "anime", "genres", "settings",
         "scrobbler", "filters", "history", "wizard", "sync",
         "updates", "auth", "search", "torrents", "notifications", "crash",
-        "about"
+        "about", "player"
     };
 
     public void LoadLanguage(string langCode)

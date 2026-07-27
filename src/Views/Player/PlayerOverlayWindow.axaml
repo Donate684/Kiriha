@@ -94,7 +94,7 @@
                                        Height="32"
                                        Foreground="#FFFFD166"
                                        HorizontalAlignment="Center"/>
-                <TextBlock Text="ÃÂÃÂµ Ã‘Æ’ÃÂ´ÃÂ°ÃÂ»ÃÂ¾Ã‘ÂÃ‘Å’ ÃÂ²ÃÂ¾Ã‘ÂÃÂ¿Ã‘â‚¬ÃÂ¾ÃÂ¸ÃÂ·ÃÂ²ÃÂµÃ‘ÂÃ‘â€šÃÂ¸ ÃÂ²ÃÂ¸ÃÂ´ÃÂµÃÂ¾"
+                <TextBlock Text="{DynamicResource l.player.overlay.error_failed_to_play}"
                            Classes="overlay-text"
                            Foreground="White"
                            FontSize="15"
@@ -110,13 +110,13 @@
                             HorizontalAlignment="Center">
                     <Button Classes="icon-btn state-action"
                             Command="{Binding ReloadMediaCommand}"
-                            ToolTip.Tip="ÃÅ¸ÃÂ¾ÃÂ²Ã‘â€šÃÂ¾Ã‘â‚¬ÃÂ¸Ã‘â€šÃ‘Å’">
+                            ToolTip.Tip="{DynamicResource l.player.overlay.error_retry}">
                         <material:MaterialIcon Kind="Refresh" Width="20" Height="20" Foreground="White"/>
                     </Button>
                     <Button Classes="icon-btn state-action"
                             Command="{Binding OpenNextMediaCommand}"
                             IsEnabled="{Binding CanOpenNextMedia}"
-                            ToolTip.Tip="ÃÂ¡ÃÂ»ÃÂµÃÂ´Ã‘Æ’Ã‘Å½Ã‘â€°ÃÂ¸ÃÂ¹ Ã‘â€žÃÂ°ÃÂ¹ÃÂ»">
+                            ToolTip.Tip="{DynamicResource l.player.overlay.error_next_file}">
                         <material:MaterialIcon Kind="SkipNext" Width="20" Height="20" Foreground="White"/>
                     </Button>
                 </StackPanel>
@@ -144,7 +144,7 @@
                 <!-- Empty placeholder for spacing or just removed back button -->
                 <Grid Grid.Column="0" Width="16" Background="Transparent" PointerPressed="OnTopBarPointerPressed"/>
 
-                <!-- Title block Ã¢â‚¬â€ drag target -->
+                <!-- Title block — drag target -->
                 <StackPanel Grid.Column="1"
                             VerticalAlignment="Top"
                             HorizontalAlignment="Left"
@@ -276,7 +276,7 @@
                             Minimum="0" Maximum="{Binding Duration}"
                             Value="{Binding CurrentTime}"
                             VerticalAlignment="Center"/>
-                    <!-- Chapter marker canvas Ã¢â‚¬â€ drawn in code-behind, thumb radius = 7px margin -->
+                    <!-- Chapter marker canvas — drawn in code-behind, thumb radius = 7px margin -->
                     <controls:PlayerChapterMarkers Margin="7,0,7,0"
                                                    VerticalAlignment="Stretch" />
                 </Grid>

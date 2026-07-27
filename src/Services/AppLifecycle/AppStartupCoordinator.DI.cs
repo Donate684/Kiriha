@@ -1,4 +1,5 @@
 using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Metadata;
 using System;
 using System.Diagnostics;
 using Kiriha.Composition;
@@ -51,6 +52,7 @@ public sealed partial class AppStartupCoordinator
     {
         PathHelper.EnsureDirectoriesExist();
         services.AddSingleton<SettingsService>();
+        services.AddSingleton<LocalizationService>();
         services.AddSingleton<IPlayerMediaMetadataResolver, FilenamePlayerMediaMetadataResolver>();
     }
 }
