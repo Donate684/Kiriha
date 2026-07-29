@@ -15,12 +15,15 @@ public partial class PlayerControlBar : UserControl
     public PlayerControlBar()
     {
         InitializeComponent();
-    }
-
-    private void OnSettingsButtonClick(object? sender, RoutedEventArgs e)
-    {
-        e.Handled = true;
-        SettingsClicked?.Invoke(this, EventArgs.Empty);
+        
+        var settingsBtn = this.FindControl<PlayerSettingsButton>("SettingsBtn");
+        if (settingsBtn != null)
+        {
+            settingsBtn.SettingsClicked += (s, e) =>
+            {
+                SettingsClicked?.Invoke(this, EventArgs.Empty);
+            };
+        }
     }
 
     private void OnScreenshotButtonPointerReleased(object? sender, PointerReleasedEventArgs e)
