@@ -122,7 +122,9 @@ public class DiscordService : IDisposable
 
     private static string? TruncateDiscordText(string? value)
     {
-        return value?.Length > 128 ? value.Substring(0, 125) + "..." : value;
+        if (string.IsNullOrEmpty(value)) return value;
+        if (value.Length < 2) return value.PadRight(2, '\u200B');
+        return value.Length > 128 ? value.Substring(0, 125) + "..." : value;
     }
 
     public virtual void ClearPresence()

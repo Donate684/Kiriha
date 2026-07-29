@@ -6,8 +6,8 @@ namespace Kiriha.Core.Mpv;
 public class MpvScreenshotManager
 {
     private readonly MpvPlayer _player;
-    private string _screenshotDirectory = GetDefaultScreenshotDirectory();
-    private string _screenshotFormat = "png";
+    private volatile string _screenshotDirectory = GetDefaultScreenshotDirectory();
+    private volatile string _screenshotFormat = "png";
 
     public MpvScreenshotManager(MpvPlayer player)
     {
@@ -20,11 +20,14 @@ public class MpvScreenshotManager
             ? "window"
             : includeSubtitles ? "subtitles" : "video";
 
+        var dir = _screenshotDirectory;
+        var fmt = _screenshotFormat;
+
         _player.Enqueue(handle =>
         {
-            Directory.CreateDirectory(_screenshotDirectory);
-            var filename = $"Kiriha-{DateTime.Now:yyyyMMdd-HHmmss-fff}.{_screenshotFormat}";
-            var path = Path.Combine(_screenshotDirectory, filename);
+            Directory.CreateDirectory(dir);
+            var filename = $"Kiriha-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.{fmt}";
+            var path = Path.Combine(dir, filename);
             MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "screenshot-to-file", path, flag), "take screenshot");
         });
     }

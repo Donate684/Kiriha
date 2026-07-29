@@ -54,11 +54,11 @@ public class AiringInfoService
 
         if (airing == null)
         {
-            await _cache.MarkSyncedAsync(anime, DateTime.Now);
+            await _cache.MarkSyncedAsync(anime, DateTime.UtcNow);
             return;
         }
 
-        await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, DateTime.Now);
+        await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, DateTime.UtcNow);
     }
 
     public async Task SyncOngoingEpisodesAsync(bool force = false, IProgress<string>? progress = null, CancellationToken ct = default)
@@ -71,7 +71,7 @@ public class AiringInfoService
 
         Log.Information("AiringInfoService: Checking AniList airing info (Force: {Force})...", force);
 
-        var threshold = DateTime.Now.AddHours(-6);
+        var threshold = DateTime.UtcNow.AddHours(-6);
         // Snapshot on UI thread - ObservableCollection is not thread-safe.
         var toSync = await _uiDispatcher.InvokeAsync(() =>
             _animeRepo.Collection
@@ -92,27 +92,41 @@ public class AiringInfoService
 
         Log.Information("AiringInfoService: Found {Count} anime to sync from AniList.", toSync.Count);
 
-        for (int i = 0; i < toSync.Count; i++)
+        var semaphore = new SemaphoreSlim(4);
+        int completed = 0;
+        var total = toSync.Count;
+
+        var tasks = toSync.Select(async (anime, i) =>
         {
-            var anime = toSync[i];
-            if (ct.IsCancellationRequested) break;
-            if (_animeRepo.IsRecentlyDeleted(anime.Id)) continue;
+            if (ct.IsCancellationRequested) return;
+            if (_animeRepo.IsRecentlyDeleted(anime.Id)) return;
 
-            var progressMsg = UIUtils.GetLoc("sync.syncing.episodes_progress", (i + 1).ToString(), toSync.Count.ToString(), anime.Title);
-            progress?.Report(progressMsg);
-
-            Log.Information("AiringInfoService: Syncing AniList airing info for {Title} (ID: {Id})...", anime.Title, anime.Id);
-
-            var now = DateTime.Now;
-            var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
-            if (airing == null)
+            await semaphore.WaitAsync(ct);
+            try
             {
-                await _cache.MarkSyncedAsync(anime, now);
-                continue;
-            }
+                int currentCompleted = Interlocked.Increment(ref completed);
+                var progressMsg = UIUtils.GetLoc("sync.syncing.episodes_progress", currentCompleted.ToString(), total.ToString(), anime.Title);
+                progress?.Report(progressMsg);
 
-            await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, now);
-        }
+                Log.Information("AiringInfoService: Syncing AniList airing info for {Title} (ID: {Id})...", anime.Title, anime.Id);
+
+                var now = DateTime.UtcNow;
+                var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
+                if (airing == null)
+                {
+                    await _cache.MarkSyncedAsync(anime, now);
+                    return;
+                }
+
+                await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, now);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        await Task.WhenAll(tasks);
 
         Log.Information("AiringInfoService: AniList sync cycle completed.");
     }

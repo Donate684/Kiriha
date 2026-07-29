@@ -102,14 +102,7 @@ public partial class TrackingService
         lock (_state) prev = _currentMedia;
         if (!forceMatch && prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode)
         {
-            bool changed = prev.IsPlaying != media.IsPlaying || prev.ProcessName != media.ProcessName;
-            lock (_state) _currentMedia = media;
-            if (changed)
-            {
-                _uiDispatcher.Post(() => WeakReferenceMessenger.Default.Send(new MediaChangedMessage(media)));
-                _scrobbleService.UpdatePlayingState(media.IsPlaying);
-            }
-            return;
+            if (HandleSameMediaUpdate(prev, media)) return;
         }
 
         lock (_state)
@@ -129,7 +122,7 @@ public partial class TrackingService
         try
         {
             // Wait for services to be ready (e.g. at app startup)
-            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch { }
+            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => _animeRepo.Collection.ToList());
             
@@ -148,35 +141,7 @@ public partial class TrackingService
 
             if (result.Success)
             {
-                var matched = result.MatchedAnime;
-
-                bool isValid;
-                lock (_state)
-                {
-                    isValid = IsSameMedia(_currentMedia, media);
-                    if (isValid)
-                    {
-                        _matchedAnime = matched;
-                    }
-                }
-
-                if (!isValid) return;
-
-                _uiDispatcher.Post(() => WeakReferenceMessenger.Default.Send(new AnimeMatchedMessage(matched)));
-
-                if (matched != null)
-                {
-                    NotifyPlayerMetadata(media, matched);
-
-                    UpdateDiscordPresence(media, matched);
-
-                    if (matched.Status != UserAnimeStatus.None)
-                        _scrobbleService.StartScrobble(media, matched);
-                }
-                else
-                {
-                    _discordService.UpdatePresence(media.AnimeTitle, media.Episode, 0, null, null, media.Position, media.Duration, null, media.IsPlaying);
-                }
+                ApplyMatchedMedia(media, result.MatchedAnime);
             }
         }
         catch (Exception ex)

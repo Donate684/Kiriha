@@ -41,8 +41,7 @@ public class ResilientHttpHandler : DelegatingHandler
         }
 
         // Keep a reference to the "original" template request to clone from
-        // We wrap it in a using block so that the request (and the new ByteArrayContent) is disposed.
-        using var templateRequest = request;
+        var templateRequest = request;
 
         for (int attempt = 0; attempt <= MaxRetries; attempt++)
         {

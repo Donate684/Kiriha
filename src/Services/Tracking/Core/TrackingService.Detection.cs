@@ -1,6 +1,7 @@
 using Kiriha.Services.Tracking.Integration;
 using Kiriha.Services.Tracking.Feed;
 using Kiriha.Services.Tracking.Core;
+using Kiriha.Utils.Async;
 using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -85,11 +86,11 @@ public partial class TrackingService
 
         if (state.AnimeId.HasValue)
         {
-            _ = SetMatchedInternalMedia(media, state.AnimeId.Value);
+            SetMatchedInternalMedia(media, state.AnimeId.Value).SafeFireAndForget("SetMatchedInternalMedia");
         }
         else
         {
-            _ = MatchMediaAsync(media);
+            MatchMediaAsync(media).SafeFireAndForget("MatchMediaAsync");
         }
     }
 }

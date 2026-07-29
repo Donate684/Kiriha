@@ -31,7 +31,7 @@ public class AiringInfoFetcher
 
         if (airing.NextEpisode.HasValue)
         {
-            if (airing.NextEpisodeAt.HasValue && airing.NextEpisodeAt.Value <= DateTime.Now)
+            if (airing.NextEpisodeAt.HasValue && airing.NextEpisodeAt.Value <= DateTime.UtcNow)
             {
                 aired = airing.NextEpisode.Value;
                 nextSlot = null;
@@ -48,7 +48,7 @@ public class AiringInfoFetcher
             else if (anime.TotalEpisodes > 0)
                 aired = anime.TotalEpisodes;
         }
-        else if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value <= DateTime.Now)
+        else if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value <= DateTime.UtcNow)
         {
             aired = Math.Max(aired, anime.EpisodesAired + 1);
         }

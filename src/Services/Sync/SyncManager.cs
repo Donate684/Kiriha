@@ -81,8 +81,11 @@ public partial class SyncManager : IHostedService
             catch (OperationCanceledException) { /* host gave up waiting */ }
             catch (Exception ex) { Log.Warning(ex, "SyncManager: loop task ended with an exception"); }
         }
-        _cts.Dispose();
-        _queueSignal.Dispose();
+        if (_loopTask == null || _loopTask.IsCompleted)
+        {
+            _cts.Dispose();
+            _queueSignal.Dispose();
+        }
     }
 
     private async Task InitializeAndProcessQueueAsync(CancellationToken ct)

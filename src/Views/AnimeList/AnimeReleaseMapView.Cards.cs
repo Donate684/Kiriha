@@ -10,7 +10,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 {
     private Border CreateReleaseCard(ReleaseMapItem release, ReleasePalette palette)
     {
-        var isSoon = (release.ReleaseAt - DateTime.Now).TotalHours <= 24;
+        var isSoon = (release.ReleaseAt - DateTime.UtcNow).TotalHours <= 24;
         var accentColor = isSoon ? palette.WarmAccent : palette.CoolAccent;
 
         // Left accent bar

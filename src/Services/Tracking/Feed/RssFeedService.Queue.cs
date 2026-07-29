@@ -84,7 +84,7 @@ public partial class RssFeedService
                         ReleaseGroup = group,
                         DownloadLink = item.Element("link")?.Value,
                         MagnetLink = !string.IsNullOrEmpty(infoHash) ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}" : null,
-                        PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.Now,
+                        PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.UtcNow,
                         IsNew = true
                     };
                 }

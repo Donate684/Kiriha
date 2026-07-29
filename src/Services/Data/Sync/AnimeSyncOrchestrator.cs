@@ -78,9 +78,10 @@ public partial class AnimeSyncOrchestrator
 
             status?.Report(UIUtils.GetLoc("sync.saving.to_db"));
             var snapshot = await _animeRepository.GetSnapshotAsync(new[] { MediaKind.Anime });
-            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, new[] { MediaKind.Anime });
+            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, new[] { MediaKind.Anime }, ct);
 
-            await Task.Run(() => _recognitionCache.BuildIndex(_animeRepository.Collection));
+            var fullList = await _uiDispatcher.InvokeAsync(() => _animeRepository.Collection.ToList());
+            await Task.Run(() => _recognitionCache.BuildIndex(fullList));
 
             WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
             return true;
@@ -131,7 +132,7 @@ public partial class AnimeSyncOrchestrator
 
             status?.Report(UIUtils.GetLoc("sync.saving.to_db"));
             var snapshot = await _animeRepository.GetSnapshotAsync(kinds);
-            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, kinds);
+            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, kinds, ct);
 
             WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
             return true;

@@ -11,6 +11,8 @@ public class MpvOpenGlRenderer : IDisposable
     private IntPtr _renderContext;
     private MpvRenderUpdateCallback? _renderUpdateCallback;
     private GCHandle _renderUpdateHandle;
+    private int _disposeState;
+    private volatile bool _disposed;
 
     // This lock is static because it's used within a native callback (OnRenderUpdate) 
     // that lacks an instance context. If multiple instances are created, 
@@ -78,9 +80,21 @@ public class MpvOpenGlRenderer : IDisposable
 
     public void RenderOpenGl(int framebuffer, int width, int height)
     {
-        _renderGate.EnterReadLock();
+        if (_disposed) return;
+
         try
         {
+            _renderGate.EnterReadLock();
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_disposed) return;
+
             IntPtr renderContext;
             lock (_player.Gate)
             {
@@ -137,7 +151,18 @@ public class MpvOpenGlRenderer : IDisposable
 
     public void Dispose()
     {
-        _renderGate.EnterWriteLock();
+        if (Interlocked.Exchange(ref _disposeState, 1) == 1) return;
+        _disposed = true;
+
+        try
+        {
+            _renderGate.EnterWriteLock();
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
+
         try
         {
             IntPtr renderContext;

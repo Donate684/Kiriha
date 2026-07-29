@@ -29,7 +29,7 @@ public partial class WatchNextSectionViewModel : ViewModelBase
 
         if (items.Count == 0) return;
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         foreach (var item in items
                      .Where(x => IsCurrentOngoing(x, now) && x.Presentation.ShowAiredProgressBar && x.Presentation.UnseenEpisodesCount > 0)
                      .OrderByDescending(x => x.Presentation.UnseenEpisodesCount)

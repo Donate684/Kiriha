@@ -24,16 +24,16 @@ public class AnisthesiaService : IHostedService, IDisposable
     private readonly DetectionManager _detectionManager;
     private readonly PauseDetector _pauseDetector = new();
     private readonly List<AnisthesiaPlayer> _availablePlayers;
-    private HashSet<string> _runningPlayerNames = new();
+    private IReadOnlySet<string> _runningPlayerNames = new HashSet<string>();
     private uint _lastTrackedPid;
     private readonly CancellationTokenSource _disposeCts = new();
 
     public event EventHandler<ParsedMedia>? MediaDetected;
     public event EventHandler? MediaCleared;
-    public event EventHandler<HashSet<string>>? RunningPlayersChanged;
+    public event EventHandler<IReadOnlySet<string>>? RunningPlayersChanged;
 
     public List<AnisthesiaPlayer> AvailablePlayers => _availablePlayers;
-    public HashSet<string> RunningPlayerNames => _runningPlayerNames;
+    public IReadOnlySet<string> RunningPlayerNames => _runningPlayerNames;
 
     public AnisthesiaService(
         SettingsService settingsService,
@@ -165,7 +165,13 @@ public class AnisthesiaService : IHostedService, IDisposable
                 Log.Debug("Anisthesia polling error: {Msg}", ex.Message);
             }
 
-            await Task.Delay(5000, ct); // Poll every 5s
+            int delayMs = 5000;
+            if (lastDetected != null)
+                delayMs = 2000; // Actively tracking media, poll fast to catch pause/play
+            else if (_runningPlayerNames.Count > 0)
+                delayMs = 3000; // Player is open, waiting for media
+
+            await Task.Delay(delayMs, ct);
         }
     }
 

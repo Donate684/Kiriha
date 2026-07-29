@@ -22,6 +22,7 @@ public class ScrobbleServiceTests : IDisposable
     private readonly Mock<HistoryService> _mockHistoryService;
     private readonly Mock<NotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
+    private readonly Mock<Kiriha.Core.Infrastructure.IUiDispatcher> _mockUiDispatcher;
     private readonly ScrobbleService _scrobbleService;
 
     public ScrobbleServiceTests()
@@ -41,6 +42,7 @@ public class ScrobbleServiceTests : IDisposable
         _mockHistoryService = new Mock<HistoryService>(null!);
         _mockNotificationService = new Mock<NotificationService>(null!, null!);
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
+        _mockUiDispatcher = new Mock<Kiriha.Core.Infrastructure.IUiDispatcher>();
 
         // When background task is queued, run it synchronously for testing
         _mockBackgroundTasks
@@ -55,7 +57,8 @@ public class ScrobbleServiceTests : IDisposable
             _mockHistoryService.Object,
             _settingsService,
             _mockNotificationService.Object,
-            _mockBackgroundTasks.Object);
+            _mockBackgroundTasks.Object,
+            _mockUiDispatcher.Object);
     }
 
     [Fact]

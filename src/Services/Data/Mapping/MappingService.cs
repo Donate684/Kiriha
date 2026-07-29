@@ -16,6 +16,7 @@ public partial class MappingService
     private readonly Repository.IMalSearchCacheRepository _malSearchCache;
     private readonly RecognitionCache _recognitionCache;
     private readonly ConcurrentDictionary<string, int> _sessionCache = new();
+    private readonly ConcurrentDictionary<int, (string t, string e, string r)> _normalizedItemCache = new();
 
     public MappingService(MalApiService malApi, ManualMappingService manualMapping, Repository.IMalSearchCacheRepository malSearchCache, RecognitionCache recognitionCache)
     {
@@ -29,6 +30,7 @@ public partial class MappingService
     {
         _sessionCache.Clear();
         _recognitionCache.Clear();
+        _normalizedItemCache.Clear();
     }
 
     public virtual async Task<int?> GetIdFromTitleAsync(string title, IEnumerable<AnimeItem> userList)
@@ -100,9 +102,14 @@ public partial class MappingService
         string normSearchTitle = Normalize(searchTitle);
 
         localMatch = userList.FirstOrDefault(x =>
-            Normalize(x.Title) == normSearchTitle ||
-            Normalize(x.EnglishTitle ?? "") == normSearchTitle ||
-            Normalize(x.RussianTitle ?? "") == normSearchTitle);
+        {
+            var cached = _normalizedItemCache.GetOrAdd(x.Id, _ => (
+                Normalize(x.Title),
+                Normalize(x.EnglishTitle ?? ""),
+                Normalize(x.RussianTitle ?? "")
+            ));
+            return cached.t == normSearchTitle || cached.e == normSearchTitle || cached.r == normSearchTitle;
+        });
 
         // Same season-aware guard as in step 3: never collapse a "Season 2+"
         // query down to the base title here, otherwise the normalized fallback
@@ -110,9 +117,14 @@ public partial class MappingService
         if (localMatch == null && normSearchTitle != normTitle && parsedSeason <= 1)
         {
             localMatch = userList.FirstOrDefault(x =>
-                Normalize(x.Title) == normTitle ||
-                Normalize(x.EnglishTitle ?? "") == normTitle ||
-                Normalize(x.RussianTitle ?? "") == normTitle);
+            {
+                var cached = _normalizedItemCache.GetOrAdd(x.Id, _ => (
+                    Normalize(x.Title),
+                    Normalize(x.EnglishTitle ?? ""),
+                    Normalize(x.RussianTitle ?? "")
+                ));
+                return cached.t == normTitle || cached.e == normTitle || cached.r == normTitle;
+            });
         }
 
         if (localMatch != null && IsValidMatch(localMatch, parsedEpisode))

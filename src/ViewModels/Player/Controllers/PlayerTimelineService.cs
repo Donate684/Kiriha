@@ -44,7 +44,7 @@ public sealed class PlayerTimelineService
     {
         CurrentTime = ClampToDuration(time);
         CurrentTimeString = FormatTime(CurrentTime);
-        _lastSeekTime = DateTime.Now;
+        _lastSeekTime = DateTime.UtcNow;
         return Snapshot;
     }
 
@@ -69,7 +69,7 @@ public sealed class PlayerTimelineService
     public bool TryApplyPlayerTime(double time, out PlayerTimelineSnapshot snapshot)
     {
         snapshot = Snapshot;
-        if (IsScrubbing || (DateTime.Now - _lastSeekTime) <= SeekEchoSuppression)
+        if (IsScrubbing || (DateTime.UtcNow - _lastSeekTime) <= SeekEchoSuppression)
             return false;
 
         if (Math.Abs(time - CurrentTime) <= 0.05)

@@ -44,7 +44,7 @@ public class ImageCacheCleanup
 
             int deletedCount = 0;
             long reclaimedSpace = 0;
-            var threshold = DateTime.Now.AddDays(-7);
+            var threshold = DateTime.UtcNow.AddDays(-7);
 
             await Task.Run(() =>
             {

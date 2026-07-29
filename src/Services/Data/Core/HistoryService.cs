@@ -58,7 +58,7 @@ public class HistoryService
                 AnimeTitle = title,
                 RussianTitle = russianTitle,
                 Episode = episode,
-                Timestamp = DateTime.Now,
+                Timestamp = DateTime.UtcNow,
                 ActionType = typeId,
                 Detail = detail?.ToString() ?? ""
             };

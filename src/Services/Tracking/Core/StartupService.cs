@@ -10,10 +10,16 @@ public static class StartupService
 
     public static void EnableStartup(bool launchMinimized)
     {
+        if (!System.OperatingSystem.IsWindows())
+            return;
+
         using var key = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
         if (key != null)
         {
             var exePath = Process.GetCurrentProcess().MainModule?.FileName;
+            if (string.IsNullOrEmpty(exePath))
+                return;
+
             var command = $"\"{exePath}\"";
             if (launchMinimized)
             {
@@ -25,6 +31,9 @@ public static class StartupService
 
     public static void DisableStartup()
     {
+        if (!System.OperatingSystem.IsWindows())
+            return;
+
         using var key = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
         if (key != null)
         {

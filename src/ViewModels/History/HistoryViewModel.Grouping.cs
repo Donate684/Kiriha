@@ -13,7 +13,7 @@ public partial class HistoryViewModel
         var filtered = _rawItems.AsEnumerable();
 
         // Period
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         filtered = SelectedPeriod switch
         {
             1 => filtered.Where(x => x.Timestamp.Date == now.Date),
@@ -89,7 +89,7 @@ public partial class HistoryViewModel
 
     private string GetFriendlyDate(DateTime date)
     {
-        var now = DateTime.Now.Date;
+        var now = DateTime.UtcNow.Date;
         if (date == now) return UIUtils.GetLoc("common.time.today");
         if (date == now.AddDays(-1)) return UIUtils.GetLoc("common.time.yesterday");
 

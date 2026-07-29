@@ -28,6 +28,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private readonly SettingsService _settingsService;
     private readonly Services.NotificationService _notificationService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
+    private readonly Kiriha.Core.Infrastructure.IUiDispatcher _uiDispatcher;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -43,13 +44,15 @@ public class ScrobbleService : IScrobbleService, IDisposable
         HistoryService historyService,
         SettingsService settingsService,
         Services.NotificationService notificationService,
-        IBackgroundTaskSupervisor backgroundTasks)
+        IBackgroundTaskSupervisor backgroundTasks,
+        Kiriha.Core.Infrastructure.IUiDispatcher uiDispatcher)
     {
         _progressService = progressService;
         _historyService = historyService;
         _settingsService = settingsService;
         _notificationService = notificationService;
         _backgroundTasks = backgroundTasks;
+        _uiDispatcher = uiDispatcher;
     }
 
     public void StartScrobble(ParsedMedia media, AnimeItem match)
@@ -158,7 +161,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 nextStatus = UserAnimeStatus.Completed;
             }
 
-            if (match.Progress >= targetEp)
+            bool alreadyScrobbled = await _uiDispatcher.InvokeAsync(() => match.Progress >= targetEp);
+            if (alreadyScrobbled)
             {
                 CountdownUpdated?.Invoke(this, Kiriha.Core.UIUtils.GetLoc("scrobbler.status.already_scrobbled"));
                 return;

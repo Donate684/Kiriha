@@ -28,7 +28,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
         _thumbnailer ??= CreateThumbnailer();
     }
 
-    public async void Show(string videoUrl, double duration, double timeSeconds, double left)
+    public void Show(string videoUrl, double duration, double timeSeconds, double left)
     {
         if (duration <= 0 || string.IsNullOrWhiteSpace(videoUrl))
         {
@@ -36,23 +36,38 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             return;
         }
 
-        _overlay.ShowTimelinePreview(timeSeconds, left);
+        try
+        {
+            _overlay.ShowTimelinePreview(timeSeconds, left);
 
-        var thumbnailer = _thumbnailer;
-        if (thumbnailer == null)
-            return;
+            var thumbnailer = _thumbnailer;
+            if (thumbnailer == null)
+                return;
 
-        var bucket = MpvThumbnailer.GetCacheBucket(timeSeconds);
-        if (bucket == _previewBucket && _overlay.TimelinePreviewImage != null)
-            return;
+            var bucket = MpvThumbnailer.GetCacheBucket(timeSeconds);
+            if (bucket == _previewBucket && _overlay.TimelinePreviewImage != null)
+                return;
 
-        _previewBucket = bucket;
-        var requestId = ++_requestId;
-        _thumbnailCts?.Cancel();
-        _thumbnailCts?.Dispose();
-        _thumbnailCts = new CancellationTokenSource();
-        var token = _thumbnailCts.Token;
+            _previewBucket = bucket;
+            var requestId = ++_requestId;
+            
+            var oldCts = _thumbnailCts;
+            _thumbnailCts = new CancellationTokenSource();
+            oldCts?.Cancel();
+            oldCts?.Dispose();
+            
+            var token = _thumbnailCts.Token;
 
+            _ = ShowThumbnailAsync(thumbnailer, videoUrl, timeSeconds, bucket, requestId, token);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Debug(ex, "Failed to initiate timeline preview");
+        }
+    }
+
+    private async Task ShowThumbnailAsync(MpvThumbnailer thumbnailer, string videoUrl, double timeSeconds, int bucket, int requestId, CancellationToken token)
+    {
         try
         {
             var path = await thumbnailer.GetThumbnailAsync(videoUrl, timeSeconds, token);

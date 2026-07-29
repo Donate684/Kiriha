@@ -30,7 +30,7 @@ internal static partial class NyaaTorrentParser
             ReleaseGroup = group,
             DownloadLink = item.Element("link")?.Value,
             MagnetLink = !string.IsNullOrEmpty(infoHash) ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}" : null,
-            PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.Now,
+            PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.UtcNow,
             IsNew = false
         };
     }
@@ -45,7 +45,7 @@ internal static partial class NyaaTorrentParser
     {
         if (anime.StatusDetailed != "currently_airing") return false;
         if (anime.Status != Kiriha.Models.Entities.UserAnimeStatus.Watching) return false;
-        if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value > DateTime.Now) return false;
+        if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value > DateTime.UtcNow) return false;
         return true;
     }
 

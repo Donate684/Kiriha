@@ -84,7 +84,7 @@ public sealed class DatabaseMaintenance
                     AnimeTitle = $"ID {t.AnimeId}",
                     RussianTitle = null,
                     Episode = t.Progress ?? 0,
-                    Timestamp = DateTime.Now,
+                    Timestamp = DateTime.UtcNow,
                     ActionType = 3,
                     Detail = "SyncFailed (max retries exceeded)"
                 });

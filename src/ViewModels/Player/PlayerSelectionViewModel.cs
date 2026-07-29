@@ -49,7 +49,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
         RefreshLists();
     }
 
-    private void OnRunningPlayersChanged(object? sender, HashSet<string> running)
+    private void OnRunningPlayersChanged(object? sender, IReadOnlySet<string> running)
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {

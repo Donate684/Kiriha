@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using Avalonia.Threading;
 
 namespace Kiriha.ViewModels.AnimeList;
 
 public partial class AnimeListViewModel
 {
-    // Per-minute ticker that re-evaluates the airing countdown ("Hч Mм") on
+    // Per-minute ticker that re-evaluates the airing countdown ("H? M?") on
     // every visible card. Without it the pill text would only refresh when
     // NextEpisodeAt itself changed (i.e. on the next 12 h sync), so a card
-    // could sit stuck on "3ч 19м" for hours.
+    // could sit stuck on "3? 19?" for hours.
     private DispatcherTimer? _airingTicker;
 
     private void OnAiringTick(object? sender, EventArgs e)
@@ -17,7 +17,7 @@ public partial class AnimeListViewModel
         // unconfirmed state, i.e. up to 48 h overdue - see AiringBadgeText)
         // need their countdown re-evaluated. Skipping the rest keeps the
         // tick essentially free even on large libraries.
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         foreach (var item in FilteredItems)
         {
             if (item.NextEpisodeAt.HasValue)

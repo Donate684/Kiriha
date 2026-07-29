@@ -10,7 +10,7 @@ public partial class HistorySectionViewModel
 {
     private void AddRecentHistory(IEnumerable<HistoryItem> history, IReadOnlyCollection<AnimeItem> items)
     {
-        var today = DateTime.Now.Date;
+        var today = DateTime.UtcNow.Date;
         var posterMap = items
             .GroupBy(x => x.Id)
             .ToDictionary(x => x.Key, x => x.First().MainPictureUrl);

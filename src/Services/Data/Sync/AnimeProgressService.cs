@@ -9,6 +9,14 @@ using Kiriha.Services.Api;
 using Kiriha.Services.Data.Repository;
 using Serilog;
 
+using System;
+using System.Threading.Tasks;
+using Kiriha.Models;
+using Kiriha.Models.Entities;
+using Kiriha.Services.Api;
+using Kiriha.Services.Data.Repository;
+using Serilog;
+
 namespace Kiriha.Services.Data.Sync;
 
 public class AnimeProgressService
@@ -17,17 +25,20 @@ public class AnimeProgressService
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly SyncManager _syncManager;
     private readonly HistoryService _historyService;
+    private readonly Kiriha.Core.Infrastructure.IUiDispatcher _uiDispatcher;
 
     public AnimeProgressService(
         AnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
         SyncManager syncManager,
-        HistoryService historyService)
+        HistoryService historyService,
+        Kiriha.Core.Infrastructure.IUiDispatcher uiDispatcher)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
         _syncManager = syncManager;
         _historyService = historyService;
+        _uiDispatcher = uiDispatcher;
     }
 
     public async Task RemoveAnimeAsync(int animeId)
@@ -57,9 +68,12 @@ public class AnimeProgressService
         await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
         await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress, nextStatus);
 
-        item.Progress = nextProgress;
-        if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
-            item.Status = nextStatus.Value;
+        await _uiDispatcher.InvokeAsync(() =>
+        {
+            item.Progress = nextProgress;
+            if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
+                item.Status = nextStatus.Value;
+        });
 
         return true;
     }
@@ -81,9 +95,12 @@ public class AnimeProgressService
 
         if (isManga)
         {
-            item.ChaptersRead = nextProgress;
-            if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
-                item.Status = nextStatus.Value;
+            await _uiDispatcher.InvokeAsync(() =>
+            {
+                item.ChaptersRead = nextProgress;
+                if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
+                    item.Status = nextStatus.Value;
+            });
 
             await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
             await _syncManager.EnqueueFullUpdateAsync(item);
@@ -112,7 +129,10 @@ public class AnimeProgressService
             if (item.ChaptersRead > 0)
             {
                 int nextProgress = item.ChaptersRead - 1;
-                item.ChaptersRead = nextProgress;
+                await _uiDispatcher.InvokeAsync(() =>
+                {
+                    item.ChaptersRead = nextProgress;
+                });
 
                 await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, null);
                 await _syncManager.EnqueueFullUpdateAsync(item);
@@ -135,7 +155,10 @@ public class AnimeProgressService
 
     public async Task SetScoreAsync(AnimeItem item, int score)
     {
-        item.Score = score.ToString();
+        await _uiDispatcher.InvokeAsync(() =>
+        {
+            item.Score = score.ToString();
+        });
         await _userAnimeRepo.UpdateScoreAsync(item, item.Score);
         await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
         _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString());

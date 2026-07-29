@@ -8,7 +8,7 @@ public readonly partial struct AnimeItemPresentation
     private readonly AnimeItem _item;
     private readonly DateTime _now;
 
-    public AnimeItemPresentation(AnimeItem item) : this(item, DateTime.Now)
+    public AnimeItemPresentation(AnimeItem item) : this(item, DateTime.UtcNow)
     {
     }
 

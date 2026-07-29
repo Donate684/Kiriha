@@ -49,8 +49,8 @@ public partial class AnimeSyncOrchestrator
                 {
                     var currentBatch = uiBatch.ToList();
                     uiBatch.Clear();
-                    await _animeRepository.ApplySyncBatchAsync(i == 49 || i == total - 1 && uiBatch.Count == total ? toRemove : new List<AnimeItem>(), currentBatch);
-                    if (i < total - 1) toRemove.Clear(); // Only pass toRemove once
+                    var removeList = (i == total - 1) ? toRemove : new List<AnimeItem>();
+                    await _animeRepository.ApplySyncBatchAsync(removeList, currentBatch);
                 }
 
                 status?.Report($"{UIUtils.GetLoc("sync.updating.metadata")}: {i + 1}/{total}");

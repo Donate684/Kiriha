@@ -61,20 +61,20 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
                 : extractedTitle;
 
             using var db = _dbFactory.CreateDbContext();
-            var extractedLower = extractedTitle.ToLower();
-            var searchLower = searchTitle.ToLower();
 
+            var searchTitleLower = searchTitle.ToLower();
             var match = db.UserAnime.FirstOrDefault(a =>
-                (a.RussianTitle != null && a.RussianTitle.ToLower() == searchLower) ||
-                (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchLower) ||
-                (a.Title != null && a.Title.ToLower() == searchLower));
+                (a.RussianTitle != null && a.RussianTitle.ToLower() == searchTitleLower) ||
+                (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchTitleLower) ||
+                (a.Title != null && a.Title.ToLower() == searchTitleLower));
 
             if (match == null && parsedSeason <= 1)
             {
+                var extractedTitleLower = extractedTitle.ToLower();
                 match = db.UserAnime.FirstOrDefault(a =>
-                    (a.RussianTitle != null && a.RussianTitle.ToLower() == extractedLower) ||
-                    (a.EnglishTitle != null && a.EnglishTitle.ToLower() == extractedLower) ||
-                    (a.Title != null && a.Title.ToLower() == extractedLower));
+                    (a.RussianTitle != null && a.RussianTitle.ToLower() == extractedTitleLower) ||
+                    (a.EnglishTitle != null && a.EnglishTitle.ToLower() == extractedTitleLower) ||
+                    (a.Title != null && a.Title.ToLower() == extractedTitleLower));
             }
 
             return match == null

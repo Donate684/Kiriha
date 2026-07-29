@@ -19,7 +19,7 @@ public partial class HistorySectionViewModel
         if (!HasMonthlyHistory) return;
 
         var max = Math.Max(1, monthGroups.Values.Max(x => x.Count));
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var minYear = Math.Min(monthGroups.Keys.Min(x => x.Year), now.Year);
         var maxYear = Math.Max(monthGroups.Keys.Max(x => x.Year), now.Year);
         var monthNames = CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedMonthNames;

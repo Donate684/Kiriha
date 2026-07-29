@@ -25,4 +25,25 @@ public class ParsedMedia
     public string AnimeType { get; set; } = string.Empty;
     public TimeSpan? Position { get; set; }
     public TimeSpan? Duration { get; set; }
+
+    public ParsedMedia WithEpisode(string newEpisode)
+    {
+        return new ParsedMedia
+        {
+            OriginalTitle = OriginalTitle,
+            AnimeTitle = AnimeTitle,
+            EpisodeTitle = EpisodeTitle,
+            Episode = newEpisode,
+            Season = Season,
+            Group = Group,
+            ProcessName = ProcessName,
+            Pid = Pid,
+            IsPlaying = IsPlaying,
+            VideoResolution = VideoResolution,
+            Source = Source,
+            AnimeType = AnimeType,
+            Position = Position,
+            Duration = Duration
+        };
+    }
 }

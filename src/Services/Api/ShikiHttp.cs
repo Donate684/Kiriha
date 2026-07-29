@@ -65,16 +65,18 @@ internal static class ShikiHttp
             oldContent.Dispose();
         }
 
+        var currentUri = resolver.Rewrite(request.RequestUri!);
         var aliasTried = false;
         for (var hop = 0; hop <= maxHops; hop++)
         {
-            var response = await client.SendAsync(request, ct).ConfigureAwait(false);
+            var attemptRequest = await CloneRequestAsync(request, currentUri, ct).ConfigureAwait(false);
+            var response = await client.SendAsync(attemptRequest, ct).ConfigureAwait(false);
             var code = (int)response.StatusCode;
 
             // ── Scenario A: explicit redirect ────────────────────────────────
             if (code is 301 or 302 or 307 or 308 && response.Headers.Location is not null)
             {
-                var target = new Uri(request.RequestUri!, response.Headers.Location);
+                var target = new Uri(currentUri, response.Headers.Location);
 
                 // Only follow Shikimori → Shikimori redirects within the same
                 // realm. Anything else (e.g. .one → .net) is a misconfiguration
@@ -83,21 +85,20 @@ internal static class ShikiHttp
                 {
                     return response;
                 }
-                if (!resolver.IsSameRealm(request.RequestUri!.Host, target.Host))
+                if (!resolver.IsSameRealm(currentUri.Host, target.Host))
                 {
                     Log.Warning("Shiki cross-realm redirect rejected: {From} -> {To}",
-                        request.RequestUri.Host, target.Host);
+                        currentUri.Host, target.Host);
                     return response;
                 }
 
-                resolver.Remember(request.RequestUri!.Host, target.Host);
+                resolver.Remember(currentUri.Host, target.Host);
                 Log.Information("Shiki host pinned via redirect: {From} -> {To}",
-                    request.RequestUri.Host, target.Host);
+                    currentUri.Host, target.Host);
 
                 response.Dispose();
-                var oldRequest = request;
-                request = await CloneRequestAsync(request, target, ct).ConfigureAwait(false);
-                oldRequest.Dispose();
+                attemptRequest.Dispose();
+                currentUri = target;
                 continue;
             }
 
@@ -108,11 +109,11 @@ internal static class ShikiHttp
             // response. Heuristic guard: only act on /api/* and /oauth/* so a
             // genuine 404 on, say, /assets/* can't trigger unrelated retries.
             if (code == 404 && !aliasTried &&
-                LooksLikeApiPath(request.RequestUri!.AbsolutePath) &&
-                resolver.IsKnownHost(request.RequestUri.Host))
+                LooksLikeApiPath(currentUri.AbsolutePath) &&
+                resolver.IsKnownHost(currentUri.Host))
             {
                 aliasTried = true;
-                var originalHost = request.RequestUri.Host;
+                var originalHost = currentUri.Host;
 
                 HttpResponseMessage? lastResponse = null;
                 var didProbe = false;
@@ -125,7 +126,7 @@ internal static class ShikiHttp
                         didProbe = true;
                     }
 
-                    var target = new UriBuilder(request.RequestUri) { Host = alias }.Uri;
+                    var target = new UriBuilder(currentUri) { Host = alias }.Uri;
                     Log.Information("Shiki 404 on {Host}, probing alias {Alias}",
                         originalHost, alias);
 

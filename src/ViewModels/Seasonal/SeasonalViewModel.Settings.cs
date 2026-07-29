@@ -28,8 +28,8 @@ public partial class SeasonalViewModel
 
     private void SetCurrentSeasonFromClock()
     {
-        int month = DateTime.Now.Month;
-        _currentYear = DateTime.Now.Year;
+        int month = DateTime.UtcNow.Month;
+        _currentYear = DateTime.UtcNow.Year;
         if (month == 12) _currentYear++;
 
         _currentSeason = month switch

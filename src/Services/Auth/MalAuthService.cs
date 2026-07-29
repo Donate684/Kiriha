@@ -105,7 +105,7 @@ public class MalAuthService
             return tokens;
         }
 
-        Log.Error("?????? ?????? ???? ?? ?????: {Response}", json);
+        Log.Error("Failed to exchange code for token: {Response}", json);
         return null;
     }
 

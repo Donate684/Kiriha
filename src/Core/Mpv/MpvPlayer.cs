@@ -16,10 +16,7 @@ public partial class MpvPlayer : IDisposable
     private const ulong SeekablePropertyId = 4;
     private const ulong IdleActivePropertyId = 5;
     private const ulong TrackListPropertyId = 6;
-    private const string AudioNormalizationFilter = "loudnorm=I=-16:TP=-1.5:LRA=11";
-    private const string SeekCommandKey = "seek";
-    private const string VolumeCommandKey = "volume";
-    private const string SpeedCommandKey = "speed";
+
 
     private readonly object _gate = new();
     private readonly MpvPropertyCache _propertyCache = new(FormatRuntimeVideoInfo(null, null, null, null, null));

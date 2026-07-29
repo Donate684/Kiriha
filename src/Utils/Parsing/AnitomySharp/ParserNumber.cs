@@ -55,7 +55,7 @@ namespace AnitomySharp
                 temp += number[i];
             }
 
-            return !string.IsNullOrEmpty(temp) && double.Parse(temp) <= EpisodeNumberMax;
+            return !string.IsNullOrEmpty(temp) && double.Parse(temp, System.Globalization.CultureInfo.InvariantCulture) <= EpisodeNumberMax;
         }
 
         /// <summary>

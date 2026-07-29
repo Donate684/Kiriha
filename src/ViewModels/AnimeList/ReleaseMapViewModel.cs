@@ -22,7 +22,7 @@ public class ReleaseMapViewModel
 
     public IEnumerable<ReleaseMapItem> GetUpcomingReleases()
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         return _animeItems
             .Select(item => CreateReleaseMapItem(item, now))
             .Where(item => item != null)
@@ -139,7 +139,7 @@ public class ReleaseMapViewModel
 
     public static string FormatWeekReleaseSummary(IReadOnlyCollection<ReleaseMapItem> releases)
     {
-        var end = DateTime.Now.AddDays(7);
+        var end = DateTime.UtcNow.AddDays(7);
         var count = releases.Count(release => release.ReleaseAt < end);
         return $"{count} {PluralizeRelease(count)} на этой неделе";
     }
@@ -160,7 +160,7 @@ public class ReleaseMapViewModel
 
     public static string FormatUntilRelease(DateTime releaseAt)
     {
-        var diff = releaseAt - DateTime.Now;
+        var diff = releaseAt - DateTime.UtcNow;
         if (diff.TotalMinutes <= 1)
             return "сейчас";
 

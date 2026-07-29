@@ -13,6 +13,75 @@ namespace Kiriha.Services.Tracking.Core;
 
 public partial class TrackingService
 {
+    private bool HandleSameMediaUpdate(ParsedMedia prev, ParsedMedia media)
+    {
+        bool timeLeap = false;
+        if (prev.Position.HasValue && media.Position.HasValue)
+        {
+            timeLeap = Math.Abs((media.Position.Value - prev.Position.Value).TotalSeconds) > 3;
+        }
+
+        bool changed = prev.IsPlaying != media.IsPlaying || 
+                       prev.ProcessName != media.ProcessName || 
+                       timeLeap || 
+                       prev.Duration != media.Duration;
+                       
+        lock (_state) _currentMedia = media;
+
+        if (!changed)
+        {
+            return true;
+        }
+
+        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Models.Messages.MediaChangedMessage(media)));
+        _scrobbleService.UpdatePlayingState(media.IsPlaying);
+
+        AnimeItem? currentMatched;
+        lock (_state) currentMatched = _matchedAnime;
+
+        if (currentMatched != null)
+        {
+            NotifyPlayerMetadata(media, currentMatched);
+            UpdateDiscordPresence(media, currentMatched);
+        }
+
+        return true;
+    }
+
+    private void ApplyMatchedMedia(ParsedMedia media, AnimeItem? matched)
+    {
+        bool isValid;
+        lock (_state)
+        {
+            isValid = IsSameMedia(_currentMedia, media);
+            if (isValid)
+            {
+                _matchedAnime = matched;
+            }
+        }
+
+        if (!isValid) return;
+
+        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Models.Messages.AnimeMatchedMessage(matched)));
+
+        if (matched != null)
+        {
+            var effectiveMedia = (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
+                ? media.WithEpisode("1")
+                : media;
+
+            NotifyPlayerMetadata(effectiveMedia, matched);
+            UpdateDiscordPresence(effectiveMedia, matched);
+
+            if (matched.Status != UserAnimeStatus.None)
+                _scrobbleService.StartScrobble(effectiveMedia, matched);
+        }
+        else
+        {
+            _discordService.UpdatePresence(media.AnimeTitle, media.Episode, 0, null, null, media.Position, media.Duration, null, media.IsPlaying);
+        }
+    }
+
     private async Task SetMatchedInternalMedia(ParsedMedia media, int animeId)
     {
         try
@@ -21,35 +90,7 @@ public partial class TrackingService
             lock (_state) prev = _currentMedia;
             if (prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode)
             {
-                bool timeLeap = false;
-                if (prev.Position.HasValue && media.Position.HasValue)
-                {
-                    timeLeap = Math.Abs((media.Position.Value - prev.Position.Value).TotalSeconds) > 3;
-                }
-
-                bool changed = prev.IsPlaying != media.IsPlaying || prev.ProcessName != media.ProcessName || timeLeap;
-                lock (_state) _currentMedia = media;
-
-                if (!changed)
-                {
-                    return;
-                }
-
-                _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Models.Messages.MediaChangedMessage(media)));
-                _scrobbleService.UpdatePlayingState(media.IsPlaying);
-
-                // We need to update presence periodically for position/duration changes if we seek, 
-                // but for smooth ticking Discord handles it. We just call it if IsPlaying changed, or significant time leap.
-                AnimeItem? currentMatched;
-                lock (_state) currentMatched = _matchedAnime;
-
-                if (currentMatched != null)
-                {
-                    NotifyPlayerMetadata(media, currentMatched);
-                    UpdateDiscordPresence(media, currentMatched);
-                }
-
-                return;
+                if (HandleSameMediaUpdate(prev, media)) return;
             }
 
             lock (_state)
@@ -65,7 +106,7 @@ public partial class TrackingService
                 CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Models.Messages.AnimeMatchedMessage(null));
             });
 
-            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch { }
+            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.Collection));
             var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId);
@@ -95,39 +136,7 @@ public partial class TrackingService
             lock (_state) cur = _currentMedia;
             if (!IsSameMedia(cur, media)) return;
 
-            if (matched != null)
-            {
-                if (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
-                {
-                    media.Episode = "1";
-                }
-
-                NotifyPlayerMetadata(media, matched);
-
-                bool isValid;
-                lock (_state)
-                {
-                    isValid = IsSameMedia(_currentMedia, media);
-                    if (isValid)
-                    {
-                        _matchedAnime = matched;
-                    }
-                }
-
-                if (isValid)
-                {
-                    _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Models.Messages.AnimeMatchedMessage(matched)));
-
-                    UpdateDiscordPresence(media, matched);
-
-                    if (matched.Status != UserAnimeStatus.None)
-                        _scrobbleService.StartScrobble(media, matched);
-                }
-            }
-            else
-            {
-                _discordService.UpdatePresence(media.AnimeTitle, media.Episode, 0, null, null, media.Position, media.Duration, null, media.IsPlaying);
-            }
+            ApplyMatchedMedia(media, matched);
         }
         catch (Exception ex)
         {

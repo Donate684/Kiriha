@@ -9,76 +9,23 @@ internal sealed class MpvPropertyCache
     private static readonly TimeSpan TimePositionEventInterval = TimeSpan.FromMilliseconds(80);
 
     private readonly object _gate = new();
-    private double _lastTimePosition;
+    private volatile PlaybackState _playbackState = new(0, 0, false, false, false);
     private double _lastPublishedTimePosition;
-    private double _lastDuration;
-    private bool _lastPause = true;
-    private bool _lastSeekable;
-    private bool _lastLoaded;
     private DateTime _lastTimePositionEventUtc = DateTime.MinValue;
-    private string _runtimeVideoInfo;
+    private volatile string _runtimeVideoInfo;
     private DateTime _runtimeVideoInfoRefreshedUtc = DateTime.MinValue;
-    private bool _runtimeVideoInfoDirty = true;
+    private volatile bool _runtimeVideoInfoDirty = true;
 
     public MpvPropertyCache(string initialRuntimeVideoInfo)
     {
         _runtimeVideoInfo = initialRuntimeVideoInfo;
     }
 
-    public double TimePosition
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _lastTimePosition;
-            }
-        }
-    }
-
-    public double Duration
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _lastDuration;
-            }
-        }
-    }
-
-    public bool IsPaused
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _lastPause;
-            }
-        }
-    }
-
-    public string RuntimeVideoInfo
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _runtimeVideoInfo;
-            }
-        }
-    }
-
-    public PlaybackState PlaybackState
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return CreatePlaybackState();
-            }
-        }
-    }
+    public double TimePosition => _playbackState.Position;
+    public double Duration => _playbackState.Duration;
+    public bool IsPaused => !_playbackState.IsPlaying;
+    public string RuntimeVideoInfo => _runtimeVideoInfo;
+    public PlaybackState PlaybackState => _playbackState;
 
     public bool HasFreshRuntimeVideoInfo
     {
@@ -119,7 +66,8 @@ internal sealed class MpvPropertyCache
             var changedEnough = Math.Abs(timePosition - _lastPublishedTimePosition) >= TimePositionMinimumChangeSeconds;
             var elapsedEnough = now - _lastTimePositionEventUtc >= TimePositionEventInterval;
 
-            _lastTimePosition = timePosition;
+            var oldState = _playbackState;
+            _playbackState = oldState with { Position = timePosition };
 
             if (!isFirstEvent && !changedEnough && !elapsedEnough)
                 return false;
@@ -134,10 +82,11 @@ internal sealed class MpvPropertyCache
     {
         lock (_gate)
         {
-            if (Math.Abs(duration - _lastDuration) <= 0.01)
+            var oldState = _playbackState;
+            if (Math.Abs(duration - oldState.Duration) <= 0.01)
                 return false;
 
-            _lastDuration = duration;
+            _playbackState = oldState with { Duration = duration };
             return true;
         }
     }
@@ -146,10 +95,11 @@ internal sealed class MpvPropertyCache
     {
         lock (_gate)
         {
-            if (isPaused == _lastPause)
+            var oldState = _playbackState;
+            if (!isPaused == oldState.IsPlaying)
                 return false;
 
-            _lastPause = isPaused;
+            _playbackState = oldState with { IsPlaying = !isPaused };
             return true;
         }
     }
@@ -158,10 +108,11 @@ internal sealed class MpvPropertyCache
     {
         lock (_gate)
         {
-            if (isSeekable == _lastSeekable)
+            var oldState = _playbackState;
+            if (isSeekable == oldState.IsSeekable)
                 return false;
 
-            _lastSeekable = isSeekable;
+            _playbackState = oldState with { IsSeekable = isSeekable };
             return true;
         }
     }
@@ -170,10 +121,11 @@ internal sealed class MpvPropertyCache
     {
         lock (_gate)
         {
-            if (isLoaded == _lastLoaded)
+            var oldState = _playbackState;
+            if (isLoaded == oldState.IsLoaded)
                 return false;
 
-            _lastLoaded = isLoaded;
+            _playbackState = oldState with { IsLoaded = isLoaded };
             return true;
         }
     }
@@ -182,17 +134,10 @@ internal sealed class MpvPropertyCache
     {
         lock (_gate)
         {
-            var changed = !_lastPause;
-            _lastPause = true;
+            var oldState = _playbackState;
+            var changed = oldState.IsPlaying;
+            _playbackState = oldState with { IsPlaying = false };
             return changed;
         }
     }
-
-    private PlaybackState CreatePlaybackState() =>
-        new(
-            _lastTimePosition,
-            _lastDuration,
-            !_lastPause,
-            _lastSeekable,
-            _lastLoaded);
 }

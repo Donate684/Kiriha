@@ -68,10 +68,6 @@ public class MediaMatchingPipeline
                 }
             }
 
-            if (matched != null && matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
-            {
-                media.Episode = "1";
-            }
             return new MediaMatchResult { Success = true, MatchedAnime = matched, MalId = malId.Value };
         }
 

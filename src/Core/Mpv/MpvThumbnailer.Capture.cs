@@ -108,6 +108,7 @@ public sealed partial class MpvThumbnailer
                 if (string.Equals(_loadedPath, videoPath, StringComparison.Ordinal))
                     _loadedPath = null;
             }
+            throw new InvalidOperationException($"Thumbnailer failed to load file within timeout: {videoPath}");
         }
     }
 }

@@ -40,7 +40,7 @@ public interface IUserAnimeRepository
     /// non-empty local list when the incoming list is empty (defensive against
     /// transient API failures returning an empty body).
     /// </summary>
-    Task SyncFromRemoteAsync(IEnumerable<AnimeItem> items, MediaKind[]? syncKinds = null);
+    Task SyncFromRemoteAsync(IEnumerable<AnimeItem> items, MediaKind[]? syncKinds = null, CancellationToken ct = default);
 
     /// <summary>Local poster paths for items currently tracked. Used by image cache cleanup.</summary>
     Task<List<string>> GetActiveLocalImagePathsAsync();
