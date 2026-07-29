@@ -12,7 +12,16 @@ public class CrashReportTests : IDisposable
 {
     public CrashReportTests()
     {
-        // Cleanup crashes dir before tests
+        Cleanup();
+    }
+
+    public void Dispose()
+    {
+        Cleanup();
+    }
+
+    private void Cleanup()
+    {
         var dir = CrashReportReader.GetCrashesDir();
         if (Directory.Exists(dir))
         {
@@ -23,10 +32,6 @@ public class CrashReportTests : IDisposable
         {
             foreach (var f in Directory.GetFiles(CrashReporter.SeenDir)) File.Delete(f);
         }
-    }
-
-    public void Dispose()
-    {
     }
 
     [Fact]
