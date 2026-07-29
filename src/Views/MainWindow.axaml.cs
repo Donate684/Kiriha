@@ -32,7 +32,7 @@ public partial class MainWindow : KirihaWindowBase
 
 
 
-    public void ApplyMica()
+    public new void ApplyMica()
     {
         // Force transparency hints for testing, ignoring the check for a moment if needed
         var settings = SettingsService?.Current;

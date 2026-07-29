@@ -1,10 +1,31 @@
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
+using Kiriha.Models.Presentation;
 
 namespace Kiriha.ViewModels.Player;
 
 public partial class PlayerViewModel
 {
+    [ObservableProperty] private bool _playerAutoPlay = true;
+    [ObservableProperty] private bool _singlePlayerWindow = true;
+    [ObservableProperty] private bool _rememberPlayerVolume = true;
+    [ObservableProperty] private bool _autoHideControls = true;
+    [ObservableProperty] private bool _showChapterMarkers = true;
+
+    [ObservableProperty] private bool _showPlayPauseButton = true;
+    [ObservableProperty] private bool _showSkipButtons = true;
+    [ObservableProperty] private bool _showMuteButton = true;
+    [ObservableProperty] private bool _showVolumeSlider = true;
+    [ObservableProperty] private bool _showTimeDisplay = true;
+    [ObservableProperty] private bool _showSpeedButton = true;
+    [ObservableProperty] private bool _showSubtitleButton = true;
+    [ObservableProperty] private bool _showSubtitlePositionButton = true;
+    [ObservableProperty] private bool _showAudioButton = true;
+    [ObservableProperty] private bool _showScreenshotButton = true;
+    [ObservableProperty] private bool _showSubtitleStyleButton = true;
+    [ObservableProperty] private string _preferredAudioLanguages = "Japanese,jpn,ja";
+
     public List<PlayerMouseActionOption> MouseActionOptions { get; } = new()
     {
         new("Ничего", PlayerMouseAction.None),

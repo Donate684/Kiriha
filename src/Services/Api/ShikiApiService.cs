@@ -1,5 +1,6 @@
 using Kiriha.Services.Data.Settings;
 using System;
+using Kiriha.Core.Infrastructure.Http;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -16,15 +17,15 @@ using Kiriha.Services.Auth;
 using Kiriha.Services.Data;
 using Serilog;
 
+
 namespace Kiriha.Services.Api;
 
 public partial class ShikiApiService : ITrackerService
 {
     private readonly HttpClient _httpClient;
     private readonly SettingsService _settingsService;
-    private readonly ShikiAuthService _authService;
+    private readonly ShikiTokenService _tokenService;
     private readonly ShikiHostResolver _hostResolver;
-    private readonly SemaphoreSlim _tokenLock = new(1, 1);
     private readonly HttpConditionalCache _httpCache;
     private readonly System.Collections.Concurrent.ConcurrentDictionary<int, (ShikiPersonResponse? Value, DateTime SystemDateTime)> _personCache = new();
 
@@ -43,11 +44,11 @@ public partial class ShikiApiService : ITrackerService
 
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    public ShikiApiService(HttpClient httpClient, SettingsService settingsService, ShikiAuthService authService, ShikiHostResolver hostResolver, Kiriha.Services.Data.Repository.IHttpCacheRepository httpCacheRepo)
+    public ShikiApiService(HttpClient httpClient, SettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, Kiriha.Services.Data.Repository.IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
-        _authService = authService;
+        _tokenService = tokenService;
         _hostResolver = hostResolver;
         _httpCache = new HttpConditionalCache(
             _httpClient,
@@ -94,37 +95,12 @@ public partial class ShikiApiService : ITrackerService
     private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, CancellationToken ct)
     {
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
-        var token = await EnsureValidTokenAsync(ct);
+        var token = await _tokenService.EnsureValidTokenAsync(ct);
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         // Routed through ShikiHttp so the .net ⇄ .rip geo-redirect / 404
         // dance is handled transparently with method+body+auth preserved.
         return await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
-    }
-
-    private async Task<string?> EnsureValidTokenAsync(CancellationToken ct)
-    {
-        var tokens = _settingsService.Current.Api.Shiki;
-        if (tokens == null) return null;
-        if (!tokens.IsExpired) return tokens.AccessToken;
-
-        await _tokenLock.WaitAsync(ct);
-        try
-        {
-            tokens = _settingsService.Current.Api.Shiki;
-            if (tokens == null || !tokens.IsExpired) return tokens?.AccessToken;
-
-            var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);
-            if (newTokens != null)
-            {
-                newTokens.UserId = tokens.UserId;
-                _settingsService.Update(settings => settings.Api.Shiki = newTokens, SettingsSection.Api, save: false);
-                _settingsService.SaveImmediate();
-                return newTokens.AccessToken;
-            }
-            return null;
-        }
-        finally { _tokenLock.Release(); }
     }
 }

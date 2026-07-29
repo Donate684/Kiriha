@@ -17,6 +17,23 @@ public class KirihaWindowBase : Window
         if (SettingsService != null)
         {
             ApplyUiScale(SettingsService.Current.UI.UiScale);
+            ApplyMica();
+        }
+    }
+
+    public void ApplyMica()
+    {
+        var settings = SettingsService?.Current;
+        if (settings == null) return;
+        if (settings.UI.EnableMica)
+        {
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur };
+            Background = null;
+        }
+        else
+        {
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+            ClearValue(BackgroundProperty);
         }
     }
 

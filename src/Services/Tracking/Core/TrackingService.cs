@@ -33,6 +33,7 @@ public partial class TrackingService : IDisposable
     private readonly IScrobbleService _scrobbleService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IEnumerable<ITrackerService> _trackers;
+    private readonly MediaMatchingPipeline _pipeline;
 
     // _state guards _currentMedia and _matchedAnime which are read/written from the
     // Anisthesia background thread (MediaDetected/MediaCleared) and from UI command handlers.
@@ -52,7 +53,8 @@ public partial class TrackingService : IDisposable
         DiscordService discordService,
         IScrobbleService scrobbleService,
         IUiDispatcher uiDispatcher,
-        IEnumerable<ITrackerService> trackers)
+        IEnumerable<ITrackerService> trackers,
+        MediaMatchingPipeline pipeline)
     {
         _anisthesiaService = anisthesiaService;
         _mappingService = mappingService;
@@ -62,6 +64,7 @@ public partial class TrackingService : IDisposable
         _scrobbleService = scrobbleService;
         _uiDispatcher = uiDispatcher;
         _trackers = trackers;
+        _pipeline = pipeline;
 
         _anisthesiaService.MediaDetected += OnMediaDetected;
         _anisthesiaService.MediaCleared += OnMediaCleared;

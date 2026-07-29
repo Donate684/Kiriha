@@ -1,4 +1,6 @@
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Models.Presentation;
 
 namespace Kiriha.ViewModels.Player;
 

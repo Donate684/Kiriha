@@ -63,7 +63,8 @@ public class TrackingServiceTests : IDisposable
             _mockDiscordService.Object,
             _mockScrobbleService.Object,
             _mockUiDispatcher.Object,
-            Array.Empty<ITrackerService>()
+            Array.Empty<ITrackerService>(),
+            new MediaMatchingPipeline(_mockMappingService.Object, Array.Empty<ITrackerService>())
         );
     }
 

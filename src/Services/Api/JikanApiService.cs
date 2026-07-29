@@ -1,4 +1,5 @@
 using System;
+using Kiriha.Core.Infrastructure.Http;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;

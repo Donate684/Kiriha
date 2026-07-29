@@ -87,11 +87,13 @@ internal static class TrackingServicesRegistration
                 sp.GetRequiredService<SettingsService>(),
                 sp.GetRequiredService<ShikiHostResolver>()));
 
+        services.AddSingleton<ShikiTokenService>();
+
         services.AddSingleton<ShikiApiService>(sp =>
             new ShikiApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
                 sp.GetRequiredService<SettingsService>(),
-                sp.GetRequiredService<ShikiAuthService>(),
+                sp.GetRequiredService<ShikiTokenService>(),
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
@@ -116,6 +118,7 @@ internal static class TrackingServicesRegistration
         services.AddSingleton<DiscordService>();
         services.AddSingleton<AnisthesiaService>();
         services.AddSingleton<IScrobbleService, ScrobbleService>();
+        services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();
         services.AddSingleton<AnimeRepository>();
         services.AddSingleton<AnimeSyncOrchestrator>();

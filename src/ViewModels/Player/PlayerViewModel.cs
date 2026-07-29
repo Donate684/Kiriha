@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Mpv;
 using Kiriha.Models;
+using Kiriha.Models.Presentation;
 using Kiriha.Services;
 using Kiriha.Services.Data;
 
@@ -43,27 +44,6 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _rawEpisodeText = string.Empty;
 
 
-
-    [ObservableProperty] private bool _playerAutoPlay = true;
-    [ObservableProperty] private bool _singlePlayerWindow = true;
-    [ObservableProperty] private bool _rememberPlayerVolume = true;
-    [ObservableProperty] private bool _autoHideControls = true;
-    [ObservableProperty] private bool _showChapterMarkers = true;
-
-    [ObservableProperty] private bool _showPlayPauseButton = true;
-    [ObservableProperty] private bool _showSkipButtons = true;
-    [ObservableProperty] private bool _showMuteButton = true;
-    [ObservableProperty] private bool _showVolumeSlider = true;
-    [ObservableProperty] private bool _showTimeDisplay = true;
-    [ObservableProperty] private bool _showSpeedButton = true;
-    [ObservableProperty] private bool _showSubtitleButton = true;
-    [ObservableProperty] private bool _showSubtitlePositionButton = true;
-    [ObservableProperty] private bool _showAudioButton = true;
-    [ObservableProperty] private bool _showScreenshotButton = true;
-    [ObservableProperty] private bool _showSubtitleStyleButton = true;
-    [ObservableProperty] private string _preferredAudioLanguages = "Japanese,jpn,ja";
-
-
     private int? _animeId;
     private bool _isInitializing;
 
@@ -89,7 +69,3 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
 
 }
-
-public record PlayerMouseActionOption(string Name, PlayerMouseAction Value);
-public record PlayerWheelActionOption(string Name, PlayerWheelAction Value);
-public record ScreenshotResolutionOption(string Name, string Value);

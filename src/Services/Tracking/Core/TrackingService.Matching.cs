@@ -131,63 +131,24 @@ public partial class TrackingService
             // Wait for services to be ready (e.g. at app startup)
             await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000));
 
-            // Respect user's explicit unlink: skip all mapping attempts.
-            if (_mappingService.IsNegativelyMapped(media.OriginalTitle) ||
-                _mappingService.IsNegativelyMapped(media.AnimeTitle))
+            var userList = await _uiDispatcher.InvokeAsync(() => _animeRepo.Collection.ToList());
+            
+            var result = await _pipeline.RunAsync(media, userList);
+
+            if (result.NegativelyMapped)
             {
                 Log.Information("TrackingService: '{Title}' is negatively mapped, skipping auto-match", media.AnimeTitle);
                 return;
             }
-
-            // Snapshot the user list on UI thread — ObservableCollection is not thread-safe
-            // and MappingService enumerates it lazily multiple times.
-            var userList = await _uiDispatcher.InvokeAsync(
-                () => _animeRepo.Collection.ToList());
-
-            // Perform Mapping
-            int? malId = await _mappingService.GetIdFromTitleAsync(media.OriginalTitle, userList);
 
             // Race: another media event may have arrived while we were mapping.
             ParsedMedia? cur;
             lock (_state) cur = _currentMedia;
             if (!IsSameMedia(cur, media)) return;
 
-            if (!malId.HasValue)
+            if (result.Success)
             {
-                malId = await _mappingService.SearchOnMalAsync(media.OriginalTitle);
-                lock (_state) cur = _currentMedia;
-                if (!IsSameMedia(cur, media)) return;
-            }
-
-            if (malId.HasValue)
-            {
-                var matched = userList.FirstOrDefault(x => x.Id == malId.Value);
-
-                if (matched == null)
-                {
-                    var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled);
-                    if (activeTracker != null)
-                    {
-                        try
-                        {
-                            var fetched = await activeTracker.GetAnimeDetailsAsync(malId.Value);
-                            if (fetched != null)
-                            {
-                                matched = fetched;
-                                matched.Status = UserAnimeStatus.None; // Ensure it's not scrobbled or auto-added incorrectly
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId}", malId.Value);
-                        }
-                    }
-                }
-
-                if (matched != null && matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
-                {
-                    media.Episode = "1";
-                }
+                var matched = result.MatchedAnime;
 
                 bool isValid;
                 lock (_state)

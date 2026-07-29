@@ -2,6 +2,7 @@ using Kiriha.Services.Sync;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Constants;
 using System;
+using Kiriha.Core.Infrastructure.Http;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;

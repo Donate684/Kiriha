@@ -30,7 +30,7 @@ public partial class AboutWindow : KirihaWindowBase
         Opened += OnOpened;
     }
 
-    public void ApplyMica()
+    public new void ApplyMica()
     {
         var settings = SettingsService?.Current;
         if (settings == null) return;
