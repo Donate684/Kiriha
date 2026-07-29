@@ -65,7 +65,7 @@ public partial class TrackingService
                 CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Models.Messages.AnimeMatchedMessage(null));
             });
 
-            await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000));
+            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.Collection));
             var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId);

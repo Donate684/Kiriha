@@ -158,6 +158,12 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 nextStatus = UserAnimeStatus.Completed;
             }
 
+            if (match.Progress >= targetEp)
+            {
+                CountdownUpdated?.Invoke(this, Kiriha.Core.UIUtils.GetLoc("scrobbler.status.already_scrobbled"));
+                return;
+            }
+
             await _progressService.UpdateProgressAsync(match, targetEp, nextStatus);
             _historyService.AddEntry(match.Id, match.Title, match.RussianTitle, targetEp, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Scrobbled");
 

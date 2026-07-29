@@ -28,9 +28,15 @@ public partial class SyncManager
                 {
                     tasks = tasks.Skip(lastRemoveIndex).ToList();
                 }
-                return tasks
+                var latestTasks = tasks
                     .GroupBy(x => x.Type)
-                    .Select(typeGroup => typeGroup.Last());
+                    .Select(typeGroup => typeGroup.Last())
+                    .ToList();
+                if (latestTasks.Any(x => x.Type == nameof(SyncTaskType.FullUpdate)))
+                {
+                    latestTasks.RemoveAll(x => x.Type == nameof(SyncTaskType.UpdateProgress));
+                }
+                return latestTasks;
             })
             .OrderBy(x => x.Id)
             .ToList();

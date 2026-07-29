@@ -41,7 +41,7 @@ public class AiringInfoCache
                 }
 
                 anime.EpisodesAired = finalAiredCount;
-                anime.AiredSourcePriority = 4;
+                anime.AiredSourcePriority = 2;
             }
 
             anime.NextEpisodeAt = nextSlot;

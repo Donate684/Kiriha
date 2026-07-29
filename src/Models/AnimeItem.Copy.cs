@@ -22,6 +22,7 @@ public partial class AnimeItem
         target.TotalEpisodes = TotalEpisodes;
         target.Score = Score;
         target.Type = Type;
+        target.MediaKind = MediaKind;
         target.Synopsis = Synopsis;
         target.RussianSynopsis = RussianSynopsis;
         target.MainPictureUrl = MainPictureUrl;

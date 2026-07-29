@@ -57,7 +57,7 @@ public partial class PlayerViewModel
         IsLoading = true;
         HasPlaybackError = false;
         PlaybackErrorMessage = string.Empty;
-        PlaybackStatusMessage = "Загрузка видео...";
+        PlaybackStatusMessage = Kiriha.Core.UIUtils.GetLoc("player.status.loading_video");
 
         if (!_playback.HasPlayer)
             return;

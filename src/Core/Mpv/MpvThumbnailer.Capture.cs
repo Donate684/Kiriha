@@ -89,7 +89,9 @@ public sealed partial class MpvThumbnailer
 
                 if (mpvEvent.EventId == LibMpvNative.MPV_EVENT_END_FILE)
                 {
-                    var endFile = Marshal.PtrToStructure<MpvEventEndFile>(mpvEvent.Data);
+                    var endFile = mpvEvent.Data == IntPtr.Zero
+                        ? new MpvEventEndFile()
+                        : Marshal.PtrToStructure<MpvEventEndFile>(mpvEvent.Data);
                     if (endFile.Reason == MpvPlaybackEndedEventArgs.ReasonError)
                     {
                         Log.Warning("Thumbnailer failed to load: {VideoPath}", videoPath);

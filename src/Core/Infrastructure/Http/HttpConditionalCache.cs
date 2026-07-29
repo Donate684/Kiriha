@@ -183,7 +183,7 @@ public sealed class HttpConditionalCache
             {
                 try { await _cache.UpsertAsync(urlHash, etag, lmHeader, body); }
                 catch (Exception ex) { Log.Debug(ex, "{Tag}: failed to persist HTTP cache for {Url}", _logTag, fullUrl); }
-            }, ct);
+            }, CancellationToken.None);
 
             return new HttpCacheResult(body, response.StatusCode, FromCache: false);
         }

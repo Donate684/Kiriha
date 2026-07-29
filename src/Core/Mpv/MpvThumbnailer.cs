@@ -154,41 +154,41 @@ public sealed partial class MpvThumbnailer : IDisposable
 
     private void Dispose(bool disposing)
     {
-        if (disposing)
+        lock (_gate)
         {
-            lock (_gate)
-            {
-                if (_disposed)
-                    return;
+            if (_disposed)
+                return;
 
-                _disposed = true;
-                if (_handle != IntPtr.Zero)
+            _disposed = true;
+            if (_handle != IntPtr.Zero)
+            {
+                LibMpvNative.mpv_wakeup(_handle);
+                if (_activeCalls == 0)
                 {
-                    LibMpvNative.mpv_wakeup(_handle);
-                    if (_activeCalls == 0)
-                    {
-                        LibMpvNative.mpv_terminate_destroy(_handle);
-                        _handle = IntPtr.Zero;
-                    }
+                    LibMpvNative.mpv_terminate_destroy(_handle);
+                    _handle = IntPtr.Zero;
                 }
             }
+        }
 
+        if (disposing)
+        {
             try
             {
                 _lockFile?.Dispose();
             }
             catch (Exception ex) { Log.Debug(ex, "Failed to dispose lock file"); }
-        }
 
-        try
-        {
-            if (Directory.Exists(_thumbnailDirectory))
-                Directory.Delete(_thumbnailDirectory, recursive: true);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "Failed to delete thumbnail directory during dispose");
-            // Temp cleanup is allowed to fail when an image is still being released by UI.
+            try
+            {
+                if (Directory.Exists(_thumbnailDirectory))
+                    Directory.Delete(_thumbnailDirectory, recursive: true);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Failed to delete thumbnail directory during dispose");
+                // Temp cleanup is allowed to fail when an image is still being released by UI.
+            }
         }
     }
 

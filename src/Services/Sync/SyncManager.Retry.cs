@@ -23,7 +23,7 @@ public partial class SyncManager
             {
                 await Task.Delay(TimeSpan.FromMinutes(delayMin), retryCt);
                 _lowPriorityQueue.Enqueue(task);
-                _queueSignal.Release();
+                try { _queueSignal.Release(); } catch (ObjectDisposedException) { }
             }, _cts.Token);
         }
         else

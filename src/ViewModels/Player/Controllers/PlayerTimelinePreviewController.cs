@@ -87,10 +87,10 @@ public sealed class PlayerTimelinePreviewController : IDisposable
                     }
                 });
             }
-            catch
+            catch (Exception ex)
             {
                 bitmap?.Dispose();
-                throw;
+                Serilog.Log.Debug(ex, "Failed to decode timeline preview image");
             }
         }
         catch (OperationCanceledException)
