@@ -32,7 +32,7 @@ public partial class CrashReportViewModel : ObservableObject
     public CrashReportViewModel(string crashFilePath)
     {
         _crashFilePath = crashFilePath;
-        ReportText = CrashReporter.ReadReport(crashFilePath);
+        ReportText = CrashReportReader.ReadReport(crashFilePath);
     }
 
     [RelayCommand]
@@ -61,7 +61,7 @@ public partial class CrashReportViewModel : ObservableObject
     {
         try
         {
-            var dir = CrashReporter.GetCrashesDir();
+            var dir = CrashReportReader.GetCrashesDir();
             if (!string.IsNullOrEmpty(_crashFilePath) && File.Exists(_crashFilePath))
             {
                 // Open folder and select the crash file (Windows Explorer).
@@ -85,7 +85,7 @@ public partial class CrashReportViewModel : ObservableObject
     public void MarkSeen()
     {
         if (!string.IsNullOrEmpty(_crashFilePath))
-            CrashReporter.MarkSeen(_crashFilePath!);
+            CrashReportReader.MarkSeen(_crashFilePath!);
     }
 
     private static IClipboard? GetClipboard()

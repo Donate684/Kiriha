@@ -44,7 +44,7 @@ public partial class MpvPlayer : IDisposable
     public event Action<PlaybackState>? PlaybackStateChanged;
     public event Action? TracksChanged;
 
-    public MpvPlayer(MpvOptions? options = null)
+    internal MpvPlayer()
     {
         _commandQueue = new MpvCommandQueue(_gate, () => _mpvHandle, () => _disposed);
         _eventLoop = new MpvEventLoop(_gate, () => _mpvHandle, HandleEvent);
@@ -58,30 +58,10 @@ public partial class MpvPlayer : IDisposable
         ScreenshotManager = new MpvScreenshotManager(this);
         VideoPipelineConfigurator = new MpvVideoPipelineConfigurator(this);
         OpenGlRenderer = new MpvOpenGlRenderer(this);
+    }
 
-        // Configure mpv for host-driven rendering.
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "osc", "no"), "disable osc");
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "input-default-bindings", "no"), "disable default input bindings");
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "input-vo-keyboard", "no"), "disable mpv keyboard input");
-        VideoPipelineConfigurator.ConfigureVideoPipeline(_mpvHandle, options ?? MpvOptions.Default);
-
-        // Ensure mpv does not quit automatically on playback end or error
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "idle", "yes"), "enable idle");
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "keep-open", "yes"), "enable keep-open");
-
-        // Keep the embedded player modest: mpv defaults are tuned for a full player,
-        // while Kiriha mostly needs enough buffer for smooth anime playback.
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "demuxer-max-bytes", "64MiB"), "limit demuxer cache");
-        Check(LibMpvNative.mpv_set_option_string(_mpvHandle, "demuxer-max-back-bytes", "16MiB"), "limit back buffer");
-        ScreenshotManager.ConfigureScreenshots(_mpvHandle);
-
-        int res = LibMpvNative.mpv_initialize(_mpvHandle);
-        if (res < 0)
-        {
-            LibMpvNative.mpv_terminate_destroy(_mpvHandle);
-            throw new InvalidOperationException($"Failed to initialize mpv: {LibMpvNative.GetErrorString(res)}");
-        }
-
+    internal void Initialize()
+    {
         ObservePlaybackProperties();
         _commandQueue.Start();
         _eventLoop.Start();

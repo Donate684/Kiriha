@@ -37,7 +37,7 @@ public sealed partial class AppStartupCoordinator
     {
         try
         {
-            var pending = CrashReporter.GetPendingCrashFile();
+            var pending = CrashReportReader.GetPendingCrashFile();
             if (string.IsNullOrEmpty(pending))
                 return;
 

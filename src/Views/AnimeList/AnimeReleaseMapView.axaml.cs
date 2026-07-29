@@ -85,7 +85,8 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
         if (DataContext is not AnimeListViewModel vm) return;
         var mapVm = new ReleaseMapViewModel(vm.AnimeItems);
-        var releases = mapVm.GetUpcomingReleases().Take(24).ToList();
+        var groups = mapVm.GetUpcomingReleaseGroups(24).ToList();
+        var releases = groups.SelectMany(g => g.Releases).ToList();
         ReleaseEmptyState.IsVisible = releases.Count == 0;
 
         if (releases.Count == 0)
@@ -112,54 +113,45 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         ReleaseHeroWeekText.Text = ReleaseMapViewModel.FormatWeekReleaseSummary(releases);
         CachedImage.SetSource(ReleaseHeroPoster, first.PosterUrl);
 
-        // Group releases by day and build timeline with headers
-        DateTime? lastDate = null;
         int staggerIndex = 0;
         const int staggerMs = 40;
 
-        foreach (var release in releases)
+        foreach (var group in groups)
         {
-            var releaseDate = release.ReleaseAt.Date;
+            var header = CreateDayHeader(group.Label, palette);
+            ReleaseTimelinePanel.Children.Add(header);
 
-            // Day group header
-            if (lastDate == null || releaseDate != lastDate.Value)
+            foreach (var release in group.Releases)
             {
-                var header = CreateDayHeader(releaseDate, palette);
-                // Headers appear immediately
-                ReleaseTimelinePanel.Children.Add(header);
-                lastDate = releaseDate;
+                var card = CreateReleaseCard(release, palette);
+                card.Opacity = 0;
+                card.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translate(0,10px)");
+                card.Transitions = new Avalonia.Animation.Transitions
+                {
+                    new Avalonia.Animation.DoubleTransition
+                    {
+                        Property = Avalonia.Visual.OpacityProperty,
+                        Duration = TimeSpan.FromMilliseconds(350),
+                        Easing = new Avalonia.Animation.Easings.CubicEaseOut()
+                    },
+                    new Avalonia.Animation.TransformOperationsTransition
+                    {
+                        Property = Avalonia.Visual.RenderTransformProperty,
+                        Duration = TimeSpan.FromMilliseconds(350),
+                        Easing = new Avalonia.Animation.Easings.CubicEaseOut()
+                    }
+                };
+                ReleaseTimelinePanel.Children.Add(card);
+
+                var capturedCard = card;
+                var delay = TimeSpan.FromMilliseconds(staggerIndex * staggerMs);
+                DispatcherTimer.RunOnce(() =>
+                {
+                    capturedCard.Opacity = 1;
+                    capturedCard.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translate(0,0)");
+                }, delay);
+                staggerIndex++;
             }
-
-            // Release card with cascade reveal
-            var card = CreateReleaseCard(release, palette);
-            card.Opacity = 0;
-            card.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translate(0,10px)");
-            card.Transitions = new Avalonia.Animation.Transitions
-            {
-                new Avalonia.Animation.DoubleTransition
-                {
-                    Property = Avalonia.Visual.OpacityProperty,
-                    Duration = TimeSpan.FromMilliseconds(350),
-                    Easing = new Avalonia.Animation.Easings.CubicEaseOut()
-                },
-                new Avalonia.Animation.TransformOperationsTransition
-                {
-                    Property = Avalonia.Visual.RenderTransformProperty,
-                    Duration = TimeSpan.FromMilliseconds(350),
-                    Easing = new Avalonia.Animation.Easings.CubicEaseOut()
-                }
-            };
-            ReleaseTimelinePanel.Children.Add(card);
-
-            // Schedule reveal with stagger
-            var capturedCard = card;
-            var delay = TimeSpan.FromMilliseconds(staggerIndex * staggerMs);
-            DispatcherTimer.RunOnce(() =>
-            {
-                capturedCard.Opacity = 1;
-                capturedCard.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translate(0,0)");
-            }, delay);
-            staggerIndex++;
         }
 
         // Same compensation as in settings: the decorated window viewport can be

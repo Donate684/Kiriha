@@ -34,7 +34,7 @@ public class NotificationService
         AppUserModelIdRegistrar.Register();
     }
 
-    public void NotifyNewEpisode(AnimeItem anime, int episodeNumber)
+    public virtual void NotifyNewEpisode(AnimeItem anime, int episodeNumber)
     {
         if (anime == null) return;
         if (!_settingsService.Current.System.NotifyNewEpisodes) return;

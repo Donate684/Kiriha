@@ -43,7 +43,7 @@ public partial class PlayerWindow : Window
                 playerSettings.MpvGpuApi,
                 playerSettings.MpvGpuContext);
 
-            _player = new MpvPlayer(mpvOptions);
+            _player = MpvPlayerBuilder.Build(mpvOptions);
 
             if (DataContext is PlayerViewModel vm)
             {

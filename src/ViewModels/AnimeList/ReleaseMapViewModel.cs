@@ -9,6 +9,8 @@ namespace Kiriha.ViewModels.AnimeList;
 
 public sealed record ReleaseMapItem(string Title, AnimeItem Item, DateTime ReleaseAt, string Kind, string Note, string? PosterUrl);
 
+public sealed record ReleaseMapDayGroup(DateTime Date, string Label, IReadOnlyList<ReleaseMapItem> Releases);
+
 public class ReleaseMapViewModel
 {
     private readonly IEnumerable<AnimeItem> _animeItems;
@@ -26,6 +28,26 @@ public class ReleaseMapViewModel
             .Where(item => item != null)
             .Select(item => item!)
             .OrderBy(item => item.ReleaseAt);
+    }
+
+    public IEnumerable<ReleaseMapDayGroup> GetUpcomingReleaseGroups(int maxItems = 24)
+    {
+        var releases = GetUpcomingReleases().Take(maxItems).ToList();
+        var groups = new List<ReleaseMapDayGroup>();
+        var culture = GetReleaseCulture();
+        var today = DateTime.Today;
+
+        foreach (var group in releases.GroupBy(r => r.ReleaseAt.Date))
+        {
+            var date = group.Key;
+            string label = date == today ? "Сегодня"
+                : date == today.AddDays(1) ? "Завтра"
+                : date.ToString("d MMMM, dddd", culture);
+            
+            groups.Add(new ReleaseMapDayGroup(date, label.ToUpper(culture), group.ToList()));
+        }
+
+        return groups;
     }
 
     private static ReleaseMapItem? CreateReleaseMapItem(AnimeItem item, DateTime now)

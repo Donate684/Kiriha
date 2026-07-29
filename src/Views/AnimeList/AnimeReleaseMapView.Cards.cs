@@ -220,12 +220,8 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         return badge;
     }
 
-    private static Control CreateDayHeader(DateTime date, ReleasePalette palette)
+    private static Control CreateDayHeader(string label, ReleasePalette palette)
     {
-        var today = DateTime.Today;
-        string label = date == today ? "Сегодня"
-            : date == today.AddDays(1) ? "Завтра"
-            : date.ToString("d MMMM, dddd", ReleaseMapViewModel.GetReleaseCulture());
 
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Margin = new Avalonia.Thickness(0, 12, 0, 4) };
         var text = new TextBlock

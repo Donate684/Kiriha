@@ -16,11 +16,11 @@ namespace Kiriha.Services.Tracking.Core;
 
 public class AiringInfoService
 {
-    private readonly AniListApiService _aniListApi;
     private readonly AnimeRepository _animeRepo;
     private readonly AnimeSyncOrchestrator _syncOrchestrator;
-    private readonly NotificationService _notificationService;
     private readonly IUiDispatcher _uiDispatcher;
+    private readonly AiringInfoFetcher _fetcher;
+    private readonly AiringInfoCache _cache;
 
     public AiringInfoService(
         AniListApiService aniListApi,
@@ -29,54 +29,12 @@ public class AiringInfoService
         NotificationService notificationService,
         IUiDispatcher uiDispatcher)
     {
-        _aniListApi = aniListApi;
         _animeRepo = animeRepo;
         _syncOrchestrator = syncOrchestrator;
-        _notificationService = notificationService;
         _uiDispatcher = uiDispatcher;
-    }
-
-    /// <summary>
-    /// Resolve airing state from AniList's nextAiringEpisode. AniList exposes a
-    /// concrete future episode number and Unix timestamp, so there is no local
-    /// prediction math: if episode 8 is next, at least 7 episodes have aired.
-    /// </summary>
-    private static (int aired, DateTime? nextSlot) ResolveAired(AnimeItem anime, AniListAiringInfo airing)
-    {
-        int aired = anime.EpisodesAired;
-        DateTime? nextSlot = airing.NextEpisodeAt;
-
-        if (airing.NextEpisode.HasValue)
-        {
-            if (airing.NextEpisodeAt.HasValue && airing.NextEpisodeAt.Value <= DateTime.Now)
-            {
-                aired = airing.NextEpisode.Value;
-                nextSlot = null;
-            }
-            else
-            {
-                aired = Math.Max(0, airing.NextEpisode.Value - 1);
-            }
-        }
-        else if (airing.Status == "FINISHED")
-        {
-            if (airing.TotalEpisodes.HasValue && airing.TotalEpisodes > 0)
-                aired = airing.TotalEpisodes.Value;
-            else if (anime.TotalEpisodes > 0)
-                aired = anime.TotalEpisodes;
-        }
-        else if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value <= DateTime.Now)
-        {
-            // AniList no longer reports a next episode, but we expected one to have aired by now.
-            // This usually happens when the final episode just aired, but AniList's status is still "RELEASING".
-            // We can assume at least the expected episode has aired.
-            aired = Math.Max(aired, anime.EpisodesAired + 1);
-        }
-
-        if (anime.TotalEpisodes > 0 && aired > anime.TotalEpisodes)
-            aired = anime.TotalEpisodes;
-
-        return (aired, nextSlot);
+        
+        _fetcher = new AiringInfoFetcher(aniListApi);
+        _cache = new AiringInfoCache(animeRepo, notificationService, uiDispatcher);
     }
 
     public async Task SyncEpisodesForAnimeAsync(AnimeItem anime, CancellationToken ct = default)
@@ -91,18 +49,16 @@ public class AiringInfoService
 
         Log.Information("AiringInfoService: Immediate AniList sync requested for {Title} (ID: {Id})", anime.Title, anime.Id);
 
-        var airing = await _aniListApi.GetNextAiringAsync(anime.Id, force: true, ct);
+        var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force: true, ct);
         if (_animeRepo.IsRecentlyDeleted(anime.Id)) return;
 
         if (airing == null)
         {
-            await MarkSyncedAsync(anime, DateTime.Now);
-            await _animeRepo.AddOrUpdateAnimeAsync(anime);
+            await _cache.MarkSyncedAsync(anime, DateTime.Now);
             return;
         }
 
-        await ApplyAiringAsync(anime, airing, DateTime.Now);
-        await _animeRepo.AddOrUpdateAnimeAsync(anime);
+        await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, DateTime.Now);
     }
 
     public async Task SyncOngoingEpisodesAsync(bool force = false, IProgress<string>? progress = null, CancellationToken ct = default)
@@ -148,60 +104,16 @@ public class AiringInfoService
             Log.Information("AiringInfoService: Syncing AniList airing info for {Title} (ID: {Id})...", anime.Title, anime.Id);
 
             var now = DateTime.Now;
-            var airing = await _aniListApi.GetNextAiringAsync(anime.Id, force, ct);
+            var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
             if (airing == null)
             {
-                await MarkSyncedAsync(anime, now);
-                await _animeRepo.AddOrUpdateAnimeAsync(anime);
+                await _cache.MarkSyncedAsync(anime, now);
                 continue;
             }
 
-            await ApplyAiringAsync(anime, airing, now);
-            await _animeRepo.AddOrUpdateAnimeAsync(anime);
+            await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, now);
         }
 
         Log.Information("AiringInfoService: AniList sync cycle completed.");
-    }
-
-    private async Task ApplyAiringAsync(AnimeItem anime, AniListAiringInfo airing, DateTime now)
-    {
-        var (finalAiredCount, nextSlot) = ResolveAired(anime, airing);
-        int? notifyEp = null;
-
-        await _uiDispatcher.InvokeAsync(() =>
-        {
-            if (finalAiredCount != anime.EpisodesAired)
-            {
-                bool isFirstSyncJumpFromZero = anime.LastEpisodesSync == null && anime.EpisodesAired == 0;
-
-                if (!isFirstSyncJumpFromZero && finalAiredCount > anime.EpisodesAired)
-                {
-                    anime.LastEpisodeAt = now;
-                    notifyEp = finalAiredCount;
-                }
-
-                anime.EpisodesAired = finalAiredCount;
-                anime.AiredSourcePriority = 4;
-            }
-
-            anime.NextEpisodeAt = nextSlot;
-            anime.LastEpisodesSync = now;
-            anime.RefreshMetadata();
-        });
-
-        if (notifyEp.HasValue)
-        {
-            Log.Information("AiringInfoService: New episode detected for {Title}: {Count}", anime.Title, notifyEp.Value);
-            _notificationService.NotifyNewEpisode(anime, notifyEp.Value);
-        }
-    }
-
-    private async Task MarkSyncedAsync(AnimeItem anime, DateTime now)
-    {
-        await _uiDispatcher.InvokeAsync(() =>
-        {
-            anime.LastEpisodesSync = now;
-            anime.RefreshMetadata();
-        });
     }
 }
