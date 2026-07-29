@@ -52,6 +52,7 @@ public sealed partial class AppStartupCoordinator
     {
         PathHelper.EnsureDirectoriesExist();
         services.AddSingleton<SettingsService>();
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.SettingsShutdownHandler>();
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<IPlayerMediaMetadataResolver, FilenamePlayerMediaMetadataResolver>();
     }

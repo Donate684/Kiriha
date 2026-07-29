@@ -56,49 +56,14 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     private readonly Services.Api.MalApiService _malApi;
 
     [ObservableProperty] private ParsedMedia? _currentMedia;
+    
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotInList))]
     [NotifyPropertyChangedFor(nameof(AllAlternativeTitles))]
     [NotifyPropertyChangedFor(nameof(HasAlternativeTitles))]
     private AnimeItem? _matchedAnime;
+    
     [ObservableProperty] private AnimeItem? _pendingMatch;
-
-    /// <summary>
-    /// Resolved user-defined share buttons for the currently matched anime.
-    /// Refreshed via <see cref="OnMatchedAnimeChanged"/>.
-    /// </summary>
-    public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
-
-    partial void OnMatchedAnimeChanged(AnimeItem? value)
-    {
-        CustomShareLinks.Clear();
-        
-        if (value == null)
-        {
-            _allAlternativeTitles = Array.Empty<string>();
-            return;
-        }
-
-        var list = new System.Collections.Generic.List<string>();
-        if (!string.IsNullOrEmpty(value.EnglishTitle) && value.EnglishTitle != value.Title)
-            list.Add(value.EnglishTitle);
-        if (!string.IsNullOrEmpty(value.JapaneseTitle) && value.JapaneseTitle != value.Title)
-            list.Add(value.JapaneseTitle);
-
-        foreach (var syn in value.AlternativeTitles)
-        {
-            if (syn != value.Title && !list.Contains(syn))
-                list.Add(syn);
-        }
-        _allAlternativeTitles = list;
-
-        foreach (var link in _settingsService.Current.CustomLinks)
-        {
-            if (string.IsNullOrWhiteSpace(link.UrlTemplate)) continue;
-            var url = Kiriha.Core.CustomLinkResolver.Resolve(link.UrlTemplate, value);
-            CustomShareLinks.Add(new CustomShareLinkRuntime(link.Name, link.IconKind, url, link.IconPath));
-        }
-    }
 
     [ObservableProperty] private string _searchQuery = string.Empty;
     [ObservableProperty] private bool _isSearching;
@@ -106,11 +71,6 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     [ObservableProperty] private bool _isManuallyMapped;
 
     public bool IsNotInList => MatchedAnime != null && MatchedAnime.Status == UserAnimeStatus.None;
-
-    private System.Collections.Generic.IReadOnlyList<string> _allAlternativeTitles = Array.Empty<string>();
-    public System.Collections.Generic.IEnumerable<string> AllAlternativeTitles => _allAlternativeTitles;
-
-    public bool HasAlternativeTitles => AllAlternativeTitles.Any();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplayStatus))]
@@ -176,8 +136,6 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
         MatchedAnime = _trackingService.MatchedAnime;
         IsMediaDetected = CurrentMedia != null;
     }
-
-
 
     public void Dispose()
     {

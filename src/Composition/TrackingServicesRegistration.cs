@@ -116,6 +116,7 @@ internal static class TrackingServicesRegistration
         // --- Cross-tracker orchestration ---
         services.AddSingleton<SmtcService>(sp => new SmtcService(sp.GetRequiredService<SettingsService>()));
         services.AddSingleton<DiscordService>();
+        services.AddSingleton<System.Collections.Generic.IReadOnlyList<Kiriha.Services.Tracking.Anisthesia.AnisthesiaPlayer>>(sp => Kiriha.Services.Tracking.Anisthesia.AnisthesiaPlayerLoader.Load());
         services.AddSingleton<AnisthesiaService>();
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();

@@ -45,7 +45,7 @@ public class TrackingServiceTests : IDisposable
 
         _mockMappingService = new Mock<MappingService>(null!, new ManualMappingService(_tempMappingPath), null!, new RecognitionCache());
         _mockDiscordService = new Mock<DiscordService>(_settingsService);
-        _mockAnisthesiaService = new Mock<AnisthesiaService>(_settingsService, null!, null!);
+        _mockAnisthesiaService = new Mock<AnisthesiaService>(_settingsService, null!, null!, Array.Empty<Kiriha.Services.Tracking.Anisthesia.AnisthesiaPlayer>());
 
         _animeRepository = new AnimeRepository(null!, null!, null!, _mockUiDispatcher.Object, null!);
         // Force the initialization task to complete so we don't wait 5 seconds in tests

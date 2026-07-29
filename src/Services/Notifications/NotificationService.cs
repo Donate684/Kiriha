@@ -1,15 +1,12 @@
 using Kiriha.Services.Data.Settings;
 using System;
 using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models;
 using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data;
+using Kiriha.Services.Notifications;
 using Serilog;
-
-
 
 namespace Kiriha.Services;
 
@@ -30,14 +27,11 @@ public class NotificationService
     // De-dup: don't fire the same "new app version" toast twice in a row.
     private string? _lastNotifiedVersion;
 
-    private const string AumId = "Kiriha";
-
-
     public NotificationService(SettingsService settingsService, IBackgroundTaskSupervisor backgroundTasks)
     {
         _settingsService = settingsService;
         _backgroundTasks = backgroundTasks;
-        TrySetAppUserModelId();
+        AppUserModelIdRegistrar.Register();
     }
 
     public void NotifyNewEpisode(AnimeItem anime, int episodeNumber)
@@ -70,7 +64,7 @@ public class NotificationService
         if (delayMinutes == 0)
         {
             Log.Information("NotificationService: New episode toast for {Title} ep {Ep}", orig, episodeNumber);
-            Show(lines);
+            ToastRenderer.Show(lines);
             return;
         }
 
@@ -82,7 +76,7 @@ public class NotificationService
             try
             {
                 await Task.Delay(TimeSpan.FromMinutes(delayMinutes), ct);
-                Show(lines);
+                ToastRenderer.Show(lines);
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
@@ -113,7 +107,7 @@ public class NotificationService
 
         Log.Information("NotificationService: Scrobble-skip toast for {Title} ep {Ep} (expected {Expected})",
             orig, detectedEp, anime.Progress + 1);
-        Show(lines);
+        ToastRenderer.Show(lines);
     }
 
     public void NotifyAppUpdate(string newVersion)
@@ -127,70 +121,6 @@ public class NotificationService
         var body = UIUtils.GetLoc("notifications.app_update.body", newVersion);
 
         Log.Information("NotificationService: Update toast for version {Version}", newVersion);
-        Show(new System.Collections.Generic.List<string> { title, body });
+        ToastRenderer.Show(new System.Collections.Generic.List<string> { title, body });
     }
-
-    /// <summary>
-    /// Renders a toast with up to 3 text lines. The first line is bolded by the
-    /// system template; remaining lines render as regular body text. We pick the
-    /// template that matches the line count + icon availability so the system
-    /// schema validator is happy without us hand-rolling ToastGeneric XML
-    /// (which silently fails on minor format slips).
-    /// </summary>
-    private void Show(System.Collections.Generic.IReadOnlyList<string> lines)
-    {
-        if (lines == null || lines.Count == 0) return;
-        try
-        {
-#if WINDOWS
-            var clamped = lines.Count > 3 ? 3 : lines.Count;
-
-            var xmlString = "<toast><visual><binding template=\"ToastGeneric\">";
-            for (int i = 0; i < clamped; i++)
-            {
-                var text = (lines[i] ?? string.Empty)
-                    .Replace("&", "&amp;")
-                    .Replace("<", "&lt;")
-                    .Replace(">", "&gt;")
-                    .Replace("\"", "&quot;")
-                    .Replace("'", "&apos;");
-                xmlString += $"<text>{text}</text>";
-            }
-            xmlString += "</binding></visual></toast>";
-
-            var xmlDoc = new global::Windows.Data.Xml.Dom.XmlDocument();
-            xmlDoc.LoadXml(xmlString);
-
-            var toast = new global::Windows.UI.Notifications.ToastNotification(xmlDoc);
-            global::Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier(AumId).Show(toast);
-#else
-            Log.Debug("NotificationService: Toast not shown (non-Windows build): {Lines}", string.Join(" | ", lines));
-#endif
-        }
-        catch (Exception ex)
-        {
-            // Common reasons: app not installed via Velopack (no Start Menu shortcut with AUMID),
-            // running portable/dev build, or Action Center disabled. Don't surface to the user.
-            Log.Warning(ex, "NotificationService: Failed to show toast '{First}'", lines.Count > 0 ? lines[0] : "<empty>");
-        }
-    }
-
-    private static void TrySetAppUserModelId()
-    {
-        try
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                SetCurrentProcessExplicitAppUserModelID(AumId);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "NotificationService: SetCurrentProcessExplicitAppUserModelID failed (non-fatal)");
-        }
-    }
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern int SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
-
 }

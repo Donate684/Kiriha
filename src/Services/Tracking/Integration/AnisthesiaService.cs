@@ -38,28 +38,14 @@ public class AnisthesiaService : IHostedService, IDisposable
     public AnisthesiaService(
         SettingsService settingsService,
         SmtcService smtcService,
-        IBackgroundTaskSupervisor backgroundTasks)
+        IBackgroundTaskSupervisor backgroundTasks,
+        IReadOnlyList<AnisthesiaPlayer> players)
     {
         _settingsService = settingsService;
         _smtcService = smtcService;
         _backgroundTasks = backgroundTasks;
-
-        // Load players from resources
-        try
-        {
-            var uri = new Uri("avares://Kiriha/Assets/Anisthesia/players.anisthesia");
-            using var stream = Avalonia.Platform.AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            var data = reader.ReadToEnd();
-            _availablePlayers = PlayerParser.ParseData(data);
-            Log.Information("Loaded {Count} players from Anisthesia embedded data.", _availablePlayers.Count);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "AnisthesiaService: Failed to load embedded players data. Fallback to empty list.");
-            _availablePlayers = new List<AnisthesiaPlayer>();
-        }
-
+        
+        _availablePlayers = new List<AnisthesiaPlayer>(players);
         _detectionManager = new DetectionManager(_availablePlayers, _settingsService);
     }
 

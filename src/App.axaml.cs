@@ -5,6 +5,7 @@ using Avalonia.Themes.Fluent;
 using Kiriha.Services.AppLifecycle;
 using Material.Icons.Avalonia;
 
+using Microsoft.Extensions.DependencyInjection;
 namespace Kiriha;
 
 public partial class App : Application
@@ -25,7 +26,7 @@ public partial class App : Application
         var isPlayerMode = PlayerModeCoordinator.IsPlayerMode(args);
 
         ServiceProvider = AppStartupCoordinator.BuildServiceProvider(isPlayerMode);
-        _shutdownCoordinator = new ShutdownCoordinator(ServiceProvider);
+        _shutdownCoordinator = new ShutdownCoordinator(ServiceProvider, ServiceProvider.GetServices<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler>());
         _trayService = new TrayService(this, ServiceProvider, _shutdownCoordinator);
 
         if (isPlayerMode)

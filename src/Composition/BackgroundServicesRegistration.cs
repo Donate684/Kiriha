@@ -48,8 +48,14 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.UpdateMaintenanceTask>();
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.DatabaseMaintenanceTask>();
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.MetadataFetchMaintenanceTask>();
-
         services.AddSingleton<MaintenanceService>();
+
+        // Shutdown Handlers
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.PlayerResidentShutdownHandler>();
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.BackgroundTasksShutdownHandler>();
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.HostedServicesShutdownHandler>();
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.HistoryShutdownHandler>();
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.DatabaseShutdownHandler>();
 
         return services;
     }
