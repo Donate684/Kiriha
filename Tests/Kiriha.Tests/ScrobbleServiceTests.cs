@@ -38,7 +38,7 @@ public class ScrobbleServiceTests : IDisposable
             s.System.Scrobbler.NotifyOnSkippedEpisode = true;
         }, save: false);
 
-        _mockProgressService = new Mock<AnimeProgressService>(null!, null!, null!, null!);
+        _mockProgressService = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
         _mockHistoryService = new Mock<HistoryService>(null!);
         _mockNotificationService = new Mock<NotificationService>(null!, null!);
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
