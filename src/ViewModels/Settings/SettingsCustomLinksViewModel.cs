@@ -7,12 +7,25 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
 using Kiriha.Services.Data;
 using Serilog;
+using System.Collections.ObjectModel;
+using Kiriha.Core;
 
 namespace Kiriha.ViewModels.Settings;
 
-public partial class SettingsViewModel
+public partial class SettingsCustomLinksViewModel : ViewModelBase
 {
+    public ObservableCollection<CustomShareLink> CustomLinks { get; } = new();
+
+    private readonly SettingsService _settingsService;
+    private readonly FaviconService _faviconService;
     private readonly Dictionary<CustomShareLink, CancellationTokenSource> _faviconDebouncers = new();
+
+    public SettingsCustomLinksViewModel(SettingsService settingsService, FaviconService faviconService)
+    {
+        _settingsService = settingsService;
+        _faviconService = faviconService;
+        InitializeCustomLinks();
+    }
 
     private void InitializeCustomLinks()
     {
@@ -171,5 +184,4 @@ public partial class SettingsViewModel
         // directory holds tiny files and is self-healing on re-fetch.
         CustomLinks.Remove(link);
     }
-
 }

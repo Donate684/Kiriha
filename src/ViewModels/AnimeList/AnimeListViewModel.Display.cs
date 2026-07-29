@@ -3,11 +3,24 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
 using Kiriha.Utils.Async;
+using Avalonia.Collections;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Kiriha.ViewModels.AnimeList;
 
 public partial class AnimeListViewModel
 {
+    [ObservableProperty] private AvaloniaList<AnimeItem> _filteredItems = new();
+    [ObservableProperty] private string _watchingHeader = string.Empty;
+    [ObservableProperty] private string _completedHeader = string.Empty;
+    [ObservableProperty] private string _onHoldHeader = string.Empty;
+    [ObservableProperty] private string _droppedHeader = string.Empty;
+    [ObservableProperty] private string _planToWatchHeader = string.Empty;
+
+    [ObservableProperty] private AnimeItem? _selectedItem;
+    [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private AnimeItem? _activeItem;
+
     public void EnqueueItemForViewport(AnimeItem item)
     {
         if (item == null) return;

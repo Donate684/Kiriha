@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarSaveButton"
+             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+    <Button Command="{Binding Editor.SaveCommand}"
+            CommandParameter="{Binding $parent[Window]}"
+            HorizontalAlignment="Stretch"
+            Margin="0,-12,0,0"
+            Height="36"
+            CornerRadius="8"
+            Background="{DynamicResource SystemAccentColor}"
+            BorderThickness="0"
+            Foreground="White">
+        <Button.Styles>
+            <Style Selector="Button:disabled">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefault}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabled}"/>
+                <Setter Property="Opacity" Value="0.6"/>
+            </Style>
+        </Button.Styles>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+            <material:MaterialIcon Kind="Check" Width="18" Height="18" VerticalAlignment="Center"/>
+            <TextBlock Text="{DynamicResource l.common.actions.confirm}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+        </StackPanel>
+    </Button>
+</UserControl>

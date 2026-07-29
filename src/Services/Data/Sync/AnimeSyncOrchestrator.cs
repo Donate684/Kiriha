@@ -17,7 +17,7 @@ using Serilog;
 
 namespace Kiriha.Services.Data.Sync;
 
-public class AnimeSyncOrchestrator
+public partial class AnimeSyncOrchestrator
 {
 
 
@@ -147,100 +147,5 @@ public class AnimeSyncOrchestrator
         }
     }
 
-    private static bool IsRemoteSnapshotSafe(List<AnimeItem> currentItems, List<AnimeItem> apiList)
-    {
-        static int CountStatus(List<AnimeItem> items, UserAnimeStatus status)
-        {
-            return status == UserAnimeStatus.Watching
-                ? items.Count(x => x.Status == UserAnimeStatus.Watching || x.IsRewatching)
-                : items.Count(x => x.Status == status);
-        }
 
-        foreach (var trackedStatus in new[]
-        {
-            UserAnimeStatus.Watching,
-            UserAnimeStatus.Completed,
-            UserAnimeStatus.OnHold,
-            UserAnimeStatus.Dropped,
-            UserAnimeStatus.PlanToWatch
-        })
-        {
-            var local = CountStatus(currentItems, trackedStatus);
-            if (local < SyncSafetyConstants.MinimumStatusGuardCount) continue;
-
-            var incoming = CountStatus(apiList, trackedStatus);
-            var dropped = local - incoming;
-            if (dropped < SyncSafetyConstants.MinimumStatusDropCount) continue;
-
-            var incomingRatio = (double)incoming / local;
-            if (incomingRatio < SyncSafetyConstants.MaximumAllowedStatusDropRatio)
-            {
-                Log.Warning(
-                    "SyncWithTrackers: aborting because {Status} count dropped suspiciously from {Local} to {Incoming}. Likely a partial or stale tracker snapshot.",
-                    trackedStatus,
-                    local,
-                    incoming);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private async Task ProcessSyncResults(List<AnimeItem> apiList, List<AnimeItem> currentItems, IProgress<string>? status, CancellationToken ct)
-    {
-        var apiMap = apiList.ToDictionary(x => x.Id);
-        var existingMap = currentItems.ToDictionary(x => x.Id);
-
-        var toRemove = currentItems.Where(x => !apiMap.ContainsKey(x.Id)).ToList();
-
-        var uiBatch = new List<Action>();
-        int total = apiList.Count;
-
-        for (int i = 0; i < total; i++)
-        {
-            if (ct.IsCancellationRequested) break;
-
-            var newItem = apiList[i];
-
-            if (_animeRepository.IsRecentlyDeleted(newItem.Id)) continue;
-
-            if (existingMap.TryGetValue(newItem.Id, out var existing))
-            {
-                var captured = newItem;
-                var capturedExisting = existing;
-                uiBatch.Add(() => captured.CopyTo(capturedExisting));
-            }
-            else
-            {
-                uiBatch.Add(() =>
-                {
-                    _animeRepository.AddToCollection(newItem);
-                });
-            }
-
-            if (uiBatch.Count >= 50 || i == total - 1)
-            {
-                if (uiBatch.Count > 0)
-                {
-                    var currentBatch = uiBatch.ToList();
-                    uiBatch.Clear();
-                    await _animeRepository.ApplySyncBatchAsync(i == 49 || i == total - 1 && uiBatch.Count == total ? toRemove : new List<AnimeItem>(), currentBatch);
-                    if (i < total - 1) toRemove.Clear(); // Only pass toRemove once
-                }
-
-                status?.Report($"{UIUtils.GetLoc("sync.updating.metadata")}: {i + 1}/{total}");
-                if (i < total - 1)
-                {
-                    await Task.Delay(1, ct);
-                }
-            }
-        }
-
-        // If total == 0, still remove
-        if (total == 0 && toRemove.Any())
-        {
-            await _animeRepository.ApplySyncBatchAsync(toRemove, uiBatch);
-        }
-    }
 }

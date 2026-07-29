@@ -44,67 +44,6 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
 
     public ObservableCollection<AnimeItem> AnimeItems => _animeRepo.Collection;
 
-    [ObservableProperty] private AvaloniaList<AnimeItem> _filteredItems = new();
-    [ObservableProperty] private string _watchingHeader = string.Empty;
-    [ObservableProperty] private string _completedHeader = string.Empty;
-    [ObservableProperty] private string _onHoldHeader = string.Empty;
-    [ObservableProperty] private string _droppedHeader = string.Empty;
-    [ObservableProperty] private string _planToWatchHeader = string.Empty;
-
-    [ObservableProperty] private AnimeItem? _selectedItem;
-    [ObservableProperty] private bool _isBusy;
-
-    private string _searchQuery = string.Empty;
-    public string SearchQuery
-    {
-        get => _searchQuery;
-        set
-        {
-            SetProperty(ref _searchQuery, value);
-            _searchDebouncer?.Invoke();
-        }
-    }
-    private Kiriha.Utils.Async.Debouncer? _searchDebouncer;
-    private Kiriha.Utils.Async.Debouncer? _filterRefreshDebouncer;
-    private int _filterRefreshVersion;
-
-
-
-    [ObservableProperty] private AnimeItem? _activeItem;
-
-    // Sorting
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
-    private string _sortBy = "Title";
-    public string DisplaySortBy => UIUtils.GetLoc("filters.sort." + SortBy.ToLower());
-    public List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
-
-    // Filters
-    [ObservableProperty] private bool _filterNsfw;
-    [ObservableProperty] private bool _isFilterActive;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsWatchingSelected))]
-    [NotifyPropertyChangedFor(nameof(IsCompletedSelected))]
-    [NotifyPropertyChangedFor(nameof(IsOnHoldSelected))]
-    [NotifyPropertyChangedFor(nameof(IsDroppedSelected))]
-    [NotifyPropertyChangedFor(nameof(IsPlanToWatchSelected))]
-    private UserAnimeStatus _selectedStatus = UserAnimeStatus.Watching;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsAnimeSelected))]
-    [NotifyPropertyChangedFor(nameof(IsMangaSelected))]
-    private MediaKind _selectedMediaKind = MediaKind.Anime;
-
-    public bool IsAnimeSelected => SelectedMediaKind == MediaKind.Anime;
-    public bool IsMangaSelected => SelectedMediaKind == MediaKind.Manga;
-
-    public bool IsWatchingSelected => SelectedStatus == UserAnimeStatus.Watching;
-    public bool IsCompletedSelected => SelectedStatus == UserAnimeStatus.Completed;
-    public bool IsOnHoldSelected => SelectedStatus == UserAnimeStatus.OnHold;
-    public bool IsDroppedSelected => SelectedStatus == UserAnimeStatus.Dropped;
-    public bool IsPlanToWatchSelected => SelectedStatus == UserAnimeStatus.PlanToWatch;
-
     public AnimeListViewModel(
         SettingsService settingsService,
         AnimeRepository animeRepo,

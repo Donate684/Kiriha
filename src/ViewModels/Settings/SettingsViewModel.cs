@@ -30,14 +30,7 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsUpdateViewModel Update { get; }
     public SettingsCacheViewModel Cache { get; }
 
-    /// <summary>
-    /// Live, two-way bound list of user-defined share buttons. Edits are
-    /// persisted via HookCustomLink (item-level PropertyChanged)
-    /// and OnCustomLinksCollectionChanged (add/remove). The
-    /// underlying _settingsService.Current.CustomLinks list IS this
-    /// collection's backing storage.
-    /// </summary>
-    public ObservableCollection<CustomShareLink> CustomLinks { get; } = new();
+    public SettingsCustomLinksViewModel CustomLinks { get; }
 
     private readonly SettingsService _settingsService;
     private readonly FaviconService _faviconService;
@@ -70,6 +63,6 @@ public partial class SettingsViewModel : ViewModelBase
         Update = new SettingsUpdateViewModel(updateService);
         Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel);
 
-        InitializeCustomLinks();
+        CustomLinks = new SettingsCustomLinksViewModel(settingsService, faviconService);
     }
 }

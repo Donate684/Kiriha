@@ -25,11 +25,7 @@ public partial class PlayerOverlayWindow : Window
         ".ass", ".srt"
     };
 
-    // Auto-hide: hide panels after 3 seconds of no mouse movement
-    private static readonly TimeSpan ControlsKeepAliveInterval = TimeSpan.FromMilliseconds(180);
-    private readonly DispatcherTimer _hideTimer;
-    private bool _controlsVisible = true;
-    private DateTime _lastControlsKeepAliveUtc = DateTime.MinValue;
+
 
     // Chapter markers
     private Border? _topBar;
@@ -54,8 +50,7 @@ public partial class PlayerOverlayWindow : Window
         CacheOverlayControls();
         DisableLegacySettingsFlyout();
         _ownerWindow = null!;
-        _hideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-        _hideTimer.Tick += OnHideTimerTick;
+        InitializeAutoHide();
         AddHandler(KeyDownEvent, OnOverlayKeyDown, RoutingStrategies.Tunnel);
     }
 
@@ -67,8 +62,7 @@ public partial class PlayerOverlayWindow : Window
         _ownerWindow = owner;
         DataContext = owner.DataContext;
 
-        _hideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-        _hideTimer.Tick += OnHideTimerTick;
+        InitializeAutoHide();
 
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
@@ -98,8 +92,7 @@ public partial class PlayerOverlayWindow : Window
         _ownerWindow.PositionChanged += _ownerPositionChanged;
         _ownerWindow.PropertyChanged += _ownerPropertyChanged;
 
-        // Start with controls visible, then auto-hide
-        _hideTimer.Start();
+        StartAutoHide();
     }
 
     private void CacheOverlayControls()

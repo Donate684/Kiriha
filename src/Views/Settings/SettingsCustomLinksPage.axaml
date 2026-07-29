@@ -18,7 +18,7 @@
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Settings.SettingsCustomLinksPage"
-             x:DataType="vmSettings:SettingsViewModel">
+             x:DataType="vmSettings:SettingsCustomLinksViewModel">
     <UserControl.Resources>
         <conv:LocConverter x:Key="LocConverter"/>
         <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
@@ -105,7 +105,7 @@
                                                 Padding="8" CornerRadius="6"
                                                 Background="{DynamicResource SubtleFillColorTertiary}" BorderThickness="0"
                                                 ToolTip.Tip="{DynamicResource l.common.actions.remove}"
-                                                Command="{Binding $parent[ItemsControl].((vmSettings:SettingsViewModel)DataContext).RemoveCustomLinkCommand}"
+                                                Command="{Binding $parent[ItemsControl].((vmSettings:SettingsCustomLinksViewModel)DataContext).RemoveCustomLinkCommand}"
                                                 CommandParameter="{Binding}">
                                             <material:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#ff5555"/>
                                         </Button>

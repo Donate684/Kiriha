@@ -327,7 +327,7 @@
 
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=NavCustom, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
-                    <pages:SettingsCustomLinksPage />
+                    <pages:SettingsCustomLinksPage DataContext="{Binding CustomLinks}"/>
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
           </Panel>

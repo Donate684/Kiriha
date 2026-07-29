@@ -21,7 +21,7 @@ public sealed class MpvThumbnailer : IDisposable
     private readonly SemaphoreSlim _captureGate = new(1, 1);
     private readonly string _thumbnailDirectory;
     private readonly FileStream _lockFile;
-    private readonly Dictionary<int, CacheEntry> _cache = new();
+    private readonly Dictionary<int, MpvThumbnailCacheEntry> _cache = new();
     private IntPtr _handle;
     private string? _loadedPath;
     private bool _disposed;
@@ -29,47 +29,7 @@ public sealed class MpvThumbnailer : IDisposable
 
     static MpvThumbnailer()
     {
-        Task.Run(() =>
-        {
-            try
-            {
-                var baseDir = Path.Combine(Path.GetTempPath(), "Kiriha", "timeline-thumbs");
-                if (Directory.Exists(baseDir))
-                {
-                    foreach (var dir in Directory.GetDirectories(baseDir))
-                    {
-                        try
-                        {
-                            var lockFilePath = Path.Combine(dir, ".lock");
-                            bool isLocked = false;
-
-                            if (File.Exists(lockFilePath))
-                            {
-                                try
-                                {
-                                    using var fs = new FileStream(lockFilePath, FileMode.Open, FileAccess.Write, FileShare.None);
-                                }
-                                catch (IOException)
-                                {
-                                    isLocked = true;
-                                }
-                            }
-                            else if (DateTime.UtcNow - Directory.GetCreationTimeUtc(dir) < TimeSpan.FromSeconds(10))
-                            {
-                                isLocked = true;
-                            }
-
-                            if (!isLocked)
-                            {
-                                Directory.Delete(dir, recursive: true);
-                            }
-                        }
-                        catch (Exception ex) { Log.Debug(ex, "Failed to clean up thumbnail directory: {Dir}", dir); }
-                    }
-                }
-            }
-            catch (Exception ex) { Log.Debug(ex, "Failed to enumerate root thumbnail directory"); }
-        });
+        ThumbnailTempCleaner.StartCleanupTask();
     }
 
     public MpvThumbnailer()
@@ -234,7 +194,7 @@ public sealed class MpvThumbnailer : IDisposable
 
             lock (_gate)
             {
-                _cache[bucket] = new CacheEntry(targetPath);
+                _cache[bucket] = new MpvThumbnailCacheEntry(targetPath);
                 TrimCache();
             }
             return targetPath;
@@ -416,9 +376,5 @@ public sealed class MpvThumbnailer : IDisposable
         }
     }
 
-    private sealed class CacheEntry(string path)
-    {
-        public string Path { get; } = path;
-        public DateTime LastUsedUtc { get; set; } = DateTime.UtcNow;
-    }
+
 }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
@@ -11,6 +12,53 @@ namespace Kiriha.ViewModels.AnimeList;
 
 public partial class AnimeListViewModel
 {
+    private string _searchQuery = string.Empty;
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            SetProperty(ref _searchQuery, value);
+            _searchDebouncer?.Invoke();
+        }
+    }
+    private Kiriha.Utils.Async.Debouncer? _searchDebouncer;
+    private Kiriha.Utils.Async.Debouncer? _filterRefreshDebouncer;
+    private int _filterRefreshVersion;
+
+    // Sorting
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
+    private string _sortBy = "Title";
+    public string DisplaySortBy => UIUtils.GetLoc("filters.sort." + SortBy.ToLower());
+    public System.Collections.Generic.List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
+
+    // Filters
+    [ObservableProperty] private bool _filterNsfw;
+    [ObservableProperty] private bool _isFilterActive;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWatchingSelected))]
+    [NotifyPropertyChangedFor(nameof(IsCompletedSelected))]
+    [NotifyPropertyChangedFor(nameof(IsOnHoldSelected))]
+    [NotifyPropertyChangedFor(nameof(IsDroppedSelected))]
+    [NotifyPropertyChangedFor(nameof(IsPlanToWatchSelected))]
+    private UserAnimeStatus _selectedStatus = UserAnimeStatus.Watching;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAnimeSelected))]
+    [NotifyPropertyChangedFor(nameof(IsMangaSelected))]
+    private MediaKind _selectedMediaKind = MediaKind.Anime;
+
+    public bool IsAnimeSelected => SelectedMediaKind == MediaKind.Anime;
+    public bool IsMangaSelected => SelectedMediaKind == MediaKind.Manga;
+
+    public bool IsWatchingSelected => SelectedStatus == UserAnimeStatus.Watching;
+    public bool IsCompletedSelected => SelectedStatus == UserAnimeStatus.Completed;
+    public bool IsOnHoldSelected => SelectedStatus == UserAnimeStatus.OnHold;
+    public bool IsDroppedSelected => SelectedStatus == UserAnimeStatus.Dropped;
+    public bool IsPlanToWatchSelected => SelectedStatus == UserAnimeStatus.PlanToWatch;
+
     [RelayCommand]
     public void ClearFilters()
     {

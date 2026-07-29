@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vmMain="using:Kiriha.ViewModels.Main"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
+             x:Class="Kiriha.Views.Main.UpdateDialogOverlay"
+             x:DataType="vmMain:MainWindowViewModel">
+    <Border IsVisible="{Binding IsUpdateDialogOpen}"
+            Background="#80000000"
+            ZIndex="110">
+        <Border.Styles>
+            <Style Selector="Button.DimOverlay">
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter>
+            </Style>
+        </Border.Styles>
+
+        <Grid>
+            <!-- Click dim to close (disabled when downloading/downloaded) -->
+            <Button Classes="DimOverlay"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    Focusable="False"
+                    IsEnabled="{Binding !UpdateDialog.IsDownloadingOrFinished, FallbackValue=True}"
+                    Command="{Binding CloseUpdateDialogCommand}"/>
+
+            <!-- Modal card -->
+            <Border Background="{DynamicResource ModalBackgroundFill}"
+                    CornerRadius="12"
+                    Width="480" Height="280"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                    BorderThickness="1"
+                    BoxShadow="0 10 40 0 #60000000"
+                    ClipToBounds="True">
+                <ContentControl Content="{Binding UpdateDialog}"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
