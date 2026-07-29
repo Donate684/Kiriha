@@ -24,5 +24,6 @@
     "completed": "Завершено",
     "dropped": "Брошено"
   },
-  "already_scrobbled": "Уже отмечено"
+  "already_scrobbled": "Уже отмечено",
+  "count_format": "×{0}"
 }

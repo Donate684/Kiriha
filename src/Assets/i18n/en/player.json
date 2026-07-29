@@ -83,6 +83,8 @@
     "title": "Interface",
     "hide_controls": "Hide control panel",
     "hide_controls_sub": "Hide top and bottom panels when mouse is idle",
+    "hide_timeout": "Hide timeout",
+    "hide_timeout_sub": "Idle time before hiding (in seconds)",
     "on": "On",
     "off": "Off",
     "chapter_markers": "Chapter markers",

@@ -9,14 +9,6 @@ using Kiriha.Services.Api;
 using Kiriha.Services.Data.Repository;
 using Serilog;
 
-using System;
-using System.Threading.Tasks;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
-using Kiriha.Services.Api;
-using Kiriha.Services.Data.Repository;
-using Serilog;
-
 namespace Kiriha.Services.Data.Sync;
 
 public class AnimeProgressService

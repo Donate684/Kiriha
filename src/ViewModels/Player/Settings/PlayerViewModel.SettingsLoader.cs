@@ -22,6 +22,7 @@ public partial class PlayerViewModel
             RememberPlayerVolume = settings.RememberVolume;
             NormalizeAudio = settings.NormalizeAudio;
             AutoHideControls = settings.AutoHideControls;
+            AutoHideTimeout = Math.Clamp(settings.AutoHideTimeout, 0.5, 10.0);
             ShowChapterMarkers = settings.ShowChapterMarkers;
             LeftClickAction = FindMouseAction(settings.LeftClickAction);
             RightClickAction = FindMouseAction(settings.RightClickAction);

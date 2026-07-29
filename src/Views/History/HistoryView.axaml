@@ -267,7 +267,7 @@
                                                                     Padding="7,2" Margin="0,0,10,0"
                                                                     VerticalAlignment="Center"
                                                                     IsVisible="{Binding IsRange}">
-                                                                <TextBlock Text="{Binding Count, StringFormat='Ã—{0}'}"
+                                                                <TextBlock Text="{Binding Count, Converter={StaticResource LocConverter}, ConverterParameter='format:l.history.count_format'}"
                                                                            FontSize="10" FontWeight="Bold"
                                                                            Foreground="White"/>
                                                             </Border>

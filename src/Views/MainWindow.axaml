@@ -146,9 +146,9 @@
             </SplitView.Content>
         </SplitView>
 
-        <main:SettingsModalOverlay />
+        <main:SettingsModalOverlay Grid.RowSpan="2" />
 
-        <main:UpdateDialogOverlay />
+        <main:UpdateDialogOverlay Grid.RowSpan="2" />
     </Grid>
     </LayoutTransformControl>
 </Window>

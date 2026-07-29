@@ -37,6 +37,12 @@ public partial class PlayerViewModel
         _settingsService.Update(settings => settings.Player.AutoHideControls = value, SettingsSection.Player);
     }
 
+    partial void OnAutoHideTimeoutChanged(double value)
+    {
+        if (_isApplyingSettings || _settingsService == null) return;
+        _settingsService.Update(settings => settings.Player.AutoHideTimeout = value, SettingsSection.Player);
+    }
+
     partial void OnShowChapterMarkersChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
@@ -147,5 +153,13 @@ public partial class PlayerViewModel
     private static string NormalizeHotkey(string? value, string fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    }
+
+    partial void OnIsPlayingChanged(bool value)
+    {
+        if (value)
+            Kiriha.Utils.PowerManager.KeepDisplayActive();
+        else
+            Kiriha.Utils.PowerManager.AllowDisplaySleep();
     }
 }

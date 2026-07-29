@@ -25,6 +25,22 @@
 
                                 <Grid ColumnDefinitions="*,Auto" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.hide_timeout}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.hide_timeout_sub}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   Width="150"
+                                                   Minimum="0.5"
+                                                   Maximum="10.0"
+                                                   Increment="0.5"
+                                                   FormatString="0.0 сек"
+                                                   Value="{Binding AutoHideTimeout}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.chapter_markers}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.chapter_markers_sub}"/>
                                     </StackPanel>

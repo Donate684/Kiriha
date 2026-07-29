@@ -8,19 +8,29 @@ namespace Kiriha.Views.Player;
 
 public partial class PlayerOverlayWindow
 {
-    // Auto-hide: hide panels after 3 seconds of no mouse movement
+    // Auto-hide: hide panels after timeout of no mouse movement
     private static readonly TimeSpan ControlsKeepAliveInterval = TimeSpan.FromMilliseconds(180);
-    private readonly DispatcherTimer _hideTimer = new() { Interval = TimeSpan.FromSeconds(3) };
+    private readonly DispatcherTimer _hideTimer = new();
     private bool _controlsVisible = true;
     private DateTime _lastControlsKeepAliveUtc = DateTime.MinValue;
+
+    private void UpdateHideTimerInterval()
+    {
+        if (DataContext is PlayerViewModel vm)
+            _hideTimer.Interval = TimeSpan.FromSeconds(vm.AutoHideTimeout);
+        else
+            _hideTimer.Interval = TimeSpan.FromSeconds(1.5);
+    }
 
     private void InitializeAutoHide()
     {
         _hideTimer.Tick += OnHideTimerTick;
+        UpdateHideTimerInterval();
     }
 
     private void StartAutoHide()
     {
+        UpdateHideTimerInterval();
         _hideTimer.Start();
     }
 
@@ -50,24 +60,25 @@ public partial class PlayerOverlayWindow
         _lastControlsKeepAliveUtc = now;
         // Reset the hide timer
         _hideTimer.Stop();
+        UpdateHideTimerInterval();
         _hideTimer.Start();
     }
 
-    private void HideControls()
+    private async void HideControls()
     {
         _controlsVisible = false;
         _lastControlsKeepAliveUtc = DateTime.MinValue;
-        if (_topBar != null)
-        {
-            _topBar.Opacity = 0;
-            _topBar.IsHitTestVisible = false;
-        }
-        if (_bottomBar != null)
-        {
-            _bottomBar.Opacity = 0;
-            _bottomBar.IsHitTestVisible = false;
-        }
+        if (_topBar != null) _topBar.Opacity = 0;
+        if (_bottomBar != null) _bottomBar.Opacity = 0;
         Cursor = s_noneCursor;
+
+        await System.Threading.Tasks.Task.Delay(300);
+
+        if (!_controlsVisible)
+        {
+            if (_topBar != null) _topBar.IsHitTestVisible = false;
+            if (_bottomBar != null) _bottomBar.IsHitTestVisible = false;
+        }
     }
 
     private bool IsPointerOverUI()

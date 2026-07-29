@@ -33,6 +33,8 @@ public partial class PlayerViewModel
 
         try { _playback.Detach(); } catch (Exception ex) { Log.Debug(ex, "Error detaching playback"); }
         try { _statePublisher.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing state publisher"); }
+
+        Kiriha.Utils.PowerManager.AllowDisplaySleep();
     }
 
     private Kiriha.Models.Api.InternalPlayerState CreatePlayerState()

@@ -13,6 +13,7 @@ public partial class AppSettings
         public double Volume { get; set; } = 100;
         public double PlaybackSpeed { get; set; } = 1.0;
         public bool AutoHideControls { get; set; } = true;
+        public double AutoHideTimeout { get; set; } = 1.5;
         public bool ShowChapterMarkers { get; set; } = true;
         public PlayerMouseAction LeftClickAction { get; set; } = PlayerMouseAction.TogglePlayPause;
         public PlayerMouseAction RightClickAction { get; set; } = PlayerMouseAction.OpenSettings;

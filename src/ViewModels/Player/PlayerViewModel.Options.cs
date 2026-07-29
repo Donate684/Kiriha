@@ -11,6 +11,7 @@ public partial class PlayerViewModel
     [ObservableProperty] private bool _singlePlayerWindow = true;
     [ObservableProperty] private bool _rememberPlayerVolume = true;
     [ObservableProperty] private bool _autoHideControls = true;
+    [ObservableProperty] private double _autoHideTimeout = 1.5;
     [ObservableProperty] private bool _showChapterMarkers = true;
 
     [ObservableProperty] private bool _showPlayPauseButton = true;

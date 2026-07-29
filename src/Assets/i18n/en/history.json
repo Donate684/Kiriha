@@ -24,5 +24,6 @@
     "completed": "Completed",
     "dropped": "Dropped"
   },
-  "already_scrobbled": "Already scrobbled"
+  "already_scrobbled": "Already scrobbled",
+  "count_format": "×{0}"
 }
