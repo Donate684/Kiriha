@@ -43,6 +43,7 @@
   },
   "status": {
     "watching": "Watching",
+    "reading": "Reading",
     "completed": "Completed",
     "on_hold": "On Hold",
     "dropped": "Dropped",

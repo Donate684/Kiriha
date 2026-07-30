@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -74,6 +74,14 @@
                     </RadioButton>
 
                     <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
+                                 IsChecked="{Binding IsReadNextSelected, Mode=TwoWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <material:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="Что почитать" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
                                  IsChecked="{Binding IsHistorySelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <material:MaterialIcon Kind="History" Width="15" Height="15" VerticalAlignment="Center"/>
@@ -96,6 +104,7 @@
                     <controls:AnalyticsOverviewSection />
                     <controls:AnalyticsTastesSection />
                     <controls:AnalyticsWatchNextSection />
+                    <controls:AnalyticsReadNextSection />
                     <controls:AnalyticsHistorySection />
                 </Grid>
             </ScrollViewer>

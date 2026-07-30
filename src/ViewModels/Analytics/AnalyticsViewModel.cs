@@ -20,6 +20,7 @@ public partial class AnalyticsViewModel : ViewModelBase
     public OverviewSectionViewModel Overview { get; } = new();
     public TastesSectionViewModel Tastes { get; } = new();
     public WatchNextSectionViewModel WatchNext { get; } = new();
+    public ReadNextSectionViewModel ReadNext { get; } = new();
     public HistorySectionViewModel History { get; } = new();
 
     [ObservableProperty] private bool _hasData;
@@ -51,10 +52,16 @@ public partial class AnalyticsViewModel : ViewModelBase
         set { if (value) SelectedSection = 3; }
     }
 
-    public bool IsHistorySelected
+    public bool IsReadNextSelected
     {
         get => SelectedSection == 4;
         set { if (value) SelectedSection = 4; }
+    }
+
+    public bool IsHistorySelected
+    {
+        get => SelectedSection == 5;
+        set { if (value) SelectedSection = 5; }
     }
 
     public AnalyticsViewModel(AnimeRepository animeRepo, HistoryService historyService)
@@ -69,6 +76,7 @@ public partial class AnalyticsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsRatingsSelected));
         OnPropertyChanged(nameof(IsTasteSelected));
         OnPropertyChanged(nameof(IsWatchNextSelected));
+        OnPropertyChanged(nameof(IsReadNextSelected));
         OnPropertyChanged(nameof(IsHistorySelected));
     }
 
@@ -104,7 +112,12 @@ public partial class AnalyticsViewModel : ViewModelBase
 
             Overview.Refresh(items, nonPlanned, completed, scored);
             Tastes.Refresh(items, nonPlanned);
-            WatchNext.Refresh(items);
+            
+            var animes = items.Where(x => x.MediaKind == Kiriha.Models.Entities.MediaKind.Anime).ToList();
+            var mangas = items.Where(x => x.MediaKind != Kiriha.Models.Entities.MediaKind.Anime).ToList();
+            
+            WatchNext.Refresh(animes);
+            ReadNext.Refresh(mangas);
             History.Refresh(history, items, completed);
         }
         finally

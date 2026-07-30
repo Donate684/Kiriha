@@ -142,7 +142,8 @@ public partial class AnimeListViewModel
             var dropped = _listProjection.Count(UserAnimeStatus.Dropped, kind);
             var ptw = _listProjection.Count(UserAnimeStatus.PlanToWatch, kind);
 
-            WatchingHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.watching"), watching.ToString());
+            var watchingLocKey = kind == MediaKind.Manga ? "anime.status.reading" : "anime.status.watching";
+            WatchingHeader = UIUtils.GetLoc("filters.header_format", GetLoc(watchingLocKey), watching.ToString());
             CompletedHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.completed"), completed.ToString());
             OnHoldHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.on_hold"), onHold.ToString());
             DroppedHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.dropped"), dropped.ToString());

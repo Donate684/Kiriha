@@ -43,6 +43,7 @@
   },
   "status": {
     "watching": "Смотрю",
+    "reading": "Читаю",
     "completed": "Завершено",
     "on_hold": "Отложено",
     "dropped": "Брошено",

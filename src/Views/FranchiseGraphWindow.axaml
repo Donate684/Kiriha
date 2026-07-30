@@ -18,11 +18,12 @@
         xmlns:u="using:Kiriha.Utils.Graphs"
         xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
         xmlns:material="using:Material.Icons.Avalonia"
+        xmlns:conv="using:Kiriha.Views.Converters"
         x:Class="Kiriha.Views.FranchiseGraphWindow"
         x:DataType="vmDialogs:FranchiseGraphViewModel"
         x:Name="Root"
         Title="Граф франшизы"
-        Width="1000" Height="700"
+        Width="900" Height="600"
         WindowStartupLocation="CenterOwner"
         Background="{x:Null}"
         TransparencyLevelHint="Mica, AcrylicBlur"
@@ -31,10 +32,12 @@
         ExtendClientAreaTitleBarHeightHint="34"
         WindowDecorations="BorderOnly">
 
-    <LayoutTransformControl Name="ScaleRoot">
-        <LayoutTransformControl.LayoutTransform>
-            <ScaleTransform ScaleX="1" ScaleY="1"/>
-        </LayoutTransformControl.LayoutTransform>
+    <Window.Resources>
+        <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter"/>
+        <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
+        <conv:LocConverter x:Key="LocConverter"/>
+    </Window.Resources>
+
     <Grid RowDefinitions="Auto, *">
         <Border Grid.Row="0" Height="34" VerticalAlignment="Top" Background="Transparent" IsHitTestVisible="True" PointerPressed="OnTitleBarPressed" ZIndex="10"/>
         
@@ -53,9 +56,21 @@
             <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
 
-        <!-- Use a Grid with white/dark background to make the graph visible -->
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" IsVisible="{Binding !IsLoading}">
-            <Grid Width="{Binding Layout.Width}" Height="{Binding Layout.Height}" Margin="40">
+        <!-- Interactive Graph Container -->
+        <Border Grid.Row="1" x:Name="GraphContainer" Background="Transparent" IsVisible="{Binding !IsLoading}"
+                PointerPressed="OnGraphPointerPressed"
+                PointerMoved="OnGraphPointerMoved"
+                PointerReleased="OnGraphPointerReleased"
+                PointerWheelChanged="OnGraphPointerWheelChanged"
+                ClipToBounds="True">
+            
+            <Grid Width="{Binding Layout.Width}" Height="{Binding Layout.Height}" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Grid.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        <TranslateTransform X="0" Y="0"/>
+                    </TransformGroup>
+                </Grid.RenderTransform>
                 
                 <!-- Lines Layer -->
                 <ItemsControl ItemsSource="{Binding Layout.Links}">
@@ -66,8 +81,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="u:FranchiseGraphVisualLink">
-                            <Line StartPoint="{Binding Source.CenterPoint}"
-                                  EndPoint="{Binding Target.CenterPoint}" 
+                            <Path Data="{Binding ConnectionPath}"
                                   Stroke="{DynamicResource DividerStrokeColorDefault}" 
                                   StrokeThickness="2" />
                         </DataTemplate>
@@ -91,7 +105,7 @@
                         <DataTemplate x:DataType="u:FranchiseGraphVisualNode">
                             <Button Command="{Binding #Root.((vmDialogs:FranchiseGraphViewModel)DataContext).NodeClickedCommand}"
                                     CommandParameter="{Binding}"
-                                    Width="200" Height="90" Padding="0" CornerRadius="8"
+                                    Width="{Binding NodeWidth}" Height="{Binding NodeHeight}" Padding="0" CornerRadius="12"
                                     Background="{DynamicResource CardBackgroundFillDefault}"
                                     BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
                                 <Button.Styles>
@@ -103,22 +117,43 @@
                                         <Setter Property="BorderThickness" Value="2"/>
                                     </Style>
                                 </Button.Styles>
+                                <Button.Transitions>
+                                    <Transitions>
+                                        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                                    </Transitions>
+                                </Button.Transitions>
                                 <Classes.current>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                                         <Binding Path="IsCurrent"/>
                                     </MultiBinding>
                                 </Classes.current>
                                 
-                                <Grid ColumnDefinitions="Auto, *">
-                                    <Border Grid.Column="0" Width="60" CornerRadius="8,0,0,8" ClipToBounds="True">
-                                        <Image asyncImageLoader:ImageLoader.Source="{Binding Node.ImageUrl}" Stretch="UniformToFill"/>
+                                <Grid ColumnDefinitions="80, *">
+                                    <Border Grid.Column="0" CornerRadius="12,0,0,12" ClipToBounds="True">
+                                        <Image asyncImageLoader:ImageLoader.Source="{Binding DisplayImageUrl}" Stretch="UniformToFill"/>
                                     </Border>
-                                    <StackPanel Grid.Column="1" Margin="8,6" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Node.Name}" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Node.Year}" FontSize="11" Opacity="0.6" Margin="0,2,0,0" IsVisible="{Binding Node.Year, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                        <Border Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="4,1" HorizontalAlignment="Left" Margin="0,4,0,0">
-                                            <TextBlock Text="{Binding Node.Kind}" FontSize="10" FontWeight="Bold" Foreground="White"/>
-                                        </Border>
+                                    
+                                    <StackPanel Grid.Column="1" Margin="14,10" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Node.Name}" FontWeight="Bold" FontSize="13" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                        
+                                        <Grid Margin="0,8,0,0" ColumnDefinitions="Auto, *, Auto">
+                                            <!-- Left side: Year & Current label -->
+                                            <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Node.Year}" FontSize="12" Opacity="0.6" IsVisible="{Binding Node.Year, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                <TextBlock Text="Текущее" FontSize="11" Foreground="{DynamicResource SystemAccentColor}" FontWeight="Bold" IsVisible="{Binding IsCurrent}"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Right side: Kind & Status badges -->
+                                            <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="6" Padding="6,2">
+                                                    <TextBlock Text="{Binding Node.Kind}" FontSize="11" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center"/>
+                                                </Border>
+                                                
+                                                <Border Background="{Binding UserStatus, Converter={StaticResource StatusToColorConverter}}" CornerRadius="4" Padding="4,2" IsVisible="{Binding UserStatus, Converter={StaticResource StatusNotNoneConverter}}">
+                                                    <TextBlock Text="{Binding UserStatus, Converter={StaticResource LocConverter}}" FontSize="10" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
                                     </StackPanel>
                                 </Grid>
                             </Button>
@@ -126,7 +161,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Grid>
-        </ScrollViewer>
+        </Border>
     </Grid>
-    </LayoutTransformControl>
 </Window>

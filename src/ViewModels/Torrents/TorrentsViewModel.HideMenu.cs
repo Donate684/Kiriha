@@ -22,7 +22,7 @@ public partial class TorrentsViewModel
     public void RefreshWatchingList()
     {
         var hidden = new HashSet<int>(_settingsService.Current.Torrents.HiddenAnimeIds ?? new List<int>());
-        var watching = _animeRepo.Collection.Where(x => x.Status == UserAnimeStatus.Watching).ToList();
+        var watching = _animeRepo.Collection.Where(x => x.Status == UserAnimeStatus.Watching && x.MediaKind == Kiriha.Models.Entities.MediaKind.Anime).ToList();
 
         WatchingAnime.Clear();
         foreach (var a in watching)

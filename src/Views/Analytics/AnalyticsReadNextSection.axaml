@@ -1,0 +1,152 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:material="using:Material.Icons.Avalonia"
+             x:Class="Kiriha.Views.Analytics.AnalyticsReadNextSection"
+             x:DataType="vmAnalytics:AnalyticsViewModel">
+                    <StackPanel Spacing="16"
+                                HorizontalAlignment="Stretch"
+                                IsVisible="{Binding IsReadNextSelected}">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="0"/>
+                                <ColumnDefinition Width="*" MinWidth="0"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Левый столбец -->
+                            <StackPanel Grid.Column="0" Spacing="16" MinWidth="0">
+
+                                <!-- Догнать онгоинги -->
+                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
+                                    <StackPanel Spacing="14">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <Border Width="30" Height="30" CornerRadius="8"
+                                                    Background="#FFE53935"
+                                                    VerticalAlignment="Center">
+                                                <material:MaterialIcon Kind="PlaylistPlay"
+                                                                       Width="16" Height="16"
+                                                                       Foreground="White"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="Догнать онгоинги" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Текущие аниме с пропущенными сериями" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <ItemsControl ItemsSource="{Binding ReadNext.ReadTodo}"
+                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                                                      HorizontalAlignment="Stretch">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="1"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Скоро выйдет -->
+                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
+                                    <StackPanel Spacing="14">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <Border Width="30" Height="30" CornerRadius="8"
+                                                    Background="#FF2D7DD2"
+                                                    VerticalAlignment="Center">
+                                                <material:MaterialIcon Kind="CalendarClock"
+                                                                       Width="16" Height="16"
+                                                                       Foreground="White"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="Скоро выйдет" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Следующие эпизоды из списка" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <ItemsControl ItemsSource="{Binding ReadNext.UpcomingTodo}"
+                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                                                      HorizontalAlignment="Stretch">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="1"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+
+                            <!-- Правый столбец -->
+                            <StackPanel Grid.Column="1" Spacing="16" MinWidth="0">
+
+                                <!-- Догнать вышедшее -->
+                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
+                                    <StackPanel Spacing="14">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <Border Width="30" Height="30" CornerRadius="8"
+                                                    Background="#FF7B61FF"
+                                                    VerticalAlignment="Center">
+                                                <material:MaterialIcon Kind="PlaylistCheck"
+                                                                       Width="16" Height="16"
+                                                                       Foreground="White"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="Догнать вышедшее" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Завершённые аниме с пропущенным" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <ItemsControl ItemsSource="{Binding ReadNext.FinishedReadTodo}"
+                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                                                      HorizontalAlignment="Stretch">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="1"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Планы -->
+                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
+                                    <StackPanel Spacing="14">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <Border Width="30" Height="30" CornerRadius="8"
+                                                    Background="#FF2E9D62"
+                                                    VerticalAlignment="Center">
+                                                <material:MaterialIcon Kind="BookmarkPlusOutline"
+                                                                       Width="16" Height="16"
+                                                                       Foreground="White"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="Планы" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Лучшее из запланированного" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <ItemsControl ItemsSource="{Binding ReadNext.PlanTodo}"
+                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                                                      HorizontalAlignment="Stretch">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="1"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </Grid>
+                        <Border Height="110" IsHitTestVisible="False"/>
+                    </StackPanel>
+
+                    <!-- ══════════ СЕКЦИЯ: ИСТОРИЯ ══════════ -->
+</UserControl>
+
+

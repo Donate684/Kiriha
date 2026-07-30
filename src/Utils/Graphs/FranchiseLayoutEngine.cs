@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Models.Api;
+using Kiriha.Models.Entities;
+
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Kiriha.Utils.Graphs;
 
-public class FranchiseGraphVisualNode
+public partial class FranchiseGraphVisualNode : ObservableObject
 {
     public ShikiFranchiseNode Node { get; set; } = null!;
     public double X { get; set; }
@@ -14,8 +17,20 @@ public class FranchiseGraphVisualNode
     public int GridY { get; set; }
     public bool IsCurrent { get; set; }
 
-    // For Avalonia Line binding
-    public Avalonia.Point CenterPoint => new Avalonia.Point(X + 100, Y + 45);
+    public double NodeWidth { get; set; } = 260;
+    public double NodeHeight { get; set; } = 110;
+
+    [ObservableProperty]
+    private string _displayImageUrl = string.Empty;
+
+    [ObservableProperty]
+    private UserAnimeStatus _userStatus = UserAnimeStatus.None;
+
+    public Avalonia.Point TopPoint => new Avalonia.Point(X + NodeWidth / 2, Y);
+    public Avalonia.Point BottomPoint => new Avalonia.Point(X + NodeWidth / 2, Y + NodeHeight);
+    public Avalonia.Point LeftPoint => new Avalonia.Point(X, Y + NodeHeight / 2);
+    public Avalonia.Point RightPoint => new Avalonia.Point(X + NodeWidth, Y + NodeHeight / 2);
+    public Avalonia.Point CenterPoint => new Avalonia.Point(X + NodeWidth / 2, Y + NodeHeight / 2);
 }
 
 public class FranchiseGraphVisualLink
@@ -23,6 +38,7 @@ public class FranchiseGraphVisualLink
     public ShikiFranchiseLink Link { get; set; } = null!;
     public FranchiseGraphVisualNode Source { get; set; } = null!;
     public FranchiseGraphVisualNode Target { get; set; } = null!;
+    public string ConnectionPath { get; set; } = string.Empty;
 }
 
 public class FranchiseGraphLayout
@@ -35,7 +51,7 @@ public class FranchiseGraphLayout
 
 public static class FranchiseLayoutEngine
 {
-    public static FranchiseGraphLayout CalculateLayout(ShikiFranchiseResponse data, double cellWidth = 240, double cellHeight = 120)
+    public static FranchiseGraphLayout CalculateLayout(ShikiFranchiseResponse data, double cellWidth = 340, double cellHeight = 180)
     {
         var visualNodes = new Dictionary<int, FranchiseGraphVisualNode>();
         foreach (var node in data.Nodes)
@@ -159,13 +175,57 @@ public static class FranchiseLayoutEngine
         double minY = visualNodes.Values.Min(n => n.GridY) * cellHeight;
 
         // Offset so all coordinates are >= 0 with some padding
-        double offsetX = -minX + 40;
-        double offsetY = -minY + 40;
+        double offsetX = -minX + 80;
+        double offsetY = -minY + 80;
 
         foreach (var node in visualNodes.Values)
         {
             node.X = node.GridX * cellWidth + offsetX;
             node.Y = node.GridY * cellHeight + offsetY;
+        }
+
+        // 4. Calculate connection paths
+        foreach (var link in visualLinks)
+        {
+            var src = link.Source;
+            var tgt = link.Target;
+            
+            Avalonia.Point p1, p2, c1, c2;
+            double curveOffset = 60;
+
+            if (src.GridY < tgt.GridY)
+            {
+                p1 = src.BottomPoint;
+                p2 = tgt.TopPoint;
+                c1 = new Avalonia.Point(p1.X, p1.Y + curveOffset);
+                c2 = new Avalonia.Point(p2.X, p2.Y - curveOffset);
+            }
+            else if (src.GridY > tgt.GridY)
+            {
+                p1 = src.TopPoint;
+                p2 = tgt.BottomPoint;
+                c1 = new Avalonia.Point(p1.X, p1.Y - curveOffset);
+                c2 = new Avalonia.Point(p2.X, p2.Y + curveOffset);
+            }
+            else
+            {
+                if (src.GridX < tgt.GridX)
+                {
+                    p1 = src.RightPoint;
+                    p2 = tgt.LeftPoint;
+                    c1 = new Avalonia.Point(p1.X + curveOffset, p1.Y);
+                    c2 = new Avalonia.Point(p2.X - curveOffset, p2.Y);
+                }
+                else
+                {
+                    p1 = src.LeftPoint;
+                    p2 = tgt.RightPoint;
+                    c1 = new Avalonia.Point(p1.X - curveOffset, p1.Y);
+                    c2 = new Avalonia.Point(p2.X + curveOffset, p2.Y);
+                }
+            }
+
+            link.ConnectionPath = string.Format(System.Globalization.CultureInfo.InvariantCulture, "M {0},{1} C {2},{3} {4},{5} {6},{7}", p1.X, p1.Y, c1.X, c1.Y, c2.X, c2.Y, p2.X, p2.Y);
         }
 
         double maxX = visualNodes.Values.Max(n => n.X);
@@ -175,8 +235,8 @@ public static class FranchiseLayoutEngine
         {
             Nodes = visualNodes.Values.ToList(),
             Links = visualLinks,
-            Width = maxX + cellWidth + 40,
-            Height = maxY + cellHeight + 40
+            Width = maxX + cellWidth + 80,
+            Height = maxY + cellHeight + 80
         };
     }
 
