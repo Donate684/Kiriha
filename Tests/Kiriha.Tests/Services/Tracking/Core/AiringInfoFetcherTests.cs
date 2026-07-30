@@ -12,7 +12,7 @@ public class AiringInfoFetcherTests
     public void ResolveAired_NextEpisodeInFuture_DoesNotIncrementAired()
     {
         var anime = new AnimeItem { EpisodesAired = 5 };
-        var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.Now.AddDays(1), null);
+        var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
@@ -24,7 +24,7 @@ public class AiringInfoFetcherTests
     public void ResolveAired_NextEpisodeInPast_IncrementsAired()
     {
         var anime = new AnimeItem { EpisodesAired = 5 };
-        var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.Now.AddDays(-1), null);
+        var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(-1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
@@ -50,7 +50,7 @@ public class AiringInfoFetcherTests
         var anime = new AnimeItem 
         { 
             EpisodesAired = 5,
-            NextEpisodeAt = DateTime.Now.AddDays(-1)
+            NextEpisodeAt = DateTime.UtcNow.AddDays(-1)
         };
         var airing = new AniListAiringInfo(1, 1, null, null, null, null);
 

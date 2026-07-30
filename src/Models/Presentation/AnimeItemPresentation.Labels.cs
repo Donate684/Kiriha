@@ -43,7 +43,7 @@ public readonly partial struct AnimeItemPresentation
         }
     }
 
-    public string NextEpisodeAtDisplay => _item.NextEpisodeAt?.ToString("g") ?? "-";
+    public string NextEpisodeAtDisplay => _item.NextEpisodeAt?.ToLocalTime().ToString("g") ?? "-";
 
     public string AiringBadgeColor
     {

@@ -37,7 +37,7 @@ public class ReleaseMapViewModel
         var culture = GetReleaseCulture();
         var today = DateTime.Today;
 
-        foreach (var group in releases.GroupBy(r => r.ReleaseAt.Date))
+        foreach (var group in releases.GroupBy(r => r.ReleaseAt.ToLocalTime().Date))
         {
             var date = group.Key;
             string label = date == today ? "Сегодня"
@@ -94,17 +94,17 @@ public class ReleaseMapViewModel
     public static string FormatRelativeDate(DateTime releaseAt)
     {
         var today = DateTime.Today;
-        var date = releaseAt.Date;
+        var date = releaseAt.ToLocalTime().Date;
         if (date == today) return "сегодня";
         if (date == today.AddDays(1)) return "завтра";
         var diff = (date - today).Days;
-        return diff > 1 ? $"через {diff} дн." : releaseAt.ToString("dd MMM", CultureInfo.CurrentCulture);
+        return diff > 1 ? $"через {diff} дн." : releaseAt.ToLocalTime().ToString("dd MMM", CultureInfo.CurrentCulture);
     }
 
     public static string FormatBadgeDate(DateTime releaseAt)
     {
         var today = DateTime.Today;
-        var date = releaseAt.Date;
+        var date = releaseAt.ToLocalTime().Date;
         if (date == today)
             return "Сегодня";
         if (date == today.AddDays(1))
@@ -114,13 +114,13 @@ public class ReleaseMapViewModel
         if (diff > 0)
             return $"{diff} дн.";
 
-        return releaseAt.ToString("dd MMM", CultureInfo.CurrentCulture);
+        return releaseAt.ToLocalTime().ToString("dd MMM", CultureInfo.CurrentCulture);
     }
 
     public static string FormatMonthShort(DateTime date)
     {
         var culture = GetReleaseCulture();
-        return date.ToString("MMM", culture).TrimEnd('.').ToUpper(culture);
+        return date.ToLocalTime().ToString("MMM", culture).TrimEnd('.').ToUpper(culture);
     }
 
     public static CultureInfo GetReleaseCulture()

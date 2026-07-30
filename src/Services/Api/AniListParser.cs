@@ -25,7 +25,7 @@ public static class AniListParser
                 episode = ep;
 
             if (next.TryGetProperty("airingAt", out var atElement) && atElement.ValueKind == JsonValueKind.Number && atElement.TryGetInt64(out var airingAt) && airingAt > 0)
-                nextAt = DateTimeOffset.FromUnixTimeSeconds(airingAt).LocalDateTime;
+                nextAt = DateTimeOffset.FromUnixTimeSeconds(airingAt).UtcDateTime;
         }
 
         var aniListId = media.TryGetProperty("id", out var idElement) && idElement.ValueKind == JsonValueKind.Number && idElement.TryGetInt32(out var id) ? id : 0;

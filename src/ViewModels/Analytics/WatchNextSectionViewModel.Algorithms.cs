@@ -26,7 +26,7 @@ public partial class WatchNextSectionViewModel
 
     private static string FormatUpcomingDetail(AnimeItem item)
     {
-        var date = item.NextEpisodeAt?.ToString("dd.MM HH:mm", CultureInfo.CurrentCulture) ?? "-";
+        var date = item.NextEpisodeAt?.ToLocalTime().ToString("dd.MM HH:mm", CultureInfo.CurrentCulture) ?? "-";
         if (string.Equals(item.Type, AppConstants.AnimeTypes.Movie, StringComparison.OrdinalIgnoreCase))
         {
             return $"Фильм • {date}";
