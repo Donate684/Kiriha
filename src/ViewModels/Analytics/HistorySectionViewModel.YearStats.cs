@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Kiriha.Core.Localization;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -53,7 +54,7 @@ public partial class HistorySectionViewModel
                 Count = group.Count,
                 Percent = AnalyticsHelpers.Percent(group.Count, max),
                 Alpha = 0.16 + intensity * 0.84,
-                ShareText = $"{group.Count:N0} тайтл.",
+                ShareText = string.Format(LocalizationStore.Translate("analytics.history.titles_format"), group.Count.ToString("N0")),
                 Accent = $"#{alpha:X2}2D7DD2",
                 TextColor = intensity >= 0.48 ? "#FFFFFFFF" : "#FF1F2937"
             });

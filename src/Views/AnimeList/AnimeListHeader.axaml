@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -35,7 +35,7 @@
                             Background="Transparent" BorderThickness="0" Padding="8,6" CornerRadius="6"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             VerticalAlignment="Center" Click="ReleaseMapButton_Click"
-                            ToolTip.Tip="Расписание релизов">
+                            ToolTip.Tip="{DynamicResource l.schedule.tooltip}">
                         <Button.Styles>
                             <Style Selector="Button.active /template/ ContentPresenter#PART_ContentPresenter">
                                 <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
@@ -53,7 +53,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <material:MaterialIcon Kind="CalendarClock" Width="16" Height="16" Opacity="0.62"
                                                    VerticalAlignment="Center"/>
-                            <TextBlock Text="Расписание" FontSize="12" Opacity="0.6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.schedule.title}" FontSize="12" Opacity="0.6" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 

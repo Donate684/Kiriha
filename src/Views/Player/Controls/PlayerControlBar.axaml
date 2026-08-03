@@ -206,6 +206,7 @@
 
                         <!-- Subtitle style override -->
                         <Button Classes="icon-btn"
+                                Classes.active="{Binding SubtitleStyleOverrideEnabled}"
                                 ToolTip.Tip="{DynamicResource l.player.controls.subtitles_style}"
                                 Command="{Binding ToggleSubtitleStyleOverrideCommand}"
                                 IsVisible="{Binding ShowSubtitleStyleButton}">

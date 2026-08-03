@@ -1,9 +1,10 @@
-﻿using Kiriha.Models;
+using Kiriha.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Localization;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
@@ -27,10 +28,10 @@ public partial class OverviewSectionViewModel : ViewModelBase
         var meanScore = scored.Count > 0 ? scored.Average() : 0;
         var completionRate = items.Count > 0 ? completed.Count * 100.0 / items.Count : 0;
 
-        Metrics.Add(new AnalyticsMetric { Label = "Всего тайтлов", Value = items.Count.ToString("N0"), Hint = "в локальной библиотеке" });
-        Metrics.Add(new AnalyticsMetric { Label = "Завершено", Value = completed.Count.ToString("N0"), Hint = $"{completionRate:0.#}% списка" });
-        Metrics.Add(new AnalyticsMetric { Label = "Средняя оценка", Value = scored.Count > 0 ? meanScore.ToString("0.00") : "-", Hint = $"{scored.Count:N0} оценок" });
-        Metrics.Add(new AnalyticsMetric { Label = "Эпизодов", Value = totalEpisodes.ToString("N0"), Hint = $"примерно {approximateHours:N0} ч" });
+        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.total_titles"), Value = items.Count.ToString("N0"), Hint = LocalizationStore.Translate("analytics.overview.in_local_library") });
+        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.completed"), Value = completed.Count.ToString("N0"), Hint = $"{completionRate:0.#}{LocalizationStore.Translate("analytics.overview.percent_of_list")}" });
+        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.mean_score"), Value = scored.Count > 0 ? meanScore.ToString("0.00") : "-", Hint = $"{scored.Count:N0} {LocalizationStore.Translate("analytics.overview.scores_count")}" });
+        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.episodes"), Value = totalEpisodes.ToString("N0"), Hint = string.Format(LocalizationStore.Translate("analytics.overview.approx_hours"), approximateHours.ToString("N0")) });
 
         AddStatusDistribution(items);
         AddScoreDistribution(scored);
@@ -57,7 +58,7 @@ public partial class OverviewSectionViewModel : ViewModelBase
                 Value = group.Count.ToString("N0"),
                 Count = group.Count,
                 Percent = AnalyticsHelpers.Percent(group.Count, items.Count),
-                ShareText = $"{percent:0.#}% списка",
+                ShareText = $"{percent:0.#}{LocalizationStore.Translate("analytics.overview.percent_of_list")}",
                 Accent = AnalyticsHelpers.GetStatusAccent(group.Status)
             });
         }

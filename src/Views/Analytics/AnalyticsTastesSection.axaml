@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -32,8 +32,8 @@
                                                                    VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Любимые жанры" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="По взвешенной оценке" FontSize="10.5" Opacity="0.45"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.tastes.genres}" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.tastes.by_weighted_score}" FontSize="10.5" Opacity="0.45"/>
                                         </StackPanel>
                                     </Grid>
                                     <ItemsControl ItemsSource="{Binding Tastes.FavoriteGenres}" ItemTemplate="{StaticResource FavoriteRowTemplate}"/>
@@ -54,8 +54,8 @@
                                                                    VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Любимые студии" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="По взвешенной оценке" FontSize="10.5" Opacity="0.45"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.tastes.studios}" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.tastes.by_weighted_score}" FontSize="10.5" Opacity="0.45"/>
                                         </StackPanel>
                                     </Grid>
                                     <ItemsControl ItemsSource="{Binding Tastes.FavoriteStudios}" ItemTemplate="{StaticResource FavoriteRowTemplate}"/>

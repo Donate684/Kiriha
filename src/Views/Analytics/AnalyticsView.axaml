@@ -53,7 +53,7 @@
                                  IsChecked="{Binding IsOverviewSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <material:MaterialIcon Kind="ChartBoxOutline" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="Профиль" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.analytics.profile}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
 
@@ -61,7 +61,7 @@
                                  IsChecked="{Binding IsTasteSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <material:MaterialIcon Kind="HeartOutline" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="Вкусы" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.analytics.tastes}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
 
@@ -69,7 +69,7 @@
                                  IsChecked="{Binding IsWatchNextSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <material:MaterialIcon Kind="PlaylistPlay" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="Что посмотреть" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.analytics.watch_next}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
 
@@ -77,7 +77,7 @@
                                  IsChecked="{Binding IsReadNextSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <material:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="Что почитать" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.analytics.read_next}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
 
@@ -85,7 +85,7 @@
                                  IsChecked="{Binding IsHistorySelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <material:MaterialIcon Kind="History" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="История" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.analytics.history}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
 
@@ -119,11 +119,11 @@
                 <material:MaterialIcon Kind="ChartTimelineVariant" Width="40" Height="40" Opacity="0.25"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
-            <TextBlock Text="Аналитика появится после синхронизации списка"
+            <TextBlock Text="{DynamicResource l.analytics.empty_state}"
                        FontSize="15"
                        Opacity="0.55"
                        HorizontalAlignment="Center"/>
-            <Button Content="Обновить"
+            <Button Content="{DynamicResource l.common.actions.refresh}"
                     Command="{Binding RefreshCommand}"
                     HorizontalAlignment="Center"
                     Padding="20,10"

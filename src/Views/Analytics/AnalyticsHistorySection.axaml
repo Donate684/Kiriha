@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -25,13 +25,13 @@
                                                                    VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Недавняя активность" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Эпизодов за 14 дней" FontSize="10.5" Opacity="0.45"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.history.recent_activity}" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.history.recent_activity_sub}" FontSize="10.5" Opacity="0.45"/>
                                         </StackPanel>
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto,*" MinHeight="178">
-                                        <TextBlock Text="Эпизоды"
+                                        <TextBlock Text="{DynamicResource l.analytics.history.episodes}"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"
                                                    Opacity="0.65"
@@ -93,7 +93,7 @@
                                             </ItemsControl>
 
                                             <TextBlock Grid.Row="1"
-                                                       Text="Дней назад"
+                                                       Text="{DynamicResource l.analytics.history.days_ago}"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
                                                        HorizontalAlignment="Center"
@@ -117,13 +117,13 @@
                                         </Border.Background>
                                         <StackPanel VerticalAlignment="Center" Spacing="24" Margin="16">
                                             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                                <TextBlock Text="За 14 дней" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.history.for_14_days}" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="{Binding History.RecentHistoryEpisodes}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center" Foreground="#FF7B61FF"/>
-                                                <TextBlock Text="эпизодов" FontSize="11" HorizontalAlignment="Center" Opacity="0.65"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.history.episodes_lower}" FontSize="11" HorizontalAlignment="Center" Opacity="0.65"/>
                                             </StackPanel>
                                             <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="10,0"/>
                                             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                                <TextBlock Text="Разных тайтлов" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.history.unique_titles}" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="{Binding History.RecentHistoryTitles}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -145,14 +145,14 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"/>
                                     </Border>
-                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Text="По году выхода" FontSize="15" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Завершённые тайтлы по году премьеры" FontSize="10.5" Opacity="0.45"/>
+                                     <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource l.analytics.history.by_release_year}" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{DynamicResource l.analytics.history.by_release_year_sub}" FontSize="10.5" Opacity="0.45"/>
                                     </StackPanel>
                                 </Grid>
                                 <ItemsControl ItemsSource="{Binding History.ReleaseYearCompletions}"
                                               ItemTemplate="{StaticResource ReleaseYearTemplate}"
-                                              ToolTip.Tip="Насыщенность показывает, сколько завершённых тайтлов вышло в этом году">
+                                              ToolTip.Tip="{DynamicResource l.analytics.history.release_year_tooltip}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <UniformGrid Columns="12"/>
@@ -176,8 +176,8 @@
                                                                VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Text="Завершения по месяцам" FontSize="15" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Тепловая карта завершённых тайтлов" FontSize="10.5" Opacity="0.45"/>
+                                        <TextBlock Text="{DynamicResource l.analytics.history.by_month}" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{DynamicResource l.analytics.history.by_month_sub}" FontSize="10.5" Opacity="0.45"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -242,7 +242,7 @@
                         <Border Classes="AnalyticsPanel" IsVisible="{Binding !History.HasMonthlyHistory}">
                             <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8">
                                 <material:MaterialIcon Kind="CalendarBlankOutline" Width="32" Height="32" Opacity="0.25" HorizontalAlignment="Center"/>
-                                <TextBlock Text="У завершённых тайтлов пока нет дат завершения, поэтому месячная карта пустая."
+                                <TextBlock Text="{DynamicResource l.analytics.history.empty_monthly}"
                                            FontSize="13"
                                            Opacity="0.55"
                                            HorizontalAlignment="Center"

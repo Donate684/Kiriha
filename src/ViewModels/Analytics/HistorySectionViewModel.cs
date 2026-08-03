@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Localization;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
@@ -56,7 +57,7 @@ public partial class HistorySectionViewModel : ViewModelBase
         if (row == null || row.Entries.Count == 0) return;
 
         HistoryPopupTitle = row.Name;
-        HistoryPopupSubtitle = $"{row.Count} тайтл. • средняя {row.MeanScore} • вес {row.WeightedScore}";
+        HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_favorite_subtitle"), row.Count, row.MeanScore, row.WeightedScore);
         ShowHistoryPopup(row.Entries);
     }
 
@@ -66,9 +67,9 @@ public partial class HistorySectionViewModel : ViewModelBase
         if (point == null || point.Count == 0) return;
 
         HistoryPopupTitle = point.DaysAgo == 1
-            ? "Вчера"
-            : $"{point.DaysAgo} дн. назад";
-        HistoryPopupSubtitle = $"{point.DateLabel} · {point.Count} эп. · {point.Entries.Select(x => x.Title).Distinct().Count()} тайтл(ов)";
+            ? LocalizationStore.Translate("analytics.history.yesterday")
+            : string.Format(LocalizationStore.Translate("analytics.history.days_ago_format"), point.DaysAgo);
+        HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_daily_subtitle"), point.DateLabel, point.Count, point.Entries.Select(x => x.Title).Distinct().Count());
         ShowHistoryPopup(point.Entries);
     }
 
@@ -77,8 +78,8 @@ public partial class HistorySectionViewModel : ViewModelBase
     {
         if (cell == null || cell.Count == 0) return;
 
-        HistoryPopupTitle = $"{cell.MonthName} · завершено";
-        HistoryPopupSubtitle = $"{cell.Count} тайтл(ов)";
+        HistoryPopupTitle = string.Format(LocalizationStore.Translate("analytics.history.popup_monthly_title"), cell.MonthName);
+        HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_monthly_subtitle"), cell.Count);
         ShowHistoryPopup(cell.Entries);
     }
 

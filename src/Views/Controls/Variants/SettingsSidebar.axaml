@@ -236,7 +236,7 @@
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <material:MaterialIcon Classes="NavIcon" Kind="PlayCircleOutline" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="Плеер"/>
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.player}"/>
                                 </StackPanel>
                             </ListBoxItem>
                         </ListBox>

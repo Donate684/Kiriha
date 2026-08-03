@@ -32,6 +32,12 @@
     <Style Selector="Button.icon-btn:pressed /template/ Border">
         <Setter Property="Background" Value="#38FFFFFF"/>
     </Style>
+    <Style Selector="Button.icon-btn.active /template/ Border">
+        <Setter Property="Background" Value="#33FFFFFF"/>
+    </Style>
+    <Style Selector="Button.icon-btn.active:pointerover /template/ Border">
+        <Setter Property="Background" Value="#4CFFFFFF"/>
+    </Style>
     <Style Selector="Button.icon-btn:pressed">
         <Setter Property="RenderTransform" Value="scale(0.93)"/>
     </Style>

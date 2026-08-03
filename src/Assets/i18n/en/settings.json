@@ -7,7 +7,8 @@
     "notifications": "Notifications",
     "connection": "Connection",
     "accounts": "Accounts",
-    "tracking": "Auto-Scrobbler"
+    "tracking": "Auto-Scrobbler",
+    "player": "Player"
   },
   "notifications": {
     "new_episodes": {
@@ -93,6 +94,14 @@
     "download_in_background": "Download updates in background",
     "download_in_background_sub": "Automatically download updates and only prompt to restart"
   },
+  "metadata": {
+    "title": "Background metadata fetch",
+    "subtitle": "Download posters and descriptions in minimized mode"
+  },
+  "logging": {
+    "title": "Enable logging",
+    "subtitle": "Write application logs to a file (required for debugging)"
+  },
   "cache": {
     "title": "Cache",
     "subtitle": "Clear temporary data without touching your list, accounts, or app settings.",
@@ -110,6 +119,27 @@
     }
   },
   "open_wizard": "Open player setup wizard",
+  "player": {
+    "default_player": "Make Kiriha the default player",
+    "default_player_sub": "Open supported video files through this application",
+    "integrated": "Integrated",
+    "integrate": "Integrate",
+    "remove_integration": "Remove integration",
+    "keep_alive": "Keep player in background",
+    "keep_alive_sub": "Launch a separate player process in advance so videos open faster",
+    "single_window": "Single player window",
+    "single_window_sub": "When opening a new video, replace the file in the already open window",
+    "pipeline_title": "mpv video pipeline",
+    "pipeline_sub": "These values are passed to mpv before startup. Reopen the player window after changing vo, gpu-api, or gpu-context.",
+    "hwdec_title": "hwdec",
+    "hwdec_sub": "Hardware video decoding: auto, auto-copy, d3d11va, nvdec, vulkan, no",
+    "vo_title": "vo",
+    "vo_sub": "Video output driver: gpu-next, gpu, d3d11, vulkan, opengl",
+    "gpu_api_title": "gpu-api",
+    "gpu_api_sub": "Graphics API priority: auto, d3d11, vulkan, opengl",
+    "gpu_context_title": "gpu-context",
+    "gpu_context_sub": "Windowing/GPU context: auto, d3d11, win, angle, x11, wayland, cocoa"
+  },
   "custom_links": {
     "title": "My Links",
     "help_title": "How it works",

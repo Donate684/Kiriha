@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -25,8 +25,8 @@
                                                                    VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Мой список" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="По статусам просмотра" FontSize="10.5" Opacity="0.45"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.overview.my_list}" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.overview.by_status}" FontSize="10.5" Opacity="0.45"/>
                                         </StackPanel>
                                     </Grid>
                                     <ItemsControl ItemsSource="{Binding Overview.StatusDistribution}" ItemTemplate="{StaticResource StatusTileTemplate}">
@@ -53,8 +53,8 @@
                                                                    VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Оценки" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Распределение по баллам" FontSize="10.5" Opacity="0.45"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.overview.scores}" FontSize="15" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{DynamicResource l.analytics.overview.score_distribution}" FontSize="10.5" Opacity="0.45"/>
                                         </StackPanel>
                                     </Grid>
 

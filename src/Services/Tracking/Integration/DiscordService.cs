@@ -33,7 +33,7 @@ public class DiscordService : IDisposable
             {
                 _client?.Dispose();
                 _client = new DiscordRpcClient(DefaultClientId);
-                _client.Logger = new ConsoleLogger { Level = DiscordRPC.Logging.LogLevel.Warning };
+                _client.Logger = new DiscordSerilogAdapter { Level = DiscordRPC.Logging.LogLevel.Warning };
 
                 _client.OnReady += (sender, e) => Log.Information("Discord RPC Ready for {Username}", e.User.Username);
                 _client.OnPresenceUpdate += (sender, e) => Log.Debug("Discord Presence Updated");
@@ -162,6 +162,47 @@ public class DiscordService : IDisposable
         {
             _client?.Dispose();
             _client = null;
+        }
+    }
+
+    private class DiscordSerilogAdapter : DiscordRPC.Logging.ILogger
+    {
+        public LogLevel Level { get; set; } = LogLevel.Warning;
+
+        public void Trace(string message, params object[] args)
+        {
+            if (Level > LogLevel.Trace) return;
+            Log.Verbose(message, args);
+        }
+
+        public void Info(string message, params object[] args)
+        {
+            if (Level > LogLevel.Info) return;
+            Log.Information(message, args);
+        }
+
+        public void Warning(string message, params object[] args)
+        {
+            if (Level > LogLevel.Warning) return;
+            Log.Warning(message, args);
+        }
+
+        public void Error(string message, params object[] args)
+        {
+            if (Level > LogLevel.Error) return;
+
+            string formatted = args.Length > 0 ? string.Format(message, args) : message;
+
+            // Suppress the known DiscordRPC Assets.Merge NRE bug (Lachee/discord-rpc-csharp#284)
+            if (formatted.Contains("DiscordRPC.Assets.Merge") || 
+                formatted.Contains("System.NullReferenceException") || 
+                formatted == "Object reference not set to an instance of an object.")
+            {
+                Log.Debug("[DiscordRPC Ignored] {Message}", formatted);
+                return;
+            }
+
+            Log.Error("[DiscordRPC] {Message}", formatted);
         }
     }
 }

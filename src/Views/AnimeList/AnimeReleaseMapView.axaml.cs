@@ -9,6 +9,8 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Kiriha.Core;
 using Kiriha.Models;
+using Avalonia.Markup.Xaml;
+using Kiriha.Core.Localization;
 using Kiriha.Models.Entities;
 using Kiriha.ViewModels.AnimeList;
 
@@ -94,10 +96,10 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             ReleaseHeroAnimeTitle.Text = string.Empty;
             ReleaseHeroRussianTitle.Text = string.Empty;
             ReleaseHeroRussianTitle.IsVisible = false;
-            ReleaseHeroKindText.Text = "Нет дат";
-            ReleaseHeroCountdownText.Text = "после синхронизации";
+            ReleaseHeroKindText.Text = LocalizationStore.Translate("schedule.no_dates");
+            ReleaseHeroCountdownText.Text = LocalizationStore.Translate("schedule.after_sync");
             ReleaseHeroTimeText.Text = "--:--";
-            ReleaseHeroWeekText.Text = "Нет будущих дат в текущих данных";
+            ReleaseHeroWeekText.Text = LocalizationStore.Translate("schedule.no_future_dates");
             CachedImage.SetSource(ReleaseHeroPoster, null);
             return;
         }

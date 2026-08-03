@@ -7,6 +7,7 @@
     "connection": "Подключение",
     "accounts": "Аккаунты",
     "tracking": "Сейчас играет",
+    "player": "Плеер",
     "advanced": "Расширенная кастомизация"
   },
   "notifications": {
@@ -93,6 +94,14 @@
     "download_in_background": "Скачивать обновления в фоне",
     "download_in_background_sub": "Автоматически загружать обновления в фоновом режиме"
   },
+  "metadata": {
+    "title": "Фоновая загрузка метаданных",
+    "subtitle": "Скачивать постеры и описания в свёрнутом режиме"
+  },
+  "logging": {
+    "title": "Запись логов",
+    "subtitle": "Вести лог работы приложения в файл (нужно для отладки)"
+  },
   "cache": {
     "title": "Кэш",
     "subtitle": "Очистка временных данных без удаления вашего списка, аккаунтов и настроек приложения.",
@@ -110,6 +119,27 @@
     }
   },
   "open_wizard": "Открыть мастер добавления плеера",
+  "player": {
+    "default_player": "Сделать Kiriha плеером по умолчанию",
+    "default_player_sub": "Открывать поддерживаемые видеофайлы через это приложение",
+    "integrated": "Интегрировано",
+    "integrate": "Интегрировать",
+    "remove_integration": "Удалить интеграцию",
+    "keep_alive": "Держать плеер в фоне",
+    "keep_alive_sub": "Заранее запускать отдельный процесс плеера, чтобы видео открывалось быстрее",
+    "single_window": "Одно окно плеера",
+    "single_window_sub": "При открытии нового видео заменять файл в уже открытом окне",
+    "pipeline_title": "mpv video pipeline",
+    "pipeline_sub": "Эти значения передаются mpv при запуске. Переоткройте окно плеера после изменения vo, gpu-api или gpu-context.",
+    "hwdec_title": "hwdec",
+    "hwdec_sub": "Аппаратное декодирование видео: auto, auto-copy, d3d11va, nvdec, vulkan, no",
+    "vo_title": "vo",
+    "vo_sub": "Драйвер вывода видео: gpu-next, gpu, d3d11, vulkan, opengl",
+    "gpu_api_title": "gpu-api",
+    "gpu_api_sub": "Приоритет графического API: auto, d3d11, vulkan, opengl",
+    "gpu_context_title": "gpu-context",
+    "gpu_context_sub": "Оконный/GPU контекст: auto, d3d11, win, angle, x11, wayland, cocoa"
+  },
   "custom_links": {
     "title": "Мои ссылки",
     "help_title": "Как это работает",

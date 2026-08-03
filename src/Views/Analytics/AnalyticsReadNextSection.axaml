@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -30,8 +30,8 @@
                                                                        VerticalAlignment="Center"/>
                                             </Border>
                                             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="Догнать онгоинги" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Текущие аниме с пропущенными сериями" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_ongoings}" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_ongoings_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Grid>
                                         <ItemsControl ItemsSource="{Binding ReadNext.ReadTodo}"
@@ -60,8 +60,8 @@
                                                                        VerticalAlignment="Center"/>
                                             </Border>
                                             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="Скоро выйдет" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Следующие эпизоды из списка" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.upcoming}" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.upcoming_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Grid>
                                         <ItemsControl ItemsSource="{Binding ReadNext.UpcomingTodo}"
@@ -95,8 +95,8 @@
                                                                        VerticalAlignment="Center"/>
                                             </Border>
                                             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="Догнать вышедшее" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Завершённые аниме с пропущенным" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_released}" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_released_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Grid>
                                         <ItemsControl ItemsSource="{Binding ReadNext.FinishedReadTodo}"
@@ -125,8 +125,8 @@
                                                                        VerticalAlignment="Center"/>
                                             </Border>
                                             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="Планы" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Лучшее из запланированного" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.plans}" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{DynamicResource l.analytics.read_next.plans_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Grid>
                                         <ItemsControl ItemsSource="{Binding ReadNext.PlanTodo}"

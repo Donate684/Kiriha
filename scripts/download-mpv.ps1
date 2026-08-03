@@ -7,13 +7,13 @@ if ([string]::IsNullOrEmpty($projectDir)) {
 $mpvDir = Join-Path $projectDir "..\subprojects\mpv"
 $versionFile = Join-Path $mpvDir "version.txt"
 
-# 1. Fetch RSS feed from SourceForge
-$rssUrl = "https://sourceforge.net/projects/mpv-player-windows/rss?path=/libmpv"
-Write-Host "Fetching latest libmpv version info from SourceForge..."
+# 1. Fetch releases from GitHub API
+$apiUrl = "https://api.github.com/repos/zhongfly/mpv-winbuild/releases"
+Write-Host "Fetching latest libmpv version info from GitHub API (zhongfly/mpv-winbuild)..."
 try {
-    $rssItems = Invoke-RestMethod -Uri $rssUrl -TimeoutSec 15
+    $releases = Invoke-RestMethod -Uri $apiUrl -TimeoutSec 15
 } catch {
-    Write-Warning "Failed to fetch RSS feed: $_. If libmpv-2.dll exists, we will skip download."
+    Write-Warning "Failed to fetch GitHub releases: $_. If libmpv-2.dll exists, we will skip download."
     if (Test-Path (Join-Path $mpvDir "libmpv-2.dll")) {
         exit 0
     } else {
@@ -21,23 +21,35 @@ try {
     }
 }
 
-# Find the latest x86_64-v3 build
-$latestItem = $rssItems | Where-Object { $_.title.InnerText -like "*mpv-dev-x86_64-v3-*.7z" } | Select-Object -First 1
+# Find the latest x86_64-v3 dev build
+$latestItem = $null
+foreach ($release in $releases) {
+    $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-v3-*.7z" } | Select-Object -First 1
+    if ($null -ne $asset) {
+        $latestItem = $asset
+        break
+    }
+}
 
 if ($null -eq $latestItem) {
     # Fallback to standard x86_64 if v3 is not found
-    $latestItem = $rssItems | Where-Object { $_.title.InnerText -like "*mpv-dev-x86_64-*.7z" } | Select-Object -First 1
+    foreach ($release in $releases) {
+        $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-*.7z" } | Select-Object -First 1
+        if ($null -ne $asset) {
+            $latestItem = $asset
+            break
+        }
+    }
 }
 
 if ($null -eq $latestItem) {
-    throw "No matching libmpv package found in RSS feed!"
+    throw "No matching libmpv package found in GitHub releases!"
 }
 
-# The title is the filename or path, e.g. "/libmpv/mpv-dev-x86_64-v3-20260524-git-9e06c32.7z"
-$latestVersion = Split-Path $latestItem.title.InnerText -Leaf
-$downloadUrl = $latestItem.link
+$latestVersion = $latestItem.name
+$downloadUrl = $latestItem.browser_download_url
 
-Write-Host "Latest version on SourceForge: $latestVersion"
+Write-Host "Latest version on GitHub: $latestVersion"
 
 # 2. Check if we already have this version
 $currentVersion = ""

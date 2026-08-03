@@ -82,16 +82,16 @@
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="Фоновая загрузка метаданных"/>
-                            <TextBlock Classes="Sub" Text="Скачивать постеры и описания в свёрнутом режиме"/>
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.metadata.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.metadata.subtitle}"/>
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableBackgroundMetadataFetch}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="Запись логов"/>
-                            <TextBlock Classes="Sub" Text="Вести лог работы приложения в файл (нужно для отладки)"/>
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.logging.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.logging.subtitle}"/>
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableLogging}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>

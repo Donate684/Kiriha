@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <Nullable>enable</Nullable>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
@@ -13,7 +13,7 @@
     <RootNamespace>Kiriha</RootNamespace>
     <Title>Kiriha</Title>
     <ApplicationIcon>Assets\kiriha.ico</ApplicationIcon>
-    <Version>1.2.34</Version>
+    <Version>1.2.35</Version>
 
     <!-- Single source of truth for the core Avalonia stack. Bump this property to update
          every core Avalonia.* package below in lock-step.

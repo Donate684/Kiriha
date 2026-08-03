@@ -61,10 +61,10 @@
 
                         <!-- Заголовок -->
                         <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="Мой профиль"
+                            <TextBlock Text="{DynamicResource l.analytics.hero_title}"
                                        FontSize="21"
                                        FontWeight="SemiBold"/>
-                            <TextBlock Text="Статистика аниме-библиотеки"
+                            <TextBlock Text="{DynamicResource l.analytics.hero_subtitle}"
                                        FontSize="12"
                                        Opacity="0.5"/>
                         </StackPanel>

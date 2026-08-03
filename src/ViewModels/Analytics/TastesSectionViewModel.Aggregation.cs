@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Kiriha.Core;
+using Kiriha.Core.Localization;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
@@ -100,7 +101,7 @@ public partial class TastesSectionViewModel
             var name = nameFormatter?.Invoke(group.Name) ?? group.Name;
             var mean = group.Mean > 0 ? group.Mean.ToString("0.00") : "-";
             var weighted = group.Weighted > 0 ? group.Weighted.ToString("0.00") : "-";
-            var hours = $"{group.Hours:0.0} ч";
+            var hours = string.Format(LocalizationStore.Translate("analytics.tastes.hours_format"), group.Hours);
 
             var completedInGroup = group.Entries.Count(x => x.Status == UserAnimeStatus.Completed);
             var percentCompleted = totalCompleted > 0 ? (completedInGroup * 100.0 / totalCompleted) : 0;
@@ -113,7 +114,7 @@ public partial class TastesSectionViewModel
                 MeanScore = mean,
                 WeightedScore = weighted,
                 TimeSpent = hours,
-                Summary = $"{group.Count} тайтл. • оценка {mean} • {hours}",
+                Summary = string.Format(LocalizationStore.Translate("analytics.tastes.summary_format"), group.Count, mean, hours),
                 Percent = percentCompleted,
                 Accent = AnalyticsHelpers.GetAccent(group.Name)
             };
@@ -126,7 +127,7 @@ public partial class TastesSectionViewModel
                              Title = x.Presentation.DisplayTitle,
                              Subtitle = x.RussianTitle != null ? x.Title : null,
                              Detail = int.TryParse(x.Score, out var score) && score > 0
-                                 ? $"Оценка {score}"
+                                 ? string.Format(LocalizationStore.Translate("analytics.tastes.score_format"), score)
                                  : (x.TotalEpisodes > 0 ? x.TotalEpisodes.ToString() : "?"),
                              PosterUrl = x.MainPictureUrl
                          }))
