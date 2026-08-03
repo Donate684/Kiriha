@@ -55,6 +55,50 @@ public readonly partial struct AnimeItemPresentation
         }
     }
 
+    public Avalonia.Media.IBrush ProgressAccentBrush
+    {
+        get
+        {
+            var app = Avalonia.Application.Current;
+            if (app != null && app.TryGetResource("SystemAccentColor", app.ActualThemeVariant, out var res) && res is Avalonia.Media.Color accent)
+            {
+                if (IsAccentColorRedOrOrange())
+                {
+                    return Avalonia.Media.SolidColorBrush.Parse("#0078D7");
+                }
+                return new Avalonia.Media.SolidColorBrush(accent);
+            }
+            return Avalonia.Media.SolidColorBrush.Parse("#0078D7");
+        }
+    }
+
+    private static bool IsAccentColorRedOrOrange()
+    {
+        var app = Avalonia.Application.Current;
+        if (app != null && app.TryGetResource("SystemAccentColor", app.ActualThemeVariant, out var res) && res is Avalonia.Media.Color accent)
+        {
+            float r = accent.R / 255f;
+            float g = accent.G / 255f;
+            float b = accent.B / 255f;
+            
+            float max = Math.Max(r, Math.Max(g, b));
+            float min = Math.Min(r, Math.Min(g, b));
+            
+            if (max == min) return false;
+            
+            float hue = 0f;
+            if (max == r) hue = (g - b) / (max - min);
+            else if (max == g) hue = 2f + (b - r) / (max - min);
+            else hue = 4f + (r - g) / (max - min);
+            
+            hue *= 60f;
+            if (hue < 0) hue += 360f;
+            
+            return hue <= 45f || hue >= 330f;
+        }
+        return false;
+    }
+
     public string TotalPart
     {
         get

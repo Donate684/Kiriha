@@ -77,7 +77,7 @@
                                                    Current="{Binding Progress}"
                                                    Total="{Binding Presentation.EffectiveTotal}"
                                                    Aired="{Binding Presentation.ResolvedAiredEpisodes}"
-                                                   AccentBrush="{DynamicResource SystemAccentColor}"
+                                                   AccentBrush="{Binding Presentation.ProgressAccentBrush}"
                                                    AiredBrush="{DynamicResource AnimeCardAiredProgressBackground}"
                                                    TrackBrush="{DynamicResource SegmentedTrackBrush}"
                                                    IsVisible="{Binding Presentation.ShowProgress}"/>

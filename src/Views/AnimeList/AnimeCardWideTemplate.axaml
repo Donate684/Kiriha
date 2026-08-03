@@ -78,7 +78,7 @@
                                     <ScaleTransform ScaleX="{Binding Presentation.AiredValueFraction}"/>
                                 </Border.RenderTransform>
                             </Border>
-                            <Border Background="{DynamicResource SystemAccentColor}"
+                            <Border Background="{Binding Presentation.ProgressAccentBrush}"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     CornerRadius="2" RenderTransformOrigin="0%,0%">
                                 <Border.RenderTransform>
