@@ -13,7 +13,7 @@
     <RootNamespace>Kiriha</RootNamespace>
     <Title>Kiriha</Title>
     <ApplicationIcon>Assets\kiriha.ico</ApplicationIcon>
-    <Version>1.2.36</Version>
+    <Version>1.2.37</Version>
 
     <!-- Single source of truth for the core Avalonia stack. Bump this property to update
          every core Avalonia.* package below in lock-step.
@@ -49,6 +49,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" />
     <PackageReference Include="DiscordRichPresence" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Material.Icons.Avalonia" />

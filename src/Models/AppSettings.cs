@@ -22,6 +22,7 @@ public partial class AppSettings
     public class UiConfig
     {
         public ThemeType Theme { get; set; } = ThemeType.System;
+        public string CustomAccentColor { get; set; } = string.Empty;
 
         public string LanguageCode { get; set; } = AppConstants.Languages.En;
         public bool UseRussianTitles { get; set; } = false;

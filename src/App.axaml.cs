@@ -42,6 +42,24 @@ public partial class App : Application
         _startupCoordinator = new AppStartupCoordinator(this, ServiceProvider, _trayService, _shutdownCoordinator);
         _startupCoordinator.Initialize(args);
 
+        if (Current?.PlatformSettings != null)
+        {
+            Current.PlatformSettings.ColorValuesChanged += (sender, e) =>
+            {
+                if (ServiceProvider != null)
+                {
+                    var settings = ServiceProvider.GetRequiredService<Kiriha.Services.Data.Settings.SettingsService>();
+                    ApplyCustomAccentColor(settings.Current.UI.CustomAccentColor);
+                }
+            };
+        }
+
+        if (ServiceProvider != null)
+        {
+            var settings = ServiceProvider.GetRequiredService<Kiriha.Services.Data.Settings.SettingsService>();
+            ApplyCustomAccentColor(settings.Current.UI.CustomAccentColor);
+        }
+
         base.OnFrameworkInitializationCompleted();
     }
 
@@ -62,4 +80,69 @@ public partial class App : Application
     private void TrayRestore_Click(object? sender, EventArgs e) => _trayService?.RestoreMainWindow();
 
     private void TrayExit_Click(object? sender, EventArgs e) => _trayService?.Exit();
+
+    private static Avalonia.Controls.ResourceDictionary? _customAccentDictionary;
+
+    public static void ApplyCustomAccentColor(string? hexCode)
+    {
+        if (Current == null) return;
+
+        Avalonia.Media.Color baseColor;
+
+        if (string.IsNullOrWhiteSpace(hexCode) || !Avalonia.Media.Color.TryParse(hexCode, out var c))
+        {
+            var sysColor = Current.PlatformSettings?.GetColorValues().AccentColor1;
+            
+            // Workaround for Avalonia bug where GetColorValues might return White initially
+            if (sysColor.HasValue && sysColor.Value.A > 0 && !(sysColor.Value.R == 255 && sysColor.Value.G == 255 && sysColor.Value.B == 255))
+            {
+                baseColor = Avalonia.Media.Color.FromArgb(255, sysColor.Value.R, sysColor.Value.G, sysColor.Value.B);
+            }
+            else
+            {
+                baseColor = GetWindowsAccentColor();
+            }
+        }
+        else
+        {
+            baseColor = c;
+        }
+
+        var newDict = new Avalonia.Controls.ResourceDictionary();
+        newDict["SystemAccentColor"] = baseColor;
+        newDict["SystemAccentColorDark1"] = baseColor;
+        newDict["SystemAccentColorDark2"] = baseColor;
+        newDict["SystemAccentColorDark3"] = baseColor;
+        newDict["SystemAccentColorLight1"] = baseColor;
+        newDict["SystemAccentColorLight2"] = baseColor;
+        newDict["SystemAccentColorLight3"] = baseColor;
+
+        if (_customAccentDictionary != null)
+        {
+            Current.Resources.MergedDictionaries.Remove(_customAccentDictionary);
+        }
+        
+        _customAccentDictionary = newDict;
+        Current.Resources.MergedDictionaries.Add(_customAccentDictionary);
+    }
+
+    private static Avalonia.Media.Color GetWindowsAccentColor()
+    {
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+                if (key?.GetValue("ColorizationColor") is int color)
+                {
+                    var r = (byte)((color >> 16) & 0xFF);
+                    var g = (byte)((color >> 8) & 0xFF);
+                    var b = (byte)(color & 0xFF);
+                    return Avalonia.Media.Color.FromArgb(255, r, g, b);
+                }
+            }
+        }
+        catch { }
+        return Avalonia.Media.Color.Parse("#FF0078D7");
+    }
 }

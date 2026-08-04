@@ -11,6 +11,7 @@ using Kiriha.Models;
 using Kiriha.Services;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.AnimeList;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -36,6 +37,8 @@ public partial class SettingsUiViewModel : ObservableObject
     [ObservableProperty] private bool _showAiringInfo;
     [ObservableProperty] private bool _enableMica;
     [ObservableProperty] private double _uiScale;
+    [ObservableProperty] private Avalonia.Media.Color? _customAccentColor;
+    [ObservableProperty] private bool _enableCustomAccentColor;
 
     public List<double> AvailableUiScales { get; } = new() { 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0 };
     public bool IsMicaSupported => Kiriha.Core.Platform.Platform.IsMicaSupported;
@@ -64,6 +67,12 @@ public partial class SettingsUiViewModel : ObservableObject
         ShowAiringInfo = _settingsService.Current.UI.ShowAiringInfo;
         EnableMica = _settingsService.Current.UI.EnableMica;
         UiScale = _settingsService.Current.UI.UiScale;
+
+        if (Avalonia.Media.Color.TryParse(_settingsService.Current.UI.CustomAccentColor, out var parsedColor))
+        {
+            _customAccentColor = parsedColor;
+            _enableCustomAccentColor = true;
+        }
     }
 
     partial void OnSelectedThemeChanged(ThemeOption value)
@@ -76,6 +85,36 @@ public partial class SettingsUiViewModel : ObservableObject
             ThemeType.Dark => ThemeVariant.Dark,
             _ => ThemeVariant.Default
         };
+    }
+
+    partial void OnCustomAccentColorChanged(Avalonia.Media.Color? value)
+    {
+        if (!EnableCustomAccentColor) return;
+
+        var hex = value.HasValue ? $"#{value.Value.A:X2}{value.Value.R:X2}{value.Value.G:X2}{value.Value.B:X2}" : string.Empty;
+        _settingsService.Update(settings => settings.UI.CustomAccentColor = hex, SettingsSection.UI);
+        App.ApplyCustomAccentColor(hex);
+    }
+
+    partial void OnEnableCustomAccentColorChanged(bool value)
+    {
+        if (value)
+        {
+            if (!CustomAccentColor.HasValue || CustomAccentColor.Value == Avalonia.Media.Colors.White)
+                CustomAccentColor = Avalonia.Media.Color.Parse("#8A2BE2");
+            else
+            {
+                var hex = $"#{CustomAccentColor.Value.A:X2}{CustomAccentColor.Value.R:X2}{CustomAccentColor.Value.G:X2}{CustomAccentColor.Value.B:X2}";
+                _settingsService.Update(settings => settings.UI.CustomAccentColor = hex, SettingsSection.UI);
+                App.ApplyCustomAccentColor(hex);
+            }
+        }
+        else
+        {
+            _settingsService.Update(settings => settings.UI.CustomAccentColor = string.Empty, SettingsSection.UI);
+            App.ApplyCustomAccentColor(string.Empty);
+            CustomAccentColor = null;
+        }
     }
 
     partial void OnUseRussianTitlesChanged(bool value)

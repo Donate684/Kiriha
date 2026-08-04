@@ -40,6 +40,7 @@
     <Application.Styles>
         <FluentTheme />
         <materialIcons:MaterialIconStyles />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
         <StyleInclude Source="avares://Kiriha/Styles/Controls.axaml" />
     </Application.Styles>
 </Application>

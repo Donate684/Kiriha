@@ -60,6 +60,15 @@
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.ShowAiringInfo}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.custom_accent_color}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.ui.custom_accent_color_sub}"/>
+                        </StackPanel>
+                        <ColorPicker Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" Color="{Binding Ui.CustomAccentColor}" IsVisible="{Binding Ui.EnableCustomAccentColor}"/>
+                        <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding Ui.EnableCustomAccentColor}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                    </Grid>
+                    <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.scale}"/>

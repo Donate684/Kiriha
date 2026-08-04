@@ -17,8 +17,9 @@
     <!-- Avalonia core stack, version controlled by $(AvaloniaVersion) in Kiriha.csproj -->
     <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="$(AvaloniaVersion)" />
     <!-- Avalonia sub-packages publish on a slower cadence -->
     <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="$(AvaloniaSubpackagesVersion)" />
     <!-- 3rd-party UI -->

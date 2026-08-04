@@ -64,7 +64,9 @@
     "fork_domains_tooltip": "The fork is served from multiple domains (shikimori.rip, .net, .fi, …) to circumvent regional blocking. The app figures out the working one automatically — including new domains we don't know about yet."
   },
   "ui": {
-    "scale": "UI Scale"
+    "scale": "UI Scale",
+    "custom_accent_color": "Custom Accent Color",
+    "custom_accent_color_sub": "Enable to override the system accent color."
   },
   "airing_info": {
     "title": "Airing Information",
