@@ -9,6 +9,13 @@ namespace Kiriha.Services.Data.Mapping;
 
 public partial class MappingService
 {
+    /// <summary>
+    /// Minimum score a MAL search candidate must achieve before we accept it
+    /// as a match. Prevents low-confidence false positives such as
+    /// "Dota Dragons Blood" → "Kuutei Dragons" (~23 points).
+    /// </summary>
+    private const float MinConfidenceScore = 50f;
+
     public virtual async Task<int?> SearchOnMalAsync(string title)
     {
         var (cleanTitle, searchQuery, _, _) = ParseAnimeTitle(title);
@@ -33,8 +40,24 @@ public partial class MappingService
             var dbHit = await _malSearchCache.GetAsync(normQuery);
             if (dbHit != null)
             {
-                _sessionCache[normQuery] = dbHit.AnimeId; // promote to L1
-                return dbHit.AnimeId == 0 ? null : dbHit.AnimeId;
+                // Reject cached entries that scored below our confidence threshold.
+                // These are stale false-positive matches from before the threshold
+                // was introduced (e.g. "Dota Dragons Blood" → Kuutei Dragons ~23).
+                // Invalidate the entry so future sessions re-resolve via live API.
+                if (dbHit.AnimeId != 0 && dbHit.Score < MinConfidenceScore)
+                {
+                    Log.Information(
+                        "MappingService: evicting low-confidence DB cache entry for '{Query}' (AnimeId={Id}, Score={Score:F1})",
+                        normQuery, dbHit.AnimeId, dbHit.Score);
+                    try { await _malSearchCache.UpsertAsync(normQuery, 0, 0f); }
+                    catch (Exception ex) { Log.Debug(ex, "MappingService: failed to evict bad cache entry for {Query}", normQuery); }
+                    // Fall through to live API lookup.
+                }
+                else
+                {
+                    _sessionCache[normQuery] = dbHit.AnimeId; // promote to L1
+                    return dbHit.AnimeId == 0 ? null : dbHit.AnimeId;
+                }
             }
         }
         catch (Exception ex)
@@ -98,6 +121,24 @@ public partial class MappingService
             .OrderByDescending(x => x.Score)
             .ThenBy(x => searchResults.IndexOf(x.Result))
             .First();
+
+        // Require a minimum confidence score before accepting the match.
+        // A low score (e.g. only one word overlaps out of three) means MAL
+        // returned something superficially similar but almost certainly wrong
+        // (e.g. "Dota Dragons Blood" → "Kuutei Dragons" scores ~23).
+        // In that case, return null so the UI can honestly show "not found"
+        // and let the user pick manually — the same as Taiga's "НЕТ" state.
+        if (bestMalMatch.Score < MinConfidenceScore)
+        {
+            Log.Information(
+                "MappingService: best MAL candidate '{Title}' scored {Score:F1} < {Min} for query '{Query}' — rejecting as low-confidence",
+                bestMalMatch.Result.Title, bestMalMatch.Score, MinConfidenceScore, searchQuery);
+
+            // Negative-cache only in session memory — don't persist to DB so
+            // that a future manual search on a fresh session can still resolve it.
+            _sessionCache[normQuery] = 0;
+            return null;
+        }
 
         var resolvedId = bestMalMatch.Result.Id;
         _sessionCache[normQuery] = resolvedId;
