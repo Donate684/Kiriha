@@ -1,15 +1,21 @@
-using Kiriha.Services.Tracking.Integration;
-using Kiriha.Services.Tracking.Feed;
-using Kiriha.Services.Tracking.Core;
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Sync;
+using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
 using Kiriha.Services;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
-using Kiriha.Services.Tracking;
+using Kiriha.Core.Tracking;
 using Moq;
 
 namespace Kiriha.Tests;
@@ -66,7 +72,7 @@ public class ScrobbleServiceTests : IDisposable
     {
         // Arrange
         var media = new ParsedMedia { Episode = "5" };
-        var match = new AnimeItem { Progress = 5 };
+        var match = new AnimeEntity { Progress = 5 };
 
         bool statusUpdated = false;
         _scrobbleService.CountdownUpdated += (s, e) => statusUpdated = true;
@@ -76,7 +82,7 @@ public class ScrobbleServiceTests : IDisposable
 
         // Assert
         Assert.True(statusUpdated);
-        _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeItem>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
         _mockBackgroundTasks.Verify(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -85,14 +91,14 @@ public class ScrobbleServiceTests : IDisposable
     {
         // Arrange
         var media = new ParsedMedia { Episode = "7" };
-        var match = new AnimeItem { Progress = 5 };
+        var match = new AnimeEntity { Progress = 5 };
 
         // Act
         _scrobbleService.StartScrobble(media, match);
 
         // Assert
         _mockNotificationService.Verify(x => x.NotifyScrobbleSkipped(match, 7), Times.Once);
-        _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeItem>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
         _mockBackgroundTasks.Verify(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -101,7 +107,7 @@ public class ScrobbleServiceTests : IDisposable
     {
         // Arrange
         var media = new ParsedMedia { Episode = "6", IsPlaying = true };
-        var match = new AnimeItem { Progress = 5, Id = 1, Title = "Test Anime" };
+        var match = new AnimeEntity { Progress = 5, Id = 1, Title = "Test Anime" };
 
         _mockProgressService
             .Setup(x => x.UpdateProgressAsync(match, 6, It.IsAny<UserAnimeStatus?>()))
@@ -121,7 +127,7 @@ public class ScrobbleServiceTests : IDisposable
     {
         // Arrange
         var media = new ParsedMedia { Episode = "12", IsPlaying = true };
-        var match = new AnimeItem { Progress = 11, TotalEpisodes = 12, Id = 1, Title = "Test Anime" };
+        var match = new AnimeEntity { Progress = 11, TotalEpisodes = 12, Id = 1, Title = "Test Anime" };
 
         _mockProgressService
             .Setup(x => x.UpdateProgressAsync(match, 12, UserAnimeStatus.Completed))
@@ -140,7 +146,7 @@ public class ScrobbleServiceTests : IDisposable
     {
         // Arrange
         var media = new ParsedMedia { Episode = "6", IsPlaying = true };
-        var match = new AnimeItem { Progress = 5 };
+        var match = new AnimeEntity { Progress = 5 };
 
         // Make the background task not complete immediately so we can cancel it
         _settingsService.Update(s => s.System.Scrobbler.DelaySeconds = 10, save: false);

@@ -1,0 +1,132 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+        xmlns:vmMain="using:Kiriha.ViewModels.Main"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:vm="using:Kiriha.ViewModels"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+             xmlns:vmHistory="using:Kiriha.ViewModels.History"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
+             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
+             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
+             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.Settings.SettingsAccountsPage"
+             x:DataType="vmSettings:SettingsViewModel">
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+
+                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.accounts}"/>
+
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.anime.links.mal}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mal.subtitle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border IsVisible="{Binding Auth.IsLoggedIn}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                    <TextBlock Text="{DynamicResource l.settings.mal.connected}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Content="{DynamicResource l.common.actions.login}" Command="{Binding Auth.MalLoginCommand}" IsVisible="{Binding !Auth.IsLoggedIn}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+                            <Button Command="{Binding Auth.MalLogoutCommand}" IsVisible="{Binding Auth.IsLoggedIn}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0">
+                                <material:MaterialIcon Kind="Logout" Width="14" Height="14" Foreground="#ff5555"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <!-- Mutual-exclusion notice: even though both Shikimori rows
+                         are visible, only one can be connected at a time (the
+                         buttons enforce this via CanExecute). The banner makes
+                         that constraint explicit so the user doesn't wonder why
+                         the other login button is greyed out. -->
+                    <Border Margin="0,8,0,4" Padding="12,10"
+                            Background="{DynamicResource SubtleFillColorTertiary}"
+                            CornerRadius="6">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <material:MaterialIcon Kind="InformationOutline" Width="16" Height="16" Opacity="0.7"/>
+                            <TextBlock Text="{DynamicResource l.settings.shikimori.exclusive_notice}"
+                                       FontSize="12" Opacity="0.75" TextWrapping="Wrap"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Shikimori (shikimori.one) — the original/canonical site.
+                         The row below connects to the independent fan fork served
+                         from .rip / .net. Mutual exclusion handled by CanExecute. -->
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Classes="Title" Text="Shikimori"/>
+                                <Border Padding="6,1" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="3" VerticalAlignment="Center">
+                                    <TextBlock Text="shikimori.one" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
+                                </Border>
+                                <Border Padding="6,1" Background="#152ecc71" CornerRadius="3" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.shikimori.one_sub}">
+                                    <TextBlock Text="ORIGINAL" FontSize="10" FontWeight="SemiBold" Foreground="#2a9c5b"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.one_sub}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border IsVisible="{Binding Auth.IsShikiOneConnected}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                    <TextBlock Text="{DynamicResource l.settings.mal.connected}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Content="{DynamicResource l.common.actions.login}" Command="{Binding Auth.ShikiLoginOneCommand}" IsVisible="{Binding !Auth.IsShikiOneConnected}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"
+                                    ToolTip.Tip="{DynamicResource l.settings.shikimori.other_mirror_active}"/>
+                            <Button Command="{Binding Auth.ShikiLogoutCommand}" IsVisible="{Binding Auth.IsShikiOneConnected}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0">
+                                <material:MaterialIcon Kind="Logout" Width="14" Height="14" Foreground="#ff5555"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <!-- Shikimori fan fork (shikimori.rip / shikimori.net). Same fork
+                         is served from two domains for regional-blocking circumvention;
+                         the badge shows both. Independent OAuth realm from .one — its
+                         own tokens, its own client_id. -->
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Classes="Title" Text="Shikimori"/>
+                                <Border Padding="6,1" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="3" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.shikimori.fork_domains_tooltip}">
+                                    <TextBlock Text="shikimori.rip / .net / …" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
+                                </Border>
+                                <Border Padding="6,1" Background="#15ff9500" CornerRadius="3" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.shikimori.net_sub}">
+                                    <TextBlock Text="FORK" FontSize="10" FontWeight="SemiBold" Foreground="#cc8400"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.net_sub}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border IsVisible="{Binding Auth.IsShikiNetConnected}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                    <TextBlock Text="{DynamicResource l.settings.mal.connected}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Content="{DynamicResource l.common.actions.login}" Command="{Binding Auth.ShikiLoginNetCommand}" IsVisible="{Binding !Auth.IsShikiNetConnected}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"
+                                    ToolTip.Tip="{DynamicResource l.settings.shikimori.other_mirror_active}"/>
+                            <Button Command="{Binding Auth.ShikiLogoutCommand}" IsVisible="{Binding Auth.IsShikiNetConnected}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0">
+                                <material:MaterialIcon Kind="Logout" Width="14" Height="14" Foreground="#ff5555"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+</StackPanel>
+</UserControl>
+

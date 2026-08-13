@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+             xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+             xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+             xmlns:vmMain="using:Kiriha.ViewModels.Main"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:vm="using:Kiriha.ViewModels"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+             xmlns:vmHistory="using:Kiriha.ViewModels.History"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
+             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
+             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
+             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.Settings.SettingsPlayerPage"
+             x:DataType="vmSettings:SettingsViewModel">
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+
+                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.player}"/>
+
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.default_player}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.default_player_sub}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Border IsVisible="{Binding Playback.IsSystemPlayer}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                    <TextBlock Text="{DynamicResource l.settings.player.integrated}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Content="{DynamicResource l.settings.player.integrate}" Command="{Binding Playback.RegisterSystemPlayerCommand}" IsVisible="{Binding !Playback.IsSystemPlayer}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+                            <Button Command="{Binding Playback.UnregisterSystemPlayerCommand}" IsVisible="{Binding Playback.IsSystemPlayer}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0" ToolTip.Tip="{DynamicResource l.settings.player.remove_integration}">
+                                <material:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#ff5555"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.keep_alive}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.keep_alive_sub}"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Playback.KeepPlayerProcessAlive}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.single_window}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.single_window_sub}"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Playback.SinglePlayerWindow}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.pipeline_title}" Margin="0,18,0,4"/>
+                    <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.pipeline_sub}" Margin="0,0,0,8"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,180">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.hwdec_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.hwdec_sub}"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvHwdec}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,180">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.vo_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.vo_sub}"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvVideoOutput}" VerticalAlignment="Center" PlaceholderText="gpu-next"/>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,180">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.gpu_api_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.gpu_api_sub}"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvGpuApi}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,180">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.gpu_context_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.gpu_context_sub}"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvGpuContext}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                    </Grid>
+</StackPanel>
+</UserControl>

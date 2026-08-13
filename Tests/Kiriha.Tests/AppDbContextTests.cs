@@ -1,3 +1,5 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using Kiriha.Services.Data.Core;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
@@ -23,7 +25,7 @@ public sealed class AppDbContextTests
             await using (var context = new AppDbContext(options))
             {
                 await context.Database.EnsureCreatedAsync();
-                context.UserAnime.Add(new AnimeItem
+                context.UserAnime.Add(new AnimeEntity
                 {
                     Id = 42,
                     Title = "Test Title",

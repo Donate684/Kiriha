@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <!-- Single source of truth for the core Avalonia stack. Bump this property to update
+         every core Avalonia.* package in lock-step.
+         NOTE: Avalonia.Controls.ItemsRepeater publishes on a slower cadence and lags
+         the core (12.0.0 is the latest available on NuGet at the time of this writing).
+         It uses a separate property so bumping the core version doesn't break restore,
+         and a future maintainer is forced to consciously verify the sub-package
+         availability before lifting it. -->
+    <AvaloniaVersion>12.1.1</AvaloniaVersion>
+    <AvaloniaSubpackagesVersion>12.0.0</AvaloniaSubpackagesVersion>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,188 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+                    xmlns:material="using:Material.Icons.Avalonia"
+                    xmlns:core="using:Kiriha.Core"
+                    xmlns:u="using:Kiriha.Utils.UI"
+                    xmlns:controls="using:Kiriha.Views.Controls"
+                    xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
+                    xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+                    x:Class="Kiriha.Views.Torrents.TorrentTemplates">
+                                <DataTemplate x:Key="HideableAnimeItemTemplate" DataType="vmTorrents:HideableAnimeItem">
+                                    <Grid Margin="0,0,10,2"
+                                          Classes.row-hidden="{Binding IsHidden}">
+                                        <Grid.IsVisible>
+                                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                                <Binding Path="$parent[ItemsControl].((vmTorrents:TorrentsViewModel)DataContext).IsHideMode"/>
+                                                <Binding Path="!IsHidden"/>
+                                            </MultiBinding>
+                                        </Grid.IsVisible>
+                                        <Grid.Styles>
+                                            <Style Selector="Grid.row-hidden">
+                                                <Setter Property="Opacity" Value="0.4"/>
+                                            </Style>
+                                        </Grid.Styles>
+
+                                        <!-- Card (selectable) -->
+                                        <Button Classes="WatchItem"
+                                                Command="{Binding $parent[ItemsControl].((vmTorrents:TorrentsViewModel)DataContext).SelectAnimeCommand}"
+                                                CommandParameter="{Binding Anime}">
+                                            <Grid ColumnDefinitions="48, *" ColumnSpacing="10">
+                                                <Panel Grid.Column="0" Width="48" Height="68" VerticalAlignment="Top">
+                                                    <Border CornerRadius="4" ClipToBounds="True"
+                                                            Background="{DynamicResource SubtleFillColorTertiary}">
+                                                        <Image asyncImageLoader:ImageLoader.Source="{Binding Anime.MainPictureUrl}"
+                                                               Stretch="UniformToFill"/>
+                                                    </Border>
+
+                                                    <!-- New episodes badge -->
+                                                    <Border IsVisible="{Binding Anime.Presentation.ShowAiredProgressBar}"
+                                                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                            Margin="0,-5,-5,0"
+                                                            MinWidth="18" Height="18" CornerRadius="9"
+                                                            Padding="5,0"
+                                                            Background="#E53935"
+                                                            BorderBrush="{DynamicResource SubtleFillColorSecondary}"
+                                                            BorderThickness="2"
+                                                            BoxShadow="0 2 6 0 #60000000"
+                                                            ToolTip.Tip="{DynamicResource l.torrents.sidebar.new_episodes_tooltip}">
+                                                        <TextBlock Text="{Binding Anime.Presentation.UnseenEpisodesCount, StringFormat='+{0}'}"
+                                                                   FontSize="10" FontWeight="Bold"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </Panel>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1"
+                                                            Margin="0,0,22,0">
+                                                    <TextBlock Text="{Binding Anime.Title}"
+                                                               FontSize="12" FontWeight="SemiBold"
+                                                               LineHeight="14"
+                                                               TextTrimming="CharacterEllipsis" MaxLines="2"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="{DynamicResource SystemBaseHighColor}"/>
+                                                    <TextBlock Text="{Binding Anime.RussianTitle}"
+                                                               FontSize="10" LineHeight="12"
+                                                               TextTrimming="CharacterEllipsis" MaxLines="2"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="{DynamicResource SystemAccentColor}" Opacity="0.85"
+                                                               IsVisible="{Binding Anime.RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                    <TextBlock Text="{Binding Anime.Presentation.ProgressDisplay}"
+                                                               FontSize="10" Opacity="0.55" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- × / + overlay (hide mode only) -->
+                                        <Button Classes="IconAction"
+                                                Width="24" Height="24"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                Margin="0,6,6,0"
+                                                Background="{DynamicResource SubtleFillColorSecondary}"
+                                                IsVisible="{Binding $parent[ItemsControl].((vmTorrents:TorrentsViewModel)DataContext).IsHideMode}"
+                                                Command="{Binding $parent[ItemsControl].((vmTorrents:TorrentsViewModel)DataContext).ToggleHideAnimeCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Panel>
+                                                <material:MaterialIcon Kind="Close" Width="14" Height="14"
+                                                                       Foreground="#E53935"
+                                                                       IsVisible="{Binding !IsHidden}"/>
+                                                <material:MaterialIcon Kind="Plus" Width="14" Height="14"
+                                                                       Foreground="{DynamicResource SystemAccentColor}"
+                                                                       IsVisible="{Binding IsHidden}"/>
+                                            </Panel>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            <DataTemplate x:Key="TorrentGroupTemplate" DataType="vmTorrents:TorrentGroup">
+                                <Border Margin="0,0,14,14" Padding="12"
+                                        Background="{DynamicResource CardBackgroundFillSecondary}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                        BorderThickness="1" CornerRadius="10">
+                                    <StackPanel Spacing="8">
+                                        <!-- Group header -->
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                                                        VerticalAlignment="Center">
+                                                <Border CornerRadius="4" Padding="5,1"
+                                                        Background="#E53935"
+                                                        IsVisible="{Binding HasMatch}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{DynamicResource l.torrents.results.in_list}"
+                                                               Foreground="White" FontSize="9"
+                                                               FontWeight="Bold" LetterSpacing="0.4"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding AnimeTitle}"
+                                                           FontSize="14" FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Opacity="0.5" FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Text="{Binding Count, Converter={StaticResource LocConverter}, ConverterParameter=format:l.torrents.results.group_count}"/>
+                                        </Grid>
+
+                                        <!-- Items -->
+                                        <ItemsControl ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="entities:TorrentEntity">
+                                                    <Grid ColumnDefinitions="3, *, Auto" ColumnSpacing="8"
+                                                          Margin="0,2">
+                                                        <!-- Left accent bar for matched -->
+                                                        <Border Grid.Column="0" Width="3"
+                                                                CornerRadius="2"
+                                                                Background="#E53935"
+                                                                IsVisible="{Binding IsMatched}"/>
+                                                        <Border Grid.Column="1" Classes="TorrentRow">
+                                                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                                                                <StackPanel Grid.Column="0" Spacing="4">
+                                                                    <TextBlock Text="{Binding Title}"
+                                                                               FontSize="12"
+                                                                               TextTrimming="CharacterEllipsis"
+                                                                               MaxLines="1"/>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                        <Border Classes="MetaChip"
+                                                                                IsVisible="{Binding Resolution, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                                            <TextBlock Text="{Binding Resolution}"
+                                                                                       FontSize="10" FontWeight="Medium"/>
+                                                                        </Border>
+                                                                        <Border Classes="MetaChip"
+                                                                                IsVisible="{Binding ReleaseGroup, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                                            <TextBlock Text="{Binding ReleaseGroup}"
+                                                                                       FontSize="10" FontWeight="Medium"/>
+                                                                        </Border>
+                                                                        <Border Classes="MetaChip"
+                                                                                IsVisible="{Binding Episode, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                                            <TextBlock FontSize="10" FontWeight="Medium"
+                                                                                       Text="{Binding Episode, StringFormat='EP {0}'}"/>
+                                                                        </Border>
+                                                                        <TextBlock Opacity="0.5" FontSize="10"
+                                                                                   VerticalAlignment="Center"
+                                                                                   Text="{Binding PublishDate, StringFormat='{}{0:dd MMM HH:mm}'}"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                                            Spacing="2" VerticalAlignment="Center">
+                                                                    <Button Classes="IconAction"
+                                                                            ToolTip.Tip="{DynamicResource l.torrents.results.actions.download_file}"
+                                                                            Command="{Binding $parent[UserControl].((vmTorrents:TorrentsViewModel)DataContext).DownloadTorrentFileCommand}"
+                                                                            CommandParameter="{Binding}"
+                                                                            IsVisible="{Binding DownloadLink, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                                        <material:MaterialIcon Kind="Download" Width="16" Height="16"/>
+                                                                    </Button>
+                                                                    <Button Classes="IconAction"
+                                                                            ToolTip.Tip="{DynamicResource l.torrents.results.actions.download_magnet}"
+                                                                            Command="{Binding $parent[UserControl].((vmTorrents:TorrentsViewModel)DataContext).DownloadMagnetCommand}"
+                                                                            CommandParameter="{Binding}"
+                                                                            IsVisible="{Binding MagnetLink, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                                        <material:MaterialIcon Kind="Magnet" Width="16" Height="16"/>
+                                                                    </Button>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+</ResourceDictionary>

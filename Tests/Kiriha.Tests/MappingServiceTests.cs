@@ -1,5 +1,8 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Models;
+using Kiriha.Models.Entities;
 using Kiriha.Services.Data;
 
 namespace Kiriha.Tests;
@@ -33,10 +36,10 @@ public sealed class MappingServiceTests
             var manualMapping = new ManualMappingService(path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
-            var userList = new List<AnimeItem>
+            var userList = new List<AnimeEntity>
             {
-                new AnimeItem { Id = 1, Title = "Sousou no Frieren" },
-                new AnimeItem { Id = 2, Title = "Sousou no Frieren Season 2" }
+                new AnimeEntity { Id = 1, Title = "Sousou no Frieren" },
+                new AnimeEntity { Id = 2, Title = "Sousou no Frieren Season 2" }
             };
 
             var id = await service.GetIdFromTitleAsync("[Erai-raws] Sousou no Frieren 2nd Season - 01 [1080p].mkv", userList);
@@ -57,10 +60,10 @@ public sealed class MappingServiceTests
             var manualMapping = new ManualMappingService(path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
-            var userList = new List<AnimeItem>
+            var userList = new List<AnimeEntity>
             {
-                new AnimeItem { Id = 1, Title = "KonoSuba" },
-                new AnimeItem { Id = 2, Title = "KonoSuba OVA" }
+                new AnimeEntity { Id = 1, Title = "KonoSuba" },
+                new AnimeEntity { Id = 2, Title = "KonoSuba OVA" }
             };
 
             var id = await service.GetIdFromTitleAsync("KonoSuba OVA 1.mkv", userList);
@@ -81,10 +84,10 @@ public sealed class MappingServiceTests
             var manualMapping = new ManualMappingService(path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
-            var userList = new List<AnimeItem>
+            var userList = new List<AnimeEntity>
             {
-                new AnimeItem { Id = 1, Title = "Cyberpunk Edgerunners" },
-                new AnimeItem { Id = 2, Title = "Cyberpunk Edgerunners ONA" }
+                new AnimeEntity { Id = 1, Title = "Cyberpunk Edgerunners" },
+                new AnimeEntity { Id = 2, Title = "Cyberpunk Edgerunners ONA" }
             };
 
             var id = await service.GetIdFromTitleAsync("Cyberpunk Edgerunners ONA 01.mkv", userList);
@@ -105,9 +108,9 @@ public sealed class MappingServiceTests
             var manualMapping = new ManualMappingService(path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
-            var userList = new List<AnimeItem>
+            var userList = new List<AnimeEntity>
             {
-                new AnimeItem { Id = 1, Title = "Sousou no Frieren", RussianTitle = "Фрирен, провожающая в последний путь" }
+                new AnimeEntity { Id = 1, Title = "Sousou no Frieren", RussianTitle = "Фрирен, провожающая в последний путь" }
             };
 
             var id = await service.GetIdFromTitleAsync("[Субтитры] Фрирен, провожающая в последний путь - 01.mkv", userList);
@@ -128,9 +131,9 @@ public sealed class MappingServiceTests
             var manualMapping = new ManualMappingService(path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
-            var userList = new List<AnimeItem>
+            var userList = new List<AnimeEntity>
             {
-                new AnimeItem { Id = 1, Title = "Sousou no Frieren" }
+                new AnimeEntity { Id = 1, Title = "Sousou no Frieren" }
             };
 
             var id = await service.GetIdFromTitleAsync("[Erai-raws] Sousou no Frieren Season 2 - 01.mkv", userList);

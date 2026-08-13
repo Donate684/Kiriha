@@ -1,5 +1,7 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using System.Net;
-using Kiriha.Services.Api;
+using Kiriha.Core.Tracking.Api;
 
 namespace Kiriha.Tests;
 

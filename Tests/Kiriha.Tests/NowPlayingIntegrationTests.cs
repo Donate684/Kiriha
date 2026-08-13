@@ -1,6 +1,8 @@
-using Kiriha.Services.Tracking.Integration;
-using Kiriha.Services.Tracking.Feed;
-using Kiriha.Services.Tracking.Core;
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.AppLifecycle;
@@ -40,7 +42,7 @@ public sealed class NowPlayingIntegrationTests
         string originalTitle = Path.GetFileNameWithoutExtension(mkvPath);
 
         // Mimic TrackingService's MatchMediaAsync logic
-        int? malId = await mappingService.GetIdFromTitleAsync(originalTitle, userList);
+        int? malId = await mappingService.GetIdFromTitleAsync(originalTitle, userList.Select(x => x.ToViewModel()));
 
         if (!malId.HasValue)
         {

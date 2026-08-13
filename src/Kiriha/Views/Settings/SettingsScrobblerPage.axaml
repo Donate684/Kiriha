@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
+        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+        xmlns:vmMain="using:Kiriha.ViewModels.Main"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:vm="using:Kiriha.ViewModels"
+             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+             xmlns:vmHistory="using:Kiriha.ViewModels.History"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
+             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
+             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
+             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.Settings.SettingsScrobblerPage"
+             x:DataType="vmSettings:SettingsViewModel">
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+
+                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.scrobbler.title}"/>
+
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.enable.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.enable.subtitle}"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableScrobbler}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.processes.tracked_apps}"/>
+                            <TextBlock Classes="Sub" Text="{Binding Playback.EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter=scrobbler.rules.active_count}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding Playback.ManagePlayersCommand}" Padding="14,6" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <material:MaterialIcon Kind="CogOutline" Width="14" Height="14"/>
+                                <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.subtitle}"/>
+                        </StackPanel>
+                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding System.ScrobbleDelaySeconds}" Minimum="10" Maximum="3600" Increment="10" Width="80" ShowButtonSpinner="False"/>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.skip_notify.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.skip_notify.subtitle}"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.ScrobbleNotifyOnSkip}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.discord.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.discord.subtitle}"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableDiscordRPC}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
+                    </Grid>
+</StackPanel>
+</UserControl>
+

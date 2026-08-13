@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:core="using:Kiriha.Core"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsHeroBanner"
+             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+    </UserControl.Resources>
+        <Border Grid.Row="0" ClipToBounds="True" Padding="28,40,28,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="{DynamicResource SystemAccentColor}" Offset="0"/>
+                    <GradientStop Color="{DynamicResource SystemAccentColorDark1}" Offset="0.6"/>
+                    <GradientStop Color="{DynamicResource SystemAccentColorDark2}" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid ColumnDefinitions="Auto, *" VerticalAlignment="Center">
+                <Border Grid.Column="0" Width="105" Height="152" CornerRadius="10" ClipToBounds="True" BoxShadow="0 8 24 0 #40000000">
+                    <Image asyncImageLoader:ImageLoader.Source="{Binding Anime.MainPictureUrl}" Stretch="UniformToFill"/>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center" Spacing="4">
+                    <TextBlock Text="{Binding Anime.Title}" FontSize="28" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34"/>
+                    <TextBlock Text="{Binding Anime.RussianTitle}" FontSize="15" Foreground="#BFFFFFFF" TextWrapping="Wrap">
+                        <TextBlock.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="Settings.Current.UI.UseRussianTitles"/>
+                                <Binding Path="Anime.RussianTitle" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+                            </MultiBinding>
+                        </TextBlock.IsVisible>
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <material:MaterialIcon Kind="Star" Width="14" Height="14" Foreground="Gold" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Anime.MeanScore}" FontWeight="SemiBold" FontSize="13" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Border Width="1" Height="12" Background="#30FFFFFF" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <material:MaterialIcon Kind="Television" Width="12" Height="12" Foreground="#A0FFFFFF" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Anime.Type, Converter={StaticResource LocConverter}}" FontSize="12" Foreground="#D0FFFFFF" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Border Width="1" Height="12" Background="#30FFFFFF" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <material:MaterialIcon Kind="Calendar" Width="12" Height="12" Foreground="#A0FFFFFF" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Anime.Season, Converter={StaticResource LocConverter}}" FontSize="12" Foreground="#D0FFFFFF" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Border Width="1" Height="12" Background="#30FFFFFF" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <material:MaterialIcon Kind="TrendingUp" Width="12" Height="12" Foreground="#A0FFFFFF" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Anime.Popularity, StringFormat='#{0}'}" FontSize="12" Foreground="#D0FFFFFF" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <!-- Action Row Links -->
+                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,10,0,0">
+                        <Border Background="#25FFFFFF" CornerRadius="8" Width="30" Height="30" ToolTip.Tip="MyAnimeList">
+                            <Border.Styles><Style Selector="Border:pointerover"><Setter Property="Background" Value="#40FFFFFF"/></Style></Border.Styles>
+                            <Button Background="Transparent" Padding="0" CornerRadius="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Command="{Binding OpenMalLinkCommand}">
+                                <Image Source="/Assets/myanimelist_white.png" Width="16" Height="16" Opacity="0.95"/>
+                            </Button>
+                        </Border>
+                        <Border Background="#25FFFFFF" CornerRadius="8" Width="30" Height="30" ToolTip.Tip="Shikimori">
+                            <Border.Styles><Style Selector="Border:pointerover"><Setter Property="Background" Value="#40FFFFFF"/></Style></Border.Styles>
+                            <Button Background="Transparent" Padding="0" CornerRadius="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Command="{Binding OpenShikiLinkCommand}">
+                                <Image Source="/Assets/shikimori_white.png" Width="16" Height="16" Opacity="0.95"/>
+                            </Button>
+                        </Border>
+                        <!-- User Share links -->
+                        <ItemsControl ItemsSource="{Binding CustomShareLinks}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vmSettings:CustomShareLinkRuntime">
+                                    <Border Background="#25FFFFFF" CornerRadius="8" Width="30" Height="30" ToolTip.Tip="{Binding Name}">
+                                        <Border.Styles><Style Selector="Border:pointerover"><Setter Property="Background" Value="#40FFFFFF"/></Style></Border.Styles>
+                                        <Button Background="Transparent" Padding="0" CornerRadius="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Command="{Binding OpenCommand}">
+                                            <Panel>
+                                                <material:MaterialIcon Kind="{Binding IconKind}" Width="16" Height="16" Foreground="White"
+                                                                       IsVisible="{Binding UseIconKind}"/>
+                                                <Image Source="{Binding IconPath, Converter={StaticResource FilePathToBitmapConverter}}"
+                                                       Width="18" Height="18" Stretch="UniformToFill"
+                                                       IsVisible="{Binding HasIconImage}"/>
+                                            </Panel>
+                                        </Button>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <Border Background="#25FFFFFF" CornerRadius="8" Width="30" Height="30" ToolTip.Tip="{DynamicResource l.common.actions.share}">
+                            <Border.Styles><Style Selector="Border:pointerover"><Setter Property="Background" Value="#40FFFFFF"/></Style></Border.Styles>
+                            <Button x:Name="ShareMainButton" Background="Transparent" Padding="0" CornerRadius="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <material:MaterialIcon Kind="ShareVariant" Width="16" Height="16" Foreground="White"/>
+                                <Button.Flyout>
+                                    <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="ShareFlyout">
+                                        <Border Background="{DynamicResource ModalBackgroundFill}"
+                                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                BoxShadow="0 8 32 0 #30000000">
+                                            <StackPanel Spacing="4" Margin="10">
+                                                <Button Classes="ShareRow" Command="{Binding CopyMalLinkCommand}" Click="ShareRow_Click">
+                                                    <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                                        <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6"
+                                                                Background="{DynamicResource SystemAccentColor}" VerticalAlignment="Center">
+                                                            <Image Source="/Assets/myanimelist_white.png" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Grid.Column="1" Text="{DynamicResource l.anime.links.mal}" Margin="10,0,0,0" FontSize="12" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </Grid>
+                                                </Button>
+                                                <Button Classes="ShareRow" Command="{Binding CopyShikiLinkCommand}" Click="ShareRow_Click">
+                                                    <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                                        <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6"
+                                                                Background="{DynamicResource SystemAccentColor}" VerticalAlignment="Center">
+                                                            <Image Source="/Assets/shikimori_white.png" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Grid.Column="1" Text="{DynamicResource l.anime.links.shiki}" Margin="10,0,0,0" FontSize="12" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </Grid>
+                                                </Button>
+                                                <Border Height="1" Margin="0,4" Background="{DynamicResource DividerStrokeColorDefault}"
+                                                        IsVisible="{Binding CustomShareLinks.Count, Converter={StaticResource IntToBoolConverter}}"/>
+                                                <ItemsControl ItemsSource="{Binding CustomShareLinks}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><StackPanel Spacing="4"/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vmSettings:CustomShareLinkRuntime">
+                                                            <Button Classes="ShareRow" Command="{Binding CopyCommand}" Click="ShareRow_Click">
+                                                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                                                    <Border Grid.Column="0" Width="24" Height="24" CornerRadius="6"
+                                                                            Background="{DynamicResource SystemAccentColor}" VerticalAlignment="Center">
+                                                                        <Panel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                            <material:MaterialIcon Kind="{Binding IconKind}" Width="14" Height="14" Foreground="White"
+                                                                                                   IsVisible="{Binding UseIconKind}"/>
+                                                                            <Image Source="{Binding IconPath, Converter={StaticResource FilePathToBitmapConverter}}"
+                                                                                   Width="14" Height="14" Stretch="UniformToFill"
+                                                                                   IsVisible="{Binding HasIconImage}"/>
+                                                                        </Panel>
+                                                                    </Border>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="10,0,0,0" FontSize="12" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                                                </Grid>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+</UserControl>

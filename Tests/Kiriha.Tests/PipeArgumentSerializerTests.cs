@@ -1,3 +1,5 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using Kiriha.Core.Player;
 
 namespace Kiriha.Tests;

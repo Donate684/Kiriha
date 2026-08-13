@@ -1,22 +1,24 @@
-﻿using Kiriha.Models;
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
+using Kiriha.Models;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.Tests;
 
-public sealed class AnimeItemTests
+public sealed class AnimeEntityTests
 {
     [Fact]
     public void DisplayTitle_AndSynopsisPreferRussianWhenPresent()
     {
-        var item = new AnimeItem
+        var item = new AnimeEntity
         {
             Title = "Frieren: Beyond Journey's End",
-            RussianTitle = "Провожающая в последний путь Фрирен",
+            RussianTitle = "??????????? ? ????????? ???? ??????",
             Synopsis = "English synopsis",
             RussianSynopsis = "Russian synopsis"
         };
 
-        Assert.Equal("Провожающая в последний путь Фрирен", item.Presentation.DisplayTitle);
+        Assert.Equal("??????????? ? ????????? ???? ??????", item.Presentation.DisplayTitle);
         Assert.Equal("Russian synopsis", item.Presentation.DisplaySynopsis);
     }
 
@@ -27,7 +29,7 @@ public sealed class AnimeItemTests
     [InlineData(0, 0, 0)]
     public void ProgressValue_UsesKnownTotalOrBucketedFallback(int progress, int total, double expected)
     {
-        var item = new AnimeItem { Progress = progress, TotalEpisodes = total };
+        var item = new AnimeEntity { Progress = progress, TotalEpisodes = total };
 
         Assert.Equal(expected, item.Presentation.ProgressValue, precision: 6);
     }
@@ -35,7 +37,7 @@ public sealed class AnimeItemTests
     [Fact]
     public void AiredProgress_ShowsOnlyWhenWatchingHasUnseenAiredEpisodes()
     {
-        var item = new AnimeItem
+        var item = new AnimeEntity
         {
             Status = UserAnimeStatus.Watching,
             Progress = 3,
@@ -50,9 +52,9 @@ public sealed class AnimeItemTests
     }
 
     [Fact]
-    public void Presentation_MatchesAnimeItemCompatibilityProperties()
+    public void Presentation_MatchesAnimeEntityCompatibilityProperties()
     {
-        var item = new AnimeItem
+        var item = new AnimeEntity
         {
             Title = "Original",
             RussianTitle = "Localized",
@@ -83,12 +85,12 @@ public sealed class AnimeItemTests
     public void Presentation_UsesSnapshotTimeForTimeDependentBadges()
     {
         var now = new DateTime(2026, 06, 01, 12, 00, 00);
-        var item = new AnimeItem
+        var item = new AnimeEntity
         {
             NextEpisodeAt = now.AddHours(-49)
         };
 
-        var presentation = new AnimeItemPresentation(item, now);
+        var presentation = new AnimeEntityPresentation(item, now);
 
         Assert.Equal(string.Empty, presentation.AiringBadgeText);
         Assert.Equal("#FF8C00", presentation.AiringBadgeColor);
@@ -97,21 +99,21 @@ public sealed class AnimeItemTests
     [Fact]
     public void Presentation_NotifiesWithoutLegacyComputedPropertyNoise()
     {
-        var item = new AnimeItem();
+        var item = new AnimeEntity();
         var changed = new List<string?>();
         item.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
 
         item.Progress = 3;
 
-        Assert.Contains(nameof(AnimeItem.Presentation), changed);
-        Assert.DoesNotContain(nameof(AnimeItemPresentation.ProgressValue), changed);
-        Assert.DoesNotContain(nameof(AnimeItemPresentation.ProgressValueFraction), changed);
+        Assert.Contains(nameof(AnimeEntity.Presentation), changed);
+        Assert.DoesNotContain(nameof(AnimeEntityPresentation.ProgressValue), changed);
+        Assert.DoesNotContain(nameof(AnimeEntityPresentation.ProgressValueFraction), changed);
     }
 
     [Fact]
     public void Clone_CopiesCollectionsWithoutSharingListInstances()
     {
-        var item = new AnimeItem
+        var item = new AnimeEntity
         {
             Id = 1,
             Title = "Test",

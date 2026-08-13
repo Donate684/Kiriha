@@ -1,6 +1,9 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using Kiriha.Core.Constants;
 using Kiriha.Core;
 using Kiriha.Models;
+using Kiriha.Models.Entities;
 
 namespace Kiriha.Tests;
 
@@ -76,9 +79,9 @@ public sealed class AnimeFilterEngineTests
         Assert.Equal(new[] { "Cowboy Bebop", "Frieren", "Fullmetal Alchemist", "Mystery Adult" }, sorted);
     }
 
-    private static List<AnimeItem> SampleItems() =>
+    private static List<AnimeEntity> SampleItems() =>
     [
-        new AnimeItem
+        new AnimeEntity
         {
             Id = 1,
             Title = "Frieren",
@@ -90,7 +93,7 @@ public sealed class AnimeFilterEngineTests
             Popularity = 10,
             AiringDate = new DateTime(2023, 9, 29),
         },
-        new AnimeItem
+        new AnimeEntity
         {
             Id = 2,
             Title = "Fullmetal Alchemist",
@@ -100,7 +103,7 @@ public sealed class AnimeFilterEngineTests
             Popularity = 1,
             AiringDate = new DateTime(2009, 4, 5),
         },
-        new AnimeItem
+        new AnimeEntity
         {
             Id = 3,
             Title = "Cowboy Bebop",
@@ -111,7 +114,7 @@ public sealed class AnimeFilterEngineTests
             Rating = "rx",
             AiringDate = new DateTime(1998, 4, 3),
         },
-        new AnimeItem
+        new AnimeEntity
         {
             Id = 4,
             Title = "Mystery Adult",

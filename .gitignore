@@ -23,3 +23,12 @@ logs/
 
 apikeys.json
 /subprojects/mpv/
+
+# IDE & OS
+.idea/
+.DS_Store
+
+# DB
+*.db
+*.db-shm
+*.db-wal

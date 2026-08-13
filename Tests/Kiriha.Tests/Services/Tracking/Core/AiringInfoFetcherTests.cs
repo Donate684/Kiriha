@@ -1,7 +1,10 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using System;
 using Kiriha.Models;
-using Kiriha.Services.Api;
-using Kiriha.Services.Tracking.Core;
+using Kiriha.Models.Entities;
+using Kiriha.Core.Tracking.Api;
+using Kiriha.Core.Tracking.Core;
 using Xunit;
 
 namespace Kiriha.Tests.Services.Tracking.Core;
@@ -11,7 +14,7 @@ public class AiringInfoFetcherTests
     [Fact]
     public void ResolveAired_NextEpisodeInFuture_DoesNotIncrementAired()
     {
-        var anime = new AnimeItem { EpisodesAired = 5 };
+        var anime = new AnimeEntity { EpisodesAired = 5 };
         var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
@@ -23,7 +26,7 @@ public class AiringInfoFetcherTests
     [Fact]
     public void ResolveAired_NextEpisodeInPast_IncrementsAired()
     {
-        var anime = new AnimeItem { EpisodesAired = 5 };
+        var anime = new AnimeEntity { EpisodesAired = 5 };
         var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(-1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
@@ -35,7 +38,7 @@ public class AiringInfoFetcherTests
     [Fact]
     public void ResolveAired_FinishedStatus_SetsTotalEpisodes()
     {
-        var anime = new AnimeItem { EpisodesAired = 5 };
+        var anime = new AnimeEntity { EpisodesAired = 5 };
         var airing = new AniListAiringInfo(1, 1, "FINISHED", null, null, 12);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
@@ -47,7 +50,7 @@ public class AiringInfoFetcherTests
     [Fact]
     public void ResolveAired_NoAiringInfo_UsesAnimeNextEpisodeAt()
     {
-        var anime = new AnimeItem 
+        var anime = new AnimeEntity 
         { 
             EpisodesAired = 5,
             NextEpisodeAt = DateTime.UtcNow.AddDays(-1)

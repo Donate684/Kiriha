@@ -1,3 +1,6 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using Kiriha.Core.Constants;
 using System.Collections.Specialized;
 using Kiriha.Core;
@@ -86,7 +89,7 @@ public sealed class AnimeCollectionProjectionTests
         Assert.Equal(0, projection.Count(UserAnimeStatus.Watching, MediaKind.Anime));
     }
 
-    private static AnimeItem Item(
+    private static AnimeEntity Item(
         int id,
         string title,
         UserAnimeStatus status,
@@ -94,7 +97,7 @@ public sealed class AnimeCollectionProjectionTests
         string? rating = null,
         bool isRewatching = false)
     {
-        return new AnimeItem
+        return new AnimeEntity
         {
             Id = id,
             Title = title,

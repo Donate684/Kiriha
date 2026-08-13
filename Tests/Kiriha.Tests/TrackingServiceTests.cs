@@ -1,17 +1,24 @@
-using Kiriha.Services.Tracking.Integration;
-using Kiriha.Services.Tracking.Feed;
-using Kiriha.Services.Tracking.Core;
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
-using Kiriha.Models.Api;
 using Kiriha.Models.Entities;
-using Kiriha.Services.Api;
+using Kiriha.Models.Api;
+using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
-using Kiriha.Services.Tracking;
+using Kiriha.Core.Tracking;
 using Moq;
+using Xunit;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Kiriha.Tests;
 
@@ -40,12 +47,12 @@ public class TrackingServiceTests : IDisposable
 
         _mockUiDispatcher = new Mock<IUiDispatcher>();
         _mockUiDispatcher.Setup(x => x.Post(It.IsAny<Action>())).Callback<Action>(a => a());
-        _mockUiDispatcher.Setup(x => x.InvokeAsync(It.IsAny<Func<List<AnimeItem>>>()))
-            .Returns<Func<List<AnimeItem>>>(f => Task.FromResult(f()));
+        _mockUiDispatcher.Setup(x => x.InvokeAsync(It.IsAny<Func<List<AnimeEntity>>>()))
+            .Returns<Func<List<AnimeEntity>>>(f => Task.FromResult(f()));
 
         _mockMappingService = new Mock<MappingService>(null!, new ManualMappingService(_tempMappingPath), null!, new RecognitionCache());
         _mockDiscordService = new Mock<DiscordService>(_settingsService);
-        _mockAnisthesiaService = new Mock<AnisthesiaService>(_settingsService, null!, null!, Array.Empty<Kiriha.Services.Tracking.Anisthesia.AnisthesiaPlayer>());
+        _mockAnisthesiaService = new Mock<AnisthesiaService>(_settingsService, null!, null!, Array.Empty<Kiriha.Core.Tracking.Anisthesia.AnisthesiaPlayer>());
 
         _animeRepository = new AnimeRepository(null!, null!, null!, _mockUiDispatcher.Object, null!);
         // Force the initialization task to complete so we don't wait 5 seconds in tests
@@ -69,7 +76,7 @@ public class TrackingServiceTests : IDisposable
     }
 
     [Fact]
-    public void SetInternalMedia_ValidMatch_StartsScrobble()
+    public async Task SetInternalMedia_ValidMatch_StartsScrobble()
     {
         // Arrange
         var state = new InternalPlayerState
@@ -82,15 +89,15 @@ public class TrackingServiceTests : IDisposable
             Duration = 1400
         };
 
-        var match = new AnimeItem { Id = 123, Title = "Test Anime", Status = UserAnimeStatus.Watching };
+        var match = new AnimeEntity { Id = 123, Title = "Test Anime", Status = UserAnimeStatus.Watching };
         _animeRepository.Collection.Add(match);
 
         _mockMappingService
-            .Setup(x => x.GetIdFromTitleAsync(state.OriginalTitle, It.IsAny<IEnumerable<AnimeItem>>()))
+            .Setup(x => x.GetIdFromTitleAsync(state.OriginalTitle, It.IsAny<IEnumerable<AnimeEntity>>()))
             .ReturnsAsync(123);
 
         // Act
-        _trackingService.SetInternalMedia(state);
+        await _trackingService.SetInternalMediaAsync(state);
 
         // Assert
         _mockScrobbleService.Verify(x => x.StartScrobble(It.Is<ParsedMedia>(m => m.AnimeTitle == "Test Anime"), match), Times.Once);
@@ -100,7 +107,7 @@ public class TrackingServiceTests : IDisposable
     }
 
     [Fact]
-    public void SetInternalMedia_WithExplicitId_StartsScrobbleDirectly()
+    public async Task SetInternalMedia_WithExplicitId_StartsScrobbleDirectly()
     {
         // Arrange
         var state = new InternalPlayerState
@@ -111,19 +118,19 @@ public class TrackingServiceTests : IDisposable
             AnimeId = 456
         };
 
-        var match = new AnimeItem { Id = 456, Title = "Explicit Anime", Status = UserAnimeStatus.Watching };
+        var match = new AnimeEntity { Id = 456, Title = "Explicit Anime", Status = UserAnimeStatus.Watching };
         _animeRepository.Collection.Add(match);
 
         // Act
-        _trackingService.SetInternalMedia(state);
+        await _trackingService.SetInternalMediaAsync(state);
 
         // Assert
         _mockScrobbleService.Verify(x => x.StartScrobble(It.Is<ParsedMedia>(m => m.AnimeTitle == "Explicit Anime"), match), Times.Once);
-        _mockMappingService.Verify(x => x.GetIdFromTitleAsync(It.IsAny<string>(), It.IsAny<IEnumerable<AnimeItem>>()), Times.Never);
+        _mockMappingService.Verify(x => x.GetIdFromTitleAsync(It.IsAny<string>(), It.IsAny<IEnumerable<AnimeEntity>>()), Times.Never);
     }
 
     [Fact]
-    public void SetInternalMedia_NegativelyMapped_DoesNotMatch()
+    public async Task SetInternalMedia_NegativelyMapped_DoesNotMatch()
     {
         // Arrange
         var state = new InternalPlayerState
@@ -137,11 +144,11 @@ public class TrackingServiceTests : IDisposable
         _mockMappingService.Setup(x => x.IsNegativelyMapped(state.OriginalTitle)).Returns(true);
 
         // Act
-        _trackingService.SetInternalMedia(state);
+        await _trackingService.SetInternalMediaAsync(state);
 
         // Assert
-        _mockMappingService.Verify(x => x.GetIdFromTitleAsync(It.IsAny<string>(), It.IsAny<IEnumerable<AnimeItem>>()), Times.Never);
-        _mockScrobbleService.Verify(x => x.StartScrobble(It.IsAny<ParsedMedia>(), It.IsAny<AnimeItem>()), Times.Never);
+        _mockMappingService.Verify(x => x.GetIdFromTitleAsync(It.IsAny<string>(), It.IsAny<IEnumerable<AnimeEntity>>()), Times.Never);
+        _mockScrobbleService.Verify(x => x.StartScrobble(It.IsAny<ParsedMedia>(), It.IsAny<AnimeEntity>()), Times.Never);
     }
 
     public void Dispose()

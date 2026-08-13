@@ -1,0 +1,107 @@
+<ResourceDictionary x:Class="Kiriha.Views.AnimeList.AnimeCardFloatingMagazineTemplate"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+                    xmlns:material="using:Material.Icons.Avalonia"
+                    xmlns:core="using:Kiriha.Core"
+                    xmlns:controls="using:Kiriha.Views.Controls"
+                    xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList">
+    <DataTemplate x:Key="CardTemplateFloatingMagazine" x:DataType="entities:AnimeEntity">
+        <Border Classes="AnimeCard revealItem FloatingMagCard" Margin="4" Width="158" Height="325" ClipToBounds="False"
+                CornerRadius="10" Background="{DynamicResource CardBackgroundFillSecondary}"
+                BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1">
+            <Border CornerRadius="10" ClipToBounds="True">
+                <Grid RowDefinitions="210, *">
+                <!-- Poster -->
+                <Panel Grid.Row="0" Background="Transparent" DoubleTapped="Poster_DoubleTapped">
+                    <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"/>
+
+                    <!-- Top gradient for badge readability -->
+                    <Border VerticalAlignment="Top" Height="52" IsHitTestVisible="False" Background="{DynamicResource AnimeCardBadgeReadabilityGradient}"/>
+
+                    <!-- Top-Left: airing + rewatching pills -->
+                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
+                                Margin="8" Orientation="Horizontal" Spacing="4">
+                        <Border Classes="Badge" Background="{Binding Presentation.AiringBadgeColor}"
+                                IsVisible="{Binding Presentation.AiringBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding Presentation.AiringBadgeText}"
+                                       FontSize="9" Foreground="White" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Classes="Badge" Background="{DynamicResource AnimeCardRewatchingBadgeBackground}"
+                                IsVisible="{Binding IsRewatching}">
+                            <TextBlock Text="{DynamicResource l.anime.status.rewatching}"
+                                       FontSize="9" Foreground="White" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Top-Right: clickable score -->
+                    <Button Classes="ScoreBadgeButton" VerticalAlignment="Top" HorizontalAlignment="Right"
+                            Margin="8" BorderThickness="0"
+                            Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).OpenScoreMenuCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding Score, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <Button.Effect>
+                            <DropShadowEffect BlurRadius="4" Color="{DynamicResource AnimeCardShadowColor}" OffsetX="0" OffsetY="1"/>
+                        </Button.Effect>
+                        <Button.Flyout>
+                            <MenuFlyout ItemsSource="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).AvailableScores}"
+                                        FlyoutPresenterClasses="ScoreFlyout"
+                                        Opened="ScoreMenu_Opened"/>
+                        </Button.Flyout>
+                        <StackPanel Orientation="Horizontal" Spacing="3">
+                            <material:MaterialIcon Kind="Star" Width="11" Height="11" Foreground="{DynamicResource AnimeCardStarForeground}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Score}" FontSize="10" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Panel>
+
+                <!-- Bottom Info -->
+                <StackPanel Grid.Row="1" Margin="11,10,11,12" Spacing="8">
+                    <StackPanel Spacing="2" Height="36" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"
+                                   MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                   LineHeight="15" Foreground="{DynamicResource SystemBaseHighColor}"/>
+                        <TextBlock Text="{Binding RussianTitle}" FontSize="10"
+                                   MaxLines="1" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                   LineHeight="13" Foreground="{DynamicResource SystemBaseMediumColor}" Opacity="0.85"
+                                   IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    </StackPanel>
+
+                    <!-- Progress bar -->
+                    <controls:SegmentedProgressBar Margin="0,4,0,4"
+                                                   Current="{Binding Progress}"
+                                                   Total="{Binding Presentation.EffectiveTotal}"
+                                                   Aired="{Binding Presentation.ResolvedAiredEpisodes}"
+                                                   AccentBrush="{DynamicResource SystemAccentColor}"
+                                                   AiredBrush="{DynamicResource AnimeCardAiredProgressBackground}"
+                                                   TrackBrush="{DynamicResource SegmentedTrackBrush}"
+                                                   IsVisible="{Binding Presentation.ShowProgress}"/>
+
+                    <!-- Episode controls -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                        <Button Grid.Column="0" Classes="ProgressStep"
+                                IsVisible="{Binding Presentation.CanEditProgress}"
+                                Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).DecrementProgressCommand}"
+                                CommandParameter="{Binding}">
+                            <material:MaterialIcon Kind="Minus" Width="16" Height="16" Foreground="{DynamicResource SystemBaseMediumColor}"/>
+                        </Button>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Presentation.ProgressPart}" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource SystemBaseMediumColor}" IsVisible="{Binding Presentation.ShowProgress}"/>
+                            <TextBlock Text="{Binding Presentation.TotalPart}" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource SystemBaseMediumColor}"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="2" Classes="ProgressStep"
+                                IsVisible="{Binding Presentation.CanEditProgress}"
+                                Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).IncrementProgressCommand}"
+                                CommandParameter="{Binding}">
+                            <material:MaterialIcon Kind="Plus" Width="16" Height="16" Foreground="{DynamicResource SystemAccentColor}"/>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+            </Border>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>
+

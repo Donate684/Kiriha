@@ -1,5 +1,8 @@
+using Kiriha.Core.Services;
+using Kiriha.Core.Models;
 using Kiriha.Core;
 using Kiriha.Models;
+using Kiriha.Models.Entities;
 
 namespace Kiriha.Tests;
 
@@ -8,7 +11,7 @@ public sealed class CustomLinkResolverTests
     [Fact]
     public void Resolve_EncodesTextPlaceholdersAndKeepsNumericIdsRaw()
     {
-        var anime = new AnimeItem
+        var anime = new AnimeEntity
         {
             Id = 5114,
             Title = "Fullmetal Alchemist: Brotherhood",
@@ -29,7 +32,7 @@ public sealed class CustomLinkResolverTests
     [Fact]
     public void Resolve_FallsBackToTitleWhenOptionalTitlesAreMissing()
     {
-        var anime = new AnimeItem { Id = 1, Title = "Cowboy Bebop" };
+        var anime = new AnimeEntity { Id = 1, Title = "Cowboy Bebop" };
 
         var resolved = CustomLinkResolver.Resolve("{english}|{russian}|{japanese}", anime);
 
@@ -39,7 +42,7 @@ public sealed class CustomLinkResolverTests
     [Fact]
     public void Resolve_NullAnimeOrTemplateReturnsSafeString()
     {
-        Assert.Equal(string.Empty, CustomLinkResolver.Resolve(null!, new AnimeItem()));
+        Assert.Equal(string.Empty, CustomLinkResolver.Resolve(null!, new AnimeEntity()));
         Assert.Equal("https://example.test/{title}", CustomLinkResolver.Resolve("https://example.test/{title}", null));
     }
 }
