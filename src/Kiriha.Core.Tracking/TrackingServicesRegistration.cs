@@ -14,7 +14,6 @@ using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Sync;
-using Kiriha.Core.Tracking.Api;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiriha.Core.Tracking;
