@@ -1,8 +1,4 @@
-﻿using Kiriha.Core.Services.AppLifecycle;
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
-using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Core.Services;
 using Kiriha.Core.Models;
 using Kiriha.Core.Tracking.Integration;
