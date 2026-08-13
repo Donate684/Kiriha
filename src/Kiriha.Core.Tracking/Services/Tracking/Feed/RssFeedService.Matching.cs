@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Feed;

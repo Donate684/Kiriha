@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.Win32;
 
 namespace Kiriha.Core.Tracking.Core;

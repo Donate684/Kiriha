@@ -31,13 +31,13 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<InstanceServer>());
 
         // SyncManager needs to start with the app lifecycle
-        services.AddSingleton<IHostedService>(sp => (IHostedService)sp.GetRequiredService<Kiriha.Core.Services.ISyncManager>());
+        services.AddSingleton<IHostedService>(sp => (IHostedService)sp.GetRequiredService<Kiriha.Core.Abstractions.Services.ISyncManager>());
 
         // Background utilities
         services.AddSingleton<LoadQueueService>();
         services.AddSingleton<UpdateService>();
         services.AddSingleton<NotificationService>();
-        services.AddSingleton<Kiriha.Core.Services.INotificationService>(sp => sp.GetRequiredService<NotificationService>());
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.INotificationService>(sp => sp.GetRequiredService<NotificationService>());
         services.AddSingleton<AiringInfoService>();
 
         // AnisthesiaService (Discord presence) also runs as IHostedService

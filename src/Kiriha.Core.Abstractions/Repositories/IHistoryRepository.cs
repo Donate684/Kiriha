@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 
-namespace Kiriha.Core.Repositories;
+namespace Kiriha.Core.Abstractions.Repositories;
 
 /// <summary>
 /// Persistence boundary for the user-action history (the <c>history</c> table).

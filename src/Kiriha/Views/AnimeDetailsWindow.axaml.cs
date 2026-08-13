@@ -13,7 +13,7 @@ public partial class AnimeDetailsWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public AnimeDetailsWindow(Kiriha.Core.Services.ISettingsService settingsService) : this()
+    public AnimeDetailsWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         Opened += OnOpened;

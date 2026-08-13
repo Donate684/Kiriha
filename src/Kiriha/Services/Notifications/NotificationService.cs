@@ -1,16 +1,16 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Settings;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Notifications;
 using Serilog;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services;
 

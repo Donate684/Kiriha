@@ -1,5 +1,5 @@
-using Kiriha.Core.Abstractions.Models.Entities;
-namespace Kiriha.Core.Services;
+using Kiriha.Core.Domain.Models.Entities;
+namespace Kiriha.Core.Abstractions.Services;
 
 public interface INotificationService
 {

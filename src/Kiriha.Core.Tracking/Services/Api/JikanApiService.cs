@@ -1,4 +1,5 @@
 using System;
+using Kiriha.Core.Shared;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -8,8 +9,8 @@ using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure.Http;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

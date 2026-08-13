@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Utils.Async;
 using Serilog;
 

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -17,11 +17,11 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
 {
     public ObservableCollection<CustomShareLink> CustomLinks { get; } = new();
 
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly FaviconService _faviconService;
     private readonly Dictionary<CustomShareLink, CancellationTokenSource> _faviconDebouncers = new();
 
-    public SettingsCustomLinksViewModel(Kiriha.Core.Services.ISettingsService settingsService, FaviconService faviconService)
+    public SettingsCustomLinksViewModel(Kiriha.Core.Abstractions.Services.ISettingsService settingsService, FaviconService faviconService)
     {
         _settingsService = settingsService;
         _faviconService = faviconService;
@@ -63,7 +63,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
     private void OnCustomLinkPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         // User typed something into Name / UrlTemplate — persist.
-        _settingsService.Update(settings => { }, Kiriha.Core.Services.SettingsSection.CustomLinks, save: false);
+        _settingsService.Update(settings => { }, Kiriha.Core.Abstractions.Services.SettingsSection.CustomLinks, save: false);
         _settingsService.Save();
 
         // When the URL changes, try to refresh the favicon. We deliberately
@@ -135,7 +135,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
         {
             settings.CustomLinks.Clear();
             foreach (var link in CustomLinks) settings.CustomLinks.Add(link);
-        }, Kiriha.Core.Services.SettingsSection.CustomLinks);
+        }, Kiriha.Core.Abstractions.Services.SettingsSection.CustomLinks);
     }
 
     [RelayCommand]

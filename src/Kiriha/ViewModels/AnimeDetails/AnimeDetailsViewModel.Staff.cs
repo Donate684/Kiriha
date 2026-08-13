@@ -8,7 +8,7 @@ namespace Kiriha.ViewModels.AnimeDetails;
 
 public partial class AnimeDetailsViewModel
 {
-    private async Task ProcessStaffPlusAsync(System.Collections.Generic.List<Kiriha.Core.Abstractions.Models.Entities.AnimeStaff> staffList)
+    private async Task ProcessStaffPlusAsync(System.Collections.Generic.List<Kiriha.Core.Domain.Models.Entities.AnimeStaff> staffList)
     {
         var keyRoles = new[] { "Original Creator", "Director", "Series Composition", "Script", "Music", "Character Design" };
         var staffPlusVms = new System.Collections.Generic.List<StaffPlusItemVm>();
@@ -69,9 +69,9 @@ public partial class AnimeDetailsViewModel
                             IBrush highlight = Brushes.Transparent;
                             if (localAnime != null)
                             {
-                                if (localAnime.Status == Kiriha.Core.Abstractions.Models.Entities.UserAnimeStatus.Watching || localAnime.Status == Kiriha.Core.Abstractions.Models.Entities.UserAnimeStatus.Completed)
+                                if (localAnime.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Watching || localAnime.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Completed)
                                     highlight = SolidColorBrush.Parse("#334CAF50");
-                                else if (localAnime.Status == Kiriha.Core.Abstractions.Models.Entities.UserAnimeStatus.Dropped)
+                                else if (localAnime.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Dropped)
                                     highlight = SolidColorBrush.Parse("#33F44336");
                             }
 

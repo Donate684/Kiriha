@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.ViewModels.Seasonal;

@@ -10,10 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Serilog;
 

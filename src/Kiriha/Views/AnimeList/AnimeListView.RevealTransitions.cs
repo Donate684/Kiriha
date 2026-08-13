@@ -1,9 +1,9 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using System;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;

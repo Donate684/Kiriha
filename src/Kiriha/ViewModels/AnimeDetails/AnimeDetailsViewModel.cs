@@ -6,7 +6,7 @@ using Kiriha.ViewModels.Settings;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System.Linq;
@@ -18,10 +18,10 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Platform;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
@@ -51,25 +51,25 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly JikanApiService _jikanApiService;
     private readonly IDialogService _dialogs;
-    private readonly Kiriha.Core.Services.IShikiApiService _shikiApiService;
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Services.IMalApiService _malApiService;
+    private readonly Kiriha.Core.Abstractions.Services.IShikiApiService _shikiApiService;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApiService;
 
-    public Kiriha.Core.Services.ISettingsService Settings => _settingsService;
+    public Kiriha.Core.Abstractions.Services.ISettingsService Settings => _settingsService;
 
     public AnimeDetailsViewModel(
         AnimeEntity cloneAnime,
         AnimeEditViewModel editor,
         AnimeMetadataViewModel metadata,
         JikanApiService jikanApiService,
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         IDialogService dialogs,
-        Kiriha.Core.Services.IShikiApiService shikiApiService,
-        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Services.IMalApiService malApiService)
+        Kiriha.Core.Abstractions.Services.IShikiApiService shikiApiService,
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Abstractions.Services.IMalApiService malApiService)
     {
         _anime = cloneAnime;
         Editor = editor;

@@ -1,6 +1,6 @@
 using System;
 using System.Text.Json;
-using Kiriha.Core.Models;
+using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Core.Tracking.Api;
 

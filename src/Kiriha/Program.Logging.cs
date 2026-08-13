@@ -1,4 +1,4 @@
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
 using System;
 using System.IO;
 using Serilog;
@@ -38,7 +38,7 @@ partial class Program
 
         Log.Logger = loggerConfig.CreateLogger();
 
-        Log.Information(Kiriha.Core.Constants.AppConstants.System.AppStartedLog);
+        Log.Information(Kiriha.Core.Domain.Constants.AppConstants.System.AppStartedLog);
         // Mask OAuth callback parameters (code, token, refresh) before logging command-line args.
         Log.Information("Arguments: {Args}", MaskSensitiveArgs(args));
     }

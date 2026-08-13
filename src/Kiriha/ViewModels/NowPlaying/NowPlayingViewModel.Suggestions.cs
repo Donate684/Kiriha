@@ -1,11 +1,11 @@
-using Kiriha.Core.Models;
+using Kiriha.Core.Domain.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core;
 using Kiriha.Core.Platform;
 using Serilog;
@@ -20,7 +20,7 @@ public partial class NowPlayingViewModel
         if (parameter is not AnimeEntity suggestion) return;
 
         Log.Information("Selecting anime suggestion: {Title} (ID: {Id})", suggestion.Title, suggestion.Id);
-        LogDetection(CurrentMedia ?? new Kiriha.Core.Models.ParsedMedia { AnimeTitle = suggestion.Title }, UIUtils.GetLoc("scrobbler.status.mapped_by") + " " + suggestion.Presentation.DisplayTitle);
+        LogDetection(CurrentMedia ?? new Kiriha.Core.Domain.Models.ParsedMedia { AnimeTitle = suggestion.Title }, UIUtils.GetLoc("scrobbler.status.mapped_by") + " " + suggestion.Presentation.DisplayTitle);
 
         Volatile.Write(ref _pendingManualMatchId, suggestion.Id);
         ShowSuggestions = false;

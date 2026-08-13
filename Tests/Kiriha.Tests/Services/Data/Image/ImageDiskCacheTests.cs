@@ -1,5 +1,5 @@
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using System;
 using System.IO;
 using System.Net.Http;

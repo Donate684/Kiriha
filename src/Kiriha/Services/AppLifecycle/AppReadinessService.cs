@@ -2,7 +2,7 @@ using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Settings;

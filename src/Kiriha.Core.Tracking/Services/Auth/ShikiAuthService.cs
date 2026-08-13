@@ -5,13 +5,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
-using Kiriha.Core.Constants;
-using Kiriha.Core.Services;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core.Tracking.Api;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -19,7 +19,7 @@ namespace Kiriha.Core.Tracking.Auth;
 public partial class ShikiAuthService
 {
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly ShikiHostResolver _hostResolver;
 
     private ShikiMirror ActiveMirror => _settingsService.Current.Api.ShikiMirror;
@@ -27,7 +27,7 @@ public partial class ShikiAuthService
     private string TokenUrl => ShikiEndpoints.TokenUrl(ActiveMirror);
     private string AuthBase => ShikiEndpoints.AuthUrl(ActiveMirror);
 
-    public ShikiAuthService(HttpClient httpClient, Kiriha.Core.Services.ISettingsService settingsService, ShikiHostResolver hostResolver)
+    public ShikiAuthService(HttpClient httpClient, Kiriha.Core.Abstractions.Services.ISettingsService settingsService, ShikiHostResolver hostResolver)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;

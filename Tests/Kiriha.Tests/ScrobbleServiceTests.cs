@@ -1,6 +1,6 @@
-using Kiriha.Core.Services.AppLifecycle;
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -8,14 +8,15 @@ using Kiriha.Services.Data.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Moq;
 
+using Kiriha.Core.Domain.Models.Entities;
 namespace Kiriha.Tests;
 
 public class ScrobbleServiceTests : IDisposable
@@ -26,7 +27,7 @@ public class ScrobbleServiceTests : IDisposable
     private readonly Mock<HistoryService> _mockHistoryService;
     private readonly Mock<NotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
-    private readonly Mock<Kiriha.Core.Infrastructure.IUiDispatcher> _mockUiDispatcher;
+    private readonly Mock<Kiriha.Core.Shared.Infrastructure.IUiDispatcher> _mockUiDispatcher;
     private readonly ScrobbleService _scrobbleService;
 
     public ScrobbleServiceTests()
@@ -46,7 +47,7 @@ public class ScrobbleServiceTests : IDisposable
         _mockHistoryService = new Mock<HistoryService>(null!);
         _mockNotificationService = new Mock<NotificationService>(null!, null!);
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
-        _mockUiDispatcher = new Mock<Kiriha.Core.Infrastructure.IUiDispatcher>();
+        _mockUiDispatcher = new Mock<Kiriha.Core.Shared.Infrastructure.IUiDispatcher>();
 
         // When background task is queued, run it synchronously for testing
         _mockBackgroundTasks

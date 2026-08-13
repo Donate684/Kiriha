@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
-using Kiriha.Core.Messages;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Shared.Messages;
 using Serilog;
 
 namespace Kiriha.ViewModels.Search;

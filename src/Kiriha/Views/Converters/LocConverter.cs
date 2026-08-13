@@ -1,5 +1,6 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using System;
+using Kiriha.Core.Domain.Models;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;

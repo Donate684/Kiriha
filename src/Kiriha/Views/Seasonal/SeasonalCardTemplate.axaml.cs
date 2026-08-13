@@ -1,11 +1,11 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.Seasonal;
 
 namespace Kiriha.Views.Seasonal;

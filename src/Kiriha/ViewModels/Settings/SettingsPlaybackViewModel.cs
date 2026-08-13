@@ -18,7 +18,7 @@ namespace Kiriha.ViewModels.Settings;
 
 public partial class SettingsPlaybackViewModel : ObservableObject
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly SystemIntegrationService _systemIntegrationService;
     private readonly AnisthesiaService _anisthesiaService;
 
@@ -33,7 +33,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     public int EnabledPlayersCount => _settingsService.Current.System.Scrobbler.AllowedProcesses.Count;
 
     public SettingsPlaybackViewModel(
-        Kiriha.Core.Services.ISettingsService settingsService, 
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService, 
         SystemIntegrationService systemIntegrationService,
         AnisthesiaService anisthesiaService)
     {
@@ -52,18 +52,18 @@ public partial class SettingsPlaybackViewModel : ObservableObject
 
     partial void OnKeepPlayerProcessAliveChanged(bool value)
     {
-        _settingsService.Update(settings => settings.System.KeepPlayerProcessAlive = value, Kiriha.Core.Services.SettingsSection.System);
+        _settingsService.Update(settings => settings.System.KeepPlayerProcessAlive = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
         if (value) Kiriha.Core.Player.PlayerProcessBridge.StartResident();
         else _ = Kiriha.Core.Player.PlayerProcessBridge.StopResidentAsync();
     }
 
-    partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, Kiriha.Core.Services.SettingsSection.Player);
+    partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     partial void OnMpvHwdecChanged(string value) => SaveMpvOption(x => x.MpvHwdec = NormalizeMpvOption(value, "auto"));
     partial void OnMpvVideoOutputChanged(string value) => SaveMpvOption(x => x.MpvVideoOutput = NormalizeMpvOption(value, "gpu-next"));
     partial void OnMpvGpuApiChanged(string value) => SaveMpvOption(x => x.MpvGpuApi = NormalizeMpvOption(value, "auto"));
     partial void OnMpvGpuContextChanged(string value) => SaveMpvOption(x => x.MpvGpuContext = NormalizeMpvOption(value, "auto"));
 
-    private void SaveMpvOption(System.Action<Kiriha.Core.Abstractions.Models.AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Services.SettingsSection.Player);
+    private void SaveMpvOption(System.Action<Kiriha.Core.Domain.Models.AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
 
     private static string NormalizeMpvOption(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 

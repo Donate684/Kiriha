@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Models.Presentation;
 
 namespace Kiriha.ViewModels.Player;

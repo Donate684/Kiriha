@@ -1,26 +1,27 @@
+using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data.Settings;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Services.Data;
 using Serilog;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Shared.Shiki;
 
 namespace Kiriha.ViewModels.Settings;
 
 public partial class SettingsAuthViewModel : ObservableObject
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly MalAuthService _authService;
     private readonly ShikiAuthService _shikiAuthService;
     private readonly ShikiHostResolver _shikiHostResolver;
 
     public SettingsAuthViewModel(
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         MalAuthService authService,
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver)
@@ -62,7 +63,7 @@ public partial class SettingsAuthViewModel : ObservableObject
         var tokens = await _authService.LoginAsync();
         if (tokens != null)
         {
-            _settingsService.Update(settings => settings.Api.Mal = tokens, Kiriha.Core.Services.SettingsSection.Api, save: false);
+            _settingsService.Update(settings => settings.Api.Mal = tokens, Kiriha.Core.Abstractions.Services.SettingsSection.Api, save: false);
             _settingsService.SaveImmediate();
             IsLoggedIn = true;
             ShikiLoginOneCommand.NotifyCanExecuteChanged();
@@ -77,7 +78,7 @@ public partial class SettingsAuthViewModel : ObservableObject
         {
             settings.Api.Mal = null;
             settings.Api.Shiki = null;
-        }, Kiriha.Core.Services.SettingsSection.Api, save: false);
+        }, Kiriha.Core.Abstractions.Services.SettingsSection.Api, save: false);
         _settingsService.SaveImmediate();
         IsLoggedIn = false;
         IsShikiLoggedIn = false;
@@ -100,7 +101,7 @@ public partial class SettingsAuthViewModel : ObservableObject
             return;
         }
 
-        _settingsService.Update(settings => settings.Api.ShikiMirror = mirror, Kiriha.Core.Services.SettingsSection.Api, save: false);
+        _settingsService.Update(settings => settings.Api.ShikiMirror = mirror, Kiriha.Core.Abstractions.Services.SettingsSection.Api, save: false);
         _settingsService.SaveImmediate();
         _shikiHostResolver.Reset();
 
@@ -108,7 +109,7 @@ public partial class SettingsAuthViewModel : ObservableObject
         if (tokens != null)
         {
             tokens.Mirror = mirror;
-            _settingsService.Update(settings => settings.Api.Shiki = tokens, Kiriha.Core.Services.SettingsSection.Api, save: false);
+            _settingsService.Update(settings => settings.Api.Shiki = tokens, Kiriha.Core.Abstractions.Services.SettingsSection.Api, save: false);
             _settingsService.SaveImmediate();
             IsShikiLoggedIn = true;
         }
@@ -117,7 +118,7 @@ public partial class SettingsAuthViewModel : ObservableObject
     [RelayCommand]
     public void ShikiLogout()
     {
-        _settingsService.Update(settings => settings.Api.Shiki = null, Kiriha.Core.Services.SettingsSection.Api, save: false);
+        _settingsService.Update(settings => settings.Api.Shiki = null, Kiriha.Core.Abstractions.Services.SettingsSection.Api, save: false);
         _settingsService.SaveImmediate();
         IsShikiLoggedIn = false;
     }

@@ -1,4 +1,4 @@
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
 using System;
 using System.IO;
 

@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -9,7 +9,7 @@ using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System;
@@ -19,7 +19,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
@@ -39,9 +39,9 @@ namespace Kiriha.Core.Dialogs;
 /// </summary>
 public sealed class AvaloniaDialogService : IDialogService
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService; private readonly Kiriha.Core.Services.ISyncManager _syncManager; private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo; private readonly Kiriha.Core.Services.IProgressUpdateService _progressService; private readonly Kiriha.Core.Services.IHistoryService _historyService; private readonly Kiriha.Core.Services.IMalApiService _malApiService; private readonly Kiriha.Core.Services.IShikiApiService _shikiApiService; private readonly Kiriha.Core.Tracking.Api.JikanApiService _jikanApiService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService; private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager; private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo; private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _progressService; private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService; private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApiService; private readonly Kiriha.Core.Abstractions.Services.IShikiApiService _shikiApiService; private readonly Kiriha.Core.Tracking.Api.JikanApiService _jikanApiService;
 
-    public AvaloniaDialogService(Kiriha.Core.Services.ISettingsService settingsService, Kiriha.Core.Services.ISyncManager syncManager, Kiriha.Core.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Services.IProgressUpdateService progressService, Kiriha.Core.Services.IHistoryService historyService, Kiriha.Core.Services.IMalApiService malApiService, Kiriha.Core.Services.IShikiApiService shikiApiService, Kiriha.Core.Tracking.Api.JikanApiService jikanApiService)
+    public AvaloniaDialogService(Kiriha.Core.Abstractions.Services.ISettingsService settingsService, Kiriha.Core.Abstractions.Services.ISyncManager syncManager, Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Abstractions.Services.IProgressUpdateService progressService, Kiriha.Core.Abstractions.Services.IHistoryService historyService, Kiriha.Core.Abstractions.Services.IMalApiService malApiService, Kiriha.Core.Abstractions.Services.IShikiApiService shikiApiService, Kiriha.Core.Tracking.Api.JikanApiService jikanApiService)
     {
         _settingsService = settingsService; _syncManager = syncManager; _animeRepo = animeRepo; _progressService = progressService; _historyService = historyService; _malApiService = malApiService; _shikiApiService = shikiApiService; _jikanApiService = jikanApiService;
     }

@@ -1,4 +1,5 @@
 using System;
+using Kiriha.Core.Shared;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,15 +8,15 @@ using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
-using Kiriha.Core.Models;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
-// Moved to Kiriha.Core.Models.AniListAiringInfo
+// Moved to Kiriha.Core.Domain.Models.AniListAiringInfo
 
-public class AniListApiService : IDisposable, Kiriha.Core.Services.IAniListApiService
+public class AniListApiService : IDisposable, Kiriha.Core.Abstractions.Services.IAniListApiService
 {
     private const string Endpoint = "https://graphql.anilist.co";
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(6);

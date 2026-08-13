@@ -6,15 +6,15 @@ using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Infrastructure.Http;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Sync;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
@@ -32,7 +32,7 @@ public partial class MalApiService : IMalApiService, IDisposable
     private static readonly string MangaFields = $"list_status{{{MangaListStatusFields}}},my_list_status{{{MangaListStatusFields}}},main_picture,synopsis,mean,rank,popularity,num_chapters,num_volumes,authors,genres,alternative_titles,status,start_date,nsfw,media_type,external_links";
 
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly MalTokenManager _tokenManager;
     private readonly JikanApiService _jikanApi;
     private readonly HttpConditionalCache _httpCache;
@@ -53,7 +53,7 @@ public partial class MalApiService : IMalApiService, IDisposable
     public string Name => "MyAnimeList";
     public bool IsEnabled => _settingsService.Current.Api.Mal != null;
 
-    public MalApiService(HttpClient httpClient, Kiriha.Core.Services.ISettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
+    public MalApiService(HttpClient httpClient, Kiriha.Core.Abstractions.Services.ISettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;

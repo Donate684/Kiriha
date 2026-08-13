@@ -1,7 +1,7 @@
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Services;
 using System;
 
-namespace Kiriha.Core.Services;
+namespace Kiriha.Core.Abstractions.Services;
 
 /// <summary>
 /// Outcome of a single tracker mutation (update / remove). Replaces the old

@@ -1,5 +1,5 @@
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using System;
 using System.Globalization;
@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
 
 public partial class AnalyticsViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
     private readonly HistoryService _historyService;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
 
@@ -65,7 +65,7 @@ public partial class AnalyticsViewModel : ViewModelBase
         set { if (value) SelectedSection = 5; }
     }
 
-    public AnalyticsViewModel(Kiriha.Core.Repositories.IAnimeRepository animeRepo, HistoryService historyService)
+    public AnalyticsViewModel(Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, HistoryService historyService)
     {
         _animeRepo = animeRepo;
         _historyService = historyService;

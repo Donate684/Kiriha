@@ -1,6 +1,6 @@
 using System;
 
-namespace Kiriha.Core.Services;
+namespace Kiriha.Core.Abstractions.Services;
 
 [Flags]
 public enum SettingsSection

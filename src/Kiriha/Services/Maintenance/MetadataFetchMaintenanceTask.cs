@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Image;
@@ -6,9 +6,10 @@ using Kiriha.Services.Data.Settings;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Services.Data;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Serilog;
 
@@ -16,7 +17,7 @@ namespace Kiriha.Services.Maintenance;
 
 public class MetadataFetchMaintenanceTask : IMaintenanceTask
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IMetadataRepository _metadataRepo;
     private readonly ShikiMetadataService _shikiMetadata;
@@ -24,7 +25,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
     private readonly IUiDispatcher _uiDispatcher;
 
     public MetadataFetchMaintenanceTask(
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         IUserAnimeRepository userAnimeRepo,
         IMetadataRepository metadataRepo,
         ShikiMetadataService shikiMetadata,

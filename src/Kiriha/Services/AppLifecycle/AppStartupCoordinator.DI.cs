@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Services.Data.Metadata;
@@ -54,7 +54,7 @@ public sealed partial class AppStartupCoordinator
     {
         PathHelper.EnsureDirectoriesExist();
         services.AddSingleton<SettingsService>();
-        services.AddSingleton<Kiriha.Core.Services.ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.SettingsShutdownHandler>();
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<IPlayerMediaMetadataResolver, FilenamePlayerMediaMetadataResolver>();

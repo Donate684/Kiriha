@@ -1,5 +1,5 @@
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System;
@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Dialogs;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
@@ -19,10 +19,10 @@ public partial class HistoryViewModel : ViewModelBase
 {
     private readonly HistoryService _historyService;
     private readonly DatabaseInitializer _dbInit;
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Services.IMalApiService _malApi;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly Kiriha.Core.Services.ISettingsService _settings;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settings;
     private List<HistoryItem> _rawItems = new();
 
     [ObservableProperty]
@@ -48,10 +48,10 @@ public partial class HistoryViewModel : ViewModelBase
     public HistoryViewModel(
         HistoryService historyService,
         DatabaseInitializer dbInit,
-        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Services.IMalApiService malApi,
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Abstractions.Services.IMalApiService malApi,
         IDialogService dialogs,
-        Kiriha.Core.Services.ISettingsService settings)
+        Kiriha.Core.Abstractions.Services.ISettingsService settings)
     {
         _historyService = historyService;
         _dbInit = dbInit;

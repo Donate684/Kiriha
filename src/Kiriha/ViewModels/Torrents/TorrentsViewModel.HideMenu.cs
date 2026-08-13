@@ -2,7 +2,7 @@ using Kiriha.Services.Data.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Torrents;
@@ -50,7 +50,7 @@ public partial class TorrentsViewModel
             {
                 ids.Remove(item.Anime.Id);
             }
-        }, Kiriha.Core.Services.SettingsSection.Torrents);
+        }, Kiriha.Core.Abstractions.Services.SettingsSection.Torrents);
 
         if (item.IsHidden)
         {

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core.Platform;
 using Avalonia.Input.Platform;
 
@@ -12,7 +12,7 @@ public partial class NowPlayingViewModel
     private async Task CopyMalLink()
     {
         if (MatchedAnime == null) return;
-        string url = $"{Kiriha.Core.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}";
+        string url = $"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}";
         await CopyToClipboard(url);
     }
 
@@ -28,7 +28,7 @@ public partial class NowPlayingViewModel
     private void OpenMalLink()
     {
         if (MatchedAnime == null) return;
-        ShellLauncher.OpenUrl($"{Kiriha.Core.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}");
+        ShellLauncher.OpenUrl($"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}");
     }
 
     [RelayCommand]

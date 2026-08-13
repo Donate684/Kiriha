@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Serilog;
 
 namespace Kiriha.ViewModels.Torrents;

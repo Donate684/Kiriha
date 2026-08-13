@@ -1,12 +1,14 @@
+using Kiriha.Core.Shared;
 using Kiriha.Services.Data.Settings;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Kiriha.Core;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 
 namespace Kiriha.Views;
@@ -23,7 +25,7 @@ public partial class AboutWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public AboutWindow(Kiriha.Core.Services.ISettingsService settingsService) : this()
+    public AboutWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         ApplyMica();

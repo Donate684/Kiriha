@@ -3,7 +3,7 @@ using System.IO;
 using Kiriha.Models.Presentation;
 using System;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Player;
@@ -14,7 +14,7 @@ public partial class PlayerViewModel
     {
         if (_isApplyingSettings || _settingsService == null) return;
         var normalized = NormalizeScreenshotDirectory(value);
-        _settingsService.Update(settings => settings.Player.ScreenshotDirectory = normalized, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotDirectory = normalized, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotFormatChanged(string value)
@@ -24,13 +24,13 @@ public partial class PlayerViewModel
             ScreenshotFormat = normalized;
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotFormat = normalized, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotFormat = normalized, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotResolutionChanged(ScreenshotResolutionOption? value)
     {
         if (_isApplyingSettings || _settingsService == null || value == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotResolutionMode = value.Value, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotResolutionMode = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     }
     partial void OnScreenshotPngCompressionChanged(int value)
     {
@@ -42,7 +42,7 @@ public partial class PlayerViewModel
         }
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotPngCompression = normalized, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotPngCompression = normalized, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotQualityChanged(int value)
@@ -55,24 +55,24 @@ public partial class PlayerViewModel
         }
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotQuality = normalized, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotQuality = normalized, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotHighBitDepthChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotHighBitDepth = value, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotHighBitDepth = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotWithSubtitlesHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotWithSubtitlesHotkey = NormalizeHotkey(value, "S"), Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotWithSubtitlesHotkey = NormalizeHotkey(value, "S"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     }
     partial void OnScreenshotWithoutSubtitlesHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ScreenshotWithoutSubtitlesHotkey = NormalizeHotkey(value, "Shift+S"), Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ScreenshotWithoutSubtitlesHotkey = NormalizeHotkey(value, "Shift+S"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     }
 
     private void ApplyScreenshotOptions()

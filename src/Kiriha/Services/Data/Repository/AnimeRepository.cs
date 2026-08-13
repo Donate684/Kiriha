@@ -5,16 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
-using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Utils.Collections;
-using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Domain.Models.Api;
 using Serilog;
 
 namespace Kiriha.Services.Data.Repository;
@@ -36,7 +37,7 @@ public partial class AnimeRepository : IAnimeRepository
     public bool IsInitializing => Volatile.Read(ref _initStarted) == 1 && !_initTcs.Task.IsCompleted;
 
     public BulkObservableCollection<AnimeEntity> Collection { get; } = new();
-    System.Collections.ObjectModel.ObservableCollection<AnimeEntity> Kiriha.Core.Repositories.IAnimeRepository.Collection => Collection;
+    System.Collections.ObjectModel.ObservableCollection<AnimeEntity> Kiriha.Core.Abstractions.Repositories.IAnimeRepository.Collection => Collection;
 
     public IEnumerable<AnimeEntity> GetCollection()
     {

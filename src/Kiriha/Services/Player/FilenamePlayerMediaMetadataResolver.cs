@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Utils.Parsing;
 using Serilog;
 

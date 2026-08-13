@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Repositories;
+namespace Kiriha.Core.Abstractions.Repositories;
 
 public interface IAnimeRepository
 {

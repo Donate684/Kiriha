@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Anisthesia;

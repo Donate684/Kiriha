@@ -1,12 +1,12 @@
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
 

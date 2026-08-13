@@ -2,8 +2,8 @@ using Kiriha.Services.Data.Settings;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Seasonal;
@@ -39,7 +39,7 @@ public partial class SeasonalViewModel
         {
             foreach (var id in toUnhide)
                 settings.UI.HiddenSeasonalIds?.Remove(id);
-        }, Kiriha.Core.Services.SettingsSection.UI, save: false);
+        }, Kiriha.Core.Abstractions.Services.SettingsSection.UI, save: false);
         _ = _settingsService.SaveAsync();
     }
 
@@ -66,7 +66,7 @@ public partial class SeasonalViewModel
                 if (!list.Contains(item.Id)) list.Add(item.Id);
                 item.IsHiddenInSeasons = true;
             }
-        }, Kiriha.Core.Services.SettingsSection.UI, save: false);
+        }, Kiriha.Core.Abstractions.Services.SettingsSection.UI, save: false);
         _ = _settingsService.SaveAsync();
         ApplyFilters();
     }

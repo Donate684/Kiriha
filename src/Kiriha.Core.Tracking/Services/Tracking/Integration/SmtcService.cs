@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 #if WINDOWS
 using Windows.Media.Control;

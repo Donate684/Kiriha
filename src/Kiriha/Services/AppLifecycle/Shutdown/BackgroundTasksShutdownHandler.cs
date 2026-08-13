@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Serilog;
 

@@ -8,7 +8,7 @@ namespace Kiriha.Views;
 
 public class KirihaWindowBase : Window
 {
-    protected Kiriha.Core.Services.ISettingsService? SettingsService { get; set; }
+    protected Kiriha.Core.Abstractions.Services.ISettingsService? SettingsService { get; set; }
 
     protected override void OnOpened(EventArgs e)
     {

@@ -9,10 +9,10 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Avalonia.Markup.Xaml;
 using Kiriha.Localization;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;

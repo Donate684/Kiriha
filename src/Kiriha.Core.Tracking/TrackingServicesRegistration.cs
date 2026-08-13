@@ -1,11 +1,12 @@
 using System;
+using Kiriha.Core.Shared;
 using System.Net;
 using System.Net.Http;
 using Kiriha.Core;
-using Kiriha.Core.Constants;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core.Tracking;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
@@ -13,6 +14,7 @@ using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Sync;
+using Kiriha.Core.Tracking.Api;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiriha.Core.Tracking;

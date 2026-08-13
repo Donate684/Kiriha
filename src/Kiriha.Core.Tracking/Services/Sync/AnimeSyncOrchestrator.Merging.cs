@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Sync;
 

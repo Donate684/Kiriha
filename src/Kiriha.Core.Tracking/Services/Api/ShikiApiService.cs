@@ -1,4 +1,6 @@
 using System;
+using Kiriha.Core.Tracking.Api;
+using Kiriha.Core.Shared;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -8,13 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure.Http;
-using Kiriha.Core.Services;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core.Tracking.Auth;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Api;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 
@@ -23,7 +25,7 @@ namespace Kiriha.Core.Tracking.Api;
 public partial class ShikiApiService : IShikiApiService
 {
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly ShikiTokenService _tokenService;
     private readonly ShikiHostResolver _hostResolver;
     private readonly HttpConditionalCache _httpCache;
@@ -44,7 +46,7 @@ public partial class ShikiApiService : IShikiApiService
 
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    public ShikiApiService(HttpClient httpClient, Kiriha.Core.Services.ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, Kiriha.Core.Repositories.IHttpCacheRepository httpCacheRepo)
+    public ShikiApiService(HttpClient httpClient, Kiriha.Core.Abstractions.Services.ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, Kiriha.Core.Abstractions.Repositories.IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;

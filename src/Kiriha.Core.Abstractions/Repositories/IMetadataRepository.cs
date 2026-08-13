@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Domain.Models.Api;
 
-namespace Kiriha.Core.Repositories;
+namespace Kiriha.Core.Abstractions.Repositories;
 
 /// <summary>
 /// Persistence boundary for Shikimori metadata (the <c>metadata</c> table).

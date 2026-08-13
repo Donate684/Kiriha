@@ -1,6 +1,6 @@
 using Kiriha.Services.Data.Settings;
 using System.Linq;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.Data.Settings;
 

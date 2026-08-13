@@ -1,3 +1,4 @@
+using Kiriha.Core.Shared;
 using Kiriha.Services.Data.Settings;
 using Avalonia;
 using Avalonia.Controls;

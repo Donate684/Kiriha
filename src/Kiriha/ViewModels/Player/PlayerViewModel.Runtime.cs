@@ -208,7 +208,7 @@ public partial class PlayerViewModel
 
         if (!_isApplyingSettings && RememberPlayerVolume && _settingsService != null)
         {
-            _settingsService.Update(settings => settings.Player.Volume = Math.Clamp(value, 0, 100), Kiriha.Core.Services.SettingsSection.Player);
+            _settingsService.Update(settings => settings.Player.Volume = Math.Clamp(value, 0, 100), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         }
 
         if (!_isApplyingSettings)
@@ -222,7 +222,7 @@ public partial class PlayerViewModel
 
         if (!_isApplyingSettings && _settingsService != null)
         {
-            _settingsService.Update(settings => settings.Player.PlaybackSpeed = speed, Kiriha.Core.Services.SettingsSection.Player);
+            _settingsService.Update(settings => settings.Player.PlaybackSpeed = speed, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
         }
 
         if (!_isApplyingSettings)
@@ -234,7 +234,7 @@ public partial class PlayerViewModel
         _playback.SetAudioNormalization(value);
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.NormalizeAudio = value, Kiriha.Core.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.NormalizeAudio = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     }
 
     partial void OnIsMutedChanged(bool value)

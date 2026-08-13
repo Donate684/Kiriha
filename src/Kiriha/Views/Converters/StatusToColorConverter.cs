@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Views.Converters;
 

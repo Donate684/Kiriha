@@ -1,3 +1,4 @@
+using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -9,14 +10,14 @@ using Kiriha.Services.Data.Settings;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core;
 
 namespace Kiriha.ViewModels.Settings;
@@ -33,11 +34,11 @@ public partial class SettingsViewModel : ViewModelBase
 
     public SettingsCustomLinksViewModel CustomLinks { get; }
 
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly FaviconService _faviconService;
 
     public SettingsViewModel(
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         MalAuthService authService,
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver,

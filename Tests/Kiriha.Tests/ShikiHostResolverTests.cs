@@ -1,6 +1,7 @@
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Tracking.Api;
 
 namespace Kiriha.Tests;
 

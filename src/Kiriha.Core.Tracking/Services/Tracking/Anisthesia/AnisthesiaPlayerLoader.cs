@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Anisthesia;

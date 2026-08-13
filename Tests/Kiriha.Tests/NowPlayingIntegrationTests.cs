@@ -1,6 +1,6 @@
-﻿using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;

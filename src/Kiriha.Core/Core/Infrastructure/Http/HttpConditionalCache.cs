@@ -6,8 +6,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Models.Entities;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Infrastructure.Http;

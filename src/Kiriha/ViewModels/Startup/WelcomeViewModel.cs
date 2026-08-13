@@ -18,11 +18,11 @@ public partial class WelcomeViewModel : ViewModelBase, IDisposable
     private bool _isLoading = true;
 
     private readonly AnimeListViewModel _animeListViewModel;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
 
-    public Kiriha.Core.Services.ISettingsService SettingsService => _settingsService;
+    public Kiriha.Core.Abstractions.Services.ISettingsService SettingsService => _settingsService;
 
-    public WelcomeViewModel(AnimeListViewModel animeListViewModel, Kiriha.Core.Services.ISettingsService settingsService)
+    public WelcomeViewModel(AnimeListViewModel animeListViewModel, Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
     {
         _animeListViewModel = animeListViewModel;
         _settingsService = settingsService;

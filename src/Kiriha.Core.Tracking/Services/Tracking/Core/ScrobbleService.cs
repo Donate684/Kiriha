@@ -2,13 +2,13 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Models;
-using Kiriha.Core.Services;
-using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Sync;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -24,11 +24,11 @@ public interface IScrobbleService
 public class ScrobbleService : IScrobbleService, IDisposable
 {
     private readonly Kiriha.Core.Tracking.Sync.AnimeProgressService _progressService;
-    private readonly Kiriha.Core.Services.IHistoryService _historyService;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
-    private readonly Kiriha.Core.Services.INotificationService _notificationService;
+    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.INotificationService _notificationService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
-    private readonly Kiriha.Core.Infrastructure.IUiDispatcher _uiDispatcher;
+    private readonly Kiriha.Core.Shared.Infrastructure.IUiDispatcher _uiDispatcher;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -41,11 +41,11 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public ScrobbleService(
         Kiriha.Core.Tracking.Sync.AnimeProgressService progressService,
-        Kiriha.Core.Services.IHistoryService historyService,
-        Kiriha.Core.Services.ISettingsService settingsService,
-        Kiriha.Core.Services.INotificationService notificationService,
+        Kiriha.Core.Abstractions.Services.IHistoryService historyService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
-        Kiriha.Core.Infrastructure.IUiDispatcher uiDispatcher)
+        Kiriha.Core.Shared.Infrastructure.IUiDispatcher uiDispatcher)
     {
         _progressService = progressService;
         _historyService = historyService;

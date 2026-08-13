@@ -2,7 +2,7 @@ using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Metadata;
@@ -17,9 +17,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
-using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
@@ -29,8 +29,8 @@ namespace Kiriha.ViewModels.AnimeList;
 
 public partial class AnimeListViewModel : ViewModelBase, IDisposable
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
     private readonly AnimeSyncOrchestrator _syncOrchestrator;
     private readonly AnimeProgressService _progressService;
     private readonly LoadQueueService _queueService;
@@ -41,15 +41,15 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     private readonly ShikiMetadataService _shikiMetadataService;
     private readonly AnimeCollectionProjection _listProjection = new();
 
-    public Kiriha.Core.Services.ISettingsService SettingsService => _settingsService;
+    public Kiriha.Core.Abstractions.Services.ISettingsService SettingsService => _settingsService;
     public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
     public ShikiMetadataService ShikiMetadataService => _shikiMetadataService;
 
     public ObservableCollection<AnimeEntity> AnimeItems => _animeRepo.Collection;
 
     public AnimeListViewModel(
-        Kiriha.Core.Services.ISettingsService settingsService,
-        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
         AnimeSyncOrchestrator syncOrchestrator,
         AnimeProgressService progressService,
         LoadQueueService queueService,
@@ -109,13 +109,13 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
 
     partial void OnSortByChanged(string value)
     {
-        _settingsService.Update(settings => settings.UI.ListSortBy = value, Kiriha.Core.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.ListSortBy = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
         ScheduleFilterRefresh();
     }
 
     partial void OnFilterNsfwChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.ListShowNsfw = value, Kiriha.Core.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.ListShowNsfw = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
         IsFilterActive = value;
         ScheduleFilterRefresh();
     }

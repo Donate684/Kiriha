@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.Settings;
 
@@ -18,7 +18,7 @@ namespace Kiriha.ViewModels.Startup;
 
 public partial class FirstStartupViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly LocalizationService _localizationService;
     private readonly SettingsViewModel _settingsViewModel;
 
@@ -35,7 +35,7 @@ public partial class FirstStartupViewModel : ViewModelBase
     public SettingsViewModel SettingsVm => _settingsViewModel;
 
     public FirstStartupViewModel(
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         LocalizationService localizationService,
         SettingsViewModel settingsViewModel)
     {

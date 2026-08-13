@@ -2,6 +2,7 @@ using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Image;
 using Kiriha.Services.Data.Settings;
 using System;
+using Kiriha.Core.Domain.Models;
 using System.Diagnostics;
 using AsyncImageLoader;
 using Avalonia;

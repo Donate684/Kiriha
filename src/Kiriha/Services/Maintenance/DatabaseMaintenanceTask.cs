@@ -1,10 +1,10 @@
-﻿using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Image;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Services.Data;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Serilog;
 

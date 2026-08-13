@@ -1,8 +1,8 @@
-using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Domain.Models.Api;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kiriha.Core.Services;
+namespace Kiriha.Core.Abstractions.Services;
 
 public interface IShikiApiService : ITrackerService
 {

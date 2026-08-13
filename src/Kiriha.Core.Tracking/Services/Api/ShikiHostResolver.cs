@@ -1,8 +1,9 @@
 using System;
+using Kiriha.Core.Tracking.Api;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Kiriha.Core.Shiki;
+namespace Kiriha.Core.Tracking.Api;
 
 public sealed class ShikiHostResolver
 {

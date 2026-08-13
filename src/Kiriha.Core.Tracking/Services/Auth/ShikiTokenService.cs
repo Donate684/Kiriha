@@ -1,17 +1,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Core.Tracking.Auth;
 
 public class ShikiTokenService
 {
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly ShikiAuthService _authService;
     private readonly SemaphoreSlim _tokenLock = new(1, 1);
 
-    public ShikiTokenService(Kiriha.Core.Services.ISettingsService settingsService, ShikiAuthService authService)
+    public ShikiTokenService(Kiriha.Core.Abstractions.Services.ISettingsService settingsService, ShikiAuthService authService)
     {
         _settingsService = settingsService;
         _authService = authService;

@@ -7,7 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Styling;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Kiriha.Views.Player;
 using Serilog;
@@ -23,7 +23,7 @@ public partial class MainWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public MainWindow(Kiriha.Core.Services.ISettingsService settingsService) : this()
+    public MainWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         ApplyMica();

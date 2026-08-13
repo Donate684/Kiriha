@@ -1,18 +1,18 @@
-using Kiriha.Core.Abstractions.Models.Entities;
-using Kiriha.Core.Services;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Mapping;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Utils.Parsing;
 
 namespace Kiriha.Services.Data.Mapping;
 
 
 
-public class RecognitionCache : Kiriha.Core.Services.IRecognitionCache
+public class RecognitionCache : Kiriha.Core.Abstractions.Services.IRecognitionCache
 {
     private readonly ConcurrentDictionary<string, List<WeightedMatch>> _cache = new();
 

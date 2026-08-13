@@ -4,20 +4,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
-using Kiriha.Core.Messages;
-using Kiriha.Core.Models;
+using Kiriha.Core.Shared.Messages;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Player;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Api;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -48,7 +49,7 @@ public partial class TrackingService : IDisposable
         AnisthesiaService anisthesiaService,
         IMappingService mappingService,
         IAnimeRepository animeRepo,
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         IDiscordService discordService,
         IScrobbleService scrobbleService,
         IUiDispatcher uiDispatcher,

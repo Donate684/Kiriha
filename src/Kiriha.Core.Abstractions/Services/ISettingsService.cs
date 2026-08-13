@@ -1,8 +1,8 @@
 using System;
 
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 
-namespace Kiriha.Core.Services;
+namespace Kiriha.Core.Abstractions.Services;
 
 public interface ISettingsService
 {

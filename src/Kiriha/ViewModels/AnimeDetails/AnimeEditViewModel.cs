@@ -4,7 +4,7 @@ using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,8 +12,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
@@ -25,10 +25,10 @@ public partial class AnimeEditViewModel : ObservableObject
 {
     private readonly AnimeEntity _originalAnime;
     private readonly AnimeEntity _anime;
-    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Services.IProgressUpdateService _animeProgressService;
-    private readonly Kiriha.Core.Services.IHistoryService _historyService;
+    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _animeProgressService;
+    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
     private bool _isRemoving;
 
     [ObservableProperty]
@@ -63,10 +63,10 @@ public partial class AnimeEditViewModel : ObservableObject
     public AnimeEditViewModel(
         AnimeEntity originalAnime,
         AnimeEntity cloneAnime,
-        Kiriha.Core.Services.ISyncManager syncManager,
-        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Services.IProgressUpdateService animeProgressService,
-        Kiriha.Core.Services.IHistoryService historyService)
+        Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Abstractions.Services.IProgressUpdateService animeProgressService,
+        Kiriha.Core.Abstractions.Services.IHistoryService historyService)
     {
         _originalAnime = originalAnime;
         _anime = cloneAnime;

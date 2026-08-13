@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Dialogs;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
@@ -13,14 +14,14 @@ namespace Kiriha.Services.Maintenance;
 public class UpdateMaintenanceTask : IMaintenanceTask
 {
     private readonly UpdateService _updateService;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly NotificationService _notificationService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IDialogService _dialogs;
 
     public UpdateMaintenanceTask(
         UpdateService updateService,
-        Kiriha.Core.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         NotificationService notificationService,
         IUiDispatcher uiDispatcher,
         IDialogService dialogs)

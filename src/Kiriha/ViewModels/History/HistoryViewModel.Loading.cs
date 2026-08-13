@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ public partial class HistoryViewModel
                 }
             }
         }
-        catch { /* Kiriha.Core.Repositories.IAnimeRepository may not be ready at very early startup */ }
+        catch { /* Kiriha.Core.Abstractions.Repositories.IAnimeRepository may not be ready at very early startup */ }
 
         HasHistory = _rawItems.Count > 0;
         ApplyFilters();

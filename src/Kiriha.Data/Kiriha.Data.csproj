@@ -3,6 +3,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Kiriha.Core\Kiriha.Core.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
+    <ProjectReference Include="..\Kiriha.Core.Shared\Kiriha.Core.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

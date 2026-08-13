@@ -1,12 +1,13 @@
 using System;
+using Kiriha.Core.Shared;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
-using Kiriha.Core.Constants;
-using Kiriha.Core.Services;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Sync;
 using Serilog;

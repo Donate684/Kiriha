@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 

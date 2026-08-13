@@ -25,7 +25,7 @@ namespace Kiriha.Services.Data.Core;
 ///     durable across process kill — and <c>wal_autocheckpoint=200</c> caps
 ///     how much the WAL can outgrow the main file before being folded back.
 /// </summary>
-public sealed class DatabaseInitializer : Kiriha.Core.Services.IDatabaseInitializer
+public sealed class DatabaseInitializer : Kiriha.Core.Abstractions.Services.IDatabaseInitializer
 {
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);

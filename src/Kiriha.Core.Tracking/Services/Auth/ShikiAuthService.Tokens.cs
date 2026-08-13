@@ -1,14 +1,15 @@
 using System;
+using Kiriha.Core.Shared;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Constants;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Shared.Shiki;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -22,7 +23,7 @@ public partial class ShikiAuthService
             { "grant_type", "authorization_code" },
             { "client_id", ShikiEndpoints.ClientId(mirror) },
             { "code", code },
-            { "redirect_uri", Kiriha.Core.Constants.AppConstants.Api.RedirectUri }
+            { "redirect_uri", Kiriha.Core.Domain.Constants.AppConstants.Api.RedirectUri }
         };
         // Confidential OAuth app: Doorkeeper requires client_secret on every token call.
         // See ApiKeys.cs for why these are embedded instead of proxied.
@@ -32,7 +33,7 @@ public partial class ShikiAuthService
         var content = new FormUrlEncodedContent(values);
 
         var request = new HttpRequestMessage(HttpMethod.Post, ShikiEndpoints.TokenUrl(mirror)) { Content = content };
-        request.Headers.Add("User-Agent", Kiriha.Core.AppInfo.UserAgent);
+        request.Headers.Add("User-Agent", Kiriha.Core.Shared.AppInfo.UserAgent);
 
         try
         {
@@ -77,7 +78,7 @@ public partial class ShikiAuthService
 
         var content = new FormUrlEncodedContent(values);
         var request = new HttpRequestMessage(HttpMethod.Post, ShikiEndpoints.TokenUrl(savedMirror)) { Content = content };
-        request.Headers.Add("User-Agent", Kiriha.Core.AppInfo.UserAgent);
+        request.Headers.Add("User-Agent", Kiriha.Core.Shared.AppInfo.UserAgent);
 
         try
         {

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Kiriha.Core.Services;
+namespace Kiriha.Core.Abstractions.Services;
 
 public interface IDatabaseInitializer
 {

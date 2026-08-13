@@ -4,13 +4,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Player;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Abstractions.Models.Api;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

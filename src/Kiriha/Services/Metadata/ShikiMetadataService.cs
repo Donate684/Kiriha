@@ -1,6 +1,7 @@
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Settings;
 using System;
+using Kiriha.Core.Shared;
 using Kiriha.Core.Infrastructure.Http;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,12 +9,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
-using Kiriha.Core.Shiki;
+using Kiriha.Core.Shared.Shiki;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Api;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Serilog;
 
@@ -22,9 +24,9 @@ namespace Kiriha.Services.Data.Metadata;
 public partial class ShikiMetadataService : IDisposable
 {
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Repositories.IMetadataRepository _metadataRepo;
-    private readonly Kiriha.Core.Repositories.IUserAnimeRepository _userAnimeRepo;
-    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Repositories.IMetadataRepository _metadataRepo;
+    private readonly Kiriha.Core.Abstractions.Repositories.IUserAnimeRepository _userAnimeRepo;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiHostResolver _hostResolver;
     private readonly IUiDispatcher _uiDispatcher;
@@ -35,10 +37,10 @@ public partial class ShikiMetadataService : IDisposable
 
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
-        Kiriha.Core.Services.ISettingsService settingsService,
-        Kiriha.Core.Repositories.IMetadataRepository metadataRepo,
-        Kiriha.Core.Repositories.IUserAnimeRepository userAnimeRepo,
-        Kiriha.Core.Repositories.IHttpCacheRepository httpCacheRepo,
+        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        Kiriha.Core.Abstractions.Repositories.IMetadataRepository metadataRepo,
+        Kiriha.Core.Abstractions.Repositories.IUserAnimeRepository userAnimeRepo,
+        Kiriha.Core.Abstractions.Repositories.IHttpCacheRepository httpCacheRepo,
         ShikiHostResolver hostResolver,
         IUiDispatcher uiDispatcher,
         ShikiRateLimiter rateLimiter)

@@ -6,37 +6,38 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core;
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Api;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public partial class AnimeSyncOrchestrator : Kiriha.Core.Services.IAnimeSyncOrchestrator
+public partial class AnimeSyncOrchestrator : Kiriha.Core.Abstractions.Services.IAnimeSyncOrchestrator
 {
 
 
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepository;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly IUiDispatcher _uiDispatcher;
-    private readonly Kiriha.Core.Services.IRecognitionCache _recognitionCache;
+    private readonly Kiriha.Core.Abstractions.Services.IRecognitionCache _recognitionCache;
 
     private int _syncing;
     public bool IsSyncing => Volatile.Read(ref _syncing) == 1;
 
     public AnimeSyncOrchestrator(
-        Kiriha.Core.Repositories.IAnimeRepository animeRepository,
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
         IEnumerable<ITrackerService> trackers,
         IUiDispatcher uiDispatcher,
-        Kiriha.Core.Services.IRecognitionCache recognitionCache)
+        Kiriha.Core.Abstractions.Services.IRecognitionCache recognitionCache)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;

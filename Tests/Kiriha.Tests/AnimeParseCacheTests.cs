@@ -1,5 +1,5 @@
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Utils.Parsing;
 
 namespace Kiriha.Tests;

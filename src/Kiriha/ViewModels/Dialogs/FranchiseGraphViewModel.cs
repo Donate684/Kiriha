@@ -8,10 +8,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Dialogs;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Utils.Graphs;
 using System.Linq;
@@ -21,10 +21,10 @@ namespace Kiriha.ViewModels.Dialogs;
 
 public partial class FranchiseGraphViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Services.IShikiApiService _shikiApi;
-    private readonly Kiriha.Core.Services.IMalApiService _malApi;
+    private readonly Kiriha.Core.Abstractions.Services.IShikiApiService _shikiApi;
+    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
     private readonly int _baseAnimeId;
 
     [ObservableProperty]
@@ -36,7 +36,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    public FranchiseGraphViewModel(int animeId, Kiriha.Core.Services.IShikiApiService shikiApi, Kiriha.Core.Services.IMalApiService malApi, IDialogService dialogs, Kiriha.Core.Repositories.IAnimeRepository animeRepo)
+    public FranchiseGraphViewModel(int animeId, Kiriha.Core.Abstractions.Services.IShikiApiService shikiApi, Kiriha.Core.Abstractions.Services.IMalApiService malApi, IDialogService dialogs, Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo)
     {
         _baseAnimeId = animeId;
         _shikiApi = shikiApi;

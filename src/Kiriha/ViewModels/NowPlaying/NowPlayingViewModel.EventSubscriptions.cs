@@ -1,4 +1,4 @@
-using Kiriha.Core.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -11,9 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
-using Kiriha.Core.Messages;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Shared.Messages;
 using Kiriha.Utils.Async;
 using Serilog;
 

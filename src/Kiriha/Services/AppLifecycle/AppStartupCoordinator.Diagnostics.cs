@@ -6,6 +6,7 @@ using Kiriha.ViewModels.Settings;
 using System;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
+using Kiriha.Core.Shared.Infrastructure;
 using Kiriha.Core.Infrastructure;
 using Kiriha.ViewModels;
 using Kiriha.Views;

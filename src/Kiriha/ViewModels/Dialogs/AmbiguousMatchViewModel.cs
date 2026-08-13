@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Serilog;
 
@@ -18,7 +18,7 @@ namespace Kiriha.ViewModels.Dialogs;
 
 public partial class AmbiguousMatchViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Services.IMalApiService _malApi;
+    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
 
     [ObservableProperty]
     private string _fileName;
@@ -34,7 +34,7 @@ public partial class AmbiguousMatchViewModel : ViewModelBase
     [ObservableProperty]
     private AnimeOfflineItem? _selectedAnime;
 
-    public AmbiguousMatchViewModel(string fileName, IEnumerable<AnimeOfflineItem> candidates, Kiriha.Core.Services.IMalApiService malApi)
+    public AmbiguousMatchViewModel(string fileName, IEnumerable<AnimeOfflineItem> candidates, Kiriha.Core.Abstractions.Services.IMalApiService malApi)
     {
         _fileName = fileName;
         _malApi = malApi;

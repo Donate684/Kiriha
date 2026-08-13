@@ -1,8 +1,8 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using System;
 using System.Linq;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.Settings;
 
 namespace Kiriha.ViewModels.NowPlaying;

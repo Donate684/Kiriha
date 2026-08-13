@@ -16,14 +16,14 @@ public partial class PlayerWindow : Window
 
     public MpvPlayer? Player => _player;
 
-    private readonly Kiriha.Core.Services.ISettingsService? _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ISettingsService? _settingsService;
 
     public PlayerWindow()
     {
         InitializeComponent();
     }
 
-    public PlayerWindow(Kiriha.Core.Services.ISettingsService settingsService) : this()
+    public PlayerWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
     {
         _settingsService = settingsService;
     }

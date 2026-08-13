@@ -1,9 +1,9 @@
 using Kiriha.Services.Data.Core;
 
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using System.Text.RegularExpressions;
-using Kiriha.Core.Abstractions.Models.Api;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Kiriha.Core.Infrastructure.Http;
 

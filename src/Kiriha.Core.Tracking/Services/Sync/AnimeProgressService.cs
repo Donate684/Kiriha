@@ -1,30 +1,30 @@
 using System;
 using System.Threading.Tasks;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Sync;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public class AnimeProgressService : Kiriha.Core.Services.IProgressUpdateService
+public class AnimeProgressService : Kiriha.Core.Abstractions.Services.IProgressUpdateService
 {
-    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepository;
+    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
-    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
-    private readonly Kiriha.Core.Services.IHistoryService _historyService;
-    private readonly Kiriha.Core.Infrastructure.IUiDispatcher _uiDispatcher;
+    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
+    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
+    private readonly Kiriha.Core.Shared.Infrastructure.IUiDispatcher _uiDispatcher;
 
     public AnimeProgressService(
-        Kiriha.Core.Repositories.IAnimeRepository animeRepository,
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
-        Kiriha.Core.Services.ISyncManager syncManager,
-        Kiriha.Core.Services.IHistoryService historyService,
-        Kiriha.Core.Infrastructure.IUiDispatcher uiDispatcher)
+        Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
+        Kiriha.Core.Abstractions.Services.IHistoryService historyService,
+        Kiriha.Core.Shared.Infrastructure.IUiDispatcher uiDispatcher)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;

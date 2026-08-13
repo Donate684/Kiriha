@@ -1,11 +1,12 @@
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
-using Kiriha.Core.Constants;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 
+using Kiriha.Core.Domain.Models.Entities;
 namespace Kiriha.Tests;
 
 public sealed class AnimeFilterEngineTests

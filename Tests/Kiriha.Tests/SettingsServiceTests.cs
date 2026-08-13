@@ -1,7 +1,7 @@
-using Kiriha.Core.Services;
-using Kiriha.Core.Models;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data.Settings;
-using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Services.Data;
 
 namespace Kiriha.Tests;
@@ -100,10 +100,10 @@ public sealed class SettingsServiceTests
             using (var mainProcess = new SettingsService(path))
             using (var playerProcess = new SettingsService(path))
             {
-                playerProcess.Update(settings => settings.Player.Volume = 33, Kiriha.Core.Services.SettingsSection.Player, save: false);
+                playerProcess.Update(settings => settings.Player.Volume = 33, Kiriha.Core.Abstractions.Services.SettingsSection.Player, save: false);
                 playerProcess.SaveImmediate();
 
-                mainProcess.Update(settings => settings.UI.LanguageCode = "ru", Kiriha.Core.Services.SettingsSection.UI, save: false);
+                mainProcess.Update(settings => settings.UI.LanguageCode = "ru", Kiriha.Core.Abstractions.Services.SettingsSection.UI, save: false);
                 mainProcess.SaveImmediate();
             }
 

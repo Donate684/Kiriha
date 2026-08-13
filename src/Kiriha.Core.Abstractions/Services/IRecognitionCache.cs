@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Services;
+namespace Kiriha.Core.Abstractions.Services;
 
 public record struct WeightedMatch(int Id, float Weight);
 

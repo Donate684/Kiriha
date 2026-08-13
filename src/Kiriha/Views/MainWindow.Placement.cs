@@ -1,10 +1,10 @@
 using Kiriha.Services.Data.Settings;
 using System;
-using Kiriha.Core.Services;
+using Kiriha.Core.Abstractions.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Serilog;
 

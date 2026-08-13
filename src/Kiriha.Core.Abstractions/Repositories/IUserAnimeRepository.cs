@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Repositories;
+namespace Kiriha.Core.Abstractions.Repositories;
 
 /// <summary>
 /// Persistence boundary for the user's anime list (the <c>user_anime</c> table).

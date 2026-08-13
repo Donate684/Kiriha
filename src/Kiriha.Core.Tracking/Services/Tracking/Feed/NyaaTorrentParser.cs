@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
-using Kiriha.Core.Models;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Feed;
 

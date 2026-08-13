@@ -6,13 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Repositories;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Repositories;
 using Serilog;
 
 namespace Kiriha.Services.Data.Core;
 
-public class HistoryService : Kiriha.Core.Services.IHistoryService
+public class HistoryService : Kiriha.Core.Abstractions.Services.IHistoryService
 {
     private readonly IHistoryRepository _repo;
     // Tracks in-flight AddEntryAsync calls launched via the fire-and-forget AddEntry overload.

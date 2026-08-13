@@ -1,6 +1,6 @@
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Core;
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Platform;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Serilog;
 
 namespace Kiriha.Services.Data.Core;

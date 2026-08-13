@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Kiriha.Core.Shiki;
+namespace Kiriha.Core.Tracking.Api;
 
 public sealed class ShikiProbeStrategy
 {

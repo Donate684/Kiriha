@@ -86,7 +86,7 @@
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
              xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Abstractions.Models" xmlns:entities="using:Kiriha.Core.Abstractions.Models.Entities"
+             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
              xmlns:u="using:Kiriha.Utils.UI"

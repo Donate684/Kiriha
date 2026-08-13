@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using DiscordRPC;
 using DiscordRPC.Logging;
 using Kiriha.Core;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Integration;
 
-public class DiscordService : IDisposable, Kiriha.Core.Services.IDiscordService
+public class DiscordService : IDisposable, Kiriha.Core.Abstractions.Services.IDiscordService
 {
     private DiscordRpcClient? _client;
     private readonly ISettingsService _settingsService;

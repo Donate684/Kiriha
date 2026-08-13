@@ -1,4 +1,4 @@
-using Kiriha.Core.Constants;
+using Kiriha.Core.Domain.Constants;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -6,8 +6,8 @@ using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.Seasonal;
 

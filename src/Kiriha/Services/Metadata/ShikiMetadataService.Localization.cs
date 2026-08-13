@@ -1,14 +1,15 @@
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Mapping;
 using System;
+using Kiriha.Core.Shared;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
-using Kiriha.Core.Abstractions.Models.Api;
-using Kiriha.Core.Abstractions.Models.Entities;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Services.Data.Metadata;
@@ -146,7 +147,7 @@ public partial class ShikiMetadataService
                 requestFactory: innerCt =>
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, $"{ShikiBaseUrl}animes?search={Uri.EscapeDataString(query)}&limit=1");
-                    request.Headers.Add("User-Agent", Kiriha.Core.AppInfo.UserAgent);
+                    request.Headers.Add("User-Agent", Kiriha.Core.Shared.AppInfo.UserAgent);
                     return Task.FromResult(request);
                 },
                 throttle: ct => _rateLimiter.ThrottleAsync(ct),

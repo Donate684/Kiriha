@@ -6,7 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Kiriha.Models;
-using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;
