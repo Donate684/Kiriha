@@ -48,7 +48,7 @@ public static class TrackingServicesRegistration
         services.AddSingleton<IMalApiService, MalApiService>(sp =>
             new MalApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient"),
-                sp.GetRequiredService<Kiriha.Core.Services.ISettingsService>(),
+                sp.GetRequiredService<ISettingsService>(),
                 sp.GetRequiredService<MalTokenManager>(),
                 sp.GetRequiredService<JikanApiService>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
@@ -80,7 +80,7 @@ public static class TrackingServicesRegistration
         services.AddSingleton<ShikiAuthService>(sp =>
             new ShikiAuthService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
-                sp.GetRequiredService<Kiriha.Core.Services.ISettingsService>(),
+                sp.GetRequiredService<ISettingsService>(),
                 sp.GetRequiredService<ShikiHostResolver>()));
 
         services.AddSingleton<ShikiTokenService>();
@@ -88,7 +88,7 @@ public static class TrackingServicesRegistration
         services.AddSingleton<IShikiApiService, ShikiApiService>(sp =>
             new ShikiApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
-                sp.GetRequiredService<Kiriha.Core.Services.ISettingsService>(),
+                sp.GetRequiredService<ISettingsService>(),
                 sp.GetRequiredService<ShikiTokenService>(),
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
@@ -103,7 +103,7 @@ public static class TrackingServicesRegistration
             new AniListApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
                 sp.GetRequiredService<IHttpCacheRepository>()));
-        services.AddSingleton<Kiriha.Core.Services.IAniListApiService>(sp => sp.GetRequiredService<AniListApiService>());
+        services.AddSingleton<IAniListApiService>(sp => sp.GetRequiredService<AniListApiService>());
 
         // --- RSS ---
         services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));
@@ -111,18 +111,18 @@ public static class TrackingServicesRegistration
         services.AddSingleton<RssFeedService>();
 
         // --- Cross-tracker orchestration ---
-        services.AddSingleton<SmtcService>(sp => new SmtcService(sp.GetRequiredService<Kiriha.Core.Services.ISettingsService>()));
+        services.AddSingleton<SmtcService>(sp => new SmtcService(sp.GetRequiredService<ISettingsService>()));
         services.AddSingleton<DiscordService>();
-        services.AddSingleton<Kiriha.Core.Services.IDiscordService>(sp => sp.GetRequiredService<DiscordService>());
+        services.AddSingleton<IDiscordService>(sp => sp.GetRequiredService<DiscordService>());
         services.AddSingleton<System.Collections.Generic.IReadOnlyList<Kiriha.Core.Tracking.Anisthesia.AnisthesiaPlayer>>(sp => Kiriha.Core.Tracking.Anisthesia.AnisthesiaPlayerLoader.Load());
         services.AddSingleton<AnisthesiaService>();
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();
         services.AddSingleton<AnimeSyncOrchestrator>();
-        services.AddSingleton<Kiriha.Core.Services.IAnimeSyncOrchestrator>(sp => sp.GetRequiredService<AnimeSyncOrchestrator>());
+        services.AddSingleton<IAnimeSyncOrchestrator>(sp => sp.GetRequiredService<AnimeSyncOrchestrator>());
         services.AddSingleton<AnimeProgressService>();
-        services.AddSingleton<Kiriha.Core.Services.IProgressUpdateService>(sp => sp.GetRequiredService<AnimeProgressService>());
+        services.AddSingleton<IProgressUpdateService>(sp => sp.GetRequiredService<AnimeProgressService>());
         services.AddSingleton<ISyncManager, SyncManager>();
 
         return services;

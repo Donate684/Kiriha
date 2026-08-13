@@ -63,7 +63,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     partial void OnMpvGpuApiChanged(string value) => SaveMpvOption(x => x.MpvGpuApi = NormalizeMpvOption(value, "auto"));
     partial void OnMpvGpuContextChanged(string value) => SaveMpvOption(x => x.MpvGpuContext = NormalizeMpvOption(value, "auto"));
 
-    private void SaveMpvOption(System.Action<Kiriha.Models.AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Services.SettingsSection.Player);
+    private void SaveMpvOption(System.Action<Kiriha.Core.Abstractions.Models.AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Services.SettingsSection.Player);
 
     private static string NormalizeMpvOption(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 

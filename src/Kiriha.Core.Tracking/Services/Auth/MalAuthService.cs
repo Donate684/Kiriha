@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Core.Constants;
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;

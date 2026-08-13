@@ -2,6 +2,7 @@ using Kiriha.Services.Data.Settings;
 using System;
 using System.Linq;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Player;

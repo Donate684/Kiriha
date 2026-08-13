@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Tracking.Sync;
+using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
 using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
@@ -8,6 +8,7 @@ using System.Linq;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;

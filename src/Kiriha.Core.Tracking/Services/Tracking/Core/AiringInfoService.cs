@@ -7,7 +7,7 @@ using Kiriha.Core.Infrastructure;
 using Kiriha.Core.Models;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;

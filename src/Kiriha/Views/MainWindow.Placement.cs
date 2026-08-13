@@ -4,6 +4,7 @@ using Kiriha.Core.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services.Data;
 using Serilog;
 

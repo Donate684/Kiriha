@@ -1,5 +1,6 @@
 using System;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core;
 
 namespace Kiriha.ViewModels.History;

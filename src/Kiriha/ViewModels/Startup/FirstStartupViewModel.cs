@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.Settings;
 

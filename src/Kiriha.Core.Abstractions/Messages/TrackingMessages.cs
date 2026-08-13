@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Models;
 
 namespace Kiriha.Core.Messages;

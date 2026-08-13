@@ -14,7 +14,7 @@
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
              xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="clr-namespace:Kiriha.Models" xmlns:entities="clr-namespace:Kiriha.Models.Entities"
+             xmlns:models="clr-namespace:Kiriha.Models" xmlns:entities="clr-namespace:Kiriha.Core.Abstractions.Models.Entities"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:controls="using:Kiriha.Views.Controls"
              xmlns:sections="using:Kiriha.Views.Controls.Variants.NowPlayingCompactSections"

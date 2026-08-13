@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 public class HistoryItem
 {

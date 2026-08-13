@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Api;
 

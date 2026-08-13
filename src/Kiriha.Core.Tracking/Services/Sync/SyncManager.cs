@@ -10,8 +10,9 @@ using Kiriha.Core.Services;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Sync.Models;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace Kiriha.Models.Api;
+namespace Kiriha.Core.Abstractions.Models.Api;
 
 public class ShikiMetadata
 {

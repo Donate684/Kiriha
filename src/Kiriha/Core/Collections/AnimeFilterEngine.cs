@@ -1,8 +1,9 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 
 namespace Kiriha.Core;
 

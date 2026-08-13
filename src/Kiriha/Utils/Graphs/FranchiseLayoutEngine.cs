@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kiriha.Models.Api;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 

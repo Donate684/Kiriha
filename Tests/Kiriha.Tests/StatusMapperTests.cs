@@ -1,6 +1,6 @@
 using Kiriha.Core.Services;
 using Kiriha.Core.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Tests;
 
@@ -27,8 +27,8 @@ public sealed class StatusMapperTests
     [InlineData("Watching", UserAnimeStatus.Watching)]
     [InlineData("on_hold", UserAnimeStatus.OnHold)]
     [InlineData("planned", UserAnimeStatus.PlanToWatch)]
-    [InlineData("", Kiriha.Models.Entities.UserAnimeStatus.None)]
-    [InlineData(null, Kiriha.Models.Entities.UserAnimeStatus.None)]
+    [InlineData("", UserAnimeStatus.None)]
+    [InlineData(null, UserAnimeStatus.None)]
     public void FromDbString_AcceptsLegacyAndApiSpellings(string? input, UserAnimeStatus expected)
     {
         Assert.Equal(expected, StatusMapper.FromDbString(input));
@@ -40,7 +40,7 @@ public sealed class StatusMapperTests
     [InlineData("on_hold", UserAnimeStatus.OnHold)]
     [InlineData("dropped", UserAnimeStatus.Dropped)]
     [InlineData("plan_to_watch", UserAnimeStatus.PlanToWatch)]
-    [InlineData("unknown", Kiriha.Models.Entities.UserAnimeStatus.None)]
+    [InlineData("unknown", UserAnimeStatus.None)]
     public void FromMal_MapsKnownStatuses(string input, UserAnimeStatus expected)
     {
         Assert.Equal(expected, StatusMapper.FromMal(input));

@@ -8,7 +8,7 @@ using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Feed;
@@ -26,7 +26,7 @@ public partial class RssFeedService
     /// This method intentionally does not mutate the AnimeEntity or fire
     /// notifications, so all airing-state writes flow through one path.
     /// </summary>
-    public async Task<int?> SyncEpisodesFromNyaaAsync(Kiriha.Models.Entities.AnimeEntity anime, CancellationToken ct = default)
+    public async Task<int?> SyncEpisodesFromNyaaAsync(AnimeEntity anime, CancellationToken ct = default)
     {
         if (anime == null) return null;
         if (!NyaaTorrentParser.NeedsNyaaCheck(anime))

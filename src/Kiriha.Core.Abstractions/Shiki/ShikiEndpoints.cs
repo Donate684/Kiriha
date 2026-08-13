@@ -1,6 +1,7 @@
 using Kiriha.Core.Constants;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Shiki;
 

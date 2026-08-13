@@ -1,5 +1,6 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

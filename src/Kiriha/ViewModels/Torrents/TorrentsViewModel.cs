@@ -1,4 +1,4 @@
-﻿using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -8,6 +8,7 @@ using Kiriha.Services.Data.Settings;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 

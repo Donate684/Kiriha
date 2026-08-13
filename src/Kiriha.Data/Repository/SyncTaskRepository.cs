@@ -1,9 +1,9 @@
-﻿using Kiriha.Core.Repositories;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Services.Data.Repository;
@@ -50,7 +50,7 @@ public sealed class SyncTaskRepository : ISyncTaskRepository
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Task was already removed by a parallel drain â€” treat as success.
+            // Task was already removed by a parallel drain — treat as success.
         }
     }
 

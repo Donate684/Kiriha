@@ -1,11 +1,12 @@
-﻿using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Models;
+
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core.Repositories;
 using Serilog;
 

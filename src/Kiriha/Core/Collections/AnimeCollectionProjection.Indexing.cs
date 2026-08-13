@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core;
 

@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services.Data;
 
 namespace Kiriha.Views;

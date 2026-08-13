@@ -7,13 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Utils.Collections;
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models.Api;
 using Serilog;
 
 namespace Kiriha.Services.Data.Repository;
@@ -37,7 +38,7 @@ public partial class AnimeRepository : IAnimeRepository
     public BulkObservableCollection<AnimeEntity> Collection { get; } = new();
     System.Collections.ObjectModel.ObservableCollection<AnimeEntity> Kiriha.Core.Repositories.IAnimeRepository.Collection => Collection;
 
-    public IEnumerable<Kiriha.Models.Entities.AnimeEntity> GetCollection()
+    public IEnumerable<AnimeEntity> GetCollection()
     {
         return Collection;
     }

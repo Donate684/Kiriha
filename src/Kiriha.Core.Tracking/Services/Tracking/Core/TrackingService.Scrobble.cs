@@ -9,8 +9,9 @@ using Kiriha.Core.Shiki;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Core;
 
@@ -124,7 +125,7 @@ public partial class TrackingService
                         var fetched = await activeTracker.GetAnimeDetailsAsync(animeId);
                         if (fetched != null)
                         {
-                            matched = new Kiriha.Models.Entities.AnimeEntity { Id = fetched.Id, Title = fetched.Title, RussianTitle = fetched.RussianTitle, EnglishTitle = fetched.EnglishTitle, TotalEpisodes = fetched.TotalEpisodes, Progress = fetched.Progress, MainPictureUrl = fetched.MainPictureUrl, Status = Kiriha.Models.Entities.UserAnimeStatus.None }; // Ensure it's not scrobbled or auto-added incorrectly
+                            matched = new AnimeEntity { Id = fetched.Id, Title = fetched.Title, RussianTitle = fetched.RussianTitle, EnglishTitle = fetched.EnglishTitle, TotalEpisodes = fetched.TotalEpisodes, Progress = fetched.Progress, MainPictureUrl = fetched.MainPictureUrl, Status = UserAnimeStatus.None }; // Ensure it's not scrobbled or auto-added incorrectly
                         }
                     }
                     catch (Exception ex)

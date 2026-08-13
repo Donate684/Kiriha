@@ -1,3 +1,3 @@
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 public record AnimeListRefreshMessage();

@@ -1,7 +1,7 @@
 using System;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
-namespace Kiriha.Models.Entities;
+namespace Kiriha.Core.Abstractions.Models.Entities;
 
 public delegate string GetLocDelegate(string key, params object[] args);
 

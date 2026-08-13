@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kiriha.Models.Entities;
+namespace Kiriha.Core.Abstractions.Models.Entities;
 
 [Table("anime_relation_meta")]
 public class AnimeRelationMeta

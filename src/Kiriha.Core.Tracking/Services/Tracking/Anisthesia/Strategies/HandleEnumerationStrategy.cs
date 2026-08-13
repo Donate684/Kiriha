@@ -7,8 +7,9 @@ using System.Runtime.InteropServices;
 using Kiriha.Core.Models;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Utils.Parsing;
 using Serilog;
 

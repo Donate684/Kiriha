@@ -14,7 +14,7 @@
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
              xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:models="using:Kiriha.Core.Abstractions.Models" xmlns:entities="using:Kiriha.Core.Abstractions.Models.Entities"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Settings.SettingsPlayerPage"

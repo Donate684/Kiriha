@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 public partial class AppSettings
 {

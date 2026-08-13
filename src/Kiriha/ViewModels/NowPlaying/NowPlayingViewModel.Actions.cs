@@ -14,7 +14,8 @@ using Kiriha.Core;
 using Kiriha.Core.Platform;
 using Kiriha.Core.Shiki;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Messages;
 using Serilog;
 

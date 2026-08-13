@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kiriha.Models.Entities;
+namespace Kiriha.Core.Abstractions.Models.Entities;
 
 /// <summary>
 /// Sidecar for <see cref="EpisodeRelease"/>: tracks when the Jikan episode

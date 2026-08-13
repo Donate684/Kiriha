@@ -6,8 +6,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models;
-using Kiriha.Models.Api;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Services.Data.Metadata;

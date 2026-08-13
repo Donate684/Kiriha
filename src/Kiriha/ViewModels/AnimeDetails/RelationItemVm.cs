@@ -4,7 +4,7 @@ namespace Kiriha.ViewModels.AnimeDetails;
 
 public partial class RelationItemVm : ObservableObject
 {
-    public Models.Entities.AnimeRelation Relation { get; }
+    public Kiriha.Core.Abstractions.Models.Entities.AnimeRelation Relation { get; }
 
     [ObservableProperty]
     private string? _imageUrl;
@@ -12,7 +12,7 @@ public partial class RelationItemVm : ObservableObject
     [ObservableProperty]
     private string? _displayTargetType;
 
-    public RelationItemVm(Models.Entities.AnimeRelation relation)
+    public RelationItemVm(Kiriha.Core.Abstractions.Models.Entities.AnimeRelation relation)
     {
         Relation = relation;
         DisplayTargetType = relation.TargetType;

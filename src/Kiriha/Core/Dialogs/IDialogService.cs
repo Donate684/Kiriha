@@ -1,8 +1,9 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 
 namespace Kiriha.Core.Dialogs;
 

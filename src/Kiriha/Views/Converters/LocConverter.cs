@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using System;
 using System.Globalization;
 using Avalonia;
@@ -71,7 +71,7 @@ public class LocConverter : IValueConverter
             {
                 try
                 {
-                    if (value is Kiriha.Models.Entities.AnimeEntity ai)
+                    if (value is AnimeEntity ai)
                         return string.Format(formatStr, ai.EpisodesAired, ai.TotalEpisodes);
                     return string.Format(formatStr, value);
                 }

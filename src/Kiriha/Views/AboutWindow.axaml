@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
@@ -26,7 +26,7 @@
 
     <Window.Styles>
 
-        <!-- ─── Section caption ─── -->
+        <!-- â”€â”€â”€ Section caption â”€â”€â”€ -->
         <Style Selector="TextBlock.SectionHeader">
             <Setter Property="FontSize" Value="9.5"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -36,7 +36,7 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
 
-        <!-- ─── Comfortable pill chip ─── -->
+        <!-- â”€â”€â”€ Comfortable pill chip â”€â”€â”€ -->
         <Style Selector="Button.Chip">
             <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
@@ -84,7 +84,7 @@
         <controls:TitleBarButtons Grid.Row="0" Grid.RowSpan="2"
                                   HorizontalAlignment="Right" VerticalAlignment="Top" ZIndex="999"/>
 
-        <!-- ═══ Body ═══ -->
+        <!-- â•â•â• Body â•â•â• -->
         <Panel Grid.Row="1" ClipToBounds="True">
 
             <!-- Background halo (left-tinted) -->
@@ -104,12 +104,12 @@
             <!-- Two-column layout with broader columns -->
             <Grid ColumnDefinitions="310,1,*" Margin="24,16,20,16">
 
-                <!-- ── Vertical separator ── -->
+                <!-- â”€â”€ Vertical separator â”€â”€ -->
                 <Border Grid.Column="1" Width="1"
                         Background="{DynamicResource CardStrokeColorDefault}"
                         Opacity="0.35" Margin="0,8,0,8"/>
 
-                <!-- ── LEFT: Hero ── -->
+                <!-- â”€â”€ LEFT: Hero â”€â”€ -->
                 <StackPanel Grid.Column="0" VerticalAlignment="Top"
                             Spacing="0" Margin="0,0,16,0">
 
@@ -138,7 +138,7 @@
                                Text="{DynamicResource l.about.license_note}"/>
                 </StackPanel>
 
-                <!-- ── RIGHT: Credits ── -->
+                <!-- â”€â”€ RIGHT: Credits â”€â”€ -->
                 <ScrollViewer Grid.Column="2"
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto"

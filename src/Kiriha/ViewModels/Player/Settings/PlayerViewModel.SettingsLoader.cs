@@ -3,6 +3,7 @@ using System.IO;
 using Kiriha.Models.Presentation;
 using System.Linq;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 
 namespace Kiriha.ViewModels.Player;
 

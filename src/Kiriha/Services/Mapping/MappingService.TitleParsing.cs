@@ -1,15 +1,16 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Services.Data.Mapping;
 using System;
 using System.IO;
 using System.Linq;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 
 namespace Kiriha.Services.Data.Mapping;
 
 public partial class MappingService
 {
-    private bool IsValidMatch(Kiriha.Models.Entities.AnimeEntity match, int? episodeNumber)
+    private bool IsValidMatch(AnimeEntity match, int? episodeNumber)
     {
         if (episodeNumber == null) return true;
         if (match.TotalEpisodes <= 1) return true;

@@ -1,4 +1,4 @@
-namespace Kiriha.Models.Entities;
+namespace Kiriha.Core.Abstractions.Models.Entities;
 
 public partial class AnimeEntity
 {

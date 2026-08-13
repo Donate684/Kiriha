@@ -2,7 +2,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.ViewModels.AnimeDetails;
@@ -80,7 +81,7 @@ public partial class AnimeDetailsViewModel
     }
 
     [RelayCommand]
-    private async Task NavigateToRelation(Models.Entities.AnimeRelation relation)
+    private async Task NavigateToRelation(Kiriha.Core.Abstractions.Models.Entities.AnimeRelation relation)
     {
         if (relation == null || string.IsNullOrEmpty(relation.TargetType)) return;
 

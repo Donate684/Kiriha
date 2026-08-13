@@ -6,8 +6,9 @@ using Kiriha.Core.Models;
 using Kiriha.Core.Services;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Sync;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;

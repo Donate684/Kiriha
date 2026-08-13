@@ -1,4 +1,4 @@
-﻿using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Image;
@@ -51,14 +51,14 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         var allItems = await _userAnimeRepo.GetAllAsync();
         var existingIds = await _metadataRepo.GetAllIdsAsync();
 
-        var missingItems = new System.Collections.Generic.List<Kiriha.Models.Entities.AnimeEntity>();
+        var missingItems = new System.Collections.Generic.List<AnimeEntity>();
 
         foreach (var item in allItems)
         {
             int cacheId = item.MediaKind switch
             {
-                Kiriha.Models.Entities.MediaKind.Manga => item.Id | 0x40000000,
-                Kiriha.Models.Entities.MediaKind.LightNovel => item.Id | 0x20000000,
+                MediaKind.Manga => item.Id | 0x40000000,
+                MediaKind.LightNovel => item.Id | 0x20000000,
                 _ => item.Id
             };
 

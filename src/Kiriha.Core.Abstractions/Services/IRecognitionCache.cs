@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Services;
 

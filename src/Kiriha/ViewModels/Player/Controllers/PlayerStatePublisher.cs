@@ -1,6 +1,6 @@
 using System;
 using Kiriha.Core.Player;
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models.Api;
 
 namespace Kiriha.ViewModels.Player;
 

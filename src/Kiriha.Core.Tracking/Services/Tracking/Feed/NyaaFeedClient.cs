@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using Kiriha.Core.Infrastructure.Http;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Feed;

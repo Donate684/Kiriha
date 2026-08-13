@@ -6,8 +6,9 @@ using Kiriha.Core.Models;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Integration;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -58,7 +59,7 @@ public class MediaMatchingPipeline
                         var fetched = await activeTracker.GetAnimeDetailsAsync(malId.Value);
                         if (fetched != null)
                         {
-                            matched = new Kiriha.Models.Entities.AnimeEntity { Id = fetched.Id, Title = fetched.Title, RussianTitle = fetched.RussianTitle, EnglishTitle = fetched.EnglishTitle, TotalEpisodes = fetched.TotalEpisodes, Progress = fetched.Progress, MainPictureUrl = fetched.MainPictureUrl, Status = Kiriha.Models.Entities.UserAnimeStatus.None };
+                            matched = new AnimeEntity { Id = fetched.Id, Title = fetched.Title, RussianTitle = fetched.RussianTitle, EnglishTitle = fetched.EnglishTitle, TotalEpisodes = fetched.TotalEpisodes, Progress = fetched.Progress, MainPictureUrl = fetched.MainPictureUrl, Status = UserAnimeStatus.None };
                         }
                     }
                     catch (Exception ex)

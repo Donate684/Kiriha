@@ -1,9 +1,9 @@
 using Kiriha.Core.Constants;
 using System.Collections.Generic;
 using Kiriha.Core;
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models.Api;
 
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 public partial class AppSettings
 {

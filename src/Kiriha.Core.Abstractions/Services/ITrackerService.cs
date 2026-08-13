@@ -2,7 +2,7 @@ using Kiriha.Core.Services;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Services;
 

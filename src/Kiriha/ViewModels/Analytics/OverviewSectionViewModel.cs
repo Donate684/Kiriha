@@ -1,11 +1,12 @@
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Localization;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
 

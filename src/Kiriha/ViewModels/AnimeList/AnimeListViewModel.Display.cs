@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Utils.Async;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;

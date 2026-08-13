@@ -1,10 +1,11 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.ViewModels.Seasonal;
 
 namespace Kiriha.Views.Seasonal;
@@ -82,7 +83,7 @@ public partial class SeasonalCardTemplate : ResourceDictionary
         try
         {
             if (sender is MenuItem menuItem &&
-                menuItem.Tag is string statusStr && Enum.TryParse<Kiriha.Models.Entities.UserAnimeStatus>(statusStr, out var status) &&
+                menuItem.Tag is string statusStr && Enum.TryParse<UserAnimeStatus>(statusStr, out var status) &&
                 menuItem.DataContext is AnimeEntity item)
             {
                 var vm = GetViewModel(menuItem);

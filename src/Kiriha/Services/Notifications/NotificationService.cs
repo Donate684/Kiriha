@@ -1,10 +1,11 @@
-﻿using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Services.Data.Settings;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Notifications;
@@ -16,7 +17,7 @@ namespace Kiriha.Services;
 /// <summary>
 /// Surfaces user-facing notifications via Windows toast (Action Center).
 /// Designed to work even when the app is hidden in the tray. Failures are
-/// logged but never thrown â€” notifications are best-effort UX, not critical path.
+/// logged but never thrown — notifications are best-effort UX, not critical path.
 /// </summary>
 public class NotificationService : INotificationService
 {
@@ -37,20 +38,20 @@ public class NotificationService : INotificationService
         AppUserModelIdRegistrar.Register();
     }
 
-    public virtual void NotifyNewEpisode(Kiriha.Models.Entities.AnimeEntity anime, int episodeNumber)
+    public virtual void NotifyNewEpisode(AnimeEntity anime, int episodeNumber)
     {
         if (anime == null) return;
         if (!_settingsService.Current.System.NotifyNewEpisodes) return;
         if (episodeNumber <= 0) return;
 
-        // Dedupe â€” only fire when episode number actually advanced for this anime.
+        // Dedupe — only fire when episode number actually advanced for this anime.
         if (_lastNotifiedEpisode.TryGetValue(anime.Id, out var prev) && prev >= episodeNumber)
             return;
         _lastNotifiedEpisode[anime.Id] = episodeNumber;
 
         // Build a 2- or 3-line toast: bold original title, optional Russian title, then
         // the episode availability line. "Original" is whichever non-Russian title we have
-        // (Title is the user's preferred MAL display title â€” usually English/romaji).
+        // (Title is the user's preferred MAL display title — usually English/romaji).
         var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
         var ru = anime.RussianTitle;
         var episodeLine = UIUtils.GetLoc("notifications.new_episode.body", episodeNumber);
@@ -94,7 +95,7 @@ public class NotificationService : INotificationService
     /// progress by more than one episode and <c>NotifyOnSkippedEpisode</c> is on.
     /// Surfaces a toast so the user knows progress was NOT updated.
     /// </summary>
-    public virtual void NotifyScrobbleSkipped(Kiriha.Models.Entities.AnimeEntity anime, int detectedEp)
+    public virtual void NotifyScrobbleSkipped(AnimeEntity anime, int detectedEp)
     {
         if (anime == null) return;
 

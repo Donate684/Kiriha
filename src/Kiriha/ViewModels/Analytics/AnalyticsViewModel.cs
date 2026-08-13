@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Core;
 using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using System;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -114,8 +114,8 @@ public partial class AnalyticsViewModel : ViewModelBase
             Overview.Refresh(items, nonPlanned, completed, scored);
             Tastes.Refresh(items, nonPlanned);
             
-            var animes = items.Where(x => x.MediaKind == Kiriha.Models.Entities.MediaKind.Anime).ToList();
-            var mangas = items.Where(x => x.MediaKind != Kiriha.Models.Entities.MediaKind.Anime).ToList();
+            var animes = items.Where(x => x.MediaKind == MediaKind.Anime).ToList();
+            var mangas = items.Where(x => x.MediaKind != MediaKind.Anime).ToList();
             
             WatchNext.Refresh(animes);
             ReadNext.Refresh(mangas);

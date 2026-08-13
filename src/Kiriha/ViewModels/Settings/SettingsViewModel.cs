@@ -9,6 +9,7 @@ using Kiriha.Services.Data.Settings;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Services.Data;

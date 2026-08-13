@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Kiriha.Models;
+
+using Kiriha.Core.Abstractions.Models;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Anisthesia;

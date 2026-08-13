@@ -1,7 +1,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 /// <summary>
 /// User-defined share button shown next to MAL/Shiki on the anime details and

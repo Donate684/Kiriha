@@ -1,10 +1,11 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Services;
 using Kiriha.Services.Data.Mapping;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Utils.Parsing;
 
 namespace Kiriha.Services.Data.Mapping;

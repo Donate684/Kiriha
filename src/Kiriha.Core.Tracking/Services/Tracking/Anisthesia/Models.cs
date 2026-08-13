@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Anisthesia;
 

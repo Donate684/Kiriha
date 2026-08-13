@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Mpv;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Models.Presentation;
 using Kiriha.Services;
 using Kiriha.Services.Data;

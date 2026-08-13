@@ -1,4 +1,4 @@
-﻿using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Image;
@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 

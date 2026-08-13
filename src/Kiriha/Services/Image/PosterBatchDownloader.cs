@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Services.Data.Image;
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core.Infrastructure;
 
 namespace Kiriha.Services.Data.Image;

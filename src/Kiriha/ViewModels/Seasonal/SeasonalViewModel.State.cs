@@ -6,7 +6,8 @@ using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.ViewModels.Seasonal;
 

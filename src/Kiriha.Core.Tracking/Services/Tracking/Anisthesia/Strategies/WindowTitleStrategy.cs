@@ -5,8 +5,9 @@ using Kiriha.Core.Models;
 using Kiriha.Core.Platform;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Anisthesia.Strategies;
 

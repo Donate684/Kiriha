@@ -1,7 +1,7 @@
 <ResourceDictionary x:Class="Kiriha.Views.AnimeList.AnimeCardMinimalTemplate"
                     xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+                    xmlns:models="using:Kiriha.Core.Abstractions.Models" xmlns:entities="using:Kiriha.Core.Abstractions.Models.Entities"
                     xmlns:material="using:Material.Icons.Avalonia"
                     xmlns:core="using:Kiriha.Core"
                     xmlns:controls="using:Kiriha.Views.Controls"

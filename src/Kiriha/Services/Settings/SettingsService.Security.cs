@@ -3,7 +3,8 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using Kiriha.Models;
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Api;
 using Serilog;
 
 namespace Kiriha.Services.Data.Settings;

@@ -2,7 +2,8 @@ using Kiriha.Services.Data.Settings;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Seasonal;

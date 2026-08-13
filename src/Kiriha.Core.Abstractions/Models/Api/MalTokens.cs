@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Kiriha.Models.Api;
+namespace Kiriha.Core.Abstractions.Models.Api;
 
 public class MalTokens
 {

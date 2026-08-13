@@ -4,7 +4,7 @@ using System.IO.Pipes;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models.Api;
 
 namespace Kiriha.Core.Player;
 

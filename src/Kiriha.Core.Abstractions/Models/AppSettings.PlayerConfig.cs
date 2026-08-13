@@ -1,6 +1,6 @@
 using Kiriha.Core;
 
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 public partial class AppSettings
 {

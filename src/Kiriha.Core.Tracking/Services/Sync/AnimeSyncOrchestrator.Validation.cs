@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Core.Constants;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;

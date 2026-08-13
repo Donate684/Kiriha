@@ -8,6 +8,7 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.AnimeList;

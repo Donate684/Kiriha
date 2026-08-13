@@ -1,4 +1,4 @@
-namespace Kiriha.Models;
+namespace Kiriha.Core.Abstractions.Models;
 
 public enum PlayerWheelAction
 {

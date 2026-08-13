@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure.Http;
 using Kiriha.Core.Repositories;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

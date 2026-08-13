@@ -57,11 +57,7 @@
     <PackageReference Include="DiscordRichPresence" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Material.Icons.Avalonia" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Threading.RateLimiting" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

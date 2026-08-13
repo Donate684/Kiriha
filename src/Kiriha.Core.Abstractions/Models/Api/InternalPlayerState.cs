@@ -1,4 +1,4 @@
-namespace Kiriha.Models.Api;
+namespace Kiriha.Core.Abstractions.Models.Api;
 
 public class InternalPlayerState
 {

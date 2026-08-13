@@ -11,9 +11,10 @@ using Kiriha.Core.Infrastructure.Http;
 using Kiriha.Core.Services;
 using Kiriha.Core.Shiki;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Models;
-using Kiriha.Models.Api;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Api;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 

@@ -16,7 +16,7 @@
              xmlns:vmSearch="using:Kiriha.ViewModels.Search"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:models="using:Kiriha.Core.Abstractions.Models" xmlns:entities="using:Kiriha.Core.Abstractions.Models.Entities"
              xmlns:core="using:Kiriha.Core"
              xmlns:conv="using:Kiriha.Views.Converters"
              xmlns:u="using:Kiriha.Utils.UI"

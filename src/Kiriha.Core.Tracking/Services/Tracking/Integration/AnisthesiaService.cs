@@ -11,8 +11,9 @@ using Kiriha.Core.Tracking.Anisthesia;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Integration;
-using Kiriha.Models;
-using Kiriha.Models.Entities;
+
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

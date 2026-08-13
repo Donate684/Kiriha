@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using Kiriha.Core.Models;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Feed;
 
@@ -47,7 +47,7 @@ internal static partial class NyaaTorrentParser
     public static bool NeedsNyaaCheck(AnimeEntity anime)
     {
         if (anime.StatusDetailed != "currently_airing") return false;
-        if (anime.Status != Kiriha.Models.Entities.UserAnimeStatus.Watching) return false;
+        if (anime.Status != UserAnimeStatus.Watching) return false;
         if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value > DateTime.UtcNow) return false;
         return true;
     }

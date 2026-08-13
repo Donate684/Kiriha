@@ -1,4 +1,4 @@
-using Kiriha.Models.Api;
+using Kiriha.Core.Abstractions.Models.Api;
 using System.Threading;
 using System.Threading.Tasks;
 

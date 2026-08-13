@@ -1,9 +1,10 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.ViewModels.Seasonal;
 using Kiriha.Views.Seasonal;
 

@@ -2,6 +2,7 @@ using Kiriha.Services.Data.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Torrents;

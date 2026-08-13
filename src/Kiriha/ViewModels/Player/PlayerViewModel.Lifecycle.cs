@@ -37,13 +37,13 @@ public partial class PlayerViewModel
         Kiriha.Utils.PowerManager.AllowDisplaySleep();
     }
 
-    private Kiriha.Models.Api.InternalPlayerState CreatePlayerState()
+    private Kiriha.Core.Abstractions.Models.Api.InternalPlayerState CreatePlayerState()
     {
         var titleToUse = !string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu;
         if (string.IsNullOrEmpty(titleToUse))
             titleToUse = AnimeTitle;
 
-        return new Kiriha.Models.Api.InternalPlayerState
+        return new Kiriha.Core.Abstractions.Models.Api.InternalPlayerState
         {
             AnimeId = _animeId,
             OriginalTitle = !string.IsNullOrEmpty(OriginalTitle) ? OriginalTitle : System.IO.Path.GetFileNameWithoutExtension(VideoUrl),

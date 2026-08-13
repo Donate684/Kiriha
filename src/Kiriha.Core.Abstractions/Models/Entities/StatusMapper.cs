@@ -1,4 +1,4 @@
-namespace Kiriha.Models.Entities;
+namespace Kiriha.Core.Abstractions.Models.Entities;
 
 /// <summary>
 /// Centralized status mapping between Enum, legacy DB string, MAL API, and Shikimori API.

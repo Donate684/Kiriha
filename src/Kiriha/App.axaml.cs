@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.Themes.Fluent;
@@ -21,7 +21,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        Kiriha.Models.Entities.AnimeEntityPresentation.GetLoc = (k, args) => Kiriha.Core.UIUtils.GetLoc(k, args);
+        Kiriha.Core.Abstractions.Models.Entities.AnimeEntityPresentation.GetLoc = (k, args) => Kiriha.Core.UIUtils.GetLoc(k, args);
         AppStartupCoordinator.InstallUnhandledExceptionHandler();
 
         var args = Environment.GetCommandLineArgs();

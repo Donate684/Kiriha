@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Image;
+using Kiriha.Services.Data.Image;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Serilog;

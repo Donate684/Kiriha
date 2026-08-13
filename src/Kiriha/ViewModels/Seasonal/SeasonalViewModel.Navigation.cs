@@ -1,6 +1,7 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.Utils.Async;
 
 namespace Kiriha.ViewModels.Seasonal;

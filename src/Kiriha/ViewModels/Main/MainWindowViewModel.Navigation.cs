@@ -6,6 +6,7 @@ using Kiriha.Utils.Async;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Startup;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 
 namespace Kiriha.ViewModels.Main;
 

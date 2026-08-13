@@ -3,7 +3,8 @@ using Kiriha.Core.Models;
 using Kiriha.Core.Constants;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.Tests;
 

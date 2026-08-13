@@ -1,9 +1,9 @@
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 
-namespace Kiriha.Models.Entities;
+namespace Kiriha.Core.Abstractions.Models.Entities;
 
 public partial class AnimeEntity : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
 {

@@ -5,7 +5,7 @@ using DiscordRPC.Logging;
 using Kiriha.Core;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Integration;

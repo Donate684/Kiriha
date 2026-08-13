@@ -4,7 +4,8 @@ using System.Globalization;
 using System.Linq;
 using Kiriha.Localization;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 
 namespace Kiriha.ViewModels.AnimeList;
 

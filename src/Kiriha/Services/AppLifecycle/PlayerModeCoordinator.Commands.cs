@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
 using Kiriha.Models;
+using Kiriha.Core.Abstractions.Models;
 using Kiriha.ViewModels.Player;
 using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;

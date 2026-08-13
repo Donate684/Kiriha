@@ -1,10 +1,10 @@
-﻿using Kiriha.Core.Repositories;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Services.Data.Repository;

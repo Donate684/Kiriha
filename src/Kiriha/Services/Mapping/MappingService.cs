@@ -1,11 +1,12 @@
-﻿using Kiriha.Services.Data.Mapping;
+using Kiriha.Services.Data.Mapping;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kiriha.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Abstractions.Models;
+using Kiriha.Core.Abstractions.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Services;
 
@@ -82,7 +83,7 @@ public partial class MappingService : IMappingService
             string.Equals(x.RussianTitle, searchTitle, StringComparison.OrdinalIgnoreCase));
 
         // Don't fall back to the bare title when a higher season was explicitly
-        // parsed from the filename ("2nd Season", "S02", etc.) â€” otherwise we'd
+        // parsed from the filename ("2nd Season", "S02", etc.) — otherwise we'd
         // happily match e.g. "Sousou no Frieren 2nd Season - 01" to the S1 entry
         // in the user list. Let SearchOnMalAsync handle these cases instead.
         if (localMatch == null && searchTitle != cleanTitle && parsedSeason <= 1)
