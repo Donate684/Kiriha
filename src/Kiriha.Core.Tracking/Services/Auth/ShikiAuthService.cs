@@ -1,4 +1,4 @@
-using Kiriha.Core.Services;
+﻿using Kiriha.Core.Services;
 using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,6 @@ using Kiriha.Core.Shiki;
 using Kiriha.Models;
 using Kiriha.Models.Api;
 using Kiriha.Core.Tracking.Api;
-using Kiriha.Services.Data;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;

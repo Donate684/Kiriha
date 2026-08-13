@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Services.AppLifecycle;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;

@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kiriha.Models.Entities;
 
-namespace Kiriha.Services.Data.Repository;
+namespace Kiriha.Core.Repositories;
 
 /// <summary>
 /// Persistence boundary for the offline-replay queue of tracker mutations

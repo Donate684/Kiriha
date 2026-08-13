@@ -1,4 +1,4 @@
-
+﻿
 using Kiriha.Core.Services;
 using Kiriha.Core.Constants;
 using System;
@@ -13,7 +13,7 @@ using Kiriha.Core.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
 using Kiriha.Core.Tracking.Api;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;

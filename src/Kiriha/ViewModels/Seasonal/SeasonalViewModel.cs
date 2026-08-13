@@ -1,5 +1,6 @@
-using Kiriha.Core.Tracking.Sync;
+﻿using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System;

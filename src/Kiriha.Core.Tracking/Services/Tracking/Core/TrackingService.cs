@@ -1,9 +1,9 @@
-using Kiriha.Core.Repositories;
+﻿using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Services;
 using System;
@@ -23,7 +23,6 @@ using Kiriha.Models.Api;
 using Kiriha.Models.Entities;
 using Kiriha.Core.Messages;
 using Kiriha.Core.Services;
-using Kiriha.Services.Data;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;

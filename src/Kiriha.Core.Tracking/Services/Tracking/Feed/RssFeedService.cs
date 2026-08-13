@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
@@ -8,8 +8,7 @@ using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Services;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Core.Services;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 
 namespace Kiriha.Core.Tracking.Feed;
 

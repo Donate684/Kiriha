@@ -1,4 +1,5 @@
-using Kiriha.Services.Data.Core;
+﻿using Kiriha.Services.Data.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System;
@@ -72,7 +73,7 @@ public partial class HistoryViewModel : ViewModelBase
         NotifyActionFlags();
     }
 
-    // ─── Radio-button friendly flags (also safe for ToggleButton: can't uncheck) ───
+    // â”€â”€â”€ Radio-button friendly flags (also safe for ToggleButton: can't uncheck) â”€â”€â”€
     public bool IsPeriodAll { get => SelectedPeriod == 0; set { if (value) SelectedPeriod = 0; else OnPropertyChanged(nameof(IsPeriodAll)); } }
     public bool IsPeriodToday { get => SelectedPeriod == 1; set { if (value) SelectedPeriod = 1; else OnPropertyChanged(nameof(IsPeriodToday)); } }
     public bool IsPeriodWeek { get => SelectedPeriod == 2; set { if (value) SelectedPeriod = 2; else OnPropertyChanged(nameof(IsPeriodWeek)); } }

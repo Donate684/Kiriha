@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Core;
+﻿using Kiriha.Services.Data.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Serilog;
 
 namespace Kiriha.Services.Data.Core;

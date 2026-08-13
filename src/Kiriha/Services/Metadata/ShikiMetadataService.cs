@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Metadata;
+﻿using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Settings;
 using System;
 using Kiriha.Core.Infrastructure.Http;
@@ -21,8 +21,8 @@ namespace Kiriha.Services.Data.Metadata;
 public partial class ShikiMetadataService : IDisposable
 {
     private readonly HttpClient _httpClient;
-    private readonly Repository.IMetadataRepository _metadataRepo;
-    private readonly Repository.IUserAnimeRepository _userAnimeRepo;
+    private readonly Kiriha.Core.Repositories.IMetadataRepository _metadataRepo;
+    private readonly Kiriha.Core.Repositories.IUserAnimeRepository _userAnimeRepo;
     private readonly SettingsService _settingsService;
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiHostResolver _hostResolver;
@@ -35,9 +35,9 @@ public partial class ShikiMetadataService : IDisposable
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
         SettingsService settingsService,
-        Repository.IMetadataRepository metadataRepo,
-        Repository.IUserAnimeRepository userAnimeRepo,
-        Repository.IHttpCacheRepository httpCacheRepo,
+        Kiriha.Core.Repositories.IMetadataRepository metadataRepo,
+        Kiriha.Core.Repositories.IUserAnimeRepository userAnimeRepo,
+        Kiriha.Core.Repositories.IHttpCacheRepository httpCacheRepo,
         ShikiHostResolver hostResolver,
         IUiDispatcher uiDispatcher,
         ShikiRateLimiter rateLimiter)
@@ -72,11 +72,11 @@ public partial class ShikiMetadataService : IDisposable
     /// Returns Shikimori metadata for <paramref name="animeId"/>, fetching from
     /// the API on miss. <paramref name="maxAge"/> bounds the cache freshness:
     /// when the persisted entry is older, we re-fetch (the conditional GET via
-    /// <see cref="HttpConditionalCache"/> makes this cheap — usually 304).
+    /// <see cref="HttpConditionalCache"/> makes this cheap â€” usually 304).
     /// Pass <c>null</c> to accept any age (default for completed shows).
     ///
-    /// <paramref name="onFetched"/> is invoked on every successful return —
-    /// cache hit or fresh fetch — so periodic syncs (e.g. AiringInfoService's
+    /// <paramref name="onFetched"/> is invoked on every successful return â€”
+    /// cache hit or fresh fetch â€” so periodic syncs (e.g. AiringInfoService's
     /// Shiki fallback) keep applying current values to the UI.
     /// </summary>
     public async Task<ShikiMetadata?> GetOrFetchMetadataAsync(int animeId, TimeSpan? maxAge = null, Func<ShikiMetadata, Task>? onFetched = null, MediaKind mediaKind = MediaKind.Anime)
@@ -84,7 +84,7 @@ public partial class ShikiMetadataService : IDisposable
         int cacheId = GetCacheId(animeId, mediaKind);
         var cached = await _metadataRepo.GetAsync(cacheId);
         // When a TTL is requested, treat both genuinely-old entries and pre-TTL
-        // legacy rows (FetchedAt == default after the schema migration) as stale —
+        // legacy rows (FetchedAt == default after the schema migration) as stale â€”
         // otherwise a user's existing metadata would skip the airing refresh
         // forever. The first successful upsert stamps a real timestamp and
         // normal TTL semantics take over.
@@ -116,7 +116,7 @@ public partial class ShikiMetadataService : IDisposable
                 return fetched;
             }
 
-            // Live fetch failed but we still have a stale entry — better to
+            // Live fetch failed but we still have a stale entry â€” better to
             // return it than nothing, the caller can apply best-effort.
             if (cached != null)
             {
@@ -169,7 +169,7 @@ public partial class ShikiMetadataService : IDisposable
                 return new ShikiMetadata { Id = GetCacheId(animeId, mediaKind), Russian = "", Description = "" };
             }
 
-            if (result.Body == null) return null; // transient failure — retry next tick
+            if (result.Body == null) return null; // transient failure â€” retry next tick
 
             var metadata = System.Text.Json.JsonSerializer.Deserialize<ShikiMetadata>(result.Body);
             if (metadata != null)

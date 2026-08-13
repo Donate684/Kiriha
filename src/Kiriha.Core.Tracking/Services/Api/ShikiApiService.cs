@@ -1,4 +1,4 @@
-using Kiriha.Core.Services;
+﻿using Kiriha.Core.Services;
 using Kiriha.Core.Services;
 using System;
 using Kiriha.Core.Infrastructure.Http;
@@ -15,7 +15,6 @@ using Kiriha.Models;
 using Kiriha.Models.Api;
 using Kiriha.Models.Entities;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Services.Data;
 using Serilog;
 
 
@@ -45,7 +44,7 @@ public partial class ShikiApiService : ITrackerService
 
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    public ShikiApiService(HttpClient httpClient, Kiriha.Core.Services.ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, Kiriha.Services.Data.Repository.IHttpCacheRepository httpCacheRepo)
+    public ShikiApiService(HttpClient httpClient, Kiriha.Core.Services.ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, Kiriha.Core.Repositories.IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
@@ -100,7 +99,7 @@ public partial class ShikiApiService : ITrackerService
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        // Routed through ShikiHttp so the .net ⇄ .rip geo-redirect / 404
+        // Routed through ShikiHttp so the .net â‡„ .rip geo-redirect / 404
         // dance is handled transparently with method+body+auth preserved.
         return await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
     }

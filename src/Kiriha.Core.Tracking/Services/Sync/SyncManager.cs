@@ -1,4 +1,4 @@
-using Kiriha.Core.Services;
+﻿using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Sync.Models;
 
@@ -11,9 +11,8 @@ using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Repositories;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

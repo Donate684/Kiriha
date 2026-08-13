@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Services;
@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Kiriha.Core.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Services.Data;
 using Kiriha.Core.Tracking.Anisthesia.Strategies;
 
 namespace Kiriha.Core.Tracking.Anisthesia;

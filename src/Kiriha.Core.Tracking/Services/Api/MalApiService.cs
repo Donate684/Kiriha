@@ -1,4 +1,4 @@
-using Kiriha.Core.Services;
+﻿using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Core.Services;
 using Kiriha.Core.Constants;
@@ -14,15 +14,14 @@ using Kiriha.Core;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
 public partial class MalApiService : ITrackerService, IDisposable
 {
-    // Resolved once from Constants — no parallel const that can drift from the URL
+    // Resolved once from Constants â€” no parallel const that can drift from the URL
     // wired into the IHttpClientFactory "MalClient" registration.
     private static readonly string MalBaseUrl = AppConstants.Api.Mal.BaseUrl;
 

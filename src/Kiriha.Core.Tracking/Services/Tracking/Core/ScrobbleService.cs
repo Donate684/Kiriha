@@ -1,4 +1,4 @@
-using Kiriha.Core.Services;
+﻿using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Core.Services;
 using System;
@@ -8,8 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data;
+using Kiriha.Core.Services.AppLifecycle;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -69,7 +68,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         }
 
         // Check if the detected episode skips ahead beyond the next expected one.
-        // For example: progress=5, watching ep 7 — ep 6 was never marked, so updating
+        // For example: progress=5, watching ep 7 â€” ep 6 was never marked, so updating
         // directly to 7 would skip an episode. When the setting is on, notify and bail.
         if (ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode)
         {

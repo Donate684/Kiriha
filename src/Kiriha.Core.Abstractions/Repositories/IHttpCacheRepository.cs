@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Kiriha.Models.Entities;
 
-namespace Kiriha.Services.Data.Repository;
+namespace Kiriha.Core.Repositories;
 
 /// <summary>
 /// Persistence boundary for the conditional-GET HTTP cache (the

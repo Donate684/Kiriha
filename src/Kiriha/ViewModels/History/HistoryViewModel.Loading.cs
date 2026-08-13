@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using System.Linq;
 using System.Threading.Tasks;

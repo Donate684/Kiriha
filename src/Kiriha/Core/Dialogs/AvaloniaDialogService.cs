@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -9,6 +9,7 @@ using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System;

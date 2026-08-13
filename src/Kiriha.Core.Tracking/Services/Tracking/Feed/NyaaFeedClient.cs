@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using System;
@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Kiriha.Core.Services;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Feed;

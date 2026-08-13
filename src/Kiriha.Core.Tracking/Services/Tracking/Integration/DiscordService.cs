@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Services;
@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using DiscordRPC;
 using DiscordRPC.Logging;
 using Kiriha.Core;
-using Kiriha.Services.Data;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Integration;
@@ -105,7 +104,7 @@ public class DiscordService : IDisposable, Kiriha.Core.Services.IDiscordService
                     Timestamps = timestamps
                 };
 
-                // Discord Rich Presence allows at most 2 buttons per presence — that's a hard
+                // Discord Rich Presence allows at most 2 buttons per presence â€” that's a hard
                 // SDK limit, not ours, so a third row (e.g. Anilist/AniDB) isn't possible here.
                 var buttons = new List<Button>();
                 if (!string.IsNullOrEmpty(malUrl)) buttons.Add(new Button { Label = "MyAnimeList", Url = malUrl });

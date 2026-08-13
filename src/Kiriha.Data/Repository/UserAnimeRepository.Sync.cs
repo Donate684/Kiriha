@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Core;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ public sealed partial class UserAnimeRepository
             }
         }
 
-        // The context runs with NoTracking globally — opt into a transaction so
+        // The context runs with NoTracking globally â€” opt into a transaction so
         // the upsert/delete happens atomically.
         using var transaction = await context.Database.BeginTransactionAsync(ct);
 

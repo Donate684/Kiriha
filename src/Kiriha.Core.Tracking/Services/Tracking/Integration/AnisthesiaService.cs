@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Integration;
@@ -13,8 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data;
+using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Anisthesia;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -120,7 +119,7 @@ public class AnisthesiaService : IHostedService, IDisposable
 
                     // Reconcile the strategy's optimistic IsPlaying=true against
                     // the audio session state. WindowTitleStrategy and HandleEnumerationStrategy
-                    // can't tell pause from play on their own — the player process
+                    // can't tell pause from play on their own â€” the player process
                     // and the open file handle look identical in both cases. The
                     // audio session, however, goes Inactive within ~1 s of pause
                     // for every mainstream player, so we treat that as the
@@ -130,7 +129,7 @@ public class AnisthesiaService : IHostedService, IDisposable
                     {
                         if (_lastTrackedPid != 0 && _lastTrackedPid != detected.Pid)
                         {
-                            // The user switched to a different player instance —
+                            // The user switched to a different player instance â€”
                             // drop the previous tracker so we don't carry over
                             // its Inactive streak.
                             _pauseDetector.Forget(_lastTrackedPid);

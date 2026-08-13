@@ -1,9 +1,10 @@
-using Kiriha.Core.Tracking.Integration;
+﻿using Kiriha.Core.Tracking.Integration;
 using System;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using System.Collections.Generic;
 using System.Threading.Tasks;

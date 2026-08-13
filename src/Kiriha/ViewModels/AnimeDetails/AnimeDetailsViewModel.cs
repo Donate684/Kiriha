@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -6,6 +6,7 @@ using Kiriha.ViewModels.Settings;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using System.Linq;

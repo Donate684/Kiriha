@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Mapping;
+﻿using Kiriha.Services.Data.Mapping;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,12 +15,12 @@ public partial class MappingService : IMappingService
 {
     private readonly MalApiService _malApi;
     private readonly ManualMappingService _manualMapping;
-    private readonly Repository.IMalSearchCacheRepository _malSearchCache;
+    private readonly Kiriha.Core.Repositories.IMalSearchCacheRepository _malSearchCache;
     private readonly RecognitionCache _recognitionCache;
     private readonly ConcurrentDictionary<string, int> _sessionCache = new();
     private readonly ConcurrentDictionary<int, (string t, string e, string r)> _normalizedItemCache = new();
 
-    public MappingService(MalApiService malApi, ManualMappingService manualMapping, Repository.IMalSearchCacheRepository malSearchCache, RecognitionCache recognitionCache)
+    public MappingService(MalApiService malApi, ManualMappingService manualMapping, Kiriha.Core.Repositories.IMalSearchCacheRepository malSearchCache, RecognitionCache recognitionCache)
     {
         _malApi = malApi;
         _manualMapping = manualMapping;
@@ -82,7 +82,7 @@ public partial class MappingService : IMappingService
             string.Equals(x.RussianTitle, searchTitle, StringComparison.OrdinalIgnoreCase));
 
         // Don't fall back to the bare title when a higher season was explicitly
-        // parsed from the filename ("2nd Season", "S02", etc.) — otherwise we'd
+        // parsed from the filename ("2nd Season", "S02", etc.) â€” otherwise we'd
         // happily match e.g. "Sousou no Frieren 2nd Season - 01" to the S1 entry
         // in the user list. Let SearchOnMalAsync handle these cases instead.
         if (localMatch == null && searchTitle != cleanTitle && parsedSeason <= 1)

@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Core.Tracking;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Services.Data.Metadata;

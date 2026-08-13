@@ -5,14 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Serilog;
 
-namespace Kiriha.Services.Data.Repository;
+namespace Kiriha.Core.Repositories;
 
 /// <summary>
 /// Persistence boundary for the user's anime list (the <c>user_anime</c> table).
 /// Owns full-list synchronisation, point reads/writes, and deletes; intentionally
-/// does NOT touch sync tasks or history — those live in their own repositories
+/// does NOT touch sync tasks or history â€” those live in their own repositories
 /// (<see cref="ISyncTaskRepository"/>, <see cref="IHistoryRepository"/>) so a
 /// future move to a different store (e.g. server-backed) can be done one
 /// aggregate at a time.

@@ -1,4 +1,4 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Image;
@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Services.Data;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Serilog;
 

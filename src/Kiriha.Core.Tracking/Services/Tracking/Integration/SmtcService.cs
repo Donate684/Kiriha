@@ -1,11 +1,10 @@
-using Kiriha.Models.Entities;
+﻿using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
 using Kiriha.Core.Services;
 using Kiriha.Core.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Kiriha.Services.Data;
 using Serilog;
 #if WINDOWS
 using Windows.Media.Control;

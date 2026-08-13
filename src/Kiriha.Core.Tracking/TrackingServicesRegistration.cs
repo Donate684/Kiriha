@@ -1,4 +1,4 @@
-using Kiriha.Core.Services;
+﻿using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -12,11 +12,9 @@ using System.Net;
 using System.Net.Http;
 using Kiriha.Core;
 using Kiriha.Core.Shiki;
-using Kiriha.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Kiriha.Core.Tracking;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,7 +30,7 @@ namespace Kiriha.Core.Tracking;
 /// inject it directly when they need API-specific operations) and under
 /// <see cref="ITrackerService"/> via a <c>sp.GetRequiredService</c> resolver
 /// so <c>IEnumerable&lt;ITrackerService&gt;</c> consumers see the SAME singleton
-/// instance — registering the implementation twice would create two parallel
+/// instance â€” registering the implementation twice would create two parallel
 /// instances and silently double the rate-limit budget.
 /// </summary>
 public static class TrackingServicesRegistration

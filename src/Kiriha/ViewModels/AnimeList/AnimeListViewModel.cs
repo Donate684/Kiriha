@@ -1,7 +1,8 @@
-using Kiriha.Core.Tracking.Integration;
+﻿using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Metadata;
@@ -17,6 +18,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
+using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;

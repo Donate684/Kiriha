@@ -1,4 +1,5 @@
-using Kiriha.Services.Data.Core;
+﻿using Kiriha.Services.Data.Core;
+using Kiriha.Core.Repositories;
 using Kiriha.Services.Data.Repository;
 using System;
 using System.Globalization;

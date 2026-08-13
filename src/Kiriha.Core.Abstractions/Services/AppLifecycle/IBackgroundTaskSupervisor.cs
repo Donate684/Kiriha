@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kiriha.Services.AppLifecycle;
+namespace Kiriha.Core.Services.AppLifecycle;
 
 public interface IBackgroundTaskSupervisor
 {

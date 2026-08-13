@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models.Entities;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Core.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Infrastructure.Http;
@@ -27,7 +27,7 @@ public readonly record struct HttpCacheResult(byte[]? Body, HttpStatusCode? Stat
 /// <see cref="HttpCacheEntry"/> (table <c>http_response_cache</c>, 30 d TTL).
 ///
 /// Usage: build a fresh <see cref="HttpRequestMessage"/> per call (with all
-/// caller-specific headers — User-Agent, auth, etc.) inside
+/// caller-specific headers â€” User-Agent, auth, etc.) inside
 /// <c>requestFactory</c>. The helper attaches <c>If-None-Match</c> /
 /// <c>If-Modified-Since</c> from the cache, sends the request, replays the
 /// cached body on <c>304 Not Modified</c>, and persists fresh <c>200</c>
@@ -37,7 +37,7 @@ public readonly record struct HttpCacheResult(byte[]? Body, HttpStatusCode? Stat
 /// same auth context (no per-call user-specific fields, or fields that the
 /// caller already overrides downstream from a separate user store).
 ///
-/// Persist is fire-and-forget — a transient DB hiccup costs at most one
+/// Persist is fire-and-forget â€” a transient DB hiccup costs at most one
 /// extra full payload on the next call.
 /// </summary>
 public sealed class HttpConditionalCache
@@ -99,7 +99,7 @@ public sealed class HttpConditionalCache
 
     /// <summary>
     /// Same as <see cref="SendAsync"/> but returns the full <see cref="HttpCacheResult"/>
-    /// so callers can distinguish e.g. 404 (terminal — anime not on the source)
+    /// so callers can distinguish e.g. 404 (terminal â€” anime not on the source)
     /// from a transient network error.
     /// </summary>
     public async Task<HttpCacheResult> SendForResultAsync(
@@ -124,12 +124,12 @@ public sealed class HttpConditionalCache
                 return new HttpCacheResult(cached.Body, null, FromCache: true);
             }
 
-            // Both validators are independent — sending both lets the server
+            // Both validators are independent â€” sending both lets the server
             // pick whichever it currently honours.
             if (!string.IsNullOrEmpty(cached.ETag))
             {
                 try { request.Headers.IfNoneMatch.Add(EntityTagHeaderValue.Parse(cached.ETag)); }
-                catch { /* malformed stored ETag — ignore and refetch */ }
+                catch { /* malformed stored ETag â€” ignore and refetch */ }
             }
             if (!string.IsNullOrEmpty(cached.LastModified)
                 && DateTimeOffset.TryParse(cached.LastModified, out var lm))
@@ -148,7 +148,7 @@ public sealed class HttpConditionalCache
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            // Network blip — serve stale cache rather than failing the call.
+            // Network blip â€” serve stale cache rather than failing the call.
             if (cached != null)
             {
                 Log.Debug(ex, "{Tag}: network error, serving stale cache for {Url}", _logTag, fullUrl);
@@ -167,8 +167,8 @@ public sealed class HttpConditionalCache
 
             if (!response.IsSuccessStatusCode)
             {
-                // 4xx/5xx without a usable replay — propagate the failure with
-                // the status code so callers can react (e.g. 404 → sentinel).
+                // 4xx/5xx without a usable replay â€” propagate the failure with
+                // the status code so callers can react (e.g. 404 â†’ sentinel).
                 Log.Debug("{Tag}: {Url} returned {Status}", _logTag, fullUrl, response.StatusCode);
                 return new HttpCacheResult(null, response.StatusCode, FromCache: false);
             }
