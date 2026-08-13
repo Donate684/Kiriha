@@ -48,7 +48,7 @@ jobs:
         run: dotnet publish src\Kiriha\Kiriha.csproj -c Release -f net10.0 --runtime win-x64 --self-contained true -p:PublishReadyToRun=true -p:Version=${{ env.VERSION }} -o ./publish
 
       - name: Pack with Velopack
-        run: vpk pack --packId Kiriha --packVersion ${{ env.VERSION }} --packDir ./publish --mainExe Kiriha.exe --icon ./src/Assets/kiriha.ico
+        run: vpk pack --packId Kiriha --packVersion ${{ env.VERSION }} --packDir ./publish --mainExe Kiriha.exe --icon ./src/Kiriha/Assets/kiriha.ico
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
