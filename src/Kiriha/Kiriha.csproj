@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
@@ -13,7 +13,7 @@
     <RootNamespace>Kiriha</RootNamespace>
     <Title>Kiriha</Title>
     <ApplicationIcon>Assets\kiriha.ico</ApplicationIcon>
-    <Version>1.2.42</Version>
+    <Version>1.2.43</Version>
 
 
     <!-- Optimization: Ahead-of-time compilation for faster startup -->
