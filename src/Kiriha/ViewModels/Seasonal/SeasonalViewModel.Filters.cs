@@ -38,7 +38,8 @@ public partial class SeasonalViewModel
             FilterCompleted: FilterCompleted,
             FilterOnHold: FilterOnHold,
             FilterPlanToWatch: FilterPlanToWatch,
-            FilterDropped: FilterDropped);
+            FilterDropped: FilterDropped,
+            _localizer);
 
         var result = await Task.Run(() => SeasonalFilterEngine.Apply(request));
         if (requestId != _applyFiltersRequestCount) return;

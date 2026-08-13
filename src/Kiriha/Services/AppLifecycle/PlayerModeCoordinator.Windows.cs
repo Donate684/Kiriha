@@ -16,7 +16,7 @@ public sealed partial class PlayerModeCoordinator
 
         var metadataResolver = _serviceProvider.GetRequiredService<IPlayerMediaMetadataResolver>();
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
-        var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService);
+        var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService, _serviceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ILocalizer>());
         return new PlayerWindow(settingsService) { DataContext = playerVm };
     }
 

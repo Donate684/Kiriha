@@ -25,7 +25,7 @@ public partial class AnimeListViewModel
         RatingHelper.GetRatingOption("1")
     ];
 
-    private string GetLoc(string key) => UIUtils.GetLoc(key);
+    private string GetLoc(string key) => _localizer.GetLoc(key);
 
     public void RefreshAvailableScores()
     {

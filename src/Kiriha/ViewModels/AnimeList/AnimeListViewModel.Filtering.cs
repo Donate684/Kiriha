@@ -31,7 +31,7 @@ public partial class AnimeListViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
     private string _sortBy = "Title";
-    public string DisplaySortBy => UIUtils.GetLoc("filters.sort." + SortBy.ToLower());
+    public string DisplaySortBy => _localizer.GetLoc("filters.sort." + SortBy.ToLower());
     public System.Collections.Generic.List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
 
     // Filters
@@ -144,11 +144,11 @@ public partial class AnimeListViewModel
             var ptw = _listProjection.Count(UserAnimeStatus.PlanToWatch, kind);
 
             var watchingLocKey = kind == MediaKind.Manga ? "anime.status.reading" : "anime.status.watching";
-            WatchingHeader = UIUtils.GetLoc("filters.header_format", GetLoc(watchingLocKey), watching.ToString());
-            CompletedHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.completed"), completed.ToString());
-            OnHoldHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.on_hold"), onHold.ToString());
-            DroppedHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.dropped"), dropped.ToString());
-            PlanToWatchHeader = UIUtils.GetLoc("filters.header_format", GetLoc("anime.status.plan_to_watch"), ptw.ToString());
+            WatchingHeader = _localizer.GetLoc("filters.header_format", GetLoc(watchingLocKey), watching.ToString());
+            CompletedHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.completed"), completed.ToString());
+            OnHoldHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.on_hold"), onHold.ToString());
+            DroppedHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.dropped"), dropped.ToString());
+            PlanToWatchHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.plan_to_watch"), ptw.ToString());
         });
     }
 }

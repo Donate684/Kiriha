@@ -12,6 +12,13 @@ namespace Kiriha.ViewModels.Analytics;
 
 public partial class TastesSectionViewModel : ViewModelBase
 {
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+
+    public TastesSectionViewModel(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    {
+        _localizer = localizer;
+    }
+
     public ObservableCollection<AnalyticsBar> GenreDistribution { get; } = new();
     public ObservableCollection<AnalyticsBar> StudioDistribution { get; } = new();
     public ObservableCollection<AnalyticsBar> TasteHighlights { get; } = new();

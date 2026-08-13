@@ -117,7 +117,7 @@ public class InstanceServer : BackgroundService
                     }
                 }
 
-                var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService);
+                var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService, _serviceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ILocalizer>());
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
             });

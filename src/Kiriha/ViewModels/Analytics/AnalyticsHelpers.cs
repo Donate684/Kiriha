@@ -41,16 +41,16 @@ public static class AnalyticsHelpers
         return palette[hash % palette.Length];
     }
 
-    public static string GetStatusLabel(UserAnimeStatus status)
+    public static string GetStatusLabel(UserAnimeStatus status, Kiriha.Core.Abstractions.Services.ILocalizer _localizer)
     {
         return status switch
         {
-            UserAnimeStatus.Watching => UIUtils.GetLoc("anime.status.watching"),
-            UserAnimeStatus.Completed => UIUtils.GetLoc("anime.status.completed"),
-            UserAnimeStatus.OnHold => UIUtils.GetLoc("anime.status.on_hold"),
-            UserAnimeStatus.Dropped => UIUtils.GetLoc("anime.status.dropped"),
-            UserAnimeStatus.PlanToWatch => UIUtils.GetLoc("anime.status.plan_to_watch"),
-            _ => UIUtils.GetLoc("anime.status.unknown")
+            UserAnimeStatus.Watching => _localizer.GetLoc("anime.status.watching"),
+            UserAnimeStatus.Completed => _localizer.GetLoc("anime.status.completed"),
+            UserAnimeStatus.OnHold => _localizer.GetLoc("anime.status.on_hold"),
+            UserAnimeStatus.Dropped => _localizer.GetLoc("anime.status.dropped"),
+            UserAnimeStatus.PlanToWatch => _localizer.GetLoc("anime.status.plan_to_watch"),
+            _ => _localizer.GetLoc("anime.status.unknown")
         };
     }
 

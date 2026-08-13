@@ -3,10 +3,8 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
-using Kiriha.Core.Domain.Models.Entities;
 namespace Kiriha.Tests;
 
 public sealed class AnimeFilterEngineTests

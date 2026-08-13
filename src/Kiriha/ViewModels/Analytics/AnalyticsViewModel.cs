@@ -18,11 +18,11 @@ public partial class AnalyticsViewModel : ViewModelBase
     private readonly HistoryService _historyService;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
 
-    public OverviewSectionViewModel Overview { get; } = new();
-    public TastesSectionViewModel Tastes { get; } = new();
-    public WatchNextSectionViewModel WatchNext { get; } = new();
-    public ReadNextSectionViewModel ReadNext { get; } = new();
-    public HistorySectionViewModel History { get; } = new();
+                    public OverviewSectionViewModel Overview { get; }
+    public TastesSectionViewModel Tastes { get; }
+    public WatchNextSectionViewModel WatchNext { get; }
+    public ReadNextSectionViewModel ReadNext { get; }
+    public HistorySectionViewModel History { get; }
 
     [ObservableProperty] private bool _hasData;
     [ObservableProperty] private bool _isRefreshing;
@@ -65,10 +65,15 @@ public partial class AnalyticsViewModel : ViewModelBase
         set { if (value) SelectedSection = 5; }
     }
 
-    public AnalyticsViewModel(Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, HistoryService historyService)
+    public AnalyticsViewModel(Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, HistoryService historyService, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _animeRepo = animeRepo;
         _historyService = historyService;
+        Overview = new(localizer);
+        Tastes = new(localizer);
+        WatchNext = new(localizer);
+        ReadNext = new(localizer);
+        History = new();
     }
 
     partial void OnSelectedSectionChanged(int value)

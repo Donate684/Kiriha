@@ -28,17 +28,26 @@ public partial class SettingsCacheViewModel : ObservableObject
     private readonly ImageCacheService _imageCacheService;
     private readonly MappingService _mappingService;
     private readonly SeasonalViewModel _seasonalViewModel;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
     public SettingsCacheViewModel(
         CacheCleanupService cacheCleanupService,
         ImageCacheService imageCacheService,
         MappingService mappingService,
-        SeasonalViewModel seasonalViewModel)
+        SeasonalViewModel seasonalViewModel,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _cacheCleanupService = cacheCleanupService;
         _imageCacheService = imageCacheService;
         _mappingService = mappingService;
         _seasonalViewModel = seasonalViewModel;
+        _localizer = localizer;
+
+        CacheItems.Add(new CacheCleanupItem(CacheCleanupTarget.History, "settings.cache.items.history", _localizer));
+        CacheItems.Add(new CacheCleanupItem(CacheCleanupTarget.ImageFiles, "settings.cache.items.images", _localizer));
+        CacheItems.Add(new CacheCleanupItem(CacheCleanupTarget.ApiCache, "settings.cache.items.api", _localizer));
+        CacheItems.Add(new CacheCleanupItem(CacheCleanupTarget.RecognitionCache, "settings.cache.items.recognition", _localizer));
+        CacheItems.Add(new CacheCleanupItem(CacheCleanupTarget.SeasonalCache, "settings.cache.items.seasonal", _localizer));
 
         InitializeCacheItems();
         _ = RefreshCacheStats();
@@ -53,14 +62,7 @@ public partial class SettingsCacheViewModel : ObservableObject
     [ObservableProperty]
     private string _cacheStatus = string.Empty;
 
-    public ObservableCollection<CacheCleanupItem> CacheItems { get; } = new()
-    {
-        new CacheCleanupItem(CacheCleanupTarget.History, "settings.cache.items.history"),
-        new CacheCleanupItem(CacheCleanupTarget.ImageFiles, "settings.cache.items.images"),
-        new CacheCleanupItem(CacheCleanupTarget.ApiCache, "settings.cache.items.api"),
-        new CacheCleanupItem(CacheCleanupTarget.RecognitionCache, "settings.cache.items.recognition"),
-        new CacheCleanupItem(CacheCleanupTarget.SeasonalCache, "settings.cache.items.seasonal")
-    };
+    public ObservableCollection<CacheCleanupItem> CacheItems { get; } = new();
 
     public bool CanClearSelectedCache => !IsCacheBusy && CacheItems.Any(x => x.IsSelected);
 
@@ -97,7 +99,7 @@ public partial class SettingsCacheViewModel : ObservableObject
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to refresh cache stats");
-            CacheStatus = UIUtils.GetLoc("common.errors.generic");
+            CacheStatus = _localizer.GetLoc("common.errors.generic");
         }
         finally
         {
@@ -120,12 +122,12 @@ public partial class SettingsCacheViewModel : ObservableObject
             await _cacheCleanupService.ClearAsync(selected);
             InvalidateRuntimeCaches(selected);
             foreach (var item in CacheItems) item.IsSelected = false;
-            CacheStatus = UIUtils.GetLoc("settings.cache.cleared");
+            CacheStatus = _localizer.GetLoc("settings.cache.cleared");
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to clear selected cache");
-            CacheStatus = UIUtils.GetLoc("common.errors.generic");
+            CacheStatus = _localizer.GetLoc("common.errors.generic");
         }
         finally
         {

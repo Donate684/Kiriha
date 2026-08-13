@@ -23,6 +23,7 @@ public partial class HistoryViewModel : ViewModelBase
     private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
     private readonly IDialogService _dialogs;
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settings;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
     private List<HistoryItem> _rawItems = new();
 
     [ObservableProperty]
@@ -51,7 +52,8 @@ public partial class HistoryViewModel : ViewModelBase
         Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
         Kiriha.Core.Abstractions.Services.IMalApiService malApi,
         IDialogService dialogs,
-        Kiriha.Core.Abstractions.Services.ISettingsService settings)
+        Kiriha.Core.Abstractions.Services.ISettingsService settings,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _historyService = historyService;
         _dbInit = dbInit;
@@ -59,6 +61,7 @@ public partial class HistoryViewModel : ViewModelBase
         _malApi = malApi;
         _dialogs = dialogs;
         _settings = settings;
+        _localizer = localizer;
         RefreshHistory().SafeFireAndForget("HistoryInit");
     }
 

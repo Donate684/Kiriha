@@ -14,6 +14,13 @@ namespace Kiriha.ViewModels.Analytics;
 
 public partial class ReadNextSectionViewModel : ViewModelBase
 {
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+
+    public ReadNextSectionViewModel(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    {
+        _localizer = localizer;
+    }
+
     public ObservableCollection<ProfileTodoItem> ReadTodo { get; } = new();
     public ObservableCollection<ProfileTodoItem> FinishedReadTodo { get; } = new();
     public ObservableCollection<ProfileTodoItem> UpcomingTodo { get; } = new();

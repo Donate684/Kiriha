@@ -25,7 +25,7 @@ internal sealed record SeasonalFilterRequest(
     bool FilterCompleted,
     bool FilterOnHold,
     bool FilterPlanToWatch,
-    bool FilterDropped);
+    bool FilterDropped, Kiriha.Core.Abstractions.Services.ILocalizer Localizer);
 
 internal sealed record SeasonalFilterResult(
     IReadOnlyList<AnimeEntity> Items,
@@ -46,7 +46,7 @@ internal static class SeasonalFilterEngine
         var categories = SeasonalCategoryBuckets.Build(filtered, request.CurrentYear, request.CurrentSeason);
         var resolvedCategory = categories.ResolveCategory(request.SelectedCategory);
         var items = categories.GetItems(resolvedCategory).DistinctBy(x => x.Id).ToList();
-        var headers = categories.BuildHeaders();
+        var headers = categories.BuildHeaders(request.Localizer);
 
         return new SeasonalFilterResult(
             items,
@@ -164,22 +164,22 @@ internal sealed class SeasonalCategoryBuckets
         ? items
         : _items["Other"];
 
-    public IReadOnlyDictionary<string, string> BuildHeaders() => new Dictionary<string, string>
+    public IReadOnlyDictionary<string, string> BuildHeaders(Kiriha.Core.Abstractions.Services.ILocalizer localizer) => new Dictionary<string, string>
     {
-        ["New"] = GetHeader("anime.seasonal.categories.new", _items["New"].Count),
-        ["Continuing"] = GetHeader("anime.seasonal.categories.continuing", _items["Continuing"].Count),
-        ["Movies"] = GetHeader("anime.seasonal.categories.movies", _items["Movies"].Count),
-        ["OVA"] = GetHeader("ova", _items["OVA"].Count),
-        ["ONA"] = GetHeader("ona", _items["ONA"].Count),
-        ["Specials"] = GetHeader("anime.seasonal.categories.specials", _items["Specials"].Count),
-        ["Other"] = GetHeader("anime.seasonal.categories.other", _items["Other"].Count)
+        ["New"] = GetHeader("anime.seasonal.categories.new", _items["New"].Count, localizer),
+        ["Continuing"] = GetHeader("anime.seasonal.categories.continuing", _items["Continuing"].Count, localizer),
+        ["Movies"] = GetHeader("anime.seasonal.categories.movies", _items["Movies"].Count, localizer),
+        ["OVA"] = GetHeader("ova", _items["OVA"].Count, localizer),
+        ["ONA"] = GetHeader("ona", _items["ONA"].Count, localizer),
+        ["Specials"] = GetHeader("anime.seasonal.categories.specials", _items["Specials"].Count, localizer),
+        ["Other"] = GetHeader("anime.seasonal.categories.other", _items["Other"].Count, localizer)
     };
 
-    private static string GetHeader(string key, int count)
+    private static string GetHeader(string key, int count, Kiriha.Core.Abstractions.Services.ILocalizer _localizer)
     {
-        string loc = UIUtils.GetLoc(key);
+        string loc = _localizer.GetLoc(key);
         if (loc == key && key != "TV" && key != "OVA" && key != "ONA")
             loc = char.ToUpper(loc[0]) + loc.Substring(1);
-        return UIUtils.GetLoc("filters.header_format", loc, count.ToString());
+        return _localizer.GetLoc("filters.header_format", loc, count.ToString());
     }
 }

@@ -37,18 +37,18 @@ public partial class ReadNextSectionViewModel
         return $"{nextEpisode} серия • {date}";
     }
 
-    private static string FormatPlanDetail(AnimeEntity item)
+    private string FormatPlanDetail(AnimeEntity item)
     {
         if (item.Genres.Count > 0)
         {
             return string.Join(", ", item.Genres.Take(2).Select(LocalizeGenre));
         }
 
-        var type = UIUtils.GetLoc($"anime.types.{item.Type}");
+        var type = _localizer.GetLoc($"anime.types.{item.Type}");
         return type == $"anime.types.{item.Type}" ? item.Type : type;
     }
 
-    private static string LocalizeGenre(string genre)
+    private string LocalizeGenre(string genre)
     {
         var candidates = new[]
         {
@@ -60,7 +60,7 @@ public partial class ReadNextSectionViewModel
         foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var key = $"genres.{candidate}";
-            var translated = UIUtils.GetLoc(key);
+            var translated = _localizer.GetLoc(key);
             if (translated != key)
             {
                 return translated;
@@ -70,7 +70,7 @@ public partial class ReadNextSectionViewModel
         return genre;
     }
 
-    private static string ToResourceKey(string value)
+    private string ToResourceKey(string value)
     {
         var chars = new List<char>(value.Length);
         var lastWasSeparator = false;

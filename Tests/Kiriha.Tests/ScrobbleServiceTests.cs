@@ -8,7 +8,6 @@ using Kiriha.Services.Data.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services;
 using Kiriha.Services.AppLifecycle;
@@ -16,7 +15,6 @@ using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Moq;
 
-using Kiriha.Core.Domain.Models.Entities;
 namespace Kiriha.Tests;
 
 public class ScrobbleServiceTests : IDisposable

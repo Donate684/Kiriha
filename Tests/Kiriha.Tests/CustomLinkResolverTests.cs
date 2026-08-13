@@ -2,7 +2,6 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Tests;

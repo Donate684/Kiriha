@@ -38,6 +38,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
     private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
     private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
     public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
 
@@ -50,9 +51,9 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     public AdultFilterMode[] AdultFilterOptions { get; } = [AdultFilterMode.Hide, AdultFilterMode.Include, AdultFilterMode.Only];
     public string DisplayAdultFilter => AdultFilter switch
     {
-        AdultFilterMode.Hide => UIUtils.GetLoc("filters.adult.hide"),
-        AdultFilterMode.Include => UIUtils.GetLoc("filters.adult.include"),
-        AdultFilterMode.Only => UIUtils.GetLoc("filters.adult.only"),
+        AdultFilterMode.Hide => _localizer.GetLoc("filters.adult.hide"),
+        AdultFilterMode.Include => _localizer.GetLoc("filters.adult.include"),
+        AdultFilterMode.Only => _localizer.GetLoc("filters.adult.only"),
         _ => "18+"
     };
 
@@ -76,7 +77,8 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
 
     public SearchViewModel(Kiriha.Core.Abstractions.Services.IMalApiService apiService, ShikiMetadataService shikiMetadataService,
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService, LoadQueueService queueService,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Abstractions.Services.ISyncManager syncManager, Kiriha.Core.Dialogs.IDialogService dialogService)
+        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Abstractions.Services.ISyncManager syncManager, Kiriha.Core.Dialogs.IDialogService dialogService,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _apiService = apiService;
         _shikiMetadataService = shikiMetadataService;
@@ -85,6 +87,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
         _animeRepo = animeRepo;
         _syncManager = syncManager;
         _dialogService = dialogService;
+        _localizer = localizer;
 
         _searchDebouncer = new Kiriha.Utils.Async.Debouncer(TimeSpan.FromMilliseconds(800), _ =>
         {

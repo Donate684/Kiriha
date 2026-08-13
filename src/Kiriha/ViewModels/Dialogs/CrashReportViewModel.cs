@@ -27,12 +27,14 @@ public partial class CrashReportViewModel : ObservableObject
     private string _statusText = string.Empty;
 
     private readonly string? _crashFilePath;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
-    public CrashReportViewModel() { } // designer
+    public CrashReportViewModel() { _localizer = null!; } // designer
 
-    public CrashReportViewModel(string crashFilePath)
+    public CrashReportViewModel(string crashFilePath, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _crashFilePath = crashFilePath;
+        _localizer = localizer;
         ReportText = CrashReportReader.ReadReport(crashFilePath);
     }
 
@@ -44,16 +46,16 @@ public partial class CrashReportViewModel : ObservableObject
             var clipboard = GetClipboard();
             if (clipboard == null)
             {
-                StatusText = UIUtils.GetLoc("crash.status.copy_unavailable");
+                StatusText = _localizer.GetLoc("crash.status.copy_unavailable");
                 return;
             }
             await clipboard.SetTextAsync(ReportText);
-            StatusText = UIUtils.GetLoc("crash.status.copied");
+            StatusText = _localizer.GetLoc("crash.status.copied");
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "CrashReportViewModel: clipboard copy failed");
-            StatusText = UIUtils.GetLoc("crash.status.copy_failed");
+            StatusText = _localizer.GetLoc("crash.status.copy_failed");
         }
     }
 
@@ -79,7 +81,7 @@ public partial class CrashReportViewModel : ObservableObject
         catch (Exception ex)
         {
             Log.Warning(ex, "CrashReportViewModel: open folder failed");
-            StatusText = UIUtils.GetLoc("crash.status.open_failed");
+            StatusText = _localizer.GetLoc("crash.status.open_failed");
         }
     }
 

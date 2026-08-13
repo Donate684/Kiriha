@@ -63,7 +63,7 @@ public partial class HistoryViewModel
                 else
                 {
                     if (run != null) group.Items.Add(run);
-                    run = new HistoryEntryVm
+                    run = new HistoryEntryVm(_localizer)
                     {
                         AnimeId = item.AnimeId,
                         AnimeTitle = item.AnimeTitle,
@@ -90,8 +90,8 @@ public partial class HistoryViewModel
     private string GetFriendlyDate(DateTime date)
     {
         var now = DateTime.UtcNow.Date;
-        if (date == now) return UIUtils.GetLoc("common.time.today");
-        if (date == now.AddDays(-1)) return UIUtils.GetLoc("common.time.yesterday");
+        if (date == now) return _localizer.GetLoc("common.time.today");
+        if (date == now.AddDays(-1)) return _localizer.GetLoc("common.time.yesterday");
 
         var culture = _settings.Current.UI.LanguageCode == AppConstants.Languages.Ru ? new System.Globalization.CultureInfo("ru-RU") : new System.Globalization.CultureInfo("en-US");
         return date.ToString("d MMMM", culture);

@@ -37,7 +37,7 @@ public partial class SeasonalViewModel
     [NotifyPropertyChangedFor(nameof(DisplaySeason))]
     private string _currentSeason = "";
 
-    public string DisplaySeason => UIUtils.GetLoc("anime.seasons." + CurrentSeason.ToLower());
+    public string DisplaySeason => _localizer.GetLoc("anime.seasons." + CurrentSeason.ToLower());
 
     [ObservableProperty] private AvaloniaList<AnimeEntity> _displayItems = new();
     [ObservableProperty] private string _currentHeader = "";
@@ -46,7 +46,7 @@ public partial class SeasonalViewModel
     [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
     private string _sortBy = "";
 
-    public string DisplaySortBy => UIUtils.GetLoc("filters.sort." + SortBy.ToLower());
+    public string DisplaySortBy => _localizer.GetLoc("filters.sort." + SortBy.ToLower());
 
     public List<string> SortOptions { get; } = new()
     {

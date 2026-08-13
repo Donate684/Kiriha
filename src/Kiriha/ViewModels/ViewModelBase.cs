@@ -7,7 +7,6 @@ namespace Kiriha.ViewModels;
 
 public abstract class ViewModelBase : ObservableObject
 {
-    protected IServiceProvider ServiceProvider => ((App)Application.Current!).ServiceProvider;
 
     protected bool IsDesignMode => Design.IsDesignMode;
 

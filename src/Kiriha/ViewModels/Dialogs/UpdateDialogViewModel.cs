@@ -17,6 +17,7 @@ public partial class UpdateDialogViewModel : ViewModelBase
     private readonly UpdateService _updateService;
     private readonly Action _closeAction;
     private readonly CancellationTokenSource _cts = new();
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
     [ObservableProperty]
     private string _versionText;
@@ -36,19 +37,20 @@ public partial class UpdateDialogViewModel : ViewModelBase
 
     public string NewVersionLabel => _updateService.NewVersion is { } v ? $"v{v}" : string.Empty;
 
-    public UpdateDialogViewModel(UpdateService updateService, Action closeAction, bool isDownloaded = false)
+    public UpdateDialogViewModel(UpdateService updateService, Action closeAction, bool isDownloaded, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _updateService = updateService;
         _closeAction = closeAction;
         _isDownloaded = isDownloaded;
+        _localizer = localizer;
 
         if (isDownloaded)
         {
-            _versionText = Core.UIUtils.GetLoc("updates.downloaded");
+            _versionText = _localizer.GetLoc("updates.downloaded");
         }
         else
         {
-            _versionText = Core.UIUtils.GetLoc("updates.found.message", _updateService.NewVersion);
+            _versionText = _localizer.GetLoc("updates.found.message", _updateService.NewVersion);
         }
     }
 

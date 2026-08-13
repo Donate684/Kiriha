@@ -55,7 +55,7 @@ public partial class TastesSectionViewModel
         }
     }
 
-    private static void AddFavoriteRows(
+    private void AddFavoriteRows(
         ObservableCollection<AnalyticsFavoriteRow> target,
         IEnumerable<AnimeEntity> items,
         Func<AnimeEntity, IEnumerable<string>> selector,
@@ -149,7 +149,7 @@ public partial class TastesSectionViewModel
         return bayesianMean + volumeBonus;
     }
 
-    private static string LocalizeGenre(string genre)
+    private string LocalizeGenre(string genre)
     {
         var candidates = new[]
         {
@@ -161,7 +161,7 @@ public partial class TastesSectionViewModel
         foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var key = $"genres.{candidate}";
-            var translated = UIUtils.GetLoc(key);
+            var translated = _localizer.GetLoc(key);
             if (translated != key)
             {
                 return translated;
@@ -171,7 +171,7 @@ public partial class TastesSectionViewModel
         return genre;
     }
 
-    private static string ToResourceKey(string value)
+    private string ToResourceKey(string value)
     {
         var chars = new List<char>(value.Length);
         var lastWasSeparator = false;

@@ -3,7 +3,6 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Shared.Shiki;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Tests;

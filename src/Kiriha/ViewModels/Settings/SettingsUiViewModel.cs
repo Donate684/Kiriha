@@ -27,9 +27,9 @@ public partial class SettingsUiViewModel : ObservableObject
 
     public List<ThemeOption> AvailableThemes => new()
     {
-        new ThemeOption(UIUtils.GetLoc("settings.theme.default"), ThemeType.System),
-        new ThemeOption(UIUtils.GetLoc("settings.theme.light"), ThemeType.Light),
-        new ThemeOption(UIUtils.GetLoc("settings.theme.dark"), ThemeType.Dark)
+        new ThemeOption(_localizationService.GetLoc("settings.theme.default"), ThemeType.System),
+        new ThemeOption(_localizationService.GetLoc("settings.theme.light"), ThemeType.Light),
+        new ThemeOption(_localizationService.GetLoc("settings.theme.dark"), ThemeType.Dark)
     };
 
     [ObservableProperty] private ThemeOption _selectedTheme;

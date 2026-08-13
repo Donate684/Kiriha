@@ -74,6 +74,7 @@ internal static class DataServicesRegistration
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
         services.AddSingleton<LocalizationService>();
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<ShikiMetadataService>();
         services.AddHttpClient("ImageClient", c =>
         {

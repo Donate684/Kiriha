@@ -26,14 +26,17 @@ public partial class CacheCleanupItem : ObservableObject
     [NotifyPropertyChangedFor(nameof(DisplayStats))]
     private long _sizeBytes;
 
-    public string DisplayStats => SizeBytes > 0
-        ? UIUtils.GetLoc("settings.cache.stats_with_size", ItemCount, FormatBytes(SizeBytes))
-        : UIUtils.GetLoc("settings.cache.stats_items", ItemCount);
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
-    public CacheCleanupItem(CacheCleanupTarget target, string titleKey)
+    public string DisplayStats => SizeBytes > 0
+        ? _localizer.GetLoc("settings.cache.stats_with_size", ItemCount, FormatBytes(SizeBytes))
+        : _localizer.GetLoc("settings.cache.stats_items", ItemCount);
+
+    public CacheCleanupItem(CacheCleanupTarget target, string titleKey, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         Target = target;
         TitleKey = titleKey;
+        _localizer = localizer;
     }
 
     private static string FormatBytes(long bytes)

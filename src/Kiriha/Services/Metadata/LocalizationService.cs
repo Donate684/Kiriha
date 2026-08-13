@@ -8,7 +8,7 @@ using Serilog;
 
 namespace Kiriha.Services.Data.Metadata;
 
-public class LocalizationService
+public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
 {
     private string _currentLanguage = "en";
     private readonly string[] _namespaces =
@@ -18,6 +18,18 @@ public class LocalizationService
         "updates", "auth", "search", "torrents", "notifications", "crash",
         "about", "player", "analytics", "schedule"
     };
+
+    public string GetLoc(string key)
+    {
+        return Application.Current?.Resources[$"l.{key}"] as string ?? key;
+    }
+
+    public string GetLoc(string key, params object?[] args)
+    {
+        var pattern = GetLoc(key);
+        try { return string.Format(pattern, args); }
+        catch { return pattern; }
+    }
 
     public void LoadLanguage(string langCode)
     {

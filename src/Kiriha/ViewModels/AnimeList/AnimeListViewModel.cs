@@ -40,6 +40,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
     private readonly ShikiMetadataService _shikiMetadataService;
     private readonly AnimeCollectionProjection _listProjection = new();
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
     public Kiriha.Core.Abstractions.Services.ISettingsService SettingsService => _settingsService;
     public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
@@ -57,7 +58,8 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         RssFeedService rssService,
         AppReadinessService readinessService,
         Kiriha.Core.Dialogs.IDialogService dialogService,
-        ShikiMetadataService shikiMetadataService)
+        ShikiMetadataService shikiMetadataService,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _settingsService = settingsService;
         _animeRepo = animeRepo;
@@ -69,6 +71,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         _readinessService = readinessService;
         _dialogService = dialogService;
         _shikiMetadataService = shikiMetadataService;
+        _localizer = localizer;
 
         _filterNsfw = _settingsService.Current.UI.ListShowNsfw;
         _sortBy = _settingsService.Current.UI.ListSortBy;

@@ -63,7 +63,7 @@ public partial class SettingsViewModel : ViewModelBase
 
         Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver);
         Update = new SettingsUpdateViewModel(updateService);
-        Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel);
+        Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel, localizationService);
 
         CustomLinks = new SettingsCustomLinksViewModel(settingsService, faviconService);
     }

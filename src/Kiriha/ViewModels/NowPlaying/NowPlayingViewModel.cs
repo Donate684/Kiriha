@@ -26,7 +26,6 @@ using Kiriha.Core;
 using Kiriha.Core.Platform;
 using Kiriha.Core.Shared.Shiki;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Shared.Messages;
 using Kiriha.Services.Data;
@@ -48,6 +47,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     // 0 means "no manual selection pending".
     private int _pendingManualMatchId;
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
     private readonly MappingService _mappingService;
     private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
     private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _progressService;
@@ -88,10 +88,10 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     [NotifyPropertyChangedFor(nameof(DisplayStatus))]
     private string _trackingStatus = string.Empty;
 
-    public string DisplayStatus => !IsMediaDetected ? UIUtils.GetLoc("scrobbler.status.ready") :
+    public string DisplayStatus => !IsMediaDetected ? _localizer.GetLoc("scrobbler.status.ready") :
                                    (!string.IsNullOrEmpty(TrackingStatus) ? TrackingStatus :
-                                   (IsPaused ? UIUtils.GetLoc("scrobbler.status.paused") :
-                                   (string.IsNullOrEmpty(CountdownStatus) ? UIUtils.GetLoc("scrobbler.status.active") : CountdownStatus)));
+                                   (IsPaused ? _localizer.GetLoc("scrobbler.status.paused") :
+                                   (string.IsNullOrEmpty(CountdownStatus) ? _localizer.GetLoc("scrobbler.status.active") : CountdownStatus)));
 
     public Kiriha.Core.Abstractions.Services.ISettingsService Settings => _settingsService;
     public bool IsScrobblerEnabled => _settingsService.Current.System.Scrobbler.Enabled;
@@ -118,9 +118,11 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
         Kiriha.Core.Abstractions.Services.IProgressUpdateService progressService,
         Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
         ShikiMetadataService shikiMetadataService,
-        Kiriha.Core.Abstractions.Services.IMalApiService malApi)
+        Kiriha.Core.Abstractions.Services.IMalApiService malApi,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _trackingService = trackingService;
+        _localizer = localizer;
         _settingsService = settingsService;
         _mappingService = mappingService;
         _animeRepo = animeRepo;

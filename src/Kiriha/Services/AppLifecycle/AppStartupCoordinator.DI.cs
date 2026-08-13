@@ -57,6 +57,7 @@ public sealed partial class AppStartupCoordinator
         services.AddSingleton<Kiriha.Core.Abstractions.Services.ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.SettingsShutdownHandler>();
         services.AddSingleton<LocalizationService>();
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<IPlayerMediaMetadataResolver, FilenamePlayerMediaMetadataResolver>();
     }
 }

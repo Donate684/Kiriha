@@ -19,7 +19,7 @@ namespace Kiriha.ViewModels.Startup;
 public partial class FirstStartupViewModel : ViewModelBase
 {
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
-    private readonly LocalizationService _localizationService;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
     private readonly SettingsViewModel _settingsViewModel;
 
     [ObservableProperty]
@@ -36,11 +36,11 @@ public partial class FirstStartupViewModel : ViewModelBase
 
     public FirstStartupViewModel(
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
-        LocalizationService localizationService,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer,
         SettingsViewModel settingsViewModel)
     {
         _settingsService = settingsService;
-        _localizationService = localizationService;
+        _localizer = localizer;
         _settingsViewModel = settingsViewModel;
 
         _settingsViewModel.System.PropertyChanged += (s, e) =>
@@ -155,7 +155,7 @@ public partial class FirstStartupViewModel : ViewModelBase
         }
     }
 
-    public string ProgressText => Core.UIUtils.GetLoc("wizard.step_of", CurrentStepIndex + 1, Steps.Count);
+    public string ProgressText => _localizer.GetLoc("wizard.step_of", CurrentStepIndex + 1, Steps.Count);
 
     private void NotifyCurrentStepFlagsChanged()
     {

@@ -24,6 +24,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
     private readonly SeasonalCacheStore _cacheStore;
     private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
     private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
     public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
 
@@ -34,7 +35,8 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
         SeasonalCacheStore cacheStore,
         Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
-        Kiriha.Core.Dialogs.IDialogService dialogService)
+        Kiriha.Core.Dialogs.IDialogService dialogService,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _apiService = apiService;
         _settingsService = settingsService;
@@ -43,6 +45,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         _cacheStore = cacheStore;
         _syncManager = syncManager;
         _dialogService = dialogService;
+        _localizer = localizer;
 
         HydrateDiskCacheOnce();
         LoadSettingsState();

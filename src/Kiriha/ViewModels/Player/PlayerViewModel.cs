@@ -21,6 +21,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
     private readonly IPlayerMediaMetadataResolver? _metadataResolver;
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService? _settingsService;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
     private readonly PlayerPlaybackController _playback = new();
     private readonly PlayerStatePublisher _statePublisher;
     private readonly PlayerTimelineService _timeline = new();
@@ -50,13 +51,14 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
     public PlayerViewModel(
         string videoUrl,
-        PlayerMediaMetadata? metadata = null,
-        IPlayerMediaMetadataResolver? metadataResolver = null,
-        Kiriha.Core.Abstractions.Services.ISettingsService? settingsService = null)
+        PlayerMediaMetadata? metadata,
+        IPlayerMediaMetadataResolver? metadataResolver,
+        Kiriha.Core.Abstractions.Services.ISettingsService? settingsService, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;
         _settingsService = settingsService;
+        _localizer = localizer;
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
         _settingsApplier = new PlayerSettingsApplier(_playback);
         _timelinePreview = new PlayerTimelinePreviewController(Overlay);

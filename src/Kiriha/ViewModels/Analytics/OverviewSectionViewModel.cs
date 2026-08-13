@@ -12,6 +12,13 @@ namespace Kiriha.ViewModels.Analytics;
 
 public partial class OverviewSectionViewModel : ViewModelBase
 {
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+
+    public OverviewSectionViewModel(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    {
+        _localizer = localizer;
+    }
+
     public ObservableCollection<AnalyticsMetric> Metrics { get; } = new();
     public ObservableCollection<AnalyticsBar> StatusDistribution { get; } = new();
     public ObservableCollection<AnalyticsBar> ScoreDistribution { get; } = new();
@@ -55,7 +62,7 @@ public partial class OverviewSectionViewModel : ViewModelBase
             var percent = items.Count > 0 ? group.Count * 100.0 / items.Count : 0;
             StatusDistribution.Add(new AnalyticsBar
             {
-                Label = AnalyticsHelpers.GetStatusLabel(group.Status),
+                Label = AnalyticsHelpers.GetStatusLabel(group.Status, _localizer),
                 Value = group.Count.ToString("N0"),
                 Count = group.Count,
                 Percent = AnalyticsHelpers.Percent(group.Count, items.Count),

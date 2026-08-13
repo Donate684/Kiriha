@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Shared.Messages;
 using Kiriha.Utils.Async;
@@ -50,7 +49,7 @@ public partial class NowPlayingViewModel
         if (anime != null)
         {
             IsManuallyMapped = _trackingService.IsManuallyMapped();
-            LogDetection(CurrentMedia ?? new ParsedMedia { AnimeTitle = anime.Title }, UIUtils.GetLoc("scrobbler.status.matched"));
+            LogDetection(CurrentMedia ?? new ParsedMedia { AnimeTitle = anime.Title }, _localizer.GetLoc("scrobbler.status.matched"));
 
             // Force fetch + apply Russian metadata if enabled and missing.
             // EnsureLocalizedAsync handles the cache-miss → API fetch path
@@ -106,7 +105,7 @@ public partial class NowPlayingViewModel
         if (media != null)
         {
             IsPaused = !media.IsPlaying;
-            LogDetection(media, UIUtils.GetLoc("scrobbler.status.detected"));
+            LogDetection(media, _localizer.GetLoc("scrobbler.status.detected"));
         }
         else
         {
@@ -122,7 +121,7 @@ public partial class NowPlayingViewModel
             new[] { media.VideoResolution, media.Source, media.AnimeType }
             .Where(s => !string.IsNullOrEmpty(s)));
         string extraInfo = !string.IsNullOrEmpty(extras) ? $" [{extras}]" : "";
-        string epInfo = !string.IsNullOrEmpty(media.Episode) ? $" ({UIUtils.GetLoc("anime.labels.episode")} {media.Episode})" : "";
+        string epInfo = !string.IsNullOrEmpty(media.Episode) ? $" ({_localizer.GetLoc("anime.labels.episode")} {media.Episode})" : "";
         string logEntry = $"[{DateTime.UtcNow:HH:mm:ss}] {status}: {media.AnimeTitle}{epInfo}{extraInfo}";
         DetectionLogs.Insert(0, logEntry);
         if (DetectionLogs.Count > 50) DetectionLogs.RemoveAt(50);

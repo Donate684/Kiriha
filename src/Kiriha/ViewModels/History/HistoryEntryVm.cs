@@ -11,6 +11,12 @@ namespace Kiriha.ViewModels.History;
 /// </summary>
 public class HistoryEntryVm
 {
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+
+    public HistoryEntryVm(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    {
+        _localizer = localizer;
+    }
     public int AnimeId { get; set; }
     public string AnimeTitle { get; set; } = string.Empty;
     public string? RussianTitle { get; set; }
@@ -27,7 +33,7 @@ public class HistoryEntryVm
     public string EpisodeLabel =>
         (ActionType == 1 || ActionType == 4 || ActionType == 6)
             ? (IsRange
-                ? UIUtils.GetLoc("history.episode_range", EpisodeFrom, EpisodeTo)
-                : (EpisodeFrom > 0 ? UIUtils.GetLoc("history.episode_single", EpisodeFrom) : string.Empty))
+                ? _localizer.GetLoc("history.episode_range", EpisodeFrom, EpisodeTo)
+                : (EpisodeFrom > 0 ? _localizer.GetLoc("history.episode_single", EpisodeFrom) : string.Empty))
             : string.Empty;
 }
