@@ -1,10 +1,9 @@
-﻿using Kiriha.Models.Entities;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Models.Entities;
 using Serilog;
 #if WINDOWS
 using Windows.Media.Control;
@@ -15,7 +14,7 @@ namespace Kiriha.Core.Tracking.Integration;
 public class SmtcService : IDisposable
 {
     private readonly ISettingsService _settingsService;
-    #if WINDOWS
+#if WINDOWS
     private GlobalSystemMediaTransportControlsSessionManager? _manager;
 #endif
 
@@ -30,7 +29,7 @@ public class SmtcService : IDisposable
     {
         try
         {
-            #if WINDOWS
+#if WINDOWS
             if (_manager == null && OperatingSystem.IsWindows())
             {
                 _manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
@@ -46,7 +45,7 @@ public class SmtcService : IDisposable
 
     public (TimeSpan Position, TimeSpan Duration, DateTimeOffset LastUpdatedTime)? GetTimeline(string processName)
     {
-        #if WINDOWS
+#if WINDOWS
         if (_manager == null || !OperatingSystem.IsWindows()) return null;
 
         try

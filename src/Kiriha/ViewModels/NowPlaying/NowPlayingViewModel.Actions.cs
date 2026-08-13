@@ -15,7 +15,7 @@ using Kiriha.Core.Platform;
 using Kiriha.Core.Shiki;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Models.Messages;
+using Kiriha.Core.Messages;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;

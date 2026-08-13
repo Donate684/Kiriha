@@ -1,20 +1,18 @@
-﻿using Kiriha.Models.Entities;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Services;
 using System;
-using Kiriha.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
 using Kiriha.Core.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Anisthesia;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Models;
+using Kiriha.Models.Entities;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -48,7 +46,7 @@ public class AnisthesiaService : IHostedService, IDisposable
         _settingsService = settingsService;
         _smtcService = smtcService;
         _backgroundTasks = backgroundTasks;
-        
+
         _availablePlayers = new List<AnisthesiaPlayer>(players);
         _detectionManager = new DetectionManager(_availablePlayers, _settingsService);
     }

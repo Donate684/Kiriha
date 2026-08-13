@@ -1,9 +1,4 @@
-﻿using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Core.Services;
-using Kiriha.Core.Constants;
 using System;
-using Kiriha.Core.Infrastructure.Http;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -11,10 +6,14 @@ using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
+using Kiriha.Core.Constants;
+using Kiriha.Core.Infrastructure.Http;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Core.Tracking.Auth;
+using Kiriha.Core.Tracking.Sync;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Core.Tracking.Auth;
-using Kiriha.Core.Repositories;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

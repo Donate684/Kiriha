@@ -1,13 +1,11 @@
-﻿using Kiriha.Models.Entities;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
 using System;
 using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Core.Models;
-using Kiriha.Models.Entities;
 using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;

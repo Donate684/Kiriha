@@ -1,4 +1,3 @@
-using Kiriha.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -7,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core;
+using Kiriha.Core.Constants;
 using Kiriha.Models.Api;
 using Serilog;
 

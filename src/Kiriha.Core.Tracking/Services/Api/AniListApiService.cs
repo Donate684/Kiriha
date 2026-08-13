@@ -1,4 +1,3 @@
-﻿using Kiriha.Core.Models;
 using System;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -8,6 +7,7 @@ using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Kiriha.Core;
+using Kiriha.Core.Models;
 using Kiriha.Core.Repositories;
 using Serilog;
 

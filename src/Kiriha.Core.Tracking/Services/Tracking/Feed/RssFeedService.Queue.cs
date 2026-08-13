@@ -1,15 +1,14 @@
-using Kiriha.Models.Entities;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Integration;
 using Kiriha.Models.Entities;
 using Serilog;
 
@@ -81,12 +80,12 @@ public partial class RssFeedService
                     torrent = new TorrentEntity
                     {
                         Title = title,
-                        AnimeTitle = animeTitle,
-                        Episode = episodeStr,
-                        Resolution = resolution,
-                        ReleaseGroup = group,
-                        DownloadLink = item.Element("link")?.Value,
-                        MagnetLink = !string.IsNullOrEmpty(infoHash) ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}" : null,
+                        AnimeTitle = animeTitle ?? string.Empty,
+                        Episode = episodeStr ?? string.Empty,
+                        Resolution = resolution ?? string.Empty,
+                        ReleaseGroup = group ?? string.Empty,
+                        DownloadLink = item.Element("link")?.Value ?? string.Empty,
+                        MagnetLink = !string.IsNullOrEmpty(infoHash) ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}" : string.Empty,
                         PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.UtcNow,
                         IsNew = true
                     };

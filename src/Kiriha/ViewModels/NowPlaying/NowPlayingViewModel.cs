@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Models;
+using Kiriha.Core.Models;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -27,7 +27,7 @@ using Kiriha.Core.Platform;
 using Kiriha.Core.Shiki;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Models.Messages;
+using Kiriha.Core.Messages;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
 using Serilog;

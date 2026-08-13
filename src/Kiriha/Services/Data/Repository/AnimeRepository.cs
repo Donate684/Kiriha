@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Mapping;
 using System;
 using System.Collections.Generic;
@@ -15,8 +15,6 @@ using Kiriha.Services.Data.Repository;
 using Kiriha.Utils.Collections;
 using Kiriha.Models.Api;
 using Serilog;
-using Kiriha.Core.Repositories;
-using Kiriha.Services.Data.Repository;
 
 namespace Kiriha.Services.Data.Repository;
 

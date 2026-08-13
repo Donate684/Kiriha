@@ -1,19 +1,17 @@
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Services;
 using System;
-using Kiriha.Models;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core;
-using Kiriha.Core.Models;
-using Kiriha.Models.Entities;
-using Kiriha.Models.Entities;
 using Kiriha.Core.Messages;
+using Kiriha.Core.Models;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Models;
+using Kiriha.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -129,7 +127,7 @@ public partial class TrackingService
             try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => _animeRepo.GetCollection().ToList());
-            
+
             var result = await _pipeline.RunAsync(media, userList);
 
             if (result.NegativelyMapped)

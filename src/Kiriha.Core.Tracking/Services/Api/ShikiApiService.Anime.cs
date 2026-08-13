@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +8,6 @@ using Kiriha.Models;
 using Kiriha.Models.Api;
 using Kiriha.Models.Entities;
 using Serilog;
-using System.Net.Http;
 
 namespace Kiriha.Core.Tracking.Api;
 

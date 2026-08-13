@@ -1,12 +1,11 @@
-﻿using Kiriha.Models.Entities;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Services;
 using System;
 using System.Collections.Generic;
 using DiscordRPC;
 using DiscordRPC.Logging;
 using Kiriha.Core;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Models.Entities;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Integration;
@@ -196,8 +195,8 @@ public class DiscordService : IDisposable, Kiriha.Core.Services.IDiscordService
             string formatted = args.Length > 0 ? string.Format(message, args) : message;
 
             // Suppress the known DiscordRPC Assets.Merge NRE bug (Lachee/discord-rpc-csharp#284)
-            if (formatted.Contains("DiscordRPC.Assets.Merge") || 
-                formatted.Contains("System.NullReferenceException") || 
+            if (formatted.Contains("DiscordRPC.Assets.Merge") ||
+                formatted.Contains("System.NullReferenceException") ||
                 formatted == "Object reference not set to an instance of an object.")
             {
                 Log.Debug("[DiscordRPC Ignored] {Message}", formatted);

@@ -1,14 +1,13 @@
-﻿using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Core.Services;
 using System;
-using Kiriha.Core.Models;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Models;
+using Kiriha.Core.Services;
+using Kiriha.Core.Services.AppLifecycle;
+using Kiriha.Core.Tracking.Sync;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Core.Services.AppLifecycle;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;

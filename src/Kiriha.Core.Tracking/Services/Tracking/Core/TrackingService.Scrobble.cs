@@ -1,16 +1,15 @@
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
 using System;
-using Kiriha.Models;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Core.Player;
-using Kiriha.Core.Shiki;
 using Kiriha.Core.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Player;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
+using Kiriha.Core.Shiki;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Models;
 using Kiriha.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -25,11 +24,11 @@ public partial class TrackingService
             timeLeap = Math.Abs((media.Position.Value - prev.Position.Value).TotalSeconds) > 3;
         }
 
-        bool changed = prev.IsPlaying != media.IsPlaying || 
-                       prev.ProcessName != media.ProcessName || 
-                       timeLeap || 
+        bool changed = prev.IsPlaying != media.IsPlaying ||
+                       prev.ProcessName != media.ProcessName ||
+                       timeLeap ||
                        prev.Duration != media.Duration;
-                       
+
         lock (_state) _currentMedia = media;
 
         if (!changed)

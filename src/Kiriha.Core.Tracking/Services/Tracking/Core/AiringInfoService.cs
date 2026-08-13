@@ -1,5 +1,3 @@
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
 using System;
 using System.Linq;
 using System.Threading;
@@ -7,6 +5,8 @@ using System.Threading.Tasks;
 using Kiriha.Core;
 using Kiriha.Core.Infrastructure;
 using Kiriha.Core.Models;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
 using Kiriha.Models.Entities;
 using Serilog;
 
@@ -30,7 +30,7 @@ public class AiringInfoService
         _animeRepo = animeRepo;
         _syncOrchestrator = syncOrchestrator;
         _uiDispatcher = uiDispatcher;
-        
+
         _fetcher = new AiringInfoFetcher(aniListApi);
         _cache = new AiringInfoCache(animeRepo, notificationService, uiDispatcher);
     }

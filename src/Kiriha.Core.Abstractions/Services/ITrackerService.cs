@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Models.Entities;
-using Kiriha.Models.Entities;
 
 namespace Kiriha.Core.Services;
 

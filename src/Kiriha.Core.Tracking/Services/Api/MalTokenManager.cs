@@ -1,7 +1,7 @@
-﻿using Kiriha.Core.Services;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Auth;
 using Serilog;
 

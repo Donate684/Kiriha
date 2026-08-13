@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Kiriha.Core.Tracking.Sync.Models;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;

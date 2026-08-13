@@ -1,21 +1,18 @@
-﻿using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Core.Services;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Core.Services;
-using Kiriha.Core.Constants;
 using System;
 using System.Net;
 using System.Net.Http;
 using Kiriha.Core;
+using Kiriha.Core.Constants;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
 using Kiriha.Core.Shiki;
+using Kiriha.Core.Tracking;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Tracking;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Tracking.Sync;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiriha.Core.Tracking;
@@ -102,11 +99,11 @@ public static class TrackingServicesRegistration
         services.AddSingleton<JikanApiService>();
         services.AddHttpClient("AniListClient")
                 .AddHttpMessageHandler<ResilientHttpHandler>();
-        services.AddSingleton<Kiriha.Core.Services.IAniListApiService>(sp => sp.GetRequiredService<AniListApiService>());
         services.AddSingleton<AniListApiService>(sp =>
             new AniListApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
                 sp.GetRequiredService<IHttpCacheRepository>()));
+        services.AddSingleton<Kiriha.Core.Services.IAniListApiService>(sp => sp.GetRequiredService<AniListApiService>());
 
         // --- RSS ---
         services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));

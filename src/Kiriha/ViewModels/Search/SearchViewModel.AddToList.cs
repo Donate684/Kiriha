@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Models;
 using Kiriha.Models.Entities;
-using Kiriha.Models.Messages;
+using Kiriha.Core.Messages;
 using Serilog;
 
 namespace Kiriha.ViewModels.Search;

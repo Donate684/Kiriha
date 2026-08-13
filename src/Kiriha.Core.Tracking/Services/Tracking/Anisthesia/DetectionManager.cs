@@ -1,17 +1,15 @@
-﻿using Kiriha.Models.Entities;
-using Kiriha.Core.Repositories;
-using Kiriha.Core.Services;
-using Kiriha.Core.Services;
 using System;
-using Kiriha.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Kiriha.Core.Models;
-using Kiriha.Models.Entities;
+using Kiriha.Core.Repositories;
+using Kiriha.Core.Services;
 using Kiriha.Core.Tracking.Anisthesia.Strategies;
+using Kiriha.Models;
+using Kiriha.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Anisthesia;
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
          and we want it to stay clean: silent regressions in null-safety are a top

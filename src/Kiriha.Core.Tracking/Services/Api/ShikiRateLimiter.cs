@@ -1,6 +1,6 @@
 using System;
-using System.Threading.RateLimiting;
 using System.Threading;
+using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 
 namespace Kiriha.Core.Tracking.Api;
