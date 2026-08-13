@@ -16,8 +16,8 @@ namespace Kiriha.ViewModels.Torrents;
 public partial class TorrentsViewModel : ViewModelBase
 {
     private readonly RssFeedService _rssService;
-    private readonly AnimeRepository _animeRepo;
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
 
     public ObservableCollection<TorrentEntity> Torrents { get; } = new();
 
@@ -42,7 +42,7 @@ public partial class TorrentsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isHideMode;
 
-    public TorrentsViewModel(RssFeedService rssService, AnimeRepository animeRepo, SettingsService settingsService)
+    public TorrentsViewModel(RssFeedService rssService, Kiriha.Core.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Services.ISettingsService settingsService)
     {
         _rssService = rssService;
         _animeRepo = animeRepo;

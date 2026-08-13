@@ -17,7 +17,7 @@ namespace Kiriha.ViewModels.Startup;
 
 public partial class FirstStartupViewModel : ViewModelBase
 {
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly LocalizationService _localizationService;
     private readonly SettingsViewModel _settingsViewModel;
 
@@ -34,7 +34,7 @@ public partial class FirstStartupViewModel : ViewModelBase
     public SettingsViewModel SettingsVm => _settingsViewModel;
 
     public FirstStartupViewModel(
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         LocalizationService localizationService,
         SettingsViewModel settingsViewModel)
     {

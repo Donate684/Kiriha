@@ -30,12 +30,12 @@ namespace Kiriha.ViewModels.Search;
 
 public partial class SearchViewModel : ViewModelBase, IDisposable
 {
-    private readonly MalApiService _apiService;
+    private readonly Kiriha.Core.Services.IMalApiService _apiService;
     private readonly ShikiMetadataService _shikiMetadataService;
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly LoadQueueService _queueService;
-    private readonly AnimeRepository _animeRepo;
-    private readonly SyncManager _syncManager;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
     private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
 
     public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
@@ -73,9 +73,9 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     private bool _isDisposed;
     private readonly Kiriha.Utils.Async.Debouncer _searchDebouncer;
 
-    public SearchViewModel(MalApiService apiService, ShikiMetadataService shikiMetadataService,
-        SettingsService settingsService, LoadQueueService queueService,
-        AnimeRepository animeRepo, SyncManager syncManager, Kiriha.Core.Dialogs.IDialogService dialogService)
+    public SearchViewModel(Kiriha.Core.Services.IMalApiService apiService, ShikiMetadataService shikiMetadataService,
+        Kiriha.Core.Services.ISettingsService settingsService, LoadQueueService queueService,
+        Kiriha.Core.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Services.ISyncManager syncManager, Kiriha.Core.Dialogs.IDialogService dialogService)
     {
         _apiService = apiService;
         _shikiMetadataService = shikiMetadataService;

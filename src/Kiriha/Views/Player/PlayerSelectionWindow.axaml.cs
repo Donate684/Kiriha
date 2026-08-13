@@ -6,14 +6,14 @@ namespace Kiriha.Views.Player;
 
 public partial class PlayerSelectionWindow : Window
 {
-    private readonly SettingsService? _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService? _settingsService;
 
     public PlayerSelectionWindow()
     {
         InitializeComponent();
     }
 
-    public PlayerSelectionWindow(SettingsService settingsService) : this()
+    public PlayerSelectionWindow(Kiriha.Core.Services.ISettingsService settingsService) : this()
     {
         _settingsService = settingsService;
         ApplyMica();

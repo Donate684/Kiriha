@@ -32,11 +32,11 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
     // see DI registrations: WelcomeViewModel and SearchViewModel are AddTransient.
     private readonly IViewModelFactory _viewModelFactory;
 
-    private readonly Kiriha.Services.Data.Settings.SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
 
     public MainWindowViewModel(
         IViewModelFactory viewModelFactory,
-        Kiriha.Services.Data.Settings.SettingsService settingsService)
+        Kiriha.Core.Services.ISettingsService settingsService)
     {
         _viewModelFactory = viewModelFactory;
         _settingsService = settingsService;
@@ -53,7 +53,7 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
 
     partial void OnIsPaneOpenChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.IsPaneOpen = value, SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.IsPaneOpen = value, Kiriha.Core.Services.SettingsSection.UI);
     }
 
     [RelayCommand]

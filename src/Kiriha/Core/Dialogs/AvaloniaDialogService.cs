@@ -1,4 +1,4 @@
-﻿using Kiriha.Models.Entities;
+using Kiriha.Models.Entities;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -38,11 +38,11 @@ namespace Kiriha.Core.Dialogs;
 /// </summary>
 public sealed class AvaloniaDialogService : IDialogService
 {
-    private readonly IServiceProvider _services;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService; private readonly Kiriha.Core.Services.ISyncManager _syncManager; private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo; private readonly Kiriha.Core.Services.IProgressUpdateService _progressService; private readonly Kiriha.Core.Services.IHistoryService _historyService; private readonly Kiriha.Core.Services.IMalApiService _malApiService; private readonly Kiriha.Core.Services.IShikiApiService _shikiApiService; private readonly Kiriha.Core.Tracking.Api.JikanApiService _jikanApiService;
 
-    public AvaloniaDialogService(IServiceProvider services)
+    public AvaloniaDialogService(Kiriha.Core.Services.ISettingsService settingsService, Kiriha.Core.Services.ISyncManager syncManager, Kiriha.Core.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Services.IProgressUpdateService progressService, Kiriha.Core.Services.IHistoryService historyService, Kiriha.Core.Services.IMalApiService malApiService, Kiriha.Core.Services.IShikiApiService shikiApiService, Kiriha.Core.Tracking.Api.JikanApiService jikanApiService)
     {
-        _services = services;
+        _settingsService = settingsService; _syncManager = syncManager; _animeRepo = animeRepo; _progressService = progressService; _historyService = historyService; _malApiService = malApiService; _shikiApiService = shikiApiService; _jikanApiService = jikanApiService;
     }
 
     public async Task<bool> ShowAnimeDetailsAsync(Control? sourceControl, AnimeEntity item, CancellationToken ct = default)
@@ -58,28 +58,28 @@ public sealed class AvaloniaDialogService : IDialogService
         var editVm = new AnimeEditViewModel(
             item,
             clone,
-            _services.GetRequiredService<SyncManager>(),
-            _services.GetRequiredService<AnimeRepository>(),
-            _services.GetRequiredService<AnimeProgressService>(),
-            _services.GetRequiredService<HistoryService>());
+            _syncManager,
+            _animeRepo,
+            _progressService,
+            _historyService);
             
         var metaVm = new AnimeMetadataViewModel(
             clone,
-            _services.GetRequiredService<MalApiService>(),
-            _services.GetRequiredService<ShikiApiService>());
+            _malApiService,
+            _shikiApiService);
 
         var vm = new AnimeDetailsViewModel(
             clone,
             editVm,
             metaVm,
-            _services.GetRequiredService<JikanApiService>(),
-            _services.GetRequiredService<SettingsService>(),
+            _jikanApiService,
+            _settingsService,
             this,
-            _services.GetRequiredService<ShikiApiService>(),
-            _services.GetRequiredService<AnimeRepository>(),
-            _services.GetRequiredService<MalApiService>());
+            _shikiApiService,
+            _animeRepo,
+            _malApiService);
 
-        var window = new Views.AnimeDetailsWindow(_services.GetRequiredService<SettingsService>()) { DataContext = vm };
+        var window = new Views.AnimeDetailsWindow(_settingsService) { DataContext = vm };
 
         try
         {

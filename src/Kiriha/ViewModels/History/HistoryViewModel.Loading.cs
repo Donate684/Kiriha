@@ -30,7 +30,7 @@ public partial class HistoryViewModel
                 }
             }
         }
-        catch { /* AnimeRepository may not be ready at very early startup */ }
+        catch { /* Kiriha.Core.Repositories.IAnimeRepository may not be ready at very early startup */ }
 
         HasHistory = _rawItems.Count > 0;
         ApplyFilters();

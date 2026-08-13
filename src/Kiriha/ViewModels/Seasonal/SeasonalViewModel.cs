@@ -16,23 +16,23 @@ namespace Kiriha.ViewModels.Seasonal;
 
 public partial class SeasonalViewModel : ViewModelBase, IDisposable
 {
-    private readonly MalApiService _apiService;
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.IMalApiService _apiService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly LoadQueueService _queueService;
-    private readonly AnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
     private readonly SeasonalCacheStore _cacheStore;
-    private readonly SyncManager _syncManager;
+    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
     private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
 
     public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
 
     public SeasonalViewModel(
-        MalApiService apiService,
-        SettingsService settingsService,
+        Kiriha.Core.Services.IMalApiService apiService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         LoadQueueService queueService,
-        AnimeRepository animeRepo,
+        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
         SeasonalCacheStore cacheStore,
-        SyncManager syncManager,
+        Kiriha.Core.Services.ISyncManager syncManager,
         Kiriha.Core.Dialogs.IDialogService dialogService)
     {
         _apiService = apiService;

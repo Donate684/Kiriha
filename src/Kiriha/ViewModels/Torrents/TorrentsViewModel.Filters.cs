@@ -76,7 +76,7 @@ public partial class TorrentsViewModel
 
     partial void OnFiltersPerTitleChanged(bool value)
     {
-        _settingsService.Update(settings => settings.Torrents.FiltersPerTitle = value, SettingsSection.Torrents);
+        _settingsService.Update(settings => settings.Torrents.FiltersPerTitle = value, Kiriha.Core.Services.SettingsSection.Torrents);
         ReloadFiltersForCurrentContext();
     }
 
@@ -129,7 +129,7 @@ public partial class TorrentsViewModel
                 cfg.FilterHevc = target.FilterHevc;
                 cfg.Filter1080p = target.Filter1080p;
             }
-        }, SettingsSection.Torrents);
+        }, Kiriha.Core.Services.SettingsSection.Torrents);
         PerformSearchCommand.Execute(null);
     }
 

@@ -22,7 +22,7 @@ public partial class AboutWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public AboutWindow(SettingsService settingsService) : this()
+    public AboutWindow(Kiriha.Core.Services.ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         ApplyMica();

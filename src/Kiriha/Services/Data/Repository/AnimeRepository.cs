@@ -35,7 +35,7 @@ public partial class AnimeRepository : IAnimeRepository
     public bool IsInitializing => Volatile.Read(ref _initStarted) == 1 && !_initTcs.Task.IsCompleted;
 
     public BulkObservableCollection<AnimeEntity> Collection { get; } = new();
-    System.Collections.Generic.IEnumerable<AnimeEntity> IAnimeRepository.Collection => Collection;
+    System.Collections.ObjectModel.ObservableCollection<AnimeEntity> Kiriha.Core.Repositories.IAnimeRepository.Collection => Collection;
 
     public IEnumerable<Kiriha.Models.Entities.AnimeEntity> GetCollection()
     {

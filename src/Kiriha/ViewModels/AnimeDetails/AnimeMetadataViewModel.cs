@@ -11,13 +11,13 @@ namespace Kiriha.ViewModels.AnimeDetails;
 public partial class AnimeMetadataViewModel : ObservableObject
 {
     private readonly AnimeEntity _anime;
-    private readonly MalApiService _malApiService;
-    private readonly ShikiApiService _shikiApiService;
+    private readonly Kiriha.Core.Services.IMalApiService _malApiService;
+    private readonly Kiriha.Core.Services.IShikiApiService _shikiApiService;
 
     public AnimeMetadataViewModel(
         AnimeEntity anime,
-        MalApiService malApiService,
-        ShikiApiService shikiApiService)
+        Kiriha.Core.Services.IMalApiService malApiService,
+        Kiriha.Core.Services.IShikiApiService shikiApiService)
     {
         _anime = anime;
         _malApiService = malApiService;

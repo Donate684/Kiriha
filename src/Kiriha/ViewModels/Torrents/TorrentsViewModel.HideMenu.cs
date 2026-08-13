@@ -50,7 +50,7 @@ public partial class TorrentsViewModel
             {
                 ids.Remove(item.Anime.Id);
             }
-        }, SettingsSection.Torrents);
+        }, Kiriha.Core.Services.SettingsSection.Torrents);
 
         if (item.IsHidden)
         {

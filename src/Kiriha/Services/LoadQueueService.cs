@@ -18,7 +18,7 @@ public class LoadQueueService : IDisposable
 {
     private readonly PosterBatchDownloader _posterBatchDownloader;
     private readonly ShikiMetadataService _shikiMetadata;
-    private readonly SettingsService _settings;
+    private readonly Kiriha.Core.Services.ISettingsService _settings;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
 
     private const int ImageWorkerCount = 5;
@@ -35,7 +35,7 @@ public class LoadQueueService : IDisposable
     public LoadQueueService(
         PosterBatchDownloader posterBatchDownloader,
         ShikiMetadataService shikiMetadata,
-        SettingsService settings,
+        Kiriha.Core.Services.ISettingsService settings,
         IBackgroundTaskSupervisor backgroundTasks)
     {
         _posterBatchDownloader = posterBatchDownloader;

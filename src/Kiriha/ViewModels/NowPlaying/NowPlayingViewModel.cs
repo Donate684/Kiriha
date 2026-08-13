@@ -46,13 +46,13 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     // we ignore intermediate null/other matches so they don't clobber the UI choice.
     // 0 means "no manual selection pending".
     private int _pendingManualMatchId;
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly MappingService _mappingService;
-    private readonly AnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
     private readonly Kiriha.Core.Services.IProgressUpdateService _progressService;
-    private readonly SyncManager _syncManager;
+    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
     private readonly ShikiMetadataService _shikiMetadataService;
-    private readonly Kiriha.Core.Tracking.Api.MalApiService _malApi;
+    private readonly Kiriha.Core.Services.IMalApiService _malApi;
 
     [ObservableProperty] private ParsedMedia? _currentMedia;
     
@@ -92,7 +92,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
                                    (IsPaused ? UIUtils.GetLoc("scrobbler.status.paused") :
                                    (string.IsNullOrEmpty(CountdownStatus) ? UIUtils.GetLoc("scrobbler.status.active") : CountdownStatus)));
 
-    public SettingsService Settings => _settingsService;
+    public Kiriha.Core.Services.ISettingsService Settings => _settingsService;
     public bool IsScrobblerEnabled => _settingsService.Current.System.Scrobbler.Enabled;
 
     public ObservableCollection<string> DetectionLogs { get; } = new();
@@ -111,13 +111,13 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
 
     public NowPlayingViewModel(
         Kiriha.Core.Tracking.Core.TrackingService trackingService,
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         MappingService mappingService,
-        AnimeRepository animeRepo,
+        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
         Kiriha.Core.Services.IProgressUpdateService progressService,
-        SyncManager syncManager,
+        Kiriha.Core.Services.ISyncManager syncManager,
         ShikiMetadataService shikiMetadataService,
-        Kiriha.Core.Tracking.Api.MalApiService malApi)
+        Kiriha.Core.Services.IMalApiService malApi)
     {
         _trackingService = trackingService;
         _settingsService = settingsService;

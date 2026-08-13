@@ -30,7 +30,7 @@ namespace Kiriha.Core.Tracking.Sync;
 /// observes a half-constructed service running work against unrelated
 /// dependencies on shutdown.
 /// </summary>
-public partial class SyncManager : IHostedService
+public partial class SyncManager : ISyncManager, IHostedService
 {
     private readonly IReadOnlyList<ITrackerService> _trackers;
     private readonly ISyncTaskRepository _syncTaskRepo;

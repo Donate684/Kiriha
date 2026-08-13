@@ -13,14 +13,14 @@ namespace Kiriha.Services.Maintenance;
 public class UpdateMaintenanceTask : IMaintenanceTask
 {
     private readonly UpdateService _updateService;
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly NotificationService _notificationService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IDialogService _dialogs;
 
     public UpdateMaintenanceTask(
         UpdateService updateService,
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         NotificationService notificationService,
         IUiDispatcher uiDispatcher,
         IDialogService dialogs)

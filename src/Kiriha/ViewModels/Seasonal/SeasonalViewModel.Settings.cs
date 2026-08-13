@@ -58,7 +58,7 @@ public partial class SeasonalViewModel
                 if (FilterOnHold) s.SeasonalStatusFilters.Add("OnHold");
                 if (FilterPlanToWatch) s.SeasonalStatusFilters.Add("PlanToWatch");
                 if (FilterDropped) s.SeasonalStatusFilters.Add("Dropped");
-            }, SettingsSection.UI, save: false);
+            }, Kiriha.Core.Services.SettingsSection.UI, save: false);
 
             await _settingsService.SaveAsync();
         });

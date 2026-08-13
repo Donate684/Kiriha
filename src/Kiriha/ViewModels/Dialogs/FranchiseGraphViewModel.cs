@@ -20,10 +20,10 @@ namespace Kiriha.ViewModels.Dialogs;
 
 public partial class FranchiseGraphViewModel : ViewModelBase
 {
-    private readonly ShikiApiService _shikiApi;
-    private readonly MalApiService _malApi;
+    private readonly Kiriha.Core.Services.IShikiApiService _shikiApi;
+    private readonly Kiriha.Core.Services.IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly AnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
     private readonly int _baseAnimeId;
 
     [ObservableProperty]
@@ -35,7 +35,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    public FranchiseGraphViewModel(int animeId, ShikiApiService shikiApi, MalApiService malApi, IDialogService dialogs, AnimeRepository animeRepo)
+    public FranchiseGraphViewModel(int animeId, Kiriha.Core.Services.IShikiApiService shikiApi, Kiriha.Core.Services.IMalApiService malApi, IDialogService dialogs, Kiriha.Core.Repositories.IAnimeRepository animeRepo)
     {
         _baseAnimeId = animeId;
         _shikiApi = shikiApi;

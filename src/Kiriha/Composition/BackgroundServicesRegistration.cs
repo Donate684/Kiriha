@@ -31,7 +31,7 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<InstanceServer>());
 
         // SyncManager needs to start with the app lifecycle
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<SyncManager>());
+        services.AddSingleton<IHostedService>(sp => (IHostedService)sp.GetRequiredService<Kiriha.Core.Services.ISyncManager>());
 
         // Background utilities
         services.AddSingleton<LoadQueueService>();

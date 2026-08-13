@@ -23,7 +23,7 @@ public partial class ShikiMetadataService : IDisposable
     private readonly HttpClient _httpClient;
     private readonly Kiriha.Core.Repositories.IMetadataRepository _metadataRepo;
     private readonly Kiriha.Core.Repositories.IUserAnimeRepository _userAnimeRepo;
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiHostResolver _hostResolver;
     private readonly IUiDispatcher _uiDispatcher;
@@ -34,7 +34,7 @@ public partial class ShikiMetadataService : IDisposable
 
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         Kiriha.Core.Repositories.IMetadataRepository metadataRepo,
         Kiriha.Core.Repositories.IUserAnimeRepository userAnimeRepo,
         Kiriha.Core.Repositories.IHttpCacheRepository httpCacheRepo,

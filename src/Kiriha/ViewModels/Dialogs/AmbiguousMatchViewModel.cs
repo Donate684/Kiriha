@@ -18,7 +18,7 @@ namespace Kiriha.ViewModels.Dialogs;
 
 public partial class AmbiguousMatchViewModel : ViewModelBase
 {
-    private readonly MalApiService _malApi;
+    private readonly Kiriha.Core.Services.IMalApiService _malApi;
 
     [ObservableProperty]
     private string _fileName;
@@ -34,7 +34,7 @@ public partial class AmbiguousMatchViewModel : ViewModelBase
     [ObservableProperty]
     private AnimeOfflineItem? _selectedAnime;
 
-    public AmbiguousMatchViewModel(string fileName, IEnumerable<AnimeOfflineItem> candidates, MalApiService malApi)
+    public AmbiguousMatchViewModel(string fileName, IEnumerable<AnimeOfflineItem> candidates, Kiriha.Core.Services.IMalApiService malApi)
     {
         _fileName = fileName;
         _malApi = malApi;

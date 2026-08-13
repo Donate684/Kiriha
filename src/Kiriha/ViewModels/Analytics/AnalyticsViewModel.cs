@@ -14,7 +14,7 @@ namespace Kiriha.ViewModels.Analytics;
 
 public partial class AnalyticsViewModel : ViewModelBase
 {
-    private readonly AnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
     private readonly HistoryService _historyService;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
 
@@ -65,7 +65,7 @@ public partial class AnalyticsViewModel : ViewModelBase
         set { if (value) SelectedSection = 5; }
     }
 
-    public AnalyticsViewModel(AnimeRepository animeRepo, HistoryService historyService)
+    public AnalyticsViewModel(Kiriha.Core.Repositories.IAnimeRepository animeRepo, HistoryService historyService)
     {
         _animeRepo = animeRepo;
         _historyService = historyService;

@@ -16,7 +16,7 @@ namespace Kiriha.ViewModels.Player;
 
 public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
 {
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly AnisthesiaService _anisthesia;
     private readonly List<PlayerSelectionItem> _allPlayers = new();
 
@@ -26,7 +26,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
     public ObservableCollection<PlayerSelectionItem> VideoPlayers { get; } = new();
     public ObservableCollection<PlayerSelectionItem> WebBrowsers { get; } = new();
 
-    public PlayerSelectionViewModel(AnisthesiaService anisthesia, SettingsService settingsService)
+    public PlayerSelectionViewModel(AnisthesiaService anisthesia, Kiriha.Core.Services.ISettingsService settingsService)
     {
         _anisthesia = anisthesia;
         _settingsService = settingsService;
@@ -101,7 +101,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
         {
             settings.System.Scrobbler.AllowedProcesses.Clear();
             foreach (var name in enabled) settings.System.Scrobbler.AllowedProcesses.Add(name);
-        }, SettingsSection.System, save: false);
+        }, Kiriha.Core.Services.SettingsSection.System, save: false);
         _settingsService.SaveImmediate();
         window.Close();
     }

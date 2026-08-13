@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Tracking.Integration;
 using System;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -24,10 +24,10 @@ public partial class AnimeEditViewModel : ObservableObject
 {
     private readonly AnimeEntity _originalAnime;
     private readonly AnimeEntity _anime;
-    private readonly SyncManager _syncManager;
-    private readonly AnimeRepository _animeRepo;
-    private readonly AnimeProgressService _animeProgressService;
-    private readonly HistoryService _historyService;
+    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Services.IProgressUpdateService _animeProgressService;
+    private readonly Kiriha.Core.Services.IHistoryService _historyService;
     private bool _isRemoving;
 
     [ObservableProperty]
@@ -62,10 +62,10 @@ public partial class AnimeEditViewModel : ObservableObject
     public AnimeEditViewModel(
         AnimeEntity originalAnime,
         AnimeEntity cloneAnime,
-        SyncManager syncManager,
-        AnimeRepository animeRepo,
-        AnimeProgressService animeProgressService,
-        HistoryService historyService)
+        Kiriha.Core.Services.ISyncManager syncManager,
+        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Services.IProgressUpdateService animeProgressService,
+        Kiriha.Core.Services.IHistoryService historyService)
     {
         _originalAnime = originalAnime;
         _anime = cloneAnime;

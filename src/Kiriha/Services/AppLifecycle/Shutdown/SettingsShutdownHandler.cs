@@ -7,9 +7,9 @@ namespace Kiriha.Services.AppLifecycle.Shutdown;
 
 public sealed class SettingsShutdownHandler : IShutdownHandler
 {
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
 
-    public SettingsShutdownHandler(SettingsService settingsService)
+    public SettingsShutdownHandler(Kiriha.Core.Services.ISettingsService settingsService)
     {
         _settingsService = settingsService;
     }
@@ -22,7 +22,7 @@ public sealed class SettingsShutdownHandler : IShutdownHandler
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Shutdown flush: SettingsService.SaveAsync failed");
+            Log.Error(ex, "Shutdown flush: Kiriha.Core.Services.ISettingsService.SaveAsync failed");
         }
     }
 }

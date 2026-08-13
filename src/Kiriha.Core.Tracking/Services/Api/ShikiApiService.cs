@@ -19,7 +19,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
-public partial class ShikiApiService : ITrackerService
+public partial class ShikiApiService : IShikiApiService
 {
     private readonly HttpClient _httpClient;
     private readonly Kiriha.Core.Services.ISettingsService _settingsService;

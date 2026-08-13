@@ -16,7 +16,7 @@ namespace Kiriha.Services.Maintenance;
 
 public class MetadataFetchMaintenanceTask : IMaintenanceTask
 {
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IMetadataRepository _metadataRepo;
     private readonly ShikiMetadataService _shikiMetadata;
@@ -24,7 +24,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
     private readonly IUiDispatcher _uiDispatcher;
 
     public MetadataFetchMaintenanceTask(
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         IUserAnimeRepository userAnimeRepo,
         IMetadataRepository metadataRepo,
         ShikiMetadataService shikiMetadata,

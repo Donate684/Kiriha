@@ -16,11 +16,11 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
 {
     public ObservableCollection<CustomShareLink> CustomLinks { get; } = new();
 
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly FaviconService _faviconService;
     private readonly Dictionary<CustomShareLink, CancellationTokenSource> _faviconDebouncers = new();
 
-    public SettingsCustomLinksViewModel(SettingsService settingsService, FaviconService faviconService)
+    public SettingsCustomLinksViewModel(Kiriha.Core.Services.ISettingsService settingsService, FaviconService faviconService)
     {
         _settingsService = settingsService;
         _faviconService = faviconService;
@@ -62,7 +62,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
     private void OnCustomLinkPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         // User typed something into Name / UrlTemplate — persist.
-        _settingsService.Update(settings => { }, SettingsSection.CustomLinks, save: false);
+        _settingsService.Update(settings => { }, Kiriha.Core.Services.SettingsSection.CustomLinks, save: false);
         _settingsService.Save();
 
         // When the URL changes, try to refresh the favicon. We deliberately
@@ -134,7 +134,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
         {
             settings.CustomLinks.Clear();
             foreach (var link in CustomLinks) settings.CustomLinks.Add(link);
-        }, SettingsSection.CustomLinks);
+        }, Kiriha.Core.Services.SettingsSection.CustomLinks);
     }
 
     [RelayCommand]

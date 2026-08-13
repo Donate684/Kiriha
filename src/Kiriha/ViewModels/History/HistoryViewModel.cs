@@ -18,10 +18,10 @@ public partial class HistoryViewModel : ViewModelBase
 {
     private readonly HistoryService _historyService;
     private readonly DatabaseInitializer _dbInit;
-    private readonly AnimeRepository _animeRepo;
-    private readonly MalApiService _malApi;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Services.IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly SettingsService _settings;
+    private readonly Kiriha.Core.Services.ISettingsService _settings;
     private List<HistoryItem> _rawItems = new();
 
     [ObservableProperty]
@@ -47,10 +47,10 @@ public partial class HistoryViewModel : ViewModelBase
     public HistoryViewModel(
         HistoryService historyService,
         DatabaseInitializer dbInit,
-        AnimeRepository animeRepo,
-        MalApiService malApi,
+        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Services.IMalApiService malApi,
         IDialogService dialogs,
-        SettingsService settings)
+        Kiriha.Core.Services.ISettingsService settings)
     {
         _historyService = historyService;
         _dbInit = dbInit;

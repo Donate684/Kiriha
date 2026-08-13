@@ -13,14 +13,14 @@ namespace Kiriha.Services.Data.Mapping;
 
 public partial class MappingService : IMappingService
 {
-    private readonly MalApiService _malApi;
+    private readonly Kiriha.Core.Services.IMalApiService _malApi;
     private readonly ManualMappingService _manualMapping;
     private readonly Kiriha.Core.Repositories.IMalSearchCacheRepository _malSearchCache;
     private readonly RecognitionCache _recognitionCache;
     private readonly ConcurrentDictionary<string, int> _sessionCache = new();
     private readonly ConcurrentDictionary<int, (string t, string e, string r)> _normalizedItemCache = new();
 
-    public MappingService(MalApiService malApi, ManualMappingService manualMapping, Kiriha.Core.Repositories.IMalSearchCacheRepository malSearchCache, RecognitionCache recognitionCache)
+    public MappingService(Kiriha.Core.Services.IMalApiService malApi, ManualMappingService manualMapping, Kiriha.Core.Repositories.IMalSearchCacheRepository malSearchCache, RecognitionCache recognitionCache)
     {
         _malApi = malApi;
         _manualMapping = manualMapping;

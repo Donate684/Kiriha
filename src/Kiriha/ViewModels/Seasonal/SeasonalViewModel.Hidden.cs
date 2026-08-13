@@ -38,7 +38,7 @@ public partial class SeasonalViewModel
         {
             foreach (var id in toUnhide)
                 settings.UI.HiddenSeasonalIds?.Remove(id);
-        }, SettingsSection.UI, save: false);
+        }, Kiriha.Core.Services.SettingsSection.UI, save: false);
         _ = _settingsService.SaveAsync();
     }
 
@@ -65,7 +65,7 @@ public partial class SeasonalViewModel
                 if (!list.Contains(item.Id)) list.Add(item.Id);
                 item.IsHiddenInSeasons = true;
             }
-        }, SettingsSection.UI, save: false);
+        }, Kiriha.Core.Services.SettingsSection.UI, save: false);
         _ = _settingsService.SaveAsync();
         ApplyFilters();
     }

@@ -32,11 +32,11 @@ public partial class SettingsViewModel : ViewModelBase
 
     public SettingsCustomLinksViewModel CustomLinks { get; }
 
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly FaviconService _faviconService;
 
     public SettingsViewModel(
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         MalAuthService authService,
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver,

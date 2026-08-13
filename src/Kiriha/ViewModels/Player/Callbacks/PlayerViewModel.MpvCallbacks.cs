@@ -38,13 +38,13 @@ public partial class PlayerViewModel
     private void SaveMpvOption(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Services.SettingsSection.Player);
     }
 
     private void SaveVideoProcessingOption(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Services.SettingsSection.Player);
         ApplyVideoProcessingOptions();
     }
 

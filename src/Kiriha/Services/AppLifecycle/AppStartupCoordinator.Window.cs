@@ -22,7 +22,7 @@ public sealed partial class AppStartupCoordinator
 {
     private void InitializeMainWindow(
         IClassicDesktopStyleApplicationLifetime desktop,
-        SettingsService settings,
+        Kiriha.Core.Services.ISettingsService settings,
         string[] args)
     {
         if (settings.NeedsFirstStartup())
@@ -73,7 +73,7 @@ public sealed partial class AppStartupCoordinator
                     setupVm.SetupCompleted -= OnSetupCompleted;
 
                 var mainWindowVm = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-                var main = new MainWindow(_serviceProvider.GetRequiredService<SettingsService>()) { DataContext = mainWindowVm };
+                var main = new MainWindow(_serviceProvider.GetRequiredService<Kiriha.Core.Services.ISettingsService>()) { DataContext = mainWindowVm };
                 main.Show();
                 desktop.MainWindow = main;
                 setupWindow.Close();

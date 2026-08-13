@@ -18,7 +18,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
-public partial class MalApiService : ITrackerService, IDisposable
+public partial class MalApiService : IMalApiService, IDisposable
 {
     // Resolved once from Constants â€” no parallel const that can drift from the URL
     // wired into the IHttpClientFactory "MalClient" registration.

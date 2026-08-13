@@ -14,14 +14,14 @@ public class AnimeProgressService : Kiriha.Core.Services.IProgressUpdateService
 {
     private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
-    private readonly SyncManager _syncManager;
+    private readonly Kiriha.Core.Services.ISyncManager _syncManager;
     private readonly Kiriha.Core.Services.IHistoryService _historyService;
     private readonly Kiriha.Core.Infrastructure.IUiDispatcher _uiDispatcher;
 
     public AnimeProgressService(
         Kiriha.Core.Repositories.IAnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
-        SyncManager syncManager,
+        Kiriha.Core.Services.ISyncManager syncManager,
         Kiriha.Core.Services.IHistoryService historyService,
         Kiriha.Core.Infrastructure.IUiDispatcher uiDispatcher)
     {

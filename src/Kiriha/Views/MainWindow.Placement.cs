@@ -1,5 +1,6 @@
 using Kiriha.Services.Data.Settings;
 using System;
+using Kiriha.Core.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Kiriha.Models;

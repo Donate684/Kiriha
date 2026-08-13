@@ -50,25 +50,25 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
-    private readonly SettingsService _settingsService;
+    private readonly Kiriha.Core.Services.ISettingsService _settingsService;
     private readonly JikanApiService _jikanApiService;
     private readonly IDialogService _dialogs;
-    private readonly ShikiApiService _shikiApiService;
-    private readonly AnimeRepository _animeRepo;
-    private readonly MalApiService _malApiService;
+    private readonly Kiriha.Core.Services.IShikiApiService _shikiApiService;
+    private readonly Kiriha.Core.Repositories.IAnimeRepository _animeRepo;
+    private readonly Kiriha.Core.Services.IMalApiService _malApiService;
 
-    public SettingsService Settings => _settingsService;
+    public Kiriha.Core.Services.ISettingsService Settings => _settingsService;
 
     public AnimeDetailsViewModel(
         AnimeEntity cloneAnime,
         AnimeEditViewModel editor,
         AnimeMetadataViewModel metadata,
         JikanApiService jikanApiService,
-        SettingsService settingsService,
+        Kiriha.Core.Services.ISettingsService settingsService,
         IDialogService dialogs,
-        ShikiApiService shikiApiService,
-        AnimeRepository animeRepo,
-        MalApiService malApiService)
+        Kiriha.Core.Services.IShikiApiService shikiApiService,
+        Kiriha.Core.Repositories.IAnimeRepository animeRepo,
+        Kiriha.Core.Services.IMalApiService malApiService)
     {
         _anime = cloneAnime;
         Editor = editor;

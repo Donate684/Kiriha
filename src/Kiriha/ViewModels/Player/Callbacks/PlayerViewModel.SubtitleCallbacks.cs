@@ -12,7 +12,7 @@ public partial class PlayerViewModel
     {
         if (_isApplyingSettings || _settingsService == null) return;
         PreferredSubtitleLanguages = NormalizeLanguageList(value, "Russian,rus,ru");
-        _settingsService.Update(settings => settings.Player.PreferredSubtitleLanguages = PreferredSubtitleLanguages, SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.PreferredSubtitleLanguages = PreferredSubtitleLanguages, Kiriha.Core.Services.SettingsSection.Player);
         ApplyTrackLanguagePreferences();
     }
     partial void OnSubtitleStyleOverrideEnabledChanged(bool value)
@@ -23,12 +23,12 @@ public partial class PlayerViewModel
         if (_isApplyingSettings) return;
         ApplySubtitleStyleOverride();
         if (_settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SubtitleStyleOverrideEnabled = value, SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SubtitleStyleOverrideEnabled = value, Kiriha.Core.Services.SettingsSection.Player);
     }
     partial void OnSubtitleStyleHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), Kiriha.Core.Services.SettingsSection.Player);
     }
     partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, "Candara Bold"));
     partial void OnSubtitleFontSizeChanged(double value) => SaveSubtitleStyle(x => x.SubtitleFontSize = Math.Clamp(value, 1, 300));
@@ -45,7 +45,7 @@ public partial class PlayerViewModel
     private void SaveSubtitleStyle(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Services.SettingsSection.Player);
         ApplySubtitleStyleOverride();
     }
 

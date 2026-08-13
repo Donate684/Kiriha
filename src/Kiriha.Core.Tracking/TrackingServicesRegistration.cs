@@ -45,7 +45,7 @@ public static class TrackingServicesRegistration
 
         services.AddSingleton<MalTokenManager>();
 
-        services.AddSingleton<MalApiService>(sp =>
+        services.AddSingleton<IMalApiService, MalApiService>(sp =>
             new MalApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient"),
                 sp.GetRequiredService<Kiriha.Core.Services.ISettingsService>(),
@@ -53,7 +53,7 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<JikanApiService>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
-        services.AddSingleton<ITrackerService>(sp => sp.GetRequiredService<MalApiService>());
+        services.AddSingleton<ITrackerService>(sp => sp.GetRequiredService<IMalApiService>());
 
         // --- Shikimori ---
         // No BaseAddress: ShikiApiService resolves the endpoint per-call from settings
@@ -85,7 +85,7 @@ public static class TrackingServicesRegistration
 
         services.AddSingleton<ShikiTokenService>();
 
-        services.AddSingleton<ShikiApiService>(sp =>
+        services.AddSingleton<IShikiApiService, ShikiApiService>(sp =>
             new ShikiApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
                 sp.GetRequiredService<Kiriha.Core.Services.ISettingsService>(),
@@ -93,7 +93,7 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
-        services.AddSingleton<ITrackerService>(sp => sp.GetRequiredService<ShikiApiService>());
+        services.AddSingleton<ITrackerService>(sp => sp.GetRequiredService<IShikiApiService>());
 
         // --- Jikan / AniList ---
         services.AddSingleton<JikanApiService>();
@@ -123,7 +123,7 @@ public static class TrackingServicesRegistration
         services.AddSingleton<Kiriha.Core.Services.IAnimeSyncOrchestrator>(sp => sp.GetRequiredService<AnimeSyncOrchestrator>());
         services.AddSingleton<AnimeProgressService>();
         services.AddSingleton<Kiriha.Core.Services.IProgressUpdateService>(sp => sp.GetRequiredService<AnimeProgressService>());
-        services.AddSingleton<SyncManager>();
+        services.AddSingleton<ISyncManager, SyncManager>();
 
         return services;
     }
