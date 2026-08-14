@@ -5,7 +5,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Shared.Shiki;
+namespace Kiriha.Core.Domain.Models.Api;
 
 /// <summary>
 /// Resolves Shikimori endpoints + OAuth client_id for the active mirror.

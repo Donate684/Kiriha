@@ -1,6 +1,6 @@
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using System.Linq;
@@ -150,3 +150,5 @@ internal static class TorrentQueryBuilder
         return string.IsNullOrEmpty(query) ? token : $"{query} {token}";
     }
 }
+
+

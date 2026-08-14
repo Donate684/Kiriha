@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Api;
 
 using Kiriha.Core.Domain.Models;

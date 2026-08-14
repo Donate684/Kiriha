@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
-    <ProjectReference Include="..\Kiriha.Core.Shared\Kiriha.Core.Shared.csproj" />
+    
   </ItemGroup>
 
 </Project>

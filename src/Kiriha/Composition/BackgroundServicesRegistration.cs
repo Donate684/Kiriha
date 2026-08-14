@@ -2,7 +2,8 @@ using Kiriha.Services;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data.Core;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +25,7 @@ internal static class BackgroundServicesRegistration
     public static IServiceCollection AddKirihaBackgroundServices(this IServiceCollection services)
     {
         // IPC / player HTTP server
-        services.AddSingleton<InternalPlayerServer>();
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<InternalPlayerServer>());
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Kiriha.Infrastructure.Tracking.Integration.InternalPlayerServer>());
 
         services.AddSingleton<InstanceServer>();
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<InstanceServer>());
@@ -41,7 +41,7 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<AiringInfoService>();
 
         // AnisthesiaService (Discord presence) also runs as IHostedService
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Kiriha.Core.Tracking.Integration.AnisthesiaService>());
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Kiriha.Infrastructure.Tracking.Integration.AnisthesiaService>());
 
         // Maintenance tasks
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.RssMaintenanceTask>();
@@ -61,3 +61,4 @@ internal static class BackgroundServicesRegistration
         return services;
     }
 }
+

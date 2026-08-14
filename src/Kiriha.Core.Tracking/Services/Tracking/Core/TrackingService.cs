@@ -4,17 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Messages;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
@@ -24,7 +24,7 @@ namespace Kiriha.Core.Tracking.Core;
 
 public partial class TrackingService : IDisposable
 {
-    private readonly AnisthesiaService _anisthesiaService;
+    private readonly IExternalMediaDetector _anisthesiaService;
     private readonly IMappingService _mappingService;
     private readonly IAnimeRepository _animeRepo;
     private readonly ISettingsService _settingsService;
@@ -45,7 +45,7 @@ public partial class TrackingService : IDisposable
     public AnimeEntity? MatchedAnime { get { lock (_state) return _matchedAnime; } }
 
     public TrackingService(
-        AnisthesiaService anisthesiaService,
+        IExternalMediaDetector anisthesiaService, IInternalPlayerServer internalPlayerServer,
         IMappingService mappingService,
         IAnimeRepository animeRepo,
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
@@ -56,6 +56,7 @@ public partial class TrackingService : IDisposable
         MediaMatchingPipeline pipeline)
     {
         _anisthesiaService = anisthesiaService;
+        internalPlayerServer.PlayerStateChanged += (s, e) => SetInternalMedia(e);
         _mappingService = mappingService;
         _animeRepo = animeRepo;
         _settingsService = settingsService;
@@ -78,3 +79,4 @@ public partial class TrackingService : IDisposable
         _scrobbleService.CancelScrobble();
     }
 }
+

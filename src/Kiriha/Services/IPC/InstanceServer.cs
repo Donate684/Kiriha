@@ -4,7 +4,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Services.Data;

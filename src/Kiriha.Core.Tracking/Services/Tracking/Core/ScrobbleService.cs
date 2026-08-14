@@ -27,7 +27,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly Kiriha.Core.Abstractions.Services.INotificationService _notificationService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
-    private readonly Kiriha.Core.Shared.Infrastructure.IUiDispatcher _uiDispatcher;
+    private readonly Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher _uiDispatcher;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -44,7 +44,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         Kiriha.Core.Abstractions.Services.INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
-        Kiriha.Core.Shared.Infrastructure.IUiDispatcher uiDispatcher)
+        Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher uiDispatcher)
     {
         _progressService = progressService;
         _historyService = historyService;

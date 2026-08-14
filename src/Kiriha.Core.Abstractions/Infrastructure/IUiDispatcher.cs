@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Kiriha.Core.Shared.Infrastructure;
+namespace Kiriha.Core.Abstractions.Infrastructure;
 
 public interface IUiDispatcher
 {

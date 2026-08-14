@@ -8,7 +8,7 @@ using Kiriha.Core.Abstractions.Services;
 
 using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Tracking.Anisthesia.Strategies;
+namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
 public class WindowTitleStrategy
 {
@@ -85,3 +85,4 @@ public class WindowTitleStrategy
         return null;
     }
 }
+

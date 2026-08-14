@@ -1,4 +1,6 @@
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Settings;
@@ -10,14 +12,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
-using Kiriha.Core.Tracking.Anisthesia;
 
 namespace Kiriha.ViewModels.Player;
 
 public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
 {
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
-    private readonly AnisthesiaService _anisthesia;
+    private readonly IExternalMediaDetector _anisthesia;
     private readonly List<PlayerSelectionItem> _allPlayers = new();
 
     [ObservableProperty] private string _searchText = string.Empty;
@@ -26,7 +27,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
     public ObservableCollection<PlayerSelectionItem> VideoPlayers { get; } = new();
     public ObservableCollection<PlayerSelectionItem> WebBrowsers { get; } = new();
 
-    public PlayerSelectionViewModel(AnisthesiaService anisthesia, Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
+    public PlayerSelectionViewModel(IExternalMediaDetector anisthesia, Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
     {
         _anisthesia = anisthesia;
         _settingsService = settingsService;
@@ -128,3 +129,9 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
         }
     }
 }
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using Kiriha.Infrastructure.Extensions;
 using System;
 using Kiriha.Core.Shared;
 using System.Net;
@@ -6,13 +7,13 @@ using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Sync;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -54,7 +55,7 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<JikanApiService>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
-        services.AddSingleton<ITrackerService>(sp => sp.GetRequiredService<IMalApiService>());
+        services.AddForwardedSingleton<IMalApiService, ITrackerService>();
 
         // --- Shikimori ---
         // No BaseAddress: ShikiApiService resolves the endpoint per-call from settings
@@ -94,7 +95,7 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
-        services.AddSingleton<ITrackerService>(sp => sp.GetRequiredService<IShikiApiService>());
+        services.AddForwardedSingleton<IShikiApiService, ITrackerService>();
 
         // --- Jikan / AniList ---
         services.AddSingleton<JikanApiService>();
@@ -104,7 +105,7 @@ public static class TrackingServicesRegistration
             new AniListApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
                 sp.GetRequiredService<IHttpCacheRepository>()));
-        services.AddSingleton<IAniListApiService>(sp => sp.GetRequiredService<AniListApiService>());
+        services.AddForwardedSingleton<AniListApiService, IAniListApiService>();
 
         // --- RSS ---
         services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));
@@ -112,20 +113,18 @@ public static class TrackingServicesRegistration
         services.AddSingleton<RssFeedService>();
 
         // --- Cross-tracker orchestration ---
-        services.AddSingleton<SmtcService>(sp => new SmtcService(sp.GetRequiredService<ISettingsService>()));
-        services.AddSingleton<DiscordService>();
-        services.AddSingleton<IDiscordService>(sp => sp.GetRequiredService<DiscordService>());
-        services.AddSingleton<System.Collections.Generic.IReadOnlyList<Kiriha.Core.Tracking.Anisthesia.AnisthesiaPlayer>>(sp => Kiriha.Core.Tracking.Anisthesia.AnisthesiaPlayerLoader.Load());
-        services.AddSingleton<AnisthesiaService>();
-        services.AddSingleton<IScrobbleService, ScrobbleService>();
+                                
+                services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();
         services.AddSingleton<AnimeSyncOrchestrator>();
-        services.AddSingleton<IAnimeSyncOrchestrator>(sp => sp.GetRequiredService<AnimeSyncOrchestrator>());
+        services.AddForwardedSingleton<AnimeSyncOrchestrator, IAnimeSyncOrchestrator>();
         services.AddSingleton<AnimeProgressService>();
-        services.AddSingleton<IProgressUpdateService>(sp => sp.GetRequiredService<AnimeProgressService>());
+        services.AddForwardedSingleton<AnimeProgressService, IProgressUpdateService>();
         services.AddSingleton<ISyncManager, SyncManager>();
 
         return services;
     }
 }
+
+

@@ -1,13 +1,14 @@
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Repository;
+using Kiriha.Services.Data.Core;
+using Kiriha.Core;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Settings;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
@@ -32,8 +33,8 @@ public class TrackingServiceTests : IDisposable
     private readonly Mock<IScrobbleService> _mockScrobbleService;
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
     private readonly Mock<MappingService> _mockMappingService;
-    private readonly Mock<DiscordService> _mockDiscordService;
-    private readonly Mock<AnisthesiaService> _mockAnisthesiaService;
+    private readonly Mock<IDiscordService> _mockDiscordService;
+    private readonly Mock<IExternalMediaDetector> _mockAnisthesiaService;
     private readonly AnimeRepository _animeRepository;
     private readonly TrackingService _trackingService;
 
@@ -53,8 +54,8 @@ public class TrackingServiceTests : IDisposable
             .Returns<Func<List<AnimeEntity>>>(f => Task.FromResult(f()));
 
         _mockMappingService = new Mock<MappingService>(null!, new ManualMappingService(_tempMappingPath), null!, new RecognitionCache());
-        _mockDiscordService = new Mock<DiscordService>(_settingsService);
-        _mockAnisthesiaService = new Mock<AnisthesiaService>(_settingsService, null!, null!, Array.Empty<Kiriha.Core.Tracking.Anisthesia.AnisthesiaPlayer>());
+        _mockDiscordService = new Mock<IDiscordService>();
+        _mockAnisthesiaService = new Mock<IExternalMediaDetector>();
 
         _animeRepository = new AnimeRepository(null!, null!, null!, _mockUiDispatcher.Object, null!);
         // Force the initialization task to complete so we don't wait 5 seconds in tests
@@ -66,6 +67,7 @@ public class TrackingServiceTests : IDisposable
 
         _trackingService = new TrackingService(
             _mockAnisthesiaService.Object,
+            new Mock<IInternalPlayerServer>().Object,
             _mockMappingService.Object,
             _animeRepository,
             _settingsService,
@@ -161,3 +163,7 @@ public class TrackingServiceTests : IDisposable
         if (File.Exists(_tempMappingPath)) try { File.Delete(_tempMappingPath); } catch { }
     }
 }
+
+
+
+

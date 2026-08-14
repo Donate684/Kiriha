@@ -1,6 +1,8 @@
+using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
@@ -13,12 +15,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services;
-using Kiriha.Core.Tracking.Auth;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Infrastructure;
 
 namespace Kiriha.ViewModels.Settings;
@@ -46,7 +47,7 @@ public partial class SettingsViewModel : ViewModelBase
         AnimeListViewModel animeListViewModel,
         LocalizationService localizationService,
         UpdateService updateService,
-        AnisthesiaService anisthesiaService,
+        IExternalMediaDetector anisthesiaService,
         DiscordService discordService,
         CacheCleanupService cacheCleanupService,
         ImageCacheService imageCacheService,
@@ -69,3 +70,10 @@ public partial class SettingsViewModel : ViewModelBase
         CustomLinks = new SettingsCustomLinksViewModel(settingsService, faviconService);
     }
 }
+
+
+
+
+
+
+

@@ -6,7 +6,7 @@ using Kiriha.Services.Data.Settings;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Repositories;

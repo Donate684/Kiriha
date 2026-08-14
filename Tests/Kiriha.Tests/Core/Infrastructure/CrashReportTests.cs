@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Platform;
 using Xunit;

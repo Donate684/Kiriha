@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Http;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Auth;
 
 using Kiriha.Core.Domain.Models;

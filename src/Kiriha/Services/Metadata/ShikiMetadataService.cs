@@ -8,13 +8,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Serilog;
@@ -192,3 +190,6 @@ public partial class ShikiMetadataService : IDisposable
         _concurrentFetches.Dispose();
     }
 }
+
+
+

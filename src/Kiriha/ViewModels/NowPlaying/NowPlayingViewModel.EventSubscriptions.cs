@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Shared.Messages;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Utils.Async;
 using Serilog;
 

@@ -1,4 +1,3 @@
-using Kiriha.Core.Tracking.Integration;
 using System;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -208,3 +207,4 @@ public partial class AnimeEditViewModel : ObservableObject
         if (window is Avalonia.Controls.Window w) w.Close(true);
     }
 }
+

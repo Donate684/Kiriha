@@ -1,5 +1,6 @@
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking;
+using Kiriha.Infrastructure.Tracking;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Services.Data.Metadata;
 using System;
@@ -46,6 +47,7 @@ public sealed partial class AppStartupCoordinator
         services
             .AddKirihaData(PathHelper.GetDbPath())
             .AddKirihaTracking()
+            .AddKirihaTrackingInfrastructure()
             .AddKirihaBackgroundServices()
             .AddKirihaUi();
     }
@@ -61,3 +63,4 @@ public sealed partial class AppStartupCoordinator
         services.AddSingleton<IPlayerMediaMetadataResolver, FilenamePlayerMediaMetadataResolver>();
     }
 }
+

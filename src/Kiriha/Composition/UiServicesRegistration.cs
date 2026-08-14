@@ -48,6 +48,11 @@ internal static class UiServicesRegistration
         services.AddTransient<SearchViewModel>();
         services.AddTransient<FirstStartupViewModel>();
 
+        // Client UI Support Services
+        services.AddSingleton<Kiriha.Services.SystemIntegrationService>();
+        services.AddSingleton<Kiriha.Services.IPlayerMediaMetadataResolver, Kiriha.Services.PlayerMediaMetadataResolver>();
+        services.AddSingleton<Kiriha.Core.FaviconService>();
+
         return services;
     }
 }

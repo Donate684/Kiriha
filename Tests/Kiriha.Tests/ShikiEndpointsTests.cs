@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;

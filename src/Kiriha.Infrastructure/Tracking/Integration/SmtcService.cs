@@ -9,7 +9,7 @@ using Serilog;
 using Windows.Media.Control;
 #endif
 
-namespace Kiriha.Core.Tracking.Integration;
+namespace Kiriha.Infrastructure.Tracking.Integration;
 
 public class SmtcService : IDisposable
 {

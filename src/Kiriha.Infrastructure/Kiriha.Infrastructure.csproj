@@ -3,18 +3,23 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="DiscordRichPresence" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Serilog" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
-    <ProjectReference Include="..\Kiriha.Core.Shared\Kiriha.Core.Shared.csproj" />
+    
   </ItemGroup>
 
 </Project>
+

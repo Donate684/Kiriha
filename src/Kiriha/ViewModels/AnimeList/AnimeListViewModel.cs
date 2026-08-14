@@ -1,4 +1,3 @@
-using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -138,3 +137,4 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         _listProjection.Dispose();
     }
 }
+

@@ -5,7 +5,7 @@ using System.IO;
 using Kiriha.Core.Domain.Models;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
 public static class AnisthesiaPlayerLoader
 {

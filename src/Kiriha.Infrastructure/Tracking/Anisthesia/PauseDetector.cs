@@ -1,13 +1,14 @@
+using Kiriha.Core.Domain.Models;
 using System.Collections.Generic;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+
+
+
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
 /// <summary>
 /// Translates raw <see cref="AudioState"/> samples (one per polling tick of
@@ -122,3 +123,4 @@ internal sealed class PauseDetector
         }
     }
 }
+

@@ -1,4 +1,6 @@
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Settings;
@@ -20,7 +22,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
 {
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly SystemIntegrationService _systemIntegrationService;
-    private readonly AnisthesiaService _anisthesiaService;
+    private readonly IExternalMediaDetector _IExternalMediaDetector;
 
     [ObservableProperty] private bool _isSystemPlayer;
     [ObservableProperty] private bool _keepPlayerProcessAlive;
@@ -35,11 +37,11 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     public SettingsPlaybackViewModel(
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService, 
         SystemIntegrationService systemIntegrationService,
-        AnisthesiaService anisthesiaService)
+        IExternalMediaDetector IExternalMediaDetector)
     {
         _settingsService = settingsService;
         _systemIntegrationService = systemIntegrationService;
-        _anisthesiaService = anisthesiaService;
+        _IExternalMediaDetector = IExternalMediaDetector;
 
         IsSystemPlayer = _systemIntegrationService.IsRegistered();
         KeepPlayerProcessAlive = _settingsService.Current.System.KeepPlayerProcessAlive;
@@ -70,7 +72,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     [RelayCommand]
     private async Task ManagePlayers()
     {
-        using var viewModel = new PlayerSelectionViewModel(_anisthesiaService, _settingsService);
+        using var viewModel = new PlayerSelectionViewModel(_IExternalMediaDetector, _settingsService);
         var window = new PlayerSelectionWindow(_settingsService) { DataContext = viewModel };
 
         var mainWindow = (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
@@ -95,3 +97,4 @@ public partial class SettingsPlaybackViewModel : ObservableObject
         IsSystemPlayer = _systemIntegrationService.IsRegistered();
     }
 }
+

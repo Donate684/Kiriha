@@ -1,9 +1,9 @@
+using Kiriha.Core.Tracking.Api;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
 using Kiriha.ViewModels.Settings;
-using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Abstractions.Repositories;
@@ -18,11 +18,10 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Dialogs;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Kiriha.Utils.Async;
@@ -153,3 +152,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
 
 }
+
+
+

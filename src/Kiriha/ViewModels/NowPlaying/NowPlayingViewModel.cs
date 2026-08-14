@@ -1,12 +1,12 @@
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
 using Kiriha.ViewModels.Settings;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
@@ -24,10 +24,8 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Core.Shared.Shiki;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Shared.Messages;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
 using Serilog;
@@ -149,3 +147,9 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
         try { _disposeCts.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing dispose CTS"); }
     }
 }
+
+
+
+
+
+

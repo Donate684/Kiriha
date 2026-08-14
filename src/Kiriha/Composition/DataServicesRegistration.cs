@@ -1,3 +1,7 @@
+using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Infrastructure;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Infrastructure.Extensions;
 using Kiriha.Services.Data.Core;
 using Kiriha.Core;
 using Kiriha.Services.Data.Metadata;
@@ -6,11 +10,7 @@ using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Settings;
 using System;
 using Kiriha.Core.Shared;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Infrastructure;
 using Kiriha.Services;
-using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Repositories;
@@ -92,10 +92,10 @@ internal static class DataServicesRegistration
         services.AddSingleton<Kiriha.Core.Abstractions.Services.IRecognitionCache>(sp => sp.GetRequiredService<RecognitionCache>());
         services.AddSingleton<MappingService>();
         services.AddSingleton<Kiriha.Core.Abstractions.Services.IMappingService>(sp => sp.GetRequiredService<MappingService>());
-        services.AddSingleton<SystemIntegrationService>();
-        services.AddSingleton<IPlayerMediaMetadataResolver, PlayerMediaMetadataResolver>();
-        services.AddSingleton<FaviconService>();
 
         return services;
     }
 }
+
+
+

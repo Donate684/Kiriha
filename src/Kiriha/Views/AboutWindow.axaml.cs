@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
@@ -77,3 +76,5 @@ public partial class AboutWindow : KirihaWindowBase
             UIUtils.OpenUrl(url);
     }
 }
+
+

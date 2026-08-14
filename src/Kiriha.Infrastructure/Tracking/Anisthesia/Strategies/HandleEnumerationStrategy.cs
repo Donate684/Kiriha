@@ -12,7 +12,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Utils.Parsing;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Anisthesia.Strategies;
+namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
 public class HandleEnumerationStrategy
 {
@@ -231,3 +231,4 @@ public class HandleEnumerationStrategy
         return null;
     }
 }
+

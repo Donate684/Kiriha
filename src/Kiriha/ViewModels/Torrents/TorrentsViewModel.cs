@@ -1,5 +1,5 @@
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Abstractions.Repositories;
@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
-using Kiriha.Core.Tracking;
 
 namespace Kiriha.ViewModels.Torrents;
 
@@ -55,3 +54,6 @@ public partial class TorrentsViewModel : ViewModelBase
         RefreshWatchingList();
     }
 }
+
+
+

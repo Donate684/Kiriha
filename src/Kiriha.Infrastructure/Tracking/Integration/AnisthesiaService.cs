@@ -7,18 +7,19 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
-using Kiriha.Core.Tracking.Anisthesia;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Anisthesia;
+using Kiriha.Core.Domain.Models;
+
+
+
 
 using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Integration;
+namespace Kiriha.Infrastructure.Tracking.Integration;
 
-public class AnisthesiaService : IHostedService, IDisposable
+public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDetector
 {
     private readonly ISettingsService _settingsService;
     private readonly SmtcService _smtcService;

@@ -1,7 +1,7 @@
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models;
 
-namespace Kiriha.Core.Shared.Messages;
+namespace Kiriha.Core.Abstractions.Messages;
 
 public record MediaChangedMessage(ParsedMedia? Media);
 

@@ -9,7 +9,7 @@ using Kiriha.Services;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Services.Data;
 using Serilog;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.ViewModels.Settings;
 

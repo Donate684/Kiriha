@@ -6,26 +6,23 @@ using System.Threading.Tasks;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+
+
+
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Integration;
+namespace Kiriha.Infrastructure.Tracking.Integration;
 
-public class InternalPlayerServer : BackgroundService
+public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
 {
-    private readonly TrackingService _trackingService;
+    public event EventHandler<InternalPlayerState>? PlayerStateChanged;
     private readonly object _pipeGate = new();
     private NamedPipeServerStream? _currentPipe;
 
-    public InternalPlayerServer(TrackingService trackingService)
-    {
-        _trackingService = trackingService;
-    }
+    
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -63,7 +60,7 @@ public class InternalPlayerServer : BackgroundService
                         var state = JsonSerializer.Deserialize<InternalPlayerState>(line);
                         if (state != null)
                         {
-                            _trackingService.SetInternalMedia(state);
+                            PlayerStateChanged?.Invoke(this, state);
                         }
                     }
                     catch (Exception ex)
@@ -97,7 +94,7 @@ public class InternalPlayerServer : BackgroundService
 
                 // Whenever pipe breaks or player disconnects, clear the media
                 Log.Information("InternalPlayerServer: Player disconnected. Clearing media.");
-                _trackingService.SetInternalMedia(new InternalPlayerState { IsClosed = true });
+                PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsClosed = true });
             }
         }
     }
@@ -115,3 +112,4 @@ public class InternalPlayerServer : BackgroundService
         return stopTask;
     }
 }
+

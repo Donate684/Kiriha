@@ -5,7 +5,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
 /// <summary>
 /// Per-process state of the audio session in the Windows audio engine.

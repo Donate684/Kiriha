@@ -84,7 +84,7 @@
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Tracking\Kiriha.Core.Tracking.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
-    <ProjectReference Include="..\Kiriha.Core.Shared\Kiriha.Core.Shared.csproj" />
+    
     <ProjectReference Include="..\Kiriha.Mpv\Kiriha.Mpv.csproj" />
   </ItemGroup>
 

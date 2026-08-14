@@ -5,10 +5,10 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 
 using Kiriha.Core.Domain.Models.Entities;
 
@@ -36,7 +36,7 @@ public partial class TrackingService
             return true;
         }
 
-        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Shared.Messages.MediaChangedMessage(media)));
+        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.MediaChangedMessage(media)));
         _scrobbleService.UpdatePlayingState(media.IsPlaying);
 
         AnimeEntity? currentMatched;
@@ -65,7 +65,7 @@ public partial class TrackingService
 
         if (!isValid) return;
 
-        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Shared.Messages.AnimeMatchedMessage(matched)));
+        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(matched)));
 
         if (matched != null)
         {
@@ -105,8 +105,8 @@ public partial class TrackingService
 
             _uiDispatcher.Post(() =>
             {
-                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Shared.Messages.MediaChangedMessage(media));
-                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Shared.Messages.AnimeMatchedMessage(null));
+                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.MediaChangedMessage(media));
+                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(null));
             });
 
             try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch (Exception ex) when (ex is not OperationCanceledException) { }

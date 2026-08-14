@@ -12,11 +12,11 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Shared.Messages;
+using Kiriha.Core.Abstractions.Messages;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;

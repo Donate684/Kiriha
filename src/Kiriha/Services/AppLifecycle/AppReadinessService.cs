@@ -1,4 +1,5 @@
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;

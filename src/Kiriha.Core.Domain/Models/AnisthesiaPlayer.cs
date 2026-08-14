@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Tracking.Anisthesia;
+namespace Kiriha.Core.Domain.Models;
 
 public enum StrategyType
 {
@@ -27,4 +24,3 @@ public class AnisthesiaPlayer
     public string WindowTitleFormat { get; set; } = string.Empty;
     public PlayerType Type { get; set; } = PlayerType.Default;
 }
-

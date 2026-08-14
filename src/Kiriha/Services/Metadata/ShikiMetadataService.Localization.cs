@@ -147,7 +147,7 @@ public partial class ShikiMetadataService
                 requestFactory: innerCt =>
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, $"{ShikiBaseUrl}animes?search={Uri.EscapeDataString(query)}&limit=1");
-                    request.Headers.Add("User-Agent", Kiriha.Core.Shared.AppInfo.UserAgent);
+                    request.Headers.Add("User-Agent", AppInfo.UserAgent);
                     return Task.FromResult(request);
                 },
                 throttle: ct => _rateLimiter.ThrottleAsync(ct),

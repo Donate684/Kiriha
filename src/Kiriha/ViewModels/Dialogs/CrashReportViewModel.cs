@@ -11,8 +11,7 @@ using Avalonia;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Shared.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Serilog;
 
@@ -98,3 +97,5 @@ public partial class CrashReportViewModel : ObservableObject
         return null;
     }
 }
+
+

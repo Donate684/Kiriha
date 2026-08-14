@@ -1,14 +1,14 @@
-using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
+using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Core;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
-using Kiriha.Services.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -111,3 +111,4 @@ public sealed class NowPlayingIntegrationTests
         }
     }
 }
+

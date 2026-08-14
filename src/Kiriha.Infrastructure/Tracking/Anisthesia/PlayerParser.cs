@@ -1,10 +1,11 @@
+using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Core.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
 public class PlayerParser
 {
@@ -98,3 +99,4 @@ public class PlayerParser
         return players;
     }
 }
+

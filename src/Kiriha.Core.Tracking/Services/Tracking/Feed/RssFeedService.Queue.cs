@@ -8,7 +8,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Integration;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 

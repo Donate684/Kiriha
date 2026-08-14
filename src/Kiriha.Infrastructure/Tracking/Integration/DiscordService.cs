@@ -8,7 +8,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
-namespace Kiriha.Core.Tracking.Integration;
+namespace Kiriha.Infrastructure.Tracking.Integration;
 
 public class DiscordService : IDisposable, Kiriha.Core.Abstractions.Services.IDiscordService
 {

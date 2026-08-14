@@ -9,7 +9,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Core.Shared.Shiki;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
@@ -29,7 +29,7 @@ public partial class AnimeDetailsViewModel
     [RelayCommand]
     private async Task CopyShikiLink()
     {
-        string baseUrl = Kiriha.Core.Shared.Shiki.ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror, Anime.MediaKind);
+        string baseUrl = ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror, Anime.MediaKind);
         string url = $"{baseUrl}{Anime.Id}";
         await CopyToClipboard(url);
     }
