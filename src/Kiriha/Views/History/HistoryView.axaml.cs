@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -8,7 +8,7 @@ namespace Kiriha.Views.History;
 
 public partial class HistoryView : UserControl
 {
-    // Reveal-on-load ÐºÐ°ÑÐºÐ°Ð´ Ð´Ð»Ñ ÑÑ‚Ñ€Ð¾Ðº Ñ‚Ð°Ð¹Ð¼Ð»Ð°Ð¹Ð½Ð°.
+    // Reveal-on-load каскад для строк таймлайна.
     private DateTime _lastRevealEvent = DateTime.MinValue;
     private int _revealStaggerIndex;
     private const int RevealStaggerStepMs = 30;

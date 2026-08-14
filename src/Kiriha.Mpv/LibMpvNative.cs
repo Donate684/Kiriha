@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 /// <summary>
 /// Minimal P/Invoke wrapper for libmpv C API.

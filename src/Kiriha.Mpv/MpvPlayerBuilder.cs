@@ -1,7 +1,7 @@
 using System;
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public static class MpvPlayerBuilder
 {

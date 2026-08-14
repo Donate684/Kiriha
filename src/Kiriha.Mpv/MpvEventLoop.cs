@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 internal sealed class MpvEventLoop : IDisposable
 {

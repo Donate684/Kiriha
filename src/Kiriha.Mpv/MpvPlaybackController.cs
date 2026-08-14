@@ -1,6 +1,6 @@
 using System;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public class MpvPlaybackController
 {

@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 namespace Kiriha.Views.Analytics;
 public partial class AnalyticsHistorySection : UserControl
 {

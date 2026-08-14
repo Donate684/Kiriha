@@ -6,7 +6,7 @@
         xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
         xmlns:vmMain="using:Kiriha.ViewModels.Main"
                     xmlns:vm="using:Kiriha.ViewModels"
-                    xmlns:mpv="clr-namespace:Kiriha.Core.Mpv"
+                    xmlns:mpv="clr-namespace:Kiriha.Mpv"
                     xmlns:material="using:Material.Icons.Avalonia"
                     xmlns:conv="using:Kiriha.Views.Converters">
 <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>

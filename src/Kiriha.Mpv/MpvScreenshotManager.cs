@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public class MpvScreenshotManager
 {

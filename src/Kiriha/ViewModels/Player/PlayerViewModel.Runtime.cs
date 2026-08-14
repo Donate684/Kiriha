@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Player;

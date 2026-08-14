@@ -1,4 +1,4 @@
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public sealed record PlaybackState(
     double Position,

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public partial class MpvPlayer : IDisposable
 {

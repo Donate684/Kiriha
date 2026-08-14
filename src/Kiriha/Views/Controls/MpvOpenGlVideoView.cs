@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Threading;
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 using Serilog;
 
 namespace Kiriha.Views.Controls;

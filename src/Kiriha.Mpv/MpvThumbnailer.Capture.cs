@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Serilog;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public sealed partial class MpvThumbnailer
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public partial class MpvPlayer
 {

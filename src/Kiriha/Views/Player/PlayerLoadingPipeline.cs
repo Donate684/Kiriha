@@ -1,4 +1,4 @@
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 using Kiriha.ViewModels.Player;
 using Kiriha.Views.Controls;
 using Serilog;

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Serilog;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 internal static class ThumbnailTempCleaner
 {

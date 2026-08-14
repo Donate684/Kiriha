@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Serilog;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 internal static class MpvNodeParser
 {

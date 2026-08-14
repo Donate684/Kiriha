@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 namespace Kiriha.Views.Controls.Variants.NowPlayingCompactSections;
 public partial class NowPlayingCompactManualMatch : UserControl
 {

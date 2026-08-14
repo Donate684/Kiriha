@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Threading;
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 
 namespace Kiriha.ViewModels.Player;
 

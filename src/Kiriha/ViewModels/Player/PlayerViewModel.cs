@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Models.Presentation;

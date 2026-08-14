@@ -1,7 +1,7 @@
 using Kiriha.Services.Data.Settings;
 using System;
 using Avalonia.Controls;
-using Kiriha.Core.Mpv;
+using Kiriha.Mpv;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.Player;
 using Serilog;

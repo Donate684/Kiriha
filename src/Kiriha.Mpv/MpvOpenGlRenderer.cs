@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Kiriha.Core.Mpv;
+namespace Kiriha.Mpv;
 
 public class MpvOpenGlRenderer : IDisposable
 {
