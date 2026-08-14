@@ -41,7 +41,7 @@ public sealed class EpisodeReleaseRepository : IEpisodeReleaseRepository
         context.EpisodeReleases.RemoveRange(existing);
         await context.EpisodeReleases.AddRangeAsync(episodes);
 
-        var meta = await context.EpisodeListMeta.FirstOrDefaultAsync(m => m.MalId == malId);
+        var meta = await context.EpisodeListMeta.AsTracking().FirstOrDefaultAsync(m => m.MalId == malId);
         var now = DateTime.UtcNow;
         if (meta == null)
             context.EpisodeListMeta.Add(new EpisodeListMeta { MalId = malId, FetchedAt = now });

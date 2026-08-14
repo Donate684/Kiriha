@@ -41,7 +41,7 @@ public sealed class AnimeStaffRepository : IAnimeStaffRepository
         context.Set<AnimeStaff>().RemoveRange(existing);
         await context.Set<AnimeStaff>().AddRangeAsync(staff);
 
-        var meta = await context.Set<AnimeStaffMeta>().FirstOrDefaultAsync(m => m.MalId == sourceMalId);
+        var meta = await context.Set<AnimeStaffMeta>().AsTracking().FirstOrDefaultAsync(m => m.MalId == sourceMalId);
         var now = DateTime.UtcNow;
         if (meta == null)
             context.Set<AnimeStaffMeta>().Add(new AnimeStaffMeta { MalId = sourceMalId, FetchedAt = now });

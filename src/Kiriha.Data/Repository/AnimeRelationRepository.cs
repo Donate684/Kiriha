@@ -41,7 +41,7 @@ public sealed class AnimeRelationRepository : IAnimeRelationRepository
         context.Set<AnimeRelation>().RemoveRange(existing);
         await context.Set<AnimeRelation>().AddRangeAsync(relations);
 
-        var meta = await context.Set<AnimeRelationMeta>().FirstOrDefaultAsync(m => m.MalId == sourceMalId);
+        var meta = await context.Set<AnimeRelationMeta>().AsTracking().FirstOrDefaultAsync(m => m.MalId == sourceMalId);
         var now = DateTime.UtcNow;
         if (meta == null)
             context.Set<AnimeRelationMeta>().Add(new AnimeRelationMeta { MalId = sourceMalId, FetchedAt = now });

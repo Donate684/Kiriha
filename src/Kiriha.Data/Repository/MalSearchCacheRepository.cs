@@ -37,7 +37,7 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
     {
         if (string.IsNullOrWhiteSpace(queryNormalized)) return;
         using var context = await _contextFactory.CreateDbContextAsync();
-        var existing = await context.MalSearchCache
+        var existing = await context.MalSearchCache.AsTracking()
             .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized);
         var now = DateTime.UtcNow;
         if (existing == null)

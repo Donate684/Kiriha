@@ -46,7 +46,7 @@ public sealed partial class UserAnimeRepository
 
         try
         {
-            var query = context.UserAnime.AsQueryable();
+            var query = context.UserAnime.AsTracking().AsQueryable();
             if (syncKinds != null && syncKinds.Length > 0)
             {
                 query = query.Where(x => syncKinds.Contains(x.MediaKind));

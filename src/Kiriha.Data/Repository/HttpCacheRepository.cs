@@ -33,7 +33,7 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
     {
         if (string.IsNullOrEmpty(urlHash) || body == null) return;
         using var context = await _contextFactory.CreateDbContextAsync();
-        var existing = await context.HttpResponseCache
+        var existing = await context.HttpResponseCache.AsTracking()
             .FirstOrDefaultAsync(e => e.UrlHash == urlHash);
         var now = DateTime.UtcNow;
         if (existing == null)

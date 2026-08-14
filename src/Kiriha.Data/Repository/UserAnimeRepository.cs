@@ -41,7 +41,7 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     public async Task UpsertAsync(AnimeEntity item)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
-        var existing = await context.UserAnime.FirstOrDefaultAsync(x => x.Id == item.Id);
+        var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id);
         if (existing == null)
         {
             Log.Information("Inserting new Anime {Title} (ID: {Id})", item.Title, item.Id);
@@ -57,7 +57,7 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     public async Task UpdateAsync(AnimeEntity item)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
-        var existing = await context.UserAnime.FirstOrDefaultAsync(x => x.Id == item.Id);
+        var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id);
         if (existing == null)
         {
             Log.Warning("Attempted to update non-existent anime {Title} (ID: {Id})", item.Title, item.Id);

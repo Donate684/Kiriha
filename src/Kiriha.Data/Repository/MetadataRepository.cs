@@ -29,7 +29,7 @@ public sealed class MetadataRepository : IMetadataRepository
         meta.FetchedAt = DateTime.UtcNow;
 
         using var context = await _contextFactory.CreateDbContextAsync();
-        var existing = await context.Metadata.FindAsync(meta.Id);
+        var existing = await context.Metadata.AsTracking().FirstOrDefaultAsync(m => m.Id == meta.Id);
         if (existing == null)
             context.Metadata.Add(meta);
         else
