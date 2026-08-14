@@ -28,6 +28,7 @@ public class ScrobbleServiceTests : IDisposable
     private readonly Mock<NotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
+    private readonly Mock<ILocalizer> _mockLocalizer;
     private readonly ScrobbleService _scrobbleService;
 
     public ScrobbleServiceTests()
@@ -48,6 +49,7 @@ public class ScrobbleServiceTests : IDisposable
         _mockNotificationService = new Mock<NotificationService>(null!, null!);
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
         _mockUiDispatcher = new Mock<IUiDispatcher>();
+        _mockLocalizer = new Mock<ILocalizer>();
 
         // When background task is queued, run it synchronously for testing
         _mockBackgroundTasks
@@ -63,7 +65,8 @@ public class ScrobbleServiceTests : IDisposable
             _settingsService,
             _mockNotificationService.Object,
             _mockBackgroundTasks.Object,
-            _mockUiDispatcher.Object);
+            _mockUiDispatcher.Object,
+            _mockLocalizer.Object);
     }
 
     [Fact]
