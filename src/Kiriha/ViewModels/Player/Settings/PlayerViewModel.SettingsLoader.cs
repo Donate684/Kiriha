@@ -25,6 +25,7 @@ public partial class PlayerViewModel
             AutoHideControls = settings.AutoHideControls;
             AutoHideTimeout = Math.Clamp(settings.AutoHideTimeout, 0.5, 10.0);
             ShowChapterMarkers = settings.ShowChapterMarkers;
+            SmartTrackAutoload = settings.SmartTrackAutoload;
             LeftClickAction = FindMouseAction(settings.LeftClickAction);
             RightClickAction = FindMouseAction(settings.RightClickAction);
             MiddleClickAction = FindMouseAction(settings.MiddleClickAction);

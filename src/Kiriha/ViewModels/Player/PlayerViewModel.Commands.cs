@@ -165,4 +165,12 @@ public partial class PlayerViewModel
     {
         _timelinePreview.Hide();
     }
+
+    partial void OnSmartTrackAutoloadChanged(bool value)
+    {
+        if (_isApplyingSettings || _settingsService == null) return;
+        _settingsService.Update(
+            settings => settings.Player.SmartTrackAutoload = value,
+            Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+    }
 }

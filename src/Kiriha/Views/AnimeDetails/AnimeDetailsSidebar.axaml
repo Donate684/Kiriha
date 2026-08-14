@@ -29,9 +29,10 @@
                         <details:AnimeDetailsSidebarAddButton />
 
                         <!-- Save changes button inside Sidebar -->
-                        <details:AnimeDetailsSidebarSaveButton />
+                        <details:AnimeDetailsSidebarSaveButton ZIndex="1" />
 
                     </StackPanel>
                 </ScrollViewer>
             </Border>
 </UserControl>
+

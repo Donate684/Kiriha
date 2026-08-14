@@ -4,10 +4,10 @@
              xmlns:material="using:Material.Icons.Avalonia"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarSaveButton"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
-    <Button Command="{Binding Editor.SaveCommand}"
+    <Button Command="{Binding Editor.SaveCommand}" ZIndex="1"
             CommandParameter="{Binding $parent[Window]}"
             HorizontalAlignment="Stretch"
-            Margin="0,-12,0,0"
+            Margin="0,0,0,0"
             Height="36"
             CornerRadius="8"
             Background="{DynamicResource SystemAccentColor}"
@@ -28,3 +28,6 @@
         </StackPanel>
     </Button>
 </UserControl>
+
+
+

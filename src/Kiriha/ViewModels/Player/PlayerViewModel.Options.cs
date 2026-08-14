@@ -14,6 +14,7 @@ public partial class PlayerViewModel
     [ObservableProperty] private bool _autoHideControls = true;
     [ObservableProperty] private double _autoHideTimeout = 1.5;
     [ObservableProperty] private bool _showChapterMarkers = true;
+    [ObservableProperty] private bool _smartTrackAutoload = true;
 
     [ObservableProperty] private bool _showPlayPauseButton = true;
     [ObservableProperty] private bool _showSkipButtons = true;

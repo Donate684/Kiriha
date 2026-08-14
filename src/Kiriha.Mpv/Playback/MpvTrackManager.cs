@@ -91,4 +91,10 @@ public class MpvTrackManager
         if (string.IsNullOrWhiteSpace(path)) return;
         _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "sub-add", path), "add subtitle"));
     }
+
+    public void AddAudioTrack(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return;
+        _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "audio-add", path), "add audio track"));
+    }
 }

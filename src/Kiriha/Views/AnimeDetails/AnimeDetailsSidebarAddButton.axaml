@@ -1,10 +1,10 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl IsVisible="{Binding !Editor.IsInList}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:material="using:Material.Icons.Avalonia"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarAddButton"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
-    <StackPanel IsVisible="{Binding !Editor.IsInList}" Spacing="0">
+    <StackPanel Spacing="0">
         <Button Classes="AddButton" Command="{Binding Editor.AddToListCommand}" HorizontalAlignment="Stretch" Margin="0,10,0,0">
             <Grid ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">
                 <material:MaterialIcon Grid.Column="0" Kind="PlaylistPlus" Width="22" Height="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
@@ -13,3 +13,4 @@
         </Button>
     </StackPanel>
 </UserControl>
+

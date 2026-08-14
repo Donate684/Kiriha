@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl IsVisible="{Binding Editor.IsInList}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
@@ -11,7 +11,7 @@
         <conv:LocConverter x:Key="LocConverter"/>
     </UserControl.Resources>
     <!-- ══ IN LIST: User editing controls ══ -->
-    <StackPanel IsVisible="{Binding Editor.IsInList}" Spacing="14">
+    <StackPanel Spacing="14">
 
         <!-- Header: "В моём списке" + Delete -->
         <Grid ColumnDefinitions="*, Auto">
@@ -197,3 +197,4 @@
                   HorizontalAlignment="Left"/>
     </StackPanel>
 </UserControl>
+

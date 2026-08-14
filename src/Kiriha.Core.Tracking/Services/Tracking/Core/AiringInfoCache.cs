@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;

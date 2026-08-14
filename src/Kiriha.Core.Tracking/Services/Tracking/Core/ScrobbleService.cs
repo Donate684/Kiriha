@@ -28,6 +28,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private readonly Kiriha.Core.Abstractions.Services.INotificationService _notificationService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher _uiDispatcher;
+    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -44,7 +45,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         Kiriha.Core.Abstractions.Services.INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
-        Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher uiDispatcher)
+        Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher uiDispatcher,
+        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
     {
         _progressService = progressService;
         _historyService = historyService;
@@ -52,6 +54,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         _notificationService = notificationService;
         _backgroundTasks = backgroundTasks;
         _uiDispatcher = uiDispatcher;
+        _localizer = localizer;
     }
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
@@ -62,7 +65,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
         if (!int.TryParse(epStr, out int ep) || ep <= match.Progress)
         {
-            CountdownUpdated?.Invoke(this, string.Format("scrobbler.status.already_scrobbled"));
+            CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
             return;
         }
 
@@ -163,7 +166,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
             bool alreadyScrobbled = await _uiDispatcher.InvokeAsync(() => match.Progress >= targetEp);
             if (alreadyScrobbled)
             {
-                CountdownUpdated?.Invoke(this, string.Format("scrobbler.status.already_scrobbled"));
+                CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
                 return;
             }
 
@@ -190,3 +193,4 @@ public class ScrobbleService : IScrobbleService, IDisposable
         }
     }
 }
+

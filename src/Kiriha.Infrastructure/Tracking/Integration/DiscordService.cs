@@ -14,12 +14,14 @@ public class DiscordService : IDisposable, Kiriha.Core.Abstractions.Services.IDi
 {
     private DiscordRpcClient? _client;
     private readonly ISettingsService _settingsService;
+    private readonly ILocalizer _localizer;
     private readonly object _gate = new();
     private const string DefaultClientId = "1496599223192391941"; // User's Client ID
 
-    public DiscordService(ISettingsService settingsService)
+    public DiscordService(ISettingsService settingsService, ILocalizer localizer)
     {
         _settingsService = settingsService;
+        _localizer = localizer;
     }
 
     public void Initialize()
@@ -60,11 +62,11 @@ public class DiscordService : IDisposable, Kiriha.Core.Abstractions.Services.IDi
                 string state;
                 if (totalEpisodes > 0)
                 {
-                    state = string.Format("anime.labels.series_of", episode, totalEpisodes);
+                    state = _localizer.GetLoc("anime.labels.series_of", episode, totalEpisodes);
                 }
                 else
                 {
-                    state = string.Format("anime.labels.series_only", episode);
+                    state = _localizer.GetLoc("anime.labels.series_only", episode);
                 }
 
                 Timestamps? timestamps = null;
@@ -207,3 +209,4 @@ public class DiscordService : IDisposable, Kiriha.Core.Abstractions.Services.IDi
         }
     }
 }
+

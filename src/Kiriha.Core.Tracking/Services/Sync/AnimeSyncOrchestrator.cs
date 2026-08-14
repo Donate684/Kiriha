@@ -9,7 +9,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Api;

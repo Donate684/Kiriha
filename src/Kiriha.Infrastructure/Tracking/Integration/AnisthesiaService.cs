@@ -8,7 +8,6 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Infrastructure.Tracking.Anisthesia;
-using Kiriha.Core.Domain.Models;
 
 
 

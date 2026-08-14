@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Kiriha.Mpv;
+using Kiriha.Services.Player;
 
 namespace Kiriha.ViewModels.Player;
 
@@ -23,12 +24,31 @@ public partial class PlayerViewModel
             UpdateTracks();
             _timelinePreview.WarmUp(VideoUrl);
             _statePublisher.Publish();
+
+            if (SmartTrackAutoload)
+            {
+                var url = VideoUrl;
+                _ = Task.Run(() => LoadSmartTracks(url));
+            }
             _ = Task.Run(() =>
             {
                 var info = _playback.GetRuntimeVideoInfo();
                 Dispatcher.UIThread.Post(() => MpvRuntimeInfo = info);
             });
         });
+    }
+
+    private void LoadSmartTracks(string videoPath)
+    {
+        var matches = SmartTrackAutoloader.FindMatchingTracks(videoPath);
+        if (!matches.HasAny)
+            return;
+
+        foreach (var subPath in matches.SubtitlePaths)
+            _playback.AddSubtitle(subPath);
+
+        foreach (var audioPath in matches.AudioPaths)
+            _playback.AddAudioTrack(audioPath);
     }
 
     private void OnPlayerTracksChanged()

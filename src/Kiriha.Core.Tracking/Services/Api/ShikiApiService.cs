@@ -15,7 +15,6 @@ using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Auth;
 
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 

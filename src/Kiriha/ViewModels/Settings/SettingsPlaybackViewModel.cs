@@ -27,6 +27,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     [ObservableProperty] private bool _isSystemPlayer;
     [ObservableProperty] private bool _keepPlayerProcessAlive;
     [ObservableProperty] private bool _singlePlayerWindow = true;
+    [ObservableProperty] private bool _smartTrackAutoload = true;
     [ObservableProperty] private string _mpvHwdec = "auto";
     [ObservableProperty] private string _mpvVideoOutput = "gpu-next";
     [ObservableProperty] private string _mpvGpuApi = "auto";
@@ -46,6 +47,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
         IsSystemPlayer = _systemIntegrationService.IsRegistered();
         KeepPlayerProcessAlive = _settingsService.Current.System.KeepPlayerProcessAlive;
         SinglePlayerWindow = _settingsService.Current.Player.SingleWindow;
+        SmartTrackAutoload = _settingsService.Current.Player.SmartTrackAutoload;
         MpvHwdec = NormalizeMpvOption(_settingsService.Current.Player.MpvHwdec, "auto");
         MpvVideoOutput = NormalizeMpvOption(_settingsService.Current.Player.MpvVideoOutput, "gpu-next");
         MpvGpuApi = NormalizeMpvOption(_settingsService.Current.Player.MpvGpuApi, "auto");
@@ -60,6 +62,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     }
 
     partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+    partial void OnSmartTrackAutoloadChanged(bool value) => _settingsService.Update(settings => settings.Player.SmartTrackAutoload = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     partial void OnMpvHwdecChanged(string value) => SaveMpvOption(x => x.MpvHwdec = NormalizeMpvOption(value, "auto"));
     partial void OnMpvVideoOutputChanged(string value) => SaveMpvOption(x => x.MpvVideoOutput = NormalizeMpvOption(value, "gpu-next"));
     partial void OnMpvGpuApiChanged(string value) => SaveMpvOption(x => x.MpvGpuApi = NormalizeMpvOption(value, "auto"));
