@@ -14,7 +14,7 @@ public static class AnisthesiaPlayerLoader
         try
         {
             var assembly = typeof(AnisthesiaPlayerLoader).Assembly;
-            using var stream = assembly.GetManifestResourceStream("Kiriha.Core.Tracking.Assets.Anisthesia.players.anisthesia");
+            using var stream = assembly.GetManifestResourceStream("Kiriha.Infrastructure.Tracking.Anisthesia.players.anisthesia");
             if (stream == null)
             {
                 Log.Warning("AnisthesiaPlayerLoader: Could not find embedded resource players.anisthesia.");
