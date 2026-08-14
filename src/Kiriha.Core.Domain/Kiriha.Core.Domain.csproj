@@ -5,6 +5,5 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
 </Project>

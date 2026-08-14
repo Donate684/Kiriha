@@ -1,5 +1,5 @@
 using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+
 
 namespace Kiriha.Core.Domain.Models;
 
@@ -9,10 +9,10 @@ namespace Kiriha.Core.Domain.Models;
 /// resolved by <see cref="Kiriha.Core.CustomLinkResolver"/> (e.g. {title},
 /// {russian}, {english}, {japanese}, {id}, {malId}, {shikiId}).
 ///
-/// Inherits from ObservableObject so settings UI bindings (TextBox.Text, etc.)
+/// Inherits from DomainObservableObject so settings UI bindings (TextBox.Text, etc.)
 /// notify the SettingsViewModel and trigger a save.
 /// </summary>
-public partial class CustomShareLink : ObservableObject
+public partial class CustomShareLink : DomainObservableObject
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 

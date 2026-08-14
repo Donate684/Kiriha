@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 
-public partial class AnimeEntity : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
+public partial class AnimeEntity : DomainObservableObject
 {
     public int Id { get; set; }
     private MediaKind _mediaKind = MediaKind.Anime;
