@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Threading;
+using Kiriha.Utils.Async;
 
 namespace Kiriha.ViewModels.AnimeList;
 
@@ -24,6 +25,18 @@ public partial class AnimeListViewModel
             {
                 var diff = item.NextEpisodeAt.Value - now;
                 if (diff.TotalHours < -48) continue;
+                
+                if (diff.TotalSeconds <= 0)
+                {
+                    // Episode has theoretically aired. Trigger an immediate sync from AniList
+                    // if we haven't done so recently, so it doesn't stay stuck on "New ep.?"
+                    // until the 6-hour background sync task runs.
+                    if (item.LastEpisodesSync == null || (now - item.LastEpisodesSync.Value).TotalMinutes > 15)
+                    {
+                        _airingInfoService.SyncEpisodesForAnimeAsync(item).SafeFireAndForget();
+                    }
+                }
+
                 item.RefreshAiringBadge();
             }
             else if (item.Presentation.IsNewEpisode)

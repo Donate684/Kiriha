@@ -43,16 +43,15 @@ public static class SmartTrackAutoloader
         if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
             return SmartTrackMatches.Empty;
 
-        string videoFileName = Path.GetFileName(videoPath);
+        string videoFileName = Path.GetRelativePath(directory, videoPath);
 
-        List<string> allFiles;
+        List<string> allFiles = new();
         try
         {
-            allFiles = Directory.EnumerateFiles(directory)
-                .Select(Path.GetFileName)
-                .Where(f => f != null)
-                .Cast<string>()
-                .ToList();
+            foreach (var file in EnumerateFilesWithDepth(directory, 2))
+            {
+                allFiles.Add(Path.GetRelativePath(directory, file));
+            }
         }
         catch
         {
@@ -168,6 +167,30 @@ public static class SmartTrackAutoloader
             }
         }
         return result;
+    }
+
+    private static IEnumerable<string> EnumerateFilesWithDepth(string path, int maxDepth)
+    {
+        var queue = new Queue<(string path, int depth)>();
+        queue.Enqueue((path, 0));
+
+        while (queue.Count > 0)
+        {
+            var (currentPath, depth) = queue.Dequeue();
+
+            string[] files;
+            try { files = Directory.GetFiles(currentPath); }
+            catch { continue; }
+            foreach (var f in files) yield return f;
+
+            if (depth < maxDepth)
+            {
+                string[] dirs;
+                try { dirs = Directory.GetDirectories(currentPath); }
+                catch { continue; }
+                foreach (var d in dirs) queue.Enqueue((d, depth + 1));
+            }
+        }
     }
 }
 
