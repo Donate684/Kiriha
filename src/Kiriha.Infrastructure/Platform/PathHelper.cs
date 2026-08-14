@@ -2,7 +2,7 @@ using Kiriha.Core.Domain.Constants;
 using System;
 using System.IO;
 
-namespace Kiriha.Core.Platform;
+namespace Kiriha.Infrastructure.Platform;
 
 public static class PathHelper
 {

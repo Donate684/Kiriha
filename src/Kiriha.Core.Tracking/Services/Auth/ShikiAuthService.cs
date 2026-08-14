@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Shared.Shiki;

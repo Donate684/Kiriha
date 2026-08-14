@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using DiscordRPC;
 using DiscordRPC.Logging;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;

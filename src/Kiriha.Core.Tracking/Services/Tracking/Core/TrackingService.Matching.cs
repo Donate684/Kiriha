@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Shared.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Repositories;

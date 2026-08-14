@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;

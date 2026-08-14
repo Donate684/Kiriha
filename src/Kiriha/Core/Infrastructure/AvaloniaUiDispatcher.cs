@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 
-namespace Kiriha.Core.Infrastructure;
+namespace Kiriha.Infrastructure;
 
 public sealed class AvaloniaUiDispatcher : IUiDispatcher
 {

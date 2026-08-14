@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
@@ -7,7 +8,7 @@ using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.Api;

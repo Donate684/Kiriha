@@ -1,4 +1,5 @@
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;

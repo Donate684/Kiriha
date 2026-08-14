@@ -1,4 +1,5 @@
 using Kiriha.Services.Data.Metadata;
+using Kiriha.Core;
 using Kiriha.Services.Data.Image;
 using Kiriha.Services.Data.Settings;
 using System;
@@ -8,7 +9,7 @@ using AsyncImageLoader;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

@@ -3,7 +3,7 @@ using System.IO.Pipes;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;

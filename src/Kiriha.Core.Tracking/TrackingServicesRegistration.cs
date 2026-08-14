@@ -2,7 +2,7 @@ using System;
 using Kiriha.Core.Shared;
 using System.Net;
 using System.Net.Http;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;

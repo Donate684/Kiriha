@@ -2,7 +2,7 @@ using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Domain.Constants;
 using System;
 using System.Collections.Generic;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Seasonal;

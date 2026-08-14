@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure;
+using Kiriha.Infrastructure.Platform;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;

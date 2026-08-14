@@ -1,4 +1,4 @@
-namespace Kiriha.Core.Player;
+namespace Kiriha.Infrastructure.Player;
 
 public static class InternalPlayerBridge
 {

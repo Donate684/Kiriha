@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Shared.Messages;

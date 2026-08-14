@@ -53,8 +53,8 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     partial void OnKeepPlayerProcessAliveChanged(bool value)
     {
         _settingsService.Update(settings => settings.System.KeepPlayerProcessAlive = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-        if (value) Kiriha.Core.Player.PlayerProcessBridge.StartResident();
-        else _ = Kiriha.Core.Player.PlayerProcessBridge.StopResidentAsync();
+        if (value) Kiriha.Infrastructure.Player.PlayerProcessBridge.StartResident();
+        else _ = Kiriha.Infrastructure.Player.PlayerProcessBridge.StopResidentAsync();
     }
 
     partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);

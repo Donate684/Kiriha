@@ -12,7 +12,7 @@ partial class Program
         bool enableLogging = false;
         try
         {
-            var settingsPath = Kiriha.Core.Platform.PathHelper.GetSettingsPath();
+            var settingsPath = Kiriha.Infrastructure.Platform.PathHelper.GetSettingsPath();
             if (File.Exists(settingsPath))
             {
                 var content = File.ReadAllText(settingsPath);
@@ -25,7 +25,7 @@ partial class Program
         }
         catch { }
 
-        string logTemplate = Path.Combine(Kiriha.Core.Platform.PathHelper.GetLogsPath(), "kiriha-.txt");
+        string logTemplate = Path.Combine(Kiriha.Infrastructure.Platform.PathHelper.GetLogsPath(), "kiriha-.txt");
 
         var loggerConfig = new LoggerConfiguration()
             .MinimumLevel.Information()

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Kiriha.Core.Domain.Constants;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.Analytics;

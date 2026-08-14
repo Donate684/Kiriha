@@ -5,7 +5,7 @@ using Kiriha.ViewModels.Startup;
 using Kiriha.ViewModels.Settings;
 using Kiriha.Services.Data.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 
 namespace Kiriha.ViewModels.Settings;

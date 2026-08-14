@@ -25,7 +25,7 @@ using Kiriha.Views.Search;
 using Kiriha.Views.Seasonal;
 using Kiriha.Views.Torrents;
 
-namespace Kiriha.Core.Infrastructure;
+namespace Kiriha.Infrastructure;
 
 /// <summary>
 /// Resolves a <see cref="ViewModelBase"/> to its companion <see cref="Control"/>.

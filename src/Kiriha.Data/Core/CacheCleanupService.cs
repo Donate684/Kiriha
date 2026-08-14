@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 

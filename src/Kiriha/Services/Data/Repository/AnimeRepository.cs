@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;

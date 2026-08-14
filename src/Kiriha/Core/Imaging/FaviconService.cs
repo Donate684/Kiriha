@@ -1,10 +1,11 @@
 using System;
+using Kiriha.Core;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Serilog;
 
 namespace Kiriha.Core;

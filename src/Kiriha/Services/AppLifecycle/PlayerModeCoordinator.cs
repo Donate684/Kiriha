@@ -5,7 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 using Kiriha.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

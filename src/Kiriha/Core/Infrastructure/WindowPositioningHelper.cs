@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace Kiriha.Core.Infrastructure;
+namespace Kiriha.Infrastructure;
 
 public static class WindowPositioningHelper
 {

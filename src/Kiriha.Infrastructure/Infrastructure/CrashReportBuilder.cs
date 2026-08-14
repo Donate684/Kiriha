@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Serilog;
 
-namespace Kiriha.Core.Infrastructure;
+namespace Kiriha.Infrastructure;
 
 public static class CrashReportBuilder
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kiriha.Core;
+
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;

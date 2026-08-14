@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 

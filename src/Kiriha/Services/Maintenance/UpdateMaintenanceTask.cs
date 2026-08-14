@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
 using Serilog;

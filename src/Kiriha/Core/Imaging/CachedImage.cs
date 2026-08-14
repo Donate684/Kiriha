@@ -1,4 +1,5 @@
 using Kiriha.Services.Data.Image;
+using Kiriha.Core;
 using System;
 using Avalonia;
 using Avalonia.Controls;

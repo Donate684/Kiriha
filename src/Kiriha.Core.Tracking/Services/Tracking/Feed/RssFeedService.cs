@@ -1,5 +1,5 @@
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;

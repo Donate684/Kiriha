@@ -17,7 +17,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Dialogs;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Kiriha.Core.Shared.Shiki;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;

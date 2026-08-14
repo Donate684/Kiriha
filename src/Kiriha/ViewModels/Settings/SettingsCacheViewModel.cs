@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;

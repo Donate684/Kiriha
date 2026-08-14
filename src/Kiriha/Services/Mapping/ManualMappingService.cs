@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Kiriha.Utils.Async;
 using Kiriha.Utils.Parsing;
 using Serilog;

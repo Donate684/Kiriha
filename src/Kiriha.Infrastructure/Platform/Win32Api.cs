@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Kiriha.Core.Platform;
+namespace Kiriha.Infrastructure.Platform;
 
 public static class Win32Api
 {

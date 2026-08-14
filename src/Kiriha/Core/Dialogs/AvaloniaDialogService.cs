@@ -1,4 +1,5 @@
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;

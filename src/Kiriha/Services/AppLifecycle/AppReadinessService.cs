@@ -10,7 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Microsoft.Extensions.DependencyInjection;

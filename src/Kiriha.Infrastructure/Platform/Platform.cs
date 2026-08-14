@@ -1,6 +1,6 @@
 using System;
 
-namespace Kiriha.Core.Platform;
+namespace Kiriha.Infrastructure.Platform;
 
 /// <summary>
 /// Platform feature probes. Centralised so caller code doesn't sprinkle

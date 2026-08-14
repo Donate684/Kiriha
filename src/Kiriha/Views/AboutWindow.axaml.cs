@@ -1,12 +1,13 @@
 using Kiriha.Core.Shared;
+using Kiriha.Core;
 using Kiriha.Services.Data.Settings;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;

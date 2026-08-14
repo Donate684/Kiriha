@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Api;
 using Serilog;

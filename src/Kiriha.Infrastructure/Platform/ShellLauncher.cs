@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Serilog;
 
-namespace Kiriha.Core.Platform;
+namespace Kiriha.Infrastructure.Platform;
 
 /// <summary>
 /// Thin wrapper over <see cref="Process.Start(ProcessStartInfo)"/> for opening

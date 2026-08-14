@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 using Serilog;
 
 namespace Kiriha.Services;

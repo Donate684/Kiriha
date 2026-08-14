@@ -1,7 +1,8 @@
 using System;
+using Kiriha.Core;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;

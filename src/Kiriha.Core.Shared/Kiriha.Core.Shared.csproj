@@ -7,4 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog" />
+  </ItemGroup>
 </Project>

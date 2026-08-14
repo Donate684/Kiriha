@@ -37,7 +37,7 @@ public partial class SettingsService : IDisposable, ISettingsService
     public SettingsService(string? settingsPath = null)
     {
         var sw = Stopwatch.StartNew();
-        _settingsPath = settingsPath ?? Kiriha.Core.Platform.PathHelper.GetSettingsPath();
+        _settingsPath = settingsPath ?? Kiriha.Infrastructure.Platform.PathHelper.GetSettingsPath();
         _debouncer = new Debouncer(TimeSpan.FromMilliseconds(500), async (_) => await SaveAsync());
         Load();
         Log.Information("StartupTiming: settings service initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 
 namespace Kiriha.Services.Data.Image;
 

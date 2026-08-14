@@ -3,7 +3,7 @@ using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 

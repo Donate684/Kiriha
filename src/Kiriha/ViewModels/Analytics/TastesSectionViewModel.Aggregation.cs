@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Localization;
 using Kiriha.Core.Domain.Models.Entities;
 

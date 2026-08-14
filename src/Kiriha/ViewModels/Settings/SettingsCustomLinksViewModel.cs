@@ -1,4 +1,5 @@
 using Kiriha.Services.Data.Settings;
+using Kiriha.Core;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,7 +10,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Serilog;
 using System.Collections.ObjectModel;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 
 namespace Kiriha.ViewModels.Settings;
 

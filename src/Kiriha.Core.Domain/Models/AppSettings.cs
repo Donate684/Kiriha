@@ -1,6 +1,6 @@
 using Kiriha.Core.Domain.Constants;
 using System.Collections.Generic;
-using Kiriha.Core;
+
 using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.Core.Domain.Models;

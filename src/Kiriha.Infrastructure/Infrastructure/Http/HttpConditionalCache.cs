@@ -10,7 +10,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Abstractions.Repositories;
 using Serilog;
 
-namespace Kiriha.Core.Infrastructure.Http;
+namespace Kiriha.Infrastructure.Http;
 
 /// <summary>
 /// Result envelope for <see cref="HttpConditionalCache.SendAsync"/>.

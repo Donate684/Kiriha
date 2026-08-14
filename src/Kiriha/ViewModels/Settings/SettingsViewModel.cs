@@ -1,4 +1,5 @@
 using Kiriha.Core.Tracking.Api;
+using Kiriha.Core;
 using Kiriha.Core.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -18,7 +19,7 @@ using Kiriha.Core.Tracking;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
 using Kiriha.Core.Shared.Shiki;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 
 namespace Kiriha.ViewModels.Settings;
 

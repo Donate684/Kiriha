@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Services;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 
 namespace Kiriha.ViewModels.Settings;
 

@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Kiriha.Core\Kiriha.Core.csproj" />
+    <ProjectReference Include="..\Kiriha.Infrastructure\Kiriha.Infrastructure.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Shared\Kiriha.Core.Shared.csproj" />

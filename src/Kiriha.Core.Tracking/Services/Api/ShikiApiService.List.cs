@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Sync;
 

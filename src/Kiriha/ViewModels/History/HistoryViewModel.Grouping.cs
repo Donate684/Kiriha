@@ -2,7 +2,7 @@ using Kiriha.Core.Domain.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 
 namespace Kiriha.ViewModels.History;
 

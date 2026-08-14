@@ -1,6 +1,6 @@
 using Kiriha.Core.Domain.Constants;
 using System;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 
 namespace Kiriha;
 
@@ -16,10 +16,10 @@ partial class Program
 
         if (isPlayer)
         {
-            playerMutex = new System.Threading.Mutex(true, Kiriha.Core.Player.PlayerProcessBridge.MutexName, out var playerCreatedNew);
+            playerMutex = new System.Threading.Mutex(true, Kiriha.Infrastructure.Player.PlayerProcessBridge.MutexName, out var playerCreatedNew);
             if (!playerCreatedNew)
             {
-                Kiriha.Core.Player.PlayerProcessBridge.TryForward(args);
+                Kiriha.Infrastructure.Player.PlayerProcessBridge.TryForward(args);
                 return false;
             }
         }

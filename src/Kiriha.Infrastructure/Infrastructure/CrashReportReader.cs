@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Serilog;
 
-namespace Kiriha.Core.Infrastructure;
+namespace Kiriha.Infrastructure;
 
 public static class CrashReportReader
 {

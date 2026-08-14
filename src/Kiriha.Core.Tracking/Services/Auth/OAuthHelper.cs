@@ -4,7 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;

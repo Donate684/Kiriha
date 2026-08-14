@@ -1,12 +1,13 @@
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure;
+using Kiriha.Infrastructure.Platform;
 using Xunit;
 
 namespace Kiriha.Tests.Core.Infrastructure;

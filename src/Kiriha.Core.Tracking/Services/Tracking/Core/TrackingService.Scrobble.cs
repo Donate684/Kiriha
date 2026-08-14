@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Shared.Shiki;

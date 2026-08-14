@@ -1,5 +1,5 @@
 using Kiriha.Services.Data.Settings;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 using System;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;

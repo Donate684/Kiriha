@@ -1,5 +1,6 @@
 using Avalonia;
-using Kiriha.Core.Platform;
+using Kiriha.Core;
+using Kiriha.Infrastructure.Platform;
 
 namespace Kiriha.Core;
 

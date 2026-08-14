@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Kiriha.Core.Shared.Infrastructure;
-using Kiriha.Core.Infrastructure;
+using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
@@ -22,7 +22,7 @@ namespace Kiriha.Services.Data.Image;
 
 public class ImageCacheService : IDisposable
 {
-    private readonly string CacheRoot = Kiriha.Core.Platform.PathHelper.GetImageCachePath();
+    private readonly string CacheRoot = Kiriha.Infrastructure.Platform.PathHelper.GetImageCachePath();
 
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly IUiDispatcher _uiDispatcher;

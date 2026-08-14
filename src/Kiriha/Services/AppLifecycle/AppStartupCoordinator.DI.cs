@@ -5,7 +5,7 @@ using Kiriha.Services.Data.Metadata;
 using System;
 using System.Diagnostics;
 using Kiriha.Composition;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Kiriha.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

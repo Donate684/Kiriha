@@ -1,4 +1,5 @@
 using System;
+using Kiriha.Core;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.Themes.Fluent;

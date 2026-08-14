@@ -1,6 +1,7 @@
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Player;
+using Kiriha.Infrastructure.Player;
 
 namespace Kiriha.Tests;
 

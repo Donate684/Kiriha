@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Domain.Models.Api;
 
-namespace Kiriha.Core.Player;
+namespace Kiriha.Infrastructure.Player;
 
 public sealed class InternalPlayerStateClient : IDisposable
 {

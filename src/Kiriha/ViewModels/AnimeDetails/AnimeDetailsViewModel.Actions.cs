@@ -8,7 +8,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Core.Platform;
+using Kiriha.Infrastructure.Platform;
 using Kiriha.Core.Shared.Shiki;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;

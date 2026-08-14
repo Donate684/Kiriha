@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
-using Kiriha.Core;
+using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Api;

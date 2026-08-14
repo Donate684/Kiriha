@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace Kiriha.Core.Player;
+namespace Kiriha.Infrastructure.Player;
 
 public static class PipeArgumentSerializer
 {

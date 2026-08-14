@@ -79,7 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kiriha.Core\Kiriha.Core.csproj" />
+    <ProjectReference Include="..\Kiriha.Infrastructure\Kiriha.Infrastructure.csproj" />
     <ProjectReference Include="..\Kiriha.Data\Kiriha.Data.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Tracking\Kiriha.Core.Tracking.csproj" />

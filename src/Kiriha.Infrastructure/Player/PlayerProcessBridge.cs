@@ -4,7 +4,7 @@ using System.IO.Pipes;
 using System.Threading.Tasks;
 using Serilog;
 
-namespace Kiriha.Core.Player;
+namespace Kiriha.Infrastructure.Player;
 
 public static class PlayerProcessBridge
 {
