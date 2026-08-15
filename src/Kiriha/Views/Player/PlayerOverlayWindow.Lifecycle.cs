@@ -22,6 +22,16 @@ public partial class PlayerOverlayWindow
     {
         _hideTimer.Stop();
         _hideTimer.Tick -= OnHideTimerTick;
+        
+        _hitTestDisableTimer.Stop();
+        _hitTestDisableTimer.Tick -= OnHitTestDisableTimerTick;
+
+        if (_leftClickTimer != null)
+        {
+            _leftClickTimer.Stop();
+            _leftClickTimer = null;
+        }
+
         RemoveHandler(DragDrop.DragOverEvent, OnDragOver);
         RemoveHandler(DragDrop.DropEvent, OnDrop);
         RemoveHandler(KeyDownEvent, OnOverlayKeyDown);
@@ -66,7 +76,7 @@ public partial class PlayerOverlayWindow
 
     private void OnOwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == Window.BoundsProperty || e.Property == Window.ClientSizeProperty)
+        if (e.Property == Window.ClientSizeProperty)
         {
             UpdateOverlayPosition();
         }

@@ -33,6 +33,7 @@ public partial class PlayerOverlayWindow : Window
 
     private Slider? _timelineSlider;
 
+    private Controls.PlayerControlBar? _controlBar;
     private Button? _settingsButton;
     private Button? _screenshotButton;
     private Button? _closeButton;
@@ -43,6 +44,7 @@ public partial class PlayerOverlayWindow : Window
     private EventHandler<AvaloniaPropertyChangedEventArgs>? _ownerPropertyChanged;
     private DateTime _lastTimelinePreviewAt = DateTime.MinValue;
     private double _lastTimelinePreviewTime = -1;
+    private bool _positionUpdatePending;
 
     public PlayerOverlayWindow()
     {
@@ -87,7 +89,7 @@ public partial class PlayerOverlayWindow : Window
         }
 
         // Keep overlay synced with owner window
-        _ownerPositionChanged = (_, _) => UpdateOverlayPosition();
+        _ownerPositionChanged = (_, _) => ScheduleOverlayPositionUpdate();
         _ownerPropertyChanged = OnOwnerPropertyChanged;
         _ownerWindow.PositionChanged += _ownerPositionChanged;
         _ownerWindow.PropertyChanged += _ownerPropertyChanged;
@@ -102,6 +104,7 @@ public partial class PlayerOverlayWindow : Window
 
         _timelineSlider = this.FindControl<Slider>("TimelineSlider");
 
+        _controlBar = this.FindControl<Controls.PlayerControlBar>("ControlBar");
         _settingsButton = this.FindControl<Button>("SettingsButton");
         _screenshotButton = this.FindControl<Button>("ScreenshotButton");
         _closeButton = this.FindControl<Button>("CloseButton");
@@ -167,5 +170,18 @@ public partial class PlayerOverlayWindow : Window
     private void OnSettingsOverlayClosed(object? sender, EventArgs e)
     {
         Focus();
+    }
+
+    private void ScheduleOverlayPositionUpdate()
+    {
+        if (_positionUpdatePending) return;
+        _positionUpdatePending = true;
+        Dispatcher.UIThread.Post(ApplyOverlayPosition, DispatcherPriority.Render);
+    }
+
+    private void ApplyOverlayPosition()
+    {
+        _positionUpdatePending = false;
+        UpdateOverlayPosition();
     }
 }

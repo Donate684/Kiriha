@@ -84,6 +84,22 @@
     <Style Selector="Button.wnd-btn:pressed /template/ Border">
         <Setter Property="Background" Value="#40FFFFFF"/>
     </Style>
+    <Style Selector="Button.wnd-btn TextBlock">
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets, sans-serif"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Opacity" Value="0.9"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.wnd-btn.close:pointerover TextBlock">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector="Button.wnd-btn.close:pressed TextBlock">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Opacity" Value="1"/>
+    </Style>
 
     <!-- ===== Speed menu & track menu items ===== -->
     <Style Selector="MenuItem.speed-item">

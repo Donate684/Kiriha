@@ -1,0 +1,132 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:mpres="using:Kiriha.Models.Presentation"
+             xmlns:mpv="clr-namespace:Kiriha.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Views.Player.Controls.Settings.PlayerVideoSettings">
+    <StackPanel Spacing="10">
+        <TextBlock Classes="player-settings-title" Text="{DynamicResource l.settings.player.video_preset_title}"/>
+
+        <Grid ColumnDefinitions="*,180" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.settings.player.video_preset_title}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.settings.player.video_preset_sub}" TextWrapping="Wrap"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedValue="{Binding MpvVideoPreset}" SelectedValueBinding="{Binding Tag}" x:CompileBindings="False">
+                <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_default}" Tag="default"/>
+                <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_balanced}" Tag="balanced"/>
+                <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_quality}" Tag="quality"/>
+                <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_custom}" Tag="custom"/>
+            </ComboBox>
+        </Grid>
+
+        <Border Classes="player-settings-divider"/>
+        <TextBlock Classes="player-settings-row-title"
+                   Text="{DynamicResource l.player.settings_adv.scaling_processing}"
+                   Margin="0,6,0,0"/>
+        
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.scale}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_lanczos}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvScaleOptions}" SelectedItem="{Binding MpvScale}" VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.cscale}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_lanczos}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvScaleOptions}" SelectedItem="{Binding MpvChromaScale}" VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.dither_depth}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_auto}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvDitherDepthOptions}" SelectedItem="{Binding MpvDitherDepth}" VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.correct_downscaling}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_yes}"/>
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding MpvCorrectDownscaling}"
+                          OnContent="{DynamicResource l.player.settings_adv.on}"
+                          OffContent="{DynamicResource l.player.settings_adv.off}"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.deband}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.deband_desc}"/>
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding MpvDeband}"
+                          OnContent="{DynamicResource l.player.settings_adv.on}"
+                          OffContent="{DynamicResource l.player.settings_adv.off}"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.deband_iterations}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_3}"/>
+            </StackPanel>
+            <NumericUpDown Grid.Column="1"
+                           Minimum="0"
+                           Maximum="16"
+                           Increment="1"
+                           Value="{Binding MpvDebandIterations}"
+                           VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.deband_threshold}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_30}"/>
+            </StackPanel>
+            <NumericUpDown Grid.Column="1"
+                           Minimum="0"
+                           Maximum="4096"
+                           Increment="1"
+                           Value="{Binding MpvDebandThreshold}"
+                           VerticalAlignment="Center"/>
+        </Grid>
+        
+        <Border Classes="player-settings-divider"/>
+        
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.hwdec}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.hwdec_desc}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvHwdecOptions}" SelectedItem="{Binding MpvHwdec}" VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.vo}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.vo_desc}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvVoOptions}" SelectedItem="{Binding MpvVideoOutput}" VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.gpu_api}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.gpu_api_desc}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvGpuApiOptions}" SelectedItem="{Binding MpvGpuApi}" VerticalAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,220" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.gpu_context}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.gpu_context_desc}"/>
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvGpuContextOptions}" SelectedItem="{Binding MpvGpuContext}" VerticalAlignment="Center"/>
+        </Grid>
+        
+        <Border Height="110" IsHitTestVisible="False"/>
+    </StackPanel>
+</UserControl>

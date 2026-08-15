@@ -12,11 +12,11 @@ internal sealed class MpvPropertyCache
     private volatile PlaybackState _playbackState = new(0, 0, false, false, false);
     private double _lastPublishedTimePosition;
     private DateTime _lastTimePositionEventUtc = DateTime.MinValue;
-    private volatile string _runtimeVideoInfo;
+    private MpvRuntimeDiagnostics _runtimeVideoInfo;
     private DateTime _runtimeVideoInfoRefreshedUtc = DateTime.MinValue;
     private volatile bool _runtimeVideoInfoDirty = true;
 
-    public MpvPropertyCache(string initialRuntimeVideoInfo)
+    public MpvPropertyCache(MpvRuntimeDiagnostics initialRuntimeVideoInfo)
     {
         _runtimeVideoInfo = initialRuntimeVideoInfo;
     }
@@ -24,7 +24,16 @@ internal sealed class MpvPropertyCache
     public double TimePosition => _playbackState.Position;
     public double Duration => _playbackState.Duration;
     public bool IsPaused => !_playbackState.IsPlaying;
-    public string RuntimeVideoInfo => _runtimeVideoInfo;
+    public MpvRuntimeDiagnostics RuntimeVideoInfo
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _runtimeVideoInfo;
+            }
+        }
+    }
     public PlaybackState PlaybackState => _playbackState;
 
     public bool HasFreshRuntimeVideoInfo
@@ -39,7 +48,7 @@ internal sealed class MpvPropertyCache
         }
     }
 
-    public void StoreRuntimeVideoInfo(string info)
+    public void StoreRuntimeVideoInfo(MpvRuntimeDiagnostics info)
     {
         lock (_gate)
         {

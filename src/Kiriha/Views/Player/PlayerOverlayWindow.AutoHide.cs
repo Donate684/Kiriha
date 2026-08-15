@@ -11,6 +11,7 @@ public partial class PlayerOverlayWindow
     // Auto-hide: hide panels after timeout of no mouse movement
     private static readonly TimeSpan ControlsKeepAliveInterval = TimeSpan.FromMilliseconds(180);
     private readonly DispatcherTimer _hideTimer = new();
+    private readonly DispatcherTimer _hitTestDisableTimer = new() { Interval = TimeSpan.FromMilliseconds(300) };
     private bool _controlsVisible = true;
     private DateTime _lastControlsKeepAliveUtc = DateTime.MinValue;
 
@@ -25,6 +26,7 @@ public partial class PlayerOverlayWindow
     private void InitializeAutoHide()
     {
         _hideTimer.Tick += OnHideTimerTick;
+        _hitTestDisableTimer.Tick += OnHitTestDisableTimerTick;
         UpdateHideTimerInterval();
     }
 
@@ -36,6 +38,8 @@ public partial class PlayerOverlayWindow
 
     private void ShowControls()
     {
+        _hitTestDisableTimer.Stop();
+
         var now = DateTime.UtcNow;
         bool wasHidden = !_controlsVisible;
         if (wasHidden)
@@ -54,9 +58,6 @@ public partial class PlayerOverlayWindow
             Cursor = s_arrowCursor;
         }
 
-        if (!wasHidden && now - _lastControlsKeepAliveUtc < ControlsKeepAliveInterval)
-            return;
-
         _lastControlsKeepAliveUtc = now;
         // Reset the hide timer
         _hideTimer.Stop();
@@ -64,7 +65,7 @@ public partial class PlayerOverlayWindow
         _hideTimer.Start();
     }
 
-    private async void HideControls()
+    private void HideControls()
     {
         _controlsVisible = false;
         _lastControlsKeepAliveUtc = DateTime.MinValue;
@@ -72,8 +73,13 @@ public partial class PlayerOverlayWindow
         if (_bottomBar != null) _bottomBar.Opacity = 0;
         Cursor = s_noneCursor;
 
-        await System.Threading.Tasks.Task.Delay(300);
+        _hitTestDisableTimer.Stop();
+        _hitTestDisableTimer.Start();
+    }
 
+    private void OnHitTestDisableTimerTick(object? sender, EventArgs e)
+    {
+        _hitTestDisableTimer.Stop();
         if (!_controlsVisible)
         {
             if (_topBar != null) _topBar.IsHitTestVisible = false;
@@ -89,16 +95,10 @@ public partial class PlayerOverlayWindow
         if (IsSettingsOverlayVisible())
             return true;
 
-        if (this.FindControl<Button>("SpeedButton")?.Flyout?.IsOpen == true)
+        if (_controlBar?.IsAnyFlyoutOpen() == true)
             return true;
 
-        if (this.FindControl<Button>("SubtitleButton")?.Flyout?.IsOpen == true)
-            return true;
-
-        if (this.FindControl<Button>("AudioButton")?.Flyout?.IsOpen == true)
-            return true;
-
-        if (this.FindControl<Button>("SettingsButton")?.Flyout?.IsOpen == true)
+        if (_settingsButton?.Flyout?.IsOpen == true)
             return true;
 
         return false;
@@ -107,15 +107,11 @@ public partial class PlayerOverlayWindow
     private void OnHideTimerTick(object? sender, EventArgs e)
     {
         _hideTimer.Stop();
-        if (DataContext is PlayerViewModel { AutoHideControls: false })
-            return;
-
-        if (DataContext is PlayerViewModel vm && !vm.IsPlaying && !string.IsNullOrEmpty(vm.VideoUrl))
-        {
-            // Do not hide controls if paused and video is loaded
-            return;
-        }
-
+        
+        if (DataContext is not PlayerViewModel vm) return;
+        if (!vm.AutoHideControls) return;
+        if (!vm.IsPlaying && !string.IsNullOrEmpty(vm.VideoUrl)) return;
+        
         if (IsPointerOverUI())
             return;
 
@@ -124,7 +120,21 @@ public partial class PlayerOverlayWindow
 
     private void OnGridPointerMoved(object? sender, PointerEventArgs e)
     {
-        ShowControls();
+        var now = DateTime.UtcNow;
+        if (_controlsVisible && now - _lastControlsKeepAliveUtc < ControlsKeepAliveInterval)
+            return;
+            
+        _lastControlsKeepAliveUtc = now;
+
+        if (!_controlsVisible)
+        {
+            ShowControls();
+            return;
+        }
+
+        // Fast-path: if controls are already visible, just restart the timer
+        _hideTimer.Stop();
+        _hideTimer.Start();
     }
 
     private void OnGridPointerExited(object? sender, PointerEventArgs e)

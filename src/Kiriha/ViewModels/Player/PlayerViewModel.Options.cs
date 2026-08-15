@@ -59,4 +59,10 @@ public partial class PlayerViewModel
         new("Исходное видео", "video"),
         new("Размер окна", "window")
     };
+    public List<string> MpvScaleOptions { get; } = new() { "bilinear", "spline36", "lanczos", "ewa_lanczossharp", "mitchell", "oversample", "nearest" };
+    public List<string> MpvDitherDepthOptions { get; } = new() { "auto", "no", "8", "10", "12", "16" };
+    public List<string> MpvHwdecOptions { get; } = new() { "auto", "auto-safe", "auto-copy", "no", "d3d11va", "d3d11va-copy", "dxva2", "dxva2-copy", "vulkan", "vulkan-copy", "nvdec", "nvdec-copy" };
+    public List<string> MpvVoOptions { get; } = new() { "gpu-next", "gpu" };
+    public List<string> MpvGpuApiOptions { get; } = new() { "auto", "d3d11", "vulkan", "opengl" };
+    public List<string> MpvGpuContextOptions { get; } = new() { "auto", "d3d11", "winvk", "win", "angle" };
 }

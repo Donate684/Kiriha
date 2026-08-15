@@ -125,7 +125,7 @@
 
         <!-- ===== TOP GRADIENT + BAR ===== -->
         <Border Name="TopBar" VerticalAlignment="Top" Height="72"
-                CornerRadius="8,8,0,0" ClipToBounds="True">
+                CornerRadius="8,8,0,0">
             <Border.Background>
                 <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
                     <GradientStop Color="#68000000" Offset="0"/>
@@ -174,24 +174,6 @@
                 <!-- Window controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="0"
                             VerticalAlignment="Top">
-                    <StackPanel.Styles>
-                        <Style Selector="Button.wnd-btn TextBlock">
-                            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets, sans-serif"/>
-                            <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="Opacity" Value="0.9"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                        </Style>
-                        <Style Selector="Button.wnd-btn.close:pointerover TextBlock">
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="Opacity" Value="1"/>
-                        </Style>
-                        <Style Selector="Button.wnd-btn.close:pressed TextBlock">
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="Opacity" Value="1"/>
-                        </Style>
-                    </StackPanel.Styles>
                     <Button Classes="wnd-btn" Click="OnMinimizeClick">
                         <TextBlock Text="&#xE921;"/>
                     </Button>
@@ -282,7 +264,7 @@
                 </Grid>
 
                 <!-- ===== CONTROLS ROW ===== -->
-                    <controls:PlayerControlBar SettingsClicked="OnSettingsClicked" ActionExecuted="OnActionExecuted" />
+                    <controls:PlayerControlBar Name="ControlBar" SettingsClicked="OnSettingsClicked" ActionExecuted="OnActionExecuted" />
             </StackPanel>
         </Border>
 

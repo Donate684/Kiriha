@@ -59,7 +59,7 @@ public sealed class PlayerPlaybackController
     public void SetOptionString(string name, string value) => _player?.SetOptionString(name, value);
     public double GetDuration() => _player?.GetDuration() ?? 0;
     public PlaybackState GetPlaybackState() => _player?.GetPlaybackState() ?? new PlaybackState(0, 0, false, false, false);
-    public string GetRuntimeVideoInfo() => _player?.GetRuntimeVideoInfo() ?? "hwdec: -, interop: -, vo: -, context: -, decoder: -";
+    public MpvRuntimeDiagnostics GetRuntimeVideoInfo() => _player?.GetRuntimeVideoInfo() ?? default;
     public void SetScreenshotOptions(
         string directory,
         string format,

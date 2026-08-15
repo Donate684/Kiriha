@@ -33,7 +33,22 @@ public partial class PlayerOverlayWindow
         var maxLeft = Math.Max(8, (_bottomBar?.Bounds.Width ?? Bounds.Width) - 244);
         var previewLeft = Math.Clamp(bottomPos.X - 118, 8, maxLeft);
         vm.ShowTimelinePreview(previewTime, previewLeft);
-        ShowControls();
+
+        var nowUtc = DateTime.UtcNow;
+        if (_controlsVisible && nowUtc - _lastControlsKeepAliveUtc < ControlsKeepAliveInterval)
+            return;
+
+        _lastControlsKeepAliveUtc = nowUtc;
+
+        if (!_controlsVisible)
+        {
+            ShowControls();
+            return;
+        }
+
+        // Fast-path: if controls are already visible, just restart the timer
+        _hideTimer.Stop();
+        _hideTimer.Start();
     }
 
     private void OnTimelinePointerExited(object? sender, PointerEventArgs e)
@@ -58,11 +73,14 @@ public partial class PlayerOverlayWindow
         if (_ownerWindow == null) return;
 
         var clientPos = _ownerWindow.PointToScreen(new Point(0, 0));
-        Position = clientPos;
+        if (Position != clientPos)
+        {
+            Position = clientPos;
+        }
 
         var clientSize = _ownerWindow.ClientSize;
-        Width = clientSize.Width;
-        Height = clientSize.Height;
+        if (Math.Abs(Width - clientSize.Width) > 0.5) Width = clientSize.Width;
+        if (Math.Abs(Height - clientSize.Height) > 0.5) Height = clientSize.Height;
     }
 
     // ──────────────────────────────────────────────────────────

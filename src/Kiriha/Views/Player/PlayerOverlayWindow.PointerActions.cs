@@ -27,6 +27,7 @@ public partial class PlayerOverlayWindow
     // ──────────────────────────────────────────────────────────
 
     private DispatcherTimer? _leftClickTimer;
+    private PlayerMouseAction _pendingLeftClickAction = PlayerMouseAction.None;
 
     private void OnBackgroundPointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -57,14 +58,19 @@ public partial class PlayerOverlayWindow
         if (properties.IsLeftButtonPressed)
         {
             _leftClickTimer?.Stop();
+            _pendingLeftClickAction = action;
 
-            _leftClickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
-            _leftClickTimer.Tick += (s, args) =>
+            if (_leftClickTimer == null)
             {
-                _leftClickTimer?.Stop();
-                _leftClickTimer = null;
-                ExecuteMouseAction(vm, action);
-            };
+                _leftClickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+                _leftClickTimer.Tick += (s, args) =>
+                {
+                    _leftClickTimer?.Stop();
+                    if (DataContext is PlayerViewModel currentVm && _pendingLeftClickAction != PlayerMouseAction.None)
+                        ExecuteMouseAction(currentVm, _pendingLeftClickAction);
+                    _pendingLeftClickAction = PlayerMouseAction.None;
+                };
+            }
             _leftClickTimer.Start();
         }
         else
@@ -78,7 +84,7 @@ public partial class PlayerOverlayWindow
         if (_leftClickTimer != null)
         {
             _leftClickTimer.Stop();
-            _leftClickTimer = null;
+            _pendingLeftClickAction = PlayerMouseAction.None;
         }
 
         if (IsSettingsOverlayVisible())

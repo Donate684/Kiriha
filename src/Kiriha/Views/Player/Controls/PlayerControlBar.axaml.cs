@@ -9,12 +9,20 @@ namespace Kiriha.Views.Player.Controls;
 
 public partial class PlayerControlBar : UserControl
 {
+    private readonly Button? _speedButton;
+    private readonly Button? _subtitleButton;
+    private readonly Button? _audioButton;
+
     public event EventHandler? SettingsClicked;
     public event EventHandler? ActionExecuted;
 
     public PlayerControlBar()
     {
         InitializeComponent();
+        
+        _speedButton = this.FindControl<Button>("SpeedButton");
+        _subtitleButton = this.FindControl<Button>("SubtitleButton");
+        _audioButton = this.FindControl<Button>("AudioButton");
         
         var settingsBtn = this.FindControl<PlayerSettingsButton>("SettingsBtn");
         if (settingsBtn != null)
@@ -24,6 +32,14 @@ public partial class PlayerControlBar : UserControl
                 SettingsClicked?.Invoke(this, EventArgs.Empty);
             };
         }
+    }
+
+    public bool IsAnyFlyoutOpen()
+    {
+        if (_speedButton?.Flyout?.IsOpen == true) return true;
+        if (_subtitleButton?.Flyout?.IsOpen == true) return true;
+        if (_audioButton?.Flyout?.IsOpen == true) return true;
+        return false;
     }
 
     private void OnScreenshotButtonPointerReleased(object? sender, PointerReleasedEventArgs e)

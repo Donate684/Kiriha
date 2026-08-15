@@ -14,6 +14,23 @@ public partial class PlayerChapterMarkers : UserControl
 {
     private PlayerViewModel? _subscribedViewModel;
     private static readonly Geometry s_chapterMarkerGeometry = Geometry.Parse("M0,0 L6,0 L3,3 Z M0,10 L6,10 L3,7 Z");
+    private IBrush? _cachedMarkerFill;
+
+    private IBrush GetMarkerFill()
+    {
+        if (_cachedMarkerFill != null) return _cachedMarkerFill;
+        
+        if (Application.Current!.TryGetResource("SystemAccentColor", out var res) && res is Color accentColor)
+        {
+            _cachedMarkerFill = new SolidColorBrush(accentColor);
+        }
+        else
+        {
+            _cachedMarkerFill = Brushes.White;
+        }
+        
+        return _cachedMarkerFill;
+    }
 
     public PlayerChapterMarkers()
     {
@@ -86,11 +103,7 @@ public partial class PlayerChapterMarkers : UserControl
         double trackHeight = ChapterCanvas.Bounds.Height;
         if (trackWidth <= 0 || trackHeight <= 0) return;
 
-        IBrush markerFill = Brushes.White;
-        if (Application.Current!.TryGetResource("SystemAccentColor", out var res) && res is Color accentColor)
-        {
-            markerFill = new SolidColorBrush(accentColor);
-        }
+        IBrush markerFill = GetMarkerFill();
 
         int childIndex = 0;
         double duration = vm.Duration;

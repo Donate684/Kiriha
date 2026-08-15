@@ -8,10 +8,59 @@ namespace Kiriha.ViewModels.Player;
 
 public partial class PlayerViewModel
 {
+    partial void OnMpvVideoPresetChanged(string value)
+    {
+        if (_isApplyingSettings || _settingsService == null) return;
+        var preset = NormalizeMpvOption(value, "default");
+        
+        _isApplyingSettings = true;
+        try
+        {
+            if (preset == "default")
+            {
+                MpvScale = "bilinear";
+                MpvChromaScale = "bilinear";
+                MpvDeband = false;
+                MpvDebandIterations = 1;
+                MpvCorrectDownscaling = false;
+            }
+            else if (preset == "balanced")
+            {
+                MpvScale = "spline36";
+                MpvChromaScale = "spline36";
+                MpvDeband = true;
+                MpvDebandIterations = 1;
+                MpvCorrectDownscaling = false;
+            }
+            else if (preset == "quality")
+            {
+                MpvScale = "ewa_lanczossharp";
+                MpvChromaScale = "ewa_lanczossharp";
+                MpvDeband = true;
+                MpvDebandIterations = 3;
+                MpvCorrectDownscaling = true;
+            }
+        }
+        finally
+        {
+            _isApplyingSettings = false;
+        }
+
+        SaveVideoProcessingOption(x =>
+        {
+            x.MpvVideoPreset = preset;
+            x.MpvScale = NormalizeMpvOption(MpvScale, "bilinear");
+            x.MpvChromaScale = NormalizeMpvOption(MpvChromaScale, "bilinear");
+            x.MpvDeband = MpvDeband;
+            x.MpvDebandIterations = Math.Clamp(MpvDebandIterations, 0, 16);
+            x.MpvCorrectDownscaling = MpvCorrectDownscaling;
+        });
+    }
+
     partial void OnMpvScaleChanged(string value) =>
-        SaveVideoProcessingOption(x => x.MpvScale = NormalizeMpvOption(value, "ewa_lanczossharp"));
+        SaveVideoProcessingOption(x => x.MpvScale = NormalizeMpvOption(value, "bilinear"));
     partial void OnMpvChromaScaleChanged(string value) =>
-        SaveVideoProcessingOption(x => x.MpvChromaScale = NormalizeMpvOption(value, "ewa_lanczossharp"));
+        SaveVideoProcessingOption(x => x.MpvChromaScale = NormalizeMpvOption(value, "bilinear"));
     partial void OnMpvDitherDepthChanged(string value) =>
         SaveVideoProcessingOption(x => x.MpvDitherDepth = NormalizeMpvOption(value, "auto"));
     partial void OnMpvCorrectDownscalingChanged(bool value) =>
@@ -52,8 +101,8 @@ public partial class PlayerViewModel
     private void ApplyVideoProcessingOptions()
     {
         _settingsApplier.ApplyVideoProcessing(new PlayerVideoProcessingOptions(
-            NormalizeMpvOption(MpvScale, "ewa_lanczossharp"),
-            NormalizeMpvOption(MpvChromaScale, "ewa_lanczossharp"),
+            NormalizeMpvOption(MpvScale, "bilinear"),
+            NormalizeMpvOption(MpvChromaScale, "bilinear"),
             NormalizeMpvOption(MpvDitherDepth, "auto"),
             MpvCorrectDownscaling,
             MpvDeband,

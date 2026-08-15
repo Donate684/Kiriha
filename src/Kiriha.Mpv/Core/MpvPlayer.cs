@@ -19,7 +19,7 @@ public partial class MpvPlayer : IDisposable
 
 
     private readonly object _gate = new();
-    private readonly MpvPropertyCache _propertyCache = new(FormatRuntimeVideoInfo(null, null, null, null, null));
+    private readonly MpvPropertyCache _propertyCache = new(FormatRuntimeVideoInfo(null, null, null, null, null, null, null, null, null, null, null));
     private readonly MpvCommandQueue _commandQueue;
     private readonly MpvEventLoop _eventLoop;
     private IntPtr _mpvHandle;
@@ -185,7 +185,7 @@ public partial class MpvPlayer : IDisposable
         return Read(handle => GetPropertyString(handle, name), null);
     }
 
-    public string GetRuntimeVideoInfo()
+    public MpvRuntimeDiagnostics GetRuntimeVideoInfo()
     {
         if (_propertyCache.HasFreshRuntimeVideoInfo)
             return _propertyCache.RuntimeVideoInfo;
@@ -197,8 +197,20 @@ public partial class MpvPlayer : IDisposable
             var vo = GetPropertyString(handle, "current-vo") ?? GetPropertyString(handle, "vo-configured");
             var gpuContext = GetPropertyString(handle, "current-gpu-context");
             var decoder = GetPropertyString(handle, "decoder");
+            
+            var vcodec = GetPropertyString(handle, "video-codec");
+            var width = GetPropertyString(handle, "video-params/w");
+            var height = GetPropertyString(handle, "video-params/h");
+            var fps = GetPropertyString(handle, "estimated-vf-fps");
+            
+            // Format fps nicely if it's a number
+            if (double.TryParse(fps, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedFps))
+                fps = parsedFps.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
 
-            return FormatRuntimeVideoInfo(hwdec, interop, vo, gpuContext, decoder);
+            var dropped = GetPropertyString(handle, "drop-frame-count");
+            var voDropped = GetPropertyString(handle, "vo-drop-frame-count");
+
+            return FormatRuntimeVideoInfo(hwdec, interop, vo, gpuContext, decoder, vcodec, width, height, fps, dropped, voDropped);
         }, _propertyCache.RuntimeVideoInfo);
 
         _propertyCache.StoreRuntimeVideoInfo(info);

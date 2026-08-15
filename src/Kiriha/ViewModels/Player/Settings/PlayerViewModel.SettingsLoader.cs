@@ -84,8 +84,9 @@ public partial class PlayerViewModel
             ReloadSubtitlesHotkey = NormalizeHotkey(settings.ReloadSubtitlesHotkey, "Q");
             FrameStepForwardHotkey = NormalizeHotkey(settings.FrameStepForwardHotkey, "OemPeriod");
             FrameStepBackwardHotkey = NormalizeHotkey(settings.FrameStepBackwardHotkey, "OemComma");
-            MpvScale = NormalizeMpvOption(settings.MpvScale, "ewa_lanczossharp");
-            MpvChromaScale = NormalizeMpvOption(settings.MpvChromaScale, "ewa_lanczossharp");
+            MpvVideoPreset = NormalizeMpvOption(settings.MpvVideoPreset, "default");
+            MpvScale = NormalizeMpvOption(settings.MpvScale, "bilinear");
+            MpvChromaScale = NormalizeMpvOption(settings.MpvChromaScale, "bilinear");
             MpvDitherDepth = NormalizeMpvOption(settings.MpvDitherDepth, "auto");
             MpvCorrectDownscaling = settings.MpvCorrectDownscaling;
             MpvDeband = settings.MpvDeband;

@@ -61,6 +61,19 @@
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Playback.SinglePlayerWindow}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,180">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.video_preset_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.video_preset_sub}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" SelectedValue="{Binding Playback.MpvVideoPreset}" SelectedValueBinding="{Binding Tag}" x:CompileBindings="False">
+                            <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_default}" Tag="default"/>
+                            <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_balanced}" Tag="balanced"/>
+                            <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_quality}" Tag="quality"/>
+                            <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_custom}" Tag="custom"/>
+                        </ComboBox>
+                    </Grid>
+
                     <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.pipeline_title}" Margin="0,18,0,4"/>
                     <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.pipeline_sub}" Margin="0,0,0,8"/>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
@@ -68,28 +81,28 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.hwdec_title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.hwdec_sub}"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvHwdec}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Playback.MpvHwdecOptions}" SelectedItem="{Binding Playback.MpvHwdec}" VerticalAlignment="Center"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.vo_title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.vo_sub}"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvVideoOutput}" VerticalAlignment="Center" PlaceholderText="gpu-next"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Playback.MpvVoOptions}" SelectedItem="{Binding Playback.MpvVideoOutput}" VerticalAlignment="Center"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.gpu_api_title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.gpu_api_sub}"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvGpuApi}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Playback.MpvGpuApiOptions}" SelectedItem="{Binding Playback.MpvGpuApi}" VerticalAlignment="Center"/>
                     </Grid>
                     <Grid Classes="Row" ColumnDefinitions="*,180">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.player.gpu_context_title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.player.gpu_context_sub}"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Playback.MpvGpuContext}" VerticalAlignment="Center" PlaceholderText="auto"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Playback.MpvGpuContextOptions}" SelectedItem="{Binding Playback.MpvGpuContext}" VerticalAlignment="Center"/>
                     </Grid>
 </StackPanel>
 </UserControl>

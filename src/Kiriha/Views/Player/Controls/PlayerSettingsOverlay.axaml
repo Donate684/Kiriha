@@ -49,6 +49,42 @@
                                 </StackPanel>
                             </Grid>
 
+                            <Border DockPanel.Dock="Bottom" Margin="12,0,12,14" Background="#10FFFFFF" CornerRadius="4" Padding="10" BorderBrush="#20FFFFFF" BorderThickness="1">
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="{Binding MpvRuntimeInfo.ResolutionFps}" 
+                                               TextWrapping="Wrap"
+                                               FontFamily="Consolas,Courier New,monospace" FontSize="10" Foreground="#80FFFFFF"
+                                               IsVisible="{Binding MpvRuntimeInfo.ResolutionFps, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                               
+                                    <TextBlock Text="{Binding MpvRuntimeInfo.CodecDecoder}" 
+                                               TextWrapping="Wrap"
+                                               FontFamily="Consolas,Courier New,monospace" FontSize="10" Foreground="#80FFFFFF"
+                                               IsVisible="{Binding MpvRuntimeInfo.CodecDecoder, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                               
+                                    <TextBlock Text="{Binding MpvRuntimeInfo.HwDecVo}" 
+                                               TextWrapping="Wrap"
+                                               FontFamily="Consolas,Courier New,monospace" FontSize="10"
+                                               IsVisible="{Binding MpvRuntimeInfo.HwDecVo, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <TextBlock.Tag>
+                                            <Binding Path="MpvRuntimeInfo.IsHwDecActive"/>
+                                        </TextBlock.Tag>
+                                        <TextBlock.Styles>
+                                            <Style Selector="TextBlock">
+                                                <Setter Property="Foreground" Value="#80FFFFFF"/>
+                                            </Style>
+                                            <Style Selector="TextBlock[Tag=True]">
+                                                <Setter Property="Foreground" Value="#FF4CAF50"/>
+                                            </Style>
+                                        </TextBlock.Styles>
+                                    </TextBlock>
+                                    
+                                    <TextBlock Text="{Binding MpvRuntimeInfo.Drops}" 
+                                               TextWrapping="Wrap"
+                                               FontFamily="Consolas,Courier New,monospace" FontSize="10" Foreground="#80FFFFFF"
+                                               IsVisible="{Binding MpvRuntimeInfo.Drops, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                </StackPanel>
+                            </Border>
+
                             <ListBox Name="CenteredPlayerSettingsNav"
                                      Classes="player-settings-nav"
                                      SelectedIndex="0">
@@ -78,6 +114,12 @@
                                 </ListBoxItem>
                                 <ListBoxItem>
                                     <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <material:MaterialIcon Kind="VideoOutline" Width="17" Height="17" Foreground="White"/>
+                                        <TextBlock Text="{DynamicResource l.settings.player.video_preset_title}" Foreground="White" FontSize="12"/>
+                                    </StackPanel>
+                                </ListBoxItem>
+                                <ListBoxItem>
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
                                         <material:MaterialIcon Kind="Tune" Width="17" Height="17" Foreground="White"/>
                                         <TextBlock Text="{DynamicResource l.player.advanced}" Foreground="White" FontSize="12"/>
                                     </StackPanel>
@@ -95,7 +137,8 @@
                             <settings:PlayerAudioSettings IsVisible="{Binding ElementName=CenteredPlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=1}"/>
                             <settings:PlayerInterfaceSettings IsVisible="{Binding ElementName=CenteredPlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=2}"/>
                             <settings:PlayerTrackSettings IsVisible="{Binding ElementName=CenteredPlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=3}"/>
-                            <settings:PlayerAdvancedSettings IsVisible="{Binding ElementName=CenteredPlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=4}"/>
+                            <settings:PlayerVideoSettings IsVisible="{Binding ElementName=CenteredPlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=4}"/>
+                            <settings:PlayerAdvancedSettings IsVisible="{Binding ElementName=CenteredPlayerSettingsNav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=5}"/>
                         </Panel>
                     </ScrollViewer>
                     <Button Grid.Column="1"
