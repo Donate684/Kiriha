@@ -44,6 +44,7 @@ public static class SmartTrackAutoloader
             return SmartTrackMatches.Empty;
 
         string videoFileName = Path.GetRelativePath(directory, videoPath);
+        string videoFileWithoutExt = Path.GetFileNameWithoutExtension(videoFileName);
 
         List<string> allFiles = new();
         try
@@ -58,19 +59,6 @@ public static class SmartTrackAutoloader
             return SmartTrackMatches.Empty;
         }
 
-        // Determine episode number from the video file list
-        var videoFiles = allFiles
-            .Where(f => VideoExtensions.Contains(Path.GetExtension(f)))
-            .OrderBy(f => f, StringComparer.Ordinal)
-            .ToList();
-
-        int? episodeNumber = ExtractEpisodeNumber(videoFileName, videoFiles);
-
-        // If we cannot determine episode number and there are multiple videos, bail out
-        if (episodeNumber == null && videoFiles.Count > 1)
-            return SmartTrackMatches.Empty;
-
-        // Collect external subs and audio from the same directory
         var subFiles = allFiles
             .Where(f => SubtitleExtensions.Contains(Path.GetExtension(f)))
             .OrderBy(f => f, StringComparer.Ordinal)
@@ -84,30 +72,80 @@ public static class SmartTrackAutoloader
         if (subFiles.Count == 0 && audioFiles.Count == 0)
             return SmartTrackMatches.Empty;
 
+        var videoElements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(videoFileName);
+        string? videoTitle = videoElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
+        string? videoEpisode = videoElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+
         var matchedSubs = new List<string>();
         var matchedAudio = new List<string>();
 
         foreach (var sub in subFiles)
         {
-            int? subEp = ExtractEpisodeNumber(sub, subFiles);
-            bool epMatch = episodeNumber == null || subEp == episodeNumber;
-            float confidence = CalculateConfidence(videoFileName, sub);
-            
-            if (epMatch && confidence >= 40f)
+            if (IsTrackMatch(videoFileName, videoFileWithoutExt, videoTitle, videoEpisode, sub))
                 matchedSubs.Add(Path.Combine(directory, sub));
         }
 
         foreach (var audio in audioFiles)
         {
-            int? audioEp = ExtractEpisodeNumber(audio, audioFiles);
-            bool epMatch = episodeNumber == null || audioEp == episodeNumber;
-            float confidence = CalculateConfidence(videoFileName, audio);
-
-            if (epMatch && confidence >= 40f)
+            if (IsTrackMatch(videoFileName, videoFileWithoutExt, videoTitle, videoEpisode, audio))
                 matchedAudio.Add(Path.Combine(directory, audio));
         }
 
         return new SmartTrackMatches(matchedSubs, matchedAudio);
+    }
+
+    private static bool IsTrackMatch(string videoFileName, string videoFileWithoutExt, string? videoTitle, string? videoEpisode, string trackFileName)
+    {
+        string trackFileWithoutExt = Path.GetFileNameWithoutExtension(trackFileName);
+        
+        // 1. Exact Name Match (stripping common language codes)
+        // e.g. "Video 01.en" == "Video 01"
+        string trackBaseName = trackFileWithoutExt;
+        int lastDotIndex = trackBaseName.LastIndexOf('.');
+        if (lastDotIndex > 0)
+        {
+            string langCode = trackBaseName.Substring(lastDotIndex + 1);
+            if (langCode.Length >= 2 && langCode.Length <= 5)
+            {
+                trackBaseName = trackBaseName.Substring(0, lastDotIndex);
+            }
+        }
+
+        if (trackBaseName.Equals(videoFileWithoutExt, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (trackFileWithoutExt.Equals(videoFileWithoutExt, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // 2. Anitomy Match
+        var trackElements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(trackFileName);
+        string? trackTitle = trackElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
+        string? trackEpisode = trackElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+
+        bool hasVideoTitle = !string.IsNullOrEmpty(videoTitle);
+        bool hasTrackTitle = !string.IsNullOrEmpty(trackTitle);
+        bool hasVideoEpisode = !string.IsNullOrEmpty(videoEpisode);
+        bool hasTrackEpisode = !string.IsNullOrEmpty(trackEpisode);
+
+        if (hasVideoTitle && hasTrackTitle)
+        {
+            if (videoTitle!.Equals(trackTitle, StringComparison.OrdinalIgnoreCase))
+            {
+                if (hasVideoEpisode && hasTrackEpisode)
+                    return videoEpisode!.Equals(trackEpisode, StringComparison.OrdinalIgnoreCase);
+                else
+                    return !hasVideoEpisode && !hasTrackEpisode;
+            }
+            return false;
+        }
+
+        if (!hasTrackTitle && hasTrackEpisode && hasVideoEpisode)
+        {
+            return videoEpisode!.Equals(trackEpisode, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // 3. Fallback to modified CalculateConfidence (higher threshold)
+        float confidence = CalculateConfidence(videoFileName, trackFileName);
+        return confidence >= 80f;
     }
 
     private static float CalculateConfidence(string videoFileName, string trackFileName)
@@ -128,8 +166,11 @@ public static class SmartTrackAutoloader
         float score2 = (matchingWords / (float)wordsV.Length) * 100f;
         float score = Math.Max(score1, score2);
 
-        if (normT.Contains(normV) || normV.Contains(normT))
-            score = Math.Max(score, 90f);
+        if (normT.Length > 5 && normV.Length > 5)
+        {
+            if (normT.Contains(normV) || normV.Contains(normT))
+                score = Math.Max(score, 90f);
+        }
 
         return score;
     }
@@ -143,71 +184,6 @@ public static class SmartTrackAutoloader
                 chars[i] = ' ';
         }
         return new string(chars).ToLowerInvariant();
-    }
-
-    /// <summary>
-    /// Determines the episode number of <paramref name="file"/> by finding the first numeric
-    /// component that differs from neighboring files in <paramref name="sortedFiles"/>.
-    /// Mirrors the Lua episode_number function exactly.
-    /// </summary>
-    internal static int? ExtractEpisodeNumber(string file, IReadOnlyList<string> sortedFiles)
-    {
-        int idx = -1;
-        for (int i = 0; i < sortedFiles.Count; i++)
-        {
-            if (sortedFiles[i] == file) { idx = i; break; }
-        }
-        if (idx < 0)
-            return null;
-
-        var numbers = ExtractNumbers(file);
-        if (numbers.Count == 0)
-            return null;
-
-        // Compare forward neighbors first, then backward
-        int? ep = CompareWithNeighbors(numbers, sortedFiles, idx + 1, sortedFiles.Count - 1, step: 1)
-               ?? CompareWithNeighbors(numbers, sortedFiles, idx - 1, 0, step: -1);
-
-        return ep;
-    }
-
-    private static int? CompareWithNeighbors(
-        IReadOnlyList<int> numbers,
-        IReadOnlyList<string> sortedFiles,
-        int start, int end, int step)
-    {
-        for (int i = start; step > 0 ? i <= end : i >= end; i += step)
-        {
-            var otherNumbers = ExtractNumbers(sortedFiles[i]);
-            int len = Math.Min(numbers.Count, otherNumbers.Count);
-            for (int n = 0; n < len; n++)
-            {
-                if (numbers[n] != otherNumbers[n])
-                    return numbers[n];
-            }
-        }
-        return null;
-    }
-
-    private static List<int> ExtractNumbers(string str)
-    {
-        var result = new List<int>();
-        int i = 0;
-        while (i < str.Length)
-        {
-            if (char.IsDigit(str[i]))
-            {
-                int start = i;
-                while (i < str.Length && char.IsDigit(str[i])) i++;
-                if (int.TryParse(str.AsSpan(start, i - start), out int num))
-                    result.Add(num);
-            }
-            else
-            {
-                i++;
-            }
-        }
-        return result;
     }
 
     private static IEnumerable<string> EnumerateFilesWithDepth(string path, int maxDepth)
