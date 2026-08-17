@@ -28,9 +28,11 @@ public partial class MpvPlayer
                 break;
 
             case LibMpvNative.MPV_EVENT_END_FILE:
-                var endFile = mpvEvent.Data == IntPtr.Zero
-                    ? new MpvEventEndFile()
-                    : Marshal.PtrToStructure<MpvEventEndFile>(mpvEvent.Data);
+                MpvEventEndFile endFile = default;
+                if (mpvEvent.Data != IntPtr.Zero)
+                {
+                    unsafe { endFile = *(MpvEventEndFile*)mpvEvent.Data; }
+                }
                 if (_propertyCache.TryUpdatePlaybackEnded())
                     PublishPlaybackState();
                 PlaybackEnded?.Invoke(this, new MpvPlaybackEndedEventArgs(endFile.Reason, endFile.Error));
@@ -67,7 +69,8 @@ public partial class MpvPlayer
         if (mpvEvent.Data == IntPtr.Zero)
             return;
 
-        var property = Marshal.PtrToStructure<MpvEventProperty>(mpvEvent.Data);
+        MpvEventProperty property;
+        unsafe { property = *(MpvEventProperty*)mpvEvent.Data; }
 
         if (mpvEvent.ReplyUserData == TrackListPropertyId)
         {
@@ -81,13 +84,15 @@ public partial class MpvPlayer
         switch (mpvEvent.ReplyUserData)
         {
             case TimePositionPropertyId when property.Format == LibMpvNative.MPV_FORMAT_DOUBLE:
-                var timePosition = Marshal.PtrToStructure<double>(property.Data);
+                double timePosition;
+                unsafe { timePosition = *(double*)property.Data; }
                 if (_propertyCache.TryUpdateTimePosition(timePosition))
                     PublishPlaybackState();
                 break;
 
             case DurationPropertyId when property.Format == LibMpvNative.MPV_FORMAT_DOUBLE:
-                var duration = Marshal.PtrToStructure<double>(property.Data);
+                double duration;
+                unsafe { duration = *(double*)property.Data; }
                 if (_propertyCache.TryUpdateDuration(duration))
                     PublishPlaybackState();
                 break;

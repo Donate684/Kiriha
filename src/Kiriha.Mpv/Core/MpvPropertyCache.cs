@@ -9,7 +9,7 @@ internal sealed class MpvPropertyCache
     private static readonly TimeSpan TimePositionEventInterval = TimeSpan.FromMilliseconds(80);
 
     private readonly object _gate = new();
-    private volatile PlaybackState _playbackState = new(0, 0, false, false, false);
+    private PlaybackState _playbackState = new(0, 0, false, false, false);
     private double _lastPublishedTimePosition;
     private DateTime _lastTimePositionEventUtc = DateTime.MinValue;
     private MpvRuntimeDiagnostics _runtimeVideoInfo;
@@ -21,9 +21,18 @@ internal sealed class MpvPropertyCache
         _runtimeVideoInfo = initialRuntimeVideoInfo;
     }
 
-    public double TimePosition => _playbackState.Position;
-    public double Duration => _playbackState.Duration;
-    public bool IsPaused => !_playbackState.IsPlaying;
+    public double TimePosition
+    {
+        get { lock (_gate) return _playbackState.Position; }
+    }
+    public double Duration
+    {
+        get { lock (_gate) return _playbackState.Duration; }
+    }
+    public bool IsPaused
+    {
+        get { lock (_gate) return !_playbackState.IsPlaying; }
+    }
     public MpvRuntimeDiagnostics RuntimeVideoInfo
     {
         get
@@ -34,7 +43,10 @@ internal sealed class MpvPropertyCache
             }
         }
     }
-    public PlaybackState PlaybackState => _playbackState;
+    public PlaybackState PlaybackState
+    {
+        get { lock (_gate) return _playbackState; }
+    }
 
     public bool HasFreshRuntimeVideoInfo
     {

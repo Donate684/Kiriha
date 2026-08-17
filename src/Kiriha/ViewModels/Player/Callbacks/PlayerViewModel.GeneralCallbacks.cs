@@ -159,8 +159,14 @@ public partial class PlayerViewModel
     partial void OnIsPlayingChanged(bool value)
     {
         if (value)
+        {
             Kiriha.Utils.PowerManager.KeepDisplayActive();
+            _timer?.Start();
+        }
         else
+        {
             Kiriha.Utils.PowerManager.AllowDisplaySleep();
+            _timer?.Stop();
+        }
     }
 }

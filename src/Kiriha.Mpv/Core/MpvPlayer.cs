@@ -23,7 +23,7 @@ public partial class MpvPlayer : IDisposable
     private readonly MpvCommandQueue _commandQueue;
     private readonly MpvEventLoop _eventLoop;
     private IntPtr _mpvHandle;
-    private bool _disposed;
+    private volatile bool _disposed;
 
     internal object Gate => _gate;
     internal bool IsDisposed => _disposed;
@@ -43,8 +43,8 @@ public partial class MpvPlayer : IDisposable
 
     internal MpvPlayer()
     {
-        _commandQueue = new MpvCommandQueue(_gate, () => _mpvHandle, () => _disposed);
-        _eventLoop = new MpvEventLoop(_gate, () => _mpvHandle, HandleEvent);
+        _commandQueue = new MpvCommandQueue(_gate, () => Volatile.Read(ref _mpvHandle), () => _disposed);
+        _eventLoop = new MpvEventLoop(_gate, () => Volatile.Read(ref _mpvHandle), HandleEvent);
 
         _mpvHandle = LibMpvNative.mpv_create();
         if (_mpvHandle == IntPtr.Zero)

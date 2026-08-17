@@ -1,6 +1,6 @@
 namespace Kiriha.Mpv;
 
-public sealed record PlaybackState(
+public readonly record struct PlaybackState(
     double Position,
     double Duration,
     bool IsPlaying,

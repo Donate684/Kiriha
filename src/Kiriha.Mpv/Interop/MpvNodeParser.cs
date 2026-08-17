@@ -67,13 +67,13 @@ internal static class MpvNodeParser
             return false;
         }
 
-        list = Marshal.PtrToStructure<MpvNodeList>(node.U.List);
+        unsafe { list = *(MpvNodeList*)node.U.List; }
         return list.Num > 0 && list.Values != IntPtr.Zero;
     }
 
     private static MpvNode ReadNode(IntPtr values, int index)
     {
-        return Marshal.PtrToStructure<MpvNode>(IntPtr.Add(values, index * Marshal.SizeOf<MpvNode>()));
+        unsafe { return *(MpvNode*)IntPtr.Add(values, index * sizeof(MpvNode)); }
     }
 
     private static bool TryGetMapValue(MpvNode mapNode, string key, out MpvNode value)

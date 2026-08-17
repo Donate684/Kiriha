@@ -31,7 +31,10 @@ public partial class PlayerViewModel
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _timer.Tick += OnTimerTick;
-        _timer.Start();
+        if (IsPlaying)
+        {
+            _timer.Start();
+        }
 
         _statePublisher.Connect();
     }

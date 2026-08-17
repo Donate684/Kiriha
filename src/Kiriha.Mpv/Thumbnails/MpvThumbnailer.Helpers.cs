@@ -60,8 +60,11 @@ public sealed partial class MpvThumbnailer
         for (var i = 0; i < 20; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (File.Exists(path) && new FileInfo(path).Length > 0)
-                return true;
+            if (File.Exists(path))
+            {
+                try { if (new FileInfo(path).Length > 0) return true; }
+                catch { /* race condition, retry */ }
+            }
 
             if (cancellationToken.WaitHandle.WaitOne(25))
                 cancellationToken.ThrowIfCancellationRequested();

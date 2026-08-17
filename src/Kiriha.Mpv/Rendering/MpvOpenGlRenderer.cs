@@ -8,7 +8,7 @@ public class MpvOpenGlRenderer : IDisposable
 {
     private readonly MpvPlayer _player;
     private readonly ReaderWriterLockSlim _renderGate = new();
-    private IntPtr _renderContext;
+    private volatile IntPtr _renderContext;
     private MpvRenderUpdateCallback? _renderUpdateCallback;
     private GCHandle _renderUpdateHandle;
     private int _disposeState;
@@ -45,7 +45,9 @@ public class MpvOpenGlRenderer : IDisposable
                     parameters[1] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_OPENGL_INIT_PARAMS, (IntPtr)(&initParams));
                     parameters[2] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_INVALID, IntPtr.Zero);
 
-                    MpvPlayer.Check(LibMpvNative.mpv_render_context_create(out _renderContext, _player.MpvHandle, (IntPtr)parameters), "create OpenGL render context");
+                    IntPtr localRenderContext;
+                    MpvPlayer.Check(LibMpvNative.mpv_render_context_create(out localRenderContext, _player.MpvHandle, (IntPtr)parameters), "create OpenGL render context");
+                    _renderContext = localRenderContext;
                 }
 
                 _renderUpdateCallback = OnRenderUpdate;
@@ -87,11 +89,7 @@ public class MpvOpenGlRenderer : IDisposable
         {
             if (_disposed) return;
 
-            IntPtr renderContext;
-            lock (_player.Gate)
-            {
-                renderContext = _renderContext;
-            }
+            IntPtr renderContext = _renderContext;
 
             if (renderContext == IntPtr.Zero || width <= 0 || height <= 0)
                 return;

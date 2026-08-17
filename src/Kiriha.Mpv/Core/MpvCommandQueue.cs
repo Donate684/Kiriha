@@ -32,11 +32,8 @@ internal sealed class MpvCommandQueue
 
     public bool Enqueue(Action<IntPtr> action, string? coalescingKey = null)
     {
-        lock (_gate)
-        {
-            if (_isDisposed() || _getHandle() == IntPtr.Zero)
-                return false;
-        }
+        if (_isDisposed() || _getHandle() == IntPtr.Zero)
+            return false;
 
         var command = CreateCommand(action, coalescingKey);
         if (_queue.Writer.TryWrite(command))

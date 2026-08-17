@@ -77,7 +77,7 @@ public sealed partial class MpvThumbnailer
         while (sw.ElapsedMilliseconds < 3000)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var eventPtr = LibMpvNative.mpv_wait_event(handle, 0.01);
+            var eventPtr = LibMpvNative.mpv_wait_event(handle, 0.1);
             if (eventPtr != IntPtr.Zero)
             {
                 var mpvEvent = Marshal.PtrToStructure<MpvEvent>(eventPtr);
@@ -89,9 +89,11 @@ public sealed partial class MpvThumbnailer
 
                 if (mpvEvent.EventId == LibMpvNative.MPV_EVENT_END_FILE)
                 {
-                    var endFile = mpvEvent.Data == IntPtr.Zero
-                        ? new MpvEventEndFile()
-                        : Marshal.PtrToStructure<MpvEventEndFile>(mpvEvent.Data);
+                    MpvEventEndFile endFile = default;
+                    if (mpvEvent.Data != IntPtr.Zero)
+                    {
+                        unsafe { endFile = *(MpvEventEndFile*)mpvEvent.Data; }
+                    }
                     if (endFile.Reason == MpvPlaybackEndedEventArgs.ReasonError)
                     {
                         Log.Warning("Thumbnailer failed to load: {VideoPath}", videoPath);

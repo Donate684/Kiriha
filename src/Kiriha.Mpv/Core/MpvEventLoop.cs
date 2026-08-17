@@ -43,24 +43,25 @@ internal sealed class MpvEventLoop : IDisposable
 
     private void EventLoop()
     {
+        IntPtr handle;
+        lock (_gate)
+        {
+            handle = _getHandle();
+        }
+
+        if (handle == IntPtr.Zero)
+            return;
+
         while (!_cts.IsCancellationRequested)
         {
-            IntPtr handle;
-            lock (_gate)
-            {
-                handle = _getHandle();
-            }
-
-            if (handle == IntPtr.Zero)
-                break;
-
             try
             {
                 var eventPtr = LibMpvNative.mpv_wait_event(handle, 0.5);
                 if (eventPtr == IntPtr.Zero)
                     continue;
 
-                var mpvEvent = Marshal.PtrToStructure<MpvEvent>(eventPtr);
+                MpvEvent mpvEvent;
+                unsafe { mpvEvent = *(MpvEvent*)eventPtr; }
                 if (mpvEvent.EventId == LibMpvNative.MPV_EVENT_NONE)
                     continue;
 
