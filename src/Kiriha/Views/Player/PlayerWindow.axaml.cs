@@ -98,7 +98,9 @@ public partial class PlayerWindow : Window
                 playerSettings.MpvHwdec,
                 playerSettings.MpvVideoOutput,
                 playerSettings.MpvGpuApi,
-                playerSettings.MpvGpuContext);
+                playerSettings.MpvGpuContext,
+                VideoSync: playerSettings.MpvVideoSync ? "display-resample" : "no",
+                Interpolation: playerSettings.MpvInterpolation);
 
             _player = MpvPlayerBuilder.Build(mpvOptions);
 

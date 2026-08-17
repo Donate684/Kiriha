@@ -169,21 +169,15 @@ public class MpvOpenGlRenderer : IDisposable
         if (context == IntPtr.Zero)
             return;
 
-        MpvOpenGlRenderer? renderer = null;
-        lock (_renderUpdateLock)
+        try
         {
-            try
-            {
-                var handle = GCHandle.FromIntPtr(context);
-                if (handle.IsAllocated)
-                    renderer = handle.Target as MpvOpenGlRenderer;
-            }
-            catch (InvalidOperationException)
-            {
-                // Handle was freed concurrently
-            }
+            var handle = GCHandle.FromIntPtr(context);
+            if (handle.IsAllocated && handle.Target is MpvOpenGlRenderer renderer && !renderer._disposed)
+                renderer._player.InvokeRenderUpdateRequested();
         }
-
-        renderer?._player.InvokeRenderUpdateRequested();
+        catch (InvalidOperationException)
+        {
+            // Handle was freed concurrently
+        }
     }
 }

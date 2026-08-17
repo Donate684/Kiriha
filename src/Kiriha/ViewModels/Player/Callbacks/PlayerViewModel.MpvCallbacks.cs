@@ -84,6 +84,10 @@ public partial class PlayerViewModel
         SaveMpvOption(x => x.MpvGpuApi = NormalizeMpvOption(value, "auto"));
     partial void OnMpvGpuContextChanged(string value) =>
         SaveMpvOption(x => x.MpvGpuContext = NormalizeMpvOption(value, "auto"));
+    partial void OnMpvVideoSyncChanged(bool value) =>
+        SaveMpvOption(x => x.MpvVideoSync = value);
+    partial void OnMpvInterpolationChanged(bool value) =>
+        SaveMpvOption(x => x.MpvInterpolation = value);
 
     private void SaveMpvOption(Action<AppSettings.PlayerConfig> update)
     {

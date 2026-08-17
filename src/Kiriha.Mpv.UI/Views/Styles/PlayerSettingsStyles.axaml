@@ -1,0 +1,74 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===== Player settings flyout nav ===== -->
+    <Style Selector="ListBox.player-settings-nav">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="8"/>
+    </Style>
+    <Style Selector="ListBox.player-settings-nav ListBoxItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="MinHeight" Value="34"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+    <Style Selector="ListBox.player-settings-nav ListBoxItem /template/ ContentPresenter">
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="10,8"/>
+    </Style>
+    <Style Selector="ListBox.player-settings-nav ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#18FFFFFF"/>
+    </Style>
+    <Style Selector="ListBox.player-settings-nav ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="#28FFFFFF"/>
+    </Style>
+
+    <!-- ===== Settings text styles ===== -->
+    <Style Selector="TextBlock.player-settings-title">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,16"/>
+    </Style>
+    <Style Selector="TextBlock.player-settings-row-title">
+        <Setter Property="Foreground" Value="#E6FFFFFF"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+    <Style Selector="TextBlock.player-settings-row-sub">
+        <Setter Property="Foreground" Value="#80FFFFFF"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style Selector="Border.player-settings-divider">
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Background" Value="#22FFFFFF"/>
+        <Setter Property="Margin" Value="0,2"/>
+    </Style>
+
+    <!-- ===== ToggleSwitch ===== -->
+    <Style Selector="ToggleSwitch">
+        <Setter Property="Foreground" Value="#D9FFFFFF"/>
+    </Style>
+    <Style Selector="ToggleSwitch /template/ Border#PART_SwitchKnobBounds">
+        <Setter Property="Background" Value="#33FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#8AFFFFFF"/>
+    </Style>
+    <Style Selector="ToggleSwitch:checked /template/ Border#PART_SwitchKnobBounds">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+    </Style>
+    <Style Selector="ToggleSwitch /template/ Ellipse#PART_SwitchKnob">
+        <Setter Property="Fill" Value="#F2FFFFFF"/>
+    </Style>
+
+    <!-- ===== CheckBox ===== -->
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="#E6FFFFFF"/>
+    </Style>
+    <Style Selector="CheckBox /template/ ContentPresenter">
+        <Setter Property="TextBlock.Foreground" Value="#E6FFFFFF"/>
+    </Style>
+
+</Styles>

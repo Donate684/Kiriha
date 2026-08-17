@@ -1,0 +1,7 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             x:Class="Kiriha.Mpv.UI.Views.Player.Controls.PlayerChapterMarkers"
+             x:DataType="vmPlayer:PlayerViewModel">
+    <Canvas Name="ChapterCanvas" VerticalAlignment="Stretch" SizeChanged="OnChapterCanvasSizeChanged"/>
+</UserControl>

@@ -1,4 +1,4 @@
-namespace Kiriha.Models;
+namespace Kiriha.Core.Domain.Models;
 
 public sealed record PlayerMediaMetadata(
     string OriginalTitle,

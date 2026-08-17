@@ -1,0 +1,365 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             xmlns:mpres="using:Kiriha.Mpv.UI.ViewModels.Player.Settings"
+             xmlns:mpv="clr-namespace:Kiriha.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerInterfaceSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.settings_interface.title}"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.hide_controls}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.hide_controls_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding AutoHideControls}"
+                                                  OnContent="{DynamicResource l.player.settings_interface.on}"
+                                                  OffContent="{DynamicResource l.player.settings_interface.off}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.hide_timeout}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.hide_timeout_sub}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   Width="150"
+                                                   Minimum="0.5"
+                                                   Maximum="10.0"
+                                                   Increment="0.5"
+                                                   FormatString="0.0 сек"
+                                                   Value="{Binding AutoHideTimeout}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.chapter_markers}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.chapter_markers_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding ShowChapterMarkers}"
+                                                  OnContent="{DynamicResource l.player.settings_interface.on}"
+                                                  OffContent="{DynamicResource l.player.settings_interface.off}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="{DynamicResource l.player.settings_interface.mouse_actions}"
+                                           Margin="0,6,0,0"/>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.lmb}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.lmb_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding MouseActionOptions}"
+                                              SelectedItem="{Binding LeftClickAction}"
+                                              VerticalAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="mpres:PlayerMouseActionOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.rmb}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.rmb_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding MouseActionOptions}"
+                                              SelectedItem="{Binding RightClickAction}"
+                                              VerticalAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="mpres:PlayerMouseActionOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.mmb}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.mmb_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding MouseActionOptions}"
+                                              SelectedItem="{Binding MiddleClickAction}"
+                                              VerticalAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="mpres:PlayerMouseActionOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Border Classes="player-settings-divider"/>
+
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="{DynamicResource l.player.settings_interface.mouse_wheel}"
+                                           Margin="0,6,0,0"/>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.wheel_up}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.wheel_up_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding WheelActionOptions}"
+                                              SelectedItem="{Binding WheelUpAction}"
+                                              VerticalAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="mpres:PlayerWheelActionOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.wheel_down}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.wheel_down_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding WheelActionOptions}"
+                                              SelectedItem="{Binding WheelDownAction}"
+                                              VerticalAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="mpres:PlayerWheelActionOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.volume_step}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.volume_step_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding WheelStepOptions}"
+                                              SelectedItem="{Binding WheelVolumeStep}"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.seek_step}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.seek_step_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding SeekStepOptions}"
+                                              SelectedItem="{Binding SeekStep}"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Border Classes="player-settings-divider"/>
+
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="{DynamicResource l.player.settings_interface.hotkeys}"
+                                           Margin="0,6,0,0"/>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.play_pause}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_space}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding TogglePlayPauseHotkey}"
+                                             PlaceholderText="Space"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.fullscreen}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_f}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding ToggleFullscreenHotkey}"
+                                             PlaceholderText="F"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.exit_fullscreen}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_esc}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding ExitFullscreenHotkey}"
+                                             PlaceholderText="Escape"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.mute}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_m}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding ToggleMuteHotkey}"
+                                             PlaceholderText="M"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.next_audio}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_a}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding CycleAudioHotkey}"
+                                             PlaceholderText="A"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.next_subtitle}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_v}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding CycleSubtitleHotkey}"
+                                             PlaceholderText="V"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.prev_file}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_p}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding PreviousMediaHotkey}"
+                                             PlaceholderText="P"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.next_file}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_n}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding NextMediaHotkey}"
+                                             PlaceholderText="N"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.speed_down}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_open_bracket}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SpeedDownHotkey}"
+                                             PlaceholderText="OemOpenBrackets"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.speed_up}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_close_bracket}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SpeedUpHotkey}"
+                                             PlaceholderText="OemCloseBrackets"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.vol_up}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_up}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding VolumeUpHotkey}"
+                                             PlaceholderText="Up"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.vol_down}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_down}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding VolumeDownHotkey}"
+                                             PlaceholderText="Down"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.seek_back}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_left}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SeekBackwardHotkey}"
+                                             PlaceholderText="Left"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.seek_forward}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_right}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SeekForwardHotkey}"
+                                             PlaceholderText="Right"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.subtitle_style}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_u}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SubtitleStyleHotkey}"
+                                             PlaceholderText="U"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Border Classes="player-settings-divider"/>
+
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="{DynamicResource l.player.settings_interface.panel_buttons}"
+                                           Margin="0,6,0,0"/>
+
+                                <UniformGrid Columns="2" Margin="0,0,0,0">
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_play_pause}" IsChecked="{Binding ShowPlayPauseButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_seek_10s}" IsChecked="{Binding ShowSkipButtons}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_mute}" IsChecked="{Binding ShowMuteButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_vol_slider}" IsChecked="{Binding ShowVolumeSlider}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_time}" IsChecked="{Binding ShowTimeDisplay}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_speed}" IsChecked="{Binding ShowSpeedButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_subtitles}" IsChecked="{Binding ShowSubtitleButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_sub_pos}" IsChecked="{Binding ShowSubtitlePositionButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_audio}" IsChecked="{Binding ShowAudioButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_sub_style}" IsChecked="{Binding ShowSubtitleStyleButton}"/>
+                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_screenshot}" IsChecked="{Binding ShowScreenshotButton}"/>
+                                </UniformGrid>
+
+                                <Border Height="110" IsHitTestVisible="False"/>
+                            </StackPanel>
+</UserControl>

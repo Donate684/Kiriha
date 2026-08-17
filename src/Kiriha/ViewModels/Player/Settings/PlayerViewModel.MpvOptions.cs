@@ -18,7 +18,9 @@ public partial class PlayerViewModel
     [ObservableProperty] private string _mpvVideoOutput = "gpu-next";
     [ObservableProperty] private string _mpvGpuApi = "auto";
     [ObservableProperty] private string _mpvGpuContext = "auto";
-    [ObservableProperty] private MpvRuntimeDiagnostics _mpvRuntimeInfo;
+    [ObservableProperty] private bool _mpvVideoSync = false;
+    [ObservableProperty] private bool _mpvInterpolation = false;
+    [ObservableProperty] private MpvRuntimeDiagnostics _mpvRuntimeInfo = new();
     [ObservableProperty] private int _wheelVolumeStep = 5;
     [ObservableProperty] private int _seekStep = 1;
     [ObservableProperty] private PlayerMouseActionOption? _leftClickAction;

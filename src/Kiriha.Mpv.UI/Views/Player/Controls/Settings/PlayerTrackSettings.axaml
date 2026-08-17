@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             xmlns:mpv="clr-namespace:Kiriha.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerTrackSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.tracks}"/>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_track.pref_audio}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_track.pref_audio_sub}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding PreferredAudioLanguages}"
+                                             PlaceholderText="Japanese,jpn,ja"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_track.pref_sub}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_track.pref_sub_sub}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding PreferredSubtitleLanguages}"
+                                             PlaceholderText="Russian,rus,ru"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="Автозагрузка дорожек"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="Подгружает субтитры и аудио из папки с видео по номеру эпизода"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                                  IsChecked="{Binding SmartTrackAutoload}"
+                                                  OnContent="{DynamicResource l.common.status.on}"
+                                                  OffContent="{DynamicResource l.common.status.off}"/>
+                                </Grid>
+                                <Border Height="110" IsHitTestVisible="False"/>
+                            </StackPanel>
+</UserControl>

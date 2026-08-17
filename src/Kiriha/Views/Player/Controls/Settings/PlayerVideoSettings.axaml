@@ -127,6 +127,33 @@
             <ComboBox Grid.Column="1" ItemsSource="{Binding MpvGpuContextOptions}" SelectedItem="{Binding MpvGpuContext}" VerticalAlignment="Center"/>
         </Grid>
         
+        <Border Classes="player-settings-divider"/>
+        <TextBlock Classes="player-settings-row-title"
+                   Text="Плавность воспроизведения"
+                   Margin="0,6,0,0"/>
+        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="Синхронизация с дисплеем"/>
+                <TextBlock Classes="player-settings-row-sub" Text="video-sync=display-resample. Вступит в силу после перезапуска плеера."/>
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding MpvVideoSync}"
+                          OnContent="{DynamicResource l.player.settings_adv.on}"
+                          OffContent="{DynamicResource l.player.settings_adv.off}"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Classes="player-settings-row-title" Text="Интерполяция кадров"/>
+                <TextBlock Classes="player-settings-row-sub" Text="oversample — устраняет джиттер (24fps на 60Hz+). Требует video-sync. Вступит в силу после перезапуска плеера."/>
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding MpvInterpolation}"
+                          OnContent="{DynamicResource l.player.settings_adv.on}"
+                          OffContent="{DynamicResource l.player.settings_adv.off}"/>
+        </Grid>
+
         <Border Height="110" IsHitTestVisible="False"/>
     </StackPanel>
 </UserControl>

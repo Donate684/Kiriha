@@ -56,7 +56,7 @@ internal sealed class MpvEventLoop : IDisposable
         {
             try
             {
-                var eventPtr = LibMpvNative.mpv_wait_event(handle, 0.5);
+                var eventPtr = LibMpvNative.mpv_wait_event(handle, -1);
                 if (eventPtr == IntPtr.Zero)
                     continue;
 

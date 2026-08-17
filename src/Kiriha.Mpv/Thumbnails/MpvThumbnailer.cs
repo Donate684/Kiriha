@@ -14,8 +14,8 @@ public sealed partial class MpvThumbnailer : IDisposable
 {
     private const int MaxCacheItems = 80;
     private const double CacheStepSeconds = 2.0;
-    private const int ThumbnailWidth = 640;
-    private const int ThumbnailHeight = 360;
+    private const int ThumbnailWidth = 320;
+    private const int ThumbnailHeight = 180;
 
     private readonly object _gate = new();
     private readonly SemaphoreSlim _captureGate = new(1, 1);
@@ -60,8 +60,12 @@ public sealed partial class MpvThumbnailer : IDisposable
         SetOption("hr-seek", "no");
         SetOption("vd-lavc-skiploopfilter", "all");
         SetOption("vd-lavc-fast", "yes");
+        SetOption("vd-lavc-skipframe", "nonref");
         SetOption("vd-lavc-threads", "2");
+        SetOption("vd-lavc-skipidct", "nonref");
+        SetOption("video-rotate", "no");
         SetOption("sws-scaler", "bicubic");
+        SetOption("demuxer-readahead-secs", "2");
         SetOption("vf", $"lavfi=[scale=w={ThumbnailWidth}:h={ThumbnailHeight}:force_original_aspect_ratio=decrease:flags=bicubic,pad=w={ThumbnailWidth}:h={ThumbnailHeight}:x=(ow-iw)/2:y=(oh-ih)/2]");
         SetOption("demuxer-max-bytes", "16MiB");
         SetOption("demuxer-max-back-bytes", "4MiB");

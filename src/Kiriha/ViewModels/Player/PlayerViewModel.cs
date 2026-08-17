@@ -37,6 +37,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     public System.Collections.ObjectModel.ObservableCollection<TrackInfo> SubtitleTracks { get; } = new();
     public System.Collections.ObjectModel.ObservableCollection<ChapterInfo> Chapters { get; } = new();
 
+
     [ObservableProperty] private string _videoUrl = string.Empty;
     [ObservableProperty] private string _originalTitle = string.Empty;
     [ObservableProperty] private string _animeTitle = string.Empty;

@@ -1,5 +1,5 @@
 using System;
-using Kiriha.Infrastructure.Player;
+using Kiriha.Mpv.UI.Services;
 using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.ViewModels.Player;

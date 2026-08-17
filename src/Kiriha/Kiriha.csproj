@@ -86,6 +86,7 @@
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
     
     <ProjectReference Include="..\Kiriha.Mpv\Kiriha.Mpv.csproj" />
+    <ProjectReference Include="..\Kiriha.Mpv.UI\Kiriha.Mpv.UI.csproj" />
   </ItemGroup>
 
   <Target Name="DownloadMpv" BeforeTargets="BeforeBuild;AssignTargetPaths">

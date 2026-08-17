@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             xmlns:mpv="clr-namespace:Kiriha.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerAudioSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.audio}"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.remember_volume}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.remember_volume_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding RememberPlayerVolume}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.normalize_audio}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.normalize_audio_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding NormalizeAudio}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <StackPanel Spacing="6" Margin="0,4,0,0">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.default_volume}"/>
+                                            <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.default_volume_sub}"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Volume, StringFormat='{}{0:0}%'}"
+                                                   Foreground="#99FFFFFF"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Top"/>
+                                    </Grid>
+                                    <Slider Minimum="0" Maximum="100"
+                                            Value="{Binding Volume}"
+                                            IsEnabled="{Binding RememberPlayerVolume}"/>
+                                </StackPanel>
+
+                                <Border Height="110" IsHitTestVisible="False"/>
+                            </StackPanel>
+</UserControl>

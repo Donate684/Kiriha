@@ -104,5 +104,25 @@
                         </StackPanel>
                         <ComboBox Grid.Column="1" ItemsSource="{Binding Playback.MpvGpuContextOptions}" SelectedItem="{Binding Playback.MpvGpuContext}" VerticalAlignment="Center"/>
                     </Grid>
+
+                    <TextBlock Classes="GroupTitle" Text="Плавность воспроизведения" Margin="0,6,0,0"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="Синхронизация с дисплеем"/>
+                            <TextBlock Classes="Sub" Text="video-sync=display-resample. Вступит в силу после перезапуска плеера."/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                      IsChecked="{Binding Playback.MpvVideoSync}"
+                                      OnContent="Вкл" OffContent="Выкл"/>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="Интерполяция кадров"/>
+                            <TextBlock Classes="Sub" Text="oversample — устраняет джиттер (24fps на 60Hz+). Требует video-sync. Вступит в силу после перезапуска плеера."/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                      IsChecked="{Binding Playback.MpvInterpolation}"
+                                      OnContent="Вкл" OffContent="Выкл"/>
+                    </Grid>
 </StackPanel>
 </UserControl>

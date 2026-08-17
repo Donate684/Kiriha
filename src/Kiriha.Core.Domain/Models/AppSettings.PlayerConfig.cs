@@ -85,6 +85,8 @@ public partial class AppSettings
         public string MpvVideoOutput { get; set; } = "gpu-next";
         public string MpvGpuApi { get; set; } = "auto";
         public string MpvGpuContext { get; set; } = "auto";
+        public bool MpvVideoSync { get; set; } = false;
+        public bool MpvInterpolation { get; set; } = false;
         public bool SmartTrackAutoload { get; set; } = true;
     }
 }

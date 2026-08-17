@@ -33,6 +33,8 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     [ObservableProperty] private string _mpvVideoOutput = "gpu-next";
     [ObservableProperty] private string _mpvGpuApi = "auto";
     [ObservableProperty] private string _mpvGpuContext = "auto";
+    [ObservableProperty] private bool _mpvVideoSync = false;
+    [ObservableProperty] private bool _mpvInterpolation = false;
 
     public int EnabledPlayersCount => _settingsService.Current.System.Scrobbler.AllowedProcesses.Count;
 
@@ -54,6 +56,8 @@ public partial class SettingsPlaybackViewModel : ObservableObject
         MpvVideoOutput = NormalizeMpvOption(_settingsService.Current.Player.MpvVideoOutput, "gpu-next");
         MpvGpuApi = NormalizeMpvOption(_settingsService.Current.Player.MpvGpuApi, "auto");
         MpvGpuContext = NormalizeMpvOption(_settingsService.Current.Player.MpvGpuContext, "auto");
+        MpvVideoSync = _settingsService.Current.Player.MpvVideoSync;
+        MpvInterpolation = _settingsService.Current.Player.MpvInterpolation;
     }
 
     partial void OnKeepPlayerProcessAliveChanged(bool value)
@@ -103,6 +107,8 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     partial void OnMpvVideoOutputChanged(string value) => SaveMpvOption(x => x.MpvVideoOutput = NormalizeMpvOption(value, "gpu-next"));
     partial void OnMpvGpuApiChanged(string value) => SaveMpvOption(x => x.MpvGpuApi = NormalizeMpvOption(value, "auto"));
     partial void OnMpvGpuContextChanged(string value) => SaveMpvOption(x => x.MpvGpuContext = NormalizeMpvOption(value, "auto"));
+    partial void OnMpvVideoSyncChanged(bool value) => SaveMpvOption(x => x.MpvVideoSync = value);
+    partial void OnMpvInterpolationChanged(bool value) => SaveMpvOption(x => x.MpvInterpolation = value);
 
     private void SaveMpvOption(System.Action<Kiriha.Core.Domain.Models.AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
 

@@ -4,14 +4,14 @@ namespace Kiriha.Mpv;
 
 internal sealed class MpvPropertyCache
 {
-    private const double TimePositionMinimumChangeSeconds = 0.05;
+    private const double TimePositionMinimumChangeSeconds = 0.016;
     private static readonly TimeSpan RuntimeInfoRefreshInterval = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan TimePositionEventInterval = TimeSpan.FromMilliseconds(80);
+    private static readonly TimeSpan TimePositionEventInterval = TimeSpan.FromMilliseconds(16);
 
     private readonly object _gate = new();
     private PlaybackState _playbackState = new(0, 0, false, false, false);
     private double _lastPublishedTimePosition;
-    private DateTime _lastTimePositionEventUtc = DateTime.MinValue;
+    private long _lastTimePositionTickMs;
     private MpvRuntimeDiagnostics _runtimeVideoInfo;
     private DateTime _runtimeVideoInfoRefreshedUtc = DateTime.MinValue;
     private volatile bool _runtimeVideoInfoDirty = true;
@@ -21,32 +21,11 @@ internal sealed class MpvPropertyCache
         _runtimeVideoInfo = initialRuntimeVideoInfo;
     }
 
-    public double TimePosition
-    {
-        get { lock (_gate) return _playbackState.Position; }
-    }
-    public double Duration
-    {
-        get { lock (_gate) return _playbackState.Duration; }
-    }
-    public bool IsPaused
-    {
-        get { lock (_gate) return !_playbackState.IsPlaying; }
-    }
-    public MpvRuntimeDiagnostics RuntimeVideoInfo
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _runtimeVideoInfo;
-            }
-        }
-    }
-    public PlaybackState PlaybackState
-    {
-        get { lock (_gate) return _playbackState; }
-    }
+    public double TimePosition => Volatile.Read(ref _playbackState).Position;
+    public double Duration => Volatile.Read(ref _playbackState).Duration;
+    public bool IsPaused => !Volatile.Read(ref _playbackState).IsPlaying;
+    public MpvRuntimeDiagnostics RuntimeVideoInfo => Volatile.Read(ref _runtimeVideoInfo);
+    public PlaybackState PlaybackState => Volatile.Read(ref _playbackState);
 
     public bool HasFreshRuntimeVideoInfo
     {
@@ -82,10 +61,10 @@ internal sealed class MpvPropertyCache
     {
         lock (_gate)
         {
-            var now = DateTime.UtcNow;
-            var isFirstEvent = _lastTimePositionEventUtc == DateTime.MinValue;
+            var nowMs = Environment.TickCount64;
+            var isFirstEvent = _lastTimePositionTickMs == 0;
             var changedEnough = Math.Abs(timePosition - _lastPublishedTimePosition) >= TimePositionMinimumChangeSeconds;
-            var elapsedEnough = now - _lastTimePositionEventUtc >= TimePositionEventInterval;
+            var elapsedEnough = nowMs - _lastTimePositionTickMs >= 16;
 
             var oldState = _playbackState;
             _playbackState = oldState with { Position = timePosition };
@@ -94,7 +73,7 @@ internal sealed class MpvPropertyCache
                 return false;
 
             _lastPublishedTimePosition = timePosition;
-            _lastTimePositionEventUtc = now;
+            _lastTimePositionTickMs = nowMs;
             return true;
         }
     }

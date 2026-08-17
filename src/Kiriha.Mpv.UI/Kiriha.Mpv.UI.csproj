@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Material.Icons.Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
+    <ProjectReference Include="..\Kiriha.Mpv\Kiriha.Mpv.csproj" />
+    <ProjectReference Include="..\Kiriha.Data\Kiriha.Data.csproj" />
+    <ProjectReference Include="..\Kiriha.Core.Tracking\Kiriha.Core.Tracking.csproj" />
+    <ProjectReference Include="..\Kiriha.Infrastructure\Kiriha.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

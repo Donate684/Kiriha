@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             xmlns:mpv="clr-namespace:Kiriha.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerPlaybackSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.playback}"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.autoplay}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.autoplay_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding PlayerAutoPlay}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.single_window}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.single_window_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding SinglePlayerWindow}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <StackPanel Spacing="6" Margin="0,4,0,0">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.default_speed}"/>
+                                            <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.default_speed_sub}"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}×'}"
+                                                   Foreground="#99FFFFFF"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Top"/>
+                                    </Grid>
+                                    <Slider Minimum="0.25" Maximum="2"
+                                            TickFrequency="0.25"
+                                            IsSnapToTickEnabled="True"
+                                            Value="{Binding PlaybackSpeed}"/>
+                                </StackPanel>
+
+                                <Border Height="110" IsHitTestVisible="False"/>
+                            </StackPanel>
+</UserControl>

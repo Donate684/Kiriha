@@ -96,6 +96,8 @@ public partial class PlayerViewModel
             MpvVideoOutput = NormalizeMpvOption(settings.MpvVideoOutput, "gpu-next");
             MpvGpuApi = NormalizeMpvOption(settings.MpvGpuApi, "auto");
             MpvGpuContext = NormalizeMpvOption(settings.MpvGpuContext, "auto");
+            MpvVideoSync = settings.MpvVideoSync;
+            MpvInterpolation = settings.MpvInterpolation;
             Volume = Math.Clamp(settings.Volume, 0, 100);
             PlaybackSpeed = Math.Clamp(settings.PlaybackSpeed, 0.1, 4.0);
         }

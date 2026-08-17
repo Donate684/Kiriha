@@ -1,0 +1,213 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             xmlns:mpres="using:Kiriha.Mpv.UI.ViewModels.Player.Settings"
+             xmlns:mpv="clr-namespace:Kiriha.Mpv"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
+             x:DataType="vmPlayer:PlayerViewModel"
+             x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerAdvancedSettings">
+    <StackPanel Spacing="10">
+                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.settings_adv.title}"/>
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="{DynamicResource l.player.settings_adv.screenshots}"
+                                           Margin="0,6,0,0"/>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.folder}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{Binding ScreenshotDirectory}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Classes="icon-btn"
+                                            Padding="8"
+                                            Click="OnChooseScreenshotDirectoryClick">
+                                        <material:MaterialIcon Kind="FolderOpenOutline" Width="18" Height="18" Foreground="White"/>
+                                    </Button>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.format}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_png}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding ScreenshotFormatOptions}"
+                                              SelectedItem="{Binding ScreenshotFormat}"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.size}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.frame_or_window}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding ScreenshotResolutionOptions}"
+                                              SelectedItem="{Binding ScreenshotResolution}"
+                                              VerticalAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="mpres:ScreenshotResolutionOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.png_compression}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_0_9}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="0"
+                                                   Maximum="9"
+                                                   Increment="1"
+                                                   Value="{Binding ScreenshotPngCompression}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.jpg_webp_quality}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_0_100}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="0"
+                                                   Maximum="100"
+                                                   Increment="1"
+                                                   Value="{Binding ScreenshotQuality}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.high_bit_depth}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_off}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding ScreenshotHighBitDepth}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.hotkey_sub}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.hotkey_sub_ex}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding ScreenshotWithSubtitlesHotkey}"
+                                             PlaceholderText="S"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.hotkey_no_sub}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.hotkey_no_sub_ex}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding ScreenshotWithoutSubtitlesHotkey}"
+                                             PlaceholderText="Shift+S"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="{DynamicResource l.player.settings_adv.sub_style}"
+                                           Margin="0,6,0,0"/>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.force_style}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_u}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding SubtitleStyleOverrideEnabled}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.font}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_font}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1" Text="{Binding SubtitleFont}" PlaceholderText="Candara Bold" VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.size}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_size}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="1"
+                                                   Maximum="300"
+                                                   Increment="1"
+                                                   Value="{Binding SubtitleFontSize}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.text_color}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_fff}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1" Text="{Binding SubtitleColor}" PlaceholderText="#FFFFFF" VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.border_color}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_000}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1" Text="{Binding SubtitleBorderColor}" PlaceholderText="#000000" VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.shadow_color}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_000}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1" Text="{Binding SubtitleShadowColor}" PlaceholderText="#000000" VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.border}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_border}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="0"
+                                                   Maximum="20"
+                                                   Increment="0.1"
+                                                   Value="{Binding SubtitleBorderSize}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.shadow_offset}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_shadow}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="0"
+                                                   Maximum="20"
+                                                   Increment="0.1"
+                                                   Value="{Binding SubtitleShadowOffset}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.bottom_margin}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_margin}"/>
+                                    </StackPanel>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="0"
+                                                   Maximum="500"
+                                                   Increment="1"
+                                                   Value="{Binding SubtitleMarginY}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.scale_window}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.scale_window_ex}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding SubtitleScaleByWindow}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+
+                                <Border Height="110" IsHitTestVisible="False"/>
+    </StackPanel>
+</UserControl>

@@ -5,8 +5,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Infrastructure.Player;
 
-namespace Kiriha.Infrastructure.Player;
+namespace Kiriha.Mpv.UI.Services;
 
 public sealed class InternalPlayerStateClient : IDisposable
 {
