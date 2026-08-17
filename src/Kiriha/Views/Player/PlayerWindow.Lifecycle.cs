@@ -10,61 +10,12 @@ using Kiriha.ViewModels.Player;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerOverlayWindow
+public partial class PlayerWindow
 {
     private void DisableLegacySettingsFlyout()
     {
         if (_settingsButton != null)
             _settingsButton.Flyout = null;
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        _hideTimer.Stop();
-        _hideTimer.Tick -= OnHideTimerTick;
-        
-        _hitTestDisableTimer.Stop();
-        _hitTestDisableTimer.Tick -= OnHitTestDisableTimerTick;
-
-        if (_leftClickTimer != null)
-        {
-            _leftClickTimer.Stop();
-            _leftClickTimer = null;
-        }
-
-        RemoveHandler(DragDrop.DragOverEvent, OnDragOver);
-        RemoveHandler(DragDrop.DropEvent, OnDrop);
-        RemoveHandler(KeyDownEvent, OnOverlayKeyDown);
-
-        if (_timelineSlider != null)
-        {
-            _timelineSlider.RemoveHandler(PointerPressedEvent, OnSliderPointerPressed);
-            _timelineSlider.RemoveHandler(PointerReleasedEvent, OnSliderPointerReleased);
-        }
-
-        if (_screenshotButton != null)
-            _screenshotButton.RemoveHandler(PointerReleasedEvent, OnScreenshotButtonPointerReleased);
-
-        if (_subscribedViewModel != null)
-        {
-            if (_viewModelPropertyChanged != null)
-                _subscribedViewModel.PropertyChanged -= _viewModelPropertyChanged;
-        }
-
-        if (_ownerWindow != null)
-        {
-            if (_ownerPositionChanged != null)
-                _ownerWindow.PositionChanged -= _ownerPositionChanged;
-            if (_ownerPropertyChanged != null)
-                _ownerWindow.PropertyChanged -= _ownerPropertyChanged;
-        }
-
-        _subscribedViewModel = null;
-        _viewModelPropertyChanged = null;
-        _ownerPositionChanged = null;
-        _ownerPropertyChanged = null;
-
-        base.OnClosed(e);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -74,15 +25,12 @@ public partial class PlayerOverlayWindow
             ShowControls();
     }
 
-    private void OnOwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (e.Property == Window.ClientSizeProperty)
+        base.OnPropertyChanged(change);
+
+        if (change.Property == WindowStateProperty)
         {
-            UpdateOverlayPosition();
-        }
-        else if (e.Property == Window.WindowStateProperty)
-        {
-            WindowState = (WindowState)e.NewValue!;
             UpdateCornerRounding();
         }
     }
@@ -100,10 +48,10 @@ public partial class PlayerOverlayWindow
         }
 
         // Remove rounded corners from the actual window by changing decorations and client area hint
-        if (_ownerWindow != null)
+        if (this != null)
         {
-            _ownerWindow.WindowDecorations = isEdgeToEdge ? WindowDecorations.None : WindowDecorations.BorderOnly;
-            _ownerWindow.ExtendClientAreaToDecorationsHint = !isEdgeToEdge;
+            this.WindowDecorations = isEdgeToEdge ? WindowDecorations.None : WindowDecorations.BorderOnly;
+            this.ExtendClientAreaToDecorationsHint = !isEdgeToEdge;
         }
 
         // Remove rounded corner from the close button so it stays flush

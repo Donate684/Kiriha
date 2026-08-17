@@ -8,7 +8,7 @@ using Kiriha.ViewModels.Player;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerOverlayWindow
+public partial class PlayerWindow
 {
 
 
@@ -61,27 +61,7 @@ public partial class PlayerOverlayWindow
     // Overlay positioning
     // ──────────────────────────────────────────────────────────
 
-    protected override void OnOpened(EventArgs e)
-    {
-        base.OnOpened(e);
-        UpdateOverlayPosition();
-        Focus();
-    }
 
-    private void UpdateOverlayPosition()
-    {
-        if (_ownerWindow == null) return;
-
-        var clientPos = _ownerWindow.PointToScreen(new Point(0, 0));
-        if (Position != clientPos)
-        {
-            Position = clientPos;
-        }
-
-        var clientSize = _ownerWindow.ClientSize;
-        if (Math.Abs(Width - clientSize.Width) > 0.5) Width = clientSize.Width;
-        if (Math.Abs(Height - clientSize.Height) > 0.5) Height = clientSize.Height;
-    }
 
     // ──────────────────────────────────────────────────────────
     // Window controls
@@ -89,12 +69,12 @@ public partial class PlayerOverlayWindow
 
     private void OnCloseClick(object? sender, RoutedEventArgs e)
     {
-        _ownerWindow.Close();
+        this.Close();
     }
 
     private void OnMinimizeClick(object? sender, RoutedEventArgs e)
     {
-        _ownerWindow.WindowState = WindowState.Minimized;
+        this.WindowState = WindowState.Minimized;
     }
 
     private void OnMaximizeClick(object? sender, RoutedEventArgs e)
@@ -104,7 +84,7 @@ public partial class PlayerOverlayWindow
 
     private void OnFullscreenClick(object? sender, RoutedEventArgs e)
     {
-        _ownerWindow.WindowState = _ownerWindow.WindowState == WindowState.FullScreen
+        this.WindowState = this.WindowState == WindowState.FullScreen
             ? WindowState.Normal
             : WindowState.FullScreen;
     }

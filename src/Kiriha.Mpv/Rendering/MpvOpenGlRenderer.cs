@@ -33,24 +33,20 @@ public class MpvOpenGlRenderer : IDisposable
 
             var getProcAddressPtr = Marshal.GetFunctionPointerForDelegate(getProcAddress);
             var apiTypePtr = Marshal.StringToCoTaskMemUTF8(LibMpvNative.MPV_RENDER_API_TYPE_OPENGL);
-            var initParamsPtr = IntPtr.Zero;
-            var parametersPtr = IntPtr.Zero;
 
             try
             {
-                var initParams = new MpvOpenGlInitParams(getProcAddressPtr, IntPtr.Zero);
-                initParamsPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvOpenGlInitParams>());
-                Marshal.StructureToPtr(initParams, initParamsPtr, false);
-
-                var parameters = new[]
+                unsafe
                 {
-                    new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_API_TYPE, apiTypePtr),
-                    new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_OPENGL_INIT_PARAMS, initParamsPtr),
-                    new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_INVALID, IntPtr.Zero)
-                };
+                    var initParams = new MpvOpenGlInitParams(getProcAddressPtr, IntPtr.Zero);
+                    
+                    var parameters = stackalloc MpvRenderParam[3];
+                    parameters[0] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_API_TYPE, apiTypePtr);
+                    parameters[1] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_OPENGL_INIT_PARAMS, (IntPtr)(&initParams));
+                    parameters[2] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_INVALID, IntPtr.Zero);
 
-                parametersPtr = AllocateRenderParams(parameters);
-                MpvPlayer.Check(LibMpvNative.mpv_render_context_create(out _renderContext, _player.MpvHandle, parametersPtr), "create OpenGL render context");
+                    MpvPlayer.Check(LibMpvNative.mpv_render_context_create(out _renderContext, _player.MpvHandle, (IntPtr)parameters), "create OpenGL render context");
+                }
 
                 _renderUpdateCallback = OnRenderUpdate;
                 _renderUpdateHandle = GCHandle.Alloc(this);
@@ -69,10 +65,6 @@ public class MpvOpenGlRenderer : IDisposable
             }
             finally
             {
-                if (parametersPtr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(parametersPtr);
-                if (initParamsPtr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(initParamsPtr);
                 Marshal.FreeCoTaskMem(apiTypePtr);
             }
         }
@@ -108,39 +100,19 @@ public class MpvOpenGlRenderer : IDisposable
             if ((updateFlags & LibMpvNative.MPV_RENDER_UPDATE_FRAME) == 0)
                 return;
 
-            var fboPtr = IntPtr.Zero;
-            var flipPtr = IntPtr.Zero;
-            var parametersPtr = IntPtr.Zero;
-
-            try
+            unsafe
             {
                 const int glRgba8 = 0x8058;
                 var fbo = new MpvOpenGlFbo(framebuffer, width, height, glRgba8);
-                fboPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvOpenGlFbo>());
-                Marshal.StructureToPtr(fbo, fboPtr, false);
+                int flipY = 1;
 
-                flipPtr = Marshal.AllocHGlobal(sizeof(int));
-                Marshal.WriteInt32(flipPtr, 1);
+                var parameters = stackalloc MpvRenderParam[3];
+                parameters[0] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_OPENGL_FBO, (IntPtr)(&fbo));
+                parameters[1] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_FLIP_Y, (IntPtr)(&flipY));
+                parameters[2] = new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_INVALID, IntPtr.Zero);
 
-                var parameters = new[]
-                {
-                    new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_OPENGL_FBO, fboPtr),
-                    new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_FLIP_Y, flipPtr),
-                    new MpvRenderParam(LibMpvNative.MPV_RENDER_PARAM_INVALID, IntPtr.Zero)
-                };
-
-                parametersPtr = AllocateRenderParams(parameters);
-                MpvPlayer.Check(LibMpvNative.mpv_render_context_render(renderContext, parametersPtr), "render OpenGL frame");
+                MpvPlayer.Check(LibMpvNative.mpv_render_context_render(renderContext, (IntPtr)parameters), "render OpenGL frame");
                 LibMpvNative.mpv_render_context_report_swap(renderContext);
-            }
-            finally
-            {
-                if (parametersPtr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(parametersPtr);
-                if (flipPtr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(flipPtr);
-                if (fboPtr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(fboPtr);
             }
         }
         finally
@@ -193,14 +165,6 @@ public class MpvOpenGlRenderer : IDisposable
         }
     }
 
-    private static IntPtr AllocateRenderParams(System.Collections.Generic.IReadOnlyList<MpvRenderParam> parameters)
-    {
-        var size = Marshal.SizeOf<MpvRenderParam>();
-        var ptr = Marshal.AllocHGlobal(size * parameters.Count);
-        for (int i = 0; i < parameters.Count; i++)
-            Marshal.StructureToPtr(parameters[i], IntPtr.Add(ptr, i * size), false);
-        return ptr;
-    }
 
     private static void OnRenderUpdate(IntPtr context)
     {

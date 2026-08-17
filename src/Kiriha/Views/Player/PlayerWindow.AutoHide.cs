@@ -6,7 +6,7 @@ using Kiriha.ViewModels.Player;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerOverlayWindow
+public partial class PlayerWindow
 {
     // Auto-hide: hide panels after timeout of no mouse movement
     private static readonly TimeSpan ControlsKeepAliveInterval = TimeSpan.FromMilliseconds(180);

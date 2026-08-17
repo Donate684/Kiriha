@@ -3,7 +3,7 @@ using Kiriha.Views.Player.Controls;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerOverlayWindow
+public partial class PlayerWindow
 {
     private void ShowSettingsOverlay()
     {

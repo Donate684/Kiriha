@@ -8,7 +8,7 @@ using Kiriha.ViewModels.Player;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerOverlayWindow
+public partial class PlayerWindow
 {
     private void OnSliderPointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -149,16 +149,7 @@ public partial class PlayerOverlayWindow
 
     private void BeginOwnerMoveDrag(PointerPressedEventArgs e)
     {
-        Opacity = 0;
-        try
-        {
-            _ownerWindow.BeginMoveDrag(e);
-        }
-        finally
-        {
-            UpdateOverlayPosition();
-            Opacity = 1;
-        }
+        this.BeginMoveDrag(e);
     }
 
     private void ExecuteMouseAction(PlayerViewModel vm, PlayerMouseAction action)

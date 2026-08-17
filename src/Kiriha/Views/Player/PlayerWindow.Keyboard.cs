@@ -10,7 +10,7 @@ using Kiriha.ViewModels.Player;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerOverlayWindow
+public partial class PlayerWindow
 {
     private void OnOverlayKeyDown(object? sender, KeyEventArgs e)
     {
@@ -123,10 +123,10 @@ public partial class PlayerOverlayWindow
             return;
         }
 
-        if (MatchesHotkey(e, vm.ExitFullscreenHotkey) && _ownerWindow.WindowState == WindowState.FullScreen)
+        if (MatchesHotkey(e, vm.ExitFullscreenHotkey) && this.WindowState == WindowState.FullScreen)
         {
             e.Handled = true;
-            _ownerWindow.WindowState = WindowState.Normal;
+            this.WindowState = WindowState.Normal;
             return;
         }
 
