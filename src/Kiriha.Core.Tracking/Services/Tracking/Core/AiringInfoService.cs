@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Kiriha.Core;
 using System.Linq;
 using System.Threading;
@@ -13,7 +13,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public class AiringInfoService : Kiriha.Core.Abstractions.Services.IAiringInfoService
+public class AiringInfoService : IAiringInfoService
 {
     private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeSyncOrchestrator _syncOrchestrator;

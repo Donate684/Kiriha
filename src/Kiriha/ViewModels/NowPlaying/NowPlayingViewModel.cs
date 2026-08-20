@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Messages;
+﻿using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
@@ -29,6 +29,8 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
 using Serilog;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.NowPlaying;
 
@@ -38,20 +40,20 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     IRecipient<TrackingCountdownMessage>,
     IRecipient<TrackingStatusMessage>
 {
-    private readonly Kiriha.Core.Tracking.Core.TrackingService _trackingService;
+    private readonly TrackingService _trackingService;
     // Tracks the anime id of an in-flight manual selection. Until the background
     // TrackingService fires AnimeMatched with this id (or null on a media change),
     // we ignore intermediate null/other matches so they don't clobber the UI choice.
     // 0 means "no manual selection pending".
     private int _pendingManualMatchId;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ISettingsService _settingsService;
+    private readonly ILocalizer _localizer;
     private readonly MappingService _mappingService;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _progressService;
-    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly IProgressUpdateService _progressService;
+    private readonly ISyncManager _syncManager;
     private readonly ShikiMetadataService _shikiMetadataService;
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
+    private readonly IMalApiService _malApi;
 
     [ObservableProperty] private ParsedMedia? _currentMedia;
     
@@ -91,7 +93,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
                                    (IsPaused ? _localizer.GetLoc("scrobbler.status.paused") :
                                    (string.IsNullOrEmpty(CountdownStatus) ? _localizer.GetLoc("scrobbler.status.active") : CountdownStatus)));
 
-    public Kiriha.Core.Abstractions.Services.ISettingsService Settings => _settingsService;
+    public ISettingsService Settings => _settingsService;
     public bool IsScrobblerEnabled => _settingsService.Current.System.Scrobbler.Enabled;
 
     public ObservableCollection<string> DetectionLogs { get; } = new();
@@ -109,15 +111,15 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     private readonly CancellationTokenSource _disposeCts = new();
 
     public NowPlayingViewModel(
-        Kiriha.Core.Tracking.Core.TrackingService trackingService,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        TrackingService trackingService,
+        ISettingsService settingsService,
         MappingService mappingService,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Abstractions.Services.IProgressUpdateService progressService,
-        Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
+        IAnimeRepository animeRepo,
+        IProgressUpdateService progressService,
+        ISyncManager syncManager,
         ShikiMetadataService shikiMetadataService,
-        Kiriha.Core.Abstractions.Services.IMalApiService malApi,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        IMalApiService malApi,
+        ILocalizer localizer)
     {
         _trackingService = trackingService;
         _localizer = localizer;

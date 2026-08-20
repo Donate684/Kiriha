@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,6 +13,7 @@ using Kiriha.Services.Data;
 
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.Views.Player;
 
@@ -47,7 +48,7 @@ public partial class PlayerWindow : Window
 
     public MpvPlayer? Player => _player;
 
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService? _settingsService;
+    private readonly ISettingsService? _settingsService;
 
     public PlayerWindow()
     {
@@ -70,7 +71,7 @@ public partial class PlayerWindow : Window
             _screenshotButton.AddHandler(PointerReleasedEvent, OnScreenshotButtonPointerReleased, RoutingStrategies.Tunnel);
     }
 
-    public PlayerWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
+    public PlayerWindow(ISettingsService settingsService) : this()
     {
         _settingsService = settingsService;
     }

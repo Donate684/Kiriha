@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using Avalonia.Threading;
@@ -8,6 +8,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 using Kiriha.Mpv.UI.Services.Player;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -19,8 +20,8 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     };
 
     private readonly IPlayerMediaMetadataResolver? _metadataResolver;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService? _settingsService;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ISettingsService? _settingsService;
+    private readonly ILocalizer _localizer;
     private readonly PlayerPlaybackController _playback = new();
     private readonly PlayerStatePublisher _statePublisher;
     private readonly PlayerTimelineService _timeline = new();
@@ -52,7 +53,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         string videoUrl,
         PlayerMediaMetadata? metadata,
         IPlayerMediaMetadataResolver? metadataResolver,
-        Kiriha.Core.Abstractions.Services.ISettingsService? settingsService, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        ISettingsService? settingsService, ILocalizer localizer)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;

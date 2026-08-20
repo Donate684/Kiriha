@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models.Entities;
+﻿using Kiriha.Core.Domain.Models.Entities;
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -20,7 +20,7 @@ namespace Kiriha.Views.AnimeList
         {
             try
             {
-                if (sender is Control c && c.DataContext is Kiriha.Core.Domain.Models.Entities.AnimeEntity item)
+                if (sender is Control c && c.DataContext is AnimeEntity item)
                 {
                     var topLevel = TopLevel.GetTopLevel(c);
                     // To get the AnimeListViewModel, we check if the TopLevel's content or the original control has it in data context.
@@ -57,7 +57,7 @@ namespace Kiriha.Views.AnimeList
 
         private void ScoreMenu_Opened(object? sender, EventArgs e)
         {
-            if (sender is MenuFlyout flyout && flyout.Target is Control target && target.DataContext is Kiriha.Core.Domain.Models.Entities.AnimeEntity item)
+            if (sender is MenuFlyout flyout && flyout.Target is Control target && target.DataContext is AnimeEntity item)
             {
                 var parent = target.Parent;
                 AnimeListViewModel? vm = null;

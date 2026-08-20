@@ -1,7 +1,8 @@
-
+﻿
 using System;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -91,13 +92,13 @@ public partial class PlayerViewModel
     private void SaveMpvOption(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
     }
 
     private void SaveVideoProcessingOption(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
         ApplyVideoProcessingOptions();
     }
 

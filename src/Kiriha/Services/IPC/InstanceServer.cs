@@ -1,10 +1,11 @@
-﻿using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Services.Data.Settings;
 using System;
 using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Services.Data;
@@ -13,22 +14,18 @@ using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-
 namespace Kiriha.Services;
-
 public class InstanceServer : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly object _pipeGate = new();
     private NamedPipeServerStream? _currentPipe;
-
     public InstanceServer(IServiceProvider serviceProvider, IUiDispatcher uiDispatcher)
     {
         _serviceProvider = serviceProvider;
         _uiDispatcher = uiDispatcher;
     }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -42,14 +39,10 @@ public class InstanceServer : BackgroundService
                     1,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous);
-
                 lock (_pipeGate) _currentPipe = pipeServer;
-
                 await pipeServer.WaitForConnectionAsync(stoppingToken);
-
                 using var reader = new System.IO.StreamReader(pipeServer);
                 var line = await reader.ReadLineAsync(stoppingToken);
-
                 if (!string.IsNullOrEmpty(line))
                 {
                     var args = PipeArgumentSerializer.Deserialize(line);
@@ -74,24 +67,19 @@ public class InstanceServer : BackgroundService
             }
         }
     }
-
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         var stopTask = base.StopAsync(cancellationToken);
-
         lock (_pipeGate)
         {
             _currentPipe?.Dispose();
             _currentPipe = null;
         }
-
         return stopTask;
     }
-
     private void HandleArguments(string[] args)
     {
         int playerArgIndex = Array.FindIndex(args, arg => arg.Equals("--player", StringComparison.OrdinalIgnoreCase));
-
         if (playerArgIndex >= 0)
         {
             string videoUrl = string.Empty;
@@ -99,7 +87,6 @@ public class InstanceServer : BackgroundService
             {
                 videoUrl = args[playerArgIndex + 1];
             }
-
             _uiDispatcher.Post(() =>
             {
                 var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
@@ -116,8 +103,7 @@ public class InstanceServer : BackgroundService
                         return;
                     }
                 }
-
-                var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService, _serviceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ILocalizer>());
+                var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>());
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
             });
@@ -139,6 +125,4 @@ public class InstanceServer : BackgroundService
             });
         }
     }
-
 }
-

@@ -20,7 +20,7 @@ namespace Kiriha.ViewModels.Settings;
 
 public partial class SettingsPlaybackViewModel : ObservableObject
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly SystemIntegrationService _systemIntegrationService;
     private readonly IExternalMediaDetector _IExternalMediaDetector;
 
@@ -39,7 +39,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     public int EnabledPlayersCount => _settingsService.Current.System.Scrobbler.AllowedProcesses.Count;
 
     public SettingsPlaybackViewModel(
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService, 
+        ISettingsService settingsService, 
         SystemIntegrationService systemIntegrationService,
         IExternalMediaDetector IExternalMediaDetector)
     {
@@ -62,13 +62,13 @@ public partial class SettingsPlaybackViewModel : ObservableObject
 
     partial void OnKeepPlayerProcessAliveChanged(bool value)
     {
-        _settingsService.Update(settings => settings.System.KeepPlayerProcessAlive = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+        _settingsService.Update(settings => settings.System.KeepPlayerProcessAlive = value, SettingsSection.System);
         if (value) Kiriha.Infrastructure.Player.PlayerProcessBridge.StartResident();
         else _ = Kiriha.Infrastructure.Player.PlayerProcessBridge.StopResidentAsync();
     }
 
-    partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
-    partial void OnSmartTrackAutoloadChanged(bool value) => _settingsService.Update(settings => settings.Player.SmartTrackAutoload = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+    partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, SettingsSection.Player);
+    partial void OnSmartTrackAutoloadChanged(bool value) => _settingsService.Update(settings => settings.Player.SmartTrackAutoload = value, SettingsSection.Player);
 
     partial void OnMpvVideoPresetChanged(string value)
     {
@@ -100,7 +100,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
                 settings.Player.MpvDebandIterations = 3;
                 settings.Player.MpvCorrectDownscaling = true;
             }
-        }, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        }, SettingsSection.Player);
     }
 
     partial void OnMpvHwdecChanged(string value) => SaveMpvOption(x => x.MpvHwdec = NormalizeMpvOption(value, "auto"));
@@ -110,7 +110,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     partial void OnMpvVideoSyncChanged(bool value) => SaveMpvOption(x => x.MpvVideoSync = value);
     partial void OnMpvInterpolationChanged(bool value) => SaveMpvOption(x => x.MpvInterpolation = value);
 
-    private void SaveMpvOption(System.Action<Kiriha.Core.Domain.Models.AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+    private void SaveMpvOption(System.Action<AppSettings.PlayerConfig> update) => _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
 
     private static string NormalizeMpvOption(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 

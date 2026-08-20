@@ -10,6 +10,7 @@ using Kiriha.Infrastructure.Platform;
 using Kiriha.Services.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.AppLifecycle;
 
@@ -56,10 +57,10 @@ public sealed partial class AppStartupCoordinator
     {
         PathHelper.EnsureDirectoriesExist();
         services.AddSingleton<SettingsService>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
+        services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.SettingsShutdownHandler>();
         services.AddSingleton<LocalizationService>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
+        services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.FilenamePlayerMediaMetadataResolver>();
     }
 }

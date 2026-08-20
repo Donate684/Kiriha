@@ -1,4 +1,4 @@
-using Kiriha.Core.Tracking.Api;
+﻿using Kiriha.Core.Tracking.Api;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -26,6 +26,7 @@ using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Kiriha.Utils.Async;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
@@ -50,25 +51,25 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly JikanApiService _jikanApiService;
     private readonly IDialogService _dialogs;
-    private readonly Kiriha.Core.Abstractions.Services.IShikiApiService _shikiApiService;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApiService;
+    private readonly IShikiApiService _shikiApiService;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly IMalApiService _malApiService;
 
-    public Kiriha.Core.Abstractions.Services.ISettingsService Settings => _settingsService;
+    public ISettingsService Settings => _settingsService;
 
     public AnimeDetailsViewModel(
         AnimeEntity cloneAnime,
         AnimeEditViewModel editor,
         AnimeMetadataViewModel metadata,
         JikanApiService jikanApiService,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        ISettingsService settingsService,
         IDialogService dialogs,
-        Kiriha.Core.Abstractions.Services.IShikiApiService shikiApiService,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Abstractions.Services.IMalApiService malApiService)
+        IShikiApiService shikiApiService,
+        IAnimeRepository animeRepo,
+        IMalApiService malApiService)
     {
         _anime = cloneAnime;
         Editor = editor;

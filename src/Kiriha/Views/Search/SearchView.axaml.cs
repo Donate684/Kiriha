@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models.Entities;
+﻿using Kiriha.Core.Domain.Models.Entities;
 using System;
 using Avalonia.Controls;
 using Kiriha.ViewModels.Search;
@@ -14,7 +14,7 @@ public partial class SearchView : UserControl
 
     private void ListBox_ContainerPrepared(object? sender, ContainerPreparedEventArgs e)
     {
-        if (e.Container.DataContext is Kiriha.Core.Domain.Models.Entities.AnimeEntity item && DataContext is SearchViewModel vm)
+        if (e.Container.DataContext is AnimeEntity item && DataContext is SearchViewModel vm)
         {
             vm.EnqueueItemForViewport(item);
         }
@@ -25,7 +25,7 @@ public partial class SearchView : UserControl
         // async void event handler: any leaked exception kills the process. Wrap defensively.
         try
         {
-            if (sender is Control c && c.DataContext is Kiriha.Core.Domain.Models.Entities.AnimeEntity item && DataContext is SearchViewModel vm)
+            if (sender is Control c && c.DataContext is AnimeEntity item && DataContext is SearchViewModel vm)
             {
                 await vm.DialogService.ShowAnimeDetailsAsync(this, item);
             }

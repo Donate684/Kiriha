@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Core;
+﻿using Kiriha.Services.Data.Core;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
@@ -12,6 +12,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.History;
 
@@ -19,11 +20,11 @@ public partial class HistoryViewModel : ViewModelBase
 {
     private readonly HistoryService _historyService;
     private readonly DatabaseInitializer _dbInit;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settings;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ISettingsService _settings;
+    private readonly ILocalizer _localizer;
     private List<HistoryItem> _rawItems = new();
 
     [ObservableProperty]
@@ -49,11 +50,11 @@ public partial class HistoryViewModel : ViewModelBase
     public HistoryViewModel(
         HistoryService historyService,
         DatabaseInitializer dbInit,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Abstractions.Services.IMalApiService malApi,
+        IAnimeRepository animeRepo,
+        IMalApiService malApi,
         IDialogService dialogs,
-        Kiriha.Core.Abstractions.Services.ISettingsService settings,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        ISettingsService settings,
+        ILocalizer localizer)
     {
         _historyService = historyService;
         _dbInit = dbInit;
@@ -77,7 +78,7 @@ public partial class HistoryViewModel : ViewModelBase
         NotifyActionFlags();
     }
 
-    // ─── Radio-button friendly flags (also safe for ToggleButton: can't uncheck) ───
+    // â”€â”€â”€ Radio-button friendly flags (also safe for ToggleButton: can't uncheck) â”€â”€â”€
     public bool IsPeriodAll { get => SelectedPeriod == 0; set { if (value) SelectedPeriod = 0; else OnPropertyChanged(nameof(IsPeriodAll)); } }
     public bool IsPeriodToday { get => SelectedPeriod == 1; set { if (value) SelectedPeriod = 1; else OnPropertyChanged(nameof(IsPeriodToday)); } }
     public bool IsPeriodWeek { get => SelectedPeriod == 2; set { if (value) SelectedPeriod = 2; else OnPropertyChanged(nameof(IsPeriodWeek)); } }

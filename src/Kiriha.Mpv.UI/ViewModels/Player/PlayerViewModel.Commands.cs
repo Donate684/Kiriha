@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -38,7 +39,7 @@ public partial class PlayerViewModel
     private void ReloadSubtitles()
     {
         _playback.ReloadSubtitles();
-        ShowOsd("Субтитры", "перезагружены");
+        ShowOsd("Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹", "Ð¿ÐµÑ€ÐµÐ·Ð°Ð³Ñ€ÑƒÐ¶ÐµÐ½Ñ‹");
     }
 
     [RelayCommand]
@@ -63,14 +64,14 @@ public partial class PlayerViewModel
     public void MoveSubtitleUp()
     {
         _playback.AdjustSubtitlePosition(-1);
-        ShowOsd("Субтитры", "выше");
+        ShowOsd("Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹", "Ð²Ñ‹ÑˆÐµ");
     }
 
     [RelayCommand]
     public void MoveSubtitleDown()
     {
         _playback.AdjustSubtitlePosition(1);
-        ShowOsd("Субтитры", "ниже");
+        ShowOsd("Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹", "Ð½Ð¸Ð¶Ðµ");
     }
 
     [RelayCommand]
@@ -82,7 +83,7 @@ public partial class PlayerViewModel
     public void TakeScreenshot(bool includeSubtitles)
     {
         _playback.TakeScreenshot(includeSubtitles, ScreenshotResolution?.Value ?? "video");
-        ShowOsd("Скриншот", includeSubtitles ? "с субтитрами" : "без субтитров");
+        ShowOsd("Ð¡ÐºÑ€Ð¸Ð½ÑˆÐ¾Ñ‚", includeSubtitles ? "Ñ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð°Ð¼Ð¸" : "Ð±ÐµÐ· ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð²");
     }
 
     [RelayCommand]
@@ -143,7 +144,7 @@ public partial class PlayerViewModel
     public void SeekRelative(double seconds)
     {
         SeekTo(CurrentTime + seconds);
-        ShowOsd(seconds >= 0 ? "Вперёд" : "Назад", $"{Math.Abs(seconds):0.#} сек");
+        ShowOsd(seconds >= 0 ? "Ð’Ð¿ÐµÑ€Ñ‘Ð´" : "ÐÐ°Ð·Ð°Ð´", $"{Math.Abs(seconds):0.#} ÑÐµÐº");
     }
 
     public void AdjustVolume(double delta)
@@ -171,6 +172,6 @@ public partial class PlayerViewModel
         if (_isApplyingSettings || _settingsService == null) return;
         _settingsService.Update(
             settings => settings.Player.SmartTrackAutoload = value,
-            Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+            SettingsSection.Player);
     }
 }

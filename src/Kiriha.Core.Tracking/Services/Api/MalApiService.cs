@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -21,7 +21,7 @@ namespace Kiriha.Core.Tracking.Api;
 
 public partial class MalApiService : IMalApiService, IDisposable
 {
-    // Resolved once from Constants â€” no parallel const that can drift from the URL
+    // Resolved once from Constants Ã¢â‚¬â€ no parallel const that can drift from the URL
     // wired into the IHttpClientFactory "MalClient" registration.
     private static readonly string MalBaseUrl = AppConstants.Api.Mal.BaseUrl;
 
@@ -32,7 +32,7 @@ public partial class MalApiService : IMalApiService, IDisposable
     private static readonly string MangaFields = $"list_status{{{MangaListStatusFields}}},my_list_status{{{MangaListStatusFields}}},main_picture,synopsis,mean,rank,popularity,num_chapters,num_volumes,authors,genres,alternative_titles,status,start_date,nsfw,media_type,external_links";
 
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly MalTokenManager _tokenManager;
     private readonly JikanApiService _jikanApi;
     private readonly HttpConditionalCache _httpCache;
@@ -53,7 +53,7 @@ public partial class MalApiService : IMalApiService, IDisposable
     public string Name => "MyAnimeList";
     public bool IsEnabled => _settingsService.Current.Api.Mal != null;
 
-    public MalApiService(HttpClient httpClient, Kiriha.Core.Abstractions.Services.ISettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
+    public MalApiService(HttpClient httpClient, ISettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;

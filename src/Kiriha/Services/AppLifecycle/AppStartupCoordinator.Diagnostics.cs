@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
@@ -12,6 +12,7 @@ using Kiriha.Infrastructure;
 using Kiriha.ViewModels;
 using Kiriha.Views;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.AppLifecycle;
 
@@ -52,7 +53,7 @@ public sealed partial class AppStartupCoordinator
                 {
                     var crashWindow = new CrashReportWindow
                     {
-                        DataContext = new CrashReportViewModel(pending, _serviceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ILocalizer>())
+                        DataContext = new CrashReportViewModel(pending, _serviceProvider.GetRequiredService<ILocalizer>())
                     };
 
                     if (desktop.MainWindow != null && desktop.MainWindow.IsVisible)

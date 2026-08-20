@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -7,6 +7,7 @@ using Kiriha.Services.Data.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -26,13 +27,13 @@ public partial class CacheCleanupItem : ObservableObject
     [NotifyPropertyChangedFor(nameof(DisplayStats))]
     private long _sizeBytes;
 
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
     public string DisplayStats => SizeBytes > 0
         ? _localizer.GetLoc("settings.cache.stats_with_size", ItemCount, FormatBytes(SizeBytes))
         : _localizer.GetLoc("settings.cache.stats_items", ItemCount);
 
-    public CacheCleanupItem(CacheCleanupTarget target, string titleKey, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    public CacheCleanupItem(CacheCleanupTarget target, string titleKey, ILocalizer localizer)
     {
         Target = target;
         TitleKey = titleKey;

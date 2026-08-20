@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
@@ -8,23 +8,24 @@ using Kiriha.Core.Tracking.Sync;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
+using Kiriha.Core.Abstractions.Infrastructure;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public class AnimeProgressService : Kiriha.Core.Abstractions.Services.IProgressUpdateService
+public class AnimeProgressService : IProgressUpdateService
 {
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepository;
+    private readonly IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
-    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
-    private readonly Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher _uiDispatcher;
+    private readonly ISyncManager _syncManager;
+    private readonly IHistoryService _historyService;
+    private readonly IUiDispatcher _uiDispatcher;
 
     public AnimeProgressService(
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepository,
+        IAnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
-        Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
-        Kiriha.Core.Abstractions.Services.IHistoryService historyService,
-        Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher uiDispatcher)
+        ISyncManager syncManager,
+        IHistoryService historyService,
+        IUiDispatcher uiDispatcher)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;

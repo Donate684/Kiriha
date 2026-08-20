@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Core;
+﻿using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Mapping;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ public partial class AnimeRepository : IAnimeRepository
     public bool IsInitializing => Volatile.Read(ref _initStarted) == 1 && !_initTcs.Task.IsCompleted;
 
     public BulkObservableCollection<AnimeEntity> Collection { get; } = new();
-    System.Collections.ObjectModel.ObservableCollection<AnimeEntity> Kiriha.Core.Abstractions.Repositories.IAnimeRepository.Collection => Collection;
+    System.Collections.ObjectModel.ObservableCollection<AnimeEntity> IAnimeRepository.Collection => Collection;
 
     public IEnumerable<AnimeEntity> GetCollection()
     {

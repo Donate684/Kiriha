@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Kiriha.Core.Shared;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -10,6 +10,7 @@ using Kiriha.Core.Domain.Models.Api;
 
 using Kiriha.Core.Domain.Models;
 using Serilog;
+using Kiriha.Core.Tracking.Api;
 
 namespace Kiriha.Core.Tracking.Auth;
 
@@ -36,11 +37,11 @@ public partial class ShikiAuthService
 
         try
         {
-            // ShikiHttp transparently follows the .net ⇄ .rip geo-redirect
-            // while preserving the POST body — without it, the form fields
+            // ShikiHttp transparently follows the .net â‡„ .rip geo-redirect
+            // while preserving the POST body â€” without it, the form fields
             // would be dropped and the server would return an empty token
             // payload, surfacing as "login succeeded but app stays empty".
-            var response = await Kiriha.Core.Tracking.Api.ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, CancellationToken.None);
+            var response = await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, CancellationToken.None);
             var json = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -81,7 +82,7 @@ public partial class ShikiAuthService
 
         try
         {
-            var response = await Kiriha.Core.Tracking.Api.ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
+            var response = await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
             var json = await response.Content.ReadAsStringAsync(ct);
 
             if (response.IsSuccessStatusCode)

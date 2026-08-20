@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Linq;
 using System.Threading;
@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Mpv;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -149,7 +150,7 @@ public partial class PlayerViewModel
             SubtitleTracks.Clear();
 
             // Add 'None' option for subtitles
-            SubtitleTracks.Add(new TrackInfo { Id = "no", Type = "sub", Title = "Отключить" });
+            SubtitleTracks.Add(new TrackInfo { Id = "no", Type = "sub", Title = "ÐžÑ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ" });
 
             foreach (var t in audioTracks) AudioTracks.Add(t);
             foreach (var t in subTracks) SubtitleTracks.Add(t);
@@ -166,7 +167,7 @@ public partial class PlayerViewModel
         if (_playback.HasPlayer && track != null)
         {
             _playback.SetTrack(track.Type, track.Id);
-            ShowOsd(track.Type == "sub" ? "Субтитры" : "Аудио", track.DisplayName);
+            ShowOsd(track.Type == "sub" ? "Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹" : "ÐÑƒÐ´Ð¸Ð¾", track.DisplayName);
         }
     }
 
@@ -208,11 +209,11 @@ public partial class PlayerViewModel
 
         if (!_isApplyingSettings && RememberPlayerVolume && _settingsService != null)
         {
-            _settingsService.Update(settings => settings.Player.Volume = Math.Clamp(value, 0, 100), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+            _settingsService.Update(settings => settings.Player.Volume = Math.Clamp(value, 0, 100), SettingsSection.Player);
         }
 
         if (!_isApplyingSettings)
-            ShowOsd("Громкость", $"{Math.Clamp(value, 0, 100):0}%");
+            ShowOsd("Ð“Ñ€Ð¾Ð¼ÐºÐ¾ÑÑ‚ÑŒ", $"{Math.Clamp(value, 0, 100):0}%");
     }
 
     partial void OnPlaybackSpeedChanged(double value)
@@ -222,11 +223,11 @@ public partial class PlayerViewModel
 
         if (!_isApplyingSettings && _settingsService != null)
         {
-            _settingsService.Update(settings => settings.Player.PlaybackSpeed = speed, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+            _settingsService.Update(settings => settings.Player.PlaybackSpeed = speed, SettingsSection.Player);
         }
 
         if (!_isApplyingSettings)
-            ShowOsd("Скорость", $"{speed:0.##}x");
+            ShowOsd("Ð¡ÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ", $"{speed:0.##}x");
     }
 
     partial void OnNormalizeAudioChanged(bool value)
@@ -234,7 +235,7 @@ public partial class PlayerViewModel
         _playback.SetAudioNormalization(value);
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.NormalizeAudio = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.NormalizeAudio = value, SettingsSection.Player);
     }
 
     partial void OnIsMutedChanged(bool value)
@@ -245,12 +246,12 @@ public partial class PlayerViewModel
         {
             _previousVolume = Volume;
             _playback.SetVolume(0);
-            ShowOsd("Звук", "выключен");
+            ShowOsd("Ð—Ð²ÑƒÐº", "Ð²Ñ‹ÐºÐ»ÑŽÑ‡ÐµÐ½");
         }
         else
         {
             _playback.SetVolume(Volume);
-            ShowOsd("Звук", $"{Math.Clamp(Volume, 0, 100):0}%");
+            ShowOsd("Ð—Ð²ÑƒÐº", $"{Math.Clamp(Volume, 0, 100):0}%");
         }
     }
 }

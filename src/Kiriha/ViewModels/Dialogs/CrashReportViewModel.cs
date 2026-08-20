@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Dialogs;
 
@@ -26,11 +27,11 @@ public partial class CrashReportViewModel : ObservableObject
     private string _statusText = string.Empty;
 
     private readonly string? _crashFilePath;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
     public CrashReportViewModel() { _localizer = null!; } // designer
 
-    public CrashReportViewModel(string crashFilePath, Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    public CrashReportViewModel(string crashFilePath, ILocalizer localizer)
     {
         _crashFilePath = crashFilePath;
         _localizer = localizer;

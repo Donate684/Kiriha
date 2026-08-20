@@ -1,14 +1,15 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Avalonia.Media;
 using Serilog;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
 public partial class AnimeDetailsViewModel
 {
-    private async Task ProcessStaffPlusAsync(System.Collections.Generic.List<Kiriha.Core.Domain.Models.Entities.AnimeStaff> staffList)
+    private async Task ProcessStaffPlusAsync(System.Collections.Generic.List<AnimeStaff> staffList)
     {
         var keyRoles = new[] { "Original Creator", "Director", "Series Composition", "Script", "Music", "Character Design" };
         var staffPlusVms = new System.Collections.Generic.List<StaffPlusItemVm>();
@@ -69,9 +70,9 @@ public partial class AnimeDetailsViewModel
                             IBrush highlight = Brushes.Transparent;
                             if (localAnime != null)
                             {
-                                if (localAnime.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Watching || localAnime.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Completed)
+                                if (localAnime.Status == UserAnimeStatus.Watching || localAnime.Status == UserAnimeStatus.Completed)
                                     highlight = SolidColorBrush.Parse("#334CAF50");
-                                else if (localAnime.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Dropped)
+                                else if (localAnime.Status == UserAnimeStatus.Dropped)
                                     highlight = SolidColorBrush.Parse("#33F44336");
                             }
 
@@ -107,18 +108,18 @@ public partial class AnimeDetailsViewModel
         var r = role.ToLowerInvariant();
         return matchedRole switch
         {
-            "Original Creator" => r.Contains("оригинал") || r.Contains("сюжет") || r.Contains("creator"),
-            "Director" => (r.Contains("режисс") || r.Contains("director")) &&
-                          !r.Contains("звук") && !r.Contains("sound") &&
-                          !r.Contains("эпизод") && !r.Contains("episode") &&
-                          !r.Contains("анимаци") && !r.Contains("animation") &&
+            "Original Creator" => r.Contains("Ð¾Ñ€Ð¸Ð³Ð¸Ð½Ð°Ð»") || r.Contains("ÑÑŽÐ¶ÐµÑ‚") || r.Contains("creator"),
+            "Director" => (r.Contains("Ñ€ÐµÐ¶Ð¸ÑÑ") || r.Contains("director")) &&
+                          !r.Contains("Ð·Ð²ÑƒÐº") && !r.Contains("sound") &&
+                          !r.Contains("ÑÐ¿Ð¸Ð·Ð¾Ð´") && !r.Contains("episode") &&
+                          !r.Contains("Ð°Ð½Ð¸Ð¼Ð°Ñ†Ð¸") && !r.Contains("animation") &&
                           !r.Contains("cg") && !r.Contains("3d") &&
-                          !r.Contains("ассистент") && !r.Contains("assistant") &&
-                          !r.Contains("помощник") && !r.Contains("второй") && !r.Contains("co-director"),
-            "Series Composition" => r.Contains("компоновка") || r.Contains("структура") || r.Contains("series composition"),
-            "Script" => r.Contains("сценар") || r.Contains("script"),
-            "Music" => r.Contains("композитор") || r.Contains("музык") || r.Contains("music"),
-            "Character Design" => r.Contains("дизайн персонажей") || r.Contains("character design"),
+                          !r.Contains("Ð°ÑÑÐ¸ÑÑ‚ÐµÐ½Ñ‚") && !r.Contains("assistant") &&
+                          !r.Contains("Ð¿Ð¾Ð¼Ð¾Ñ‰Ð½Ð¸Ðº") && !r.Contains("Ð²Ñ‚Ð¾Ñ€Ð¾Ð¹") && !r.Contains("co-director"),
+            "Series Composition" => r.Contains("ÐºÐ¾Ð¼Ð¿Ð¾Ð½Ð¾Ð²ÐºÐ°") || r.Contains("ÑÑ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ð°") || r.Contains("series composition"),
+            "Script" => r.Contains("ÑÑ†ÐµÐ½Ð°Ñ€") || r.Contains("script"),
+            "Music" => r.Contains("ÐºÐ¾Ð¼Ð¿Ð¾Ð·Ð¸Ñ‚Ð¾Ñ€") || r.Contains("Ð¼ÑƒÐ·Ñ‹Ðº") || r.Contains("music"),
+            "Character Design" => r.Contains("Ð´Ð¸Ð·Ð°Ð¹Ð½ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶ÐµÐ¹") || r.Contains("character design"),
             _ => r.Contains(matchedRole.ToLowerInvariant())
         };
     }

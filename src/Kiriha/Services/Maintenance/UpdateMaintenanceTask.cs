@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,20 +8,21 @@ using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.Maintenance;
 
 public class UpdateMaintenanceTask : IMaintenanceTask
 {
     private readonly UpdateService _updateService;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly NotificationService _notificationService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IDialogService _dialogs;
 
     public UpdateMaintenanceTask(
         UpdateService updateService,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        ISettingsService settingsService,
         NotificationService notificationService,
         IUiDispatcher uiDispatcher,
         IDialogService dialogs)

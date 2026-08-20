@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -13,12 +13,13 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Dialogs;
 
 public partial class AmbiguousMatchViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
+    private readonly IMalApiService _malApi;
 
     [ObservableProperty]
     private string _fileName;
@@ -34,7 +35,7 @@ public partial class AmbiguousMatchViewModel : ViewModelBase
     [ObservableProperty]
     private AnimeOfflineItem? _selectedAnime;
 
-    public AmbiguousMatchViewModel(string fileName, IEnumerable<AnimeOfflineItem> candidates, Kiriha.Core.Abstractions.Services.IMalApiService malApi)
+    public AmbiguousMatchViewModel(string fileName, IEnumerable<AnimeOfflineItem> candidates, IMalApiService malApi)
     {
         _fileName = fileName;
         _malApi = malApi;

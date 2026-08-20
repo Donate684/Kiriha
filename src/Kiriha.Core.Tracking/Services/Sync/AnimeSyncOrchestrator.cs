@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using Kiriha.Core;
 using System.Collections.Generic;
@@ -19,25 +19,25 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public partial class AnimeSyncOrchestrator : Kiriha.Core.Abstractions.Services.IAnimeSyncOrchestrator
+public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 {
 
 
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepository;
+    private readonly IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly IUiDispatcher _uiDispatcher;
-    private readonly Kiriha.Core.Abstractions.Services.IRecognitionCache _recognitionCache;
+    private readonly IRecognitionCache _recognitionCache;
 
     private int _syncing;
     public bool IsSyncing => Volatile.Read(ref _syncing) == 1;
 
     public AnimeSyncOrchestrator(
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepository,
+        IAnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
         IEnumerable<ITrackerService> trackers,
         IUiDispatcher uiDispatcher,
-        Kiriha.Core.Abstractions.Services.IRecognitionCache recognitionCache)
+        IRecognitionCache recognitionCache)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;

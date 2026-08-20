@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -18,7 +18,7 @@ namespace Kiriha.Core.Tracking.Auth;
 public partial class ShikiAuthService
 {
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly ShikiHostResolver _hostResolver;
 
     private ShikiMirror ActiveMirror => _settingsService.Current.Api.ShikiMirror;
@@ -26,7 +26,7 @@ public partial class ShikiAuthService
     private string TokenUrl => ShikiEndpoints.TokenUrl(ActiveMirror);
     private string AuthBase => ShikiEndpoints.AuthUrl(ActiveMirror);
 
-    public ShikiAuthService(HttpClient httpClient, Kiriha.Core.Abstractions.Services.ISettingsService settingsService, ShikiHostResolver hostResolver)
+    public ShikiAuthService(HttpClient httpClient, ISettingsService settingsService, ShikiHostResolver hostResolver)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;

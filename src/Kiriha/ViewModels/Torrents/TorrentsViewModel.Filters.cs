@@ -1,9 +1,10 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Torrents;
 
@@ -77,7 +78,7 @@ public partial class TorrentsViewModel
 
     partial void OnFiltersPerTitleChanged(bool value)
     {
-        _settingsService.Update(settings => settings.Torrents.FiltersPerTitle = value, Kiriha.Core.Abstractions.Services.SettingsSection.Torrents);
+        _settingsService.Update(settings => settings.Torrents.FiltersPerTitle = value, SettingsSection.Torrents);
         ReloadFiltersForCurrentContext();
     }
 
@@ -130,7 +131,7 @@ public partial class TorrentsViewModel
                 cfg.FilterHevc = target.FilterHevc;
                 cfg.Filter1080p = target.Filter1080p;
             }
-        }, Kiriha.Core.Abstractions.Services.SettingsSection.Torrents);
+        }, SettingsSection.Torrents);
         PerformSearchCommand.Execute(null);
     }
 

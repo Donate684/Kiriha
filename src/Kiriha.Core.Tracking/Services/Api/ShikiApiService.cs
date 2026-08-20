@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Abstractions.Repositories;
 using System;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Shared;
@@ -24,7 +25,7 @@ namespace Kiriha.Core.Tracking.Api;
 public partial class ShikiApiService : IShikiApiService
 {
     private readonly HttpClient _httpClient;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly ShikiTokenService _tokenService;
     private readonly ShikiHostResolver _hostResolver;
     private readonly HttpConditionalCache _httpCache;
@@ -45,7 +46,7 @@ public partial class ShikiApiService : IShikiApiService
 
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    public ShikiApiService(HttpClient httpClient, Kiriha.Core.Abstractions.Services.ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, Kiriha.Core.Abstractions.Repositories.IHttpCacheRepository httpCacheRepo)
+    public ShikiApiService(HttpClient httpClient, ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
@@ -100,7 +101,7 @@ public partial class ShikiApiService : IShikiApiService
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        // Routed through ShikiHttp so the .net â‡„ .rip geo-redirect / 404
+        // Routed through ShikiHttp so the .net Ã¢â€¡â€ž .rip geo-redirect / 404
         // dance is handled transparently with method+body+auth preserved.
         return await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
     }

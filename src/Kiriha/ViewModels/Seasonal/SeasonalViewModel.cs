@@ -1,4 +1,4 @@
-using Kiriha.Core.Tracking.Sync;
+﻿using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
@@ -12,31 +12,33 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Async;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Dialogs;
 
 namespace Kiriha.ViewModels.Seasonal;
 
 public partial class SeasonalViewModel : ViewModelBase, IDisposable
 {
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _apiService;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly IMalApiService _apiService;
+    private readonly ISettingsService _settingsService;
     private readonly LoadQueueService _queueService;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
+    private readonly IAnimeRepository _animeRepo;
     private readonly SeasonalCacheStore _cacheStore;
-    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
-    private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ISyncManager _syncManager;
+    private readonly IDialogService _dialogService;
+    private readonly ILocalizer _localizer;
 
-    public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
+    public IDialogService DialogService => _dialogService;
 
     public SeasonalViewModel(
-        Kiriha.Core.Abstractions.Services.IMalApiService apiService,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        IMalApiService apiService,
+        ISettingsService settingsService,
         LoadQueueService queueService,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
+        IAnimeRepository animeRepo,
         SeasonalCacheStore cacheStore,
-        Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
-        Kiriha.Core.Dialogs.IDialogService dialogService,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        ISyncManager syncManager,
+        IDialogService dialogService,
+        ILocalizer localizer)
     {
         _apiService = apiService;
         _settingsService = settingsService;

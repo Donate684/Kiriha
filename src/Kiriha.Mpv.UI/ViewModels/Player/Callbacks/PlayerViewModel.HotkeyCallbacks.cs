@@ -1,7 +1,8 @@
-
+﻿
 using System;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -50,35 +51,35 @@ public partial class PlayerViewModel
     partial void OnVolumeUpHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.VolumeUpHotkey = NormalizeHotkey(value, "Up"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.VolumeUpHotkey = NormalizeHotkey(value, "Up"), SettingsSection.Player);
     }
     partial void OnVolumeDownHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.VolumeDownHotkey = NormalizeHotkey(value, "Down"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.VolumeDownHotkey = NormalizeHotkey(value, "Down"), SettingsSection.Player);
     }
     partial void OnSeekBackwardHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SeekBackwardHotkey = NormalizeHotkey(value, "Left"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SeekBackwardHotkey = NormalizeHotkey(value, "Left"), SettingsSection.Player);
     }
     partial void OnSeekForwardHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SeekForwardHotkey = NormalizeHotkey(value, "Right"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SeekForwardHotkey = NormalizeHotkey(value, "Right"), SettingsSection.Player);
     }
 
     private void SaveHotkey(string value, string fallback, Action<AppSettings.PlayerConfig, string> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
         var normalized = NormalizeHotkey(value, fallback);
-        _settingsService.Update(settings => update(settings.Player, normalized), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player, normalized), SettingsSection.Player);
     }
 
     partial void OnEnableSonokoIntegrationChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.EnableSonokoIntegration = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.EnableSonokoIntegration = value, SettingsSection.Player);
     }
 
     partial void OnSonokoIntegrationHotkeyChanged(string value)

@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Infrastructure;
+﻿using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Infrastructure.Extensions;
@@ -17,6 +17,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Composition;
 
@@ -52,19 +53,19 @@ internal static class DataServicesRegistration
 
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         services.AddSingleton<SettingsService>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
+        services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
         services.AddSingleton<AppReadinessService>();
         services.AddSingleton<DatabaseInitializer>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.IDatabaseInitializer>(sp => sp.GetRequiredService<DatabaseInitializer>());
+        services.AddSingleton<IDatabaseInitializer>(sp => sp.GetRequiredService<DatabaseInitializer>());
         services.AddSingleton<DatabaseMaintenance>();
         services.AddSingleton<CacheCleanupService>();
 
-        // Per-aggregate repositories. Replaces the monolithic DatabaseService —
+        // Per-aggregate repositories. Replaces the monolithic DatabaseService â€”
         // every consumer now depends on the narrowest interface that covers its
         // queries, so a future swap of the storage layer can happen one
         // aggregate at a time.
         services.AddSingleton<AnimeRepository>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Repositories.IAnimeRepository>(sp => sp.GetRequiredService<AnimeRepository>());
+        services.AddSingleton<IAnimeRepository>(sp => sp.GetRequiredService<AnimeRepository>());
         services.AddSingleton<IUserAnimeRepository, UserAnimeRepository>();
         services.AddSingleton<IMetadataRepository, MetadataRepository>();
         services.AddSingleton<IMalSearchCacheRepository, MalSearchCacheRepository>();
@@ -75,7 +76,7 @@ internal static class DataServicesRegistration
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
         services.AddSingleton<LocalizationService>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
+        services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<ShikiMetadataService>();
         services.AddHttpClient("ImageClient", c =>
         {
@@ -86,12 +87,12 @@ internal static class DataServicesRegistration
         services.AddSingleton<PosterBatchDownloader>();
         services.AddSingleton<SeasonalCacheStore>();
         services.AddSingleton<HistoryService>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.IHistoryService>(sp => sp.GetRequiredService<HistoryService>());
+        services.AddSingleton<IHistoryService>(sp => sp.GetRequiredService<HistoryService>());
         services.AddSingleton<ManualMappingService>();
         services.AddSingleton<RecognitionCache>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.IRecognitionCache>(sp => sp.GetRequiredService<RecognitionCache>());
+        services.AddSingleton<IRecognitionCache>(sp => sp.GetRequiredService<RecognitionCache>());
         services.AddSingleton<MappingService>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.IMappingService>(sp => sp.GetRequiredService<MappingService>());
+        services.AddSingleton<IMappingService>(sp => sp.GetRequiredService<MappingService>());
 
         return services;
     }

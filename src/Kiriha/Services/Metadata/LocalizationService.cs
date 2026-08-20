@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Metadata;
 using System;
 using System.Collections.Generic;
@@ -5,10 +6,8 @@ using System.IO;
 using System.Text.Json;
 using Avalonia;
 using Serilog;
-
 namespace Kiriha.Services.Data.Metadata;
-
-public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
+public class LocalizationService : ILocalizer
 {
     private string _currentLanguage = "en";
     private readonly string[] _namespaces =
@@ -18,35 +17,29 @@ public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
         "updates", "auth", "search", "torrents", "notifications", "crash",
         "about", "player", "analytics", "schedule"
     };
-
     public string GetLoc(string key)
     {
         return Application.Current?.Resources[$"l.{key}"] as string ?? key;
     }
-
     public string GetLoc(string key, params object?[] args)
     {
         var pattern = GetLoc(key);
         try { return string.Format(pattern, args); }
         catch { return pattern; }
     }
-
     public void LoadLanguage(string langCode)
     {
         try
         {
             _currentLanguage = langCode;
             var resources = new Dictionary<string, string>();
-
             // 1. Load English as base (fallback)
             LoadAllNamespaces("en", resources);
-
             // 2. If not English, load and override
             if (langCode != "en")
             {
                 LoadAllNamespaces(langCode, resources);
             }
-
             // 3. Inject into Avalonia resources
             if (Application.Current != null)
             {
@@ -55,7 +48,6 @@ public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
                     Application.Current.Resources[$"l.{kvp.Key}"] = kvp.Value;
                 }
             }
-
             Log.Information("Language loaded: {Lang} ({Count} keys)", langCode, resources.Count);
         }
         catch (Exception ex)
@@ -63,7 +55,6 @@ public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
             Log.Error(ex, "Failed to load language: {Lang}", langCode);
         }
     }
-
     private void LoadAllNamespaces(string langCode, Dictionary<string, string> target)
     {
         foreach (var ns in _namespaces)
@@ -75,7 +66,6 @@ public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
             }
         }
     }
-
     private Dictionary<string, string> LoadNamespace(string langCode, string ns)
     {
         var result = new Dictionary<string, string>();
@@ -85,7 +75,6 @@ public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
             using var stream = Avalonia.Platform.AssetLoader.Open(uri);
             using var reader = new StreamReader(stream);
             var json = reader.ReadToEnd();
-
             using var doc = JsonDocument.Parse(json);
             FlattenJson(doc.RootElement, ns, result);
         }
@@ -99,7 +88,6 @@ public class LocalizationService : Kiriha.Core.Abstractions.Services.ILocalizer
         }
         return result;
     }
-
     private void FlattenJson(JsonElement element, string prefix, Dictionary<string, string> result)
     {
         switch (element.ValueKind)

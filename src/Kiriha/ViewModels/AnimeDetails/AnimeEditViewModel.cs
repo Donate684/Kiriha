@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
@@ -17,6 +17,7 @@ using Kiriha.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
@@ -24,10 +25,10 @@ public partial class AnimeEditViewModel : ObservableObject
 {
     private readonly AnimeEntity _originalAnime;
     private readonly AnimeEntity _anime;
-    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _animeProgressService;
-    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
+    private readonly ISyncManager _syncManager;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly IProgressUpdateService _animeProgressService;
+    private readonly IHistoryService _historyService;
     private bool _isRemoving;
 
     [ObservableProperty]
@@ -62,10 +63,10 @@ public partial class AnimeEditViewModel : ObservableObject
     public AnimeEditViewModel(
         AnimeEntity originalAnime,
         AnimeEntity cloneAnime,
-        Kiriha.Core.Abstractions.Services.ISyncManager syncManager,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Abstractions.Services.IProgressUpdateService animeProgressService,
-        Kiriha.Core.Abstractions.Services.IHistoryService historyService)
+        ISyncManager syncManager,
+        IAnimeRepository animeRepo,
+        IProgressUpdateService animeProgressService,
+        IHistoryService historyService)
     {
         _originalAnime = originalAnime;
         _anime = cloneAnime;

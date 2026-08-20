@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models.Entities;
+﻿using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Image;
@@ -12,14 +12,15 @@ using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.Data.Core;
 
-public class LoadQueueService : Kiriha.Core.Abstractions.Services.ILoadQueueService, IDisposable
+public class LoadQueueService : ILoadQueueService, IDisposable
 {
     private readonly PosterBatchDownloader _posterBatchDownloader;
     private readonly ShikiMetadataService _shikiMetadata;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settings;
+    private readonly ISettingsService _settings;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
 
     private const int ImageWorkerCount = 5;
@@ -36,7 +37,7 @@ public class LoadQueueService : Kiriha.Core.Abstractions.Services.ILoadQueueServ
     public LoadQueueService(
         PosterBatchDownloader posterBatchDownloader,
         ShikiMetadataService shikiMetadata,
-        Kiriha.Core.Abstractions.Services.ISettingsService settings,
+        ISettingsService settings,
         IBackgroundTaskSupervisor backgroundTasks)
     {
         _posterBatchDownloader = posterBatchDownloader;

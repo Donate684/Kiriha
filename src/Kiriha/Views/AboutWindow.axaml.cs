@@ -1,4 +1,4 @@
-using Kiriha.Core.Shared;
+﻿using Kiriha.Core.Shared;
 using Kiriha.Core;
 using Kiriha.Services.Data.Settings;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Views;
 
@@ -25,7 +26,7 @@ public partial class AboutWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public AboutWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
+    public AboutWindow(ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         ApplyMica();
@@ -65,7 +66,7 @@ public partial class AboutWindow : KirihaWindowBase
     }
 
     /// <summary>
-    /// Generic row click — the URL is passed via the Button.Tag binding, so
+    /// Generic row click â€” the URL is passed via the Button.Tag binding, so
     /// the same handler serves both Data Sources and Libraries lists. Rows
     /// without a URL get an empty Tag and are no-ops (the OpenInNew icon is
     /// hidden for them via HasUrl binding).

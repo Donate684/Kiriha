@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.History;
 
@@ -11,9 +12,9 @@ namespace Kiriha.ViewModels.History;
 /// </summary>
 public class HistoryEntryVm
 {
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
-    public HistoryEntryVm(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    public HistoryEntryVm(ILocalizer localizer)
     {
         _localizer = localizer;
     }

@@ -1,4 +1,4 @@
-using Kiriha.Core;
+﻿using Kiriha.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
@@ -24,42 +24,44 @@ using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Kiriha.Utils.Async;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Dialogs;
 
 namespace Kiriha.ViewModels.AnimeList;
 
 public partial class AnimeListViewModel : ViewModelBase, IDisposable
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.IAnimeSyncOrchestrator _syncOrchestrator;
-    private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _progressService;
-    private readonly Kiriha.Core.Abstractions.Services.ILoadQueueService _queueService;
-    private readonly Kiriha.Core.Abstractions.Services.IAiringInfoService _airingInfoService;
+    private readonly ISettingsService _settingsService;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly IAnimeSyncOrchestrator _syncOrchestrator;
+    private readonly IProgressUpdateService _progressService;
+    private readonly ILoadQueueService _queueService;
+    private readonly IAiringInfoService _airingInfoService;
     private readonly RssFeedService _rssService;
     private readonly AppReadinessService _readinessService;
-    private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
+    private readonly IDialogService _dialogService;
     private readonly ShikiMetadataService _shikiMetadataService;
     private readonly AnimeCollectionProjection _listProjection = new();
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
-    public Kiriha.Core.Abstractions.Services.ISettingsService SettingsService => _settingsService;
-    public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
+    public ISettingsService SettingsService => _settingsService;
+    public IDialogService DialogService => _dialogService;
     public ShikiMetadataService ShikiMetadataService => _shikiMetadataService;
 
     public ObservableCollection<AnimeEntity> AnimeItems => _animeRepo.Collection;
 
     public AnimeListViewModel(
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
-        Kiriha.Core.Abstractions.Services.IAnimeSyncOrchestrator syncOrchestrator,
-        Kiriha.Core.Abstractions.Services.IProgressUpdateService progressService,
-        Kiriha.Core.Abstractions.Services.ILoadQueueService queueService,
-        Kiriha.Core.Abstractions.Services.IAiringInfoService airingInfoService,
+        ISettingsService settingsService,
+        IAnimeRepository animeRepo,
+        IAnimeSyncOrchestrator syncOrchestrator,
+        IProgressUpdateService progressService,
+        ILoadQueueService queueService,
+        IAiringInfoService airingInfoService,
         RssFeedService rssService,
         AppReadinessService readinessService,
-        Kiriha.Core.Dialogs.IDialogService dialogService,
+        IDialogService dialogService,
         ShikiMetadataService shikiMetadataService,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        ILocalizer localizer)
     {
         _settingsService = settingsService;
         _animeRepo = animeRepo;
@@ -112,13 +114,13 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
 
     partial void OnSortByChanged(string value)
     {
-        _settingsService.Update(settings => settings.UI.ListSortBy = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.ListSortBy = value, SettingsSection.UI);
         ScheduleFilterRefresh();
     }
 
     partial void OnFilterNsfwChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.ListShowNsfw = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.ListShowNsfw = value, SettingsSection.UI);
         IsFilterActive = value;
         ScheduleFilterRefresh();
     }

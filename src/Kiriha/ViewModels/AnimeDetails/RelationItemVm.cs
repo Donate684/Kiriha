@@ -1,10 +1,11 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
 public partial class RelationItemVm : ObservableObject
 {
-    public Kiriha.Core.Domain.Models.Entities.AnimeRelation Relation { get; }
+    public AnimeRelation Relation { get; }
 
     [ObservableProperty]
     private string? _imageUrl;
@@ -12,7 +13,7 @@ public partial class RelationItemVm : ObservableObject
     [ObservableProperty]
     private string? _displayTargetType;
 
-    public RelationItemVm(Kiriha.Core.Domain.Models.Entities.AnimeRelation relation)
+    public RelationItemVm(AnimeRelation relation)
     {
         Relation = relation;
         DisplayTargetType = relation.TargetType;

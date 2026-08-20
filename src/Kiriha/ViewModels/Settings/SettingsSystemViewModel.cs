@@ -1,4 +1,4 @@
-using Kiriha.Infrastructure.Tracking.Integration;
+﻿using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -9,12 +9,13 @@ using Kiriha.Services;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Kiriha.Infrastructure;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Settings;
 
 public partial class SettingsSystemViewModel : ObservableObject
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly DiscordService _discordService;
 
     [ObservableProperty] private bool _autoLaunch;
@@ -33,7 +34,7 @@ public partial class SettingsSystemViewModel : ObservableObject
     [ObservableProperty] private bool _notifyAppUpdate;
     [ObservableProperty] private decimal? _newEpisodeNotificationDelayMinutes;
 
-    public SettingsSystemViewModel(Kiriha.Core.Abstractions.Services.ISettingsService settingsService, DiscordService discordService)
+    public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService)
     {
         _settingsService = settingsService;
         _discordService = discordService;
@@ -57,44 +58,44 @@ public partial class SettingsSystemViewModel : ObservableObject
 
     partial void OnAutoLaunchChanged(bool value)
     {
-        _settingsService.Update(settings => settings.System.AutoLaunch = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+        _settingsService.Update(settings => settings.System.AutoLaunch = value, SettingsSection.System);
         if (value) StartupService.EnableStartup(LaunchMinimized);
         else StartupService.DisableStartup();
     }
 
     partial void OnLaunchMinimizedChanged(bool value)
     {
-        _settingsService.Update(settings => settings.System.LaunchMinimized = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+        _settingsService.Update(settings => settings.System.LaunchMinimized = value, SettingsSection.System);
         if (AutoLaunch) StartupService.EnableStartup(value);
     }
 
-    partial void OnCloseToTrayChanged(bool value) => _settingsService.Update(settings => settings.System.CloseToTray = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnMinimizeToTrayChanged(bool value) => _settingsService.Update(settings => settings.System.MinimizeToTray = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnEnableBackgroundMetadataFetchChanged(bool value) => _settingsService.Update(settings => settings.System.EnableBackgroundMetadataFetch = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnEnableLoggingChanged(bool value) => _settingsService.Update(settings => settings.System.EnableLogging = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnEnableScrobblerChanged(bool value) => _settingsService.Update(settings => settings.System.Scrobbler.Enabled = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+    partial void OnCloseToTrayChanged(bool value) => _settingsService.Update(settings => settings.System.CloseToTray = value, SettingsSection.System);
+    partial void OnMinimizeToTrayChanged(bool value) => _settingsService.Update(settings => settings.System.MinimizeToTray = value, SettingsSection.System);
+    partial void OnEnableBackgroundMetadataFetchChanged(bool value) => _settingsService.Update(settings => settings.System.EnableBackgroundMetadataFetch = value, SettingsSection.System);
+    partial void OnEnableLoggingChanged(bool value) => _settingsService.Update(settings => settings.System.EnableLogging = value, SettingsSection.System);
+    partial void OnEnableScrobblerChanged(bool value) => _settingsService.Update(settings => settings.System.Scrobbler.Enabled = value, SettingsSection.System);
     partial void OnScrobbleDelaySecondsChanged(decimal? value)
     {
-        if (value.HasValue) _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = (int)value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+        if (value.HasValue) _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = (int)value.Value, SettingsSection.System);
     }
-    partial void OnScrobbleNotifyOnSkipChanged(bool value) => _settingsService.Update(settings => settings.System.Scrobbler.NotifyOnSkippedEpisode = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+    partial void OnScrobbleNotifyOnSkipChanged(bool value) => _settingsService.Update(settings => settings.System.Scrobbler.NotifyOnSkippedEpisode = value, SettingsSection.System);
 
     partial void OnEnableDiscordRPCChanged(bool value)
     {
-        _settingsService.Update(settings => settings.System.EnableDiscordRPC = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+        _settingsService.Update(settings => settings.System.EnableDiscordRPC = value, SettingsSection.System);
         _discordService.UpdateStatus(value);
     }
 
-    partial void OnAutoCheckUpdatesChanged(bool value) => _settingsService.Update(settings => settings.System.AutoCheckUpdates = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnAutoDownloadUpdatesChanged(bool value) => _settingsService.Update(settings => settings.System.AutoDownloadUpdates = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnNotifyNewEpisodesChanged(bool value) => _settingsService.Update(settings => settings.System.NotifyNewEpisodes = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
-    partial void OnNotifyAppUpdateChanged(bool value) => _settingsService.Update(settings => settings.System.NotifyAppUpdate = value, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+    partial void OnAutoCheckUpdatesChanged(bool value) => _settingsService.Update(settings => settings.System.AutoCheckUpdates = value, SettingsSection.System);
+    partial void OnAutoDownloadUpdatesChanged(bool value) => _settingsService.Update(settings => settings.System.AutoDownloadUpdates = value, SettingsSection.System);
+    partial void OnNotifyNewEpisodesChanged(bool value) => _settingsService.Update(settings => settings.System.NotifyNewEpisodes = value, SettingsSection.System);
+    partial void OnNotifyAppUpdateChanged(bool value) => _settingsService.Update(settings => settings.System.NotifyAppUpdate = value, SettingsSection.System);
     partial void OnNewEpisodeNotificationDelayMinutesChanged(decimal? value)
     {
         if (value.HasValue)
         {
             var minutes = (int)Math.Max(0, value.Value);
-            _settingsService.Update(settings => settings.System.NewEpisodeNotificationDelayMinutes = minutes, Kiriha.Core.Abstractions.Services.SettingsSection.System);
+            _settingsService.Update(settings => settings.System.NewEpisodeNotificationDelayMinutes = minutes, SettingsSection.System);
         }
     }
 }

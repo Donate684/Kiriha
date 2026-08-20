@@ -1,17 +1,18 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
 public partial class StaffPlusItemVm : ObservableObject
 {
-    public Kiriha.Core.Domain.Models.Entities.AnimeStaff Staff { get; }
+    public AnimeStaff Staff { get; }
 
     [ObservableProperty]
     private string _role = string.Empty;
 
     public System.Collections.ObjectModel.ObservableCollection<StaffWorkVm> BestWorks { get; } = new();
 
-    public StaffPlusItemVm(Kiriha.Core.Domain.Models.Entities.AnimeStaff staff)
+    public StaffPlusItemVm(AnimeStaff staff)
     {
         Staff = staff;
     }

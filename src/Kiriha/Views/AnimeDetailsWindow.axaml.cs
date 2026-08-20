@@ -1,8 +1,9 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using System;
 using Avalonia.Input;
 using Kiriha.Core.Utils;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Views;
 
@@ -13,7 +14,7 @@ public partial class AnimeDetailsWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public AnimeDetailsWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
+    public AnimeDetailsWindow(ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         Opened += OnOpened;

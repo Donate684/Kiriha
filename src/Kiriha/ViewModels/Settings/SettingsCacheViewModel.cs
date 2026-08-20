@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -19,6 +19,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.Seasonal;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -28,14 +29,14 @@ public partial class SettingsCacheViewModel : ObservableObject
     private readonly ImageCacheService _imageCacheService;
     private readonly MappingService _mappingService;
     private readonly SeasonalViewModel _seasonalViewModel;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
     public SettingsCacheViewModel(
         CacheCleanupService cacheCleanupService,
         ImageCacheService imageCacheService,
         MappingService mappingService,
         SeasonalViewModel seasonalViewModel,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        ILocalizer localizer)
     {
         _cacheCleanupService = cacheCleanupService;
         _imageCacheService = imageCacheService;

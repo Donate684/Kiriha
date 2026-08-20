@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models.Entities;
+﻿using Kiriha.Core.Domain.Models.Entities;
 using System;
 using System.Linq;
 using System.Threading;
@@ -89,7 +89,7 @@ public partial class SearchViewModel
                 // Hide in lists filtering
                 if (HideInLists)
                 {
-                    filtered = filtered.Where(x => x.Status == Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.None);
+                    filtered = filtered.Where(x => x.Status == UserAnimeStatus.None);
                 }
 
                 SearchResults.Reset(filtered);

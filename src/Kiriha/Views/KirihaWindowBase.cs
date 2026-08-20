@@ -1,14 +1,15 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using System;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Views;
 
 public class KirihaWindowBase : Window
 {
-    protected Kiriha.Core.Abstractions.Services.ISettingsService? SettingsService { get; set; }
+    protected ISettingsService? SettingsService { get; set; }
 
     protected override void OnOpened(EventArgs e)
     {

@@ -1,4 +1,4 @@
-using Kiriha.Models;
+﻿using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -9,14 +9,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Analytics;
 
 public partial class WatchNextSectionViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
-    public WatchNextSectionViewModel(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    public WatchNextSectionViewModel(ILocalizer localizer)
     {
         _localizer = localizer;
     }
@@ -46,8 +47,8 @@ public partial class WatchNextSectionViewModel : ViewModelBase
         {
             WatchTodo.Add(ToTodo(
                 item,
-                $"{item.Presentation.UnseenEpisodesCount} эп.",
-                $"Просмотрено {item.Progress}/{DisplayTotal(item)}",
+                $"{item.Presentation.UnseenEpisodesCount} ÑÐ¿.",
+                $"ÐŸÑ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ÐµÐ½Ð¾ {item.Progress}/{DisplayTotal(item)}",
                 "#FFE53935"));
         }
 
@@ -62,8 +63,8 @@ public partial class WatchNextSectionViewModel : ViewModelBase
         {
             FinishedWatchTodo.Add(ToTodo(
                 item,
-                $"{item.Presentation.UnseenEpisodesCount} эп.",
-                $"Просмотрено {item.Progress}/{DisplayTotal(item)}",
+                $"{item.Presentation.UnseenEpisodesCount} ÑÐ¿.",
+                $"ÐŸÑ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ÐµÐ½Ð¾ {item.Progress}/{DisplayTotal(item)}",
                 "#FF7B61FF"));
         }
 
@@ -102,8 +103,8 @@ public partial class WatchNextSectionViewModel : ViewModelBase
             var days = Math.Max(1, (int)(now - pauseFrom).TotalDays);
             StaleTodo.Add(ToTodo(
                 item,
-                $"{days} дн.",
-                $"Пауза на {item.Progress}/{DisplayTotal(item)}",
+                $"{days} Ð´Ð½.",
+                $"ÐŸÐ°ÑƒÐ·Ð° Ð½Ð° {item.Progress}/{DisplayTotal(item)}",
                 "#FFD17A22"));
         }
     }

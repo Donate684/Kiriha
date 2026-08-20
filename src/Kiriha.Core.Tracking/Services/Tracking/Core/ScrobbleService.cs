@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using Kiriha.Core.Tracking.Sync;
 
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
+using Kiriha.Core.Abstractions.Infrastructure;
 
 namespace Kiriha.Core.Tracking.Core;
 
@@ -22,13 +23,13 @@ public interface IScrobbleService
 
 public class ScrobbleService : IScrobbleService, IDisposable
 {
-    private readonly Kiriha.Core.Tracking.Sync.AnimeProgressService _progressService;
-    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
-    private readonly Kiriha.Core.Abstractions.Services.INotificationService _notificationService;
+    private readonly AnimeProgressService _progressService;
+    private readonly IHistoryService _historyService;
+    private readonly ISettingsService _settingsService;
+    private readonly INotificationService _notificationService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
-    private readonly Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher _uiDispatcher;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly IUiDispatcher _uiDispatcher;
+    private readonly ILocalizer _localizer;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -40,13 +41,13 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private bool _isPlaying;
 
     public ScrobbleService(
-        Kiriha.Core.Tracking.Sync.AnimeProgressService progressService,
-        Kiriha.Core.Abstractions.Services.IHistoryService historyService,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
-        Kiriha.Core.Abstractions.Services.INotificationService notificationService,
+        AnimeProgressService progressService,
+        IHistoryService historyService,
+        ISettingsService settingsService,
+        INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
-        Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher uiDispatcher,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+        IUiDispatcher uiDispatcher,
+        ILocalizer localizer)
     {
         _progressService = progressService;
         _historyService = historyService;
@@ -70,7 +71,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         }
 
         // Check if the detected episode skips ahead beyond the next expected one.
-        // For example: progress=5, watching ep 7 â€” ep 6 was never marked, so updating
+        // For example: progress=5, watching ep 7 Ã¢â‚¬â€ ep 6 was never marked, so updating
         // directly to 7 would skip an episode. When the setting is on, notify and bail.
         if (ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode)
         {

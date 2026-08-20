@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -6,19 +6,20 @@ using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
 public partial class AnimeMetadataViewModel : ObservableObject
 {
     private readonly AnimeEntity _anime;
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApiService;
-    private readonly Kiriha.Core.Abstractions.Services.IShikiApiService _shikiApiService;
+    private readonly IMalApiService _malApiService;
+    private readonly IShikiApiService _shikiApiService;
 
     public AnimeMetadataViewModel(
         AnimeEntity anime,
-        Kiriha.Core.Abstractions.Services.IMalApiService malApiService,
-        Kiriha.Core.Abstractions.Services.IShikiApiService shikiApiService)
+        IMalApiService malApiService,
+        IShikiApiService shikiApiService)
     {
         _anime = anime;
         _malApiService = malApiService;

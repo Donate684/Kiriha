@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
@@ -9,13 +9,13 @@ namespace Kiriha.Core.Tracking.Api;
 
 public class MalTokenManager : IDisposable
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly MalAuthService _authService;
     private readonly SemaphoreSlim _tokenRefreshLock = new(1, 1);
     private int _refreshFailures;
     private const int MaxRefreshFailures = 3;
 
-    public MalTokenManager(Kiriha.Core.Abstractions.Services.ISettingsService settingsService, MalAuthService authService)
+    public MalTokenManager(ISettingsService settingsService, MalAuthService authService)
     {
         _settingsService = settingsService;
         _authService = authService;

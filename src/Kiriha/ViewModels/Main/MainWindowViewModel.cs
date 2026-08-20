@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.Settings;
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Navigation;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Main;
 
@@ -29,15 +30,15 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
 
     public SettingsViewModel? SettingsViewModel => EnsureSettingsViewModel();
 
-    // IViewModelFactory delivers a fresh transient instance on each navigation —
+    // IViewModelFactory delivers a fresh transient instance on each navigation â€”
     // see DI registrations: WelcomeViewModel and SearchViewModel are AddTransient.
     private readonly IViewModelFactory _viewModelFactory;
 
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
 
     public MainWindowViewModel(
         IViewModelFactory viewModelFactory,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
+        ISettingsService settingsService)
     {
         _viewModelFactory = viewModelFactory;
         _settingsService = settingsService;
@@ -54,7 +55,7 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
 
     partial void OnIsPaneOpenChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.IsPaneOpen = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.IsPaneOpen = value, SettingsSection.UI);
     }
 
     [RelayCommand]

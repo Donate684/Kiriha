@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -9,6 +9,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.AnimeList;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Startup;
 
@@ -18,11 +19,11 @@ public partial class WelcomeViewModel : ViewModelBase, IDisposable
     private bool _isLoading = true;
 
     private readonly AnimeListViewModel _animeListViewModel;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
 
-    public Kiriha.Core.Abstractions.Services.ISettingsService SettingsService => _settingsService;
+    public ISettingsService SettingsService => _settingsService;
 
-    public WelcomeViewModel(AnimeListViewModel animeListViewModel, Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
+    public WelcomeViewModel(AnimeListViewModel animeListViewModel, ISettingsService settingsService)
     {
         _animeListViewModel = animeListViewModel;
         _settingsService = settingsService;

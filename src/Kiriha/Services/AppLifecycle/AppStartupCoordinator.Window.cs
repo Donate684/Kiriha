@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -15,6 +15,7 @@ using Kiriha.ViewModels;
 using Kiriha.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.AppLifecycle;
 
@@ -22,7 +23,7 @@ public sealed partial class AppStartupCoordinator
 {
     private void InitializeMainWindow(
         IClassicDesktopStyleApplicationLifetime desktop,
-        Kiriha.Core.Abstractions.Services.ISettingsService settings,
+        ISettingsService settings,
         string[] args)
     {
         if (settings.NeedsFirstStartup())
@@ -73,7 +74,7 @@ public sealed partial class AppStartupCoordinator
                     setupVm.SetupCompleted -= OnSetupCompleted;
 
                 var mainWindowVm = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-                var main = new MainWindow(_serviceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ISettingsService>()) { DataContext = mainWindowVm };
+                var main = new MainWindow(_serviceProvider.GetRequiredService<ISettingsService>()) { DataContext = mainWindowVm };
                 main.Show();
                 desktop.MainWindow = main;
                 setupWindow.Close();

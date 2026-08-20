@@ -1,9 +1,10 @@
-
+﻿
 using System;
 using System.Linq;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -12,13 +13,13 @@ public partial class PlayerViewModel
     partial void OnPlayerAutoPlayChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.AutoPlay = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.AutoPlay = value, SettingsSection.Player);
     }
 
     partial void OnSinglePlayerWindowChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SingleWindow = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SingleWindow = value, SettingsSection.Player);
     }
 
     partial void OnRememberPlayerVolumeChanged(bool value)
@@ -28,55 +29,55 @@ public partial class PlayerViewModel
         {
             settings.Player.RememberVolume = value;
             if (value) settings.Player.Volume = Math.Clamp(Volume, 0, 100);
-        }, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        }, SettingsSection.Player);
     }
 
     partial void OnAutoHideControlsChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.AutoHideControls = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.AutoHideControls = value, SettingsSection.Player);
     }
 
     partial void OnAutoHideTimeoutChanged(double value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.AutoHideTimeout = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.AutoHideTimeout = value, SettingsSection.Player);
     }
 
     partial void OnShowChapterMarkersChanged(bool value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.ShowChapterMarkers = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.ShowChapterMarkers = value, SettingsSection.Player);
     }
 
     partial void OnLeftClickActionChanged(PlayerMouseActionOption? value)
     {
         if (_isApplyingSettings || _settingsService == null || value == null) return;
-        _settingsService.Update(settings => settings.Player.LeftClickAction = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.LeftClickAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnRightClickActionChanged(PlayerMouseActionOption? value)
     {
         if (_isApplyingSettings || _settingsService == null || value == null) return;
-        _settingsService.Update(settings => settings.Player.RightClickAction = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.RightClickAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnMiddleClickActionChanged(PlayerMouseActionOption? value)
     {
         if (_isApplyingSettings || _settingsService == null || value == null) return;
-        _settingsService.Update(settings => settings.Player.MiddleClickAction = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.MiddleClickAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnWheelUpActionChanged(PlayerWheelActionOption? value)
     {
         if (_isApplyingSettings || _settingsService == null || value == null) return;
-        _settingsService.Update(settings => settings.Player.WheelUpAction = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.WheelUpAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnWheelDownActionChanged(PlayerWheelActionOption? value)
     {
         if (_isApplyingSettings || _settingsService == null || value == null) return;
-        _settingsService.Update(settings => settings.Player.WheelDownAction = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.WheelDownAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnWheelVolumeStepChanged(int value)
@@ -89,7 +90,7 @@ public partial class PlayerViewModel
         }
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.WheelVolumeStep = normalized, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.WheelVolumeStep = normalized, SettingsSection.Player);
     }
 
     partial void OnSeekStepChanged(int value)
@@ -102,7 +103,7 @@ public partial class PlayerViewModel
         }
 
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SeekStep = normalized, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SeekStep = normalized, SettingsSection.Player);
     }
 
     partial void OnShowPlayPauseButtonChanged(bool value) => SavePlayerPanelButtons(x => x.ShowPlayPauseButton = value);
@@ -121,14 +122,14 @@ public partial class PlayerViewModel
     {
         if (_isApplyingSettings || _settingsService == null) return;
         PreferredAudioLanguages = NormalizeLanguageList(value, "Japanese,jpn,ja");
-        _settingsService.Update(settings => settings.Player.PreferredAudioLanguages = PreferredAudioLanguages, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.PreferredAudioLanguages = PreferredAudioLanguages, SettingsSection.Player);
         ApplyTrackLanguagePreferences();
     }
 
     private void SavePlayerPanelButtons(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
     }
 
     private void ApplyTrackLanguagePreferences()

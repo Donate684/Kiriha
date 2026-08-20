@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Constants;
+﻿using Kiriha.Core.Domain.Constants;
 using Kiriha.Core;
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using Kiriha.Infrastructure;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Seasonal;
 
@@ -26,7 +27,7 @@ internal sealed record SeasonalFilterRequest(
     bool FilterCompleted,
     bool FilterOnHold,
     bool FilterPlanToWatch,
-    bool FilterDropped, Kiriha.Core.Abstractions.Services.ILocalizer Localizer);
+    bool FilterDropped, ILocalizer Localizer);
 
 internal sealed record SeasonalFilterResult(
     IReadOnlyList<AnimeEntity> Items,
@@ -165,7 +166,7 @@ internal sealed class SeasonalCategoryBuckets
         ? items
         : _items["Other"];
 
-    public IReadOnlyDictionary<string, string> BuildHeaders(Kiriha.Core.Abstractions.Services.ILocalizer localizer) => new Dictionary<string, string>
+    public IReadOnlyDictionary<string, string> BuildHeaders(ILocalizer localizer) => new Dictionary<string, string>
     {
         ["New"] = GetHeader("anime.seasonal.categories.new", _items["New"].Count, localizer),
         ["Continuing"] = GetHeader("anime.seasonal.categories.continuing", _items["Continuing"].Count, localizer),
@@ -176,7 +177,7 @@ internal sealed class SeasonalCategoryBuckets
         ["Other"] = GetHeader("anime.seasonal.categories.other", _items["Other"].Count, localizer)
     };
 
-    private static string GetHeader(string key, int count, Kiriha.Core.Abstractions.Services.ILocalizer _localizer)
+    private static string GetHeader(string key, int count, ILocalizer _localizer)
     {
         string loc = _localizer.GetLoc(key);
         if (loc == key && key != "TV" && key != "OVA" && key != "ONA")

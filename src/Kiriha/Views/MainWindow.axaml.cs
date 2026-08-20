@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,6 +11,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Kiriha.Views.Player;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Views;
 
@@ -23,7 +24,7 @@ public partial class MainWindow : KirihaWindowBase
         InitializeComponent();
     }
 
-    public MainWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
+    public MainWindow(ISettingsService settingsService) : this()
     {
         SettingsService = settingsService;
         ApplyMica();
@@ -60,14 +61,14 @@ public partial class MainWindow : KirihaWindowBase
 
         // Now that the platform impl exists, Screens is populated. Push the
         // window back onto a visible monitor if the saved position points at a
-        // display that's no longer connected (laptop dock, RDP, …).
+        // display that's no longer connected (laptop dock, RDP, â€¦).
         EnsureOnScreen();
 
         // Set the OS-level window text directly so taskbar peek / Alt-Tab /
         // Task Manager show "Kiriha". Going through Window.Title would also
         // make Avalonia render the string into the extended client area
         // (visually overlapping our custom sidebar branding). WM_SETTEXT
-        // bypasses the Avalonia binding — Avalonia keeps Title="" and won't
+        // bypasses the Avalonia binding â€” Avalonia keeps Title="" and won't
         // overwrite our native value because the property never changes.
         SetNativeTitle("Kiriha");
     }
@@ -79,7 +80,7 @@ public partial class MainWindow : KirihaWindowBase
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        // Persist whichever placement we have right now. Always — we want the
+        // Persist whichever placement we have right now. Always â€” we want the
         // size to survive both real exit and hide-to-tray.
         SavePlacement();
 

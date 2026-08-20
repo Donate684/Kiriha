@@ -1,4 +1,4 @@
-using Kiriha.Models;
+﻿using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -9,14 +9,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Analytics;
 
 public partial class ReadNextSectionViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ILocalizer _localizer;
 
-    public ReadNextSectionViewModel(Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    public ReadNextSectionViewModel(ILocalizer localizer)
     {
         _localizer = localizer;
     }

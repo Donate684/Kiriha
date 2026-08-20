@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Metadata;
+﻿using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Domain.Constants;
 using System.Collections.Generic;
@@ -13,12 +13,13 @@ using Kiriha.Services;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.AnimeList;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Settings;
 
 public partial class SettingsUiViewModel : ObservableObject
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly AnimeListViewModel _animeListViewModel;
     private readonly LocalizationService _localizationService;
 
@@ -53,7 +54,7 @@ public partial class SettingsUiViewModel : ObservableObject
     [ObservableProperty] private LanguageOption? _selectedLanguage;
 
     public SettingsUiViewModel(
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        ISettingsService settingsService,
         AnimeListViewModel animeListViewModel,
         LocalizationService localizationService)
     {
@@ -79,7 +80,7 @@ public partial class SettingsUiViewModel : ObservableObject
     partial void OnSelectedThemeChanged(ThemeOption value)
     {
         if (Application.Current == null || value == null) return;
-        _settingsService.Update(settings => settings.UI.Theme = value.Value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.Theme = value.Value, SettingsSection.UI);
         Application.Current.RequestedThemeVariant = value.Value switch
         {
             ThemeType.Light => ThemeVariant.Light,
@@ -93,7 +94,7 @@ public partial class SettingsUiViewModel : ObservableObject
         if (!EnableCustomAccentColor) return;
 
         var hex = value.HasValue ? $"#{value.Value.A:X2}{value.Value.R:X2}{value.Value.G:X2}{value.Value.B:X2}" : string.Empty;
-        _settingsService.Update(settings => settings.UI.CustomAccentColor = hex, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.CustomAccentColor = hex, SettingsSection.UI);
         App.ApplyCustomAccentColor(hex);
     }
 
@@ -106,13 +107,13 @@ public partial class SettingsUiViewModel : ObservableObject
             else
             {
                 var hex = $"#{CustomAccentColor.Value.A:X2}{CustomAccentColor.Value.R:X2}{CustomAccentColor.Value.G:X2}{CustomAccentColor.Value.B:X2}";
-                _settingsService.Update(settings => settings.UI.CustomAccentColor = hex, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+                _settingsService.Update(settings => settings.UI.CustomAccentColor = hex, SettingsSection.UI);
                 App.ApplyCustomAccentColor(hex);
             }
         }
         else
         {
-            _settingsService.Update(settings => settings.UI.CustomAccentColor = string.Empty, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+            _settingsService.Update(settings => settings.UI.CustomAccentColor = string.Empty, SettingsSection.UI);
             App.ApplyCustomAccentColor(string.Empty);
             CustomAccentColor = null;
         }
@@ -120,19 +121,19 @@ public partial class SettingsUiViewModel : ObservableObject
 
     partial void OnUseRussianTitlesChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.UseRussianTitles = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.UseRussianTitles = value, SettingsSection.UI);
         _animeListViewModel.RefreshLocalization();
     }
 
     partial void OnUseRussianDescriptionsChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.UseRussianDescriptions = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.UseRussianDescriptions = value, SettingsSection.UI);
         _animeListViewModel.RefreshLocalization();
     }
 
     partial void OnUiScaleChanged(double value)
     {
-        _settingsService.Update(settings => settings.UI.UiScale = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.UiScale = value, SettingsSection.UI);
         if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
         {
             foreach (var window in desktop.Windows)
@@ -144,7 +145,7 @@ public partial class SettingsUiViewModel : ObservableObject
 
     partial void OnShowAiringInfoChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.ShowAiringInfo = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.ShowAiringInfo = value, SettingsSection.UI);
         _animeListViewModel.RefreshLocalization();
     }
 
@@ -152,7 +153,7 @@ public partial class SettingsUiViewModel : ObservableObject
     {
         if (value != null && value.Code != _settingsService.Read(settings => settings.UI.LanguageCode))
         {
-            _settingsService.Update(settings => settings.UI.LanguageCode = value.Code, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+            _settingsService.Update(settings => settings.UI.LanguageCode = value.Code, SettingsSection.UI);
             _localizationService.LoadLanguage(value.Code);
             OnPropertyChanged(nameof(AvailableThemes));
             var theme = _settingsService.Read(settings => settings.UI.Theme);
@@ -164,7 +165,7 @@ public partial class SettingsUiViewModel : ObservableObject
 
     partial void OnEnableMicaChanged(bool value)
     {
-        _settingsService.Update(settings => settings.UI.EnableMica = value, Kiriha.Core.Abstractions.Services.SettingsSection.UI);
+        _settingsService.Update(settings => settings.UI.EnableMica = value, SettingsSection.UI);
         if (Application.Current is App app && app.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
         {
             foreach (var window in desktop.Windows)

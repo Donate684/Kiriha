@@ -1,19 +1,20 @@
-
+﻿
 using Avalonia.Controls;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.Views.Player;
 
 public partial class PlayerSelectionWindow : Window
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService? _settingsService;
+    private readonly ISettingsService? _settingsService;
 
     public PlayerSelectionWindow()
     {
         InitializeComponent();
     }
 
-    public PlayerSelectionWindow(Kiriha.Core.Abstractions.Services.ISettingsService settingsService) : this()
+    public PlayerSelectionWindow(ISettingsService settingsService) : this()
     {
         _settingsService = settingsService;
         ApplyMica();

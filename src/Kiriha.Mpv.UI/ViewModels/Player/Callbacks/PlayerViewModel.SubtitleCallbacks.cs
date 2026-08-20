@@ -1,8 +1,9 @@
-
+﻿
 using System;
 using System.Linq;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -12,23 +13,23 @@ public partial class PlayerViewModel
     {
         if (_isApplyingSettings || _settingsService == null) return;
         PreferredSubtitleLanguages = NormalizeLanguageList(value, "Russian,rus,ru");
-        _settingsService.Update(settings => settings.Player.PreferredSubtitleLanguages = PreferredSubtitleLanguages, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.PreferredSubtitleLanguages = PreferredSubtitleLanguages, SettingsSection.Player);
         ApplyTrackLanguagePreferences();
     }
     partial void OnSubtitleStyleOverrideEnabledChanged(bool value)
     {
         if (!_isApplyingSettings)
-            ShowOsd("Стиль субтитров", value ? "включен" : "выключен");
+            ShowOsd("Ð¡Ñ‚Ð¸Ð»ÑŒ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð²", value ? "Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½" : "Ð²Ñ‹ÐºÐ»ÑŽÑ‡ÐµÐ½");
 
         if (_isApplyingSettings) return;
         ApplySubtitleStyleOverride();
         if (_settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SubtitleStyleOverrideEnabled = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SubtitleStyleOverrideEnabled = value, SettingsSection.Player);
     }
     partial void OnSubtitleStyleHotkeyChanged(string value)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), SettingsSection.Player);
     }
     partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, "Candara Bold"));
     partial void OnSubtitleFontSizeChanged(double value) => SaveSubtitleStyle(x => x.SubtitleFontSize = Math.Clamp(value, 1, 300));
@@ -45,7 +46,7 @@ public partial class PlayerViewModel
     private void SaveSubtitleStyle(Action<AppSettings.PlayerConfig> update)
     {
         if (_isApplyingSettings || _settingsService == null) return;
-        _settingsService.Update(settings => update(settings.Player), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+        _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
         ApplySubtitleStyleOverride();
     }
 

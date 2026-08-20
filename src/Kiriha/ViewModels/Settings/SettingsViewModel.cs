@@ -1,4 +1,4 @@
-using Kiriha.Core.Tracking.Auth;
+﻿using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
@@ -36,11 +36,11 @@ public partial class SettingsViewModel : ViewModelBase
 
     public SettingsCustomLinksViewModel CustomLinks { get; }
 
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly FaviconService _faviconService;
 
     public SettingsViewModel(
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        ISettingsService settingsService,
         MalAuthService authService,
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver,

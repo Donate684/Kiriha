@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -35,8 +35,8 @@ public partial class SyncManager : ISyncManager, IHostedService
 {
     private readonly IReadOnlyList<ITrackerService> _trackers;
     private readonly ISyncTaskRepository _syncTaskRepo;
-    private readonly Kiriha.Core.Abstractions.Services.IDatabaseInitializer _dbInit;
-    private readonly Kiriha.Core.Abstractions.Services.IHistoryService _historyService;
+    private readonly IDatabaseInitializer _dbInit;
+    private readonly IHistoryService _historyService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _highPriorityQueue = new();
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _lowPriorityQueue = new();
@@ -49,8 +49,8 @@ public partial class SyncManager : ISyncManager, IHostedService
     public SyncManager(
         IEnumerable<ITrackerService> trackers,
         ISyncTaskRepository syncTaskRepo,
-        Kiriha.Core.Abstractions.Services.IDatabaseInitializer dbInit,
-        Kiriha.Core.Abstractions.Services.IHistoryService historyService,
+        IDatabaseInitializer dbInit,
+        IHistoryService historyService,
         IBackgroundTaskSupervisor backgroundTasks)
     {
         _trackers = trackers.ToList();

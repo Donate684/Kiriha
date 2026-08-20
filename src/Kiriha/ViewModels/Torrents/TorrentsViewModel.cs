@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models.Entities;
+﻿using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -10,14 +10,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Torrents;
 
 public partial class TorrentsViewModel : ViewModelBase
 {
     private readonly RssFeedService _rssService;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly ISettingsService _settingsService;
 
     public ObservableCollection<TorrentEntity> Torrents { get; } = new();
 
@@ -42,7 +43,7 @@ public partial class TorrentsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isHideMode;
 
-    public TorrentsViewModel(RssFeedService rssService, Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
+    public TorrentsViewModel(RssFeedService rssService, IAnimeRepository animeRepo, ISettingsService settingsService)
     {
         _rssService = rssService;
         _animeRepo = animeRepo;

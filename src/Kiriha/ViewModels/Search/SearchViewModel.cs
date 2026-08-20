@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -26,21 +26,23 @@ using Kiriha.Core.Tracking.Api;
 using Kiriha.Services.Data;
 using Kiriha.Utils.Collections;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Dialogs;
 
 namespace Kiriha.ViewModels.Search;
 
 public partial class SearchViewModel : ViewModelBase, IDisposable
 {
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _apiService;
+    private readonly IMalApiService _apiService;
     private readonly ShikiMetadataService _shikiMetadataService;
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly LoadQueueService _queueService;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly Kiriha.Core.Abstractions.Services.ISyncManager _syncManager;
-    private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly IAnimeRepository _animeRepo;
+    private readonly ISyncManager _syncManager;
+    private readonly IDialogService _dialogService;
+    private readonly ILocalizer _localizer;
 
-    public Kiriha.Core.Dialogs.IDialogService DialogService => _dialogService;
+    public IDialogService DialogService => _dialogService;
 
     [ObservableProperty] private string _searchQuery = string.Empty;
     [ObservableProperty] private bool _isLoading;
@@ -75,10 +77,10 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     private bool _isDisposed;
     private readonly Kiriha.Utils.Async.Debouncer _searchDebouncer;
 
-    public SearchViewModel(Kiriha.Core.Abstractions.Services.IMalApiService apiService, ShikiMetadataService shikiMetadataService,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService, LoadQueueService queueService,
-        Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo, Kiriha.Core.Abstractions.Services.ISyncManager syncManager, Kiriha.Core.Dialogs.IDialogService dialogService,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer)
+    public SearchViewModel(IMalApiService apiService, ShikiMetadataService shikiMetadataService,
+        ISettingsService settingsService, LoadQueueService queueService,
+        IAnimeRepository animeRepo, ISyncManager syncManager, IDialogService dialogService,
+        ILocalizer localizer)
     {
         _apiService = apiService;
         _shikiMetadataService = shikiMetadataService;

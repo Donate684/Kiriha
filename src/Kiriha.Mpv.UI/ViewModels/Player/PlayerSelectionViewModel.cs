@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models;
+﻿using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
@@ -17,7 +17,7 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly IExternalMediaDetector _anisthesia;
     private readonly List<PlayerSelectionItem> _allPlayers = new();
 
@@ -27,7 +27,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
     public ObservableCollection<PlayerSelectionItem> VideoPlayers { get; } = new();
     public ObservableCollection<PlayerSelectionItem> WebBrowsers { get; } = new();
 
-    public PlayerSelectionViewModel(IExternalMediaDetector anisthesia, Kiriha.Core.Abstractions.Services.ISettingsService settingsService)
+    public PlayerSelectionViewModel(IExternalMediaDetector anisthesia, ISettingsService settingsService)
     {
         _anisthesia = anisthesia;
         _settingsService = settingsService;
@@ -102,7 +102,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
         {
             settings.System.Scrobbler.AllowedProcesses.Clear();
             foreach (var name in enabled) settings.System.Scrobbler.AllowedProcesses.Add(name);
-        }, Kiriha.Core.Abstractions.Services.SettingsSection.System, save: false);
+        }, SettingsSection.System, save: false);
         _settingsService.SaveImmediate();
         window.Close();
     }

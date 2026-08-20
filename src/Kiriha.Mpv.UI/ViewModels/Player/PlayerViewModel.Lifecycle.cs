@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using Serilog;
+using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -37,13 +38,13 @@ public partial class PlayerViewModel
         Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
     }
 
-    private Kiriha.Core.Domain.Models.Api.InternalPlayerState CreatePlayerState()
+    private InternalPlayerState CreatePlayerState()
     {
         var titleToUse = !string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu;
         if (string.IsNullOrEmpty(titleToUse))
             titleToUse = AnimeTitle;
 
-        return new Kiriha.Core.Domain.Models.Api.InternalPlayerState
+        return new InternalPlayerState
         {
             AnimeId = _animeId,
             OriginalTitle = !string.IsNullOrEmpty(OriginalTitle) ? OriginalTitle : System.IO.Path.GetFileNameWithoutExtension(VideoUrl),

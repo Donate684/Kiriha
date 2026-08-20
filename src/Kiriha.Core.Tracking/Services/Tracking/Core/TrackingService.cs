@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +45,7 @@ public partial class TrackingService : IDisposable
         IExternalMediaDetector anisthesiaService, IInternalPlayerServer internalPlayerServer,
         IMappingService mappingService,
         IAnimeRepository animeRepo,
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
+        ISettingsService settingsService,
         IDiscordService discordService,
         IScrobbleService scrobbleService,
         IUiDispatcher uiDispatcher,

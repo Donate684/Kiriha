@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -16,15 +16,16 @@ using Kiriha.Services.Data.Repository;
 using Kiriha.Utils.Graphs;
 using System.Linq;
 using Serilog;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Dialogs;
 
 public partial class FranchiseGraphViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Abstractions.Services.IShikiApiService _shikiApi;
-    private readonly Kiriha.Core.Abstractions.Services.IMalApiService _malApi;
+    private readonly IShikiApiService _shikiApi;
+    private readonly IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
+    private readonly IAnimeRepository _animeRepo;
     private readonly int _baseAnimeId;
 
     [ObservableProperty]
@@ -36,7 +37,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    public FranchiseGraphViewModel(int animeId, Kiriha.Core.Abstractions.Services.IShikiApiService shikiApi, Kiriha.Core.Abstractions.Services.IMalApiService malApi, IDialogService dialogs, Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo)
+    public FranchiseGraphViewModel(int animeId, IShikiApiService shikiApi, IMalApiService malApi, IDialogService dialogs, IAnimeRepository animeRepo)
     {
         _baseAnimeId = animeId;
         _shikiApi = shikiApi;
@@ -67,13 +68,13 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             }
             else
             {
-                ErrorMessage = "Не удалось загрузить данные франшизы или франшиза пуста.";
+                ErrorMessage = "ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð·Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚ÑŒ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ñ‹ Ð¸Ð»Ð¸ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ð° Ð¿ÑƒÑÑ‚Ð°.";
             }
         }
         catch (System.Exception ex)
         {
             Log.Error(ex, "Failed to load franchise graph for {AnimeId}", _baseAnimeId);
-            ErrorMessage = "Произошла ошибка при загрузке графа.";
+            ErrorMessage = "ÐŸÑ€Ð¾Ð¸Ð·Ð¾ÑˆÐ»Ð° Ð¾ÑˆÐ¸Ð±ÐºÐ° Ð¿Ñ€Ð¸ Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐµ Ð³Ñ€Ð°Ñ„Ð°.";
         }
         finally
         {
@@ -87,7 +88,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
                        node.Node.Kind == "one_shot" || node.Node.Kind == "doujin" || node.Node.Kind == "novel" ||
                        node.Node.Kind == "light_novel";
 
-        // 1. Проверяем локальный репозиторий
+        // 1. ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ Ð»Ð¾ÐºÐ°Ð»ÑŒÐ½Ñ‹Ð¹ Ñ€ÐµÐ¿Ð¾Ð·Ð¸Ñ‚Ð¾Ñ€Ð¸Ð¹
         var existing = _animeRepo.Collection.FirstOrDefault(x =>
             x.Id == node.Node.Id &&
             (isManga ? x.MediaKind != MediaKind.Anime : x.MediaKind == MediaKind.Anime));
@@ -103,7 +104,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             }
         }
 
-        // 2. Запрашиваем с MAL API по ID
+        // 2. Ð—Ð°Ð¿Ñ€Ð°ÑˆÐ¸Ð²Ð°ÐµÐ¼ Ñ MAL API Ð¿Ð¾ ID
         try
         {
             AnimeEntity? details = isManga

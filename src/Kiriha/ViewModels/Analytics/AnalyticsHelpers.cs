@@ -1,4 +1,4 @@
-using Kiriha.Models;
+﻿using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,7 @@ using System.Linq;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -41,7 +42,7 @@ public static class AnalyticsHelpers
         return palette[hash % palette.Length];
     }
 
-    public static string GetStatusLabel(UserAnimeStatus status, Kiriha.Core.Abstractions.Services.ILocalizer _localizer)
+    public static string GetStatusLabel(UserAnimeStatus status, ILocalizer _localizer)
     {
         return status switch
         {

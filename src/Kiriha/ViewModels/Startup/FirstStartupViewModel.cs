@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -13,13 +13,14 @@ using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data;
 using Kiriha.ViewModels.Settings;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Startup;
 
 public partial class FirstStartupViewModel : ViewModelBase
 {
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
-    private readonly Kiriha.Core.Abstractions.Services.ILocalizer _localizer;
+    private readonly ISettingsService _settingsService;
+    private readonly ILocalizer _localizer;
     private readonly SettingsViewModel _settingsViewModel;
 
     [ObservableProperty]
@@ -35,8 +36,8 @@ public partial class FirstStartupViewModel : ViewModelBase
     public SettingsViewModel SettingsVm => _settingsViewModel;
 
     public FirstStartupViewModel(
-        Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
-        Kiriha.Core.Abstractions.Services.ILocalizer localizer,
+        ISettingsService settingsService,
+        ILocalizer localizer,
         SettingsViewModel settingsViewModel)
     {
         _settingsService = settingsService;

@@ -1,3 +1,4 @@
+﻿using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Core;
 using System;
 using System.Diagnostics;
@@ -21,11 +22,11 @@ namespace Kiriha.Services.Data.Core;
 ///     treats the existing schema as already-applied instead of trying to
 ///     re-create tables and failing.
 ///   * WAL pragmas applied in a single batched statement (one round-trip on
-///     cold start). <c>synchronous=NORMAL</c> is the safe-default for WAL —
-///     durable across process kill — and <c>wal_autocheckpoint=200</c> caps
+///     cold start). <c>synchronous=NORMAL</c> is the safe-default for WAL â€”
+///     durable across process kill â€” and <c>wal_autocheckpoint=200</c> caps
 ///     how much the WAL can outgrow the main file before being folded back.
 /// </summary>
-public sealed class DatabaseInitializer : Kiriha.Core.Abstractions.Services.IDatabaseInitializer
+public sealed class DatabaseInitializer : IDatabaseInitializer
 {
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);

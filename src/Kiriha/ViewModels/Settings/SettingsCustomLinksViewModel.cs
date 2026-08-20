@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using Kiriha.Core;
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,7 @@ using Kiriha.Services.Data;
 using Serilog;
 using System.Collections.ObjectModel;
 using Kiriha.Infrastructure;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -18,11 +19,11 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
 {
     public ObservableCollection<CustomShareLink> CustomLinks { get; } = new();
 
-    private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly FaviconService _faviconService;
     private readonly Dictionary<CustomShareLink, CancellationTokenSource> _faviconDebouncers = new();
 
-    public SettingsCustomLinksViewModel(Kiriha.Core.Abstractions.Services.ISettingsService settingsService, FaviconService faviconService)
+    public SettingsCustomLinksViewModel(ISettingsService settingsService, FaviconService faviconService)
     {
         _settingsService = settingsService;
         _faviconService = faviconService;
@@ -63,8 +64,8 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
 
     private void OnCustomLinkPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // User typed something into Name / UrlTemplate — persist.
-        _settingsService.Update(settings => { }, Kiriha.Core.Abstractions.Services.SettingsSection.CustomLinks, save: false);
+        // User typed something into Name / UrlTemplate â€” persist.
+        _settingsService.Update(settings => { }, SettingsSection.CustomLinks, save: false);
         _settingsService.Save();
 
         // When the URL changes, try to refresh the favicon. We deliberately
@@ -136,7 +137,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
         {
             settings.CustomLinks.Clear();
             foreach (var link in CustomLinks) settings.CustomLinks.Add(link);
-        }, Kiriha.Core.Abstractions.Services.SettingsSection.CustomLinks);
+        }, SettingsSection.CustomLinks);
     }
 
     [RelayCommand]
@@ -173,7 +174,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
         // The UrlTemplate is set in the object initializer BEFORE the link
         // is hooked into the collection's PropertyChanged pipeline, so the
         // usual auto-favicon hook never fires for presets. Trigger it
-        // manually here (no debounce — the URL is final).
+        // manually here (no debounce â€” the URL is final).
         ScheduleFaviconFetch(link, delayMs: 0);
     }
 
