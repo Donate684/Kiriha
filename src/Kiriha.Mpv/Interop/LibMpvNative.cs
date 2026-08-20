@@ -123,7 +123,7 @@ public static class LibMpvNative
 
     public const string MPV_RENDER_API_TYPE_OPENGL = "opengl";
 
-    public static unsafe int mpv_command_string(IntPtr ctx, params string[] args)
+    public static unsafe int mpv_command_string(IntPtr ctx, params ReadOnlySpan<string> args)
     {
         IntPtr* ptrs = stackalloc IntPtr[args.Length + 1];
 
@@ -142,63 +142,6 @@ public static class LibMpvNative
                 if (ptrs[i] != IntPtr.Zero)
                     Marshal.FreeCoTaskMem(ptrs[i]);
             }
-        }
-    }
-
-    public static unsafe int mpv_command_string(IntPtr ctx, string arg0)
-    {
-        IntPtr* ptrs = stackalloc IntPtr[2];
-        ptrs[0] = Marshal.StringToCoTaskMemUTF8(arg0);
-        ptrs[1] = IntPtr.Zero;
-        try { return mpv_command(ctx, (IntPtr)ptrs); }
-        finally { Marshal.FreeCoTaskMem(ptrs[0]); }
-    }
-
-    public static unsafe int mpv_command_string(IntPtr ctx, string arg0, string arg1)
-    {
-        IntPtr* ptrs = stackalloc IntPtr[3];
-        ptrs[0] = Marshal.StringToCoTaskMemUTF8(arg0);
-        ptrs[1] = Marshal.StringToCoTaskMemUTF8(arg1);
-        ptrs[2] = IntPtr.Zero;
-        try { return mpv_command(ctx, (IntPtr)ptrs); }
-        finally 
-        { 
-            Marshal.FreeCoTaskMem(ptrs[0]); 
-            Marshal.FreeCoTaskMem(ptrs[1]); 
-        }
-    }
-
-    public static unsafe int mpv_command_string(IntPtr ctx, string arg0, string arg1, string arg2)
-    {
-        IntPtr* ptrs = stackalloc IntPtr[4];
-        ptrs[0] = Marshal.StringToCoTaskMemUTF8(arg0);
-        ptrs[1] = Marshal.StringToCoTaskMemUTF8(arg1);
-        ptrs[2] = Marshal.StringToCoTaskMemUTF8(arg2);
-        ptrs[3] = IntPtr.Zero;
-        try { return mpv_command(ctx, (IntPtr)ptrs); }
-        finally 
-        { 
-            Marshal.FreeCoTaskMem(ptrs[0]); 
-            Marshal.FreeCoTaskMem(ptrs[1]); 
-            Marshal.FreeCoTaskMem(ptrs[2]); 
-        }
-    }
-
-    public static unsafe int mpv_command_string(IntPtr ctx, string arg0, string arg1, string arg2, string arg3)
-    {
-        IntPtr* ptrs = stackalloc IntPtr[5];
-        ptrs[0] = Marshal.StringToCoTaskMemUTF8(arg0);
-        ptrs[1] = Marshal.StringToCoTaskMemUTF8(arg1);
-        ptrs[2] = Marshal.StringToCoTaskMemUTF8(arg2);
-        ptrs[3] = Marshal.StringToCoTaskMemUTF8(arg3);
-        ptrs[4] = IntPtr.Zero;
-        try { return mpv_command(ctx, (IntPtr)ptrs); }
-        finally 
-        { 
-            Marshal.FreeCoTaskMem(ptrs[0]); 
-            Marshal.FreeCoTaskMem(ptrs[1]); 
-            Marshal.FreeCoTaskMem(ptrs[2]); 
-            Marshal.FreeCoTaskMem(ptrs[3]); 
         }
     }
 
