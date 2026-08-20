@@ -13,7 +13,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public class AiringInfoService
+public class AiringInfoService : Kiriha.Core.Abstractions.Services.IAiringInfoService
 {
     private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeSyncOrchestrator _syncOrchestrator;

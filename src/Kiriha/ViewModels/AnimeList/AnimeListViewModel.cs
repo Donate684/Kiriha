@@ -31,10 +31,10 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
 {
     private readonly Kiriha.Core.Abstractions.Services.ISettingsService _settingsService;
     private readonly Kiriha.Core.Abstractions.Repositories.IAnimeRepository _animeRepo;
-    private readonly AnimeSyncOrchestrator _syncOrchestrator;
-    private readonly AnimeProgressService _progressService;
-    private readonly LoadQueueService _queueService;
-    private readonly AiringInfoService _airingInfoService;
+    private readonly Kiriha.Core.Abstractions.Services.IAnimeSyncOrchestrator _syncOrchestrator;
+    private readonly Kiriha.Core.Abstractions.Services.IProgressUpdateService _progressService;
+    private readonly Kiriha.Core.Abstractions.Services.ILoadQueueService _queueService;
+    private readonly Kiriha.Core.Abstractions.Services.IAiringInfoService _airingInfoService;
     private readonly RssFeedService _rssService;
     private readonly AppReadinessService _readinessService;
     private readonly Kiriha.Core.Dialogs.IDialogService _dialogService;
@@ -51,10 +51,10 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     public AnimeListViewModel(
         Kiriha.Core.Abstractions.Services.ISettingsService settingsService,
         Kiriha.Core.Abstractions.Repositories.IAnimeRepository animeRepo,
-        AnimeSyncOrchestrator syncOrchestrator,
-        AnimeProgressService progressService,
-        LoadQueueService queueService,
-        AiringInfoService airingInfoService,
+        Kiriha.Core.Abstractions.Services.IAnimeSyncOrchestrator syncOrchestrator,
+        Kiriha.Core.Abstractions.Services.IProgressUpdateService progressService,
+        Kiriha.Core.Abstractions.Services.ILoadQueueService queueService,
+        Kiriha.Core.Abstractions.Services.IAiringInfoService airingInfoService,
         RssFeedService rssService,
         AppReadinessService readinessService,
         Kiriha.Core.Dialogs.IDialogService dialogService,

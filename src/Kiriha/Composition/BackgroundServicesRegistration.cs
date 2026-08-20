@@ -35,10 +35,12 @@ internal static class BackgroundServicesRegistration
 
         // Background utilities
         services.AddSingleton<LoadQueueService>();
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.ILoadQueueService>(sp => sp.GetRequiredService<LoadQueueService>());
         services.AddSingleton<UpdateService>();
         services.AddSingleton<NotificationService>();
         services.AddSingleton<Kiriha.Core.Abstractions.Services.INotificationService>(sp => sp.GetRequiredService<NotificationService>());
         services.AddSingleton<AiringInfoService>();
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.IAiringInfoService>(sp => sp.GetRequiredService<AiringInfoService>());
 
         // AnisthesiaService (Discord presence) also runs as IHostedService
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Kiriha.Infrastructure.Tracking.Integration.AnisthesiaService>());

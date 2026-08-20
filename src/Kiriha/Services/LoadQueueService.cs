@@ -15,7 +15,7 @@ using Kiriha.Services.AppLifecycle;
 
 namespace Kiriha.Services.Data.Core;
 
-public class LoadQueueService : IDisposable
+public class LoadQueueService : Kiriha.Core.Abstractions.Services.ILoadQueueService, IDisposable
 {
     private readonly PosterBatchDownloader _posterBatchDownloader;
     private readonly ShikiMetadataService _shikiMetadata;
