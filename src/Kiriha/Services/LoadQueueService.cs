@@ -62,8 +62,8 @@ public class LoadQueueService : IDisposable
             if (item == null) continue;
 
             bool needsImage = !string.IsNullOrEmpty(item.MainPictureUrl);
-            bool needsShiki = (_settings.Current.UI.UseRussianTitles || _settings.Current.UI.UseRussianDescriptions) &&
-                string.IsNullOrEmpty(item.RussianTitle);
+            bool needsShiki = (_settings.Current.UI.UseRussianTitles && string.IsNullOrEmpty(item.RussianTitle)) ||
+                (_settings.Current.UI.UseRussianDescriptions && string.IsNullOrEmpty(item.RussianSynopsis));
 
             if (needsImage)
                 _ = EnqueueAsync(item, _imageQueue.Writer, _queuedForImage);

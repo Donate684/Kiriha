@@ -88,5 +88,7 @@ public partial class AppSettings
         public bool MpvVideoSync { get; set; } = false;
         public bool MpvInterpolation { get; set; } = false;
         public bool SmartTrackAutoload { get; set; } = true;
+        public bool EnableSonokoIntegration { get; set; } = false;
+        public string SonokoIntegrationHotkey { get; set; } = "T";
     }
 }

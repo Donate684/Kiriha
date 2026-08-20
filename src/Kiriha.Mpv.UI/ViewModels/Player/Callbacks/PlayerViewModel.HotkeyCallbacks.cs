@@ -74,4 +74,15 @@ public partial class PlayerViewModel
         var normalized = NormalizeHotkey(value, fallback);
         _settingsService.Update(settings => update(settings.Player, normalized), Kiriha.Core.Abstractions.Services.SettingsSection.Player);
     }
+
+    partial void OnEnableSonokoIntegrationChanged(bool value)
+    {
+        if (_isApplyingSettings || _settingsService == null) return;
+        _settingsService.Update(settings => settings.Player.EnableSonokoIntegration = value, Kiriha.Core.Abstractions.Services.SettingsSection.Player);
+    }
+
+    partial void OnSonokoIntegrationHotkeyChanged(string value)
+    {
+        SaveHotkey(value, "T", (settings, hotkey) => settings.SonokoIntegrationHotkey = hotkey);
+    }
 }

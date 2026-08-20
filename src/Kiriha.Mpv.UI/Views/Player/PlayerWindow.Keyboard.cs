@@ -46,6 +46,13 @@ public partial class PlayerWindow
         }
 
         var actualModifiers = e.KeyModifiers & (KeyModifiers.Shift | KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta);
+        if (vm.EnableSonokoIntegration && MatchesHotkey(e, vm.SonokoIntegrationHotkey))
+        {
+            e.Handled = true;
+            _ = Kiriha.Infrastructure.Player.SonokoIntegration.SendTimingToSonokoAsync(TimeSpan.FromSeconds(vm.CurrentTime));
+            return;
+        }
+
         if (e.Key == Key.R && actualModifiers == KeyModifiers.None)
         {
             e.Handled = true;

@@ -208,6 +208,32 @@
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
                                 </Grid>
 
+                                <Border Classes="player-settings-divider"/>
+                                <TextBlock Classes="player-settings-row-title"
+                                           Text="Интеграция с Sonoko"
+                                           Margin="0,6,0,0"/>
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="Включить интеграцию"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="Отправлять тайминги в редактор по горячей клавише"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding EnableSonokoIntegration}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,220" MinHeight="44" IsVisible="{Binding EnableSonokoIntegration}">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="Горячая клавиша"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="Например: A или Shift+A"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SonokoIntegrationHotkey}"
+                                             PlaceholderText="T"
+                                             VerticalAlignment="Center"/>
+                                </Grid>
+
                                 <Border Height="110" IsHitTestVisible="False"/>
     </StackPanel>
 </UserControl>

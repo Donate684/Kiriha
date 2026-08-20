@@ -84,6 +84,8 @@ public partial class PlayerViewModel
             ReloadSubtitlesHotkey = NormalizeHotkey(settings.ReloadSubtitlesHotkey, "Q");
             FrameStepForwardHotkey = NormalizeHotkey(settings.FrameStepForwardHotkey, "OemPeriod");
             FrameStepBackwardHotkey = NormalizeHotkey(settings.FrameStepBackwardHotkey, "OemComma");
+            EnableSonokoIntegration = settings.EnableSonokoIntegration;
+            SonokoIntegrationHotkey = NormalizeHotkey(settings.SonokoIntegrationHotkey, "T");
             MpvVideoPreset = NormalizeMpvOption(settings.MpvVideoPreset, "default");
             MpvScale = NormalizeMpvOption(settings.MpvScale, "bilinear");
             MpvChromaScale = NormalizeMpvOption(settings.MpvChromaScale, "bilinear");

@@ -24,4 +24,6 @@ public partial class PlayerViewModel
     [ObservableProperty] private string _reloadSubtitlesHotkey = "Q";
     [ObservableProperty] private string _frameStepForwardHotkey = "OemPeriod";
     [ObservableProperty] private string _frameStepBackwardHotkey = "OemComma";
+    [ObservableProperty] private bool _enableSonokoIntegration;
+    [ObservableProperty] private string _sonokoIntegrationHotkey = "T";
 }
