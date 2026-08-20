@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -9,7 +9,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -41,7 +41,7 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
-        <!-- â•â•â• Reveal-on-load: ÐºÐ°ÑÐºÐ°Ð´ Ð¿Ñ€Ð¸ Ð¿Ð¾ÑÐ²Ð»ÐµÐ½Ð¸Ð¸ ÑÑ‚Ñ€Ð¾Ðº â•â•â• -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Reveal-on-load: ÃÂºÃÂ°Ã‘ÂÃÂºÃÂ°ÃÂ´ ÃÂ¿Ã‘â‚¬ÃÂ¸ ÃÂ¿ÃÂ¾Ã‘ÂÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸ÃÂ¸ Ã‘ÂÃ‘â€šÃ‘â‚¬ÃÂ¾ÃÂº Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <Style Selector="Border.revealItem">
             <Setter Property="Opacity" Value="0"/>
             <Setter Property="RenderTransform" Value="translate(0,16px)"/>
@@ -58,7 +58,7 @@
             <Setter Property="RenderTransform" Value="translate(0,0)"/>
         </Style>
 
-        <!-- â•â•â• Torrents-style Filter Toggle (period) â•â•â• -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Torrents-style Filter Toggle (period) Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <Style Selector="ToggleButton.FilterToggle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -78,7 +78,7 @@
 
     <Grid RowDefinitions="Auto, Auto, *" Margin="0">
 
-        <!-- â•â•â• Search + Period bar (Torrents-style) â•â•â• -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Search + Period bar (Torrents-style) Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <Border Grid.Row="0" Margin="20,4,20,12" Padding="8,6"
                 Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
                 BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
@@ -112,7 +112,7 @@
             </Grid>
         </Border>
 
-        <!-- â•â•â• Action-type tabs (AnimeList-style) â•â•â• -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Action-type tabs (AnimeList-style) Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <Border Grid.Row="1" Margin="20,0,20,12" Padding="4"
                 Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8"
                 HorizontalAlignment="Center"
@@ -136,7 +136,7 @@
             </StackPanel>
         </Border>
 
-        <!-- â•â•â• Content Area â•â•â• -->
+        <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Content Area Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
         <Panel Grid.Row="2">
             <!-- Empty DB -->
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16"

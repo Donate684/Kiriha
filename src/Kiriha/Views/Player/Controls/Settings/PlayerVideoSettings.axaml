@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:mpres="using:Kiriha.Models.Presentation"
              xmlns:mpv="clr-namespace:Kiriha.Mpv"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -129,12 +129,12 @@
         
         <Border Classes="player-settings-divider"/>
         <TextBlock Classes="player-settings-row-title"
-                   Text="Плавность воспроизведения"
+                   Text="{DynamicResource l.player.settings_adv.playback_smoothness}"
                    Margin="0,6,0,0"/>
         <Grid ColumnDefinitions="*,Auto" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                <TextBlock Classes="player-settings-row-title" Text="Синхронизация с дисплеем"/>
-                <TextBlock Classes="player-settings-row-sub" Text="video-sync=display-resample. Вступит в силу после перезапуска плеера."/>
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.video_sync}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.video_sync_desc}" TextWrapping="Wrap"/>
             </StackPanel>
             <ToggleSwitch Grid.Column="1"
                           VerticalAlignment="Center"
@@ -144,8 +144,8 @@
         </Grid>
         <Grid ColumnDefinitions="*,Auto" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                <TextBlock Classes="player-settings-row-title" Text="Интерполяция кадров"/>
-                <TextBlock Classes="player-settings-row-sub" Text="oversample — устраняет джиттер (24fps на 60Hz+). Требует video-sync. Вступит в силу после перезапуска плеера."/>
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.interpolation}"/>
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.interpolation_desc}" TextWrapping="Wrap"/>
             </StackPanel>
             <ToggleSwitch Grid.Column="1"
                           VerticalAlignment="Center"

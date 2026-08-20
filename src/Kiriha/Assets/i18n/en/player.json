@@ -77,7 +77,17 @@
     "gpu_api": "gpu-api",
     "gpu_api_desc": "Graphics API",
     "gpu_context": "gpu-context",
-    "gpu_context_desc": "GPU context"
+    "gpu_context_desc": "GPU context",
+    "sonoko_integration": "Sonoko Integration",
+    "sonoko_enable": "Enable integration",
+    "sonoko_enable_ex": "Send timings to editor via hotkey",
+    "sonoko_hotkey": "Hotkey",
+    "sonoko_hotkey_ex": "Example: A or Shift+A",
+    "playback_smoothness": "Playback smoothness",
+    "video_sync": "Display synchronization",
+    "video_sync_desc": "video-sync=display-resample. Takes effect after restarting the player.",
+    "interpolation": "Frame interpolation",
+    "interpolation_desc": "oversample — eliminates jitter (24fps on 60Hz+). Requires video-sync. Takes effect after restarting the player."
   },
   "settings_interface": {
     "title": "Interface",
@@ -169,7 +179,9 @@
     "pref_audio": "Preferred audio",
     "pref_audio_sub": "mpv alang, comma separated",
     "pref_sub": "Preferred subtitles",
-    "pref_sub_sub": "mpv slang, comma separated"
+    "pref_sub_sub": "mpv slang, comma separated",
+    "smart_autoload": "Smart track autoload",
+    "smart_autoload_desc": "Loads subtitles and audio from the video folder by episode number"
   },
   "overlay": {
     "error_failed_to_play": "Failed to play video",

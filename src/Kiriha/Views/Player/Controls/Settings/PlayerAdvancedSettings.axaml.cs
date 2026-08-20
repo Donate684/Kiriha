@@ -1,8 +1,8 @@
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Kiriha.ViewModels.Player;
+using Kiriha.Mpv.UI.ViewModels.Player;
 
 namespace Kiriha.Views.Player.Controls.Settings
 {
@@ -24,7 +24,7 @@ namespace Kiriha.Views.Player.Controls.Settings
 
             var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Папка для скриншотов",
+                Title = "ÐŸÐ°Ð¿ÐºÐ° Ð´Ð»Ñ ÑÐºÑ€Ð¸Ð½ÑˆÐ¾Ñ‚Ð¾Ð²",
                 AllowMultiple = false
             });
 

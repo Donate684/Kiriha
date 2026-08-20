@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Services.Data.Settings;
 using System;
 using System.IO.Pipes;
 using System.Linq;
@@ -8,7 +8,7 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Services.Data;
-using Kiriha.ViewModels.Player;
+using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -102,7 +102,7 @@ public class InstanceServer : BackgroundService
 
             _uiDispatcher.Post(() =>
             {
-                var metadataResolver = _serviceProvider.GetRequiredService<IPlayerMediaMetadataResolver>();
+                var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
                 var settingsService = _serviceProvider.GetService<SettingsService>();
                 if (settingsService?.Current.Player.SingleWindow == true
                     && Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
@@ -141,3 +141,4 @@ public class InstanceServer : BackgroundService
     }
 
 }
+

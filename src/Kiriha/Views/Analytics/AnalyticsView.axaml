@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -9,7 +9,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -35,13 +35,13 @@
     </UserControl.Styles>
 
     <Panel>
-        <!-- ═══════════════ Основной контент ═══════════════ -->
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ÐžÑÐ½Ð¾Ð²Ð½Ð¾Ð¹ ÐºÐ¾Ð½Ñ‚ÐµÐ½Ñ‚ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <Grid RowDefinitions="Auto,Auto,*" Margin="0" IsVisible="{Binding HasData}">
 
-            <!-- ═══ HERO-БАННЕР ═══ -->
+            <!-- â•â•â• HERO-Ð‘ÐÐÐÐ•Ð  â•â•â• -->
             <controls:AnalyticsHeroBanner Grid.Row="0" />
 
-            <!-- ═══ TAB-НАВИГАЦИЯ ═══ -->
+            <!-- â•â•â• TAB-ÐÐÐ’Ð˜Ð“ÐÐ¦Ð˜Ð¯ â•â•â• -->
             <Border Grid.Row="1" Padding="4"
                     Background="{DynamicResource SubtleFillColorSecondary}"
                     CornerRadius="10"
@@ -92,7 +92,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- ═══ КОНТЕНТ СЕКЦИЙ ═══ -->
+            <!-- â•â•â• ÐšÐžÐÐ¢Ð•ÐÐ¢ Ð¡Ð•ÐšÐ¦Ð˜Ð™ â•â•â• -->
             <ScrollViewer Grid.Row="2"
                           Padding="0,0,0,42"
                           VerticalScrollBarVisibility="Auto"
@@ -100,7 +100,7 @@
                           u:SmoothScroll.IsEnabled="True">
                 <Grid Margin="20,0,20,0">
 
-                    <!-- ══════════ СЕКЦИЯ: ПРОФИЛЬ (Overview) ══════════ -->
+                    <!-- â•â•â•â•â•â•â•â•â•â• Ð¡Ð•ÐšÐ¦Ð˜Ð¯: ÐŸÐ ÐžÐ¤Ð˜Ð›Ð¬ (Overview) â•â•â•â•â•â•â•â•â•â• -->
                     <controls:AnalyticsOverviewSection />
                     <controls:AnalyticsTastesSection />
                     <controls:AnalyticsWatchNextSection />
@@ -110,7 +110,7 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- ═══ ЗАГЛУШКА при отсутствии данных ═══ -->
+        <!-- â•â•â• Ð—ÐÐ“Ð›Ð£Ð¨ÐšÐ Ð¿Ñ€Ð¸ Ð¾Ñ‚ÑÑƒÑ‚ÑÑ‚Ð²Ð¸Ð¸ Ð´Ð°Ð½Ð½Ñ‹Ñ… â•â•â• -->
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16"
                     IsVisible="{Binding !HasData}">
             <Border Width="80" Height="80" CornerRadius="40"
@@ -130,7 +130,7 @@
                     CornerRadius="10"/>
         </StackPanel>
 
-        <!-- ═══ ИСТОРИЯ POPUP ═══ -->
+        <!-- â•â•â• Ð˜Ð¡Ð¢ÐžÐ Ð˜Ð¯ POPUP â•â•â• -->
         <controls:AnalyticsHistoryPopup />
     </Panel>
 </UserControl>

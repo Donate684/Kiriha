@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -9,7 +9,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -41,10 +41,10 @@
         <!-- Row 0: Filters -->
         <local:TorrentFilters Grid.Row="0" />
 
-        <!-- ═══ Row 2: Sidebar + Results ═══ -->
+        <!-- â•â•â• Row 2: Sidebar + Results â•â•â• -->
         <Grid Grid.Row="2" ColumnDefinitions="260, *" Margin="20,0,0,16">
 
-            <!-- ─── Sidebar ─── -->
+            <!-- â”€â”€â”€ Sidebar â”€â”€â”€ -->
             <Border Grid.Column="0" Margin="0,0,14,0" Padding="8"
                     Background="{DynamicResource SubtleFillColorSecondary}"
                     BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
@@ -93,7 +93,7 @@
                         </Button>
                     </Grid>
 
-                    <!-- Watching list (× overlays in hide mode without shifting layout) -->
+                    <!-- Watching list (Ã— overlays in hide mode without shifting layout) -->
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
                         <ItemsControl ItemsSource="{Binding HideMenuItems}" ItemTemplate="{StaticResource HideableAnimeItemTemplate}">
                         </ItemsControl>
@@ -109,7 +109,7 @@
                 </Grid>
             </Border>
 
-            <!-- ─── Results area ─── -->
+            <!-- â”€â”€â”€ Results area â”€â”€â”€ -->
             <Grid Grid.Column="1">
 
                 <!-- Loading overlay -->

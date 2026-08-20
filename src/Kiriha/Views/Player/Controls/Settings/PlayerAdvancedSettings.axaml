@@ -1,6 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:mpres="using:Kiriha.Models.Presentation"
              xmlns:mpv="clr-namespace:Kiriha.Mpv"
              xmlns:material="using:Material.Icons.Avalonia"
@@ -210,12 +210,12 @@
 
                                 <Border Classes="player-settings-divider"/>
                                 <TextBlock Classes="player-settings-row-title"
-                                           Text="Интеграция с Sonoko"
+                                           Text="{DynamicResource l.player.settings_adv.sonoko_integration}"
                                            Margin="0,6,0,0"/>
                                 <Grid ColumnDefinitions="*,Auto" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="Включить интеграцию"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="Отправлять тайминги в редактор по горячей клавише"/>
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.sonoko_enable}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.sonoko_enable_ex}"/>
                                     </StackPanel>
                                     <ToggleSwitch Grid.Column="1"
                                                   VerticalAlignment="Center"
@@ -225,8 +225,8 @@
                                 </Grid>
                                 <Grid ColumnDefinitions="*,220" MinHeight="44" IsVisible="{Binding EnableSonokoIntegration}">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="Горячая клавиша"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="Например: A или Shift+A"/>
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.sonoko_hotkey}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.sonoko_hotkey_ex}"/>
                                     </StackPanel>
                                     <TextBox Grid.Column="1"
                                              Text="{Binding SonokoIntegrationHotkey}"

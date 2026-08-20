@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -9,7 +9,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -22,7 +22,7 @@
         x:Class="Kiriha.Views.FranchiseGraphWindow"
         x:DataType="vmDialogs:FranchiseGraphViewModel"
         x:Name="Root"
-        Title="Граф франшизы"
+        Title="Ð“Ñ€Ð°Ñ„ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ñ‹"
         Width="900" Height="600"
         WindowStartupLocation="CenterOwner"
         Background="{x:Null}"
@@ -43,12 +43,12 @@
         
         <controls:TitleBarButtons Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Top" ZIndex="999"/>
         
-        <TextBlock Grid.Row="0" Text="Граф франшизы" FontWeight="SemiBold" FontSize="14" Margin="16,8,0,0" IsHitTestVisible="False"/>
+        <TextBlock Grid.Row="0" Text="Ð“Ñ€Ð°Ñ„ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ñ‹" FontWeight="SemiBold" FontSize="14" Margin="16,8,0,0" IsHitTestVisible="False"/>
 
         <Grid Grid.Row="1" IsVisible="{Binding IsLoading}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4" CornerRadius="2" Foreground="{DynamicResource SystemAccentColor}"/>
-                <TextBlock Text="Загрузка структуры франшизы..." Opacity="0.6" HorizontalAlignment="Center"/>
+                <TextBlock Text="Ð—Ð°Ð³Ñ€ÑƒÐ·ÐºÐ° ÑÑ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ñ‹ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ñ‹..." Opacity="0.6" HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
 
@@ -140,7 +140,7 @@
                                             <!-- Left side: Year & Current label -->
                                             <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Node.Year}" FontSize="12" Opacity="0.6" IsVisible="{Binding Node.Year, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                <TextBlock Text="Текущее" FontSize="11" Foreground="{DynamicResource SystemAccentColor}" FontWeight="Bold" IsVisible="{Binding IsCurrent}"/>
+                                                <TextBlock Text="Ð¢ÐµÐºÑƒÑ‰ÐµÐµ" FontSize="11" Foreground="{DynamicResource SystemAccentColor}" FontWeight="Bold" IsVisible="{Binding IsCurrent}"/>
                                             </StackPanel>
                                             
                                             <!-- Right side: Kind & Status badges -->

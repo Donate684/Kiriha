@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -11,7 +11,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -65,7 +65,7 @@
 
     <Grid RowDefinitions="*,Auto">
 
-        <!-- ═══ Content ═══ -->
+        <!-- â•â•â• Content â•â•â• -->
         <Grid Grid.Row="0" Margin="28,24,28,20" VerticalAlignment="Stretch">
 
             <!-- Prompt: version row like Settings -->
@@ -114,7 +114,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- ═══ Actions ═══ -->
+        <!-- â•â•â• Actions â•â•â• -->
         <Border Grid.Row="1" Padding="20,14"
                 Background="{DynamicResource ModalSidebarFill}"
                 BorderBrush="{DynamicResource DividerStrokeColorDefault}"
@@ -139,7 +139,7 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Downloading — progress inside button -->
+                    <!-- Downloading â€” progress inside button -->
                     <Button IsVisible="{Binding IsDownloading}" IsEnabled="False"
                             Padding="16,9" CornerRadius="6"
                             Background="{DynamicResource SystemAccentColor}" Foreground="White"

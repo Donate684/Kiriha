@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -6,7 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using Kiriha.ViewModels.Player;
+using Kiriha.Mpv.UI.ViewModels.Player;
 
 namespace Kiriha.Views.Player;
 

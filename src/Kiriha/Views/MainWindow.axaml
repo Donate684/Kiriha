@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -9,7 +9,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -37,7 +37,7 @@
         <vmMain:MainWindowViewModel/>
     </Design.DataContext>
 
-    <!-- ═══════════════ Global Styles ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• Global Styles â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <Window.Styles>
         <!-- Nav items: pill-shape, left-rounded -->
         <Style Selector="ListBox.NavList ListBoxItem">
@@ -107,11 +107,11 @@
         </LayoutTransformControl.LayoutTransform>
         <Grid RowDefinitions="34, *" Background="{x:Null}"
               PointerPressed="OnTitleBarPressed">
-            <!-- ═══ TitleBar (drag area) ═══
+            <!-- â•â•â• TitleBar (drag area) â•â•â•
                  ExtendClientAreaToDecorationsHint=True hides the OS chrome, so we
                  have to drive Begin{Move,Resize}Drag ourselves on the top 34px.
                  Handler lives on the root Grid: child controls that consume their
-                 own click (Button, ListBoxItem, …) set Handled=true and the drag
+                 own click (Button, ListBoxItem, â€¦) set Handled=true and the drag
                  never fires for them; clicks on empty title-bar area bubble up
                  unhandled and trigger the move. -->
     
@@ -125,12 +125,12 @@
                    Background="Transparent"
                    PaneBackground="{DynamicResource LayerFillColorDefault}">
 
-            <!-- ═══════════════ Navigation Pane ═══════════════ -->
+            <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• Navigation Pane â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
             <SplitView.Pane>
                 <main:MainSidebar />
             </SplitView.Pane>
 
-            <!-- ═══════════════ Main Content ═══════════════ -->
+            <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• Main Content â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
             <SplitView.Content>
                 <Grid>
                     <Border Background="{DynamicResource ContentSurfaceFill}"

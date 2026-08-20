@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -9,7 +9,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
@@ -38,7 +38,7 @@
     </UserControl.Styles>
     <Grid RowDefinitions="Auto, Auto, Auto, *" Margin="0">
 
-        <!-- ΓòÉΓòÉΓòÉ Top Bar ΓòÉΓòÉΓòÉ -->
+        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ Top Bar Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
         <Border Grid.Row="0" Margin="20,4,20,12" Padding="8,6" Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
                 BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
             <Grid ColumnDefinitions="*, Auto, Auto, Auto">
@@ -145,7 +145,7 @@
             </Grid>
         </Border>
 
-        <!-- ΓòÉΓòÉΓòÉ Category Tabs ΓòÉΓòÉΓòÉ -->
+        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ Category Tabs Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
         <Border Grid.Row="1" Margin="20,0,20,12" Padding="4"
                 Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8"
                 HorizontalAlignment="Center">
@@ -174,9 +174,9 @@
             </StackPanel>
         </Border>
 
-        <!-- ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ -->
-        <!-- ΓòÉΓòÉΓòÉ GRID VIEW (Virtualized ItemsRepeater) ΓòÉΓòÉΓòÉ -->
-        <!-- ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ -->
+        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
+        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ GRID VIEW (Virtualized ItemsRepeater) Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
+        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
         <Panel Grid.Row="3">
             <ScrollViewer x:Name="ContentScrollViewer"
                           HorizontalScrollBarVisibility="Disabled"

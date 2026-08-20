@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:mpv="clr-namespace:Kiriha.Mpv"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
@@ -30,8 +30,8 @@
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="Автозагрузка дорожек"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="Подгружает субтитры и аудио из папки с видео по номеру эпизода"/>
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_track.smart_autoload}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_track.smart_autoload_desc}" TextWrapping="Wrap"/>
                                     </StackPanel>
                                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                                   IsChecked="{Binding SmartTrackAutoload}"

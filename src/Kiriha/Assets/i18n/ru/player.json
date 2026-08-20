@@ -77,7 +77,17 @@
     "gpu_api": "gpu-api",
     "gpu_api_desc": "Graphics API",
     "gpu_context": "gpu-context",
-    "gpu_context_desc": "GPU context"
+    "gpu_context_desc": "GPU context",
+    "sonoko_integration": "Интеграция с Sonoko",
+    "sonoko_enable": "Включить интеграцию",
+    "sonoko_enable_ex": "Отправлять тайминги в редактор по горячей клавише",
+    "sonoko_hotkey": "Горячая клавиша",
+    "sonoko_hotkey_ex": "Например: A или Shift+A",
+    "playback_smoothness": "Плавность воспроизведения",
+    "video_sync": "Синхронизация с дисплеем",
+    "video_sync_desc": "video-sync=display-resample. Вступит в силу после перезапуска плеера.",
+    "interpolation": "Интерполяция кадров",
+    "interpolation_desc": "oversample — устраняет джиттер (24fps на 60Hz+). Требует video-sync. Вступит в силу после перезапуска плеера."
   },
   "settings_interface": {
     "title": "Интерфейс",
@@ -169,7 +179,9 @@
     "pref_audio": "Предпочтительный звук",
     "pref_audio_sub": "mpv alang, через запятую",
     "pref_sub": "Предпочтительные субтитры",
-    "pref_sub_sub": "mpv slang, через запятую"
+    "pref_sub_sub": "mpv slang, через запятую",
+    "smart_autoload": "Автозагрузка дорожек",
+    "smart_autoload_desc": "Подгружает субтитры и аудио из папки с видео по номеру эпизода"
   },
   "overlay": {
     "error_failed_to_play": "Не удалось воспроизвести видео",

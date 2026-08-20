@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -10,7 +10,7 @@
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
              xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.ViewModels.Player"
+             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
              xmlns:vmSearch="using:Kiriha.ViewModels.Search"
@@ -73,7 +73,7 @@
                                     <Grid ColumnDefinitions="Auto,8,*,8,2*,8,Auto">
                                         <!-- Read-only icon preview. Shows the auto-fetched favicon for
                                              the URL's host when available; otherwise the default globe.
-                                             No interaction — the icon is derived purely from the URL. -->
+                                             No interaction â€” the icon is derived purely from the URL. -->
                                         <Border Grid.Column="0"
                                                 Width="40" Height="40" CornerRadius="6"
                                                 Background="{DynamicResource SubtleFillColorTertiary}"

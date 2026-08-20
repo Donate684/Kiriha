@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Main;
+﻿using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -19,7 +19,7 @@ namespace Kiriha.Composition;
 /// <summary>
 /// DI registrations for the UI layer: all ViewModels (singleton vs transient
 /// lifetime decisions are deliberate and documented inline), plus the abstract
-/// services they consume — <see cref="IDialogService"/> and
+/// services they consume â€” <see cref="IDialogService"/> and
 /// <see cref="IViewModelFactory"/>.
 ///
 /// Lifetime rationale:
@@ -50,9 +50,10 @@ internal static class UiServicesRegistration
 
         // Client UI Support Services
         services.AddSingleton<Kiriha.Services.SystemIntegrationService>();
-        services.AddSingleton<Kiriha.Services.IPlayerMediaMetadataResolver, Kiriha.Services.PlayerMediaMetadataResolver>();
+        services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.PlayerMediaMetadataResolver>();
         services.AddSingleton<Kiriha.Core.FaviconService>();
 
         return services;
     }
 }
+

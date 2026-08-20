@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -10,7 +10,7 @@ using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.History;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Player;
+using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Seasonal;
 using Kiriha.ViewModels.Settings;
@@ -41,7 +41,7 @@ namespace Kiriha.Infrastructure;
 /// only ever shown via a directly-constructed <see cref="Window"/> (e.g.
 /// <see cref="AnimeDetailsViewModel"/>, <see cref="CrashReportViewModel"/>,
 /// <see cref="MainWindowViewModel"/>, <see cref="PlayerSelectionViewModel"/>)
-/// are intentionally absent — they don't participate in DataTemplate routing.
+/// are intentionally absent â€” they don't participate in DataTemplate routing.
 /// </summary>
 public class ViewLocator : IDataTemplate
 {
@@ -65,7 +65,7 @@ public class ViewLocator : IDataTemplate
     {
         if (param is null) return null;
         if (Map.TryGetValue(param.GetType(), out var factory)) return factory();
-        // Fall back to a visible diagnostic instead of throwing — keeping
+        // Fall back to a visible diagnostic instead of throwing â€” keeping
         // parity with the old reflective behaviour so a missed registration
         // doesn't crash the shell.
         return new TextBlock { Text = "ViewLocator: no view registered for " + param.GetType().FullName };

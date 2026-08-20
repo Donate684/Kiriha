@@ -1,4 +1,4 @@
-using Kiriha.Core.Abstractions.Services;
+﻿using Kiriha.Core.Abstractions.Services;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Feed;
@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Services;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
-using Kiriha.ViewModels.Player;
+using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.Views;
 using Kiriha.Views.Player;
 

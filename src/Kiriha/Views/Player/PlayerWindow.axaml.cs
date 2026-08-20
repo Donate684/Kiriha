@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,7 +11,7 @@ using Avalonia.Threading;
 using Kiriha.Mpv;
 using Kiriha.Services.Data;
 using Kiriha.Services.Data.Settings;
-using Kiriha.ViewModels.Player;
+using Kiriha.Mpv.UI.ViewModels.Player;
 using Serilog;
 
 namespace Kiriha.Views.Player;
