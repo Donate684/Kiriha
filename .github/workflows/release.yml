@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
           cache: true
@@ -45,6 +45,12 @@ jobs:
 
       - name: Pack with Velopack
         run: vpk pack --packId Kiriha --packVersion ${{ env.VERSION }} --packDir ./publish --mainExe Kiriha.exe --icon ./src/Kiriha/Assets/kiriha.ico
+
+      - name: Cleanup old packages
+        shell: bash
+        run: |
+          # Delete any .nupkg in the Releases folder that doesn't match the current version
+          find ./Releases -type f -name "*.nupkg" ! -name "*-${{ env.VERSION }}-*.nupkg" -delete
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v3
