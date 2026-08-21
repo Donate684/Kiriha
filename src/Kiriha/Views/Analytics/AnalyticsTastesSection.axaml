@@ -23,7 +23,7 @@
                                 <StackPanel Spacing="14">
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                         <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="#FFE53935"
+                                                Background="{DynamicResource AnalyticsSectionRedBrush}"
                                                 VerticalAlignment="Center">
                                             <material:MaterialIcon Kind="ShapeOutline"
                                                                    Width="16" Height="16"
@@ -45,7 +45,7 @@
                                 <StackPanel Spacing="14">
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                         <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="#FF2D7DD2"
+                                                Background="{DynamicResource AnalyticsSectionBlueBrush}"
                                                 VerticalAlignment="Center">
                                             <material:MaterialIcon Kind="MovieOpenOutline"
                                                                    Width="16" Height="16"

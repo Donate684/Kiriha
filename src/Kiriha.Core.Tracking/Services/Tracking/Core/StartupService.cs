@@ -8,7 +8,7 @@ namespace Kiriha.Core.Tracking.Core;
 
 public static class StartupService
 {
-    private const string AppName = "Kiriha";
+    private const string AppName = Kiriha.Core.Domain.Constants.AppConstants.System.AppName;
     private const string RegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
     public static void EnableStartup(bool launchMinimized)

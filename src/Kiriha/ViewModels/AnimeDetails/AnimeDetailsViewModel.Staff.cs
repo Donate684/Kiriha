@@ -1,9 +1,11 @@
-﻿using System.Linq;
+using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Avalonia.Media;
 using Serilog;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
@@ -79,7 +81,7 @@ public partial class AnimeDetailsViewModel
                             vm.BestWorks.Add(new StaffWorkVm
                             {
                                 Title = string.IsNullOrEmpty(w.Work.Anime!.Russian) ? (w.Work.Anime!.Name ?? "Unknown") : w.Work.Anime.Russian,
-                                Url = "https://shikimori.one" + w.Work.Anime.Url,
+                                Url = Kiriha.Core.Domain.Constants.AppConstants.Api.Shiki.OneHost + w.Work.Anime.Url,
                                 Score = scoreDisplay,
                                 HighlightColor = highlight
                             });
@@ -108,18 +110,14 @@ public partial class AnimeDetailsViewModel
         var r = role.ToLowerInvariant();
         return matchedRole switch
         {
-            "Original Creator" => r.Contains("Ð¾Ñ€Ð¸Ð³Ð¸Ð½Ð°Ð»") || r.Contains("ÑÑŽÐ¶ÐµÑ‚") || r.Contains("creator"),
-            "Director" => (r.Contains("Ñ€ÐµÐ¶Ð¸ÑÑ") || r.Contains("director")) &&
-                          !r.Contains("Ð·Ð²ÑƒÐº") && !r.Contains("sound") &&
-                          !r.Contains("ÑÐ¿Ð¸Ð·Ð¾Ð´") && !r.Contains("episode") &&
-                          !r.Contains("Ð°Ð½Ð¸Ð¼Ð°Ñ†Ð¸") && !r.Contains("animation") &&
-                          !r.Contains("cg") && !r.Contains("3d") &&
-                          !r.Contains("Ð°ÑÑÐ¸ÑÑ‚ÐµÐ½Ñ‚") && !r.Contains("assistant") &&
-                          !r.Contains("Ð¿Ð¾Ð¼Ð¾Ñ‰Ð½Ð¸Ðº") && !r.Contains("Ð²Ñ‚Ð¾Ñ€Ð¾Ð¹") && !r.Contains("co-director"),
-            "Series Composition" => r.Contains("ÐºÐ¾Ð¼Ð¿Ð¾Ð½Ð¾Ð²ÐºÐ°") || r.Contains("ÑÑ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ð°") || r.Contains("series composition"),
-            "Script" => r.Contains("ÑÑ†ÐµÐ½Ð°Ñ€") || r.Contains("script"),
-            "Music" => r.Contains("ÐºÐ¾Ð¼Ð¿Ð¾Ð·Ð¸Ñ‚Ð¾Ñ€") || r.Contains("Ð¼ÑƒÐ·Ñ‹Ðº") || r.Contains("music"),
-            "Character Design" => r.Contains("Ð´Ð¸Ð·Ð°Ð¹Ð½ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶ÐµÐ¹") || r.Contains("character design"),
+            "Original Creator" => AppConstants.StaffRoles.OriginalCreator.Any(r.Contains),
+            "Director" => AppConstants.StaffRoles.Director.Any(r.Contains) &&
+                          !AppConstants.StaffRoles.NotDirector.Any(r.Contains) &&
+                          !r.Contains("cg") && !r.Contains("3d"),
+            "Series Composition" => AppConstants.StaffRoles.SeriesComposition.Any(r.Contains),
+            "Script" => AppConstants.StaffRoles.Script.Any(r.Contains),
+            "Music" => AppConstants.StaffRoles.Music.Any(r.Contains),
+            "Character Design" => AppConstants.StaffRoles.CharacterDesign.Any(r.Contains),
             _ => r.Contains(matchedRole.ToLowerInvariant())
         };
     }

@@ -108,7 +108,7 @@
                                 <Border Background="#88000000" CornerRadius="5" Padding="5,2"
                                         IsVisible="{Binding MeanScore, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                     <StackPanel Orientation="Horizontal" Spacing="3">
-                                        <material:MaterialIcon Kind="Star" Width="9" Height="9" Foreground="#F6D365" VerticalAlignment="Center"/>
+                                        <material:MaterialIcon Kind="Star" Width="9" Height="9" Foreground="{DynamicResource RatingStarForegroundBrush}" VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding MeanScore}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -99,7 +99,7 @@
                                 <StackPanel Spacing="12">
                                     <TextBlock IsVisible="{Binding SettingsVm.Auth.IsLoggedIn}" 
                                                Text="{DynamicResource l.settings.mal.connected}" 
-                                               Foreground="#4CAF50" 
+                                               Foreground="{DynamicResource SuccessTextForegroundBrush}" 
                                                HorizontalAlignment="Center"
                                                FontWeight="SemiBold"/>
                                     <TextBlock IsVisible="{Binding !SettingsVm.Auth.IsLoggedIn}" 
@@ -158,7 +158,7 @@
                         </Border>
                         
                         <!-- Block hint -->
-                        <Border Background="#15ff5555" CornerRadius="10" Padding="12,8" IsVisible="{Binding !CanGoNext}">
+                        <Border Background="{DynamicResource ErrorBackgroundTintBrush}" CornerRadius="10" Padding="12,8" IsVisible="{Binding !CanGoNext}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <material:MaterialIcon Kind="AlertCircleOutline" Foreground="#ff5555" Width="16" Height="16"/>
                                 <TextBlock Text="{DynamicResource l.wizard.tracking.blocked_hint}" Foreground="#ff5555" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>

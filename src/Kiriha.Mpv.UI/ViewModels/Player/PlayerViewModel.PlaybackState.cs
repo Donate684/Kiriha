@@ -11,7 +11,7 @@ public partial class PlayerViewModel
     [ObservableProperty] private string _durationString = "--:--";
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private bool _hasPlaybackError;
-    [ObservableProperty] private string _playbackStatusMessage = "Загрузка видео...";
+    [ObservableProperty] private string _playbackStatusMessage = string.Empty;
     [ObservableProperty] private string _playbackErrorMessage = string.Empty;
     [ObservableProperty] private bool _canOpenPreviousMedia;
     [ObservableProperty] private bool _canOpenNextMedia;

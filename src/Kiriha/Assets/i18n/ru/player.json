@@ -187,5 +187,51 @@
     "error_failed_to_play": "Не удалось воспроизвести видео",
     "error_retry": "Повторить",
     "error_next_file": "Следующий файл"
+  },
+  "state": {
+    "loading": "Загрузка видео...",
+    "ready": "Готово",
+    "error_playback": "Ошибка воспроизведения",
+    "error_open": "Не удалось открыть или воспроизвести файл."
+  },
+  "osd": {
+    "off": "Отключить",
+    "subtitles": "Субтитры",
+    "audio": "Аудио",
+    "volume": "Громкость",
+    "speed": "Скорость",
+    "sound": "Звук",
+    "muted": "выключен",
+    "reloaded": "перезагружены",
+    "higher": "выше",
+    "lower": "ниже",
+    "screenshot": "Скриншот",
+    "with_subtitles": "с субтитрами",
+    "without_subtitles": "без субтитров",
+    "forward": "Вперёд",
+    "backward": "Назад",
+    "seconds": "сек",
+    "subtitle_style": "Стиль субтитров",
+    "enabled": "включен",
+    "disabled": "выключен"
+  },
+  "options": {
+    "none": "Ничего",
+    "play_pause": "Пауза / воспроизведение",
+    "fullscreen": "Полноэкранный режим",
+    "show_controls": "Показать панель",
+    "open_settings": "Открыть настройки",
+    "seek_backward_10s": "Назад на 10 секунд",
+    "seek_forward_10s": "Вперёд на 10 секунд",
+    "next_audio": "Следующая аудиодорожка",
+    "next_subtitle": "Следующие субтитры",
+    "volume_up": "Громче",
+    "volume_down": "Тише",
+    "seek_forward": "Вперёд",
+    "seek_backward": "Назад",
+    "speed_up": "Скорость выше",
+    "speed_down": "Скорость ниже",
+    "scale_video": "Исходное видео",
+    "scale_window": "Размер окна"
   }
 }

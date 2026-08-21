@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,7 +71,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         }
 
         // Check if the detected episode skips ahead beyond the next expected one.
-        // For example: progress=5, watching ep 7 Ã¢â‚¬â€ ep 6 was never marked, so updating
+        // For example: progress=5, watching ep 7 — ep 6 was never marked, so updating
         // directly to 7 would skip an episode. When the setting is on, notify and bail.
         if (ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode)
         {

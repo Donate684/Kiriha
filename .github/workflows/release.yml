@@ -13,19 +13,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-
-      - name: Cache NuGet
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ hashFiles('**/Directory.Packages.props') }}
-          restore-keys: nuget-
+          cache: true
+          cache-dependency-path: '**/Directory.Packages.props'
 
       - name: Extract version
         id: version
@@ -38,14 +33,15 @@ jobs:
       - name: Install Velopack
         run: dotnet tool install -g vpk
 
-      - name: Build with warnings-as-errors
-        run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
-
       - name: Run tests
-        run: dotnet test .\tests\Kiriha.Tests\Kiriha.Tests.csproj --configuration Release
+        run: dotnet test .\Tests\Kiriha.Tests\Kiriha.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true
 
       - name: Publish app
-        run: dotnet publish src\Kiriha\Kiriha.csproj -c Release -f net10.0 --runtime win-x64 --self-contained true -p:PublishReadyToRun=true -p:Version=${{ env.VERSION }} -o ./publish
+        run: dotnet publish src\Kiriha\Kiriha.csproj -c Release -f net10.0 --runtime win-x64 --self-contained true -p:PublishReadyToRun=true -p:TreatWarningsAsErrors=true -p:Version=${{ env.VERSION }} -o ./publish
+
+      - name: Download previous release for delta generation
+        run: vpk download github --repoUrl https://github.com/Donate684/kiriha
+        continue-on-error: true # Might fail on the very first release
 
       - name: Pack with Velopack
         run: vpk pack --packId Kiriha --packVersion ${{ env.VERSION }} --packDir ./publish --mainExe Kiriha.exe --icon ./src/Kiriha/Assets/kiriha.ico

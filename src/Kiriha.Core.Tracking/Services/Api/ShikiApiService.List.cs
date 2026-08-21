@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Infrastructure;
@@ -21,7 +21,7 @@ public partial class ShikiApiService
 
     public async Task<SyncOutcome> UpdateProgressAsync(int animeId, int episodes, UserAnimeStatus? status = null, int? score = null, bool? isRewatching = null, int? rewatchCount = null, CancellationToken ct = default)
     {
-        // No tokens at all â€” user disabled the tracker. Nothing to retry.
+        // No tokens at all — user disabled the tracker. Nothing to retry.
         if (_settingsService.Current.Api.Shiki == null) return SyncOutcome.PermanentFailure;
 
         if (_settingsService.Current.Api.Shiki.UserId == null)

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -104,8 +104,8 @@
                                         Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="6" Padding="10,6"
                                         BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefault}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <material:MaterialIcon Kind="CalendarClock" Width="16" Height="16" Foreground="#1565C0"/>
-                                        <TextBlock Text="{DynamicResource l.anime.status.plan_to_watch}" FontSize="12" FontWeight="Medium" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                        <material:MaterialIcon Kind="CalendarClock" Width="16" Height="16" Foreground="{DynamicResource SearchAccentForegroundBrush}"/>
+                                        <TextBlock Text="{DynamicResource l.anime.status.plan_to_watch}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SearchAccentForegroundBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </StackPanel>

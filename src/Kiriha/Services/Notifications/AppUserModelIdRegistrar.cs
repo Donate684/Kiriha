@@ -6,7 +6,7 @@ namespace Kiriha.Services.Notifications;
 
 internal static class AppUserModelIdRegistrar
 {
-    private const string AumId = "Kiriha";
+    private const string AumId = Kiriha.Core.Domain.Constants.AppConstants.System.AppName;
 
     public static void Register()
     {

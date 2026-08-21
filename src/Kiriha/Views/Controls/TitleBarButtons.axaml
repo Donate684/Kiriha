@@ -44,10 +44,10 @@
             <Setter Property="ClipToBounds" Value="True"/>
         </Style>
         <Style Selector="Button.CloseBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#E81123"/>
+            <Setter Property="Background" Value="{DynamicResource DangerButtonBackgroundBrush}"/>
         </Style>
         <Style Selector="Button.CloseBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#F1707A"/>
+            <Setter Property="Background" Value="{DynamicResource DangerButtonHoverBrush}"/>
         </Style>
         
         <!-- Icons inside buttons (Segoe Fluent perfectly matches Windows 11) -->

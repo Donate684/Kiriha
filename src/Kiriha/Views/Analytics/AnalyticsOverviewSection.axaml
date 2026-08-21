@@ -44,7 +44,7 @@
                                 <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                         <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="#FF2E9D62"
+                                                Background="{DynamicResource AnalyticsSectionGreenBrush}"
                                                 VerticalAlignment="Center">
                                             <material:MaterialIcon Kind="StarOutline"
                                                                    Width="16" Height="16"

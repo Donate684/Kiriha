@@ -25,12 +25,12 @@ public class NyaaFeedClient
 
     public Task<XDocument?> FetchGlobalFeedAsync(CancellationToken ct)
     {
-        return FetchRssDocumentAsync("https://nyaa.si/?page=rss&c=1_2", ct);
+        return FetchRssDocumentAsync(Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.BaseUrl + "?page=rss&c=1_2", ct);
     }
 
     public Task<XDocument?> FetchSearchAsync(string query, CancellationToken ct)
     {
-        return FetchRssDocumentAsync($"https://nyaa.si/?page=rss&q={Uri.EscapeDataString(query)}&c=1_2", ct);
+        return FetchRssDocumentAsync($"{Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.BaseUrl}?page=rss&q={Uri.EscapeDataString(query)}&c=1_2", ct);
     }
 
     private async Task<XDocument?> FetchRssDocumentAsync(string url, CancellationToken ct)

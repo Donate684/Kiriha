@@ -30,7 +30,7 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
 
     public SettingsViewModel? SettingsViewModel => EnsureSettingsViewModel();
 
-    // IViewModelFactory delivers a fresh transient instance on each navigation â€”
+    // IViewModelFactory delivers a fresh transient instance on each navigation —
     // see DI registrations: WelcomeViewModel and SearchViewModel are AddTransient.
     private readonly IViewModelFactory _viewModelFactory;
 

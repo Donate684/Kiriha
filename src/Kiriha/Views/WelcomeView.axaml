@@ -39,7 +39,7 @@
             
             <!-- Logo with soft accent halo -->
             <Panel HorizontalAlignment="Center">
-                <!-- ÐœÑÐ³ÐºÐ¾Ðµ Ð°ÐºÑ†ÐµÐ½Ñ‚Ð½Ð¾Ðµ ÑÐ²ÐµÑ‡ÐµÐ½Ð¸Ðµ ÑÐ·Ð°Ð´Ð¸ -->
+                <!-- Мягкое акцентное свечение сзади -->
                 <!-- Soft halo: pure RadialGradient gives the same visual feel as
                      a blurred fill at zero rendering cost. The previous BlurEffect
                      Radius=30 was contributing ~150ms+ to the first frame on
@@ -57,14 +57,14 @@
                     </Ellipse.Fill>
                 </Ellipse>
 
-                <!-- Ð¡Ð°Ð¼ Ð»Ð¾Ð³Ð¾Ñ‚Ð¸Ð¿ -->
+                <!-- Сам логотип -->
                 <controls:LeafLogo Width="270" Height="270"
                                    Margin="0,0,0,50"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
             </Panel>
 
-            <!-- Brand (Margin top Ð¾Ñ‚Ñ€Ð¸Ñ†Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¹ â€” Ð´Ð²Ð¸Ð³Ð°ÐµÑ‚ Ñ‚ÐµÐºÑÑ‚ Ð²Ñ‹ÑˆÐµ, Ð±Ð»Ð¸Ð¶Ðµ Ðº Ð»Ð¾Ð³Ð¾Ñ‚Ð¸Ð¿Ñƒ) -->
+            <!-- Brand (Margin top отрицательный — двигает текст выше, ближе к логотипу) -->
             <StackPanel Spacing="4" Margin="0,-70,0,0">
                 <TextBlock Text="{DynamicResource l.common.app_name}" FontSize="52" FontWeight="Thin" 
                            HorizontalAlignment="Center" LetterSpacing="8" Opacity="0.9"/>
@@ -74,7 +74,7 @@
 
         </StackPanel>
 
-        <!-- About link â€” bottom-centered, deliberately muted so it never
+        <!-- About link — bottom-centered, deliberately muted so it never
              competes with the brand or the loading badge. Click opens the
              AboutWindow modal (credits + library list). -->
         <Button Content="{DynamicResource l.about.open_button}"
@@ -88,7 +88,7 @@
                 Opacity="0.55"
                 Cursor="Hand"/>
 
-        <!-- Status / Progress Info â€” Ð²Ñ‹Ð²ÐµÐ´ÐµÐ½Ð¾ Ð·Ð° StackPanel, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð½Ðµ Ð´Ð²Ð¸Ð³Ð°Ð»Ð¾ Ð»Ð¾Ð³Ð¾Ñ‚Ð¸Ð¿/Ñ‚ÐµÐºÑÑ‚ -->
+        <!-- Status / Progress Info — выведено за StackPanel, чтобы не двигало логотип/текст -->
         <Border Background="{DynamicResource CardBackgroundFillDefault}" CornerRadius="20" Padding="20,10"
                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10"
                 BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"

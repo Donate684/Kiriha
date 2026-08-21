@@ -105,9 +105,9 @@
                                     <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterNsfw}">
                                         <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
                                             <Border Grid.Column="0" Width="22" Height="22" CornerRadius="6"
-                                                    Background="#1FF44336" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    Background="{DynamicResource FilterRedTintBrush}" VerticalAlignment="Center" Margin="0,0,8,0">
                                                 <material:MaterialIcon Kind="AlertOctagonOutline" Width="13" Height="13"
-                                                                      Foreground="#FFF44336"
+                                                                      Foreground="{DynamicResource FilterRedBrush}"
                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.adult.only}"

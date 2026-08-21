@@ -16,7 +16,7 @@
                                 <StackPanel Spacing="14">
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                         <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="#FF7B61FF"
+                                                Background="{DynamicResource AnalyticsSectionPurpleBrush}"
                                                 VerticalAlignment="Center">
                                             <material:MaterialIcon Kind="ChartBar"
                                                                    Width="16" Height="16"
@@ -107,7 +107,7 @@
                             <!-- Статистика 14 дней -->
                             <Border Grid.Column="1" Classes="AnalyticsPanel" Padding="0" ClipToBounds="True">
                                 <Grid ColumnDefinitions="4,*">
-                                    <Border Grid.Column="0" Background="#FF7B61FF" CornerRadius="10,0,0,10"/>
+                                    <Border Grid.Column="0" Background="{DynamicResource AnalyticsSectionPurpleBrush}" CornerRadius="10,0,0,10"/>
                                     <Border Grid.Column="1">
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
@@ -118,7 +118,7 @@
                                         <StackPanel VerticalAlignment="Center" Spacing="24" Margin="16">
                                             <StackPanel Spacing="6" HorizontalAlignment="Center">
                                                 <TextBlock Text="{DynamicResource l.analytics.history.for_14_days}" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="{Binding History.RecentHistoryEpisodes}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center" Foreground="#FF7B61FF"/>
+                                                <TextBlock Text="{Binding History.RecentHistoryEpisodes}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center" Foreground="{DynamicResource AnalyticsSectionPurpleBrush}"/>
                                                 <TextBlock Text="{DynamicResource l.analytics.history.episodes_lower}" FontSize="11" HorizontalAlignment="Center" Opacity="0.65"/>
                                             </StackPanel>
                                             <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="10,0"/>
@@ -137,7 +137,7 @@
                             <StackPanel Spacing="14">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                     <Border Width="30" Height="30" CornerRadius="8"
-                                            Background="#FF7B61FF"
+                                            Background="{DynamicResource AnalyticsSectionPurpleBrush}"
                                             VerticalAlignment="Center">
                                         <material:MaterialIcon Kind="CalendarRange"
                                                                Width="16" Height="16"
@@ -167,7 +167,7 @@
                             <StackPanel Spacing="14">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                     <Border Width="30" Height="30" CornerRadius="8"
-                                            Background="#FF0F7B83"
+                                            Background="{DynamicResource AnalyticsSectionTealBrush}"
                                             VerticalAlignment="Center">
                                         <material:MaterialIcon Kind="CalendarMonthOutline"
                                                                Width="16" Height="16"

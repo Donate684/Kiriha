@@ -34,7 +34,7 @@
                                                    Minimum="0.5"
                                                    Maximum="10.0"
                                                    Increment="0.5"
-                                                   FormatString="0.0 ÑÐµÐº"
+                                                   FormatString="0.0 сек"
                                                    Value="{Binding AutoHideTimeout}"/>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>

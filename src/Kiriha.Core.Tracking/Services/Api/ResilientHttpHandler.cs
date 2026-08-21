@@ -14,6 +14,7 @@ namespace Kiriha.Core.Tracking.Api;
 /// </summary>
 public class ResilientHttpHandler : DelegatingHandler
 {
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(60);
     private const int MaxRetries = 3;
     private static readonly TimeSpan[] Delays = {
         TimeSpan.FromSeconds(1),
@@ -46,7 +47,7 @@ public class ResilientHttpHandler : DelegatingHandler
         for (int attempt = 0; attempt <= MaxRetries; attempt++)
         {
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutCts.CancelAfter(TimeSpan.FromSeconds(60)); // 60 seconds timeout per attempt
+            timeoutCts.CancelAfter(RequestTimeout); // 60 seconds timeout per attempt
 
             // Clone for this specific attempt (always clone to be safe with retry logic)
             using var currentRequest = await CloneRequestAsync(templateRequest, timeoutCts.Token);

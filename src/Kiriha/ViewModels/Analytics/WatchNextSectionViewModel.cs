@@ -1,4 +1,4 @@
-﻿using Kiriha.Models;
+using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -47,8 +47,8 @@ public partial class WatchNextSectionViewModel : ViewModelBase
         {
             WatchTodo.Add(ToTodo(
                 item,
-                $"{item.Presentation.UnseenEpisodesCount} ÑÐ¿.",
-                $"ÐŸÑ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ÐµÐ½Ð¾ {item.Progress}/{DisplayTotal(item)}",
+                string.Format(_localizer.GetLoc("analytics.history.episodes_format"), item.Presentation.UnseenEpisodesCount),
+                string.Format(_localizer.GetLoc("analytics.watch_next.watched_progress"), item.Progress, DisplayTotal(item)),
                 "#FFE53935"));
         }
 
@@ -63,8 +63,8 @@ public partial class WatchNextSectionViewModel : ViewModelBase
         {
             FinishedWatchTodo.Add(ToTodo(
                 item,
-                $"{item.Presentation.UnseenEpisodesCount} ÑÐ¿.",
-                $"ÐŸÑ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ÐµÐ½Ð¾ {item.Progress}/{DisplayTotal(item)}",
+                string.Format(_localizer.GetLoc("analytics.history.episodes_format"), item.Presentation.UnseenEpisodesCount),
+                string.Format(_localizer.GetLoc("analytics.watch_next.watched_progress"), item.Progress, DisplayTotal(item)),
                 "#FF7B61FF"));
         }
 
@@ -103,8 +103,8 @@ public partial class WatchNextSectionViewModel : ViewModelBase
             var days = Math.Max(1, (int)(now - pauseFrom).TotalDays);
             StaleTodo.Add(ToTodo(
                 item,
-                $"{days} Ð´Ð½.",
-                $"ÐŸÐ°ÑƒÐ·Ð° Ð½Ð° {item.Progress}/{DisplayTotal(item)}",
+                string.Format(_localizer.GetLoc("analytics.watch_next.days_format"), days),
+                string.Format(_localizer.GetLoc("analytics.watch_next.paused_on"), item.Progress, DisplayTotal(item)),
                 "#FFD17A22"));
         }
     }

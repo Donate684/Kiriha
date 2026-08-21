@@ -37,9 +37,14 @@
     "total_ch_finished": "{0} ch.",
     "total_vol_format": "of {0} vol.",
     "total_vol_finished": "{0} vol.",
-    "thoughts_placeholder": "Thoughts...",
+    "thoughts_placeholder": "Thoughts on the title...",
     "no_alternative_titles": "No alternative titles",
-    "no_synopsis": "No synopsis available"
+    "no_synopsis": "No synopsis available",
+    "relations": "Related",
+    "staff": "Staff",
+    "franchise_graph": "Franchise Graph",
+    "franchise_graph_loading": "Loading franchise structure...",
+    "franchise_graph_current": "Current"
   },
   "status": {
     "watching": "Watching",

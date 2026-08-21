@@ -11,6 +11,7 @@ namespace Kiriha.Services.Data.Repository;
 
 public partial class AnimeRepository
 {
+    private static readonly TimeSpan RecentDeleteExpiryDelay = TimeSpan.FromSeconds(60);
     public bool IsRecentlyDeleted(int animeId)
     {
         lock (_recentlyDeletedIds) return _recentlyDeletedIds.ContainsKey(animeId);
@@ -63,7 +64,7 @@ public partial class AnimeRepository
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts.Token);
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(60), linkedCts.Token);
+                await Task.Delay(RecentDeleteExpiryDelay, linkedCts.Token);
             }
             catch (OperationCanceledException) { }
             finally

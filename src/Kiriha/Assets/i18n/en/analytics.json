@@ -26,7 +26,7 @@
     "studios": "Favorite studios",
     "by_weighted_score": "By weighted score",
     "hours_format": "{0:0.0} h",
-    "summary_format": "{0} title(s) • score {1} • {2}",
+    "summary_format": "{0} title(s) \u2022 score {1} \u2022 {2}",
     "score_format": "Score {0}"
   },
   "watch_next": {
@@ -37,7 +37,10 @@
     "catch_up_released": "Catch up released",
     "catch_up_released_sub": "Completed anime with missed episodes",
     "plans": "Plans",
-    "plans_sub": "Best from planned"
+    "plans_sub": "Best from planned",
+    "watched_progress": "Watched {0}/{1}",
+    "days_format": "{0} d.",
+    "paused_on": "Paused on {0}/{1}"
   },
   "read_next": {
     "catch_up_ongoings": "Catch up ongoings",
@@ -63,12 +66,18 @@
     "by_month": "Completions by month",
     "by_month_sub": "Heatmap of completed titles",
     "empty_monthly": "Completed titles do not have completion dates yet, so the monthly map is empty.",
-    "popup_favorite_subtitle": "{0} title(s) • avg {1} • weight {2}",
+    "popup_favorite_subtitle": "{0} title(s) \u2022 avg {1} \u2022 weight {2}",
     "yesterday": "Yesterday",
     "days_ago_format": "{0} days ago",
     "popup_daily_subtitle": "{0} · {1} ep. · {2} title(s)",
     "popup_monthly_title": "{0} · completed",
     "popup_monthly_subtitle": "{0} title(s)",
-    "titles_format": "{0} title(s)"
+    "titles_format": "{0} title.",
+    "completed_avg": "{0} completed, avg {1}",
+    "completed_count": "{0} completed",
+    "no_score": "Unscored",
+    "score_format": "Score {0}",
+    "episodes_format": "{0} ep.",
+    "episode_format_2": "Episode {0} · {1}"
   }
 }

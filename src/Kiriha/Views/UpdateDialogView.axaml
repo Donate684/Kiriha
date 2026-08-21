@@ -65,7 +65,7 @@
 
     <Grid RowDefinitions="*,Auto">
 
-        <!-- â•â•â• Content â•â•â• -->
+        <!-- ═══ Content ═══ -->
         <Grid Grid.Row="0" Margin="28,24,28,20" VerticalAlignment="Stretch">
 
             <!-- Prompt: version row like Settings -->
@@ -114,7 +114,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- â•â•â• Actions â•â•â• -->
+        <!-- ═══ Actions ═══ -->
         <Border Grid.Row="1" Padding="20,14"
                 Background="{DynamicResource ModalSidebarFill}"
                 BorderBrush="{DynamicResource DividerStrokeColorDefault}"
@@ -139,7 +139,7 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Downloading â€” progress inside button -->
+                    <!-- Downloading — progress inside button -->
                     <Button IsVisible="{Binding IsDownloading}" IsEnabled="False"
                             Padding="16,9" CornerRadius="6"
                             Background="{DynamicResource SystemAccentColor}" Foreground="White"

@@ -19,7 +19,7 @@ public partial class PlayerViewModel
             IsLoading = false;
             HasPlaybackError = false;
             PlaybackErrorMessage = string.Empty;
-            PlaybackStatusMessage = "Готово";
+            PlaybackStatusMessage = _localizer.GetLoc("player.state.ready");
             UpdateNavigationAvailability();
             RefreshDurationFromPlayer();
             UpdateTracks();
@@ -70,9 +70,9 @@ public partial class PlayerViewModel
             {
                 HasPlaybackError = true;
                 PlaybackErrorMessage = string.IsNullOrWhiteSpace(e.ErrorMessage)
-                    ? "Не удалось открыть или воспроизвести файл."
+                    ? _localizer.GetLoc("player.state.error_open")
                     : e.ErrorMessage;
-                PlaybackStatusMessage = "Ошибка воспроизведения";
+                PlaybackStatusMessage = _localizer.GetLoc("player.state.error_playback");
             }
 
             _statePublisher.Publish();

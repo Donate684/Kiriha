@@ -15,6 +15,7 @@ public static class AppConstants
             public const string TokenUrl = "https://myanimelist.net/v1/oauth2/token";
             public const string AuthUrl = "https://myanimelist.net/v1/oauth2/authorize";
             public const string WebsiteUrl = "https://myanimelist.net/anime/";
+            public const string BaseWebsiteUrl = "https://myanimelist.net/";
         }
 
         // shikimori.one and shikimori.net are independent OAuth realms with identical
@@ -24,6 +25,9 @@ public static class AppConstants
         // user's machine (see ApiKeys.cs for the WAF-bypass rationale).
         public static class Shiki
         {
+            public const string OneHost = "https://shikimori.one";
+            public const string NetHost = "https://shikimori.net";
+
             public static readonly ShikiHost One = new(
                 BaseUrl: "https://shikimori.one/api/",
                 TokenUrl: "https://shikimori.one/oauth/token",
@@ -37,6 +41,22 @@ public static class AppConstants
                 AuthUrl: "https://shikimori.net/oauth/authorize",
                 WebsiteUrl: "https://shikimori.net/animes/",
                 MangaWebsiteUrl: "https://shikimori.net/mangas/");
+        }
+
+        public static class AniList
+        {
+            public const string BaseUrl = "https://graphql.anilist.co";
+        }
+
+        public static class Jikan
+        {
+            public const string BaseUrl = "https://api.jikan.moe/v4/";
+        }
+
+        public static class Nyaa
+        {
+            public const string BaseUrl = "https://nyaa.si/";
+            public const string XmlNamespace = "https://nyaa.si/xmlns/nyaa";
         }
     }
 
@@ -95,5 +115,22 @@ public static class AppConstants
             public const string LogsDir = "logs";
             public const string CacheDir = "cacheimg";
         }
+    }
+
+    public static class Parsing
+    {
+        public const string BlockedByRoskomnadzor = "Заблокировано по требованию Роскомнадзора";
+        public const string CyrillicChe = "Ч";
+    }
+
+    public static class StaffRoles
+    {
+        public static readonly string[] Director = ["режисс", "director"];
+        public static readonly string[] NotDirector = ["звук", "sound", "эпизод", "episode", "анимаци", "animation", "ассистент", "assistant", "помощник", "второй", "co-director"];
+        public static readonly string[] SeriesComposition = ["компоновка", "структура", "series composition"];
+        public static readonly string[] Script = ["сценар", "script"];
+        public static readonly string[] Music = ["композитор", "музык", "music"];
+        public static readonly string[] CharacterDesign = ["дизайн персонажей", "character design"];
+        public static readonly string[] OriginalCreator = ["оригинал", "автор", "creator"];
     }
 }

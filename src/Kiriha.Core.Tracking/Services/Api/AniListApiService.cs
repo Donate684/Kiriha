@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using System;
 using Kiriha.Core.Shared;
 using System.Net.Http;
@@ -19,7 +19,7 @@ namespace Kiriha.Core.Tracking.Api;
 
 public class AniListApiService : IDisposable, IAniListApiService
 {
-    private const string Endpoint = "https://graphql.anilist.co";
+    private const string Endpoint = Kiriha.Core.Domain.Constants.AppConstants.Api.AniList.BaseUrl;
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(6);
     private static readonly TimeSpan EmptyTtl = TimeSpan.FromHours(12);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

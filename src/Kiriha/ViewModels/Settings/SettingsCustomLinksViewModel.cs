@@ -64,7 +64,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
 
     private void OnCustomLinkPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // User typed something into Name / UrlTemplate â€” persist.
+        // User typed something into Name / UrlTemplate — persist.
         _settingsService.Update(settings => { }, SettingsSection.CustomLinks, save: false);
         _settingsService.Save();
 
@@ -174,7 +174,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
         // The UrlTemplate is set in the object initializer BEFORE the link
         // is hooked into the collection's PropertyChanged pipeline, so the
         // usual auto-favicon hook never fires for presets. Trigger it
-        // manually here (no debounce â€” the URL is final).
+        // manually here (no debounce — the URL is final).
         ScheduleFaviconFetch(link, delayMs: 0);
     }
 

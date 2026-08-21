@@ -21,7 +21,7 @@ internal static partial class NyaaTorrentParser
         var resolution = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementVideoResolution)?.Value;
         var group = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementReleaseGroup)?.Value;
 
-        var nyaaNs = XNamespace.Get("https://nyaa.si/xmlns/nyaa");
+        var nyaaNs = XNamespace.Get(Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.XmlNamespace);
         var infoHash = item.Element(nyaaNs + "infoHash")?.Value;
 
         return new TorrentEntity

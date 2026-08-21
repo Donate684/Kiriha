@@ -61,14 +61,14 @@ public partial class MainWindow : KirihaWindowBase
 
         // Now that the platform impl exists, Screens is populated. Push the
         // window back onto a visible monitor if the saved position points at a
-        // display that's no longer connected (laptop dock, RDP, â€¦).
+        // display that's no longer connected (laptop dock, RDP, …).
         EnsureOnScreen();
 
         // Set the OS-level window text directly so taskbar peek / Alt-Tab /
         // Task Manager show "Kiriha". Going through Window.Title would also
         // make Avalonia render the string into the extended client area
         // (visually overlapping our custom sidebar branding). WM_SETTEXT
-        // bypasses the Avalonia binding â€” Avalonia keeps Title="" and won't
+        // bypasses the Avalonia binding — Avalonia keeps Title="" and won't
         // overwrite our native value because the property never changes.
         SetNativeTitle("Kiriha");
     }
@@ -80,7 +80,7 @@ public partial class MainWindow : KirihaWindowBase
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        // Persist whichever placement we have right now. Always â€” we want the
+        // Persist whichever placement we have right now. Always — we want the
         // size to survive both real exit and hide-to-tray.
         SavePlacement();
 

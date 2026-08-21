@@ -21,7 +21,7 @@
                                     <StackPanel Spacing="14">
                                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="#FFE53935"
+                                                    Background="{DynamicResource AnalyticsSectionRedBrush}"
                                                     VerticalAlignment="Center">
                                                 <material:MaterialIcon Kind="PlaylistPlay"
                                                                        Width="16" Height="16"
@@ -51,7 +51,7 @@
                                     <StackPanel Spacing="14">
                                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="#FF2D7DD2"
+                                                    Background="{DynamicResource AnalyticsSectionBlueBrush}"
                                                     VerticalAlignment="Center">
                                                 <material:MaterialIcon Kind="CalendarClock"
                                                                        Width="16" Height="16"
@@ -86,7 +86,7 @@
                                     <StackPanel Spacing="14">
                                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="#FF7B61FF"
+                                                    Background="{DynamicResource AnalyticsSectionPurpleBrush}"
                                                     VerticalAlignment="Center">
                                                 <material:MaterialIcon Kind="PlaylistCheck"
                                                                        Width="16" Height="16"
@@ -116,7 +116,7 @@
                                     <StackPanel Spacing="14">
                                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="#FF2E9D62"
+                                                    Background="{DynamicResource AnalyticsSectionGreenBrush}"
                                                     VerticalAlignment="Center">
                                                 <material:MaterialIcon Kind="BookmarkPlusOutline"
                                                                        Width="16" Height="16"

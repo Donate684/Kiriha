@@ -26,7 +26,7 @@
     "studios": "Любимые студии",
     "by_weighted_score": "По взвешенной оценке",
     "hours_format": "{0:0.0} ч",
-    "summary_format": "{0} тайтл. • оценка {1} • {2}",
+    "summary_format": "{0} тайтл. \u2022 оценка {1} \u2022 {2}",
     "score_format": "Оценка {0}"
   },
   "watch_next": {
@@ -37,7 +37,10 @@
     "catch_up_released": "Догнать вышедшее",
     "catch_up_released_sub": "Завершённые аниме с пропущенным",
     "plans": "Планы",
-    "plans_sub": "Лучшее из запланированного"
+    "plans_sub": "Лучшее из запланированного",
+    "watched_progress": "Просмотрено {0}/{1}",
+    "days_format": "{0} дн.",
+    "paused_on": "Пауза на {0}/{1}"
   },
   "read_next": {
     "catch_up_ongoings": "Догнать онгоинги",
@@ -63,12 +66,18 @@
     "by_month": "Завершения по месяцам",
     "by_month_sub": "Тепловая карта завершённых тайтлов",
     "empty_monthly": "У завершённых тайтлов пока нет дат завершения, поэтому месячная карта пустая.",
-    "popup_favorite_subtitle": "{0} тайтл. • средняя {1} • вес {2}",
+    "popup_favorite_subtitle": "{0} тайтл. \u2022 средняя {1} \u2022 вес {2}",
     "yesterday": "Вчера",
     "days_ago_format": "{0} дн. назад",
     "popup_daily_subtitle": "{0} · {1} эп. · {2} тайтл(ов)",
     "popup_monthly_title": "{0} · завершено",
     "popup_monthly_subtitle": "{0} тайтл(ов)",
-    "titles_format": "{0} тайтл."
+    "titles_format": "{0} тайтл.",
+    "completed_avg": "{0} завершено, средняя {1}",
+    "completed_count": "{0} завершено",
+    "no_score": "Без оценки",
+    "score_format": "Оценка {0}",
+    "episodes_format": "{0} эп.",
+    "episode_format_2": "Серия {0} · {1}"
   }
 }

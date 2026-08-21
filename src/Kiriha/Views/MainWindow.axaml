@@ -37,7 +37,7 @@
         <vmMain:MainWindowViewModel/>
     </Design.DataContext>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• Global Styles â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ═══════════════ Global Styles ═══════════════ -->
     <Window.Styles>
         <!-- Nav items: pill-shape, left-rounded -->
         <Style Selector="ListBox.NavList ListBoxItem">
@@ -107,11 +107,11 @@
         </LayoutTransformControl.LayoutTransform>
         <Grid RowDefinitions="34, *" Background="{x:Null}"
               PointerPressed="OnTitleBarPressed">
-            <!-- â•â•â• TitleBar (drag area) â•â•â•
+            <!-- ═══ TitleBar (drag area) ═══
                  ExtendClientAreaToDecorationsHint=True hides the OS chrome, so we
                  have to drive Begin{Move,Resize}Drag ourselves on the top 34px.
                  Handler lives on the root Grid: child controls that consume their
-                 own click (Button, ListBoxItem, â€¦) set Handled=true and the drag
+                 own click (Button, ListBoxItem, …) set Handled=true and the drag
                  never fires for them; clicks on empty title-bar area bubble up
                  unhandled and trigger the move. -->
     
@@ -125,12 +125,12 @@
                    Background="Transparent"
                    PaneBackground="{DynamicResource LayerFillColorDefault}">
 
-            <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• Navigation Pane â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+            <!-- ═══════════════ Navigation Pane ═══════════════ -->
             <SplitView.Pane>
                 <main:MainSidebar />
             </SplitView.Pane>
 
-            <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• Main Content â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+            <!-- ═══════════════ Main Content ═══════════════ -->
             <SplitView.Content>
                 <Grid>
                     <Border Background="{DynamicResource ContentSurfaceFill}"

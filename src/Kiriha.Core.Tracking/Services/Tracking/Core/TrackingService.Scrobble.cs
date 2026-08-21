@@ -108,7 +108,8 @@ public partial class TrackingService
                 CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(null));
             });
 
-            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
+            const int repoInitTimeoutMs = 5000;
+            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(repoInitTimeoutMs)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.GetCollection()));
             var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId);
@@ -174,7 +175,7 @@ public partial class TrackingService
             ? $"{mainTitle} | {subTitle}"
             : (!string.IsNullOrEmpty(subTitle) ? subTitle : (mainTitle ?? "Anime"));
 
-        string malUrl = $"https://myanimelist.net/anime/{matched.Id}";
+        string malUrl = $"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.WebsiteUrl}{matched.Id}";
         string shikiUrl = $"{ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror)}{matched.Id}";
 
         _discordService.UpdatePresence(discordTitle, media.Episode, matched.TotalEpisodes, malUrl, shikiUrl, media.Position, media.Duration, matched.MainPictureUrl, media.IsPlaying);

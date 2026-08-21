@@ -30,7 +30,10 @@
     "generic": "Error",
     "network": "Network error",
     "search": "Error during search",
-    "add": "Failed to add to list"
+    "add": "Error adding item",
+    "franchise_load_failed": "Failed to load franchise data or franchise is empty.",
+    "franchise_error": "An error occurred while loading the graph.",
+    "sonoko_error": "Error sending to Sonoko: {0}"
   },
   "time": {
     "today": "Today",
@@ -47,5 +50,10 @@
     "active": "Active",
     "system": "System",
     "no_results": "No results"
+  },
+  "symbols": {
+    "bullet": "\u2022",
+    "middot": "\u00B7",
+    "emdash": "\u2014"
   }
 }

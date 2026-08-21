@@ -84,7 +84,7 @@
                                     <TextBlock Text="{Binding Overview.Metrics[0].Value}"
                                                FontSize="22" FontWeight="Light"
                                                HorizontalAlignment="Center"
-                                               Foreground="#FF7B61FF"/>
+                                               Foreground="{DynamicResource AnalyticsSectionPurpleBrush}"/>
                                     <TextBlock Text="{Binding Overview.Metrics[0].Label}"
                                                FontSize="10" Opacity="0.55"
                                                HorizontalAlignment="Center"/>
@@ -103,7 +103,7 @@
                                     <TextBlock Text="{Binding Overview.Metrics[1].Value}"
                                                FontSize="22" FontWeight="Light"
                                                HorizontalAlignment="Center"
-                                               Foreground="#FF2E9D62"/>
+                                               Foreground="{DynamicResource AnalyticsSectionGreenBrush}"/>
                                     <TextBlock Text="{Binding Overview.Metrics[1].Label}"
                                                FontSize="10" Opacity="0.55"
                                                HorizontalAlignment="Center"/>
@@ -122,7 +122,7 @@
                                     <TextBlock Text="{Binding Overview.Metrics[2].Value}"
                                                FontSize="22" FontWeight="Light"
                                                HorizontalAlignment="Center"
-                                               Foreground="#FFD17A22"/>
+                                               Foreground="{DynamicResource AnalyticsSectionOrangeBrush}"/>
                                     <TextBlock Text="{Binding Overview.Metrics[2].Label}"
                                                FontSize="10" Opacity="0.55"
                                                HorizontalAlignment="Center"/>

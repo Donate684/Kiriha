@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Linq;
 using Kiriha.Core.Domain.Models;
@@ -19,7 +19,7 @@ public partial class PlayerViewModel
     partial void OnSubtitleStyleOverrideEnabledChanged(bool value)
     {
         if (!_isApplyingSettings)
-            ShowOsd("Ð¡Ñ‚Ð¸Ð»ÑŒ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð²", value ? "Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½" : "Ð²Ñ‹ÐºÐ»ÑŽÑ‡ÐµÐ½");
+            ShowOsd(_localizer.GetLoc("player.osd.subtitle_style"), value ? _localizer.GetLoc("player.osd.enabled") : _localizer.GetLoc("player.osd.disabled"));
 
         if (_isApplyingSettings) return;
         ApplySubtitleStyleOverride();

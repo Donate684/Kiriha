@@ -41,7 +41,7 @@ public static class SonokoIntegration
         catch (Exception ex)
         {
             // Обработка других возможных ошибок (например, IOException)
-            System.Diagnostics.Debug.WriteLine($"Ошибка отправки в Sonoko: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Sonoko send error: {ex.Message}");
         }
     }
 }

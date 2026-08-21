@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Kiriha.Localization;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -53,8 +54,8 @@ public partial class HistorySectionViewModel
                     TextColor = intensity >= 0.48 ? "#FFFFFFFF" : "#FF1F2937",
                     IsCurrentMonth = year == now.Year && month == now.Month,
                     Tooltip = mean > 0
-                        ? $"{monthNames[month - 1]} {year}: {count} завершено, средняя {mean:0.00}"
-                        : $"{monthNames[month - 1]} {year}: {count} завершено"
+                        ? string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), $"{monthNames[month - 1]} {year}", mean.ToString("0.00"))
+                        : string.Format(LocalizationStore.Translate("analytics.history.completed_count"), $"{monthNames[month - 1]} {year}")
                 };
 
                 foreach (var entry in entries?.OrderBy(x => x.Presentation.DisplayTitle) ?? Enumerable.Empty<AnimeEntity>())
@@ -64,8 +65,8 @@ public partial class HistorySectionViewModel
                         Title = entry.Presentation.DisplayTitle,
                         Subtitle = entry.RussianTitle != null ? entry.Title : null,
                         Detail = int.TryParse(entry.Score, out var score) && score > 0
-                            ? $"Оценка {score}"
-                            : "Без оценки",
+                            ? string.Format(LocalizationStore.Translate("analytics.history.score_format"), score)
+                            : LocalizationStore.Translate("analytics.history.no_score"),
                         PosterUrl = entry.MainPictureUrl
                     });
                 }

@@ -6,7 +6,7 @@ namespace Kiriha.Services.Notifications;
 
 internal static class ToastRenderer
 {
-    private const string AumId = "Kiriha";
+    private const string AumId = Kiriha.Core.Domain.Constants.AppConstants.System.AppName;
 
     /// <summary>
     /// Renders a toast with up to 3 text lines. The first line is bolded by the

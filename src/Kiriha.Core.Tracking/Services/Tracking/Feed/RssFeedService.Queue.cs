@@ -67,7 +67,7 @@ public partial class RssFeedService
 
                 // Single-episode releases only — batches / ranges return null and
                 // are surfaced as torrent rows but not used to bump EpisodesAired.
-                var nyaaNs = XNamespace.Get("https://nyaa.si/xmlns/nyaa");
+                var nyaaNs = XNamespace.Get(Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.XmlNamespace);
                 var infoHash = item.Element(nyaaNs + "infoHash")?.Value;
 
                 TorrentEntity torrent;

@@ -187,5 +187,51 @@
     "error_failed_to_play": "Failed to play video",
     "error_retry": "Retry",
     "error_next_file": "Next file"
+  },
+  "state": {
+    "loading": "Loading video...",
+    "ready": "Ready",
+    "error_playback": "Playback error",
+    "error_open": "Could not open or play the file."
+  },
+  "osd": {
+    "off": "Off",
+    "subtitles": "Subtitles",
+    "audio": "Audio",
+    "volume": "Volume",
+    "speed": "Speed",
+    "sound": "Sound",
+    "muted": "muted",
+    "reloaded": "reloaded",
+    "higher": "higher",
+    "lower": "lower",
+    "screenshot": "Screenshot",
+    "with_subtitles": "with subtitles",
+    "without_subtitles": "without subtitles",
+    "forward": "Forward",
+    "backward": "Backward",
+    "seconds": "sec",
+    "subtitle_style": "Subtitle style",
+    "enabled": "enabled",
+    "disabled": "disabled"
+  },
+  "options": {
+    "none": "None",
+    "play_pause": "Play / Pause",
+    "fullscreen": "Fullscreen",
+    "show_controls": "Show controls",
+    "open_settings": "Open settings",
+    "seek_backward_10s": "Seek backward 10s",
+    "seek_forward_10s": "Seek forward 10s",
+    "next_audio": "Next audio track",
+    "next_subtitle": "Next subtitles",
+    "volume_up": "Volume up",
+    "volume_down": "Volume down",
+    "seek_forward": "Seek forward",
+    "seek_backward": "Seek backward",
+    "speed_up": "Speed up",
+    "speed_down": "Speed down",
+    "scale_video": "Original video",
+    "scale_window": "Window size"
   }
 }

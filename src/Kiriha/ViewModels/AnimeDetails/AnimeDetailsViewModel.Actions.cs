@@ -22,7 +22,7 @@ public partial class AnimeDetailsViewModel
     private async Task CopyMalLink()
     {
         string type = Anime.MediaKind == MediaKind.Anime ? "anime" : "manga";
-        string url = $"https://myanimelist.net/{type}/{Anime.Id}";
+        string url = $"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.BaseWebsiteUrl}{type}/{Anime.Id}";
         await CopyToClipboard(url);
     }
 
@@ -43,7 +43,7 @@ public partial class AnimeDetailsViewModel
     private void OpenMalLink()
     {
         string type = Anime.MediaKind == MediaKind.Anime ? "anime" : "manga";
-        OpenInBrowser($"https://myanimelist.net/{type}/{Anime.Id}");
+        OpenInBrowser($"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.BaseWebsiteUrl}{type}/{Anime.Id}");
     }
 
     [RelayCommand]

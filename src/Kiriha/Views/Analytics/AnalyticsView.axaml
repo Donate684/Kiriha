@@ -35,13 +35,13 @@
     </UserControl.Styles>
 
     <Panel>
-        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ÐžÑÐ½Ð¾Ð²Ð½Ð¾Ð¹ ÐºÐ¾Ð½Ñ‚ÐµÐ½Ñ‚ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- ═══════════════ Основной контент ═══════════════ -->
         <Grid RowDefinitions="Auto,Auto,*" Margin="0" IsVisible="{Binding HasData}">
 
-            <!-- â•â•â• HERO-Ð‘ÐÐÐÐ•Ð  â•â•â• -->
+            <!-- ═══ HERO-БАННЕР ═══ -->
             <controls:AnalyticsHeroBanner Grid.Row="0" />
 
-            <!-- â•â•â• TAB-ÐÐÐ’Ð˜Ð“ÐÐ¦Ð˜Ð¯ â•â•â• -->
+            <!-- ═══ TAB-НАВИГАЦИЯ ═══ -->
             <Border Grid.Row="1" Padding="4"
                     Background="{DynamicResource SubtleFillColorSecondary}"
                     CornerRadius="10"
@@ -92,7 +92,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- â•â•â• ÐšÐžÐÐ¢Ð•ÐÐ¢ Ð¡Ð•ÐšÐ¦Ð˜Ð™ â•â•â• -->
+            <!-- ═══ КОНТЕНТ СЕКЦИЙ ═══ -->
             <ScrollViewer Grid.Row="2"
                           Padding="0,0,0,42"
                           VerticalScrollBarVisibility="Auto"
@@ -100,7 +100,7 @@
                           u:SmoothScroll.IsEnabled="True">
                 <Grid Margin="20,0,20,0">
 
-                    <!-- â•â•â•â•â•â•â•â•â•â• Ð¡Ð•ÐšÐ¦Ð˜Ð¯: ÐŸÐ ÐžÐ¤Ð˜Ð›Ð¬ (Overview) â•â•â•â•â•â•â•â•â•â• -->
+                    <!-- ══════════ СЕКЦИЯ: ПРОФИЛЬ (Overview) ══════════ -->
                     <controls:AnalyticsOverviewSection />
                     <controls:AnalyticsTastesSection />
                     <controls:AnalyticsWatchNextSection />
@@ -110,7 +110,7 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- â•â•â• Ð—ÐÐ“Ð›Ð£Ð¨ÐšÐ Ð¿Ñ€Ð¸ Ð¾Ñ‚ÑÑƒÑ‚ÑÑ‚Ð²Ð¸Ð¸ Ð´Ð°Ð½Ð½Ñ‹Ñ… â•â•â• -->
+        <!-- ═══ ЗАГЛУШКА при отсутствии данных ═══ -->
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16"
                     IsVisible="{Binding !HasData}">
             <Border Width="80" Height="80" CornerRadius="40"
@@ -130,7 +130,7 @@
                     CornerRadius="10"/>
         </StackPanel>
 
-        <!-- â•â•â• Ð˜Ð¡Ð¢ÐžÐ Ð˜Ð¯ POPUP â•â•â• -->
+        <!-- ═══ ИСТОРИЯ POPUP ═══ -->
         <controls:AnalyticsHistoryPopup />
     </Panel>
 </UserControl>

@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using Avalonia.Threading;
@@ -59,6 +59,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _metadataResolver = metadataResolver;
         _settingsService = settingsService;
         _localizer = localizer;
+        InitializeOptions();
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
         _settingsApplier = new PlayerSettingsApplier(_playback);
         _timelinePreview = new PlayerTimelinePreviewController(Overlay);

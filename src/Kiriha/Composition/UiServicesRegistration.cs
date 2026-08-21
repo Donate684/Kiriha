@@ -19,7 +19,7 @@ namespace Kiriha.Composition;
 /// <summary>
 /// DI registrations for the UI layer: all ViewModels (singleton vs transient
 /// lifetime decisions are deliberate and documented inline), plus the abstract
-/// services they consume â€” <see cref="IDialogService"/> and
+/// services they consume — <see cref="IDialogService"/> and
 /// <see cref="IViewModelFactory"/>.
 ///
 /// Lifetime rationale:

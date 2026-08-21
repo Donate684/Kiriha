@@ -1,74 +1,74 @@
 ﻿<!--
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  SettingsSidebar.axaml â€” Ð¾ÐºÐ½Ð¾ Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº (Ð¼Ð¾Ð´Ð°Ð»ÐºÐ° Ñ ÑÐ°Ð¹Ð´Ð±Ð°Ñ€Ð¾Ð¼ ÑÐ»ÐµÐ²Ð° + ÐºÐ¾Ð½Ñ‚ÐµÐ½Ñ‚)
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+════════════════════════════════════════════════════════════════════════════════
+  SettingsSidebar.axaml — окно настроек (модалка с сайдбаром слева + контент)
+════════════════════════════════════════════════════════════════════════════════
 
-  âš ï¸  Ð’ÐÐ–ÐÐž: Ð¡ÐšÐ ÐžÐ›Ð› ÐŸÐ ÐÐ’ÐžÐ™ Ð§ÐÐ¡Ð¢Ð˜ â€” ÐšÐÐš ÐžÐÐž Ð ÐÐ‘ÐžÐ¢ÐÐ•Ð¢ Ð˜ Ð§Ð¢Ðž ÐÐ• Ð¢Ð ÐžÐ“ÐÐ¢Ð¬  âš ï¸
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  ⚠️  ВАЖНО: СКРОЛЛ ПРАВОЙ ЧАСТИ — КАК ОНО РАБОТАЕТ И ЧТО НЕ ТРОГАТЬ  ⚠️
+  ──────────────────────────────────────────────────────────────────────────────
 
-  ÐŸÑ€Ð°Ð²Ð°Ñ Ñ‡Ð°ÑÑ‚ÑŒ Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº Ð¾Ð±Ñ‘Ñ€Ð½ÑƒÑ‚Ð° Ð² ÐžÐ”Ð˜Ð Ð²Ð½ÐµÑˆÐ½Ð¸Ð¹ <ScrollViewer>, Ð²Ð½ÑƒÑ‚Ñ€Ð¸ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾
-  <Panel> Ñ 5 Ð¿Ð°Ñ‡ÐºÐ°Ð¼Ð¸ <StackPanel> (ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†). ÐÐºÑ‚Ð¸Ð²Ð½Ð°Ñ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð°ÐµÑ‚ÑÑ
-  Ñ‡ÐµÑ€ÐµÐ· `IsVisible` + `IntEqualsConverter` Ð¿Ð¾ `Nav.SelectedIndex` (ÑÐ°Ð¹Ð´Ð±Ð°Ñ€
-  ÑÐ»ÐµÐ²Ð°). `Panel` Ð·Ð´ÐµÑÑŒ Ð²Ð¼ÐµÑÑ‚Ð¾ `Carousel` Ð½Ð°Ð¼ÐµÑ€ÐµÐ½Ð½Ð¾ â€” `Carousel` Ð² Avalonia
-  Ð½Ðµ Ð¾Ð³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°Ð» Ð²Ñ‹ÑÐ¾Ñ‚Ñƒ Ð´Ð¾Ñ‡ÐµÑ€Ð½ÐµÐ³Ð¾ ScrollViewer ÐºÐ¾Ñ€Ñ€ÐµÐºÑ‚Ð½Ð¾, Ð¸Ð·-Ð·Ð° Ñ‡ÐµÐ³Ð¾ ÑÐºÑ€Ð¾Ð»Ð»
-  Ð½Ðµ Ð°ÐºÑ‚Ð¸Ð²Ð¸Ñ€Ð¾Ð²Ð°Ð»ÑÑ.
+  Правая часть настроек обёрнута в ОДИН внешний <ScrollViewer>, внутри которого
+  <Panel> с 5 пачками <StackPanel> (страниц). Активная страница переключается
+  через `IsVisible` + `IntEqualsConverter` по `Nav.SelectedIndex` (сайдбар
+  слева). `Panel` здесь вместо `Carousel` намеренно — `Carousel` в Avalonia
+  не ограничивал высоту дочернего ScrollViewer корректно, из-за чего скролл
+  не активировался.
 
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  ÐŸÐžÐ§Ð•ÐœÐ£ Ð’ ÐšÐžÐÐ¦Ð• ÐšÐÐ–Ð”ÐžÐ™ Ð¡Ð¢Ð ÐÐÐ˜Ð¦Ð« Ð¡Ð¢ÐžÐ˜Ð¢ <Border Height="110" IsHitTestVisible="False"/>
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  ──────────────────────────────────────────────────────────────────────────────
+  ПОЧЕМУ В КОНЦЕ КАЖДОЙ СТРАНИЦЫ СТОИТ <Border Height="110" IsHitTestVisible="False"/>
+  ──────────────────────────────────────────────────────────────────────────────
 
-  Ð­Ñ‚Ð¾ ÐÐ•Ð’Ð˜Ð”Ð˜ÐœÐ«Ð™ Ð¡ÐŸÐ•Ð™Ð¡Ð•Ð . ÐžÐ½ Ð½ÑƒÐ¶ÐµÐ½ Ð¿Ð¾Ñ‚Ð¾Ð¼Ñƒ, Ñ‡Ñ‚Ð¾ viewport ScrollViewer'Ð° Ð½Ð°
-  ~110â€“128px Ð‘ÐžÐ›Ð¬Ð¨Ð• Ñ€ÐµÐ°Ð»ÑŒÐ½Ð¾ Ð²Ð¸Ð´Ð¸Ð¼Ð¾Ð¹ Ð¾Ð±Ð»Ð°ÑÑ‚Ð¸ Ð¼Ð¾Ð´Ð°Ð»ÐºÐ¸. Avalonia ÑÑ‡Ð¸Ñ‚Ð°ÐµÑ‚ Ð¾ÐºÐ½Ð¾
-  Ð¿Ð¾Ð»Ð½Ð¾ÑÐºÑ€Ð°Ð½Ð½Ñ‹Ð¼ (ExtendClientAreaToDecorationsHint=True + RowSpan=2 overlay),
-  Ð¸Ð·-Ð·Ð° Ñ‡ÐµÐ³Ð¾ Ð¼Ð¾Ð´Ð°Ð»ÐºÐ° "Ð´ÑƒÐ¼Ð°ÐµÑ‚" Ñ‡Ñ‚Ð¾ Ñƒ Ð½ÐµÑ‘ Ð±Ð¾Ð»ÑŒÑˆÐµ Ð¼ÐµÑÑ‚Ð°, Ñ‡ÐµÐ¼ Ð²Ð¸Ð´Ð¸Ñ‚ ÑŽÐ·ÐµÑ€.
-  Ð‘ÐµÐ· ÑÐ¿ÐµÐ¹ÑÐµÑ€Ð° Ð¿Ñ€Ð¸ Ð½ÐµÐ±Ð¾Ð»ÑŒÑˆÐ¾Ð¼ Ð¿ÐµÑ€ÐµÐ¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ð¸ (1-2 Ð¿ÑƒÐ½ÐºÑ‚Ð°) ÑÐºÑ€Ð¾Ð»Ð» ÐÐ• Ð°ÐºÑ‚Ð¸Ð²Ð¸Ñ€Ð¾Ð²Ð°Ð»ÑÑ:
-  ÐºÐ¾Ð½Ñ‚ÐµÐ½Ñ‚ Ð²Ð¸Ð·ÑƒÐ°Ð»ÑŒÐ½Ð¾ Ð¾Ð±Ñ€ÐµÐ·Ð°Ð»ÑÑ ÑÐ½Ð¸Ð·Ñƒ, Ð½Ð¾ ScrollViewer ÑÑ‡Ð¸Ñ‚Ð°Ð» viewport > extent
-  Ð¸ Ð½Ð¸Ñ‡ÐµÐ³Ð¾ Ð½Ðµ ÑÐºÑ€Ð¾Ð»Ð»Ð¸Ð». Ð¡Ð¿ÐµÐ¹ÑÐµÑ€ Ð¸ÑÐºÑƒÑÑÑ‚Ð²ÐµÐ½Ð½Ð¾ ÑƒÐ²ÐµÐ»Ð¸Ñ‡Ð¸Ð²Ð°ÐµÑ‚ extent Ð¸ ÐºÐ¾Ð¼Ð¿ÐµÐ½ÑÐ¸Ñ€ÑƒÐµÑ‚
-  ÑÑ‚Ñƒ "Ð¼Ñ‘Ñ€Ñ‚Ð²ÑƒÑŽ Ð·Ð¾Ð½Ñƒ".
+  Это НЕВИДИМЫЙ СПЕЙСЕР. Он нужен потому, что viewport ScrollViewer'а на
+  ~110–128px БОЛЬШЕ реально видимой области модалки. Avalonia считает окно
+  полноэкранным (ExtendClientAreaToDecorationsHint=True + RowSpan=2 overlay),
+  из-за чего модалка "думает" что у неё больше места, чем видит юзер.
+  Без спейсера при небольшом переполнении (1-2 пункта) скролл НЕ активировался:
+  контент визуально обрезался снизу, но ScrollViewer считал viewport > extent
+  и ничего не скроллил. Спейсер искусственно увеличивает extent и компенсирует
+  эту "мёртвую зону".
 
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  ÐŸÐ ÐÐ’Ð˜Ð›Ð ÐŸÐ Ð˜ Ð”ÐžÐ‘ÐÐ’Ð›Ð•ÐÐ˜Ð˜ / Ð Ð•Ð”ÐÐšÐ¢Ð˜Ð ÐžÐ’ÐÐÐ˜Ð˜ Ð¡Ð¢Ð ÐÐÐ˜Ð¦
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  ──────────────────────────────────────────────────────────────────────────────
+  ПРАВИЛА ПРИ ДОБАВЛЕНИИ / РЕДАКТИРОВАНИИ СТРАНИЦ
+  ──────────────────────────────────────────────────────────────────────────────
 
-  1. ÐšÐ°Ð¶Ð´Ð°Ñ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ð° â€” ÑÑ‚Ð¾ <StackPanel MaxWidth="720" VerticalAlignment="Top"
+  1. Каждая страница — это <StackPanel MaxWidth="720" VerticalAlignment="Top"
      IsVisible="{Binding ElementName=Nav, Path=SelectedIndex,
                 Converter={StaticResource IntEqualsConverter},
-                ConverterParameter=N}"> Ð³Ð´Ðµ N â€” Ð¸Ð½Ð´ÐµÐºÑ Ð¿ÑƒÐ½ÐºÑ‚Ð° Ð² ÑÐ°Ð¹Ð´Ð±Ð°Ñ€Ðµ (0..4).
+                ConverterParameter=N}"> где N — индекс пункта в сайдбаре (0..4).
 
-  2. ÐšÐÐ–Ð”ÐÐ¯ Ð½Ð¾Ð²Ð°Ñ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð”ÐžÐ›Ð–ÐÐ Ð·Ð°ÐºÐ°Ð½Ñ‡Ð¸Ð²Ð°Ñ‚ÑŒÑÑ ÑÐ¿ÐµÐ¹ÑÐµÑ€Ð¾Ð¼:
+  2. КАЖДАЯ новая страница ДОЛЖНА заканчиваться спейсером:
          <Border Height="110" IsHitTestVisible="False"/>
-     Ð­Ñ‚Ð¾ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ Ð²Ð½ÑƒÑ‚Ñ€Ð¸ </StackPanel>. ÐÐµ ÑƒÐ´Ð°Ð»ÑÑ‚ÑŒ, Ð½Ðµ Ð·Ð°Ð±Ñ‹Ð²Ð°Ñ‚ÑŒ.
+     Это последний элемент внутри </StackPanel>. Не удалять, не забывать.
 
-  3. ÐŸÑ€Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ð¸ Ð½Ð¾Ð²Ð¾Ð¹ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ñ‹:
-     - Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ <ListBoxItem> Ð² ÑÐ°Ð¹Ð´Ð±Ð°Ñ€ (Ð½Ð¸Ð¶Ðµ) Ñ Ð¸ÐºÐ¾Ð½ÐºÐ¾Ð¹ + Ñ‚ÐµÐºÑÑ‚Ð¾Ð¼.
-     - Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ <StackPanel> Ñ ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ð¼ ConverterParameter=(N+1).
-     - ÐÐµ Ð·Ð°Ð±Ñ‹Ñ‚ÑŒ Ð¿Ñ€Ð¾ ÑÐ¿ÐµÐ¹ÑÐµÑ€ Ð² ÐºÐ¾Ð½Ñ†Ðµ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ñ‹.
+  3. При добавлении новой страницы:
+     - Добавить <ListBoxItem> в сайдбар (ниже) с иконкой + текстом.
+     - Добавить <StackPanel> с соответствующим ConverterParameter=(N+1).
+     - Не забыть про спейсер в конце страницы.
 
-  4. Ð•ÑÐ»Ð¸ Ð¼ÐµÐ½ÑÐµÑ‚ÑÑ Ð²Ñ‹ÑÐ¾Ñ‚Ð° Ð¾ÐºÐ½Ð°/Ð¼Ð¾Ð´Ð°Ð»ÐºÐ¸ Ð¸Ð»Ð¸ structure layout'Ð° Ð¸ ÑÐºÑ€Ð¾Ð»Ð» Ð½Ð°Ñ‡Ð¸Ð½Ð°ÐµÑ‚
-     Ð²ÐµÑÑ‚Ð¸ ÑÐµÐ±Ñ ÑÑ‚Ñ€Ð°Ð½Ð½Ð¾ â€” ÐŸÐ•Ð Ð’Ð«Ðœ Ð”Ð•Ð›ÐžÐœ Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ ÑÐ¿ÐµÐ¹ÑÐµÑ€:
-     - Ð•ÑÐ»Ð¸ Ð¿Ñ€Ð¸ Ð½ÐµÐ±Ð¾Ð»ÑŒÑˆÐ¾Ð¼ Ð¿ÐµÑ€ÐµÐ¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ð¸ ÑÐºÑ€Ð¾Ð»Ð» ÐÐ• Ð¿Ð¾ÑÐ²Ð»ÑÐµÑ‚ÑÑ â€” Ð£Ð’Ð•Ð›Ð˜Ð§Ð˜Ð¢Ð¬ Height ÑÐ¿ÐµÐ¹ÑÐµÑ€Ð°.
-     - Ð•ÑÐ»Ð¸ ÑÐ½Ð¸Ð·Ñƒ ÑÐ»Ð¸ÑˆÐºÐ¾Ð¼ Ð¼Ð½Ð¾Ð³Ð¾ Ð¿ÑƒÑÑ‚Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾ÑÑ‚Ñ€Ð°Ð½ÑÑ‚Ð²Ð° Ð¿Ñ€Ð¸ Ð¿Ñ€Ð¾ÐºÑ€ÑƒÑ‚ÐºÐµ Ð²Ð½Ð¸Ð· â€” Ð£ÐœÐ•ÐÐ¬Ð¨Ð˜Ð¢Ð¬ Height.
-     - ÐÐ¾Ñ€Ð¼Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½: 100â€“140px.
+  4. Если меняется высота окна/модалки или structure layout'а и скролл начинает
+     вести себя странно — ПЕРВЫМ ДЕЛОМ проверить спейсер:
+     - Если при небольшом переполнении скролл НЕ появляется — УВЕЛИЧИТЬ Height спейсера.
+     - Если снизу слишком много пустого пространства при прокрутке вниз — УМЕНЬШИТЬ Height.
+     - Нормальный диапазон: 100–140px.
 
-  5. ÐÐ• Ñ‚Ñ€Ð¾Ð³Ð°Ñ‚ÑŒ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ðµ Ð²ÐµÑ‰Ð¸ (Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐµÐ½Ð¾, Ñ‚Ð°Ðº Ñ€Ð°Ð±Ð¾Ñ‚Ð°ÐµÑ‚):
-     - `MaxHeight="{Binding #RootGrid.Bounds.Height}"` Ð½Ð° Ð²Ð½ÐµÑˆÐ½ÐµÐ¼ ScrollViewer.
+  5. НЕ трогать следующие вещи (проверено, так работает):
+     - `MaxHeight="{Binding #RootGrid.Bounds.Height}"` на внешнем ScrollViewer.
      - `HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"`
-       Ð½Ð° UserControl (Ð¸Ð½Ð°Ñ‡Ðµ ÐºÐ¾Ð½Ñ‚ÐµÐ½Ñ‚ Ð½Ðµ Ñ€Ð°ÑÑ‚ÑÐ³Ð¸Ð²Ð°ÐµÑ‚ÑÑ Ð¸ ScrollViewer
-       Ð½Ðµ Ð¿Ð¾Ð»ÑƒÑ‡Ð°ÐµÑ‚ Ð¾Ð³Ñ€Ð°Ð½Ð¸Ñ‡ÐµÐ½Ð¸Ðµ Ð¿Ð¾ Ð²Ñ‹ÑÐ¾Ñ‚Ðµ).
-     - `Name="RootGrid"` Ð½Ð° ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð¼ <Grid>.
-     - `RowDefinitions="*"` Ð½Ð° ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð¼ <Grid>.
-     - Ð¡Ñ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ñƒ: <ScrollViewer> > <Panel> > <StackPanel IsVisible=...>.
-       Ð’ Ñ‡Ð°ÑÑ‚Ð½Ð¾ÑÑ‚Ð¸, Ð½Ðµ Ð¾Ð±Ð¾Ñ€Ð°Ñ‡Ð¸Ð²Ð°Ñ‚ÑŒ ÐºÐ°Ð¶Ð´ÑƒÑŽ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ñƒ Ð² Ð¾Ñ‚Ð´ÐµÐ»ÑŒÐ½Ñ‹Ð¹ ScrollViewer
-       Ð¸ Ð½Ðµ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ Carousel â€” Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐµÐ½Ð¾, Ð»Ð¾Ð¼Ð°ÐµÑ‚ÑÑ ÑÐºÑ€Ð¾Ð»Ð».
+       на UserControl (иначе контент не растягивается и ScrollViewer
+       не получает ограничение по высоте).
+     - `Name="RootGrid"` на корневом <Grid>.
+     - `RowDefinitions="*"` на корневом <Grid>.
+     - Структуру: <ScrollViewer> > <Panel> > <StackPanel IsVisible=...>.
+       В частности, не оборачивать каждую страницу в отдельный ScrollViewer
+       и не использовать Carousel — проверено, ломается скролл.
 
-  6. ÐÐ½Ð°Ð»Ð¾Ð³Ð¸Ñ‡Ð½Ñ‹Ðµ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð² `@Views/SettingsView.axaml` Ð¸
-     `@Views/MainWindow.axaml` (ContentControl Ñ Stretch). Ð¢Ð¾Ð¶Ðµ Ð½Ðµ Ñ‚Ñ€Ð¾Ð³Ð°Ñ‚ÑŒ.
+  6. Аналогичные настройки в `@Views/SettingsView.axaml` и
+     `@Views/MainWindow.axaml` (ContentControl с Stretch). Тоже не трогать.
 
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  TL;DR: Ð•Ð¡Ð›Ð˜ Ð§Ð˜ÐÐ˜Ð¨Ð¬/Ð”ÐžÐ‘ÐÐ’Ð›Ð¯Ð•Ð¨Ð¬ ÐŸÐ£ÐÐšÐ¢ Ð’ ÐÐÐ¡Ð¢Ð ÐžÐ™ÐšÐ˜ â€” Ð¡ÐšÐžÐŸÐ˜Ð Ð£Ð™ Ð›Ð®Ð‘Ð£Ð® Ð¡Ð£Ð©Ð•Ð¡Ð¢Ð’Ð£Ð®Ð©Ð£Ð®
-  Ð¡Ð¢Ð ÐÐÐ˜Ð¦Ð£ Ð¦Ð•Ð›Ð˜ÐšÐžÐœ (Ð¾Ñ‚ <StackPanel IsVisible=...> Ð´Ð¾ </StackPanel> Ð’ÐšÐ›Ð®Ð§ÐÐ¯
-  Ð¡ÐŸÐ•Ð™Ð¡Ð•Ð  Ð’ ÐšÐžÐÐ¦Ð•) Ð˜ ÐÐ”ÐÐŸÐ¢Ð˜Ð Ð£Ð™.
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  ──────────────────────────────────────────────────────────────────────────────
+  TL;DR: ЕСЛИ ЧИНИШЬ/ДОБАВЛЯЕШЬ ПУНКТ В НАСТРОЙКИ — СКОПИРУЙ ЛЮБУЮ СУЩЕСТВУЮЩУЮ
+  СТРАНИЦУ ЦЕЛИКОМ (от <StackPanel IsVisible=...> до </StackPanel> ВКЛЮЧАЯ
+  СПЕЙСЕР В КОНЦЕ) И АДАПТИРУЙ.
+════════════════════════════════════════════════════════════════════════════════
 -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -177,7 +177,7 @@
     <Grid Name="RootGrid" ColumnDefinitions="232,*" RowDefinitions="*"
           HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-        <!-- â•â•â•â•â•â•â•â•â•â• LEFT SIDEBAR â•â•â•â•â•â•â•â•â•â• -->
+        <!-- ══════════ LEFT SIDEBAR ══════════ -->
         <Border Grid.Column="0" Background="{DynamicResource ModalSidebarFill}"
                 BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="True">
@@ -241,7 +241,7 @@
                             </ListBoxItem>
                         </ListBox>
 
-                        <!-- â”€â”€ Ð Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð½Ð°Ñ ÐºÐ°ÑÑ‚Ð¾Ð¼Ð¸Ð·Ð°Ñ†Ð¸Ñ â”€â”€ separate ListBox so the
+                        <!-- ── Расширенная кастомизация ── separate ListBox so the
                              section gets its own header. SelectionChanged in code-behind
                              keeps the two ListBoxes mutually exclusive (Nav.SelectedIndex
                              goes to -1 when something here is picked, and vice versa). -->
@@ -260,55 +260,55 @@
             </DockPanel>
         </Border>
 
-        <!-- â•â•â•â•â•â•â•â•â•â• RIGHT CONTENT â•â•â•â•â•â•â•â•â•â• -->
+        <!-- ══════════ RIGHT CONTENT ══════════ -->
         <ScrollViewer Grid.Column="1" Padding="32,32,32,40" HorizontalScrollBarVisibility="Disabled"
                       MaxHeight="{Binding #RootGrid.Bounds.Height}"
                       u:SmoothScroll.IsEnabled="True">
           <Panel>
 
-            <!-- â”€â”€ System â”€â”€ -->
+            <!-- ── System ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
                     <pages:SettingsSystemPage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Appearance â”€â”€ -->
+            <!-- ── Appearance ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=1}">
                     <pages:SettingsAppearancePage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Notifications â”€â”€ -->
+            <!-- ── Notifications ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=2}">
                     <pages:SettingsNotificationsPage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Accounts â”€â”€ -->
+            <!-- ── Accounts ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=3}">
                     <pages:SettingsAccountsPage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Scrobbler â”€â”€ -->
+            <!-- ── Scrobbler ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=4}">
                     <pages:SettingsScrobblerPage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Updates â”€â”€ -->
+            <!-- ── Updates ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=5}">
                     <pages:SettingsUpdatesPage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Custom Links â”€â”€ lives in the separate "Ð Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð½Ð°Ñ ÐºÐ°ÑÑ‚Ð¾Ð¼Ð¸Ð·Ð°Ñ†Ð¸Ñ"
+            <!-- ── Custom Links ── lives in the separate "Расширенная кастомизация"
                  sidebar group, so visibility is driven by NavCustom.SelectedIndex
                  instead of Nav.SelectedIndex. -->
             <!-- Cache -->
@@ -318,7 +318,7 @@
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 
-            <!-- â”€â”€ Player â”€â”€ -->
+            <!-- ── Player ── -->
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=7}">
                     <pages:SettingsPlayerPage />

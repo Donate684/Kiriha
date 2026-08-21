@@ -1,4 +1,4 @@
-﻿using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -68,13 +68,13 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             }
             else
             {
-                ErrorMessage = "ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð·Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚ÑŒ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ñ‹ Ð¸Ð»Ð¸ Ñ„Ñ€Ð°Ð½ÑˆÐ¸Ð·Ð° Ð¿ÑƒÑÑ‚Ð°.";
+                ErrorMessage = Kiriha.Localization.LocalizationStore.Translate("common.errors.franchise_load_failed");
             }
         }
         catch (System.Exception ex)
         {
             Log.Error(ex, "Failed to load franchise graph for {AnimeId}", _baseAnimeId);
-            ErrorMessage = "ÐŸÑ€Ð¾Ð¸Ð·Ð¾ÑˆÐ»Ð° Ð¾ÑˆÐ¸Ð±ÐºÐ° Ð¿Ñ€Ð¸ Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐµ Ð³Ñ€Ð°Ñ„Ð°.";
+            ErrorMessage = Kiriha.Localization.LocalizationStore.Translate("common.errors.franchise_error");
         }
         finally
         {
@@ -88,7 +88,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
                        node.Node.Kind == "one_shot" || node.Node.Kind == "doujin" || node.Node.Kind == "novel" ||
                        node.Node.Kind == "light_novel";
 
-        // 1. ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ Ð»Ð¾ÐºÐ°Ð»ÑŒÐ½Ñ‹Ð¹ Ñ€ÐµÐ¿Ð¾Ð·Ð¸Ñ‚Ð¾Ñ€Ð¸Ð¹
+        // 1. Проверяем локальный репозиторий
         var existing = _animeRepo.Collection.FirstOrDefault(x =>
             x.Id == node.Node.Id &&
             (isManga ? x.MediaKind != MediaKind.Anime : x.MediaKind == MediaKind.Anime));
@@ -104,7 +104,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             }
         }
 
-        // 2. Ð—Ð°Ð¿Ñ€Ð°ÑˆÐ¸Ð²Ð°ÐµÐ¼ Ñ MAL API Ð¿Ð¾ ID
+        // 2. Запрашиваем с MAL API по ID
         try
         {
             AnimeEntity? details = isManga

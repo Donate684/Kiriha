@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Kiriha.Core.Shared;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,17 +17,17 @@ namespace Kiriha.Core.Tracking.Api;
 
 /// <summary>
 /// Freshness policy for <see cref="JikanApiService.GetEpisodeListAsync"/>.
-/// Jikan is rate-limited (1 RPS) and the per-page round-trip is â‰¥ 1.1 s, so
+/// Jikan is rate-limited (1 RPS) and the per-page round-trip is ≥ 1.1 s, so
 /// long-running shows can take tens of seconds to refresh. Letting callers
 /// pick a freshness window lets us skip the live call entirely when the
 /// underlying data couldn't possibly have changed.
 /// </summary>
 public enum EpisodeFreshness
 {
-    /// <summary>12-hour TTL â€” appropriate for currently-airing series whose
+    /// <summary>12-hour TTL — appropriate for currently-airing series whose
     /// list grows roughly weekly.</summary>
     Default,
-    /// <summary>Effectively infinite TTL â€” appropriate for finished_airing
+    /// <summary>Effectively infinite TTL — appropriate for finished_airing
     /// series whose episode list is immutable once a series ends.</summary>
     Completed,
     /// <summary>Bypass cache; always hit the live API.</summary>
@@ -54,11 +54,11 @@ public partial class JikanApiService : IDisposable
         TokensPerPeriod = 1,
         AutoReplenishment = true,
     });
-    private const string BaseUrl = "https://api.jikan.moe/v4/";
+    private const string BaseUrl = Kiriha.Core.Domain.Constants.AppConstants.Api.Jikan.BaseUrl;
 
     // In-memory TTL cache for the /forum endpoint. Forum is only consulted as
     // a fallback signal for currently-airing shows, so a process-lifetime cache
-    // is enough â€” no need to persist across restarts. Keyed by MAL ID; value is
+    // is enough — no need to persist across restarts. Keyed by MAL ID; value is
     // (latestEpisodeOrNull, fetchedAtUtc).
     private readonly ConcurrentDictionary<int, (int? Value, DateTime FetchedAt)> _forumCache = new();
 
@@ -75,7 +75,7 @@ public partial class JikanApiService : IDisposable
     {
         // Conditional GET via HttpConditionalCache + Jikan-specific throttle.
         // The throttle (60 rpm) is enforced for *every* network call regardless of
-        // 200/304 â€” Jikan counts conditional GETs against the same budget.
+        // 200/304 — Jikan counts conditional GETs against the same budget.
         var bytes = await _httpCache.SendAsync(
             requestFactory: innerCt =>
             {

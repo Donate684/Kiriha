@@ -8,7 +8,7 @@
              x:DataType="vmAnalytics:AnalyticsViewModel">
         <!-- ═══ ИСТОРИЯ POPUP ═══ -->
         <Border IsVisible="{Binding History.IsHistoryPopupOpen}"
-                Background="#80000000"
+                Background="{DynamicResource ModalOverlayBackgroundBrush}"
                 ZIndex="50">
             <Grid>
                 <Button Background="Transparent"

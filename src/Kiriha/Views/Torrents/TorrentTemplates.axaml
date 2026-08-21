@@ -41,7 +41,7 @@
                                                             Margin="0,-5,-5,0"
                                                             MinWidth="18" Height="18" CornerRadius="9"
                                                             Padding="5,0"
-                                                            Background="#E53935"
+                                                            Background="{DynamicResource TorrentRedBrush}"
                                                             BorderBrush="{DynamicResource SubtleFillColorSecondary}"
                                                             BorderThickness="2"
                                                             BoxShadow="0 2 6 0 #60000000"
@@ -84,7 +84,7 @@
                                                 CommandParameter="{Binding}">
                                             <Panel>
                                                 <material:MaterialIcon Kind="Close" Width="14" Height="14"
-                                                                       Foreground="#E53935"
+                                                                       Foreground="{DynamicResource TorrentRedBrush}"
                                                                        IsVisible="{Binding !IsHidden}"/>
                                                 <material:MaterialIcon Kind="Plus" Width="14" Height="14"
                                                                        Foreground="{DynamicResource SystemAccentColor}"
@@ -104,7 +104,7 @@
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
                                                         VerticalAlignment="Center">
                                                 <Border CornerRadius="4" Padding="5,1"
-                                                        Background="#E53935"
+                                                        Background="{DynamicResource TorrentRedBrush}"
                                                         IsVisible="{Binding HasMatch}"
                                                         VerticalAlignment="Center">
                                                     <TextBlock Text="{DynamicResource l.torrents.results.in_list}"
@@ -129,7 +129,7 @@
                                                         <!-- Left accent bar for matched -->
                                                         <Border Grid.Column="0" Width="3"
                                                                 CornerRadius="2"
-                                                                Background="#E53935"
+                                                                Background="{DynamicResource TorrentRedBrush}"
                                                                 IsVisible="{Binding IsMatched}"/>
                                                         <Border Grid.Column="1" Classes="TorrentRow">
                                                             <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">

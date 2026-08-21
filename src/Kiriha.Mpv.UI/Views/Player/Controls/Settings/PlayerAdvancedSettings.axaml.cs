@@ -24,7 +24,7 @@ namespace Kiriha.Mpv.UI.Views.Player.Controls.Settings
 
             var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Папка для скриншотов",
+                Title = vm.ScreenshotFolderTitle,
                 AllowMultiple = false
             });
 

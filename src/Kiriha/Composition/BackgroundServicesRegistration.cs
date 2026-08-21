@@ -18,7 +18,7 @@ namespace Kiriha.Composition;
 /// load queue, update checks, notifications, airing info, and maintenance tasks.
 ///
 /// These are separated from <see cref="TrackingServicesRegistration"/> because
-/// they are not tracker-specific â€” they run in the background as
+/// they are not tracker-specific — they run in the background as
 /// <see cref="IHostedService"/> instances or support cross-cutting concerns.
 /// </summary>
 internal static class BackgroundServicesRegistration

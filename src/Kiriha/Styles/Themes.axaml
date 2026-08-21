@@ -58,6 +58,26 @@
                 <GradientStop Color="#50000000" Offset="0"/>
                 <GradientStop Color="#00000000" Offset="1"/>
             </LinearGradientBrush>
+            <!-- Analytics Section Colors -->
+            <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935"/>
+            <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2"/>
+            <SolidColorBrush x:Key="AnalyticsSectionPurpleBrush" Color="#FF7B61FF"/>
+            <SolidColorBrush x:Key="AnalyticsSectionGreenBrush" Color="#FF2E9D62"/>
+            <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22"/>
+            <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83"/>
+            <!-- Semantic UI Colors -->
+            <SolidColorBrush x:Key="SuccessTextForegroundBrush" Color="#4CAF50"/>
+            <SolidColorBrush x:Key="ErrorBackgroundTintBrush" Color="#15ff5555"/>
+            <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365"/>
+            <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0"/>
+            <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000"/>
+            <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#E81123"/>
+            <SolidColorBrush x:Key="DangerButtonHoverBrush" Color="#F1707A"/>
+            <SolidColorBrush x:Key="OrangeredAccentBrush" Color="#FF4500"/>
+            <SolidColorBrush x:Key="OrangeredAccentTintBrush" Color="#15FF4500"/>
+            <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
+            <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
+            <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
             <SolidColorBrush x:Key="CinematicTitleForeground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="CinematicSubtitleForeground" Color="#F2FFFFFF"/>
             <SolidColorBrush x:Key="CinematicProgressForeground" Color="#FFFFFFFF"/>
@@ -122,6 +142,26 @@
                 <GradientStop Color="#70000000" Offset="0"/>
                 <GradientStop Color="#00000000" Offset="1"/>
             </LinearGradientBrush>
+            <!-- Analytics Section Colors -->
+            <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935"/>
+            <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2"/>
+            <SolidColorBrush x:Key="AnalyticsSectionPurpleBrush" Color="#FF7B61FF"/>
+            <SolidColorBrush x:Key="AnalyticsSectionGreenBrush" Color="#FF2E9D62"/>
+            <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22"/>
+            <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83"/>
+            <!-- Semantic UI Colors -->
+            <SolidColorBrush x:Key="SuccessTextForegroundBrush" Color="#4CAF50"/>
+            <SolidColorBrush x:Key="ErrorBackgroundTintBrush" Color="#15ff5555"/>
+            <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365"/>
+            <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0"/>
+            <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000"/>
+            <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#E81123"/>
+            <SolidColorBrush x:Key="DangerButtonHoverBrush" Color="#F1707A"/>
+            <SolidColorBrush x:Key="OrangeredAccentBrush" Color="#FF4500"/>
+            <SolidColorBrush x:Key="OrangeredAccentTintBrush" Color="#15FF4500"/>
+            <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
+            <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
+            <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
             <SolidColorBrush x:Key="CinematicTitleForeground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="CinematicSubtitleForeground" Color="#B8FFFFFF"/>
             <SolidColorBrush x:Key="CinematicProgressForeground" Color="#FFFFFFFF"/>

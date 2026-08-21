@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -21,7 +21,7 @@ namespace Kiriha.Core.Tracking.Api;
 
 public partial class MalApiService : IMalApiService, IDisposable
 {
-    // Resolved once from Constants Ã¢â‚¬â€ no parallel const that can drift from the URL
+    // Resolved once from Constants — no parallel const that can drift from the URL
     // wired into the IHttpClientFactory "MalClient" registration.
     private static readonly string MalBaseUrl = AppConstants.Api.Mal.BaseUrl;
 

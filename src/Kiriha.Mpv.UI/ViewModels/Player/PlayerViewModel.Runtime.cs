@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -150,7 +150,7 @@ public partial class PlayerViewModel
             SubtitleTracks.Clear();
 
             // Add 'None' option for subtitles
-            SubtitleTracks.Add(new TrackInfo { Id = "no", Type = "sub", Title = "ÐžÑ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ" });
+            SubtitleTracks.Add(new TrackInfo { Id = "no", Type = "sub", Title = _localizer.GetLoc("player.osd.off") });
 
             foreach (var t in audioTracks) AudioTracks.Add(t);
             foreach (var t in subTracks) SubtitleTracks.Add(t);
@@ -167,7 +167,7 @@ public partial class PlayerViewModel
         if (_playback.HasPlayer && track != null)
         {
             _playback.SetTrack(track.Type, track.Id);
-            ShowOsd(track.Type == "sub" ? "Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹" : "ÐÑƒÐ´Ð¸Ð¾", track.DisplayName);
+            ShowOsd(track.Type == "sub" ? _localizer.GetLoc("player.osd.subtitles") : _localizer.GetLoc("player.osd.audio"), track.DisplayName);
         }
     }
 
@@ -213,7 +213,7 @@ public partial class PlayerViewModel
         }
 
         if (!_isApplyingSettings)
-            ShowOsd("Ð“Ñ€Ð¾Ð¼ÐºÐ¾ÑÑ‚ÑŒ", $"{Math.Clamp(value, 0, 100):0}%");
+            ShowOsd(_localizer.GetLoc("player.osd.volume"), $"{Math.Clamp(value, 0, 100):0}%");
     }
 
     partial void OnPlaybackSpeedChanged(double value)
@@ -227,7 +227,7 @@ public partial class PlayerViewModel
         }
 
         if (!_isApplyingSettings)
-            ShowOsd("Ð¡ÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ", $"{speed:0.##}x");
+            ShowOsd(_localizer.GetLoc("player.osd.speed"), $"{speed:0.##}x");
     }
 
     partial void OnNormalizeAudioChanged(bool value)
@@ -246,12 +246,12 @@ public partial class PlayerViewModel
         {
             _previousVolume = Volume;
             _playback.SetVolume(0);
-            ShowOsd("Ð—Ð²ÑƒÐº", "Ð²Ñ‹ÐºÐ»ÑŽÑ‡ÐµÐ½");
+            ShowOsd(_localizer.GetLoc("player.osd.sound"), _localizer.GetLoc("player.osd.muted"));
         }
         else
         {
             _playback.SetVolume(Volume);
-            ShowOsd("Ð—Ð²ÑƒÐº", $"{Math.Clamp(Volume, 0, 100):0}%");
+            ShowOsd(_localizer.GetLoc("player.osd.sound"), $"{Math.Clamp(Volume, 0, 100):0}%");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 
@@ -39,7 +39,7 @@ public partial class PlayerViewModel
     private void ReloadSubtitles()
     {
         _playback.ReloadSubtitles();
-        ShowOsd("Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹", "Ð¿ÐµÑ€ÐµÐ·Ð°Ð³Ñ€ÑƒÐ¶ÐµÐ½Ñ‹");
+        ShowOsd(_localizer.GetLoc("player.osd.subtitles"), _localizer.GetLoc("player.osd.reloaded"));
     }
 
     [RelayCommand]
@@ -64,14 +64,14 @@ public partial class PlayerViewModel
     public void MoveSubtitleUp()
     {
         _playback.AdjustSubtitlePosition(-1);
-        ShowOsd("Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹", "Ð²Ñ‹ÑˆÐµ");
+        ShowOsd(_localizer.GetLoc("player.osd.subtitles"), _localizer.GetLoc("player.osd.higher"));
     }
 
     [RelayCommand]
     public void MoveSubtitleDown()
     {
         _playback.AdjustSubtitlePosition(1);
-        ShowOsd("Ð¡ÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ñ‹", "Ð½Ð¸Ð¶Ðµ");
+        ShowOsd(_localizer.GetLoc("player.osd.subtitles"), _localizer.GetLoc("player.osd.lower"));
     }
 
     [RelayCommand]
@@ -83,7 +83,7 @@ public partial class PlayerViewModel
     public void TakeScreenshot(bool includeSubtitles)
     {
         _playback.TakeScreenshot(includeSubtitles, ScreenshotResolution?.Value ?? "video");
-        ShowOsd("Ð¡ÐºÑ€Ð¸Ð½ÑˆÐ¾Ñ‚", includeSubtitles ? "Ñ ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð°Ð¼Ð¸" : "Ð±ÐµÐ· ÑÑƒÐ±Ñ‚Ð¸Ñ‚Ñ€Ð¾Ð²");
+        ShowOsd(_localizer.GetLoc("player.osd.screenshot"), includeSubtitles ? _localizer.GetLoc("player.osd.with_subtitles") : _localizer.GetLoc("player.osd.without_subtitles"));
     }
 
     [RelayCommand]
@@ -144,7 +144,7 @@ public partial class PlayerViewModel
     public void SeekRelative(double seconds)
     {
         SeekTo(CurrentTime + seconds);
-        ShowOsd(seconds >= 0 ? "Ð’Ð¿ÐµÑ€Ñ‘Ð´" : "ÐÐ°Ð·Ð°Ð´", $"{Math.Abs(seconds):0.#} ÑÐµÐº");
+        ShowOsd(seconds >= 0 ? _localizer.GetLoc("player.osd.forward") : _localizer.GetLoc("player.osd.backward"), $"{Math.Abs(seconds):0.#} {_localizer.GetLoc("player.osd.seconds")}");
     }
 
     public void AdjustVolume(double delta)

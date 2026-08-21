@@ -15,8 +15,8 @@
                     <Border Classes="ContentCard" IsVisible="{Binding Relations.Count, Converter={StaticResource IntToBoolConverter}}">
                         <StackPanel>
                             <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
-                                <TextBlock Grid.Column="0" Text="Связанное" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
-                                <Button Grid.Column="1" Content="Граф франшизы" Command="{Binding ShowFranchiseGraphCommand}" 
+                                <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.relations}" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="{DynamicResource l.anime.labels.franchise_graph}" Command="{Binding ShowFranchiseGraphCommand}" 
                                         FontSize="11" Padding="10,5" CornerRadius="6" 
                                         Background="{DynamicResource SubtleFillColorSecondary}" />
                             </Grid>

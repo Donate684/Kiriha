@@ -123,7 +123,8 @@ public partial class TrackingService
         try
         {
             // Wait for services to be ready (e.g. at app startup)
-            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(5000)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
+            const int repoInitTimeoutMs = 5000;
+            try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(repoInitTimeoutMs)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => _animeRepo.GetCollection().ToList());
 

@@ -73,7 +73,7 @@
                                     <Grid ColumnDefinitions="Auto,8,*,8,2*,8,Auto">
                                         <!-- Read-only icon preview. Shows the auto-fetched favicon for
                                              the URL's host when available; otherwise the default globe.
-                                             No interaction â€” the icon is derived purely from the URL. -->
+                                             No interaction — the icon is derived purely from the URL. -->
                                         <Border Grid.Column="0"
                                                 Width="40" Height="40" CornerRadius="6"
                                                 Background="{DynamicResource SubtleFillColorTertiary}"

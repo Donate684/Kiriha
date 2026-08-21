@@ -101,7 +101,7 @@ public partial class ShikiApiService : IShikiApiService
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        // Routed through ShikiHttp so the .net Ã¢â€¡â€ž .rip geo-redirect / 404
+        // Routed through ShikiHttp so the .net â‡„ .rip geo-redirect / 404
         // dance is handled transparently with method+body+auth preserved.
         return await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
     }

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Utils.Collections;
 
 namespace Kiriha.Utils.Parsing;
@@ -107,7 +108,7 @@ public static class AnimeStringHelper
 
         // 2. Specific character replacements
         result = result.Replace("ō", "ou").Replace("ū", "uu")
-                       .Replace("@", "a").Replace("×", "x").Replace("꞉", ":").Replace("Ч", "x");
+                       .Replace("@", "a").Replace("×", "x").Replace("꞉", ":").Replace(AppConstants.Parsing.CyrillicChe, "x");
 
         // 3. Batch replacements using compiled regexes
         result = ApplyGroupReplacements(result, RomanRegex, RomanNumerals);
@@ -143,7 +144,7 @@ public static class AnimeStringHelper
         if (string.IsNullOrWhiteSpace(input)) return string.Empty;
 
         // Handle Shikimori's placeholder for blocked titles
-        if (input.Contains("Заблокировано по требованию Роскомнадзора")) return string.Empty;
+        if (input.Contains(AppConstants.Parsing.BlockedByRoskomnadzor)) return string.Empty;
 
         // 1. First replace [tag=val]Content[/tag] with Content
         string result = ShikiTagsRegex.Replace(input, "$2");

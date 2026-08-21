@@ -62,7 +62,7 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
-                    <!-- Shikimori (shikimori.one) â€” the original/canonical site.
+                    <!-- Shikimori (shikimori.one) — the original/canonical site.
                          The row below connects to the independent fan fork served
                          from .rip / .net. Mutual exclusion handled by CanExecute. -->
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
@@ -96,7 +96,7 @@
                     <Border Classes="Divider"/>
                     <!-- Shikimori fan fork (shikimori.rip / shikimori.net). Same fork
                          is served from two domains for regional-blocking circumvention;
-                         the badge shows both. Independent OAuth realm from .one â€” its
+                         the badge shows both. Independent OAuth realm from .one — its
                          own tokens, its own client_id. -->
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
@@ -104,7 +104,7 @@
                                 <TextBlock Classes="Title" Text="Shikimori"/>
                                 <Border Padding="6,1" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="3" VerticalAlignment="Center"
                                         ToolTip.Tip="{DynamicResource l.settings.shikimori.fork_domains_tooltip}">
-                                    <TextBlock Text="shikimori.rip / .net / â€¦" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
+                                    <TextBlock Text="shikimori.rip / .net / …" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
                                 </Border>
                                 <Border Padding="6,1" Background="#15ff9500" CornerRadius="3" VerticalAlignment="Center"
                                         ToolTip.Tip="{DynamicResource l.settings.shikimori.net_sub}">

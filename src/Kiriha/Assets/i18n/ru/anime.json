@@ -39,7 +39,12 @@
     "total_vol_finished": "{0} т.",
     "thoughts_placeholder": "Мысли о тайтле...",
     "no_alternative_titles": "Нет альтернативных названий",
-    "no_synopsis": "Описание отсутствует"
+    "no_synopsis": "Описание отсутствует",
+    "relations": "Связанное",
+    "staff": "Персонал",
+    "franchise_graph": "Граф франшизы",
+    "franchise_graph_loading": "Загрузка структуры франшизы...",
+    "franchise_graph_current": "Текущее"
   },
   "status": {
     "watching": "Смотрю",

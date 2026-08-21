@@ -7,6 +7,7 @@ namespace Kiriha.Mpv;
 
 internal static class ThumbnailTempCleaner
 {
+    private static readonly TimeSpan FileAgeThreshold = TimeSpan.FromSeconds(10);
     public static void StartCleanupTask()
     {
         Task.Run(() =>
@@ -34,7 +35,7 @@ internal static class ThumbnailTempCleaner
                                     isLocked = true;
                                 }
                             }
-                            else if (DateTime.UtcNow - Directory.GetCreationTimeUtc(dir) < TimeSpan.FromSeconds(10))
+                            else if (DateTime.UtcNow - Directory.GetCreationTimeUtc(dir) < FileAgeThreshold)
                             {
                                 isLocked = true;
                             }

@@ -25,16 +25,16 @@ public partial class ReadNextSectionViewModel
         };
     }
 
-    private static string FormatUpcomingDetail(AnimeEntity item)
+    private string FormatUpcomingDetail(AnimeEntity item)
     {
         var date = item.NextEpisodeAt?.ToLocalTime().ToString("dd.MM HH:mm", CultureInfo.CurrentCulture) ?? "-";
         if (string.Equals(item.Type, AppConstants.AnimeTypes.Movie, StringComparison.OrdinalIgnoreCase))
         {
-            return $"Фильм • {date}";
+            return $"{_localizer.GetLoc("anime.types.movie")} \u2022 {date}";
         }
 
         var nextEpisode = item.EpisodesAired > 0 ? item.EpisodesAired + 1 : 1;
-        return $"{nextEpisode} серия • {date}";
+        return $"{_localizer.GetLoc("anime.labels.series_only", nextEpisode)} \u2022 {date}";
     }
 
     private string FormatPlanDetail(AnimeEntity item)

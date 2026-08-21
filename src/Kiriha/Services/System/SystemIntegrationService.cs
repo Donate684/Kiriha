@@ -8,7 +8,7 @@ namespace Kiriha.Services;
 public class SystemIntegrationService
 {
     private const string KirihaProgIdPrefix = "io.kiriha.";
-    private const string KirihaAppName = "Kiriha";
+    private const string KirihaAppName = Kiriha.Core.Domain.Constants.AppConstants.System.AppName;
     private const string AppPathsKey = @"Software\Microsoft\Windows\CurrentVersion\App Paths\Kiriha.exe";
     private const string ApplicationsKey = @"Software\Classes\Applications\Kiriha.exe";
     private const string CapabilitiesKey = @"Software\Clients\Media\Kiriha\Capabilities";

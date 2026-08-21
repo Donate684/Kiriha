@@ -14,7 +14,7 @@
     </UserControl.Resources>
                     <Border Classes="ContentCard" IsVisible="{Binding StaffPlus.Count, Converter={StaticResource IntToBoolConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Персонал" Classes="SectionTitle"/>
+                            <TextBlock Text="{DynamicResource l.anime.labels.staff}" Classes="SectionTitle"/>
                             <ItemsControl ItemsSource="{Binding StaffPlus}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
