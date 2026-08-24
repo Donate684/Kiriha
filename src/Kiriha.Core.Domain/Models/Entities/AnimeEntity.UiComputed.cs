@@ -11,7 +11,21 @@ public partial class AnimeEntity
 
     [NotMapped]
     [JsonIgnore]
-    public AnimeEntityPresentation Presentation => new(this);
+    public AnimeEntityPresentation Presentation { get; }
+
+    public AnimeEntity()
+    {
+        Presentation = new AnimeEntityPresentation(this);
+    }
+
+    protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        base.OnPropertyChanged(propertyName);
+        if (propertyName == "Presentation")
+        {
+            Presentation?.RaiseAll();
+        }
+    }
 
     [NotMapped]
     public string Season

@@ -6,7 +6,7 @@ using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 
-public readonly partial struct AnimeEntityPresentation
+public partial class AnimeEntityPresentation
 {
     public bool IsNewEpisode => _item.LastEpisodeAt.HasValue && (_now - _item.LastEpisodeAt.Value).TotalDays < 2;
 

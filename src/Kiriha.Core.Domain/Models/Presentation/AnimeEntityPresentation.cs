@@ -1,25 +1,36 @@
 using System;
+using System.ComponentModel;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 
 public delegate string GetLocDelegate(string key, params object[] args);
 
-public readonly partial struct AnimeEntityPresentation
+public partial class AnimeEntityPresentation : INotifyPropertyChanged
 {
     public static GetLocDelegate GetLoc { get; set; } = (k, args) => k;
 
-    private readonly AnimeEntity _item;
-    private readonly DateTime _now;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-    public AnimeEntityPresentation(AnimeEntity item) : this(item, DateTime.UtcNow)
+    private readonly AnimeEntity _item;
+    private DateTime _now;
+
+    public AnimeEntityPresentation(AnimeEntity item)
     {
+        _item = item;
+        _now = DateTime.UtcNow;
     }
 
     public AnimeEntityPresentation(AnimeEntity item, DateTime now)
     {
         _item = item;
         _now = now;
+    }
+
+    public void RaiseAll()
+    {
+        _now = DateTime.UtcNow;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
 
     public string DisplayTitle => !string.IsNullOrEmpty(_item.RussianTitle) ? _item.RussianTitle : _item.Title;
