@@ -56,6 +56,25 @@ public sealed class ResilientHttpHandlerTests
     }
 
     [Fact]
+    public async Task SendAsync_HonorsFutureRetryAfter()
+    {
+        var tooManyRequests = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        tooManyRequests.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(
+            TimeSpan.FromMilliseconds(500)); // 500ms delay
+
+        var inner = new QueueHandler(tooManyRequests, new HttpResponseMessage(HttpStatusCode.OK));
+        using var client = new HttpClient(new ResilientHttpHandler(inner));
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        using var response = await client.GetAsync("https://example.test/resource");
+        stopwatch.Stop();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, inner.Attempts);
+        Assert.True(stopwatch.ElapsedMilliseconds >= 450, $"Expected at least 500ms delay, but took {stopwatch.ElapsedMilliseconds}ms");
+    }
+
+    [Fact]
     public async Task SendAsync_DoesNotRetryNonTransientResponse()
     {
         var inner = new QueueHandler(new HttpResponseMessage(HttpStatusCode.BadRequest));

@@ -32,3 +32,5 @@ apikeys.json
 *.db
 *.db-shm
 *.db-wal
+
+BenchmarkDotNet.Artifacts/
