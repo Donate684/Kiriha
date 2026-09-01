@@ -72,7 +72,7 @@
     <None Remove="apikeys.json" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <Content Include="..\..\subprojects\mpv\**\*" Link="mpv\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -89,7 +89,7 @@
     <ProjectReference Include="..\Kiriha.Mpv.UI\Kiriha.Mpv.UI.csproj" />
   </ItemGroup>
 
-  <Target Name="DownloadMpv" BeforeTargets="BeforeBuild;AssignTargetPaths">
+  <Target Name="DownloadMpv" BeforeTargets="BeforeBuild;AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)..\..\scripts\download-mpv.ps1&quot;" Condition="!Exists('$(ProjectDir)..\..\subprojects\mpv\libmpv-2.dll')" />
     <ItemGroup>
       <_MpvFiles Include="..\..\subprojects\mpv\**\*" />

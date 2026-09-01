@@ -6,6 +6,7 @@ namespace Kiriha.Infrastructure.Platform;
 
 public static class Win32Api
 {
+#if WINDOWS
     [DllImport("user32.dll")]
     public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
@@ -26,4 +27,7 @@ public static class Win32Api
         GetWindowText(hWnd, sb, sb.Capacity);
         return sb.ToString();
     }
+#else
+    public static string GetWindowTitle(IntPtr hWnd) => string.Empty;
+#endif
 }

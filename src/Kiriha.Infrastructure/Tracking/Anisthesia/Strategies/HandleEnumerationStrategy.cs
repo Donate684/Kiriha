@@ -18,6 +18,7 @@ public class HandleEnumerationStrategy
 {
     private static readonly FrozenSet<string> _videoExtensions = new[] { ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
+#if WINDOWS
     // P/Invoke constants and structures
     private const int SystemExtendedHandleInformation = 64;
     private const int STATUS_INFO_LENGTH_MISMATCH = unchecked((int)0xC0000004);
@@ -230,5 +231,9 @@ public class HandleEnumerationStrategy
 
         return null;
     }
+#else
+    public static List<string> GetOpenFiles(uint pid) => new();
+    public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid) => null;
+#endif
 }
 
