@@ -34,6 +34,7 @@ public partial class AppSettings
         public List<string> SeasonalStatusFilters { get; set; } = new() { "All" };
         public bool ShowNsfw { get; set; } = false;
         public bool ListShowNsfw { get; set; } = false;
+        public bool ListPrioritizeNewEpisodes { get; set; } = false;
         public bool IsPaneOpen { get; set; } = true;
 
         /// <summary>

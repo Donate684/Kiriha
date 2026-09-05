@@ -13,6 +13,10 @@ public partial class AnimeEntity
     [JsonIgnore]
     public AnimeEntityPresentation Presentation { get; }
 
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasNewEpisodeBadge => Presentation.HasNewEpisodeBadge;
+
     public AnimeEntity()
     {
         Presentation = new AnimeEntityPresentation(this);

@@ -45,7 +45,8 @@
     "score": "Score",
     "progress": "Progress",
     "date": "Date",
-    "popularity": "Popularity"
+    "popularity": "Popularity",
+    "new_episodes_first": "New episodes first"
   },
   "header_format": "{0} ({1})"
 }

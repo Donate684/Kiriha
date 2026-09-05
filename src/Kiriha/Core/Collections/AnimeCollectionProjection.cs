@@ -80,7 +80,7 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         }
     }
 
-    public List<AnimeEntity> Query(UserAnimeStatus status, string? searchQuery, bool filterNsfw, string? sortBy, MediaKind kind)
+    public List<AnimeEntity> Query(UserAnimeStatus status, string? searchQuery, bool filterNsfw, string? sortBy, MediaKind kind, bool prioritizeNewEpisodes = false)
     {
         lock (_syncLock)
         {
@@ -101,7 +101,7 @@ public sealed partial class AnimeCollectionProjection : IDisposable
                 ? query.Where(x => x.IsNsfw)
                 : query.Where(x => !x.IsNsfw);
 
-            return query.Select(x => x.Item).ApplySorting(sortBy).ToList();
+            return query.Select(x => x.Item).ApplySorting(sortBy, isSeasonal: false, prioritizeNewEpisodes: prioritizeNewEpisodes).ToList();
         }
     }
 

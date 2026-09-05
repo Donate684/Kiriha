@@ -10,6 +10,30 @@ public partial class AnimeEntityPresentation
 {
     public bool IsNewEpisode => _item.LastEpisodeAt.HasValue && (_now - _item.LastEpisodeAt.Value).TotalDays < 2;
 
+    public bool HasNewEpisodeBadge
+    {
+        get
+        {
+            if (_item.Status == UserAnimeStatus.Dropped) return false;
+
+            if (IsNewEpisode && HasNewEpisodes) return true;
+
+            if (_item.NextEpisodeAt.HasValue)
+            {
+                if (_item.StatusDetailed?.Equals("finished_airing", StringComparison.OrdinalIgnoreCase) == true || _item.StatusDetailed?.Equals("finished airing", StringComparison.OrdinalIgnoreCase) == true)
+                    return false;
+
+                var diff = _item.NextEpisodeAt.Value - _now;
+                if (diff.TotalSeconds <= 0 && diff.TotalHours >= -48)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     public string AiringBadgeText
     {
         get

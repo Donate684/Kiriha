@@ -44,8 +44,39 @@ public static class AnimeFilterEngine
             !x.Genres.Any(g => string.Equals(g, "Hentai", StringComparison.OrdinalIgnoreCase)));
     }
 
-    public static IEnumerable<AnimeEntity> ApplySorting(this IEnumerable<AnimeEntity> query, string? sortBy, bool isSeasonal = false)
+    public static IEnumerable<AnimeEntity> ApplySorting(this IEnumerable<AnimeEntity> query, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false)
     {
+        if (prioritizeNewEpisodes)
+        {
+            return sortBy switch
+            {
+                "Score" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenByDescending(x => isSeasonal ? x.MeanScoreValue : x.ScoreValue),
+                "Progress" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenByDescending(x => x.Presentation.ProgressValue),
+                "Date" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenByDescending(x => x.AiringDate ?? DateTime.MinValue),
+                "Popularity" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenBy(x => x.Popularity <= 0 ? int.MaxValue : x.Popularity),
+                "EnglishTitle" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenBy(x => !string.IsNullOrEmpty(x.EnglishTitle) ? x.EnglishTitle : x.Title),
+                "RussianTitle" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenBy(x => !string.IsNullOrEmpty(x.RussianTitle) ? x.RussianTitle : x.Title),
+                "Title" => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenBy(x => x.Title),
+                _ => query
+                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
+                    .ThenBy(x => x.Title)
+            };
+        }
+
         return sortBy switch
         {
             "Score" => query.OrderByDescending(x => isSeasonal ? x.MeanScoreValue : x.ScoreValue),

@@ -45,7 +45,8 @@
     "score": "Оценка",
     "progress": "Прогресс",
     "date": "Дата",
-    "popularity": "Популярность"
+    "popularity": "Популярность",
+    "new_episodes_first": "Сначала новые серии"
   },
   "header_format": "{0} ({1})"
 }

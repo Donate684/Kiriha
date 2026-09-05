@@ -33,6 +33,7 @@ public partial class AnimeListViewModel
     private string _sortBy = "Title";
     public string DisplaySortBy => _localizer.GetLoc("filters.sort." + SortBy.ToLower());
     public System.Collections.Generic.List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
+    [ObservableProperty] private bool _prioritizeNewEpisodes;
 
     // Filters
     [ObservableProperty] private bool _filterNsfw;
@@ -114,9 +115,10 @@ public partial class AnimeListViewModel
         var nsfw = FilterNsfw;
         var sort = SortBy;
         var kind = SelectedMediaKind;
+        var prioritizeNewEpisodes = PrioritizeNewEpisodes;
 
         var filtered = await Task.Run(() =>
-            _listProjection.Query(status, query, nsfw, sort, kind), cancellationToken);
+            _listProjection.Query(status, query, nsfw, sort, kind, prioritizeNewEpisodes), cancellationToken);
 
         if (cancellationToken.IsCancellationRequested || version != Volatile.Read(ref _filterRefreshVersion))
             return;

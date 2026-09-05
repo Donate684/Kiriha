@@ -67,23 +67,44 @@
                         </StackPanel>
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
-                                <ListBox Classes="SortList" Margin="6"
-                                         ItemsSource="{Binding SortOptions}"
-                                         SelectedItem="{Binding SortBy}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate x:DataType="x:String">
-                                            <Grid ColumnDefinitions="14,*" VerticalAlignment="Center">
-                                                <material:MaterialIcon Grid.Column="0" Kind="Check" Width="13" Height="13"
-                                                                      VerticalAlignment="Center"
-                                                                      Foreground="{DynamicResource SystemAccentColor}"
-                                                                      IsVisible="{Binding $parent[ListBoxItem].IsSelected}"/>
-                                                <TextBlock Grid.Column="1" Margin="8,0,0,0"
-                                                           Text="{Binding Converter={StaticResource LocConverter}}"
-                                                           FontSize="12" VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
+                                <StackPanel Margin="6" Spacing="4">
+                                    <ListBox Classes="SortList"
+                                             ItemsSource="{Binding SortOptions}"
+                                             SelectedItem="{Binding SortBy}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Grid ColumnDefinitions="14,*" VerticalAlignment="Center">
+                                                    <material:MaterialIcon Grid.Column="0" Kind="Check" Width="13" Height="13"
+                                                                          VerticalAlignment="Center"
+                                                                          Foreground="{DynamicResource SystemAccentColor}"
+                                                                          IsVisible="{Binding $parent[ListBoxItem].IsSelected}"/>
+                                                    <TextBlock Grid.Column="1" Margin="8,0,0,0"
+                                                               Text="{Binding Converter={StaticResource LocConverter}}"
+                                                               FontSize="12" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,2"/>
+
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding PrioritizeNewEpisodes}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                            <Border Grid.Column="0" Width="22" Height="22" CornerRadius="6"
+                                                    Background="{DynamicResource OrangeredAccentTintBrush}" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <material:MaterialIcon Kind="BellRingOutline" Width="13" Height="13"
+                                                                      Foreground="{DynamicResource OrangeredAccentBrush}"
+                                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.sort.new_episodes_first}"
+                                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+                                </StackPanel>
                             </Flyout>
                         </Button.Flyout>
                     </Button>

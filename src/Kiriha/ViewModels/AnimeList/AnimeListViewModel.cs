@@ -1,4 +1,4 @@
-﻿using Kiriha.Core;
+using Kiriha.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Core;
@@ -77,6 +77,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
 
         _filterNsfw = _settingsService.Current.UI.ListShowNsfw;
         _sortBy = _settingsService.Current.UI.ListSortBy;
+        _prioritizeNewEpisodes = _settingsService.Current.UI.ListPrioritizeNewEpisodes;
         IsFilterActive = _filterNsfw;
 
         _filterRefreshDebouncer = new Kiriha.Utils.Async.Debouncer(
@@ -122,6 +123,12 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     {
         _settingsService.Update(settings => settings.UI.ListShowNsfw = value, SettingsSection.UI);
         IsFilterActive = value;
+        ScheduleFilterRefresh();
+    }
+
+    partial void OnPrioritizeNewEpisodesChanged(bool value)
+    {
+        _settingsService.Update(settings => settings.UI.ListPrioritizeNewEpisodes = value, SettingsSection.UI);
         ScheduleFilterRefresh();
     }
 
