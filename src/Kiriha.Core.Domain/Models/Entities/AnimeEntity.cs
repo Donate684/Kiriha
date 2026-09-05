@@ -25,7 +25,25 @@ public partial class AnimeEntity : DomainObservableObject
     public int Progress { get => _progress; set { if (SetProperty(ref _progress, value)) OnPropertyChanged("Presentation"); } }
     private int _totalEpisodes;
     public int TotalEpisodes { get => _totalEpisodes; set { if (SetProperty(ref _totalEpisodes, value)) OnPropertyChanged("Presentation"); } }
-    public string Score { get; set; } = "-";
+    private string _score = "-";
+    private double? _cachedScoreValue;
+    public string Score
+    {
+        get => _score;
+        set
+        {
+            if (SetProperty(ref _score, value))
+            {
+                _cachedScoreValue = null;
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [System.Text.Json.Serialization.JsonIgnore]
+    public double ScoreValue => _cachedScoreValue ??= ParseScoreToDouble(_score);
+
     public string Type { get; set; } = AppConstants.AnimeTypes.Tv;
     private int _episodesAired;
     public int EpisodesAired { get => _episodesAired; set { if (SetProperty(ref _episodesAired, value)) OnPropertyChanged("Presentation"); } }
@@ -43,7 +61,41 @@ public partial class AnimeEntity : DomainObservableObject
     public List<string> Genres { get => _genres; set { if (SetProperty(ref _genres, value)) OnPropertyChanged("Presentation"); } }
     public List<string> Studios { get; set; } = new();
     public string? StatusDetailed { get; set; }
-    public string? MeanScore { get; set; }
+    private string? _meanScore;
+    private double? _cachedMeanScoreValue;
+    public string? MeanScore
+    {
+        get => _meanScore;
+        set
+        {
+            if (SetProperty(ref _meanScore, value))
+            {
+                _cachedMeanScoreValue = null;
+            }
+        }
+    }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [System.Text.Json.Serialization.JsonIgnore]
+    public double MeanScoreValue => _cachedMeanScoreValue ??= ParseScoreToDouble(_meanScore);
+
+    public static double ParseScoreToDouble(string? score)
+    {
+        if (string.IsNullOrWhiteSpace(score) || score == "-") return 0.0;
+        ReadOnlySpan<char> span = score.AsSpan().Trim();
+        int spaceIdx = span.IndexOf(' ');
+        if (spaceIdx >= 0) span = span[..spaceIdx];
+
+        Span<char> buffer = stackalloc char[span.Length];
+        for (int i = 0; i < span.Length; i++)
+        {
+            buffer[i] = span[i] == ',' ? '.' : span[i];
+        }
+
+        if (double.TryParse(buffer, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var val))
+            return val;
+        return 0.0;
+    }
     public int Popularity { get; set; }
     public int? Rank { get; set; }
     public DateTime? AiringDate { get; set; }

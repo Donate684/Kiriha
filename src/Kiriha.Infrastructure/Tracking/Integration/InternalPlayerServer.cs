@@ -57,7 +57,7 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
 
                     try
                     {
-                        var state = JsonSerializer.Deserialize<InternalPlayerState>(line);
+                        var state = JsonSerializer.Deserialize(line, InternalPlayerStateJsonContext.Default.InternalPlayerState);
                         if (state != null)
                         {
                             PlayerStateChanged?.Invoke(this, state);

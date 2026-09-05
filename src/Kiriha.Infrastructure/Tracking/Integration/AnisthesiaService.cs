@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -95,16 +95,14 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
         {
             try
             {
-                // Update running players set
-                var running = _detectionManager.GetRunningPlayerNames();
+                // Update running players set and detect active media in a single process scan pass
+                var (running, detected) = await _detectionManager.DetectSessionAsync();
 
                 if (!running.SetEquals(_runningPlayerNames))
                 {
                     _runningPlayerNames = running;
                     RunningPlayersChanged?.Invoke(this, _runningPlayerNames);
                 }
-
-                var detected = await _detectionManager.DetectAsync();
 
                 if (detected != null)
                 {

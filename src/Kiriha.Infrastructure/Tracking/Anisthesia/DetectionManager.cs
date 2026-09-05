@@ -1,6 +1,5 @@
-using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
-using Kiriha.Core.Domain.Models;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,9 +7,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-
-
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
 namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
@@ -18,55 +17,112 @@ public class DetectionManager
 {
     private readonly List<AnisthesiaPlayer> _players;
     private readonly ISettingsService _settingsService;
-    private static readonly Dictionary<string, Regex> RegexCache = new();
+    private readonly FrozenDictionary<string, List<AnisthesiaPlayer>> _exactExecutableMap;
+    private readonly (Regex Regex, AnisthesiaPlayer Player)[] _regexExecutableRules;
+
+    private static readonly FrozenSet<string> JunkPatterns = new[]
+    {
+        "vlc media player", "mpc-hc", "potplayer", "mpv", "kmplayer", "zoom player", "ready", "opening..."
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     public DetectionManager(List<AnisthesiaPlayer> players, ISettingsService settingsService)
     {
         _players = players;
         _settingsService = settingsService;
-    }
 
-    private static Regex GetCachedRegex(string pattern)
-    {
-        if (!RegexCache.TryGetValue(pattern, out var regex))
+        var exactDict = new Dictionary<string, List<AnisthesiaPlayer>>(StringComparer.OrdinalIgnoreCase);
+        var regexList = new List<(Regex, AnisthesiaPlayer)>();
+
+        foreach (var player in players)
         {
-            regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            RegexCache[pattern] = regex;
+            foreach (var exe in player.Executables)
+            {
+                if (exe.StartsWith('^'))
+                {
+                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled), player));
+                }
+                else
+                {
+                    if (!exactDict.TryGetValue(exe, out var list))
+                    {
+                        list = new List<AnisthesiaPlayer>(1);
+                        exactDict[exe] = list;
+                    }
+                    list.Add(player);
+                }
+            }
         }
-        return regex;
+
+        _exactExecutableMap = exactDict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _regexExecutableRules = regexList.ToArray();
     }
 
-    public async Task<ParsedMedia?> DetectAsync()
+    public Task<(HashSet<string> RunningPlayers, ParsedMedia? Media)> DetectSessionAsync()
     {
-        if (!OperatingSystem.IsWindows()) return null;
+        return Task.FromResult(DetectSession());
+    }
+
+    public (HashSet<string> RunningPlayers, ParsedMedia? Media) DetectSession()
+    {
+        var running = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!OperatingSystem.IsWindows()) return (running, null);
 
         var processes = Process.GetProcesses();
+        ParsedMedia? detectedMedia = null;
+
         try
         {
+            var allowedProcesses = _settingsService.Current?.System?.Scrobbler?.AllowedProcesses;
+            var hasFilter = allowedProcesses != null && allowedProcesses.Count > 0;
+
             foreach (var proc in processes)
             {
                 try
                 {
                     string procName = proc.ProcessName;
+                    List<AnisthesiaPlayer>? matchingPlayers = null;
 
-                    var matchingPlayers = _players.Where(p =>
-                        p.Executables.Any(exe =>
-                            exe.Equals(procName, StringComparison.OrdinalIgnoreCase) ||
-                            (exe.StartsWith("^") && GetCachedRegex(exe).IsMatch(procName))
-                        )).ToList();
+                    if (_exactExecutableMap.TryGetValue(procName, out var exactMatches))
+                    {
+                        matchingPlayers = exactMatches;
+                    }
+                    else if (_regexExecutableRules.Length > 0)
+                    {
+                        for (int r = 0; r < _regexExecutableRules.Length; r++)
+                        {
+                            if (_regexExecutableRules[r].Regex.IsMatch(procName))
+                            {
+                                matchingPlayers ??= new List<AnisthesiaPlayer>(1);
+                                matchingPlayers.Add(_regexExecutableRules[r].Player);
+                            }
+                        }
+                    }
 
-                    if (matchingPlayers.Count == 0) continue;
+                    if (matchingPlayers == null || matchingPlayers.Count == 0) continue;
+
+                    for (int i = 0; i < matchingPlayers.Count; i++)
+                    {
+                        running.Add(matchingPlayers[i].Name);
+                    }
+
+                    if (detectedMedia != null)
+                    {
+                        // Media already detected, only collecting running player names
+                        continue;
+                    }
 
                     uint pid = (uint)proc.Id;
                     IntPtr hWnd = proc.MainWindowHandle;
 
-                    foreach (var player in matchingPlayers)
+                    for (int i = 0; i < matchingPlayers.Count; i++)
                     {
-                        if (_settingsService.Current.System.Scrobbler.AllowedProcesses.Count == 0)
+                        var player = matchingPlayers[i];
+
+                        if (!hasFilter)
                         {
                             if (player.Type == PlayerType.WebBrowser) continue;
                         }
-                        else if (!_settingsService.Current.System.Scrobbler.AllowedProcesses.Contains(player.Name))
+                        else if (allowedProcesses?.Contains(player.Name) != true)
                         {
                             continue;
                         }
@@ -88,70 +144,65 @@ public class DetectionManager
                                 }
                                 result.ProcessName = procName;
                                 result.Pid = pid;
-                                return result;
+                                detectedMedia = result;
+                                break;
                             }
                         }
+
+                        if (detectedMedia != null) break;
                     }
                 }
-                catch { /* Access denied or exited */ }
+                catch { /* Access denied or process exited */ }
             }
         }
         finally
         {
-            foreach (var p in processes) p.Dispose();
+            for (int i = 0; i < processes.Length; i++)
+            {
+                processes[i].Dispose();
+            }
         }
-        return null;
+
+        return (running, detectedMedia);
+    }
+
+    public async Task<ParsedMedia?> DetectAsync()
+    {
+        var session = await DetectSessionAsync();
+        return session.Media;
     }
 
     public HashSet<string> GetRunningPlayerNames()
     {
-        if (!OperatingSystem.IsWindows()) return new HashSet<string>();
-
-        var running = new HashSet<string>();
-        var processes = Process.GetProcesses();
-
-        try
-        {
-            var procNames = processes.Select(p => p.ProcessName).ToList();
-
-            foreach (var player in _players)
-            {
-                if (player.Executables.Any(exe =>
-                    procNames.Any(pn => pn.Equals(exe, StringComparison.OrdinalIgnoreCase)) ||
-                    (exe.StartsWith("^") && procNames.Any(pn => GetCachedRegex(exe).IsMatch(pn)))))
-                {
-                    running.Add(player.Name);
-                }
-            }
-        }
-        finally
-        {
-            foreach (var p in processes) p.Dispose();
-        }
-        return running;
+        return DetectSession().RunningPlayers;
     }
 
-    private bool IsJunk(string title, AnisthesiaPlayer player)
+    private static bool IsJunk(string title, AnisthesiaPlayer player)
     {
         if (string.IsNullOrWhiteSpace(title)) return true;
 
-        string t = title.Trim().ToLowerInvariant();
+        var trimmed = title.Trim();
 
         // 1. Ignore if title is exactly the player name
-        if (t == player.Name.ToLowerInvariant()) return true;
+        if (string.Equals(trimmed, player.Name, StringComparison.OrdinalIgnoreCase)) return true;
 
-        // 2. Ignore common player "empty" states
-        var junkPatterns = new[] { "vlc media player", "mpc-hc", "potplayer", "mpv", "kmplayer", "zoom player", "ready", "opening..." };
-        if (junkPatterns.Contains(t)) return true;
+        // 2. Ignore common player "empty" states (O(1) FrozenSet lookup)
+        if (JunkPatterns.Contains(trimmed)) return true;
 
         // 3. Ignore very short titles (probably noise)
-        if (t.Length < 2) return true;
+        if (trimmed.Length < 2) return true;
 
         // 4. Ignore common system file names if they leaked through
-        if (t.EndsWith(".exe") || t.EndsWith(".dll") || t.EndsWith(".ini")) return true;
+        if (trimmed.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.EndsWith(".ini", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
 
         return false;
     }
 }
+
 
 

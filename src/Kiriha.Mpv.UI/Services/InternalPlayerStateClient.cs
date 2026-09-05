@@ -73,7 +73,7 @@ public sealed class InternalPlayerStateClient : IDisposable
 
         try
         {
-            _writer.WriteLine(JsonSerializer.Serialize(new InternalPlayerState { IsClosed = true }));
+            _writer.WriteLine(JsonSerializer.Serialize(new InternalPlayerState { IsClosed = true }, InternalPlayerStateJsonContext.Default.InternalPlayerState));
         }
         catch
         {
@@ -88,7 +88,7 @@ public sealed class InternalPlayerStateClient : IDisposable
             if (_disposed || _writer == null || _client?.IsConnected != true)
                 return;
 
-            await _writer.WriteLineAsync(JsonSerializer.Serialize(state));
+            await _writer.WriteLineAsync(JsonSerializer.Serialize(state, InternalPlayerStateJsonContext.Default.InternalPlayerState));
         }
         catch
         {
