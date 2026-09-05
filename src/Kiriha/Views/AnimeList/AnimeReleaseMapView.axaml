@@ -5,6 +5,12 @@
              xmlns:core="using:Kiriha.Core"
              x:Class="Kiriha.Views.AnimeList.AnimeReleaseMapView"
              x:DataType="vmAnimeList:AnimeListViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border#ReleaseHeroClickableArea:pointerover TextBlock#ReleaseHeroAnimeTitle">
+            <Setter Property="TextDecorations" Value="Underline"/>
+        </Style>
+    </UserControl.Styles>
+
         <Border x:Name="ReleaseMapOverlay"
                 Grid.Row="1"
                 Grid.RowSpan="2"
@@ -47,77 +53,90 @@
                         <!-- Details-style hero: poster as object, not background. -->
                         <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
 
-                            <Border Grid.Column="0"
-                                    Width="100"
-                                    Height="118"
-                                    CornerRadius="8"
-                                    ClipToBounds="True"
-                                    BoxShadow="0 4 20 0 #60000000">
-                                <Image x:Name="ReleaseHeroPoster"
-                                       Stretch="UniformToFill"
-                                       IsHitTestVisible="False"/>
-                            </Border>
+                            <!-- Hero clickable area: poster + titles + meta -->
+                            <Border x:Name="ReleaseHeroClickableArea"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Margin="0,0,62,0"
+                                    Background="Transparent"
+                                    Cursor="Hand"
+                                    Focusable="True"
+                                    Tapped="ReleaseHero_Tapped"
+                                    KeyDown="ReleaseHero_KeyDown">
+                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                    <Border Grid.Column="0"
+                                            Width="100"
+                                            Height="118"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            BoxShadow="0 4 20 0 #60000000">
+                                        <Image x:Name="ReleaseHeroPoster"
+                                               Stretch="UniformToFill"
+                                               IsHitTestVisible="False"/>
+                                    </Border>
 
-                            <!-- LEFT: title, meta, summary -->
-                            <StackPanel Grid.Column="1" Margin="18,0,62,0" VerticalAlignment="Center" Spacing="3">
+                                    <!-- LEFT: title, meta, summary -->
+                                    <StackPanel Grid.Column="1" Margin="18,0,0,0" VerticalAlignment="Center" Spacing="3">
 
-                                <!-- Main anime title -->
-                                <TextBlock x:Name="ReleaseHeroAnimeTitle"
-                                           Text=""
-                                           FontSize="22" FontWeight="Bold"
-                                           Foreground="White"
-                                           MaxLines="1"
-                                           TextTrimming="CharacterEllipsis"
-                                           LineHeight="28"/>
- 
-                                <TextBlock x:Name="ReleaseHeroRussianTitle"
-                                           Text=""
-                                           FontSize="12"
-                                           Foreground="#A8FFFFFF"
-                                           MaxLines="1"
-                                           TextTrimming="CharacterEllipsis"
-                                           IsVisible="False"/>
+                                        <!-- Main anime title -->
+                                        <TextBlock x:Name="ReleaseHeroAnimeTitle"
+                                                   Text=""
+                                                   FontSize="22" FontWeight="Bold"
+                                                   Foreground="White"
+                                                   MaxLines="1"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   LineHeight="28"/>
+         
+                                        <TextBlock x:Name="ReleaseHeroRussianTitle"
+                                                   Text=""
+                                                   FontSize="12"
+                                                   Foreground="#A8FFFFFF"
+                                                   MaxLines="1"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   IsVisible="False"/>
 
-                                <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,6,0,0">
-                                    <Border Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
-                                        <TextBlock x:Name="ReleaseHeroKindText"
-                                                   Text="{DynamicResource l.schedule.next_ep}"
+                                        <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,6,0,0">
+                                            <Border Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
+                                                <TextBlock x:Name="ReleaseHeroKindText"
+                                                           Text="{DynamicResource l.schedule.next_ep}"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#E6FFFFFF"/>
+                                            </Border>
+
+                                            <Border Padding="8,4" CornerRadius="6" Background="#16FFFFFF">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <material:MaterialIcon Kind="ClockOutline" Width="13" Height="13"
+                                                                           Foreground="#CCFFFFFF"
+                                                                           VerticalAlignment="Center"/>
+                                                    <TextBlock x:Name="ReleaseHeroCountdownText"
+                                                               Text=""
+                                                               FontSize="11"
+                                                               Foreground="#D8FFFFFF"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Padding="8,4" CornerRadius="6" Background="#16FFFFFF">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <material:MaterialIcon Kind="CalendarClock" Width="13" Height="13"
+                                                                           Foreground="#CCFFFFFF"
+                                                                           VerticalAlignment="Center"/>
+                                                    <TextBlock x:Name="ReleaseHeroTimeText"
+                                                               Text=""
+                                                               FontSize="11"
+                                                               Foreground="#D8FFFFFF"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <TextBlock x:Name="ReleaseHeroWeekText"
+                                                   Text=""
                                                    FontSize="11"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#E6FFFFFF"/>
-                                    </Border>
-
-                                    <Border Padding="8,4" CornerRadius="6" Background="#16FFFFFF">
-                                        <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <material:MaterialIcon Kind="ClockOutline" Width="13" Height="13"
-                                                                   Foreground="#CCFFFFFF"
-                                                                   VerticalAlignment="Center"/>
-                                            <TextBlock x:Name="ReleaseHeroCountdownText"
-                                                       Text=""
-                                                       FontSize="11"
-                                                       Foreground="#D8FFFFFF"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Padding="8,4" CornerRadius="6" Background="#16FFFFFF">
-                                        <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <material:MaterialIcon Kind="CalendarClock" Width="13" Height="13"
-                                                                   Foreground="#CCFFFFFF"
-                                                                   VerticalAlignment="Center"/>
-                                            <TextBlock x:Name="ReleaseHeroTimeText"
-                                                       Text=""
-                                                       FontSize="11"
-                                                       Foreground="#D8FFFFFF"/>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-
-                                <TextBlock x:Name="ReleaseHeroWeekText"
-                                           Text=""
-                                           FontSize="11"
-                                           Foreground="#80FFFFFF"
-                                           Margin="0,2,0,0"/>
-                            </StackPanel>
+                                                   Foreground="#80FFFFFF"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
 
                             <!-- RIGHT: close button anchored top-right -->
                             <Button Grid.Column="1"

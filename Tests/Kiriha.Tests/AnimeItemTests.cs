@@ -131,4 +131,18 @@ public sealed class AnimeEntityTests
         Assert.Equal(new[] { "Bones" }, item.Studios);
         Assert.Equal(new[] { "Alt" }, item.AlternativeTitles);
     }
+
+    [Fact]
+    public void Genres_NotifiesPropertyChanged()
+    {
+        var item = new AnimeEntity();
+        var changed = new List<string?>();
+        item.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        item.Genres = new List<string> { "Action", "Fantasy" };
+
+        Assert.Contains(nameof(AnimeEntity.Genres), changed);
+        Assert.Contains(nameof(AnimeEntity.Presentation), changed);
+        Assert.True(item.Presentation.HasGenres);
+    }
 }

@@ -8,6 +8,7 @@ public class SeasonalRevealController
     private DateTime _lastRevealEvent = DateTime.MinValue;
     private int _revealStaggerIndex;
     private bool _initialRevealActive = true;
+    private const int BaseRevealDelayMs = 35;
     private const int RevealStaggerStepMs = 45;
     private const int RevealStaggerIdleResetMs = 140;
     private static readonly TimeSpan InitialRevealWindow = TimeSpan.FromMilliseconds(1100);
@@ -53,7 +54,7 @@ public class SeasonalRevealController
             _revealStaggerIndex = 0;
         _lastRevealEvent = now;
 
-        var delay = TimeSpan.FromMilliseconds(_revealStaggerIndex++ * RevealStaggerStepMs);
+        var delay = TimeSpan.FromMilliseconds(BaseRevealDelayMs + _revealStaggerIndex++ * RevealStaggerStepMs);
         Avalonia.Threading.DispatcherTimer.RunOnce(() => card.Classes.Add("shown"), delay);
     }
 

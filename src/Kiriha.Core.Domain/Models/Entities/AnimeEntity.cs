@@ -39,7 +39,8 @@ public partial class AnimeEntity : DomainObservableObject
     private string? _japaneseTitle;
     public string? JapaneseTitle { get => _japaneseTitle; set { if (SetProperty(ref _japaneseTitle, value)) OnPropertyChanged("Presentation"); } }
     public List<string> AlternativeTitles { get; set; } = new();
-    public List<string> Genres { get; set; } = new();
+    private List<string> _genres = new();
+    public List<string> Genres { get => _genres; set { if (SetProperty(ref _genres, value)) OnPropertyChanged("Presentation"); } }
     public List<string> Studios { get; set; } = new();
     public string? StatusDetailed { get; set; }
     public string? MeanScore { get; set; }

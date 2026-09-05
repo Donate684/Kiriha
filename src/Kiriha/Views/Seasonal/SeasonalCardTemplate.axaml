@@ -30,70 +30,73 @@
                 <Grid ColumnDefinitions="110, *" DoubleTapped="Poster_DoubleTapped">
 
                     <!-- ΓöÇΓöÇΓöÇ Left: Poster ΓöÇΓöÇΓöÇ -->
-                    <Panel Grid.Column="0" Width="110">
+                    <Panel Grid.Column="0" Width="110" Height="165">
                         <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
                         <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"
                                Height="165" Width="110"/>
 
                         <!-- Status badge top-left -->
-                        <Border Classes="Badge" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5"
-                                IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}"
-                                Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
-                            <TextBlock Text="{Binding Status, Converter={StaticResource LocConverter}}"
-                                     FontSize="8" Foreground="White" FontWeight="SemiBold"/>
-                        </Border>
+                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5"
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}">
+                            <Border Classes="Badge"
+                                    Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
+                                <TextBlock Text="{Binding Status, Converter={StaticResource LocConverter}}"
+                                           FontSize="8" Foreground="White" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
 
-                        <!-- Hide btn top-right, appears on card hover -->
-                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0"
-                                Classes="HideBtn" Classes.confirming="{Binding IsHideConfirming}"
-                                Tapped="HideBtn_Tapped"
-                                ToolTip.Tip="{DynamicResource l.filters.options.hide_tooltip}">
-                            <Border.IsVisible>
-                                <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                    <Binding Path="Status" Converter="{StaticResource StatusNoneConverter}"/>
-                                    <Binding Path="IsHiddenInSeasons"/>
-                                </MultiBinding>
-                            </Border.IsVisible>
-                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                <material:MaterialIcon Kind="EyeOffOutline" Width="12" Height="12" Foreground="White" IsVisible="{Binding !IsHiddenInSeasons}"/>
-                                <material:MaterialIcon Kind="EyeOutline" Width="12" Height="12" Foreground="White" IsVisible="{Binding IsHiddenInSeasons}"/>
-                                <TextBlock IsVisible="{Binding IsHideConfirming}" FontSize="9" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center">
-                                    <TextBlock.Text>
-                                        <MultiBinding Converter="{x:Static conv:HideConfirmTextConverter.Instance}">
-                                            <Binding Path="IsHiddenInSeasons"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                        </Border>
+                        <!-- Action buttons top-right -->
+                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5" Spacing="4">
+                            <!-- Hide btn top-right, appears on card hover -->
+                            <Border Classes="HideBtn" Classes.confirming="{Binding IsHideConfirming}"
+                                    Tapped="HideBtn_Tapped"
+                                    ToolTip.Tip="{DynamicResource l.filters.options.hide_tooltip}">
+                                <Border.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                        <Binding Path="Status" Converter="{StaticResource StatusNoneConverter}"/>
+                                        <Binding Path="IsHiddenInSeasons"/>
+                                    </MultiBinding>
+                                </Border.IsVisible>
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="EyeOffOutline" Width="12" Height="12" Foreground="White" IsVisible="{Binding !IsHiddenInSeasons}"/>
+                                    <material:MaterialIcon Kind="EyeOutline" Width="12" Height="12" Foreground="White" IsVisible="{Binding IsHiddenInSeasons}"/>
+                                    <TextBlock IsVisible="{Binding IsHideConfirming}" FontSize="9" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{x:Static conv:HideConfirmTextConverter.Instance}">
+                                                <Binding Path="IsHiddenInSeasons"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
 
-                        <!-- Quick-add (+) btn ΓÇö top-right, only when not in list -->
-                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,30,5,0"
-                                Classes="HideBtn"
-                                IsVisible="{Binding Status, Converter={StaticResource StatusNoneConverter}}"
-                                Tapped="QuickAddBtn_Tapped"
-                                ToolTip.Tip="{DynamicResource l.anime.list_actions.add_to_list}">
-                            <Border.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuItem Header="{DynamicResource l.anime.status.plan_to_watch}" Click="QuickAddMenuItem_Click" Tag="PlanToWatch">
-                                        <MenuItem.Icon><material:MaterialIcon Kind="BookmarkOutline"/></MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="{DynamicResource l.anime.status.watching}" Click="QuickAddMenuItem_Click" Tag="Watching">
-                                        <MenuItem.Icon><material:MaterialIcon Kind="PlayCircleOutline"/></MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="{DynamicResource l.anime.status.on_hold}" Click="QuickAddMenuItem_Click" Tag="OnHold">
-                                        <MenuItem.Icon><material:MaterialIcon Kind="PauseCircleOutline"/></MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="{DynamicResource l.anime.status.completed}" Click="QuickAddMenuItem_Click" Tag="Completed">
-                                        <MenuItem.Icon><material:MaterialIcon Kind="CheckCircleOutline"/></MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="{DynamicResource l.anime.status.dropped}" Click="QuickAddMenuItem_Click" Tag="Dropped">
-                                        <MenuItem.Icon><material:MaterialIcon Kind="CloseCircleOutline"/></MenuItem.Icon>
-                                    </MenuItem>
-                                </MenuFlyout>
-                            </Border.ContextFlyout>
-                            <material:MaterialIcon Kind="Plus" Width="12" Height="12" Foreground="White"/>
-                        </Border>
+                            <!-- Quick-add (+) btn — top-right, only when not in list -->
+                            <Border Classes="HideBtn"
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusNoneConverter}}"
+                                    Tapped="QuickAddBtn_Tapped"
+                                    ToolTip.Tip="{DynamicResource l.anime.list_actions.add_to_list}">
+                                <Border.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuItem Header="{DynamicResource l.anime.status.plan_to_watch}" Click="QuickAddMenuItem_Click" Tag="PlanToWatch">
+                                            <MenuItem.Icon><material:MaterialIcon Kind="BookmarkOutline"/></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="{DynamicResource l.anime.status.watching}" Click="QuickAddMenuItem_Click" Tag="Watching">
+                                            <MenuItem.Icon><material:MaterialIcon Kind="PlayCircleOutline"/></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="{DynamicResource l.anime.status.on_hold}" Click="QuickAddMenuItem_Click" Tag="OnHold">
+                                            <MenuItem.Icon><material:MaterialIcon Kind="PauseCircleOutline"/></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="{DynamicResource l.anime.status.completed}" Click="QuickAddMenuItem_Click" Tag="Completed">
+                                            <MenuItem.Icon><material:MaterialIcon Kind="CheckCircleOutline"/></MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="{DynamicResource l.anime.status.dropped}" Click="QuickAddMenuItem_Click" Tag="Dropped">
+                                            <MenuItem.Icon><material:MaterialIcon Kind="CloseCircleOutline"/></MenuItem.Icon>
+                                        </MenuItem>
+                                    </MenuFlyout>
+                                </Border.ContextFlyout>
+                                <material:MaterialIcon Kind="Plus" Width="12" Height="12" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
 
                         <!-- Bottom overlay: gradient + Score/Type/Eps pills -->
                         <Border VerticalAlignment="Bottom" IsHitTestVisible="False">
@@ -145,22 +148,25 @@
                         </StackPanel>
 
                         <!-- Row 1: Genre pills -->
-                        <ItemsRepeater Grid.Row="1" ItemsSource="{Binding Genres}"
-                                       Margin="0,7,0,0"
-                                       IsVisible="{Binding Presentation.HasGenres}">
-                            <ItemsRepeater.Layout>
-                                <WrapLayout Orientation="Horizontal" HorizontalSpacing="4" VerticalSpacing="4"/>
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding Genres}"
+                                      Margin="0,7,0,0"
+                                      IsVisible="{Binding Presentation.HasGenres}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
                                     <Border Background="{DynamicResource PillBgBrush}" CornerRadius="5" Padding="6,3"
-                                            BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1">
+                                            BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1"
+                                            Margin="0,0,4,4">
                                         <TextBlock Text="{Binding Converter={StaticResource LocConverter}}"
                                                    FontSize="9.5" FontWeight="Medium" Opacity="0.85"/>
                                     </Border>
                                 </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
                     </Grid>
 

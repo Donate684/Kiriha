@@ -40,6 +40,53 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
     private void ReleaseCloseButton_Click(object? sender, RoutedEventArgs e) => HideReleaseMap();
 
+    private AnimeEntity? _currentHeroItem;
+    private bool _isOpeningDetails;
+
+    private async void ReleaseHero_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (_currentHeroItem != null)
+        {
+            e.Handled = true;
+            await OpenAnimeDetailsAsync(_currentHeroItem);
+        }
+    }
+
+    private async void ReleaseHero_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is Key.Enter or Key.Space && _currentHeroItem != null)
+        {
+            e.Handled = true;
+            await OpenAnimeDetailsAsync(_currentHeroItem);
+        }
+    }
+
+    public async Task OpenAnimeDetailsAsync(AnimeEntity item)
+    {
+        if (_isOpeningDetails) return;
+        _isOpeningDetails = true;
+        try
+        {
+            if (DataContext is not AnimeListViewModel vm) return;
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
+
+            if (await vm.DialogService.ShowAnimeDetailsAsync(topLevel, item))
+            {
+                vm.RefreshAfterDetailsEdit();
+                BuildReleaseMap();
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "AnimeReleaseMapView.OpenAnimeDetailsAsync failed");
+        }
+        finally
+        {
+            _isOpeningDetails = false;
+        }
+    }
+
     private void ReleaseMapOverlay_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key != Key.F12 && e.Key != Key.Escape)
@@ -95,6 +142,8 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
         if (releases.Count == 0)
         {
+            _currentHeroItem = null;
+            ReleaseHeroClickableArea.Cursor = Cursor.Default;
             ReleaseHeroAnimeTitle.Text = string.Empty;
             ReleaseHeroRussianTitle.Text = string.Empty;
             ReleaseHeroRussianTitle.IsVisible = false;
@@ -107,6 +156,8 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         }
 
         var first = releases[0];
+        _currentHeroItem = first.Item;
+        ReleaseHeroClickableArea.Cursor = new Cursor(StandardCursorType.Hand);
         ReleaseHeroAnimeTitle.Text = first.Title;
         ReleaseHeroRussianTitle.DataContext = first.Item;
         ReleaseHeroRussianTitle[!TextBlock.TextProperty] = new Avalonia.Data.Binding("RussianTitle");
@@ -143,6 +194,11 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
                         Property = Avalonia.Visual.RenderTransformProperty,
                         Duration = TimeSpan.FromMilliseconds(350),
                         Easing = new Avalonia.Animation.Easings.CubicEaseOut()
+                    },
+                    new Avalonia.Animation.BrushTransition
+                    {
+                        Property = Border.BackgroundProperty,
+                        Duration = TimeSpan.FromMilliseconds(150)
                     }
                 };
                 ReleaseTimelinePanel.Children.Add(card);

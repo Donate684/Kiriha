@@ -1,6 +1,7 @@
 using System;
 using Kiriha.Core;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Kiriha.Infrastructure;
 using Kiriha.ViewModels.AnimeList;
@@ -23,11 +24,13 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         };
         Grid.SetColumn(accentBar, 0);
 
+        var (cardContent, titleBlock) = CreateCardContent(release, accentColor, palette);
+
         var inner = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("4,*,Auto"),
             MinHeight = 68,
-            Children = { accentBar, CreateCardContent(release, accentColor, palette), CreateReleaseBadge(release, isSoon, palette) }
+            Children = { accentBar, cardContent, CreateReleaseBadge(release, isSoon, palette) }
         };
 
         var card = new Border
@@ -38,16 +41,39 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             BorderThickness = new Avalonia.Thickness(1),
             ClipToBounds = true,
             Margin = new Avalonia.Thickness(0, 1),
+            Cursor = new Cursor(StandardCursorType.Hand),
+            Focusable = true,
             Child = inner
         };
 
-        card.PointerEntered += (_, _) => card.Background = BrushFrom(palette.CardHover);
-        card.PointerExited += (_, _) => card.Background = BrushFrom(palette.CardBackground);
+        card.PointerEntered += (_, _) =>
+        {
+            card.Background = BrushFrom(palette.CardHover);
+            titleBlock.Foreground = BrushFrom(accentColor);
+        };
+        card.PointerExited += (_, _) =>
+        {
+            card.Background = BrushFrom(palette.CardBackground);
+            titleBlock.Foreground = BrushFrom(palette.PrimaryText);
+        };
+        card.Tapped += async (_, e) =>
+        {
+            e.Handled = true;
+            await OpenAnimeDetailsAsync(release.Item);
+        };
+        card.KeyDown += async (_, e) =>
+        {
+            if (e.Key is Key.Enter or Key.Space)
+            {
+                e.Handled = true;
+                await OpenAnimeDetailsAsync(release.Item);
+            }
+        };
 
         return card;
     }
 
-    private static Control CreateCardContent(ReleaseMapItem release, string accentColor, ReleasePalette palette)
+    private static (Control Content, TextBlock TitleBlock) CreateCardContent(ReleaseMapItem release, string accentColor, ReleasePalette palette)
     {
         // Poster
         var posterImage = new Image { Stretch = Stretch.UniformToFill };
@@ -112,15 +138,24 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             Margin = new Avalonia.Thickness(12, 10, 10, 10)
         };
 
-        infoPanel.Children.Add(new TextBlock
+        var titleBlock = new TextBlock
         {
             Text = release.Title,
             FontSize = 14,
             FontWeight = FontWeight.SemiBold,
             Foreground = BrushFrom(palette.PrimaryText),
             TextTrimming = TextTrimming.CharacterEllipsis,
-            MaxLines = 1
-        });
+            MaxLines = 1,
+            Transitions = new Avalonia.Animation.Transitions
+            {
+                new Avalonia.Animation.BrushTransition
+                {
+                    Property = TextBlock.ForegroundProperty,
+                    Duration = TimeSpan.FromMilliseconds(150)
+                }
+            }
+        };
+        infoPanel.Children.Add(titleBlock);
 
         infoPanel.Children.Add(new TextBlock
         {
@@ -156,7 +191,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         row.Children.Add(infoPanel);
 
         Grid.SetColumn(row, 1);
-        return row;
+        return (row, titleBlock);
     }
 
     private static Border MakePill(string text, ReleasePalette palette)

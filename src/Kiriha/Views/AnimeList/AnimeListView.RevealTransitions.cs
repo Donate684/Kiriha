@@ -18,6 +18,7 @@ public partial class AnimeListView
     // Start as active because ItemsRepeater may realize initial elements
     // before OnLoaded; BeginInitialRevealWindow restarts the timer there.
     private bool _initialRevealActive = true;
+    private const int BaseRevealDelayMs = 35;
     private const int RevealStaggerStepMs = 45;
     private const int RevealStaggerIdleResetMs = 140;
     private static readonly TimeSpan InitialRevealWindow = TimeSpan.FromMilliseconds(1100);
@@ -64,7 +65,7 @@ public partial class AnimeListView
             _revealStaggerIndex = 0;
         _lastRevealEvent = now;
 
-        var delay = TimeSpan.FromMilliseconds(_revealStaggerIndex++ * RevealStaggerStepMs);
+        var delay = TimeSpan.FromMilliseconds(BaseRevealDelayMs + _revealStaggerIndex++ * RevealStaggerStepMs);
         DispatcherTimer.RunOnce(() => card.Classes.Add("shown"), delay);
     }
 
