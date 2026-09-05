@@ -46,6 +46,7 @@ public class AnimeEntityConfiguration : IEntityTypeConfiguration<AnimeEntity>
         ConfigurationHelpers.ConfigureJsonList(builder, e => e.AlternativeTitles);
 
         builder.HasIndex(e => e.RussianTitle).HasDatabaseName("idx_user_anime_russian_title");
+        builder.HasIndex(e => new { e.MediaKind, e.Status }).HasDatabaseName("idx_user_anime_kind_status");
     }
 }
 
@@ -55,6 +56,8 @@ public class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
     {
         builder.ToTable("history");
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.HasIndex(e => e.Timestamp).HasDatabaseName("idx_history_timestamp");
+        builder.HasIndex(e => e.AnimeId).HasDatabaseName("idx_history_anime_id");
     }
 }
 
@@ -109,6 +112,7 @@ public class SyncTaskEntityConfiguration : IEntityTypeConfiguration<SyncTaskEnti
     {
         builder.ToTable("sync_tasks");
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.HasIndex(e => e.AnimeId).HasDatabaseName("idx_sync_tasks_anime_id");
     }
 }
 

@@ -40,13 +40,12 @@ public partial class HistoryViewModel
         var list = filtered.OrderByDescending(x => x.Timestamp).ToList();
 
         // Build groups by date, merging consecutive same-anime watch episodes.
-        var newGroups = new List<HistoryGroup>();
         var timeline = new List<HistoryTimelineItem>();
         bool isFirstGroup = true;
 
         foreach (var dateGroup in list.GroupBy(x => x.Timestamp.ToLocalTime().Date).OrderByDescending(g => g.Key))
         {
-            var group = new HistoryGroup { Header = GetFriendlyDate(dateGroup.Key) };
+            var header = GetFriendlyDate(dateGroup.Key);
             var groupEntries = new List<HistoryEntryVm>();
             HistoryEntryVm? run = null;
 
@@ -69,7 +68,6 @@ public partial class HistoryViewModel
                 {
                     if (run != null)
                     {
-                        group.Items.Add(run);
                         groupEntries.Add(run);
                     }
                     run = new HistoryEntryVm(_localizer)
@@ -89,17 +87,14 @@ public partial class HistoryViewModel
             }
             if (run != null)
             {
-                group.Items.Add(run);
                 groupEntries.Add(run);
             }
 
-            if (group.Items.Count > 0)
+            if (groupEntries.Count > 0)
             {
-                newGroups.Add(group);
-
                 timeline.Add(new HistoryDateHeaderItem
                 {
-                    Header = group.Header,
+                    Header = header,
                     IsFirst = isFirstGroup
                 });
                 isFirstGroup = false;
@@ -112,9 +107,6 @@ public partial class HistoryViewModel
                 }
             }
         }
-
-        GroupedHistory.Clear();
-        foreach (var g in newGroups) GroupedHistory.Add(g);
 
         TimelineItems.Clear();
         TimelineItems.AddRange(timeline);

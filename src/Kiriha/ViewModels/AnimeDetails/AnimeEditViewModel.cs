@@ -131,25 +131,28 @@ public partial class AnimeEditViewModel : ObservableObject
         {
             if (_originalAnime == null || _anime == null) return false;
 
-            string currentScore = _anime.Score ?? "";
-            if (currentScore != "-" && currentScore.Contains(" "))
-                currentScore = currentScore.Split(' ')[0];
-
-            string origScore = _originalAnime.Score ?? "";
-            if (origScore != "-" && origScore.Contains(" "))
-                origScore = origScore.Split(' ')[0];
+            var currentScore = GetCleanScore(_anime.Score);
+            var origScore = GetCleanScore(_originalAnime.Score);
 
             return _originalAnime.Status != _anime.Status ||
                    _originalAnime.Progress != _anime.Progress ||
                    _originalAnime.ChaptersRead != _anime.ChaptersRead ||
                    _originalAnime.VolumesRead != _anime.VolumesRead ||
-                   origScore != currentScore ||
+                   !MemoryExtensions.SequenceEqual(origScore, currentScore) ||
                    _originalAnime.IsRewatching != _anime.IsRewatching ||
                    _originalAnime.RewatchCount != _anime.RewatchCount ||
                    _originalAnime.Notes != _anime.Notes ||
                    _originalAnime.DateStarted != _anime.DateStarted ||
                    _originalAnime.DateCompleted != _anime.DateCompleted;
         }
+    }
+
+    private static ReadOnlySpan<char> GetCleanScore(string? score)
+    {
+        if (string.IsNullOrEmpty(score) || score == "-") return ReadOnlySpan<char>.Empty;
+        var span = score.AsSpan().Trim();
+        int idx = span.IndexOf(' ');
+        return idx >= 0 ? span[..idx] : span;
     }
 
     [RelayCommand(CanExecute = nameof(HasChanges))]
@@ -161,9 +164,9 @@ public partial class AnimeEditViewModel : ObservableObject
         bool markedAsCompleted = _originalAnime.Status != UserAnimeStatus.Completed && _anime.Status == UserAnimeStatus.Completed;
 
         string rawScore = _anime.Score;
-        if (rawScore != "-" && rawScore.Contains(" "))
+        if (rawScore != "-" && rawScore.Contains(' '))
         {
-            _anime.Score = rawScore.Split(' ')[0];
+            _anime.Score = rawScore.Substring(0, rawScore.IndexOf(' '));
         }
 
         bool scoreChanged = _originalAnime.Score != _anime.Score && _anime.Score != "-" && !string.IsNullOrEmpty(_anime.Score);

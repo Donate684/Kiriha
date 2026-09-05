@@ -5,31 +5,38 @@ using Kiriha.ViewModels.History;
 namespace Kiriha.Views.History;
 
 /// <summary>
-/// Data template selector for the virtualized history timeline items repeater.
-/// Implements <see cref="IRecyclingDataTemplate"/> to enable high-performance element recycling.
+/// Recycling element factory for the virtualized history timeline items repeater.
+/// Inherits from <see cref="RecyclingElementFactory"/> to maintain separate recycle pools
+/// for header items and entry cards, preventing cross-type template recycling corruption.
 /// </summary>
-public class HistoryItemTemplateSelector : IRecyclingDataTemplate
+public class HistoryItemTemplateSelector : RecyclingElementFactory
 {
-    public IDataTemplate? HeaderTemplate { get; set; }
-    public IDataTemplate? EntryTemplate { get; set; }
-
-    public Control? Build(object? param) => Build(param, null);
-
-    public Control? Build(object? data, Control? existing)
+    public IDataTemplate? HeaderTemplate
     {
-        return data switch
+        get => Templates.TryGetValue("Header", out var t) ? t : null;
+        set { if (value != null) Templates["Header"] = value; }
+    }
+
+    public IDataTemplate? EntryTemplate
+    {
+        get => Templates.TryGetValue("Entry", out var t) ? t : null;
+        set { if (value != null) Templates["Entry"] = value; }
+    }
+
+    protected override string OnSelectTemplateKeyCore(object? dataContext, Control? owner)
+    {
+        return dataContext switch
         {
-            HistoryDateHeaderItem => (existing?.DataContext is HistoryDateHeaderItem)
-                ? ((HeaderTemplate as IRecyclingDataTemplate)?.Build(data, existing) ?? existing)
-                : HeaderTemplate?.Build(data),
-
-            HistoryEntryVm => (existing?.DataContext is HistoryEntryVm)
-                ? ((EntryTemplate as IRecyclingDataTemplate)?.Build(data, existing) ?? existing)
-                : EntryTemplate?.Build(data),
-
-            _ => null
+            HistoryDateHeaderItem => "Header",
+            HistoryEntryVm => "Entry",
+            _ => base.OnSelectTemplateKeyCore(dataContext, owner)
         };
     }
 
-    public bool Match(object? data) => data is HistoryTimelineItem;
+    protected override Control GetElementCore(ElementFactoryGetArgs args)
+    {
+        var element = base.GetElementCore(args);
+        element.DataContext = args.Data;
+        return element;
+    }
 }

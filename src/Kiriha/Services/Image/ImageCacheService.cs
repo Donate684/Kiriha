@@ -34,7 +34,7 @@ public class ImageCacheService : IDisposable
 
     private readonly BitmapMemoryCache _memCache = new(
         encodedBudgetBytes: 32L * 1024 * 1024,
-        pixelBudgetBytes: 16L * 1024 * 1024);
+        pixelBudgetBytes: 64L * 1024 * 1024);
 
     protected ImageCacheService()
     {
@@ -78,14 +78,17 @@ public class ImageCacheService : IDisposable
 
                 try
                 {
-                    if (!_memCache.TryGetEncoded(localPath, out var bytes) || bytes == null)
+                    Bitmap bmp;
+                    if (_memCache.TryGetEncoded(localPath, out var bytes) && bytes != null)
                     {
-                        bytes = File.ReadAllBytes(localPath);
-                        _memCache.StoreEncoded(localPath, bytes);
+                        using var ms = new MemoryStream(bytes, writable: false);
+                        bmp = Bitmap.DecodeToWidth(ms, decodeWidth);
                     }
-
-                    using var ms = new MemoryStream(bytes, writable: false);
-                    var bmp = Bitmap.DecodeToWidth(ms, decodeWidth);
+                    else
+                    {
+                        using var fs = File.OpenRead(localPath);
+                        bmp = Bitmap.DecodeToWidth(fs, decodeWidth);
+                    }
 
                     _memCache.StorePixelsFrom(localPath, decodeWidth, bmp);
                     return bmp;

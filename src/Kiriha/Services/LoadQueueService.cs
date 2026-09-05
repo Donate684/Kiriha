@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Image;
@@ -121,9 +121,15 @@ public class LoadQueueService : ILoadQueueService, IDisposable
     {
         await foreach (var item in _imageQueue.Reader.ReadAllAsync(ct))
         {
+            var batch = new List<AnimeEntity> { item };
+            while (batch.Count < 16 && _imageQueue.Reader.TryRead(out var nextItem))
+            {
+                batch.Add(nextItem);
+            }
+
             try
             {
-                await _posterBatchDownloader.CacheBatchAsync(new[] { item }, ct: ct);
+                await _posterBatchDownloader.CacheBatchAsync(batch, ct: ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -131,11 +137,14 @@ public class LoadQueueService : ILoadQueueService, IDisposable
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Error pre-caching image in LoadQueueService");
+                Serilog.Log.Error(ex, "Error pre-caching image batch in LoadQueueService");
             }
             finally
             {
-                RemoveQueuedId(_queuedForImage, item.Id);
+                foreach (var b in batch)
+                {
+                    RemoveQueuedId(_queuedForImage, b.Id);
+                }
             }
         }
     }
@@ -144,9 +153,15 @@ public class LoadQueueService : ILoadQueueService, IDisposable
     {
         await foreach (var item in _shikiQueue.Reader.ReadAllAsync(ct))
         {
+            var batch = new List<AnimeEntity> { item };
+            while (batch.Count < 16 && _shikiQueue.Reader.TryRead(out var nextItem))
+            {
+                batch.Add(nextItem);
+            }
+
             try
             {
-                await _shikiMetadata.LocalizeItemsAsync(new[] { item }, null, ct);
+                await _shikiMetadata.LocalizeItemsAsync(batch, null, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -154,11 +169,14 @@ public class LoadQueueService : ILoadQueueService, IDisposable
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Error processing shiki queue in LoadQueueService");
+                Serilog.Log.Error(ex, "Error processing shiki queue batch in LoadQueueService");
             }
             finally
             {
-                RemoveQueuedId(_queuedForShiki, item.Id);
+                foreach (var b in batch)
+                {
+                    RemoveQueuedId(_queuedForShiki, b.Id);
+                }
             }
         }
     }

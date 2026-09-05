@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Infrastructure.Extensions;
@@ -42,7 +42,7 @@ internal static class DataServicesRegistration
     {
         services.AddDbContextFactory<AppDbContext>(options =>
         {
-            options.UseSqlite($"Data Source={dbPath};Cache=Shared")
+            options.UseSqlite($"Data Source={dbPath}")
                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 #if DEBUG
             // Sensitive data logging leaks parameter values (incl. tokens stored on entities)

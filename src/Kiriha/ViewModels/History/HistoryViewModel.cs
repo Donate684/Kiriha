@@ -32,9 +32,6 @@ public partial class HistoryViewModel : ViewModelBase
     private AvaloniaList<HistoryTimelineItem> _timelineItems = new();
 
     [ObservableProperty]
-    private ObservableCollection<HistoryGroup> _groupedHistory = new();
-
-    [ObservableProperty]
     private bool _hasHistory;
 
     [ObservableProperty]

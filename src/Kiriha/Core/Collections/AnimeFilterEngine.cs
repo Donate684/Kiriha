@@ -49,20 +49,7 @@ public static class AnimeFilterEngine
         return sortBy switch
         {
             "Score" => query.OrderByDescending(x =>
-            {
-                if (isSeasonal)
-                {
-                    // Strictly community mean score for seasons
-                    if (double.TryParse(x.MeanScore?.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var m))
-                        return m;
-                    return 0.0;
-                }
-
-                // Strictly user score for personal list
-                if (double.TryParse(x.Score?.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var s))
-                    return s;
-                return 0.0;
-            }),
+                isSeasonal ? ParseScoreToDouble(x.MeanScore) : ParseScoreToDouble(x.Score)),
             "Progress" => query.OrderByDescending(x => x.Presentation.ProgressValue),
             "Date" => query.OrderByDescending(x => x.AiringDate ?? DateTime.MinValue),
             "Popularity" => query.OrderBy(x => x.Popularity <= 0 ? int.MaxValue : x.Popularity),
@@ -71,5 +58,23 @@ public static class AnimeFilterEngine
             "Title" => query.OrderBy(x => x.Title),
             _ => query.OrderBy(x => x.Title)
         };
+    }
+
+    private static double ParseScoreToDouble(string? score)
+    {
+        if (string.IsNullOrWhiteSpace(score) || score == "-") return 0.0;
+        ReadOnlySpan<char> span = score.AsSpan().Trim();
+        int spaceIdx = span.IndexOf(' ');
+        if (spaceIdx >= 0) span = span[..spaceIdx];
+
+        Span<char> buffer = stackalloc char[span.Length];
+        for (int i = 0; i < span.Length; i++)
+        {
+            buffer[i] = span[i] == ',' ? '.' : span[i];
+        }
+
+        if (double.TryParse(buffer, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var val))
+            return val;
+        return 0.0;
     }
 }

@@ -37,12 +37,38 @@ public partial class MappingService
     private (string CleanTitle, string SearchTitle, int ParsedSeason, int? ParsedEpisode) ParseAnimeTitle(string title)
     {
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
-        var titleElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-        var seasonElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeSeason);
-        var typeElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeType);
-        var subTitleElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeTitle);
-        var otherElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementOther);
-        var episodeElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber);
+        AnitomySharp.Element? titleElement = null;
+        AnitomySharp.Element? seasonElement = null;
+        AnitomySharp.Element? typeElement = null;
+        AnitomySharp.Element? subTitleElement = null;
+        AnitomySharp.Element? otherElement = null;
+        AnitomySharp.Element? episodeElement = null;
+
+        for (int i = 0; i < parsed.Count; i++)
+        {
+            var el = parsed[i];
+            switch (el.Category)
+            {
+                case AnitomySharp.Element.ElementCategory.ElementAnimeTitle:
+                    titleElement ??= el;
+                    break;
+                case AnitomySharp.Element.ElementCategory.ElementAnimeSeason:
+                    seasonElement ??= el;
+                    break;
+                case AnitomySharp.Element.ElementCategory.ElementAnimeType:
+                    typeElement ??= el;
+                    break;
+                case AnitomySharp.Element.ElementCategory.ElementEpisodeTitle:
+                    subTitleElement ??= el;
+                    break;
+                case AnitomySharp.Element.ElementCategory.ElementOther:
+                    otherElement ??= el;
+                    break;
+                case AnitomySharp.Element.ElementCategory.ElementEpisodeNumber:
+                    episodeElement ??= el;
+                    break;
+            }
+        }
 
         int parsedSeason = ExtractSeason(title, seasonElement);
         int? parsedEpisode = null;

@@ -12,22 +12,16 @@ namespace Kiriha.Services.Data.Image;
 /// Two-tier in-memory cache layered on top of the disk image cache used by
 /// <see cref="ImageCacheService"/>.
 ///
-///   L1 (pixel cache, ~16 MB)
-///     Decoded BGRA pixel buffers keyed by (path, decodeWidth).
-///     Hit  => allocate a fresh <see cref="WriteableBitmap"/> and copy pixels in.
-///     Cost ~1 ms (memcpy + GPU upload). No JPEG decode, no disk I/O.
+///   L1 (decoded bitmap cache, ~64 MB)
+///     Decoded Bitmap instances keyed by (path, decodeWidth).
+///     Hit  => instant return of cached Bitmap reference without allocations.
+///     Cost ~0 ms.
 ///
 ///   L2 (encoded bytes cache, ~32 MB)
 ///     Raw on-disk file bytes keyed by path.
 ///     Hit  => decode from <see cref="System.IO.MemoryStream"/> into a fresh
-///             <see cref="Bitmap"/>, then promote its pixels to L1.
+///             <see cref="Bitmap"/>, then promote to L1.
 ///     Cost ~3-10 ms (decode). No disk I/O.
-///
-/// Every call returns an INDEPENDENT bitmap instance. This is intentional:
-/// AsyncImageLoader's AdvancedImage disposes the "previous" Source on rebind
-/// (recycling in ItemsRepeater), so any shared instance would die on the
-/// neighbour cards and render blank. See the long-form note in
-/// <see cref="ImageCacheService.LoadBitmapAsync"/>.
 /// </summary>
 public sealed class BitmapMemoryCache
 {
@@ -35,16 +29,15 @@ public sealed class BitmapMemoryCache
     private readonly BitmapPixelCache _pixels;
 
     public BitmapMemoryCache(long encodedBudgetBytes = 32L * 1024 * 1024,
-                              long pixelBudgetBytes = 16L * 1024 * 1024)
+                              long pixelBudgetBytes = 64L * 1024 * 1024)
     {
         _encoded = new BitmapEncodedCache(encodedBudgetBytes);
         _pixels = new BitmapPixelCache(pixelBudgetBytes);
     }
 
     /// <summary>
-    /// L1 hit path: rent an independent WriteableBitmap built from cached pixels.
-    /// Returns false on miss or on any failure during materialization (caller
-    /// should then fall through to the encoded/disk path).
+    /// L1 hit path: returns cached Bitmap.
+    /// Returns false on miss.
     /// </summary>
     public bool TryRentBitmap(string path, int decodeWidth, out Bitmap? bitmap)
         => _pixels.TryRentBitmap(path, decodeWidth, out bitmap);

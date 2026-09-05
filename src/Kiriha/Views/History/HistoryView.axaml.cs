@@ -77,6 +77,9 @@ public partial class HistoryView : UserControl
             return;
         }
 
+        if (!card.Classes.Contains("revealItem"))
+            card.Classes.Add("revealItem");
+
         card.Classes.Remove("shown");
 
         var now = DateTime.UtcNow;

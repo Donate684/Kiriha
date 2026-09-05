@@ -70,12 +70,6 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         context.Entry(existing).CurrentValues.SetValues(item);
         await context.SaveChangesAsync();
 
-        // Critical write: ensure new progress reaches the main .db file ASAP so a
-        // Windows hard shutdown cannot leave us behind the remote tracker. PASSIVE
-        // never blocks readers/writers and is cheap when the WAL is small.
-        try { await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(PASSIVE);"); }
-        catch (System.Exception ex) { Log.Warning(ex, "wal_checkpoint(PASSIVE) failed after updating {Title}", item.Title); }
-
         Log.Information("Successfully saved {Title} to database", item.Title);
     }
 

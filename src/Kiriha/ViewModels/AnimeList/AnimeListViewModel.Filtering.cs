@@ -115,8 +115,8 @@ public partial class AnimeListViewModel
         var sort = SortBy;
         var kind = SelectedMediaKind;
 
-        var filtered = await Dispatcher.UIThread.InvokeAsync(() =>
-            _listProjection.Query(status, query, nsfw, sort, kind));
+        var filtered = await Task.Run(() =>
+            _listProjection.Query(status, query, nsfw, sort, kind), cancellationToken);
 
         if (cancellationToken.IsCancellationRequested || version != Volatile.Read(ref _filterRefreshVersion))
             return;
@@ -128,8 +128,14 @@ public partial class AnimeListViewModel
         // stall right after startup population. Mutating the same instance
         // emits one CollectionChanged(Reset) and lets ItemsRepeater diff in
         // its own incremental pipeline.
-        FilteredItems.Clear();
-        FilteredItems.AddRange(filtered);
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (cancellationToken.IsCancellationRequested || version != Volatile.Read(ref _filterRefreshVersion))
+                return;
+
+            FilteredItems.Clear();
+            FilteredItems.AddRange(filtered);
+        });
     }
 
     private async Task UpdateCountsAsync()

@@ -84,7 +84,10 @@ public sealed partial class AnimeCollectionProjection
 
         if (string.IsNullOrEmpty(e.PropertyName) || AffectsProjection(e.PropertyName))
         {
-            Add(item);
+            lock (_syncLock)
+            {
+                Add(item);
+            }
         }
     }
 
