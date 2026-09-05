@@ -8,6 +8,8 @@ using Kiriha.Core.Abstractions.Services;
 using Moq;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace Kiriha.Tests;
 
 public class TrackingSoakTests
@@ -41,7 +43,9 @@ public class TrackingSoakTests
         GC.Collect();
 
         var initialMemory = GC.GetTotalMemory(true);
-        var initialHandles = Process.GetCurrentProcess().HandleCount;
+        using var currentProcess = Process.GetCurrentProcess();
+        currentProcess.Refresh();
+        var initialHandles = currentProcess.HandleCount;
 
         // Act - 1000 iterations (equivalent to ~8 hours of tracking at 1 scan / 30s)
         const int iterations = 1000;
@@ -55,7 +59,8 @@ public class TrackingSoakTests
         GC.Collect();
 
         var finalMemory = GC.GetTotalMemory(true);
-        var finalHandles = Process.GetCurrentProcess().HandleCount;
+        currentProcess.Refresh();
+        var finalHandles = currentProcess.HandleCount;
 
         // Assert
         long memoryDiff = finalMemory - initialMemory;
