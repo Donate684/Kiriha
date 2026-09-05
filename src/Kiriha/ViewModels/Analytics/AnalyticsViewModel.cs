@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Core;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using System;
@@ -103,7 +103,7 @@ public partial class AnalyticsViewModel : ViewModelBase
             var history = await _historyService.GetHistoryAsync(5000);
             
             HasData = items.Count > 0;
-            UpdatedAt = DateTime.UtcNow.ToString("HH:mm", CultureInfo.CurrentCulture);
+            UpdatedAt = DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture);
 
             if (!HasData)
             {

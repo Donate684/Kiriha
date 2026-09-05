@@ -13,17 +13,17 @@ public partial class HistorySectionViewModel
 {
     private void AddRecentHistory(IEnumerable<HistoryItem> history, IReadOnlyCollection<AnimeEntity> items)
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Today;
         var posterMap = items
             .GroupBy(x => x.Id)
             .ToDictionary(x => x.Key, x => x.First().MainPictureUrl);
         var watched = history
             .Where(x => x.ActionType is 1 or 4 or 6)
-            .Where(x => x.Timestamp.Date < today && x.Timestamp.Date >= today.AddDays(-RecentHistoryDays))
+            .Where(x => x.Timestamp.ToLocalTime().Date < today && x.Timestamp.ToLocalTime().Date >= today.AddDays(-RecentHistoryDays))
             .ToList();
 
         var grouped = watched
-            .GroupBy(x => (today - x.Timestamp.Date).Days)
+            .GroupBy(x => (today - x.Timestamp.ToLocalTime().Date).Days)
             .ToDictionary(x => x.Key, x => x.ToList());
         var max = Math.Max(1, grouped.Values.Select(x => x.Count).DefaultIfEmpty().Max());
 
@@ -57,8 +57,8 @@ public partial class HistorySectionViewModel
                     Title = entry.RussianTitle ?? entry.AnimeTitle,
                     Subtitle = entry.RussianTitle != null ? entry.AnimeTitle : null,
                     Detail = entry.Episode > 0
-                        ? string.Format(LocalizationStore.Translate("analytics.history.episode_format_2"), entry.Episode, entry.Timestamp.ToString("HH:mm", CultureInfo.CurrentCulture))
-                        : entry.Timestamp.ToString("HH:mm", CultureInfo.CurrentCulture),
+                        ? string.Format(LocalizationStore.Translate("analytics.history.episode_format_2"), entry.Episode, entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture))
+                        : entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture),
                     PosterUrl = posterUrl
                 });
             }

@@ -13,12 +13,12 @@ public partial class HistoryViewModel
         var filtered = _rawItems.AsEnumerable();
 
         // Period
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         filtered = SelectedPeriod switch
         {
-            1 => filtered.Where(x => x.Timestamp.Date == now.Date),
-            2 => filtered.Where(x => x.Timestamp >= now.AddDays(-7)),
-            3 => filtered.Where(x => x.Timestamp >= now.AddDays(-30)),
+            1 => filtered.Where(x => x.Timestamp.ToLocalTime().Date == now.Date),
+            2 => filtered.Where(x => x.Timestamp.ToLocalTime() >= now.AddDays(-7)),
+            3 => filtered.Where(x => x.Timestamp.ToLocalTime() >= now.AddDays(-30)),
             _ => filtered
         };
 
@@ -41,7 +41,7 @@ public partial class HistoryViewModel
 
         // Build groups by date, merging consecutive same-anime watch episodes.
         var newGroups = new List<HistoryGroup>();
-        foreach (var dateGroup in list.GroupBy(x => x.Timestamp.Date).OrderByDescending(g => g.Key))
+        foreach (var dateGroup in list.GroupBy(x => x.Timestamp.ToLocalTime().Date).OrderByDescending(g => g.Key))
         {
             var group = new HistoryGroup { Header = GetFriendlyDate(dateGroup.Key) };
             HistoryEntryVm? run = null;
@@ -71,7 +71,7 @@ public partial class HistoryViewModel
                         PosterUrl = item.PosterUrl,
                         ActionType = item.ActionType,
                         Detail = item.Detail,
-                        Timestamp = item.Timestamp,
+                        Timestamp = item.Timestamp.ToLocalTime(),
                         EpisodeFrom = item.Episode,
                         EpisodeTo = item.Episode,
                         Primary = item
@@ -89,7 +89,7 @@ public partial class HistoryViewModel
 
     private string GetFriendlyDate(DateTime date)
     {
-        var now = DateTime.UtcNow.Date;
+        var now = DateTime.Today;
         if (date == now) return _localizer.GetLoc("common.time.today");
         if (date == now.AddDays(-1)) return _localizer.GetLoc("common.time.yesterday");
 

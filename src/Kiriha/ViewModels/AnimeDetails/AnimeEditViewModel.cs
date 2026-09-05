@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
@@ -110,13 +110,13 @@ public partial class AnimeEditViewModel : ObservableObject
     [RelayCommand]
     private void SetStartDateToToday()
     {
-        _anime.DateStarted = DateTime.UtcNow;
+        _anime.DateStarted = DateTime.Today;
     }
 
     [RelayCommand]
     private void SetEndDateToToday()
     {
-        _anime.DateCompleted = DateTime.UtcNow;
+        _anime.DateCompleted = DateTime.Today;
     }
 
     [RelayCommand]

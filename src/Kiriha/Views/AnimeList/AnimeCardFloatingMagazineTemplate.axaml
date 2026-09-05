@@ -69,7 +69,7 @@
 
                     <!-- Progress bar -->
                     <controls:SegmentedProgressBar Margin="0,4,0,4"
-                                                   Current="{Binding Progress}"
+                                                   Current="{Binding Presentation.EffectiveProgress}"
                                                    Total="{Binding Presentation.EffectiveTotal}"
                                                    Aired="{Binding Presentation.ResolvedAiredEpisodes}"
                                                    AccentBrush="{DynamicResource SystemAccentColor}"

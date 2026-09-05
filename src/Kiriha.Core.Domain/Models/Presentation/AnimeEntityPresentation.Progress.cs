@@ -72,6 +72,8 @@ public partial class AnimeEntityPresentation
 
     public string ProgressPart => IsManga ? _item.ChaptersRead.ToString() : _item.Progress.ToString();
 
+    public int EffectiveProgress => IsManga ? _item.ChaptersRead : _item.Progress;
+
     public int EffectiveTotal
     {
         get

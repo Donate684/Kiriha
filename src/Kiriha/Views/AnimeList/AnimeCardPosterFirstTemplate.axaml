@@ -74,7 +74,7 @@
                     <!-- Segmented progress dots -->
                     <controls:SegmentedProgressBar Grid.Row="1"
                                                    Margin="0,0,0,4"
-                                                   Current="{Binding Progress}"
+                                                   Current="{Binding Presentation.EffectiveProgress}"
                                                    Total="{Binding Presentation.EffectiveTotal}"
                                                    Aired="{Binding Presentation.ResolvedAiredEpisodes}"
                                                    AccentBrush="{DynamicResource SystemAccentColor}"

@@ -122,7 +122,7 @@ public partial class NowPlayingViewModel
             .Where(s => !string.IsNullOrEmpty(s)));
         string extraInfo = !string.IsNullOrEmpty(extras) ? $" [{extras}]" : "";
         string epInfo = !string.IsNullOrEmpty(media.Episode) ? $" ({_localizer.GetLoc("anime.labels.episode")} {media.Episode})" : "";
-        string logEntry = $"[{DateTime.UtcNow:HH:mm:ss}] {status}: {media.AnimeTitle}{epInfo}{extraInfo}";
+        string logEntry = $"[{DateTime.Now:HH:mm:ss}] {status}: {media.AnimeTitle}{epInfo}{extraInfo}";
         DetectionLogs.Insert(0, logEntry);
         if (DetectionLogs.Count > 50) DetectionLogs.RemoveAt(50);
     }
