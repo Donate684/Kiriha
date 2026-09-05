@@ -17,7 +17,8 @@
              xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:core="using:Kiriha.Core"
+             xmlns:local="using:Kiriha.Views.History"
              xmlns:u="using:Kiriha.Utils.UI"
              x:Class="Kiriha.Views.History.HistoryView"
              x:DataType="vmHistory:HistoryViewModel">
@@ -25,6 +26,142 @@
     <UserControl.Resources>
         <conv:LocConverter x:Key="LocConverter"/>
         <conv:HistoryActionConverter x:Key="HistoryActionConverter"/>
+
+        <!-- Date Header Template -->
+        <DataTemplate x:Key="HistoryDateHeaderTemplate" x:DataType="vmHistory:HistoryDateHeaderItem">
+            <Grid Margin="{Binding Margin}" ColumnDefinitions="33, *" Height="28">
+                <Border Grid.Column="0" Width="8" Height="8" CornerRadius="4"
+                        Background="{DynamicResource SystemAccentColor}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Margin="6,0,0,0"/>
+                <TextBlock Grid.Column="1" Text="{Binding Header}" FontSize="12" FontWeight="Bold"
+                           Foreground="{DynamicResource SystemAccentColor}"
+                           VerticalAlignment="Center"
+                           LetterSpacing="1.2" Opacity="0.85"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Entry Card Template -->
+        <DataTemplate x:Key="HistoryEntryTemplate" x:DataType="vmHistory:HistoryEntryVm">
+            <Grid ColumnDefinitions="33, *" Margin="0,0,0,8">
+                <!-- Timeline column -->
+                <Panel Grid.Column="0">
+                    <!-- Continuous vertical line when not last in group -->
+                    <Border Width="1.5"
+                            Background="{DynamicResource DividerStrokeColorDefault}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Stretch"
+                            Margin="9.25,0,0,0"
+                            IsVisible="{Binding !IsLastInGroup}"/>
+
+                    <!-- Top-half vertical line when last in group -->
+                    <Grid RowDefinitions="*,*" IsVisible="{Binding IsLastInGroup}">
+                        <Border Grid.Row="0" Width="1.5"
+                                Background="{DynamicResource DividerStrokeColorDefault}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Stretch"
+                                Margin="9.25,0,0,0"/>
+                    </Grid>
+
+                    <!-- Timeline dot -->
+                    <Border Width="10" Height="10" CornerRadius="5"
+                            Background="{DynamicResource SystemAccentColor}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Margin="5,0,0,0"
+                            Opacity="0.85"
+                            BoxShadow="0 0 0 3 #22000000"/>
+                </Panel>
+
+                <!-- Card -->
+                <Border Grid.Column="1" Classes="HistoryRow revealItem"
+                        Background="{DynamicResource CardBackgroundFillDefault}"
+                        CornerRadius="12" Padding="12,10"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        DoubleTapped="HistoryItem_DoubleTapped">
+                    <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto">
+                        <!-- Poster -->
+                        <Border Grid.Column="0" Width="42" Height="60"
+                                CornerRadius="6" ClipToBounds="True"
+                                Background="{DynamicResource SubtleFillColorSecondary}"
+                                VerticalAlignment="Center">
+                            <Panel>
+                                <material:MaterialIcon Kind="ImageOutline"
+                                                       Width="20" Height="20"
+                                                       Opacity="0.35"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                <Image core:CachedImage.Source="{Binding PosterUrl}"
+                                       Stretch="UniformToFill"/>
+                            </Panel>
+                        </Border>
+
+                        <!-- Action icon badge -->
+                        <Border Grid.Column="1" Width="28" Height="28" CornerRadius="14"
+                                Background="{DynamicResource SubtleFillColorSecondary}"
+                                VerticalAlignment="Center"
+                                Margin="12,0,0,0">
+                            <material:MaterialIcon
+                                Kind="{Binding ActionType, Converter={StaticResource HistoryActionConverter}, ConverterParameter='icon'}"
+                                Width="14" Height="14"
+                                Foreground="{DynamicResource SystemAccentColor}"
+                                Opacity="0.85"/>
+                        </Border>
+
+                        <!-- Info -->
+                        <StackPanel Grid.Column="2" Margin="12,0" VerticalAlignment="Center" Spacing="1">
+                            <TextBlock Text="{Binding AnimeTitle}"
+                                       FontSize="13.5" FontWeight="SemiBold"
+                                       MaxLines="1" TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource SystemBaseHighColor}"/>
+                            <TextBlock Text="{Binding RussianTitle}"
+                                       FontSize="11"
+                                       MaxLines="1" TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource SystemAccentColor}" Opacity="0.85"
+                                       IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="{Binding ActionType, Converter={StaticResource HistoryActionConverter}}"
+                                               FontSize="11" Opacity="0.85"/>
+                                    <TextBlock Text="{Binding Detail}"
+                                               FontSize="11" Opacity="0.85" FontWeight="Medium"
+                                               Foreground="{DynamicResource SystemAccentColor}"
+                                               IsVisible="{Binding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                </StackPanel>
+                                <TextBlock Text="&#183;" FontSize="11" Opacity="0.5"
+                                           IsVisible="{Binding EpisodeLabel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                <TextBlock Text="{Binding EpisodeLabel}"
+                                           FontSize="11" Opacity="0.85" FontWeight="Medium"
+                                           Foreground="{DynamicResource SystemAccentColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Range count badge -->
+                        <Border Grid.Column="3" CornerRadius="10"
+                                Background="{DynamicResource SystemAccentColor}"
+                                Padding="7,2" Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding IsRange}">
+                            <TextBlock Text="{Binding Count, Converter={StaticResource LocConverter}, ConverterParameter='format:l.history.count_format'}"
+                                       FontSize="10" FontWeight="Bold"
+                                       Foreground="White"/>
+                        </Border>
+
+                        <!-- Time -->
+                        <TextBlock Grid.Column="4"
+                                   Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                   FontSize="11" Opacity="0.4"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <local:HistoryItemTemplateSelector x:Key="HistoryTemplateSelector"
+                                           HeaderTemplate="{StaticResource HistoryDateHeaderTemplate}"
+                                           EntryTemplate="{StaticResource HistoryEntryTemplate}"/>
     </UserControl.Resources>
 
     <UserControl.Styles>
@@ -157,137 +294,21 @@
                 <TextBlock Text="{DynamicResource l.history.no_results}" FontSize="14" Opacity="0.5" FontWeight="Medium"/>
             </StackPanel>
 
-            <!-- Grouped Timeline -->
-            <ScrollViewer IsVisible="{Binding HasResults}" Padding="0,0,0,0" u:SmoothScroll.IsEnabled="True">
-                <ItemsControl ItemsSource="{Binding GroupedHistory}" Margin="20,4,20,24">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vmHistory:HistoryGroup">
-                            <StackPanel Margin="0,0,0,22">
-                                <!-- Date Header -->
-                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="{DynamicResource SystemAccentColor}"
-                                            Margin="6,0,0,0"/>
-                                    <TextBlock Text="{Binding Header}" FontSize="12" FontWeight="Bold"
-                                               Foreground="{DynamicResource SystemAccentColor}"
-                                               VerticalAlignment="Center"
-                                               LetterSpacing="1.2" Opacity="0.85"/>
-                                </StackPanel>
-
-                                <!-- Timeline column with vertical line -->
-                                <Grid ColumnDefinitions="Auto, *">
-                                    <!-- Vertical line -->
-                                    <Border Grid.Column="0" Width="1.5"
-                                            Background="{DynamicResource DividerStrokeColorDefault}"
-                                            Margin="9,0,0,0"
-                                            HorizontalAlignment="Left"/>
-
-                                    <!-- Items -->
-                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Items}" Margin="0,0,0,0">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="vmHistory:HistoryEntryVm">
-                                                <Grid ColumnDefinitions="Auto, *" Margin="0,0,0,8">
-                                                    <!-- Timeline dot (overlayed on the line) -->
-                                                    <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5"
-                                                            Background="{DynamicResource SystemAccentColor}"
-                                                            VerticalAlignment="Center"
-                                                            Margin="5,0,18,0"
-                                                            Opacity="0.85"
-                                                            BoxShadow="0 0 0 3 #22000000"/>
-
-                                                    <!-- Card -->
-                                                    <Border Grid.Column="1" Classes="HistoryRow revealItem"
-                                                            Background="{DynamicResource CardBackgroundFillDefault}"
-                                                            CornerRadius="12" Padding="12,10"
-                                                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                                            BorderThickness="1"
-                                                            Loaded="OnHistoryRowLoaded"
-                                                            DoubleTapped="HistoryItem_DoubleTapped">
-                                                        <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto">
-                                                            <!-- Poster -->
-                                                            <Border Grid.Column="0" Width="42" Height="60"
-                                                                    CornerRadius="6" ClipToBounds="True"
-                                                                    Background="{DynamicResource SubtleFillColorSecondary}"
-                                                                    VerticalAlignment="Center">
-                                                                <Panel>
-                                                                    <material:MaterialIcon Kind="ImageOutline"
-                                                                                           Width="20" Height="20"
-                                                                                           Opacity="0.35"
-                                                                                           HorizontalAlignment="Center"
-                                                                                           VerticalAlignment="Center"/>
-                                                                    <asyncImageLoader:AdvancedImage
-                                                                        Source="{Binding PosterUrl}"
-                                                                        Stretch="UniformToFill"/>
-                                                                </Panel>
-                                                            </Border>
-
-                                                            <!-- Action icon badge -->
-                                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="14"
-                                                                    Background="{DynamicResource SubtleFillColorSecondary}"
-                                                                    VerticalAlignment="Center"
-                                                                    Margin="12,0,0,0">
-                                                                <material:MaterialIcon
-                                                                    Kind="{Binding ActionType, Converter={StaticResource HistoryActionConverter}, ConverterParameter='icon'}"
-                                                                    Width="14" Height="14"
-                                                                    Foreground="{DynamicResource SystemAccentColor}"
-                                                                    Opacity="0.85"/>
-                                                            </Border>
-
-                                                            <!-- Info -->
-                                                            <StackPanel Grid.Column="2" Margin="12,0" VerticalAlignment="Center" Spacing="1">
-                                                                <TextBlock Text="{Binding AnimeTitle}"
-                                                                           FontSize="13.5" FontWeight="SemiBold"
-                                                                           MaxLines="1" TextTrimming="CharacterEllipsis"
-                                                                           Foreground="{DynamicResource SystemBaseHighColor}"/>
-                                                                <TextBlock Text="{Binding RussianTitle}"
-                                                                           FontSize="11"
-                                                                           MaxLines="1" TextTrimming="CharacterEllipsis"
-                                                                           Foreground="{DynamicResource SystemAccentColor}" Opacity="0.85"
-                                                                           IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                                        <TextBlock Text="{Binding ActionType, Converter={StaticResource HistoryActionConverter}}"
-                                                                                   FontSize="11" Opacity="0.85"/>
-                                                                        <TextBlock Text="{Binding Detail}"
-                                                                                   FontSize="11" Opacity="0.85" FontWeight="Medium"
-                                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                                   IsVisible="{Binding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                                                    </StackPanel>
-                                                                    <TextBlock Text="&#183;" FontSize="11" Opacity="0.5"
-                                                                               IsVisible="{Binding EpisodeLabel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                                                    <TextBlock Text="{Binding EpisodeLabel}"
-                                                                               FontSize="11" Opacity="0.85" FontWeight="Medium"
-                                                                               Foreground="{DynamicResource SystemAccentColor}"/>
-                                                                </StackPanel>
-                                                            </StackPanel>
-
-                                                            <!-- Range count badge -->
-                                                            <Border Grid.Column="3" CornerRadius="10"
-                                                                    Background="{DynamicResource SystemAccentColor}"
-                                                                    Padding="7,2" Margin="0,0,10,0"
-                                                                    VerticalAlignment="Center"
-                                                                    IsVisible="{Binding IsRange}">
-                                                                <TextBlock Text="{Binding Count, Converter={StaticResource LocConverter}, ConverterParameter='format:l.history.count_format'}"
-                                                                           FontSize="10" FontWeight="Bold"
-                                                                           Foreground="White"/>
-                                                            </Border>
-
-                                                            <!-- Time -->
-                                                            <TextBlock Grid.Column="4"
-                                                                       Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                                                       FontSize="11" Opacity="0.4"
-                                                                       VerticalAlignment="Center"/>
-                                                        </Grid>
-                                                    </Border>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Grid>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+            <!-- Grouped Timeline (Virtualized ItemsRepeater) -->
+            <ScrollViewer x:Name="HistoryScrollViewer"
+                          IsVisible="{Binding HasResults}"
+                          Padding="0,0,0,0"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          u:SmoothScroll.IsEnabled="True">
+                <ItemsRepeater x:Name="HistoryRepeater"
+                               ItemsSource="{Binding TimelineItems}"
+                               ItemTemplate="{StaticResource HistoryTemplateSelector}"
+                               Margin="20,4,20,24">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Vertical" Spacing="0"/>
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
             </ScrollViewer>
         </Panel>
     </Grid>

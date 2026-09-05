@@ -1,4 +1,5 @@
-﻿using Kiriha.Services.Data.Core;
+using Avalonia.Collections;
+using Kiriha.Services.Data.Core;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
@@ -26,6 +27,9 @@ public partial class HistoryViewModel : ViewModelBase
     private readonly ISettingsService _settings;
     private readonly ILocalizer _localizer;
     private List<HistoryItem> _rawItems = new();
+
+    [ObservableProperty]
+    private AvaloniaList<HistoryTimelineItem> _timelineItems = new();
 
     [ObservableProperty]
     private ObservableCollection<HistoryGroup> _groupedHistory = new();

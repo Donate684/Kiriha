@@ -41,10 +41,15 @@ public partial class HistoryViewModel
 
         // Build groups by date, merging consecutive same-anime watch episodes.
         var newGroups = new List<HistoryGroup>();
+        var timeline = new List<HistoryTimelineItem>();
+        bool isFirstGroup = true;
+
         foreach (var dateGroup in list.GroupBy(x => x.Timestamp.ToLocalTime().Date).OrderByDescending(g => g.Key))
         {
             var group = new HistoryGroup { Header = GetFriendlyDate(dateGroup.Key) };
+            var groupEntries = new List<HistoryEntryVm>();
             HistoryEntryVm? run = null;
+
             foreach (var item in dateGroup) // already desc by timestamp
             {
                 bool canMerge =
@@ -62,7 +67,11 @@ public partial class HistoryViewModel
                 }
                 else
                 {
-                    if (run != null) group.Items.Add(run);
+                    if (run != null)
+                    {
+                        group.Items.Add(run);
+                        groupEntries.Add(run);
+                    }
                     run = new HistoryEntryVm(_localizer)
                     {
                         AnimeId = item.AnimeId,
@@ -78,13 +87,39 @@ public partial class HistoryViewModel
                     };
                 }
             }
-            if (run != null) group.Items.Add(run);
-            if (group.Items.Count > 0) newGroups.Add(group);
+            if (run != null)
+            {
+                group.Items.Add(run);
+                groupEntries.Add(run);
+            }
+
+            if (group.Items.Count > 0)
+            {
+                newGroups.Add(group);
+
+                timeline.Add(new HistoryDateHeaderItem
+                {
+                    Header = group.Header,
+                    IsFirst = isFirstGroup
+                });
+                isFirstGroup = false;
+
+                for (int i = 0; i < groupEntries.Count; i++)
+                {
+                    groupEntries[i].IsFirstInGroup = (i == 0);
+                    groupEntries[i].IsLastInGroup = (i == groupEntries.Count - 1);
+                    timeline.Add(groupEntries[i]);
+                }
+            }
         }
 
         GroupedHistory.Clear();
         foreach (var g in newGroups) GroupedHistory.Add(g);
-        HasResults = newGroups.Count > 0;
+
+        TimelineItems.Clear();
+        TimelineItems.AddRange(timeline);
+
+        HasResults = timeline.Count > 0;
     }
 
     private string GetFriendlyDate(DateTime date)
