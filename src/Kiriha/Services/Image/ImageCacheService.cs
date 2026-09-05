@@ -36,6 +36,15 @@ public class ImageCacheService : IDisposable
         encodedBudgetBytes: 32L * 1024 * 1024,
         pixelBudgetBytes: 16L * 1024 * 1024);
 
+    protected ImageCacheService()
+    {
+        _backgroundTasks = null!;
+        _uiDispatcher = null!;
+        _downloader = null!;
+        _diskCache = null!;
+        _cleanup = null!;
+    }
+
     public ImageCacheService(
         IHttpClientFactory httpClientFactory,
         IBackgroundTaskSupervisor backgroundTasks,
@@ -101,7 +110,7 @@ public class ImageCacheService : IDisposable
 
     public void ClearMemoryCache() => _memCache.Clear();
 
-    public Task<string> GetLocalPathOrDownload(string url, CancellationToken ct = default)
+    public virtual Task<string> GetLocalPathOrDownload(string url, CancellationToken ct = default)
     {
         return _downloader.GetLocalPathOrDownload(url, ct);
     }

@@ -1,24 +1,24 @@
-﻿using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Image;
 using Kiriha.Services.Data.Settings;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Infrastructure;
-using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Repository;
-using Serilog;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Utils.Parsing;
+using Serilog;
 
 namespace Kiriha.Services.Maintenance;
 
 public class MetadataFetchMaintenanceTask : IMaintenanceTask
 {
     private readonly ISettingsService _settingsService;
+    private readonly IAnimeRepository _animeRepo;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IMetadataRepository _metadataRepo;
     private readonly ShikiMetadataService _shikiMetadata;
@@ -27,6 +27,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
     public MetadataFetchMaintenanceTask(
         ISettingsService settingsService,
+        IAnimeRepository animeRepo,
         IUserAnimeRepository userAnimeRepo,
         IMetadataRepository metadataRepo,
         ShikiMetadataService shikiMetadata,
@@ -34,6 +35,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         IUiDispatcher uiDispatcher)
     {
         _settingsService = settingsService;
+        _animeRepo = animeRepo;
         _userAnimeRepo = userAnimeRepo;
         _metadataRepo = metadataRepo;
         _shikiMetadata = shikiMetadata;
@@ -41,144 +43,164 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         _uiDispatcher = uiDispatcher;
     }
 
-    public TimeSpan InitialDelay => TimeSpan.FromMinutes(2);
-    public TimeSpan Interval => _settingsService.Current.System.EnableBackgroundMetadataFetch ? TimeSpan.FromHours(1) : TimeSpan.FromMinutes(5);
+    public TimeSpan InitialDelay => TimeSpan.FromSeconds(30);
+    public TimeSpan Interval => _settingsService.Current.System.EnableBackgroundMetadataFetch ? TimeSpan.FromMinutes(20) : TimeSpan.FromMinutes(1);
+
+    private const int NetworkThrottleDelayMs = 1500;
 
     public async Task ExecuteAsync(CancellationToken ct)
     {
         if (!_settingsService.Current.System.EnableBackgroundMetadataFetch)
             return;
 
-        // Scan the entire database
-        var allItems = await _userAnimeRepo.GetAllAsync();
-        var existingIds = await _metadataRepo.GetAllIdsAsync();
+        // Ensure in-memory anime repository is initialized
+        await _animeRepo.InitializationTask.WaitAsync(ct);
 
-        var missingItems = new System.Collections.Generic.List<AnimeEntity>();
+        var snapshot = await _animeRepo.GetSnapshotAsync(new[] { MediaKind.Anime, MediaKind.Manga, MediaKind.LightNovel });
+        if (snapshot.Count == 0)
+            return;
 
-        foreach (var item in allItems)
+        var itemsToProcess = new List<AnimeEntity>();
+        foreach (var item in snapshot)
         {
-            int cacheId = item.MediaKind switch
+            if (NeedsWork(item))
             {
-                MediaKind.Manga => item.Id | 0x40000000,
-                MediaKind.LightNovel => item.Id | 0x20000000,
-                _ => item.Id
-            };
-
-            if (!existingIds.Contains(cacheId))
-            {
-                missingItems.Add(item);
+                itemsToProcess.Add(item);
             }
         }
 
-        if (missingItems.Count > 0)
+        if (itemsToProcess.Count == 0)
+            return;
+
+        Log.Information("MetadataFetchMaintenanceTask: Found {Count} items needing metadata or poster download.", itemsToProcess.Count);
+
+        foreach (var item in itemsToProcess)
         {
-            Log.Information("MetadataFetcherTask: Found {Count} items missing metadata.", missingItems.Count);
+            ct.ThrowIfCancellationRequested();
 
-            foreach (var missing in missingItems)
+            if (!_settingsService.Current.System.EnableBackgroundMetadataFetch)
+                break;
+
+            bool performedNetworkCall = false;
+
+            try
             {
-                ct.ThrowIfCancellationRequested();
+                int cacheId = GetCacheId(item.Id, item.MediaKind);
 
-                if (!_settingsService.Current.System.EnableBackgroundMetadataFetch)
-                    break;
-
-                // Wait until window is minimized before fetching
-                await WaitUntilMinimizedAsync(ct);
-
-                if (!_settingsService.Current.System.EnableBackgroundMetadataFetch)
-                    break;
-
-                try
+                // 1. Fetch or apply metadata (Russian title and synopsis)
+                bool needsMeta = string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis);
+                if (needsMeta)
                 {
-                    // Fetch metadata one by one
-                    var fetched = await _shikiMetadata.GetOrFetchMetadataAsync(missing.Id, null, null, missing.MediaKind);
+                    var meta = await _metadataRepo.GetAsync(cacheId);
 
-                    // Ensure main poster is downloaded
-                    if (!string.IsNullOrEmpty(missing.MainPictureUrl))
+                    // If not in database metadata cache, fetch from Shikimori API
+                    if (meta == null)
                     {
-                        await _shikiMetadata.EnsureLocalizedAsync(missing.ToViewModel(), ct);
-                        await _imageCacheService.GetLocalPathOrDownload(missing.MainPictureUrl);
+                        performedNetworkCall = true;
+                        meta = await _shikiMetadata.GetOrFetchMetadataAsync(item.Id, null, null, item.MediaKind);
+                    }
+
+                    if (meta != null)
+                    {
+                        bool changed = false;
+                        await _uiDispatcher.InvokeAsync(() =>
+                        {
+                            if (!string.IsNullOrEmpty(meta.Russian) && item.RussianTitle != meta.Russian)
+                            {
+                                item.RussianTitle = meta.Russian;
+                                changed = true;
+                            }
+
+                            if (!string.IsNullOrEmpty(meta.Description))
+                            {
+                                var cleaned = AnimeStringHelper.CleanShikiDescription(meta.Description);
+                                if (item.RussianSynopsis != cleaned)
+                                {
+                                    item.RussianSynopsis = cleaned;
+                                    changed = true;
+                                }
+                            }
+
+                            if (changed)
+                            {
+                                item.RefreshMetadata();
+                            }
+                        });
+
+                        if (changed)
+                        {
+                            try
+                            {
+                                await _userAnimeRepo.UpdateMetadataAsync(item);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Debug(ex, "MetadataFetchMaintenanceTask: failed to persist metadata for item {Id}", item.Id);
+                            }
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "MetadataFetcherTask: Failed to fetch metadata or poster for Item {Id}", missing.Id);
-                }
 
-                // We can't fetch Shiki Relations because they are not part of ShikiMetadata, 
-                // they are fetched via JikanApiService. If the user wants relations, they are usually 
-                // fetched lazily on the Details page. We will just delay.
-                await Task.Delay(TimeSpan.FromSeconds(3), ct);
+                // 2. Download poster if missing from local cache
+                if (NeedsPosterDownload(item))
+                {
+                    performedNetworkCall = true;
+                    var localPath = await _imageCacheService.GetLocalPathOrDownload(item.MainPictureUrl!, ct);
+                    if (!string.IsNullOrEmpty(localPath) && File.Exists(localPath))
+                    {
+                        await _uiDispatcher.InvokeAsync(() => item.LocalPosterPath = localPath);
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "MetadataFetchMaintenanceTask: Error processing item {Id} ({Title})", item.Id, item.Title);
+            }
+
+            if (performedNetworkCall)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(NetworkThrottleDelayMs), ct);
+            }
+            else
+            {
+                await Task.Yield();
             }
         }
     }
 
-    private async Task WaitUntilMinimizedAsync(CancellationToken ct)
+    private static bool NeedsWork(AnimeEntity item)
     {
-        if (ct.IsCancellationRequested)
-            throw new OperationCanceledException(ct);
+        return (string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis))
+            || NeedsPosterDownload(item);
+    }
 
-        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static bool NeedsPosterDownload(AnimeEntity item)
+    {
+        if (string.IsNullOrEmpty(item.MainPictureUrl))
+            return false;
 
-        EventHandler<Avalonia.AvaloniaPropertyChangedEventArgs>? propertyHandler = null;
-        EventHandler? closedHandler = null;
-        Avalonia.Controls.Window? mainWindow = null;
+        if (string.IsNullOrEmpty(item.LocalPosterPath) || !File.Exists(item.LocalPosterPath))
+            return true;
 
         try
         {
-            await _uiDispatcher.InvokeAsync(() =>
-            {
-                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    mainWindow = desktop.MainWindow;
-                    if (mainWindow == null || !mainWindow.IsVisible || mainWindow.WindowState == Avalonia.Controls.WindowState.Minimized)
-                    {
-                        tcs.TrySetResult(true);
-                        return;
-                    }
-
-                    propertyHandler = (_, args) =>
-                    {
-                        if (args.Property == Avalonia.Visual.IsVisibleProperty || args.Property == Avalonia.Controls.Window.WindowStateProperty)
-                        {
-                            if (!mainWindow.IsVisible || mainWindow.WindowState == Avalonia.Controls.WindowState.Minimized)
-                            {
-                                tcs.TrySetResult(true);
-                            }
-                        }
-                    };
-
-                    closedHandler = (_, __) =>
-                    {
-                        tcs.TrySetResult(true);
-                    };
-
-                    mainWindow.PropertyChanged += propertyHandler;
-                    mainWindow.Closed += closedHandler;
-
-                    if (!mainWindow.IsVisible || mainWindow.WindowState == Avalonia.Controls.WindowState.Minimized)
-                    {
-                        tcs.TrySetResult(true);
-                    }
-                }
-                else
-                {
-                    tcs.TrySetResult(true);
-                }
-            });
-
-            await using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
-            await tcs.Task;
+            return new FileInfo(item.LocalPosterPath).Length == 0;
         }
-        finally
+        catch
         {
-            _uiDispatcher.Post(() =>
-            {
-                if (mainWindow != null)
-                {
-                    if (propertyHandler != null) mainWindow.PropertyChanged -= propertyHandler;
-                    if (closedHandler != null) mainWindow.Closed -= closedHandler;
-                }
-            });
+            return true;
         }
     }
+
+    private static int GetCacheId(int malId, MediaKind mediaKind) =>
+        mediaKind switch
+        {
+            MediaKind.Manga => malId | 0x40000000,
+            MediaKind.LightNovel => malId | 0x20000000,
+            _ => malId
+        };
 }
