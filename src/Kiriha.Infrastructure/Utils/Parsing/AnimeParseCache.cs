@@ -29,7 +29,7 @@ public static class AnimeParseCache
     // practice element values are short strings and entries are tiny.
     private static readonly LruStringMemoizer<IReadOnlyList<Element>> _cache = new(2048);
 
-    private static readonly IReadOnlyList<Element> Empty = Array.Empty<Element>();
+    private static readonly IReadOnlyList<Element> Empty = [];
 
     public static IReadOnlyList<Element> Parse(string filename)
     {

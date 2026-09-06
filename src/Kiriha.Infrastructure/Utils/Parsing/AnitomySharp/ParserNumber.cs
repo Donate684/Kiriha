@@ -170,20 +170,20 @@ namespace AnitomySharp
             var separatorToken = Token.FindNextToken(_parser.Tokens, currentTokenIdx, Token.TokenFlag.FlagNotDelimiter);
 
             if (!Token.InListRange(separatorToken, _parser.Tokens)) return false;
-            var separators = new List<Tuple<string, bool>>
-      {
-        Tuple.Create("&", true),
-        Tuple.Create("of", false)
-      };
+            ReadOnlySpan<(string Separator, bool SetEpisode)> separators =
+            [
+                ("&", true),
+                ("of", false)
+            ];
 
             foreach (var separator in separators)
             {
-                if (_parser.Tokens[separatorToken].Content != separator.Item1) continue;
+                if (_parser.Tokens[separatorToken].Content != separator.Separator) continue;
                 var otherToken = Token.FindNextToken(_parser.Tokens, separatorToken, Token.TokenFlag.FlagNotDelimiter);
                 if (!Token.InListRange(otherToken, _parser.Tokens)
                     || !StringHelper.IsNumericString(_parser.Tokens[otherToken].Content)) continue;
                 SetEpisodeNumber(token.Content, token, false);
-                if (separator.Item2)
+                if (separator.SetEpisode)
                 {
                     SetEpisodeNumber(_parser.Tokens[otherToken].Content, _parser.Tokens[otherToken], false);
                 }

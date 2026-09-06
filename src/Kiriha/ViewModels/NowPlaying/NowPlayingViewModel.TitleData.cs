@@ -15,7 +15,7 @@ public partial class NowPlayingViewModel
     /// </summary>
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
-    private System.Collections.Generic.IReadOnlyList<string> _allAlternativeTitles = Array.Empty<string>();
+    private System.Collections.Generic.IReadOnlyList<string> _allAlternativeTitles = [];
     public System.Collections.Generic.IEnumerable<string> AllAlternativeTitles => _allAlternativeTitles;
 
     public bool HasAlternativeTitles => AllAlternativeTitles.Any();
@@ -26,7 +26,7 @@ public partial class NowPlayingViewModel
         
         if (value == null)
         {
-            _allAlternativeTitles = Array.Empty<string>();
+            _allAlternativeTitles = [];
             return;
         }
 

@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Frozen;
 using System.Linq;
 
 namespace AnitomySharp
@@ -20,9 +21,15 @@ namespace AnitomySharp
     /// </summary>
     public static class KeywordManager
     {
-        private static readonly Dictionary<string, Keyword> Keys = new Dictionary<string, Keyword>();
-        private static readonly Dictionary<string, Keyword> Extensions = new Dictionary<string, Keyword>();
-        private static readonly List<Tuple<Element.ElementCategory, List<string>>> PeekEntries;
+        private static readonly FrozenDictionary<string, Keyword> Keys;
+        private static readonly FrozenDictionary<string, Keyword> Extensions;
+        private static readonly (Element.ElementCategory Category, string[] Keywords)[] PeekEntries =
+        [
+            (Element.ElementCategory.ElementAudioTerm, ["Dual Audio"]),
+            (Element.ElementCategory.ElementVideoTerm, ["H264", "H.264", "h264", "h.264"]),
+            (Element.ElementCategory.ElementVideoResolution, ["480p", "720p", "1080p"]),
+            (Element.ElementCategory.ElementSource, ["Blu-Ray"])
+        ];
 
         static KeywordManager()
         {
@@ -32,123 +39,134 @@ namespace AnitomySharp
             var optionsUnidentifiableInvalid = new KeywordOptions(false, true, false);
             var optionsUnidentifiableUnsearchable = new KeywordOptions(false, false, true);
 
+            var keys = new Dictionary<string, Keyword>();
+            var extensions = new Dictionary<string, Keyword>();
+
+            void Add(Element.ElementCategory category, KeywordOptions options, ReadOnlySpan<string> keywords)
+            {
+                var dict = category == Element.ElementCategory.ElementFileExtension ? extensions : keys;
+                foreach (var key in keywords)
+                {
+                    if (!string.IsNullOrEmpty(key) && !dict.ContainsKey(key))
+                    {
+                        dict[key] = new Keyword(category, options);
+                    }
+                }
+            }
+
             Add(Element.ElementCategory.ElementAnimeSeasonPrefix,
               optionsUnidentifiable,
-              new List<string> { "SAISON", "SEASON" });
+              ["SAISON", "SEASON"]);
 
             Add(Element.ElementCategory.ElementAnimeType,
               optionsUnidentifiable,
-              new List<string> { "GEKIJOUBAN", "MOVIE", "OAD", "OAV", "ONA", "OVA", "SPECIAL", "SPECIALS", "TV" });
+              ["GEKIJOUBAN", "MOVIE", "OAD", "OAV", "ONA", "OVA", "SPECIAL", "SPECIALS", "TV"]);
 
             Add(Element.ElementCategory.ElementAnimeType,
               optionsUnidentifiableUnsearchable,
-              new List<string> { "SP" }); // e.g. "Yumeiro Patissiere SP Professional"
+              ["SP"]); // e.g. "Yumeiro Patissiere SP Professional"
 
             Add(Element.ElementCategory.ElementAnimeType,
               optionsUnidentifiableInvalid,
-              new List<string> { "ED", "ENDING", "NCED", "NCOP", "OP", "OPENING", "PREVIEW", "PV" });
+              ["ED", "ENDING", "NCED", "NCOP", "OP", "OPENING", "PREVIEW", "PV"]);
 
             Add(Element.ElementCategory.ElementAudioTerm,
               optionsDefault,
-              new List<string> {
-        // Audio channels
-        "2.0CH", "2CH", "5.1", "5.1CH", "DTS", "DTS-ES", "DTS5.1",
-        "TRUEHD5.1",
-        // Audio codec
-        "AAC", "AACX2", "AACX3", "AACX4", "AC3", "EAC3", "E-AC-3",
-        "FLAC", "FLACX2", "FLACX3", "FLACX4", "LOSSLESS", "MP3", "OGG", "VORBIS",
-        // Audio language
-        "DUALAUDIO", "DUAL AUDIO"
-            });
+              [
+                // Audio channels
+                "2.0CH", "2CH", "5.1", "5.1CH", "DTS", "DTS-ES", "DTS5.1",
+                "TRUEHD5.1",
+                // Audio codec
+                "AAC", "AACX2", "AACX3", "AACX4", "AC3", "EAC3", "E-AC-3",
+                "FLAC", "FLACX2", "FLACX3", "FLACX4", "LOSSLESS", "MP3", "OGG", "VORBIS",
+                // Audio language
+                "DUALAUDIO", "DUAL AUDIO"
+              ]);
 
             Add(Element.ElementCategory.ElementDeviceCompatibility,
               optionsDefault,
-              new List<string> { "IPAD3", "IPHONE5", "IPOD", "PS3", "XBOX", "XBOX360" });
+              ["IPAD3", "IPHONE5", "IPOD", "PS3", "XBOX", "XBOX360"]);
 
             Add(Element.ElementCategory.ElementDeviceCompatibility,
               optionsUnidentifiable,
-              new List<string> { "ANDROID" });
+              ["ANDROID"]);
 
             Add(Element.ElementCategory.ElementEpisodePrefix,
               optionsDefault,
-              new List<string> { "EP", "EP.", "EPS", "EPS.", "EPISODE", "EPISODE.", "EPISODES", "CAPITULO", "EPISODIO", "FOLGE" });
+              ["EP", "EP.", "EPS", "EPS.", "EPISODE", "EPISODE.", "EPISODES", "CAPITULO", "EPISODIO", "FOLGE"]);
 
             Add(Element.ElementCategory.ElementEpisodePrefix,
               optionsInvalid,
-              new List<string> { "E", "\\x7B2C" }); // single-letter episode keywords are not valid tokens
+              ["E", "\\x7B2C"]); // single-letter episode keywords are not valid tokens
 
             Add(Element.ElementCategory.ElementFileExtension,
               optionsDefault,
-              new List<string> { "3GP", "AVI", "DIVX", "FLV", "M2TS", "MKV", "MOV", "MP4", "MPG", "OGM", "RM", "RMVB", "TS", "WEBM", "WMV" });
+              ["3GP", "AVI", "DIVX", "FLV", "M2TS", "MKV", "MOV", "MP4", "MPG", "OGM", "RM", "RMVB", "TS", "WEBM", "WMV"]);
 
             Add(Element.ElementCategory.ElementFileExtension,
               optionsInvalid,
-              new List<string> { "AAC", "AIFF", "FLAC", "M4A", "MP3", "MKA", "OGG", "WAV", "WMA", "7Z", "RAR", "ZIP", "ASS", "SRT" });
+              ["AAC", "AIFF", "FLAC", "M4A", "MP3", "MKA", "OGG", "WAV", "WMA", "7Z", "RAR", "ZIP", "ASS", "SRT"]);
 
             Add(Element.ElementCategory.ElementLanguage,
               optionsDefault,
-              new List<string> { "ENG", "ENGLISH", "ESPANO", "JAP", "PT-BR", "SPANISH", "VOSTFR" });
+              ["ENG", "ENGLISH", "ESPANO", "JAP", "PT-BR", "SPANISH", "VOSTFR"]);
 
             Add(Element.ElementCategory.ElementLanguage,
               optionsUnidentifiable,
-              new List<string> { "ESP", "ITA" }); // e.g. "Tokyo ESP:, "Bokura ga Ita"
+              ["ESP", "ITA"]); // e.g. "Tokyo ESP:, "Bokura ga Ita"
 
             Add(Element.ElementCategory.ElementOther,
               optionsDefault,
-              new List<string> { "REMASTER", "REMASTERED", "UNCENSORED", "UNCUT", "TS", "VFR", "WIDESCREEN", "WS" });
+              ["REMASTER", "REMASTERED", "UNCENSORED", "UNCUT", "TS", "VFR", "WIDESCREEN", "WS"]);
 
             Add(Element.ElementCategory.ElementReleaseGroup,
               optionsDefault,
-              new List<string> { "THORA" });
+              ["THORA"]);
 
             Add(Element.ElementCategory.ElementReleaseInformation,
               optionsDefault,
-              new List<string> { "BATCH", "COMPLETE", "PATCH", "REMUX" });
+              ["BATCH", "COMPLETE", "PATCH", "REMUX"]);
 
             Add(Element.ElementCategory.ElementReleaseInformation,
               optionsUnidentifiable,
-              new List<string> { "END", "FINAL" }); // e.g. "The End of Evangelion", 'Final Approach"
+              ["END", "FINAL"]); // e.g. "The End of Evangelion", 'Final Approach"
 
             Add(Element.ElementCategory.ElementReleaseVersion,
               optionsDefault,
-              new List<string> { "V0", "V1", "V2", "V3", "V4" });
+              ["V0", "V1", "V2", "V3", "V4"]);
 
             Add(Element.ElementCategory.ElementSource,
               optionsDefault,
-              new List<string> { "BD", "BDRIP", "BLURAY", "BLU-RAY", "DVD", "DVD5", "DVD9", "DVD-R2J", "DVDRIP", "DVD-RIP", "R2DVD", "R2J", "R2JDVD", "R2JDVDRIP", "HDTV", "HDTVRIP", "TVRIP", "TV-RIP", "WEBCAST", "WEBRIP" });
+              ["BD", "BDRIP", "BLURAY", "BLU-RAY", "DVD", "DVD5", "DVD9", "DVD-R2J", "DVDRIP", "DVD-RIP", "R2DVD", "R2J", "R2JDVD", "R2JDVDRIP", "HDTV", "HDTVRIP", "TVRIP", "TV-RIP", "WEBCAST", "WEBRIP"]);
 
             Add(Element.ElementCategory.ElementSubtitles,
               optionsDefault,
-              new List<string> { "ASS", "BIG5", "DUB", "DUBBED", "HARDSUB", "HARDSUBS", "RAW", "SOFTSUB", "SOFTSUBS", "SUB", "SUBBED", "SUBTITLED" });
+              ["ASS", "BIG5", "DUB", "DUBBED", "HARDSUB", "HARDSUBS", "RAW", "SOFTSUB", "SOFTSUBS", "SUB", "SUBBED", "SUBTITLED"]);
 
             Add(Element.ElementCategory.ElementVideoTerm,
               optionsDefault,
-              new List<string> {
-          // Frame rate
-          "23.976FPS", "24FPS", "29.97FPS", "30FPS", "60FPS", "120FPS",
-          // Video codec
-          "8BIT", "8-BIT", "10BIT", "10BITS", "10-BIT", "10-BITS",
-          "HI10", "HI10P", "HI444", "HI444P", "HI444PP",
-          "H264", "H265", "H.264", "H.265", "X264", "X265", "X.264",
-          "AVC", "HEVC", "HEVC2", "DIVX", "DIVX5", "DIVX6", "XVID",
-          // Video format
-          "AVI", "RMVB", "WMV", "WMV3", "WMV9",
-          // Video quality
-          "HQ", "LQ",
-          // Video resolution
-          "HD", "SD"});
+              [
+                // Frame rate
+                "23.976FPS", "24FPS", "29.97FPS", "30FPS", "60FPS", "120FPS",
+                // Video codec
+                "8BIT", "8-BIT", "10BIT", "10BITS", "10-BIT", "10-BITS",
+                "HI10", "HI10P", "HI444", "HI444P", "HI444PP",
+                "H264", "H265", "H.264", "H.265", "X264", "X265", "X.264",
+                "AVC", "HEVC", "HEVC2", "DIVX", "DIVX5", "DIVX6", "XVID",
+                // Video format
+                "AVI", "RMVB", "WMV", "WMV3", "WMV9",
+                // Video quality
+                "HQ", "LQ",
+                // Video resolution
+                "HD", "SD"
+              ]);
 
             Add(Element.ElementCategory.ElementVolumePrefix,
               optionsDefault,
-              new List<string> { "VOL", "VOL.", "VOLUME" });
+              ["VOL", "VOL.", "VOLUME"]);
 
-            PeekEntries = new List<Tuple<Element.ElementCategory, List<string>>>
-      {
-        Tuple.Create(Element.ElementCategory.ElementAudioTerm, new List<string> { "Dual Audio" }),
-        Tuple.Create(Element.ElementCategory.ElementVideoTerm, new List<string> { "H264", "H.264", "h264", "h.264" }),
-        Tuple.Create(Element.ElementCategory.ElementVideoResolution, new List<string> { "480p", "720p", "1080p" }),
-        Tuple.Create(Element.ElementCategory.ElementSource, new List<string> { "Blu-Ray" })
-      };
+            Keys = keys.ToFrozenDictionary();
+            Extensions = extensions.ToFrozenDictionary();
         }
 
         public static string Normalize(string word)
@@ -207,12 +225,12 @@ namespace AnitomySharp
             var search = filename.Substring(range.Offset, endR > filename.Length ? filename.Length - range.Offset : endR - range.Offset);
             foreach (var entry in PeekEntries)
             {
-                foreach (var keyword in entry.Item2)
+                foreach (var keyword in entry.Keywords)
                 {
                     var foundIdx = search.IndexOf(keyword, StringComparison.CurrentCulture);
                     if (foundIdx == -1) continue;
                     foundIdx += range.Offset;
-                    elements.Add(new Element(entry.Item1, keyword));
+                    elements.Add(new Element(entry.Category, keyword));
                     preidentifiedTokens.Add(new TokenRange(foundIdx, keyword.Length));
                 }
             }
@@ -221,19 +239,9 @@ namespace AnitomySharp
         // Private API
 
         /** Returns the appropriate keyword container. */
-        private static Dictionary<string, Keyword> GetKeywordContainer(Element.ElementCategory category)
+        private static FrozenDictionary<string, Keyword> GetKeywordContainer(Element.ElementCategory category)
         {
             return category == Element.ElementCategory.ElementFileExtension ? Extensions : Keys;
-        }
-
-        /// Adds a <code>category</code>, <code>options</code>, and <code>keywords</code> to the internal keywords list.
-        private static void Add(Element.ElementCategory category, KeywordOptions options, IEnumerable<string> keywords)
-        {
-            var keys = GetKeywordContainer(category);
-            foreach (var key in keywords.Where(k => !string.IsNullOrEmpty(k) && !keys.ContainsKey(k)))
-            {
-                keys[key] = new Keyword(category, options);
-            }
         }
     }
 

@@ -24,16 +24,16 @@ namespace AnitomySharp
         private readonly List<Element> _elements;
         private readonly Options _options;
         private readonly List<Token> _tokens;
-        private static readonly List<Tuple<string, string>> Brackets = new List<Tuple<string, string>>
-    {
-      new Tuple<string, string>("(", ")"), // U+0028-U+0029
-      new Tuple<string, string>("[", "]"), // U+005B-U+005D Square bracket
-      new Tuple<string, string>("{", "}"), // U+007B-U+007D Curly bracket
-      new Tuple<string, string>("\u300C", "\u300D"),  // Corner bracket
-      new Tuple<string, string>("\u300E", "\u300E"),  // White corner bracket
-      new Tuple<string, string>("\u3010", "\u3011"), // Black lenticular bracket
-      new Tuple<string, string>("\uFF08", "\uFF09") // Fullwidth parenthesis
-    };
+        private static readonly (char Open, string Close)[] Brackets =
+        [
+            ('(', ")"),
+            ('[', "]"),
+            ('{', "}"),
+            ('\u300C', "\u300D"),
+            ('\u300E', "\u300E"),
+            ('\u3010', "\u3011"),
+            ('\uFF08', "\uFF09")
+        ];
 
         /// <summary>
         /// Tokenize a filename into <see cref="Element"/>s
@@ -103,8 +103,8 @@ namespace AnitomySharp
                 {
                     foreach (var bracket in Brackets)
                     {
-                        if (!_filename[i].Equals(char.Parse(bracket.Item1))) continue;
-                        matchingBracket = bracket.Item2;
+                        if (_filename[i] != bracket.Open) continue;
+                        matchingBracket = bracket.Close;
                         return i;
                     }
                 }

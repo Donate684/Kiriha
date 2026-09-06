@@ -1,4 +1,4 @@
-
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,21 +11,21 @@ namespace Kiriha.Utils.Parsing;
 
 public static class AnimeStringHelper
 {
-    private static readonly Dictionary<string, string> RomanNumerals = new()
+    private static readonly FrozenDictionary<string, string> RomanNumerals = new Dictionary<string, string>
     {
         { "i", "1" }, { "ii", "2" }, { "iii", "3" }, { "iv", "4" }, { "v", "5" },
         { "vi", "6" }, { "vii", "7" }, { "viii", "8" }, { "ix", "9" }, { "x", "10" },
         { "xi", "11" }, { "xii", "12" }, { "xiii", "13" }, { "xiv", "14" }, { "xv", "15" }
-    };
+    }.ToFrozenDictionary();
 
-    private static readonly Dictionary<string, string> Ordinals = new()
+    private static readonly FrozenDictionary<string, string> Ordinals = new Dictionary<string, string>
     {
         { "first", "1st" }, { "second", "2nd" }, { "third", "3rd" },
         { "fourth", "4th" }, { "fifth", "5th" }, { "sixth", "6th" },
         { "seventh", "7th" }, { "eighth", "8th" }, { "ninth", "9th" }
-    };
+    }.ToFrozenDictionary();
 
-    private static readonly Dictionary<string, string> SeasonsMap = new()
+    private static readonly FrozenDictionary<string, string> SeasonsMap = new Dictionary<string, string>
     {
         { "1st season", "1" }, { "season 1", "1" }, { "series 1", "1" }, { "s1", "1" },
         { "2nd season", "2" }, { "season 2", "2" }, { "series 2", "2" }, { "s2", "2" },
@@ -33,9 +33,9 @@ public static class AnimeStringHelper
         { "4th season", "4" }, { "season 4", "4" }, { "series 4", "4" }, { "s4", "4" },
         { "5th season", "5" }, { "season 5", "5" }, { "series 5", "5" }, { "s5", "5" },
         { "6th season", "6" }, { "season 6", "6" }, { "series 6", "6" }, { "s6", "6" }
-    };
+    }.ToFrozenDictionary();
 
-    private static readonly Dictionary<string, string> GenericReplacements = new()
+    private static readonly FrozenDictionary<string, string> GenericReplacements = new Dictionary<string, string>
     {
         { "&", "and" },
         { "the animation", "" },
@@ -46,12 +46,12 @@ public static class AnimeStringHelper
         { "specials", "sp" },
         { "special", "sp" },
         { "(tv)", "" }
-    };
+    }.ToFrozenDictionary();
 
-    private static readonly Dictionary<string, string> WapuroMap = new()
+    private static readonly FrozenDictionary<string, string> WapuroMap = new Dictionary<string, string>
     {
         { "wa", "ha" }, { "e", "he" }, { "o", "wo" }
-    };
+    }.ToFrozenDictionary();
 
     // Pre-compiled Regexes for maximum performance
     private static readonly Regex SpacesRegex = new(@"\s+", RegexOptions.Compiled);
@@ -130,7 +130,7 @@ public static class AnimeStringHelper
         return SpacesRegex.Replace(sb.ToString(), " ").Trim();
     }
 
-    private static string ApplyGroupReplacements(string input, Regex regex, Dictionary<string, string> map)
+    private static string ApplyGroupReplacements(string input, Regex regex, IReadOnlyDictionary<string, string> map)
     {
         return regex.Replace(input, match =>
             map.TryGetValue(match.Value.ToLowerInvariant(), out var replacement) ? replacement : match.Value);

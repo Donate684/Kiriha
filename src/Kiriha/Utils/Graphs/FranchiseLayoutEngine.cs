@@ -225,7 +225,7 @@ public static class FranchiseLayoutEngine
                 }
             }
 
-            link.ConnectionPath = string.Format(System.Globalization.CultureInfo.InvariantCulture, "M {0},{1} C {2},{3} {4},{5} {6},{7}", p1.X, p1.Y, c1.X, c1.Y, c2.X, c2.Y, p2.X, p2.Y);
+            link.ConnectionPath = System.FormattableString.Invariant($"M {p1.X},{p1.Y} C {c1.X},{c1.Y} {c2.X},{c2.Y} {p2.X},{p2.Y}");
         }
 
         double maxX = visualNodes.Values.Max(n => n.X);

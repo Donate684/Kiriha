@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,22 +13,22 @@ namespace Kiriha.Mpv.UI.Services.Player;
 /// </summary>
 public static class SmartTrackAutoloader
 {
-    private static readonly HashSet<string> SubtitleExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".ass", ".idx", ".lrc", ".mks", ".pgs", ".rt", ".sbv", ".scc", ".smi",
-        ".srt", ".srv3", ".ssa", ".sub", ".sup", ".utf", ".vtt", ".ytt"
-    };
+    private static readonly FrozenSet<string> SubtitleExtensions = FrozenSet.ToFrozenSet(
+        [
+            ".ass", ".idx", ".lrc", ".mks", ".pgs", ".rt", ".sbv", ".scc", ".smi",
+            ".srt", ".srv3", ".ssa", ".sub", ".sup", ".utf", ".vtt", ".ytt"
+        ], StringComparer.OrdinalIgnoreCase);
 
-    private static readonly HashSet<string> AudioExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".mka", ".flac", ".aac", ".mp3", ".ogg", ".opus", ".m4a", ".wav", ".ac3", ".dts"
-    };
+    private static readonly FrozenSet<string> AudioExtensions = FrozenSet.ToFrozenSet(
+        [
+            ".mka", ".flac", ".aac", ".mp3", ".ogg", ".opus", ".m4a", ".wav", ".ac3", ".dts"
+        ], StringComparer.OrdinalIgnoreCase);
 
-    private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv",
-        ".ts", ".m2ts", ".mpg", ".mpeg", ".ogv", ".rmvb", ".y4m"
-    };
+    private static readonly FrozenSet<string> VideoExtensions = FrozenSet.ToFrozenSet(
+        [
+            ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv",
+            ".ts", ".m2ts", ".mpg", ".mpeg", ".ogv", ".rmvb", ".y4m"
+        ], StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Finds external subtitle and audio track paths that match the episode number of

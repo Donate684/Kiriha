@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Mapping;
 using System.Collections.Concurrent;
@@ -78,7 +78,7 @@ public class RecognitionCache : IRecognitionCache
     {
         if (_cache.TryGetValue(normalizedTitle, out var matches))
             return matches;
-        return System.Linq.Enumerable.Empty<WeightedMatch>();
+        return [];
     }
 
     public void Clear() => _cache.Clear();

@@ -49,18 +49,21 @@ public partial class HistorySectionViewModel
                 Tooltip = string.Format(LocalizationStore.Translate("analytics.history.episodes_format"), $"{date:dd.MM}: {count}")
             };
 
-            foreach (var entry in entries?.OrderByDescending(x => x.Timestamp) ?? Enumerable.Empty<HistoryItem>())
+            if (entries != null)
             {
-                posterMap.TryGetValue(entry.AnimeId, out var posterUrl);
-                point.Entries.Add(new AnalyticsHistoryEntry
+                foreach (var entry in entries.OrderByDescending(x => x.Timestamp))
                 {
-                    Title = entry.RussianTitle ?? entry.AnimeTitle,
-                    Subtitle = entry.RussianTitle != null ? entry.AnimeTitle : null,
-                    Detail = entry.Episode > 0
-                        ? string.Format(LocalizationStore.Translate("analytics.history.episode_format_2"), entry.Episode, entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture))
-                        : entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture),
-                    PosterUrl = posterUrl
-                });
+                    posterMap.TryGetValue(entry.AnimeId, out var posterUrl);
+                    point.Entries.Add(new AnalyticsHistoryEntry
+                    {
+                        Title = entry.RussianTitle ?? entry.AnimeTitle,
+                        Subtitle = entry.RussianTitle != null ? entry.AnimeTitle : null,
+                        Detail = entry.Episode > 0
+                            ? string.Format(LocalizationStore.Translate("analytics.history.episode_format_2"), entry.Episode, entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture))
+                            : entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture),
+                        PosterUrl = posterUrl
+                    });
+                }
             }
 
             RecentHistory.Add(point);

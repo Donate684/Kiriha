@@ -8,6 +8,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,7 @@ namespace AnitomySharp
         private const string Dashes = "-\u2010\u2011\u2012\u2013\u2014\u2015";
         private const string DashesWithSpace = " -\u2010\u2011\u2012\u2013\u2014\u2015";
 
-        private static readonly Dictionary<string, string> Ordinals = new Dictionary<string, string>
+        private static readonly FrozenDictionary<string, string> Ordinals = new Dictionary<string, string>
     {
       {"1st", "1"}, {"First", "1"},
       {"2nd", "2"}, {"Second", "2"},
@@ -34,7 +35,7 @@ namespace AnitomySharp
       {"7th", "7"}, {"Seventh", "7"},
       {"8th", "8"}, {"Eighth", "8"},
       {"9th", "9"}, {"Ninth", "9"}
-    };
+    }.ToFrozenDictionary();
 
         private readonly Parser _parser;
 

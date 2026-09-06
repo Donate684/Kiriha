@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -45,7 +46,7 @@ namespace Kiriha.Infrastructure;
 /// </summary>
 public class ViewLocator : IDataTemplate
 {
-    private static readonly Dictionary<Type, Func<Control>> Map = new()
+    private static readonly FrozenDictionary<Type, Func<Control>> Map = new Dictionary<Type, Func<Control>>
     {
         [typeof(AmbiguousMatchViewModel)] = () => new AmbiguousMatchView(),
         [typeof(AnimeListViewModel)] = () => new AnimeListView(),
@@ -59,7 +60,7 @@ public class ViewLocator : IDataTemplate
         [typeof(TorrentsViewModel)] = () => new TorrentsView(),
         [typeof(UpdateDialogViewModel)] = () => new UpdateDialogView(),
         [typeof(WelcomeViewModel)] = () => new WelcomeView(),
-    };
+    }.ToFrozenDictionary();
 
     public Control? Build(object? param)
     {

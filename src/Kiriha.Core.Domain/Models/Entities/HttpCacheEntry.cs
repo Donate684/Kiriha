@@ -30,7 +30,7 @@ public class HttpCacheEntry
     public string? LastModified { get; set; }
 
     [Column("body")]
-    public byte[] Body { get; set; } = Array.Empty<byte>();
+    public byte[] Body { get; set; } = [];
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }

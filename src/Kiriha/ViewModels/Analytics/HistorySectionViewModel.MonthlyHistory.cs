@@ -58,17 +58,20 @@ public partial class HistorySectionViewModel
                         : string.Format(LocalizationStore.Translate("analytics.history.completed_count"), $"{monthNames[month - 1]} {year}")
                 };
 
-                foreach (var entry in entries?.OrderBy(x => x.Presentation.DisplayTitle) ?? Enumerable.Empty<AnimeEntity>())
+                if (entries != null)
                 {
-                    cell.Entries.Add(new AnalyticsHistoryEntry
+                    foreach (var entry in entries.OrderBy(x => x.Presentation.DisplayTitle))
                     {
-                        Title = entry.Presentation.DisplayTitle,
-                        Subtitle = entry.RussianTitle != null ? entry.Title : null,
-                        Detail = int.TryParse(entry.Score, out var score) && score > 0
-                            ? string.Format(LocalizationStore.Translate("analytics.history.score_format"), score)
-                            : LocalizationStore.Translate("analytics.history.no_score"),
-                        PosterUrl = entry.MainPictureUrl
-                    });
+                        cell.Entries.Add(new AnalyticsHistoryEntry
+                        {
+                            Title = entry.Presentation.DisplayTitle,
+                            Subtitle = entry.RussianTitle != null ? entry.Title : null,
+                            Detail = int.TryParse(entry.Score, out var score) && score > 0
+                                ? string.Format(LocalizationStore.Translate("analytics.history.score_format"), score)
+                                : LocalizationStore.Translate("analytics.history.no_score"),
+                            PosterUrl = entry.MainPictureUrl
+                        });
+                    }
                 }
 
                 row.Months.Add(cell);

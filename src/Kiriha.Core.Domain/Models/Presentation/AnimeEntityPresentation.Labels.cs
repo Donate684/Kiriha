@@ -154,7 +154,7 @@ public partial class AnimeEntityPresentation
 
     public bool HasGenres => _item.Genres != null && _item.Genres.Count > 0;
 
-    public IEnumerable<string> TopGenres => _item.Genres?.Take(2) ?? Enumerable.Empty<string>();
+    public IEnumerable<string> TopGenres => _item.Genres?.Take(2) ?? [];
 
     public bool HasStudios => _item.Studios != null && _item.Studios.Count > 0;
 }

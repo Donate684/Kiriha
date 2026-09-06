@@ -1,5 +1,5 @@
-
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,10 +14,10 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public partial class PlayerViewModel : ObservableObject, IDisposable
 {
-    private static readonly HashSet<string> MediaExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv", ".ts", ".m2ts", ".mpg", ".mpeg", ".ogm", ".ogg"
-    };
+    private static readonly FrozenSet<string> MediaExtensions = FrozenSet.ToFrozenSet(
+        [
+            ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv", ".ts", ".m2ts", ".mpg", ".mpeg", ".ogm", ".ogg"
+        ], StringComparer.OrdinalIgnoreCase);
 
     private readonly IPlayerMediaMetadataResolver? _metadataResolver;
     private readonly ISettingsService? _settingsService;

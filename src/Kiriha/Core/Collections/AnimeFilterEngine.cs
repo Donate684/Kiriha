@@ -1,6 +1,7 @@
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Models;
@@ -61,12 +62,13 @@ public static class AnimeFilterEngine
 
 internal static class AnimeComparerFactory
 {
-    private static readonly Dictionary<(string, bool, bool), IComparer<AnimeEntity>> Comparers = new(StringTupleComparer.Instance);
+    private static readonly FrozenDictionary<(string, bool, bool), IComparer<AnimeEntity>> Comparers;
 
     static AnimeComparerFactory()
     {
-        string[] sortOptions = { "Title", "RussianTitle", "EnglishTitle", "Score", "Progress", "Date", "Popularity", "" };
-        bool[] bools = { false, true };
+        var comparers = new Dictionary<(string, bool, bool), IComparer<AnimeEntity>>(StringTupleComparer.Instance);
+        string[] sortOptions = ["Title", "RussianTitle", "EnglishTitle", "Score", "Progress", "Date", "Popularity", ""];
+        bool[] bools = [false, true];
 
         foreach (var opt in sortOptions)
         {
@@ -74,10 +76,12 @@ internal static class AnimeComparerFactory
             {
                 foreach (var prioritizeNew in bools)
                 {
-                    Comparers[(opt, isSeasonal, prioritizeNew)] = new AnimeEntityComparer(opt, isSeasonal, prioritizeNew);
+                    comparers[(opt, isSeasonal, prioritizeNew)] = new AnimeEntityComparer(opt, isSeasonal, prioritizeNew);
                 }
             }
         }
+
+        Comparers = comparers.ToFrozenDictionary(StringTupleComparer.Instance);
     }
 
     public static IComparer<AnimeEntity> GetComparer(string? sortBy, bool isSeasonal, bool prioritizeNewEpisodes)

@@ -9,6 +9,7 @@
 */
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -54,22 +55,22 @@ namespace AnitomySharp
         /// <summary>
         /// Set of token category flags
         /// </summary>
-        private static readonly List<TokenFlag> FlagMaskCategories = new List<TokenFlag>
-    {
-      TokenFlag.FlagBracket, TokenFlag.FlagNotBracket,
-      TokenFlag.FlagDelimiter, TokenFlag.FlagNotDelimiter,
-      TokenFlag.FlagIdentifier, TokenFlag.FlagNotIdentifier,
-      TokenFlag.FlagUnknown, TokenFlag.FlagNotUnknown,
-      TokenFlag.FlagValid, TokenFlag.FlagNotValid
-    };
+        private static readonly FrozenSet<TokenFlag> FlagMaskCategories =
+            FrozenSet.ToFrozenSet([
+                TokenFlag.FlagBracket, TokenFlag.FlagNotBracket,
+                TokenFlag.FlagDelimiter, TokenFlag.FlagNotDelimiter,
+                TokenFlag.FlagIdentifier, TokenFlag.FlagNotIdentifier,
+                TokenFlag.FlagUnknown, TokenFlag.FlagNotUnknown,
+                TokenFlag.FlagValid, TokenFlag.FlagNotValid
+            ]);
 
         /// <summary>
         /// Set of token enclosed flags
         /// </summary>
-        private static readonly List<TokenFlag> FlagMaskEnclosed = new List<TokenFlag>
-    {
-      TokenFlag.FlagEnclosed, TokenFlag.FlagNotEnclosed
-    };
+        private static readonly FrozenSet<TokenFlag> FlagMaskEnclosed =
+            FrozenSet.ToFrozenSet([
+                TokenFlag.FlagEnclosed, TokenFlag.FlagNotEnclosed
+            ]);
 
         public TokenCategory Category { get; set; }
         public string Content { get; set; }

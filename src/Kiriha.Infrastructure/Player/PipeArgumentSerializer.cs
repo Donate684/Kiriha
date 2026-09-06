@@ -11,7 +11,7 @@ public static class PipeArgumentSerializer
     {
         try
         {
-            return JsonSerializer.Deserialize<string[]>(line) ?? Array.Empty<string>();
+            return JsonSerializer.Deserialize<string[]>(line) ?? [];
         }
         catch (JsonException)
         {

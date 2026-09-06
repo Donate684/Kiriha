@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -21,7 +22,7 @@ public sealed record ReleaseMapDayGroup(DateTime Date, string Label, IReadOnlyLi
 
 public class ReleaseMapViewModel
 {
-    private static readonly Dictionary<string, string> FallbackStrings = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenDictionary<string, string> FallbackStrings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         ["schedule.today"] = "Today",
         ["schedule.tomorrow"] = "Tomorrow",
@@ -54,7 +55,7 @@ public class ReleaseMapViewModel
         ["schedule.no_past_releases_desc"] = "No new episodes from your list were released recently",
         ["schedule.no_upcoming_releases"] = "No upcoming releases",
         ["schedule.after_sync_roadmap"] = "After synchronization, the episode roadmap will appear here"
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     public static string GetLoc(string key)
     {

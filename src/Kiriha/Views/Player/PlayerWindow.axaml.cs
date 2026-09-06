@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -22,11 +23,11 @@ public partial class PlayerWindow : Window
     private static readonly Cursor s_arrowCursor = new(StandardCursorType.Arrow);
     private static readonly Cursor s_noneCursor = new(StandardCursorType.None);
 
-    private static readonly HashSet<string> DropMediaExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv", ".ts", ".m2ts", ".mpg", ".mpeg", ".ogm", ".ogg",
-        ".ass", ".srt"
-    };
+    private static readonly FrozenSet<string> DropMediaExtensions = FrozenSet.ToFrozenSet(
+        [
+            ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv", ".ts", ".m2ts", ".mpg", ".mpeg", ".ogm", ".ogg",
+            ".ass", ".srt"
+        ], StringComparer.OrdinalIgnoreCase);
 
     // Chapter markers
     private Border? _topBar;
