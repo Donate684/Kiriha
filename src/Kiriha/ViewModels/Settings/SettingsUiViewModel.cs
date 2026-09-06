@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Core.Domain.Constants;
 using System.Collections.Generic;

@@ -121,7 +121,7 @@
                                                    TextTrimming="CharacterEllipsis"
                                                    LineHeight="28"/>
          
-                                        <TextBlock x:Name="ReleaseHeroRussianTitle"
+                                        <TextBlock x:Name="ReleaseHeroSecondaryTitle"
                                                    Text=""
                                                    FontSize="12"
                                                    Foreground="#A8FFFFFF"

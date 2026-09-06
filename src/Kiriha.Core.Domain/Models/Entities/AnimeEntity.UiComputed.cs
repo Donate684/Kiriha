@@ -17,6 +17,14 @@ public partial class AnimeEntity
     [JsonIgnore]
     public bool HasNewEpisodeBadge => Presentation.HasNewEpisodeBadge;
 
+    [NotMapped]
+    [JsonIgnore]
+    public string? SecondaryTitle => Presentation.SecondaryTitle;
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasSecondaryTitle => Presentation.HasSecondaryTitle;
+
     public AnimeEntity()
     {
         Presentation = new AnimeEntityPresentation(this);

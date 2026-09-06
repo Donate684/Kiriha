@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Kiriha.Infrastructure;
 using Kiriha.ViewModels.AnimeList;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Views.AnimeList;
 
@@ -161,11 +162,11 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         infoPanel.Children.Add(new TextBlock
         {
             DataContext = release.Item,
-            [!TextBlock.TextProperty] = new Avalonia.Data.Binding("RussianTitle") { FallbackValue = release.Title },
+            [!TextBlock.TextProperty] = new Avalonia.Data.Binding(nameof(AnimeEntity.SecondaryTitle)),
             FontSize = 11,
             Foreground = BrushFrom(palette.SecondaryTitleText),
             TextTrimming = TextTrimming.CharacterEllipsis,
-            [!TextBlock.IsVisibleProperty] = new Avalonia.Data.Binding("RussianTitle") { Converter = Avalonia.Data.Converters.StringConverters.IsNotNullOrEmpty }
+            [!TextBlock.IsVisibleProperty] = new Avalonia.Data.Binding(nameof(AnimeEntity.HasSecondaryTitle))
         });
 
         // Meta pills

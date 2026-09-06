@@ -140,11 +140,11 @@
                             <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold"
                                        MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                        LineHeight="16" Foreground="{DynamicResource SystemBaseHighColor}"/>
-                            <TextBlock Text="{Binding RussianTitle}" FontSize="10.5" FontWeight="Medium"
+                            <TextBlock Text="{Binding Presentation.SecondaryTitle}" FontSize="10.5" FontWeight="Medium"
                                        MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                        LineHeight="14" Opacity="0.6"
                                        Foreground="{DynamicResource SystemBaseHighColor}"
-                                       IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                       IsVisible="{Binding Presentation.HasSecondaryTitle}"/>
                         </StackPanel>
 
                         <!-- Row 1: Genre pills -->

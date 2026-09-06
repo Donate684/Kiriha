@@ -55,12 +55,12 @@
                         </Button>
                     </Grid>
 
-                    <!-- Russian title -->
-                    <TextBlock Grid.Row="1" Text="{Binding RussianTitle}" FontSize="10"
+                    <!-- Secondary title -->
+                    <TextBlock Grid.Row="1" Text="{Binding Presentation.SecondaryTitle}" FontSize="10"
                                MaxLines="1" TextTrimming="CharacterEllipsis"
                                LineHeight="14" Margin="0,2,0,0"
                                Foreground="{DynamicResource SystemAccentColor}" Opacity="0.8"
-                               IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                               IsVisible="{Binding Presentation.HasSecondaryTitle}"/>
 
                     <!-- Spacer row 2 -->
 

@@ -63,12 +63,12 @@
                                    TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                    LineHeight="16"
                                    Foreground="{DynamicResource SystemBaseHighColor}"/>
-                        <TextBlock Text="{Binding RussianTitle}"
+                        <TextBlock Text="{Binding Presentation.SecondaryTitle}"
                                    FontSize="10" MaxLines="2"
                                    TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                    LineHeight="14"
                                    Foreground="{DynamicResource SystemBaseMediumColor}" Opacity="0.85"
-                                   IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                   IsVisible="{Binding Presentation.HasSecondaryTitle}"/>
                     </StackPanel>
 
                     <!-- Segmented progress dots -->

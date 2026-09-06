@@ -64,16 +64,10 @@
                                        Foreground="White" TextWrapping="Wrap" LineHeight="28"
                                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNull}}"/>
 
-                            <!-- Russian title (optional) -->
-                            <TextBlock Text="{Binding MatchedAnime.RussianTitle}" FontSize="13" Foreground="#90FFFFFF"
-                                       TextWrapping="Wrap">
-                                <TextBlock.IsVisible>
-                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding Path="Settings.Current.UI.UseRussianTitles"/>
-                                        <Binding Path="MatchedAnime.RussianTitle" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-                                    </MultiBinding>
-                                </TextBlock.IsVisible>
-                            </TextBlock>
+                            <!-- Secondary title (optional) -->
+                            <TextBlock Text="{Binding MatchedAnime.Presentation.SecondaryTitle}" FontSize="13" Foreground="#90FFFFFF"
+                                       TextWrapping="Wrap"
+                                       IsVisible="{Binding MatchedAnime.Presentation.HasSecondaryTitle}"/>
 
                             <!-- Metadata row with dividers (AnimeDetails hero style) -->
                             <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,5,0,0">

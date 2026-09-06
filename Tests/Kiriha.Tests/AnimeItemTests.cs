@@ -145,4 +145,60 @@ public sealed class AnimeEntityTests
         Assert.Contains(nameof(AnimeEntity.Presentation), changed);
         Assert.True(item.Presentation.HasGenres);
     }
+
+    [Fact]
+    public void SecondaryTitle_DefaultsToEnglishAndAvoidsDuplication()
+    {
+        AnimeEntityPresentation.GetUseRussianTitles = () => false;
+
+        var item = new AnimeEntity
+        {
+            Title = "Kimi no Na wa.",
+            EnglishTitle = "Your Name.",
+            RussianTitle = "Твоё имя"
+        };
+
+        Assert.Equal("Your Name.", item.SecondaryTitle);
+        Assert.True(item.HasSecondaryTitle);
+
+        var duplicateItem = new AnimeEntity
+        {
+            Title = "Naruto",
+            EnglishTitle = "Naruto"
+        };
+
+        Assert.Null(duplicateItem.SecondaryTitle);
+        Assert.False(duplicateItem.HasSecondaryTitle);
+    }
+
+    [Fact]
+    public void SecondaryTitle_SwitchesToRussianWhenRussianTitlesEnabled()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Sousou no Frieren",
+            EnglishTitle = "Frieren: Beyond Journey's End",
+            RussianTitle = "Провожающая в последний путь Фрирен"
+        };
+
+        // When Russian Titles enabled -> Russian replaces English
+        AnimeEntityPresentation.GetUseRussianTitles = () => true;
+        Assert.Equal("Провожающая в последний путь Фрирен", item.SecondaryTitle);
+
+        // When Russian Titles disabled -> English is used
+        AnimeEntityPresentation.GetUseRussianTitles = () => false;
+        Assert.Equal("Frieren: Beyond Journey's End", item.SecondaryTitle);
+
+        // When Russian Titles enabled but RussianTitle is empty -> falls back to English
+        var itemWithoutRussian = new AnimeEntity
+        {
+            Title = "Sousou no Frieren",
+            EnglishTitle = "Frieren: Beyond Journey's End"
+        };
+        AnimeEntityPresentation.GetUseRussianTitles = () => true;
+        Assert.Equal("Frieren: Beyond Journey's End", itemWithoutRussian.SecondaryTitle);
+
+        // Reset delegate
+        AnimeEntityPresentation.GetUseRussianTitles = () => false;
+    }
 }

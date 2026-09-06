@@ -159,4 +159,27 @@ public class ReleaseMapViewModelTests
         Assert.NotNull(yesterdayBadge);
         Assert.NotNull(twoDaysAgoBadge);
     }
+
+    [Fact]
+    public void GetUpcomingReleases_PrefersRomajiTitleOverEnglishTitle()
+    {
+        var now = DateTime.UtcNow;
+        var items = new List<AnimeEntity>
+        {
+            new AnimeEntity
+            {
+                Id = 1,
+                Title = "Kimi no Koto ga Daidaidaidaidaisuki na 100-nin no Kanojo",
+                EnglishTitle = "The 100 Girlfriends Who Really Love You",
+                Status = UserAnimeStatus.Watching,
+                NextEpisodeAt = now.AddDays(1)
+            }
+        };
+
+        var vm = new ReleaseMapViewModel(items);
+        var upcoming = vm.GetUpcomingReleases().ToList();
+
+        Assert.Single(upcoming);
+        Assert.Equal("Kimi no Koto ga Daidaidaidaidaisuki na 100-nin no Kanojo", upcoming[0].Title);
+    }
 }

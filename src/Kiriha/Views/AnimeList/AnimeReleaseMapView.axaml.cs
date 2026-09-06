@@ -178,8 +178,8 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             _currentHeroItem = null;
             ReleaseHeroClickableArea.Cursor = Cursor.Default;
             ReleaseHeroAnimeTitle.Text = string.Empty;
-            ReleaseHeroRussianTitle.Text = string.Empty;
-            ReleaseHeroRussianTitle.IsVisible = false;
+            ReleaseHeroSecondaryTitle.Text = string.Empty;
+            ReleaseHeroSecondaryTitle.IsVisible = false;
             ReleaseHeroKindText.Text = ReleaseMapViewModel.GetNoDatesText();
             ReleaseHeroCountdownText.Text = ReleaseMapViewModel.GetAfterSyncText();
             ReleaseHeroTimeText.Text = "--:--";
@@ -196,9 +196,9 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         _currentHeroItem = first.Item;
         ReleaseHeroClickableArea.Cursor = new Cursor(StandardCursorType.Hand);
         ReleaseHeroAnimeTitle.Text = first.Title;
-        ReleaseHeroRussianTitle.DataContext = first.Item;
-        ReleaseHeroRussianTitle[!TextBlock.TextProperty] = new Avalonia.Data.Binding("RussianTitle");
-        ReleaseHeroRussianTitle[!TextBlock.IsVisibleProperty] = new Avalonia.Data.Binding("RussianTitle") { Converter = Avalonia.Data.Converters.StringConverters.IsNotNullOrEmpty };
+        ReleaseHeroSecondaryTitle.DataContext = first.Item;
+        ReleaseHeroSecondaryTitle[!TextBlock.TextProperty] = new Avalonia.Data.Binding(nameof(AnimeEntity.SecondaryTitle));
+        ReleaseHeroSecondaryTitle[!TextBlock.IsVisibleProperty] = new Avalonia.Data.Binding(nameof(AnimeEntity.HasSecondaryTitle));
 
         if (_currentFilter == ReleaseMapFilter.Past)
         {

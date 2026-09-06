@@ -257,10 +257,13 @@ public class ReleaseMapViewModel
 
     private static string GetPrimaryReleaseTitle(AnimeEntity item)
     {
+        if (!string.IsNullOrWhiteSpace(item.Title))
+            return item.Title;
+
         if (!string.IsNullOrWhiteSpace(item.EnglishTitle))
             return item.EnglishTitle;
 
-        return !string.IsNullOrWhiteSpace(item.Title) ? item.Title : item.Presentation.DisplayTitle;
+        return item.Presentation.DisplayTitle;
     }
 
     public static string FormatRelativeDate(DateTime releaseAt)

@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Entities;
 using System;
 using Kiriha.Core;
@@ -23,6 +23,11 @@ public partial class App : Application
         var args = Environment.GetCommandLineArgs();
         var isPlayerMode = PlayerModeCoordinator.IsPlayerMode(args);
         ServiceProvider = AppStartupCoordinator.BuildServiceProvider(isPlayerMode);
+        var appSettingsService = ServiceProvider.GetService<Kiriha.Services.Data.Settings.SettingsService>();
+        if (appSettingsService != null)
+        {
+            AnimeEntityPresentation.GetUseRussianTitles = () => appSettingsService.Current.UI.UseRussianTitles;
+        }
         _shutdownCoordinator = new ShutdownCoordinator(ServiceProvider, ServiceProvider.GetServices<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler>());
         _trayService = new TrayService(this, ServiceProvider, _shutdownCoordinator);
         if (isPlayerMode)

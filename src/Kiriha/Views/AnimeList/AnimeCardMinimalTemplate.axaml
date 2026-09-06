@@ -71,10 +71,10 @@
                         <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"
                                    MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                    LineHeight="15" Foreground="White"/>
-                        <TextBlock Text="{Binding RussianTitle}" FontSize="9"
+                        <TextBlock Text="{Binding Presentation.SecondaryTitle}" FontSize="9"
                                    MaxLines="1" TextTrimming="CharacterEllipsis"
                                    Foreground="{DynamicResource AnimeCardMinimalTextTertiaryForeground}"
-                                   IsVisible="{Binding RussianTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                   IsVisible="{Binding Presentation.HasSecondaryTitle}"/>
 
                         <!-- Thin progress bar -->
                         <Border Height="3" Margin="0,4,0,2"

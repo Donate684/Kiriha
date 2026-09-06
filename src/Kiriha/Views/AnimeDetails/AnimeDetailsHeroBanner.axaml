@@ -28,14 +28,8 @@
                 </Border>
                 <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center" Spacing="4">
                     <TextBlock Text="{Binding Anime.Title}" FontSize="28" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34"/>
-                    <TextBlock Text="{Binding Anime.RussianTitle}" FontSize="15" Foreground="#BFFFFFFF" TextWrapping="Wrap">
-                        <TextBlock.IsVisible>
-                            <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                <Binding Path="Settings.Current.UI.UseRussianTitles"/>
-                                <Binding Path="Anime.RussianTitle" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-                            </MultiBinding>
-                        </TextBlock.IsVisible>
-                    </TextBlock>
+                    <TextBlock Text="{Binding Anime.Presentation.SecondaryTitle}" FontSize="15" Foreground="#BFFFFFFF" TextWrapping="Wrap"
+                               IsVisible="{Binding Anime.Presentation.HasSecondaryTitle}"/>
                     <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <material:MaterialIcon Kind="Star" Width="14" Height="14" Foreground="Gold" VerticalAlignment="Center"/>
