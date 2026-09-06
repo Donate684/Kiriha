@@ -68,8 +68,7 @@ public class ImageDownloader : IDisposable
 
     private async Task<string> DownloadCoreAsync(string url, CancellationToken ct = default)
     {
-        string fileName = GetHashString(url) + Path.GetExtension(url.Split('?')[0]);
-        if (string.IsNullOrEmpty(Path.GetExtension(fileName))) fileName += ".jpg";
+        string fileName = GetFileNameForUrl(url);
 
         string localPath = Path.Combine(_cacheRoot, fileName);
         string tmpPath = localPath + ".tmp";
@@ -142,8 +141,25 @@ public class ImageDownloader : IDisposable
 
     public static string GetHashString(string inputString)
     {
-        byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(inputString));
-        return Convert.ToHexString(hashBytes);
+        if (string.IsNullOrEmpty(inputString)) return string.Empty;
+
+        int maxBytes = Encoding.UTF8.GetMaxByteCount(inputString.Length);
+        Span<byte> utf8Bytes = maxBytes <= 512 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+        int actualBytes = Encoding.UTF8.GetBytes(inputString, utf8Bytes);
+
+        Span<byte> hash = stackalloc byte[32];
+        SHA256.HashData(utf8Bytes[..actualBytes], hash);
+        return Convert.ToHexString(hash);
+    }
+
+    public static string GetFileNameForUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return string.Empty;
+        int queryIdx = url.IndexOf('?');
+        ReadOnlySpan<char> pathSpan = queryIdx >= 0 ? url.AsSpan(0, queryIdx) : url.AsSpan();
+        ReadOnlySpan<char> extSpan = Path.GetExtension(pathSpan);
+        string ext = extSpan.IsEmpty ? ".jpg" : extSpan.ToString();
+        return GetHashString(url) + ext;
     }
 
     public void Dispose()

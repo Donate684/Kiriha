@@ -51,14 +51,37 @@ public partial class AnimeEntity : DomainObservableObject
     public string? RussianSynopsis { get; set; } = string.Empty;
     public string? MainPictureUrl { get; set; }
     public string? LocalPosterPath { get; set; }
-    public string? Nsfw { get; set; }
+    private string? _nsfw;
+    public string? Nsfw
+    {
+        get => _nsfw;
+        set
+        {
+            if (SetProperty(ref _nsfw, value))
+            {
+                _cachedIsNsfw = null;
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
     private string? _englishTitle;
     public string? EnglishTitle { get => _englishTitle; set { if (SetProperty(ref _englishTitle, value)) OnPropertyChanged("Presentation"); } }
     private string? _japaneseTitle;
     public string? JapaneseTitle { get => _japaneseTitle; set { if (SetProperty(ref _japaneseTitle, value)) OnPropertyChanged("Presentation"); } }
     public List<string> AlternativeTitles { get; set; } = new();
     private List<string> _genres = new();
-    public List<string> Genres { get => _genres; set { if (SetProperty(ref _genres, value)) OnPropertyChanged("Presentation"); } }
+    public List<string> Genres
+    {
+        get => _genres;
+        set
+        {
+            if (SetProperty(ref _genres, value))
+            {
+                _cachedIsNsfw = null;
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
     public List<string> Studios { get; set; } = new();
     public string? StatusDetailed { get; set; }
     private string? _meanScore;
@@ -102,7 +125,39 @@ public partial class AnimeEntity : DomainObservableObject
     public string? StartSeason { get; set; }
     public int? StartYear { get; set; }
     private string? _rating;
-    public string? Rating { get => _rating; set { if (SetProperty(ref _rating, value)) OnPropertyChanged("Presentation"); } }
+    public string? Rating
+    {
+        get => _rating;
+        set
+        {
+            if (SetProperty(ref _rating, value))
+            {
+                _cachedIsNsfw = null;
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
+
+    private bool? _cachedIsNsfw;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsNsfw => _cachedIsNsfw ??= ComputeIsNsfw();
+
+    private bool ComputeIsNsfw()
+    {
+        if (string.Equals(_rating, "rx", StringComparison.OrdinalIgnoreCase)) return true;
+        if (string.Equals(_nsfw, "black", StringComparison.OrdinalIgnoreCase)) return true;
+        if (_genres != null)
+        {
+            for (int i = 0; i < _genres.Count; i++)
+            {
+                if (string.Equals(_genres[i], "Hentai", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+        return false;
+    }
     public string? Notes { get; set; }
     private bool _isRewatching;
     public bool IsRewatching { get => _isRewatching; set { if (SetProperty(ref _isRewatching, value)) OnPropertyChanged("Presentation"); } }

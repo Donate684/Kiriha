@@ -88,11 +88,12 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         {
             if (!_buckets.TryGetValue((status, kind), out var bucket) || bucket.Count == 0)
             {
-                return new List<AnimeEntity>();
+                return [];
             }
 
             var normalizedSearch = Normalize(searchQuery);
-            var result = new List<AnimeEntity>(bucket.Count);
+            int initialCapacity = normalizedSearch.Length > 0 ? Math.Min(bucket.Count, 32) : bucket.Count;
+            var result = new List<AnimeEntity>(initialCapacity);
 
             foreach (var entry in bucket.Values)
             {

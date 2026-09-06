@@ -31,18 +31,7 @@ public static class AnimeFilterEngine
     /// </summary>
     public static IEnumerable<AnimeEntity> ApplyNsfw(this IEnumerable<AnimeEntity> query, bool filterNsfw)
     {
-        if (filterNsfw)
-        {
-            return query.Where(x =>
-                string.Equals(x.Rating, "rx", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(x.Nsfw, "black", StringComparison.OrdinalIgnoreCase) ||
-                x.Genres.Any(g => string.Equals(g, "Hentai", StringComparison.OrdinalIgnoreCase)));
-        }
-
-        return query.Where(x =>
-            !string.Equals(x.Rating, "rx", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(x.Nsfw, "black", StringComparison.OrdinalIgnoreCase) &&
-            !x.Genres.Any(g => string.Equals(g, "Hentai", StringComparison.OrdinalIgnoreCase)));
+        return filterNsfw ? query.Where(x => x.IsNsfw) : query.Where(x => !x.IsNsfw);
     }
 
     public static IEnumerable<AnimeEntity> ApplySorting(this IEnumerable<AnimeEntity> query, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false)

@@ -3,6 +3,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Mapping;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
@@ -10,11 +11,9 @@ using Kiriha.Utils.Parsing;
 
 namespace Kiriha.Services.Data.Mapping;
 
-
-
 public class RecognitionCache : IRecognitionCache
 {
-    private readonly ConcurrentDictionary<string, List<WeightedMatch>> _cache = new();
+    private readonly ConcurrentDictionary<string, ImmutableArray<WeightedMatch>> _cache = new();
 
     public void BuildIndex(IEnumerable<AnimeEntity> collection)
     {
@@ -53,25 +52,25 @@ public class RecognitionCache : IRecognitionCache
         string norm = AnimeStringHelper.Normalize(title);
         if (string.IsNullOrWhiteSpace(norm)) return;
 
-        _cache.AddOrUpdate(norm,
-            _ => new List<WeightedMatch> { new(id, weight) },
-            (_, list) =>
+        _cache.AddOrUpdate(
+            norm,
+            static (_, arg) => ImmutableArray.Create(new WeightedMatch(arg.id, arg.weight)),
+            static (_, existing, arg) =>
             {
-                // avoid duplicate id in same normalized title, keep max weight
-                var existingIndex = list.FindIndex(x => x.Id == id);
-                if (existingIndex >= 0)
+                for (int i = 0; i < existing.Length; i++)
                 {
-                    if (list[existingIndex].Weight < weight)
+                    if (existing[i].Id == arg.id)
                     {
-                        list[existingIndex] = new WeightedMatch(id, weight);
+                        if (existing[i].Weight < arg.weight)
+                        {
+                            return existing.SetItem(i, new WeightedMatch(arg.id, arg.weight));
+                        }
+                        return existing;
                     }
                 }
-                else
-                {
-                    list.Add(new WeightedMatch(id, weight));
-                }
-                return list;
-            });
+                return existing.Add(new WeightedMatch(arg.id, arg.weight));
+            },
+            (id, weight));
     }
 
     public IEnumerable<WeightedMatch> Search(string normalizedTitle)
@@ -85,13 +84,18 @@ public class RecognitionCache : IRecognitionCache
 
     public void AddMatch(string normalizedTitle, int id, float weight)
     {
-        _cache.AddOrUpdate(normalizedTitle,
-            _ => new List<WeightedMatch> { new(id, weight) },
-            (_, list) =>
+        _cache.AddOrUpdate(
+            normalizedTitle,
+            static (_, arg) => ImmutableArray.Create(new WeightedMatch(arg.id, arg.weight)),
+            static (_, existing, arg) =>
             {
-                if (!list.Any(x => x.Id == id))
-                    list.Add(new WeightedMatch(id, weight));
-                return list;
-            });
+                for (int i = 0; i < existing.Length; i++)
+                {
+                    if (existing[i].Id == arg.id)
+                        return existing;
+                }
+                return existing.Add(new WeightedMatch(arg.id, arg.weight));
+            },
+            (id, weight));
     }
 }

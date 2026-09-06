@@ -28,9 +28,14 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
         _now = now;
     }
 
+    private string? _cachedSecondaryTitle;
+    private bool _secondaryTitleComputed;
+    private bool _cachedUseRussianTitles;
+
     public void RaiseAll()
     {
         _now = DateTime.UtcNow;
+        _secondaryTitleComputed = false;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
 
@@ -40,35 +45,60 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     {
         get
         {
-            var primary = !string.IsNullOrWhiteSpace(_item.Title)
-                ? _item.Title
-                : (!string.IsNullOrWhiteSpace(_item.EnglishTitle) ? _item.EnglishTitle : _item.RussianTitle);
-
-            if (GetUseRussianTitles())
+            bool useRussian = GetUseRussianTitles();
+            if (_secondaryTitleComputed && _cachedUseRussianTitles == useRussian)
             {
-                if (!string.IsNullOrWhiteSpace(_item.RussianTitle) &&
-                    !string.Equals(_item.RussianTitle.Trim(), primary?.Trim(), StringComparison.OrdinalIgnoreCase))
+                return _cachedSecondaryTitle;
+            }
+
+            _cachedSecondaryTitle = ComputeSecondaryTitle(useRussian);
+            _cachedUseRussianTitles = useRussian;
+            _secondaryTitleComputed = true;
+            return _cachedSecondaryTitle;
+        }
+    }
+
+    private string? ComputeSecondaryTitle(bool useRussian)
+    {
+        var primary = !string.IsNullOrWhiteSpace(_item.Title)
+            ? _item.Title
+            : (!string.IsNullOrWhiteSpace(_item.EnglishTitle) ? _item.EnglishTitle : _item.RussianTitle);
+
+        ReadOnlySpan<char> primaryTrimmed = primary != null ? primary.AsSpan().Trim() : ReadOnlySpan<char>.Empty;
+
+        if (useRussian)
+        {
+            if (!string.IsNullOrWhiteSpace(_item.RussianTitle))
+            {
+                var ruSpan = _item.RussianTitle.AsSpan().Trim();
+                if (!ruSpan.Equals(primaryTrimmed, StringComparison.OrdinalIgnoreCase))
                 {
                     return _item.RussianTitle.Trim();
                 }
+            }
 
-                if (!string.IsNullOrWhiteSpace(_item.EnglishTitle) &&
-                    !string.Equals(_item.EnglishTitle.Trim(), primary?.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(_item.EnglishTitle))
+            {
+                var enSpan = _item.EnglishTitle.AsSpan().Trim();
+                if (!enSpan.Equals(primaryTrimmed, StringComparison.OrdinalIgnoreCase))
                 {
                     return _item.EnglishTitle.Trim();
                 }
-
-                return null;
-            }
-
-            if (!string.IsNullOrWhiteSpace(_item.EnglishTitle) &&
-                !string.Equals(_item.EnglishTitle.Trim(), primary?.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                return _item.EnglishTitle.Trim();
             }
 
             return null;
         }
+
+        if (!string.IsNullOrWhiteSpace(_item.EnglishTitle))
+        {
+            var enSpan = _item.EnglishTitle.AsSpan().Trim();
+            if (!enSpan.Equals(primaryTrimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return _item.EnglishTitle.Trim();
+            }
+        }
+
+        return null;
     }
 
     public bool HasSecondaryTitle => !string.IsNullOrWhiteSpace(SecondaryTitle);

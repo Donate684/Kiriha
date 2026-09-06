@@ -109,12 +109,7 @@ public sealed partial class AnimeCollectionProjection
         ]));
     }
 
-    private static bool ComputeIsNsfw(AnimeEntity item)
-    {
-        return string.Equals(item.Rating, "rx", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(item.Nsfw, "black", StringComparison.OrdinalIgnoreCase)
-            || item.Genres.Any(g => string.Equals(g, "Hentai", StringComparison.OrdinalIgnoreCase));
-    }
+    private static bool ComputeIsNsfw(AnimeEntity item) => item.IsNsfw;
 
     private static string Normalize(string? value)
     {

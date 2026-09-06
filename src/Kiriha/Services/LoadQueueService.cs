@@ -13,6 +13,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Core.Abstractions.Services;
+using Serilog;
 
 namespace Kiriha.Services.Data.Core;
 
@@ -67,10 +68,10 @@ public class LoadQueueService : ILoadQueueService, IDisposable
                 (_settings.Current.UI.UseRussianDescriptions && string.IsNullOrEmpty(item.RussianSynopsis));
 
             if (needsImage)
-                _ = EnqueueAsync(item, _imageQueue.Writer, _queuedForImage);
+                EnqueueItem(item, _imageQueue.Writer, _queuedForImage);
 
             if (needsShiki)
-                _ = EnqueueAsync(item, _shikiQueue.Writer, _queuedForShiki);
+                EnqueueItem(item, _shikiQueue.Writer, _queuedForShiki);
         }
     }
 
@@ -96,7 +97,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
         });
     }
 
-    private async ValueTask EnqueueAsync(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<int> queuedIds)
+    private void EnqueueItem(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<int> queuedIds)
     {
         lock (_dedupeLock)
         {
@@ -104,12 +105,28 @@ public class LoadQueueService : ILoadQueueService, IDisposable
                 return;
         }
 
+        if (writer.TryWrite(item))
+            return;
+
+        _ = EnqueueSlowAsync(item, writer, queuedIds);
+    }
+
+    private async Task EnqueueSlowAsync(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<int> queuedIds)
+    {
         try
         {
             await writer.WriteAsync(item);
         }
         catch (ChannelClosedException)
         {
+            lock (_dedupeLock)
+            {
+                queuedIds.Remove(item.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "LoadQueueService: failed to enqueue item {Id}", item.Id);
             lock (_dedupeLock)
             {
                 queuedIds.Remove(item.Id);

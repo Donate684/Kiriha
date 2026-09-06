@@ -30,8 +30,7 @@ public class ImageDiskCache
         }
         else if (isUrl)
         {
-            string fileName = ImageDownloader.GetHashString(url) + Path.GetExtension(url.Split('?')[0]);
-            if (string.IsNullOrEmpty(Path.GetExtension(fileName))) fileName += ".jpg";
+            string fileName = ImageDownloader.GetFileNameForUrl(url);
             string candidatePath = Path.Combine(_cacheRoot, fileName);
 
             if (File.Exists(candidatePath))

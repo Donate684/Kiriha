@@ -84,7 +84,7 @@ public partial class MappingService
         var queryWords = normQ.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         var bestMalMatch = searchResults.Take(5)
-            .Select(r =>
+            .Select((r, index) =>
             {
                 float score = 0;
 
@@ -116,10 +116,10 @@ public partial class MappingService
                     if (currentScore > score) score = currentScore;
                 }
 
-                return new { Result = r, Score = score };
+                return new { Result = r, Score = score, Index = index };
             })
             .OrderByDescending(x => x.Score)
-            .ThenBy(x => searchResults.IndexOf(x.Result))
+            .ThenBy(x => x.Index)
             .First();
 
         // Require a minimum confidence score before accepting the match.

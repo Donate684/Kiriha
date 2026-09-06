@@ -9,7 +9,7 @@ using Kiriha.Infrastructure.Http;
 
 namespace Kiriha.Services.Data.Core;
 
-public class AppDbContext : DbContext
+public partial class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -48,6 +48,9 @@ public class AppDbContext : DbContext
     private static string ToSnakeCase(string input)
     {
         if (string.IsNullOrEmpty(input)) return input;
-        return Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2").ToLowerInvariant();
+        return SnakeCaseRegex().Replace(input, "$1_$2").ToLowerInvariant();
     }
+
+    [GeneratedRegex(@"([a-z0-9])([A-Z])")]
+    private static partial Regex SnakeCaseRegex();
 }

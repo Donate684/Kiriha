@@ -81,8 +81,11 @@ public sealed class SeasonalCacheStore
                 var name = Path.GetFileNameWithoutExtension(file);
                 if (!TryParseKey(name, out int year, out string season)) continue;
 
-                var json = File.ReadAllText(file);
-                var items = JsonSerializer.Deserialize<List<AnimeEntity>>(json, JsonOptions);
+                List<AnimeEntity>? items;
+                using (var stream = File.OpenRead(file))
+                {
+                    items = JsonSerializer.Deserialize<List<AnimeEntity>>(stream, JsonOptions);
+                }
                 if (items == null || items.Count == 0) continue;
 
                 results.Add((year, season, items));
@@ -117,8 +120,10 @@ public sealed class SeasonalCacheStore
                 try
                 {
                     Directory.CreateDirectory(_root);
-                    var json = JsonSerializer.Serialize(items, JsonOptions);
-                    File.WriteAllText(tmpPath, json);
+                    using (var stream = File.Create(tmpPath))
+                    {
+                        JsonSerializer.Serialize(stream, items, JsonOptions);
+                    }
                     File.Move(tmpPath, finalPath, overwrite: true);
                 }
                 catch (Exception ex)
