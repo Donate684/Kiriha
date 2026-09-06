@@ -56,7 +56,7 @@ public partial class RssFeedService
                 var animeTitle = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
                 if (string.IsNullOrEmpty(animeTitle)) continue;
 
-                int? malId = await _mappingService.GetIdFromTitleAsync(animeTitle, new[] { anime });
+                int? malId = await _mappingService.GetIdFromTitleAsync(animeTitle, [anime]);
                 if (malId != anime.Id) continue;
 
                 if (epNum.Value > maxFound) maxFound = epNum.Value;

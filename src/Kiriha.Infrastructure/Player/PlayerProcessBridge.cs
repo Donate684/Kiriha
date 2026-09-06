@@ -58,7 +58,7 @@ public static class PlayerProcessBridge
 
     public static Task StopResidentAsync()
     {
-        return Task.Run(() => TryForward(new[] { "--player", ShutdownArg }, timeoutMs: 500));
+        return Task.Run(() => TryForward(["--player", ShutdownArg], timeoutMs: 500));
     }
 
     public static void ForwardMetadata(
@@ -68,8 +68,7 @@ public static class PlayerProcessBridge
         string? titleEn,
         string? episodeText)
     {
-        TryForward(new[]
-        {
+        TryForward([
             "--player",
             UpdateMetadataArg,
             "--original-title",
@@ -82,6 +81,6 @@ public static class PlayerProcessBridge
             titleEn ?? string.Empty,
             "--episode",
             episodeText ?? string.Empty
-        }, timeoutMs: 100);
+        ], timeoutMs: 100);
     }
 }

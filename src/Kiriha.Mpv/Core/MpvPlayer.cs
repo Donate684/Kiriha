@@ -18,14 +18,14 @@ public partial class MpvPlayer : IDisposable
     private const ulong TrackListPropertyId = 6;
 
 
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private readonly MpvPropertyCache _propertyCache = new(FormatRuntimeVideoInfo(null, null, null, null, null, null, null, null, null, null, null));
     private readonly MpvCommandQueue _commandQueue;
     private readonly MpvEventLoop _eventLoop;
     private IntPtr _mpvHandle;
     private volatile bool _disposed;
 
-    internal object Gate => _gate;
+    internal Lock Gate => _gate;
     internal bool IsDisposed => _disposed;
     internal IntPtr MpvHandle => _mpvHandle;
 

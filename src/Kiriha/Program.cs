@@ -81,7 +81,7 @@ sealed partial class Program
             .WithInterFont()
             .With(new Win32PlatformOptions
             {
-                CompositionMode = new[] { Win32CompositionMode.WinUIComposition }
+                CompositionMode = [Win32CompositionMode.WinUIComposition]
             })
             .LogToTrace();
 }

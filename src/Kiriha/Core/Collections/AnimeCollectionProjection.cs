@@ -1,8 +1,8 @@
 using System;
-using Kiriha.Core;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
@@ -11,26 +11,28 @@ namespace Kiriha.Core;
 
 public sealed partial class AnimeCollectionProjection : IDisposable
 {
-    private readonly object _syncLock = new();
+    private readonly Lock _syncLock = new();
     private readonly Dictionary<int, Entry> _entriesById = new();
-    private readonly Dictionary<UserAnimeStatus, Dictionary<int, Entry>> _buckets = new()
+    private readonly Dictionary<(UserAnimeStatus Status, MediaKind Kind), Dictionary<int, Entry>> _buckets = new();
+
+    public AnimeCollectionProjection()
     {
-        [UserAnimeStatus.None] = new(),
-        [UserAnimeStatus.Watching] = new(),
-        [UserAnimeStatus.Completed] = new(),
-        [UserAnimeStatus.OnHold] = new(),
-        [UserAnimeStatus.Dropped] = new(),
-        [UserAnimeStatus.PlanToWatch] = new(),
-    };
-    private readonly Dictionary<UserAnimeStatus, Dictionary<MediaKind, int>> _counts = new()
+        InitializeBuckets();
+    }
+
+    private void InitializeBuckets()
     {
-        [UserAnimeStatus.None] = new(),
-        [UserAnimeStatus.Watching] = new(),
-        [UserAnimeStatus.Completed] = new(),
-        [UserAnimeStatus.OnHold] = new(),
-        [UserAnimeStatus.Dropped] = new(),
-        [UserAnimeStatus.PlanToWatch] = new(),
-    };
+        var statuses = (UserAnimeStatus[])Enum.GetValues(typeof(UserAnimeStatus));
+        var kinds = (MediaKind[])Enum.GetValues(typeof(MediaKind));
+
+        foreach (var s in statuses)
+        {
+            foreach (var k in kinds)
+            {
+                _buckets[(s, k)] = new Dictionary<int, Entry>();
+            }
+        }
+    }
 
     public void Rebuild(IEnumerable<AnimeEntity> items)
     {
@@ -74,8 +76,8 @@ public sealed partial class AnimeCollectionProjection : IDisposable
     {
         lock (_syncLock)
         {
-            return _counts.TryGetValue(status, out var countsByKind) && countsByKind.TryGetValue(kind, out var count)
-                ? count
+            return _buckets.TryGetValue((status, kind), out var bucket)
+                ? bucket.Count
                 : 0;
         }
     }
@@ -84,24 +86,31 @@ public sealed partial class AnimeCollectionProjection : IDisposable
     {
         lock (_syncLock)
         {
-            if (!_buckets.TryGetValue(status, out var bucket))
+            if (!_buckets.TryGetValue((status, kind), out var bucket) || bucket.Count == 0)
             {
                 return new List<AnimeEntity>();
             }
 
             var normalizedSearch = Normalize(searchQuery);
-            var query = bucket.Values.Where(x => x.Kind == kind);
+            var result = new List<AnimeEntity>(bucket.Count);
 
-            if (normalizedSearch.Length > 0)
+            foreach (var entry in bucket.Values)
             {
-                query = query.Where(x => x.SearchableText.Contains(normalizedSearch, StringComparison.Ordinal));
+                if (normalizedSearch.Length > 0 && !entry.SearchableText.Contains(normalizedSearch, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw)
+                {
+                    continue;
+                }
+
+                result.Add(entry.Item);
             }
 
-            query = filterNsfw
-                ? query.Where(x => x.IsNsfw)
-                : query.Where(x => !x.IsNsfw);
-
-            return query.Select(x => x.Item).ApplySorting(sortBy, isSeasonal: false, prioritizeNewEpisodes: prioritizeNewEpisodes).ToList();
+            result.SortInPlace(sortBy, isSeasonal: false, prioritizeNewEpisodes: prioritizeNewEpisodes);
+            return result;
         }
     }
 

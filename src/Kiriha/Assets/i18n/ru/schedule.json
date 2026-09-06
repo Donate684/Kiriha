@@ -24,5 +24,18 @@
   "next_ep": "Следующая серия",
   "close_tooltip": "Закрыть  Esc · F12",
   "no_upcoming_releases": "Нет предстоящих релизов",
-  "after_sync_roadmap": "После синхронизации здесь появится дорожная карта серий"
+  "after_sync_roadmap": "После синхронизации здесь появится дорожная карта серий",
+  "yesterday": "Вчера",
+  "day_before_yesterday": "Позавчера",
+  "days_ago": "{0} дн. назад",
+  "hours_ago": "{0}ч назад",
+  "minutes_ago": "{0}м назад",
+  "filter_upcoming": "Предстоящие",
+  "filter_past": "Вышедшие",
+  "filter_all": "Все",
+  "latest_ep": "Вышедшая серия",
+  "releases_past_days": "{0} {1} за недавние дни",
+  "releases_in_schedule": "{0} {1} в расписании",
+  "no_past_releases": "Нет вышедших серий за последнее время",
+  "no_past_releases_desc": "За последние дни новые серии из вашего списка не выходили"
 }

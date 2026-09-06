@@ -54,12 +54,11 @@ public class MalAuthService
     {
         Log.Information("Refreshing MAL access token...");
 
-        var content = new FormUrlEncodedContent(new[]
-        {
+        var content = new FormUrlEncodedContent([
             new KeyValuePair<string, string>("client_id", ApiKeys.MalClientId),
             new KeyValuePair<string, string>("grant_type", "refresh_token"),
             new KeyValuePair<string, string>("refresh_token", refreshToken)
-        });
+        ]);
 
         try
         {
@@ -87,14 +86,13 @@ public class MalAuthService
 
     private async Task<MalTokens?> ExchangeCodeForTokenAsync(string code, string codeVerifier)
     {
-        var content = new FormUrlEncodedContent(new[]
-        {
+        var content = new FormUrlEncodedContent([
             new KeyValuePair<string, string>("client_id", ApiKeys.MalClientId),
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
             new KeyValuePair<string, string>("code", code),
             new KeyValuePair<string, string>("code_verifier", codeVerifier),
             new KeyValuePair<string, string>("redirect_uri", AppConstants.Api.RedirectUri)
-        });
+        ]);
 
         var response = await _httpClient.PostAsync(AppConstants.Api.Mal.TokenUrl, content);
         var json = await response.Content.ReadAsStringAsync();

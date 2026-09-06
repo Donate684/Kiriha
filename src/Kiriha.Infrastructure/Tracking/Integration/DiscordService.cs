@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using DiscordRPC;
 using DiscordRPC.Logging;
 using Kiriha.Infrastructure;
@@ -15,7 +16,7 @@ public class DiscordService : IDisposable, IDiscordService
     private DiscordRpcClient? _client;
     private readonly ISettingsService _settingsService;
     private readonly ILocalizer _localizer;
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private const string DefaultClientId = "1496599223192391941"; // User's Client ID
 
     public DiscordService(ISettingsService settingsService, ILocalizer localizer)

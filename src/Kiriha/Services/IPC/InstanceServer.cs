@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Settings;
 using System;
@@ -19,7 +19,7 @@ public class InstanceServer : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IUiDispatcher _uiDispatcher;
-    private readonly object _pipeGate = new();
+    private readonly Lock _pipeGate = new();
     private NamedPipeServerStream? _currentPipe;
     public InstanceServer(IServiceProvider serviceProvider, IUiDispatcher uiDispatcher)
     {

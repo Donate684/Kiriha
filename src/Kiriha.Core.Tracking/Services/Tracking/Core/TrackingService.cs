@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Infrastructure;
@@ -33,7 +34,7 @@ public partial class TrackingService : IDisposable
 
     // _state guards _currentMedia and _matchedAnime which are read/written from the
     // Anisthesia background thread (MediaDetected/MediaCleared) and from UI command handlers.
-    private readonly object _state = new();
+    private readonly Lock _state = new();
     private ParsedMedia? _currentMedia;
     private AnimeEntity? _matchedAnime;
     private bool _manualMapInProgress;

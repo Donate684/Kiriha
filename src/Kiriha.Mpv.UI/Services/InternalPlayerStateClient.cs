@@ -11,8 +11,8 @@ namespace Kiriha.Mpv.UI.Services;
 
 public sealed class InternalPlayerStateClient : IDisposable
 {
-    private readonly object _connectionGate = new();
-    private readonly object _stateGate = new();
+    private readonly Lock _connectionGate = new();
+    private readonly Lock _stateGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private NamedPipeClientStream? _client;
     private StreamWriter? _writer;

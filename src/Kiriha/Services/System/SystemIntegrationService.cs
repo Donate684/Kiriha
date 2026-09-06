@@ -14,8 +14,8 @@ public class SystemIntegrationService
     private const string CapabilitiesKey = @"Software\Clients\Media\Kiriha\Capabilities";
     private const string RegisteredApplicationsKey = @"Software\RegisteredApplications";
 
-    private readonly string[] _videoExtensions = new[]
-    {
+    private readonly string[] _videoExtensions =
+    [
         ".yuv", ".y4m", ".m2ts", ".m2t", ".mts", ".mtv", ".ts", ".tsv", ".tsa", ".tts", ".trp",
         ".mpeg", ".mpg", ".mpe", ".mpeg2", ".m1v", ".m2v", ".mp2v", ".mpv", ".mpv2", ".mod", ".tod",
         ".vob", ".vro", ".evob", ".evo", ".mpeg4", ".m4v", ".mp4", ".mp4v", ".mpg4",
@@ -24,7 +24,7 @@ public class SystemIntegrationService
         ".flic", ".fli", ".flc", ".nsv", ".gxf", ".mxf", ".wm", ".wmv", ".asf",
         ".dvr-ms", ".dvr", ".wtv", ".dv", ".hdv", ".flv", ".f4v", ".qt", ".mov", ".hdmov",
         ".rm", ".rmvb", ".3gpp", ".3gp", ".3gp2", ".3g2"
-    };
+    ];
 
     public bool IsRegistered()
     {

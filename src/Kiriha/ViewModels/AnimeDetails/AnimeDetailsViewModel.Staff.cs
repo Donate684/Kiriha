@@ -13,7 +13,7 @@ public partial class AnimeDetailsViewModel
 {
     private async Task ProcessStaffPlusAsync(System.Collections.Generic.List<AnimeStaff> staffList)
     {
-        var keyRoles = new[] { "Original Creator", "Director", "Series Composition", "Script", "Music", "Character Design" };
+        string[] keyRoles = ["Original Creator", "Director", "Series Composition", "Script", "Music", "Character Design"];
         var staffPlusVms = new System.Collections.Generic.List<StaffPlusItemVm>();
 
         foreach (var s in staffList)

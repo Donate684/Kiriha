@@ -9,6 +9,40 @@
         <Style Selector="Border#ReleaseHeroClickableArea:pointerover TextBlock#ReleaseHeroAnimeTitle">
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
+        <Style Selector="Button.ReleaseFilterBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.ReleaseFilterBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+        </Style>
+        <Style Selector="Button.ReleaseFilterBtn.Active">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.ReleaseFilterBtn.Active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+        </Style>
+        <Style Selector="Button.ReleaseFilterBtn.Active TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.ReleaseFilterBtn.Active material|MaterialIcon">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
     </UserControl.Styles>
 
         <Border x:Name="ReleaseMapOverlay"
@@ -33,7 +67,7 @@
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.28" Easing="CubicEaseOut"/>
                 </Transitions>
             </Border.Transitions>
-            <Grid RowDefinitions="Auto,*">
+            <Grid RowDefinitions="Auto,Auto,*">
 
                 <!-- HERO BANNER -->
                 <Border x:Name="ReleaseHeaderPanel"
@@ -160,8 +194,40 @@
                     </Panel>
                 </Border>
 
+                <!-- FILTER TOOLBAR -->
+                <Border x:Name="ReleaseFilterBar"
+                        Grid.Row="1"
+                        Padding="16,8,16,6"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="0,0,0,1"
+                        Background="{DynamicResource SubtleFillColorSecondary}">
+                    <Grid ColumnDefinitions="*,Auto,*">
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                            <Button x:Name="FilterUpcomingBtn"
+                                    Classes="ReleaseFilterBtn Active"
+                                    Click="FilterUpcoming_Click"
+                                    ToolTip.Tip="{DynamicResource l.schedule.filter_upcoming}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:MaterialIcon Kind="Fire" Width="14" Height="14"/>
+                                    <TextBlock Text="{DynamicResource l.schedule.filter_upcoming}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="FilterPastBtn"
+                                    Classes="ReleaseFilterBtn"
+                                    Click="FilterPast_Click"
+                                    ToolTip.Tip="{DynamicResource l.schedule.filter_past}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:MaterialIcon Kind="History" Width="14" Height="14"/>
+                                    <TextBlock Text="{DynamicResource l.schedule.filter_past}"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
                 <!-- CARD LIST -->
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="2">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14,10,14,14">
                         <StackPanel x:Name="ReleaseTimelinePanel" Spacing="3"/>
                     </ScrollViewer>
@@ -176,11 +242,13 @@
                             <material:MaterialIcon Kind="CalendarBlankOutline" Width="48" Height="48"
                                                    HorizontalAlignment="Center"
                                                    Foreground="#30FFFFFF"/>
-                            <TextBlock Text="{DynamicResource l.schedule.no_upcoming_releases}"
+                            <TextBlock x:Name="ReleaseEmptyTitle"
+                                       Text="{DynamicResource l.schedule.no_upcoming_releases}"
                                        FontSize="16" FontWeight="SemiBold"
                                        HorizontalAlignment="Center"
                                        Foreground="#80FFFFFF"/>
-                            <TextBlock Text="{DynamicResource l.schedule.after_sync_roadmap}"
+                            <TextBlock x:Name="ReleaseEmptySubtitle"
+                                       Text="{DynamicResource l.schedule.after_sync_roadmap}"
                                        Width="320" TextWrapping="Wrap" TextAlignment="Center"
                                        FontSize="12" Foreground="#40FFFFFF"/>
                         </StackPanel>

@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Settings;
 using Avalonia.Controls;
 using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Services;
@@ -26,12 +26,12 @@ public partial class PlayerSelectionWindow : Window
         if (settings == null) return;
         if (settings.UI.EnableMica)
         {
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur };
+            TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];
             Background = null;
         }
         else
         {
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+            TransparencyLevelHint = [WindowTransparencyLevel.None];
             ClearValue(BackgroundProperty);
         }
     }

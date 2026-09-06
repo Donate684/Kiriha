@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Kiriha.Services.Data.Image;
 
@@ -17,7 +18,7 @@ internal sealed class ByteSizedLru<TKey, TVal>
     private readonly Func<TVal, long> _sizer;
     private readonly Dictionary<TKey, LinkedListNode<Entry>> _map = new();
     private readonly LinkedList<Entry> _order = new();
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private long _used;
 
     public ByteSizedLru(long budgetBytes, Func<TVal, long> sizer)

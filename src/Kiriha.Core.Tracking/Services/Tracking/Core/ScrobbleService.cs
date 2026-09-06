@@ -2,11 +2,12 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Sync;
-
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 using Kiriha.Core.Abstractions.Infrastructure;
@@ -33,9 +34,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public event EventHandler<string>? CountdownUpdated;
 
-    // _stateLock guards _countdownCts and _activeHash. StartScrobble can be invoked
-    // concurrently from the Anisthesia background thread and from UI commands.
-    private readonly object _stateLock = new();
+    private readonly Lock _stateLock = new();
     private CancellationTokenSource? _countdownCts;
     private string _activeHash = string.Empty;
     private bool _isPlaying;
@@ -60,19 +59,31 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
     {
-        // Try to parse episode number from ParsedMedia. OriginalTitle often contains cleaner number via Anitomy
         var elements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
         var epStr = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value ?? media.Episode;
 
-        if (!int.TryParse(epStr, out int ep) || ep <= match.Progress)
+        if (!int.TryParse(epStr, out int ep))
+        {
+            return;
+        }
+
+        // Auto-Rewatch candidate: title is Completed, not currently rewatching, and user launched episode 1
+        bool isRewatchCandidate = match.Status == UserAnimeStatus.Completed && !match.IsRewatching && ep == 1;
+
+        if (!isRewatchCandidate && ep <= match.Progress)
         {
             CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
             return;
         }
 
+        if (isRewatchCandidate)
+        {
+            WeakReferenceMessenger.Default.Send(new AnimeRewatchPromptMessage(match, ep));
+            CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.rewatch_prompt.title"));
+            return;
+        }
+
         // Check if the detected episode skips ahead beyond the next expected one.
-        // For example: progress=5, watching ep 7 — ep 6 was never marked, so updating
-        // directly to 7 would skip an episode. When the setting is on, notify and bail.
         if (ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode)
         {
             var msg = string.Format("scrobbler.status.episode_skipped");
@@ -89,8 +100,6 @@ public class ScrobbleService : IScrobbleService, IDisposable
         {
             if (_activeHash == hash && _countdownCts != null && !_countdownCts.IsCancellationRequested) return;
 
-            // Cancel & dispose the previous CTS atomically so we don't accumulate
-            // un-disposed CancellationTokenSources across episode changes.
             _countdownCts?.Cancel();
             _countdownCts?.Dispose();
             _countdownCts = new CancellationTokenSource();
@@ -163,6 +172,11 @@ public class ScrobbleService : IScrobbleService, IDisposable
             {
                 nextStatus = UserAnimeStatus.Completed;
             }
+            else if (match.Status == UserAnimeStatus.PlanToWatch || match.Status == UserAnimeStatus.OnHold)
+            {
+                // Auto-Start: user started watching an anime that was in PlanToWatch or OnHold
+                nextStatus = UserAnimeStatus.Watching;
+            }
 
             bool alreadyScrobbled = await _uiDispatcher.InvokeAsync(() => match.Progress >= targetEp);
             if (alreadyScrobbled)
@@ -173,6 +187,13 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
             await _progressService.UpdateProgressAsync(match, targetEp, nextStatus);
             _historyService.AddEntry(match.Id, match.Title, match.RussianTitle, targetEp, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Scrobbled");
+
+            // Auto-Complete & Quick Rating notification
+            if (nextStatus == UserAnimeStatus.Completed)
+            {
+                WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(match));
+                _notificationService.NotifyAnimeCompleted(match);
+            }
 
             CountdownUpdated?.Invoke(this, string.Format("scrobbler.status.updated"));
         }
@@ -194,4 +215,3 @@ public class ScrobbleService : IScrobbleService, IDisposable
         }
     }
 }
-

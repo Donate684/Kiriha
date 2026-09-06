@@ -107,8 +107,10 @@ public partial class AnimeEntity : DomainObservableObject
     private bool _isRewatching;
     public bool IsRewatching { get => _isRewatching; set { if (SetProperty(ref _isRewatching, value)) OnPropertyChanged("Presentation"); } }
     public int RewatchCount { get; set; }
-    public DateTime? DateStarted { get; set; }
-    public DateTime? DateCompleted { get; set; }
+    private DateTime? _dateStarted;
+    public DateTime? DateStarted { get => _dateStarted; set => SetProperty(ref _dateStarted, value); }
+    private DateTime? _dateCompleted;
+    public DateTime? DateCompleted { get => _dateCompleted; set => SetProperty(ref _dateCompleted, value); }
     public string? BroadcastDay { get; set; }
     public string? BroadcastTime { get; set; }
     public DateTime? LastEpisodeAt { get; set; }

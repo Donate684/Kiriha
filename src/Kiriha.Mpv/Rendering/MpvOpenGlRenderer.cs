@@ -17,7 +17,7 @@ public class MpvOpenGlRenderer : IDisposable
     // This lock is static because it's used within a native callback (OnRenderUpdate) 
     // that lacks an instance context. If multiple instances are created, 
     // they will compete for this shared lock.
-    private static readonly object _renderUpdateLock = new();
+    private static readonly Lock _renderUpdateLock = new();
 
     public MpvOpenGlRenderer(MpvPlayer player)
     {

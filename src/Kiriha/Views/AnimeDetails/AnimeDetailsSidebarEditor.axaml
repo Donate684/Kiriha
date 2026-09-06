@@ -195,6 +195,83 @@
                   IsChecked="{Binding Anime.IsRewatching}"
                   FontSize="12" Opacity="0.85" Padding="8,0,0,0"
                   HorizontalAlignment="Left"/>
+
+        <!-- DATES: Start & Finish -->
+        <Grid ColumnDefinitions="*, *" ColumnSpacing="8">
+            <!-- Start Date -->
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="{DynamicResource l.anime.labels.start_date}" Classes="SidebarLabel"/>
+                <Button HorizontalAlignment="Stretch" Height="34" CornerRadius="6"
+                        Padding="6,0,4,0" Background="{DynamicResource ControlFillColorDefault}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuItem Header="{DynamicResource l.common.time.today}"
+                                      Command="{Binding Editor.SetStartDateToTodayCommand}">
+                                <MenuItem.Icon>
+                                    <material:MaterialIcon Kind="CalendarToday" Width="16" Height="16"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource l.common.time.yesterday}"
+                                      Command="{Binding Editor.SetStartDateToYesterdayCommand}">
+                                <MenuItem.Icon>
+                                    <material:MaterialIcon Kind="CalendarArrowLeft" Width="16" Height="16"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource l.common.actions.reset}"
+                                      Command="{Binding Editor.ClearStartDateCommand}">
+                                <MenuItem.Icon>
+                                    <material:MaterialIcon Kind="Close" Width="16" Height="16"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                        <material:MaterialIcon Kind="CalendarMonth" Width="14" Height="14" Margin="0,0,4,0" Opacity="0.6" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Anime.DateStarted, StringFormat='{}{0:dd.MM.yyyy}', TargetNullValue='-'}"
+                                   VerticalAlignment="Center" FontSize="11" Opacity="0.9"/>
+                        <material:MaterialIcon Grid.Column="2" Kind="ChevronDown" Width="12" Height="12" Opacity="0.4" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+            </StackPanel>
+
+            <!-- Finish Date -->
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Text="{DynamicResource l.anime.labels.finish_date}" Classes="SidebarLabel"/>
+                <Button HorizontalAlignment="Stretch" Height="34" CornerRadius="6"
+                        Padding="6,0,4,0" Background="{DynamicResource ControlFillColorDefault}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuItem Header="{DynamicResource l.common.time.today}"
+                                      Command="{Binding Editor.SetEndDateToTodayCommand}">
+                                <MenuItem.Icon>
+                                    <material:MaterialIcon Kind="CalendarCheck" Width="16" Height="16"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource l.common.time.yesterday}"
+                                      Command="{Binding Editor.SetEndDateToYesterdayCommand}">
+                                <MenuItem.Icon>
+                                    <material:MaterialIcon Kind="CalendarArrowLeft" Width="16" Height="16"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource l.common.actions.reset}"
+                                      Command="{Binding Editor.ClearEndDateCommand}">
+                                <MenuItem.Icon>
+                                    <material:MaterialIcon Kind="Close" Width="16" Height="16"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                        <material:MaterialIcon Kind="CalendarCheck" Width="14" Height="14" Margin="0,0,4,0" Opacity="0.6" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Anime.DateCompleted, StringFormat='{}{0:dd.MM.yyyy}', TargetNullValue='-'}"
+                                   VerticalAlignment="Center" FontSize="11" Opacity="0.9"/>
+                        <material:MaterialIcon Grid.Column="2" Kind="ChevronDown" Width="12" Height="12" Opacity="0.4" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+            </StackPanel>
+        </Grid>
     </StackPanel>
 </UserControl>
 

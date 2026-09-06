@@ -17,7 +17,7 @@ public sealed partial class MpvThumbnailer : IDisposable
     private const int ThumbnailWidth = 320;
     private const int ThumbnailHeight = 180;
 
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private readonly SemaphoreSlim _captureGate = new(1, 1);
     private readonly string _thumbnailDirectory;
     private readonly FileStream _lockFile;

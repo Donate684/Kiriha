@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
@@ -29,7 +29,7 @@ public partial class TorrentsViewModel : ViewModelBase
     public ObservableCollection<HideableAnimeItem> HideMenuItems { get; } = new();
 
     public static TorrentSortMode[] AvailableSortModes { get; } =
-        new[] { TorrentSortMode.Newest, TorrentSortMode.Matched, TorrentSortMode.ReleaseGroup };
+        [TorrentSortMode.Newest, TorrentSortMode.Matched, TorrentSortMode.ReleaseGroup];
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;

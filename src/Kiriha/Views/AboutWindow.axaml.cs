@@ -40,12 +40,12 @@ public partial class AboutWindow : KirihaWindowBase
         if (settings == null) return;
         if (settings.UI.EnableMica)
         {
-            TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.Mica, Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur };
+            TransparencyLevelHint = [Avalonia.Controls.WindowTransparencyLevel.Mica, Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur];
             Background = null;
         }
         else
         {
-            TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.None };
+            TransparencyLevelHint = [Avalonia.Controls.WindowTransparencyLevel.None];
             ClearValue(BackgroundProperty);
         }
     }

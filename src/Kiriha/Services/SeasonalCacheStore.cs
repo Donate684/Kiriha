@@ -44,7 +44,7 @@ public sealed class SeasonalCacheStore
     // user-triggered fetch also writes). File.Move is atomic, but two
     // concurrent renames into the same destination is a coin flip on NTFS.
     private readonly Dictionary<string, SemaphoreSlim> _writeLocks = new();
-    private readonly object _writeLocksGate = new();
+    private readonly Lock _writeLocksGate = new();
 
     public SeasonalCacheStore()
     {

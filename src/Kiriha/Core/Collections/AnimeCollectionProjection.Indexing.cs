@@ -29,16 +29,13 @@ public sealed partial class AnimeCollectionProjection
 
         var entry = Entry.From(item);
         _entriesById[item.Id] = entry;
-        if (_buckets.TryGetValue(entry.ListStatus, out var bucket))
-        {
-            bucket[item.Id] = entry;
 
-            if (!_counts[entry.ListStatus].TryGetValue(entry.Kind, out var count))
-            {
-                count = 0;
-            }
-            _counts[entry.ListStatus][entry.Kind] = count + 1;
+        if (!_buckets.TryGetValue((entry.ListStatus, entry.Kind), out var bucket))
+        {
+            bucket = new Dictionary<int, Entry>();
+            _buckets[(entry.ListStatus, entry.Kind)] = bucket;
         }
+        bucket[item.Id] = entry;
 
         item.PropertyChanged += OnItemPropertyChanged;
     }
@@ -47,14 +44,9 @@ public sealed partial class AnimeCollectionProjection
     {
         if (!_entriesById.Remove(item.Id, out var entry)) return;
 
-        if (_buckets.TryGetValue(entry.ListStatus, out var bucket))
+        if (_buckets.TryGetValue((entry.ListStatus, entry.Kind), out var bucket))
         {
             bucket.Remove(item.Id);
-
-            if (_counts[entry.ListStatus].TryGetValue(entry.Kind, out var count))
-            {
-                _counts[entry.ListStatus][entry.Kind] = count - 1;
-            }
         }
 
         item.PropertyChanged -= OnItemPropertyChanged;
@@ -71,10 +63,6 @@ public sealed partial class AnimeCollectionProjection
         foreach (var bucket in _buckets.Values)
         {
             bucket.Clear();
-        }
-        foreach (var countBucket in _counts.Values)
-        {
-            countBucket.Clear();
         }
     }
 

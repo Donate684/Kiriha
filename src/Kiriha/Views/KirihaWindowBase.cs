@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Settings;
 using System;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -28,12 +28,12 @@ public class KirihaWindowBase : Window
         if (settings == null) return;
         if (settings.UI.EnableMica)
         {
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur };
+            TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];
             Background = null;
         }
         else
         {
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+            TransparencyLevelHint = [WindowTransparencyLevel.None];
             ClearValue(BackgroundProperty);
         }
     }

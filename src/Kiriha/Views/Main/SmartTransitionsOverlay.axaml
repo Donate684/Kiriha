@@ -1,0 +1,168 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:vmMain="using:Kiriha.ViewModels.Main"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
+             x:Class="Kiriha.Views.Main.SmartTransitionsOverlay"
+             x:DataType="vmMain:MainWindowViewModel">
+
+    <Grid>
+        <!-- ══════════ Quick Rating Card ══════════ -->
+        <Border IsVisible="{Binding IsQuickRatingVisible}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,24,24"
+                Width="430"
+                CornerRadius="14"
+                Background="{DynamicResource ModalBackgroundFill}"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="1"
+                BoxShadow="0 10 32 0 #55000000"
+                Padding="18,16,18,16"
+                ZIndex="500">
+            <Border.Styles>
+                <Style Selector="Button.RatingScoreBtn">
+                    <Setter Property="Width" Value="32"/>
+                    <Setter Property="Height" Value="32"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Style>
+                <Style Selector="Button.RatingScoreBtn:pointerover">
+                    <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Style>
+            </Border.Styles>
+
+            <StackPanel Spacing="10">
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <material:MaterialIcon Kind="StarCircle"
+                                          Width="22" Height="22"
+                                          Foreground="{DynamicResource SystemAccentColor}"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,8,0"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{DynamicResource l.scrobbler.quick_rating.title}"
+                               FontWeight="Bold"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                    <Button Grid.Column="2"
+                            Classes="clear"
+                            Padding="4"
+                            Width="26" Height="26"
+                            CornerRadius="4"
+                            Command="{Binding CloseQuickRatingCommand}">
+                        <material:MaterialIcon Kind="Close" Width="16" Height="16"/>
+                    </Button>
+                </Grid>
+
+                <!-- Anime Title & Subtitle -->
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding QuickRatingAnime.Presentation.DisplayTitle}"
+                               FontWeight="SemiBold"
+                               FontSize="13"
+                               Foreground="{DynamicResource SystemAccentColor}"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{DynamicResource l.scrobbler.quick_rating.subtitle}"
+                               FontSize="12"
+                               Opacity="0.75"/>
+                </StackPanel>
+
+                <!-- Rating Buttons 1..10 -->
+                <ItemsControl ItemsSource="{x:Static vmMain:MainWindowViewModel.RatingScores}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="RatingScoreBtn"
+                                    Content="{Binding}"
+                                    Command="{Binding $parent[UserControl].((vmMain:MainWindowViewModel)DataContext).SubmitQuickRatingIntCommand}"
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Skip Action -->
+                <Button HorizontalAlignment="Right"
+                        Padding="12,5"
+                        CornerRadius="6"
+                        FontSize="12"
+                        Content="{DynamicResource l.scrobbler.quick_rating.dismiss}"
+                        Command="{Binding CloseQuickRatingCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══════════ Rewatch Prompt Card ══════════ -->
+        <Border IsVisible="{Binding IsRewatchPromptVisible}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,24,24"
+                Width="430"
+                CornerRadius="14"
+                Background="{DynamicResource ModalBackgroundFill}"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="1"
+                BoxShadow="0 10 32 0 #55000000"
+                Padding="18,16,18,16"
+                ZIndex="501">
+            <StackPanel Spacing="10">
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <material:MaterialIcon Kind="History"
+                                          Width="22" Height="22"
+                                          Foreground="{DynamicResource SystemAccentColor}"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,8,0"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{DynamicResource l.scrobbler.rewatch_prompt.title}"
+                               FontWeight="Bold"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                    <Button Grid.Column="2"
+                            Classes="clear"
+                            Padding="4"
+                            Width="26" Height="26"
+                            CornerRadius="4"
+                            Command="{Binding DismissRewatchPromptCommand}">
+                        <material:MaterialIcon Kind="Close" Width="16" Height="16"/>
+                    </Button>
+                </Grid>
+
+                <!-- Prompt Body -->
+                <TextBlock Text="{Binding RewatchPromptText}"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           Opacity="0.9"/>
+
+                <!-- Actions -->
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,4,0,0">
+                    <Button Content="{DynamicResource l.scrobbler.rewatch_prompt.dismiss}"
+                            Padding="12,6"
+                            CornerRadius="6"
+                            FontSize="12"
+                            Command="{Binding DismissRewatchPromptCommand}"/>
+                    <Button Classes="accent"
+                            Content="{DynamicResource l.scrobbler.rewatch_prompt.confirm}"
+                            Padding="14,6"
+                            CornerRadius="6"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Command="{Binding ConfirmRewatchCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

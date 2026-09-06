@@ -56,7 +56,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         // Ensure in-memory anime repository is initialized
         await _animeRepo.InitializationTask.WaitAsync(ct);
 
-        var snapshot = await _animeRepo.GetSnapshotAsync(new[] { MediaKind.Anime, MediaKind.Manga, MediaKind.LightNovel });
+        var snapshot = await _animeRepo.GetSnapshotAsync([MediaKind.Anime, MediaKind.Manga, MediaKind.LightNovel]);
         if (snapshot.Count == 0)
             return;
 

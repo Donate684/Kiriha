@@ -46,49 +46,149 @@ public static class AnimeFilterEngine
 
     public static IEnumerable<AnimeEntity> ApplySorting(this IEnumerable<AnimeEntity> query, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false)
     {
-        if (prioritizeNewEpisodes)
+        var list = query as List<AnimeEntity> ?? query.ToList();
+        list.SortInPlace(sortBy, isSeasonal, prioritizeNewEpisodes);
+        return list;
+    }
+
+    public static List<AnimeEntity> SortInPlace(this List<AnimeEntity> list, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false)
+    {
+        var comparer = AnimeComparerFactory.GetComparer(sortBy, isSeasonal, prioritizeNewEpisodes);
+        list.Sort(comparer);
+        return list;
+    }
+}
+
+internal static class AnimeComparerFactory
+{
+    private static readonly Dictionary<(string, bool, bool), IComparer<AnimeEntity>> Comparers = new(StringTupleComparer.Instance);
+
+    static AnimeComparerFactory()
+    {
+        string[] sortOptions = { "Title", "RussianTitle", "EnglishTitle", "Score", "Progress", "Date", "Popularity", "" };
+        bool[] bools = { false, true };
+
+        foreach (var opt in sortOptions)
         {
-            return sortBy switch
+            foreach (var isSeasonal in bools)
             {
-                "Score" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenByDescending(x => isSeasonal ? x.MeanScoreValue : x.ScoreValue),
-                "Progress" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenByDescending(x => x.Presentation.ProgressValue),
-                "Date" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenByDescending(x => x.AiringDate ?? DateTime.MinValue),
-                "Popularity" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenBy(x => x.Popularity <= 0 ? int.MaxValue : x.Popularity),
-                "EnglishTitle" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenBy(x => !string.IsNullOrEmpty(x.EnglishTitle) ? x.EnglishTitle : x.Title),
-                "RussianTitle" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenBy(x => !string.IsNullOrEmpty(x.RussianTitle) ? x.RussianTitle : x.Title),
-                "Title" => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenBy(x => x.Title),
-                _ => query
-                    .OrderByDescending(x => x.Presentation.HasNewEpisodeBadge)
-                    .ThenBy(x => x.Title)
+                foreach (var prioritizeNew in bools)
+                {
+                    Comparers[(opt, isSeasonal, prioritizeNew)] = new AnimeEntityComparer(opt, isSeasonal, prioritizeNew);
+                }
+            }
+        }
+    }
+
+    public static IComparer<AnimeEntity> GetComparer(string? sortBy, bool isSeasonal, bool prioritizeNewEpisodes)
+    {
+        var key = (sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes);
+        return Comparers.TryGetValue(key, out var comparer)
+            ? comparer
+            : new AnimeEntityComparer(sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes);
+    }
+
+    private sealed class StringTupleComparer : IEqualityComparer<(string, bool, bool)>
+    {
+        public static readonly StringTupleComparer Instance = new();
+
+        public bool Equals((string, bool, bool) x, (string, bool, bool) y) =>
+            string.Equals(x.Item1, y.Item1, StringComparison.OrdinalIgnoreCase) &&
+            x.Item2 == y.Item2 &&
+            x.Item3 == y.Item3;
+
+        public int GetHashCode((string, bool, bool) obj) =>
+            HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Item1), obj.Item2, obj.Item3);
+    }
+
+    private sealed class AnimeEntityComparer : IComparer<AnimeEntity>
+    {
+        private readonly string _sortBy;
+        private readonly bool _isSeasonal;
+        private readonly bool _prioritizeNewEpisodes;
+
+        public AnimeEntityComparer(string sortBy, bool isSeasonal, bool prioritizeNewEpisodes)
+        {
+            _sortBy = sortBy;
+            _isSeasonal = isSeasonal;
+            _prioritizeNewEpisodes = prioritizeNewEpisodes;
+        }
+
+        public int Compare(AnimeEntity? x, AnimeEntity? y)
+        {
+            if (ReferenceEquals(x, y)) return 0;
+            if (x is null) return 1;
+            if (y is null) return -1;
+
+            if (_prioritizeNewEpisodes)
+            {
+                int badgeCompare = y.Presentation.HasNewEpisodeBadge.CompareTo(x.Presentation.HasNewEpisodeBadge);
+                if (badgeCompare != 0) return badgeCompare;
+            }
+
+            return _sortBy switch
+            {
+                "Score" => CompareScore(x, y),
+                "Progress" => CompareProgress(x, y),
+                "Date" => CompareDate(x, y),
+                "Popularity" => ComparePopularity(x, y),
+                "EnglishTitle" => CompareEnglishTitle(x, y),
+                "RussianTitle" => CompareRussianTitle(x, y),
+                "Title" => CompareTitle(x, y),
+                _ => CompareTitle(x, y)
             };
         }
 
-        return sortBy switch
+        private int CompareScore(AnimeEntity x, AnimeEntity y)
         {
-            "Score" => query.OrderByDescending(x => isSeasonal ? x.MeanScoreValue : x.ScoreValue),
-            "Progress" => query.OrderByDescending(x => x.Presentation.ProgressValue),
-            "Date" => query.OrderByDescending(x => x.AiringDate ?? DateTime.MinValue),
-            "Popularity" => query.OrderBy(x => x.Popularity <= 0 ? int.MaxValue : x.Popularity),
-            "EnglishTitle" => query.OrderBy(x => !string.IsNullOrEmpty(x.EnglishTitle) ? x.EnglishTitle : x.Title),
-            "RussianTitle" => query.OrderBy(x => !string.IsNullOrEmpty(x.RussianTitle) ? x.RussianTitle : x.Title),
-            "Title" => query.OrderBy(x => x.Title),
-            _ => query.OrderBy(x => x.Title)
-        };
-    }
+            double xScore = _isSeasonal ? x.MeanScoreValue : x.ScoreValue;
+            double yScore = _isSeasonal ? y.MeanScoreValue : y.ScoreValue;
+            int cmp = yScore.CompareTo(xScore);
+            return cmp != 0 ? cmp : CompareTitle(x, y);
+        }
 
-    private static double ParseScoreToDouble(string? score) => AnimeEntity.ParseScoreToDouble(score);
+        private static int CompareProgress(AnimeEntity x, AnimeEntity y)
+        {
+            int cmp = y.Presentation.ProgressValue.CompareTo(x.Presentation.ProgressValue);
+            return cmp != 0 ? cmp : CompareTitle(x, y);
+        }
+
+        private static int CompareDate(AnimeEntity x, AnimeEntity y)
+        {
+            DateTime xDate = x.AiringDate ?? DateTime.MinValue;
+            DateTime yDate = y.AiringDate ?? DateTime.MinValue;
+            int cmp = yDate.CompareTo(xDate);
+            return cmp != 0 ? cmp : CompareTitle(x, y);
+        }
+
+        private static int ComparePopularity(AnimeEntity x, AnimeEntity y)
+        {
+            int xp = x.Popularity <= 0 ? int.MaxValue : x.Popularity;
+            int yp = y.Popularity <= 0 ? int.MaxValue : y.Popularity;
+            int cmp = xp.CompareTo(yp);
+            return cmp != 0 ? cmp : CompareTitle(x, y);
+        }
+
+        private static int CompareEnglishTitle(AnimeEntity x, AnimeEntity y)
+        {
+            string xt = !string.IsNullOrEmpty(x.EnglishTitle) ? x.EnglishTitle : (x.Title ?? string.Empty);
+            string yt = !string.IsNullOrEmpty(y.EnglishTitle) ? y.EnglishTitle : (y.Title ?? string.Empty);
+            int cmp = StringComparer.CurrentCulture.Compare(xt, yt);
+            return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
+        }
+
+        private static int CompareRussianTitle(AnimeEntity x, AnimeEntity y)
+        {
+            string xt = !string.IsNullOrEmpty(x.RussianTitle) ? x.RussianTitle : (x.Title ?? string.Empty);
+            string yt = !string.IsNullOrEmpty(y.RussianTitle) ? y.RussianTitle : (y.Title ?? string.Empty);
+            int cmp = StringComparer.CurrentCulture.Compare(xt, yt);
+            return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
+        }
+
+        private static int CompareTitle(AnimeEntity x, AnimeEntity y)
+        {
+            int cmp = StringComparer.CurrentCulture.Compare(x.Title ?? string.Empty, y.Title ?? string.Empty);
+            return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
+        }
+    }
 }

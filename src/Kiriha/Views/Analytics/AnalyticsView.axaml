@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -89,6 +89,18 @@
                         </StackPanel>
                     </RadioButton>
 
+                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
+                                 IsChecked="{Binding IsInspectorSelected, Mode=TwoWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <material:MaterialIcon Kind="ClipboardCheckOutline" Width="15" Height="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.analytics.inspector.tab}" VerticalAlignment="Center"/>
+                            <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="6" Padding="5,1" VerticalAlignment="Center"
+                                    IsVisible="{Binding Inspector.HasIssues}">
+                                <TextBlock Text="{Binding Inspector.IssuesCount}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                    </RadioButton>
+
                 </StackPanel>
             </Border>
 
@@ -106,6 +118,7 @@
                     <controls:AnalyticsWatchNextSection />
                     <controls:AnalyticsReadNextSection />
                     <controls:AnalyticsHistorySection />
+                    <controls:AnalyticsInspectorSection />
                 </Grid>
             </ScrollViewer>
         </Grid>

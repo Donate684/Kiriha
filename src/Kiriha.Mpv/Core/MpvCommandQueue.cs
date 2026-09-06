@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Serilog;
@@ -8,8 +9,8 @@ namespace Kiriha.Mpv;
 
 internal sealed class MpvCommandQueue
 {
-    private readonly object _gate;
-    private readonly object _pendingGate = new();
+    private readonly Lock _gate;
+    private readonly Lock _pendingGate = new();
     private readonly Func<IntPtr> _getHandle;
     private readonly Func<bool> _isDisposed;
     private readonly Dictionary<string, long> _latestCoalescedVersions = new(StringComparer.Ordinal);
@@ -18,7 +19,7 @@ internal sealed class MpvCommandQueue
     private Task? _loopTask;
     private long _nextCoalescedVersion;
 
-    public MpvCommandQueue(object gate, Func<IntPtr> getHandle, Func<bool> isDisposed)
+    public MpvCommandQueue(Lock gate, Func<IntPtr> getHandle, Func<bool> isDisposed)
     {
         _gate = gate;
         _getHandle = getHandle;

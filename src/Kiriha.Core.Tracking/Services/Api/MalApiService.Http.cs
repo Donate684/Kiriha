@@ -133,7 +133,7 @@ public partial class MalApiService
     }
 
     private DateTime _nextInteractiveTime = DateTime.MinValue;
-    private readonly object _interactiveLock = new();
+    private readonly Lock _interactiveLock = new();
 
     private async Task InteractiveThrottleAsync(CancellationToken ct)
     {

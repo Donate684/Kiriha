@@ -34,7 +34,7 @@ public sealed class AppReadinessService
     private readonly IEnumerable<IHostedService> _hostedServices;
 
     private readonly TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private Task? _startupTask;
     private AppReadinessState _state = AppReadinessState.NotStarted;
 

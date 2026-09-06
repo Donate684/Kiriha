@@ -50,12 +50,12 @@ public partial class ReadNextSectionViewModel
 
     private string LocalizeGenre(string genre)
     {
-        var candidates = new[]
-        {
+        string[] candidates =
+        [
             genre.ToLowerInvariant().Replace(" ", string.Empty),
             ToResourceKey(genre),
             genre.ToLowerInvariant()
-        };
+        ];
 
         foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
         {

@@ -1,4 +1,4 @@
-﻿using Kiriha.Models;
+using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -28,8 +28,8 @@ public static class AnalyticsHelpers
     public static string GetAccent(string label)
     {
         var hash = Math.Abs(label.GetHashCode());
-        var palette = new[]
-        {
+        ReadOnlySpan<string> palette =
+        [
             "#FF0F7B83",
             "#FF2D7DD2",
             "#FFD17A22",
@@ -38,7 +38,7 @@ public static class AnalyticsHelpers
             "#FFD1495B",
             "#FF5C80BC",
             "#FF8E6C88"
-        };
+        ];
         return palette[hash % palette.Length];
     }
 

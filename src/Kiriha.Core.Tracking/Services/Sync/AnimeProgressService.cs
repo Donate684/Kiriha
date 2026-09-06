@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Api;
@@ -58,15 +60,35 @@ public class AnimeProgressService : IProgressUpdateService
             return false;
         }
 
-        await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
-        await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress, nextStatus);
+        bool isStarting = nextStatus == UserAnimeStatus.Watching || (nextProgress > 0 && item.Progress == 0 && item.Status == UserAnimeStatus.None);
+        bool isCompleting = nextStatus == UserAnimeStatus.Completed;
 
         await _uiDispatcher.InvokeAsync(() =>
         {
+            if (isStarting && !item.DateStarted.HasValue)
+            {
+                item.DateStarted = DateTime.Today;
+            }
+            if (isCompleting)
+            {
+                item.DateCompleted ??= DateTime.Today;
+                item.DateStarted ??= DateTime.Today;
+            }
             item.Progress = nextProgress;
             if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
                 item.Status = nextStatus.Value;
         });
+
+        await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
+
+        if (nextStatus.HasValue)
+        {
+            await _syncManager.EnqueueFullUpdateAsync(item);
+        }
+        else
+        {
+            await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress, nextStatus);
+        }
 
         return true;
     }
@@ -88,8 +110,20 @@ public class AnimeProgressService : IProgressUpdateService
 
         if (isManga)
         {
+            bool isStarting = nextStatus == UserAnimeStatus.Watching;
+            bool isCompleting = nextStatus == UserAnimeStatus.Completed;
+
             await _uiDispatcher.InvokeAsync(() =>
             {
+                if (isStarting && !item.DateStarted.HasValue)
+                {
+                    item.DateStarted = DateTime.Today;
+                }
+                if (isCompleting)
+                {
+                    item.DateCompleted ??= DateTime.Today;
+                    item.DateStarted ??= DateTime.Today;
+                }
                 item.ChaptersRead = nextProgress;
                 if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
                     item.Status = nextStatus.Value;
@@ -98,6 +132,11 @@ public class AnimeProgressService : IProgressUpdateService
             await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
             await _syncManager.EnqueueFullUpdateAsync(item);
 
+            if (nextStatus == UserAnimeStatus.Completed)
+            {
+                WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(item));
+            }
+
             _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, nextProgress, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Read");
             return nextStatus;
         }
@@ -105,6 +144,11 @@ public class AnimeProgressService : IProgressUpdateService
         {
             if (await UpdateProgressAsync(item, nextProgress, nextStatus))
             {
+                if (nextStatus == UserAnimeStatus.Completed)
+                {
+                    WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(item));
+                }
+
                 _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, nextProgress, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Watched");
                 return nextStatus;
             }
@@ -155,5 +199,22 @@ public class AnimeProgressService : IProgressUpdateService
         await _userAnimeRepo.UpdateScoreAsync(item, item.Score);
         await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
         _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString());
+    }
+
+    public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)
+    {
+        await _uiDispatcher.InvokeAsync(() =>
+        {
+            item.IsRewatching = true;
+            item.RewatchCount++;
+            item.Progress = episode;
+            item.Status = UserAnimeStatus.Watching;
+            item.DateStarted = DateTime.Today;
+            item.DateCompleted = null;
+        });
+
+        await _userAnimeRepo.UpdateProgressAsync(item, episode, UserAnimeStatus.Watching);
+        await _syncManager.EnqueueFullUpdateAsync(item);
+        _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, episode, "Rewatching");
     }
 }

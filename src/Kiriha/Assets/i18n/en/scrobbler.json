@@ -63,5 +63,16 @@
     "title": "Skip-ahead protection",
     "subtitle": "If the playing episode is ahead of your progress by more than one episode, send a notification instead of updating",
     "body": "Episode {0} detected, but next expected is Ep {1} — progress not updated"
+  },
+  "quick_rating": {
+    "title": "You finished watching!",
+    "subtitle": "Rate this title:",
+    "dismiss": "Skip"
+  },
+  "rewatch_prompt": {
+    "title": "Rewatch Detected",
+    "body": "You started watching Ep 1 of \"{0}\". Enable Re-watch mode?",
+    "confirm": "Start Re-watch",
+    "dismiss": "Dismiss"
   }
 }

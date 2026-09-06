@@ -24,5 +24,18 @@
   "next_ep": "Next episode",
   "close_tooltip": "Close  Esc · F12",
   "no_upcoming_releases": "No upcoming releases",
-  "after_sync_roadmap": "After synchronization, the episode roadmap will appear here"
+  "after_sync_roadmap": "After synchronization, the episode roadmap will appear here",
+  "yesterday": "Yesterday",
+  "day_before_yesterday": "2 days ago",
+  "days_ago": "{0}d ago",
+  "hours_ago": "{0}h ago",
+  "minutes_ago": "{0}m ago",
+  "filter_upcoming": "Upcoming",
+  "filter_past": "Recent",
+  "filter_all": "All",
+  "latest_ep": "Latest episode",
+  "releases_past_days": "{0} {1} in recent days",
+  "releases_in_schedule": "{0} {1} in schedule",
+  "no_past_releases": "No recent releases",
+  "no_past_releases_desc": "No new episodes from your list were released recently"
 }

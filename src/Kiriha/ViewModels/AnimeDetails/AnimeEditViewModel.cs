@@ -36,17 +36,17 @@ public partial class AnimeEditViewModel : ObservableObject
 
     public bool IsInList => _anime.Status != UserAnimeStatus.None;
 
-    public IEnumerable<UserAnimeStatus> AvailableStatuses => new[]
-    {
+    public IEnumerable<UserAnimeStatus> AvailableStatuses =>
+    [
         UserAnimeStatus.Watching,
         UserAnimeStatus.Completed,
         UserAnimeStatus.OnHold,
         UserAnimeStatus.Dropped,
         UserAnimeStatus.PlanToWatch
-    };
+    ];
 
-    public IEnumerable<RatingOption> AvailableScores => new[]
-    {
+    public IEnumerable<RatingOption> AvailableScores =>
+    [
         RatingHelper.GetRatingOption("-"),
         RatingHelper.GetRatingOption("10"),
         RatingHelper.GetRatingOption("9"),
@@ -58,7 +58,7 @@ public partial class AnimeEditViewModel : ObservableObject
         RatingHelper.GetRatingOption("3"),
         RatingHelper.GetRatingOption("2"),
         RatingHelper.GetRatingOption("1")
-    };
+    ];
 
     public AnimeEditViewModel(
         AnimeEntity originalAnime,
@@ -114,9 +114,33 @@ public partial class AnimeEditViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void SetStartDateToYesterday()
+    {
+        _anime.DateStarted = DateTime.Today.AddDays(-1);
+    }
+
+    [RelayCommand]
+    private void ClearStartDate()
+    {
+        _anime.DateStarted = null;
+    }
+
+    [RelayCommand]
     private void SetEndDateToToday()
     {
         _anime.DateCompleted = DateTime.Today;
+    }
+
+    [RelayCommand]
+    private void SetEndDateToYesterday()
+    {
+        _anime.DateCompleted = DateTime.Today.AddDays(-1);
+    }
+
+    [RelayCommand]
+    private void ClearEndDate()
+    {
+        _anime.DateCompleted = null;
     }
 
     [RelayCommand]

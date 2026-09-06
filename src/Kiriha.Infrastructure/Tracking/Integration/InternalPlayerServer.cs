@@ -19,7 +19,7 @@ namespace Kiriha.Infrastructure.Tracking.Integration;
 public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
 {
     public event EventHandler<InternalPlayerState>? PlayerStateChanged;
-    private readonly object _pipeGate = new();
+    private readonly Lock _pipeGate = new();
     private NamedPipeServerStream? _currentPipe;
 
     

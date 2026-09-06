@@ -115,6 +115,24 @@ public class NotificationService : INotificationService
         ToastRenderer.Show(lines);
     }
 
+    public virtual void NotifyAnimeCompleted(AnimeEntity anime)
+    {
+        if (anime == null) return;
+
+        var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
+        var ru = anime.RussianTitle;
+
+        var title = UIUtils.GetLoc("scrobbler.quick_rating.title");
+        var body = UIUtils.GetLoc("scrobbler.quick_rating.subtitle");
+
+        var lines = new System.Collections.Generic.List<string> { title, orig, body };
+        if (!string.IsNullOrEmpty(ru) && !string.Equals(ru, orig, StringComparison.Ordinal))
+            lines.Add(ru!);
+
+        Log.Information("NotificationService: Anime completed toast for {Title}", orig);
+        ToastRenderer.Show(lines);
+    }
+
     public void NotifyAppUpdate(string newVersion)
     {
         if (string.IsNullOrEmpty(newVersion)) return;

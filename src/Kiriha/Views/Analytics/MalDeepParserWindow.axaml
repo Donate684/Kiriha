@@ -1,0 +1,181 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+        xmlns:material="using:Material.Icons.Avalonia"
+        xmlns:core="using:Kiriha.Core"
+        xmlns:views="using:Kiriha.Views"
+        x:Class="Kiriha.Views.Analytics.MalDeepParserWindow"
+        x:DataType="vmAnalytics:MalDeepParserViewModel"
+        Title="{DynamicResource l.analytics.inspector.deep_parser_title}"
+        Width="580" Height="500"
+        MinWidth="480" MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Assets/kiriha.ico"
+        Background="{DynamicResource SolidBackgroundFillColorBase}">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+
+        <!-- ═══ HEADER ═══ -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,0,0,16">
+            <Border Width="42" Height="42" CornerRadius="10"
+                    Background="{DynamicResource SystemAccentColor}"
+                    VerticalAlignment="Center">
+                <material:MaterialIcon Kind="CloudDownloadOutline" Width="22" Height="22"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_title}"
+                           FontSize="16" FontWeight="SemiBold"/>
+                <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_desc}"
+                           FontSize="11" Opacity="0.55" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ═══ BODY / CONFIG & PROGRESS ═══ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
+
+                <!-- Карточка настройки Cookie -->
+                <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                        CornerRadius="10" Padding="14"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_cookie_label}"
+                                   FontSize="12" FontWeight="SemiBold"/>
+
+                        <TextBox Text="{Binding Cookie, Mode=TwoWay}"
+                                 PlaceholderText="MALSESSIONID=..."
+                                 IsEnabled="{Binding !IsRunning}"
+                                 Height="34" CornerRadius="6" FontSize="12"/>
+
+                        <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_cookie_hint}"
+                                   FontSize="10.5" Opacity="0.5" TextWrapping="Wrap"/>
+
+                        <CheckBox IsChecked="{Binding OnlyWithoutDates}"
+                                  Content="{DynamicResource l.analytics.inspector.deep_parser_only_missing}"
+                                  IsEnabled="{Binding !IsRunning}"
+                                  FontSize="12" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Карточка текущего прогресса -->
+                <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                        CornerRadius="10" Padding="14"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
+                        IsVisible="{Binding IsRunning}">
+                    <StackPanel Spacing="12">
+                        <!-- Прогресс-бар -->
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                            <TextBlock Text="{Binding ProgressText}" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat='{}{0:0}%'}"
+                                       FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                        </Grid>
+
+                        <ProgressBar Value="{Binding ProgressPercentage}"
+                                     Minimum="0" Maximum="100"
+                                     Height="6" CornerRadius="3"
+                                     Foreground="{DynamicResource SystemAccentColor}"/>
+
+                        <!-- Текущий обрабатываемый тайтл -->
+                        <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                                CornerRadius="8" Padding="10">
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10">
+                                <Border Width="36" Height="50" CornerRadius="6"
+                                        ClipToBounds="True" Background="{DynamicResource SubtleFillColorSecondary}">
+                                    <Image core:CachedImage.Source="{Binding CurrentPoster}" Stretch="UniformToFill"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                    <TextBlock Text="{Binding CurrentTitle}" FontSize="12.5" FontWeight="SemiBold"
+                                               MaxLines="1" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding LastResultText}" FontSize="11"
+                                               Foreground="{DynamicResource SystemAccentColor}"
+                                               MaxLines="1" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Счётчики -->
+                        <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <material:MaterialIcon Kind="CheckCircleOutline" Width="14" Height="14" Foreground="{DynamicResource SystemAccentColor}"/>
+                                <TextBlock Text="{Binding UpdatedCount, StringFormat='{}{0}'}" FontSize="11" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <material:MaterialIcon Kind="MinusCircleOutline" Width="14" Height="14" Opacity="0.5"/>
+                                <TextBlock Text="{Binding SkippedCount, StringFormat='{}{0}'}" FontSize="11" Opacity="0.7"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <material:MaterialIcon Kind="AlertCircleOutline" Width="14" Height="14" Foreground="{DynamicResource AnalyticsSectionRedBrush}"/>
+                                <TextBlock Text="{Binding ErrorCount, StringFormat='{}{0}'}" FontSize="11" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Статусное сообщение -->
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemAccentColor}"
+                           HorizontalAlignment="Center" TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ═══ FOOTER ═══ -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <!-- Старт -->
+                <Button Command="{Binding StartParsingCommand}"
+                        IsEnabled="{Binding !IsRunning}"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Foreground="White"
+                        Height="34" CornerRadius="8" Padding="14,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon Kind="Play" Width="15" Height="15"/>
+                        <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_start}"
+                                   FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Пауза -->
+                <Button Command="{Binding TogglePauseCommand}"
+                        IsVisible="{Binding IsRunning}"
+                        Classes="Subtle"
+                        Height="34" CornerRadius="8" Padding="12,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon Kind="Pause" Width="15" Height="15"/>
+                        <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_pause}"
+                                   FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Стоп -->
+                <Button Command="{Binding StopCommand}"
+                        IsVisible="{Binding IsRunning}"
+                        Classes="Subtle"
+                        Height="34" CornerRadius="8" Padding="12,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon Kind="Stop" Width="15" Height="15"/>
+                        <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_stop}"
+                                   FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Закрыть -->
+            <Button Grid.Column="1"
+                    Click="CloseButton_Click"
+                    Classes="Subtle"
+                    Height="34" CornerRadius="8" Padding="14,0">
+                <TextBlock Text="{DynamicResource l.analytics.inspector.deep_parser_close}"
+                           FontSize="12" VerticalAlignment="Center"/>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

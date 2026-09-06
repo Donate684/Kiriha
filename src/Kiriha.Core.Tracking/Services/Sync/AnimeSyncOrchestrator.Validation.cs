@@ -19,14 +19,15 @@ public partial class AnimeSyncOrchestrator
                 : items.Count(x => x.Status == status);
         }
 
-        foreach (var trackedStatus in new[]
-        {
+        ReadOnlySpan<UserAnimeStatus> trackedStatuses =
+        [
             UserAnimeStatus.Watching,
             UserAnimeStatus.Completed,
             UserAnimeStatus.OnHold,
             UserAnimeStatus.Dropped,
             UserAnimeStatus.PlanToWatch
-        })
+        ];
+        foreach (var trackedStatus in trackedStatuses)
         {
             var local = CountStatus(currentItems, trackedStatus);
             if (local < SyncSafetyConstants.MinimumStatusGuardCount) continue;

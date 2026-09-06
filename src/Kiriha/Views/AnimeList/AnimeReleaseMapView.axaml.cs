@@ -98,6 +98,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
     public event EventHandler<bool>? IsMapVisibleChanged;
     public bool IsMapVisible { get; private set; }
+    private ReleaseMapFilter _currentFilter = ReleaseMapFilter.Upcoming;
 
     public void ToggleReleaseMap()
     {
@@ -112,6 +113,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
     private void ShowReleaseMap()
     {
+        UpdateFilterButtonsState();
         BuildReleaseMap();
         IsMapVisible = true;
         this.IsVisible = true;
@@ -128,6 +130,37 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         IsMapVisibleChanged?.Invoke(this, false);
     }
 
+    private void FilterUpcoming_Click(object? sender, RoutedEventArgs e) => SetFilter(ReleaseMapFilter.Upcoming);
+    private void FilterPast_Click(object? sender, RoutedEventArgs e) => SetFilter(ReleaseMapFilter.Past);
+
+    private void SetFilter(ReleaseMapFilter filter)
+    {
+        if (_currentFilter == filter) return;
+        _currentFilter = filter;
+        UpdateFilterButtonsState();
+        BuildReleaseMap();
+    }
+
+    private void UpdateFilterButtonsState()
+    {
+        SetButtonActive(FilterUpcomingBtn, _currentFilter == ReleaseMapFilter.Upcoming);
+        SetButtonActive(FilterPastBtn, _currentFilter == ReleaseMapFilter.Past);
+    }
+
+    private static void SetButtonActive(Button? btn, bool active)
+    {
+        if (btn == null) return;
+        if (active)
+        {
+            if (!btn.Classes.Contains("Active"))
+                btn.Classes.Add("Active");
+        }
+        else
+        {
+            btn.Classes.Remove("Active");
+        }
+    }
+
     private void BuildReleaseMap()
     {
         ReleaseTimelinePanel.Children.Clear();
@@ -136,7 +169,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
         if (DataContext is not AnimeListViewModel vm) return;
         var mapVm = new ReleaseMapViewModel(vm.AnimeItems);
-        var groups = mapVm.GetUpcomingReleaseGroups(24).ToList();
+        var groups = mapVm.GetReleaseGroups(_currentFilter, 24).ToList();
         var releases = groups.SelectMany(g => g.Releases).ToList();
         ReleaseEmptyState.IsVisible = releases.Count == 0;
 
@@ -147,11 +180,15 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             ReleaseHeroAnimeTitle.Text = string.Empty;
             ReleaseHeroRussianTitle.Text = string.Empty;
             ReleaseHeroRussianTitle.IsVisible = false;
-            ReleaseHeroKindText.Text = LocalizationStore.Translate("schedule.no_dates");
-            ReleaseHeroCountdownText.Text = LocalizationStore.Translate("schedule.after_sync");
+            ReleaseHeroKindText.Text = ReleaseMapViewModel.GetNoDatesText();
+            ReleaseHeroCountdownText.Text = ReleaseMapViewModel.GetAfterSyncText();
             ReleaseHeroTimeText.Text = "--:--";
-            ReleaseHeroWeekText.Text = LocalizationStore.Translate("schedule.no_future_dates");
+            ReleaseHeroWeekText.Text = ReleaseMapViewModel.GetNoReleasesHeroText(_currentFilter);
             CachedImage.SetSource(ReleaseHeroPoster, null);
+
+            ReleaseEmptyTitle.Text = ReleaseMapViewModel.GetNoReleasesTitle(_currentFilter);
+            ReleaseEmptySubtitle.Text = ReleaseMapViewModel.GetNoReleasesSubtitle(_currentFilter);
+
             return;
         }
 
@@ -162,10 +199,22 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         ReleaseHeroRussianTitle.DataContext = first.Item;
         ReleaseHeroRussianTitle[!TextBlock.TextProperty] = new Avalonia.Data.Binding("RussianTitle");
         ReleaseHeroRussianTitle[!TextBlock.IsVisibleProperty] = new Avalonia.Data.Binding("RussianTitle") { Converter = Avalonia.Data.Converters.StringConverters.IsNotNullOrEmpty };
-        ReleaseHeroKindText.Text = ReleaseMapViewModel.GetHeroReleaseKind(first);
-        ReleaseHeroCountdownText.Text = ReleaseMapViewModel.FormatUntilRelease(first.ReleaseAt);
-        ReleaseHeroTimeText.Text = first.ReleaseAt.ToString("HH:mm");
-        ReleaseHeroWeekText.Text = ReleaseMapViewModel.FormatWeekReleaseSummary(releases);
+
+        if (_currentFilter == ReleaseMapFilter.Past)
+        {
+            ReleaseHeroKindText.Text = ReleaseMapViewModel.GetLatestEpText();
+            ReleaseHeroCountdownText.Text = ReleaseMapViewModel.FormatUntilRelease(first.ReleaseAt);
+            ReleaseHeroTimeText.Text = first.ReleaseAt.ToString("HH:mm");
+            ReleaseHeroWeekText.Text = ReleaseMapViewModel.FormatPastReleaseSummary(releases);
+        }
+        else
+        {
+            ReleaseHeroKindText.Text = ReleaseMapViewModel.GetHeroReleaseKind(first);
+            ReleaseHeroCountdownText.Text = ReleaseMapViewModel.FormatUntilRelease(first.ReleaseAt);
+            ReleaseHeroTimeText.Text = first.ReleaseAt.ToString("HH:mm");
+            ReleaseHeroWeekText.Text = ReleaseMapViewModel.FormatWeekReleaseSummary(releases);
+        }
+
         CachedImage.SetSource(ReleaseHeroPoster, first.PosterUrl);
 
         int staggerIndex = 0;
@@ -229,6 +278,4 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             _ = Task.WhenAll(tasks);
         }
     }
-
-
 }

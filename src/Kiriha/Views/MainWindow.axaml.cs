@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Settings;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -41,12 +41,12 @@ public partial class MainWindow : KirihaWindowBase
         if (settings == null) return;
         if (settings.UI.EnableMica)
         {
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur };
+            TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];
             Background = null;
         }
         else
         {
-            TransparencyLevelHint = new[] { WindowTransparencyLevel.None };
+            TransparencyLevelHint = [WindowTransparencyLevel.None];
             ClearValue(BackgroundProperty);
         }
     }

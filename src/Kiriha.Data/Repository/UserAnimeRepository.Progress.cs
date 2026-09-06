@@ -36,13 +36,21 @@ public sealed partial class UserAnimeRepository
                         .SetProperty(x => x.Progress, progress)
                         .SetProperty(x => x.ChaptersRead, item.ChaptersRead)
                         .SetProperty(x => x.VolumesRead, item.VolumesRead)
+                        .SetProperty(x => x.IsRewatching, item.IsRewatching)
+                        .SetProperty(x => x.RewatchCount, item.RewatchCount)
+                        .SetProperty(x => x.DateStarted, item.DateStarted)
+                        .SetProperty(x => x.DateCompleted, item.DateCompleted)
                         .SetProperty(x => x.Status, status!.Value))
                 : await context.UserAnime
                     .Where(x => x.Id == item.Id)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.Progress, progress)
                         .SetProperty(x => x.ChaptersRead, item.ChaptersRead)
-                        .SetProperty(x => x.VolumesRead, item.VolumesRead));
+                        .SetProperty(x => x.VolumesRead, item.VolumesRead)
+                        .SetProperty(x => x.IsRewatching, item.IsRewatching)
+                        .SetProperty(x => x.RewatchCount, item.RewatchCount)
+                        .SetProperty(x => x.DateStarted, item.DateStarted)
+                        .SetProperty(x => x.DateCompleted, item.DateCompleted));
         }
         else
         {
@@ -51,11 +59,19 @@ public sealed partial class UserAnimeRepository
                     .Where(x => x.Id == item.Id)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.Progress, progress)
+                        .SetProperty(x => x.IsRewatching, item.IsRewatching)
+                        .SetProperty(x => x.RewatchCount, item.RewatchCount)
+                        .SetProperty(x => x.DateStarted, item.DateStarted)
+                        .SetProperty(x => x.DateCompleted, item.DateCompleted)
                         .SetProperty(x => x.Status, status!.Value))
                 : await context.UserAnime
                     .Where(x => x.Id == item.Id)
                     .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(x => x.Progress, progress));
+                        .SetProperty(x => x.Progress, progress)
+                        .SetProperty(x => x.IsRewatching, item.IsRewatching)
+                        .SetProperty(x => x.RewatchCount, item.RewatchCount)
+                        .SetProperty(x => x.DateStarted, item.DateStarted)
+                        .SetProperty(x => x.DateCompleted, item.DateCompleted));
         }
 
         if (affected == 0)

@@ -81,9 +81,8 @@ public class FaviconService : IDisposable
             existing = TryFindCached(dir, safeHost);
             if (existing != null) return existing;
 
-            // Try the well-known root paths in order. /favicon.ico is the
-            // historical default; /favicon.png is the modern fallback.
-            foreach (var ext in new[] { "ico", "png" })
+            string[] extensions = ["ico", "png"];
+            foreach (var ext in extensions)
             {
                 var candidate = $"{uri.Scheme}://{host}/favicon.{ext}";
                 try

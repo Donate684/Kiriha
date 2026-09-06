@@ -16,6 +16,8 @@ using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data;
 using Kiriha.Core.Tracking;
 using Moq;
+using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Messages;
 
 namespace Kiriha.Tests;
 
@@ -141,6 +143,81 @@ public class ScrobbleServiceTests : IDisposable
         // Assert
         _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 12, UserAnimeStatus.Completed), Times.Once);
         _mockHistoryService.Verify(x => x.AddEntry(match.Id, match.Title, match.RussianTitle, 12, "Completed", null), Times.Once);
+    }
+
+    [Fact]
+    public void StartScrobble_PlanToWatch_AutoStartsWatching()
+    {
+        // Arrange
+        var media = new ParsedMedia { Episode = "1", IsPlaying = true };
+        var match = new AnimeEntity { Status = UserAnimeStatus.PlanToWatch, Progress = 0, Id = 10, Title = "Plan Anime" };
+
+        _mockProgressService
+            .Setup(x => x.UpdateProgressAsync(match, 1, UserAnimeStatus.Watching))
+            .ReturnsAsync(true);
+
+        // Act
+        _scrobbleService.StartScrobble(media, match);
+
+        // Assert - automatically transitions from PlanToWatch to Watching with Progress = 1
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 1, UserAnimeStatus.Watching), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntry(match.Id, match.Title, match.RussianTitle, 1, "Scrobbled", null), Times.Once);
+    }
+
+    [Fact]
+    public void StartScrobble_CompletedAnime_Episode1_PromptsRewatchWithoutAutoScrobble()
+    {
+        // Arrange
+        var media = new ParsedMedia { Episode = "1", IsPlaying = true };
+        var match = new AnimeEntity { Status = UserAnimeStatus.Completed, Progress = 12, TotalEpisodes = 12, Id = 20, Title = "Completed Anime", IsRewatching = false };
+
+        Kiriha.Core.Abstractions.Messages.AnimeRewatchPromptMessage? receivedPrompt = null;
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Kiriha.Core.Abstractions.Messages.AnimeRewatchPromptMessage>(
+            this, (r, m) => receivedPrompt = m);
+
+        try
+        {
+            // Act
+            _scrobbleService.StartScrobble(media, match);
+
+            // Assert
+            Assert.NotNull(receivedPrompt);
+            Assert.Equal(match.Id, receivedPrompt.Anime.Id);
+            Assert.Equal(1, receivedPrompt.Episode);
+            // Must NOT auto-update progress before user confirms
+            _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
+        }
+        finally
+        {
+            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Unregister<Kiriha.Core.Abstractions.Messages.AnimeRewatchPromptMessage>(this);
+        }
+    }
+
+    [Fact]
+    public void StartScrobble_CompletesAnime_SendsRatingPromptAndNotification()
+    {
+        // Arrange
+        var media = new ParsedMedia { Episode = "12", IsPlaying = true };
+        var match = new AnimeEntity { Status = UserAnimeStatus.Watching, Progress = 11, TotalEpisodes = 12, Id = 30, Title = "Finale Anime" };
+
+        Kiriha.Core.Abstractions.Messages.AnimeCompletedRatingPromptMessage? receivedRatingPrompt = null;
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Kiriha.Core.Abstractions.Messages.AnimeCompletedRatingPromptMessage>(
+            this, (r, m) => receivedRatingPrompt = m);
+
+        try
+        {
+            // Act
+            _scrobbleService.StartScrobble(media, match);
+
+            // Assert
+            Assert.NotNull(receivedRatingPrompt);
+            Assert.Equal(match.Id, receivedRatingPrompt.Anime.Id);
+            _mockNotificationService.Verify(x => x.NotifyAnimeCompleted(match), Times.Once);
+        }
+        finally
+        {
+            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Unregister<Kiriha.Core.Abstractions.Messages.AnimeCompletedRatingPromptMessage>(this);
+        }
     }
 
     [Fact]

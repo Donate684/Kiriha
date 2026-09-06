@@ -109,7 +109,13 @@ public static class MalMapper
                 {
                     var firstName = n.TryGetProperty("first_name", out var f) ? f.GetString() : null;
                     var lastName = n.TryGetProperty("last_name", out var l) ? l.GetString() : null;
-                    var name = string.Join(" ", new[] { firstName, lastName }.Where(x => !string.IsNullOrEmpty(x)));
+                    var name = (string.IsNullOrEmpty(firstName), string.IsNullOrEmpty(lastName)) switch
+                    {
+                        (false, false) => $"{firstName} {lastName}",
+                        (false, true) => firstName!,
+                        (true, false) => lastName!,
+                        _ => string.Empty
+                    };
                     if (!string.IsNullOrEmpty(name))
                     {
                         item.Studios.Add(name);

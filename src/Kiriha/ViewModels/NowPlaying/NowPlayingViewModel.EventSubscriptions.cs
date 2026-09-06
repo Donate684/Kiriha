@@ -117,9 +117,8 @@ public partial class NowPlayingViewModel
 
     private void LogDetection(ParsedMedia media, string status)
     {
-        string extras = string.Join(" ",
-            new[] { media.VideoResolution, media.Source, media.AnimeType }
-            .Where(s => !string.IsNullOrEmpty(s)));
+        string?[] extrasParts = [media.VideoResolution, media.Source, media.AnimeType];
+        string extras = string.Join(" ", extrasParts.Where(s => !string.IsNullOrEmpty(s)));
         string extraInfo = !string.IsNullOrEmpty(extras) ? $" [{extras}]" : "";
         string epInfo = !string.IsNullOrEmpty(media.Episode) ? $" ({_localizer.GetLoc("anime.labels.episode")} {media.Episode})" : "";
         string logEntry = $"[{DateTime.Now:HH:mm:ss}] {status}: {media.AnimeTitle}{epInfo}{extraInfo}";

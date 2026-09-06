@@ -1,4 +1,4 @@
-﻿using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -104,7 +104,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     public void EnqueueItemForViewport(AnimeEntity item)
     {
         if (item == null) return;
-        _queueService.EnqueueForViewport(new[] { item });
+        _queueService.EnqueueForViewport([item]);
     }
 
     public void Dispose()

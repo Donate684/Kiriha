@@ -12,7 +12,8 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 {
     private Border CreateReleaseCard(ReleaseMapItem release, ReleasePalette palette)
     {
-        var isSoon = (release.ReleaseAt - DateTime.UtcNow).TotalHours <= 24;
+        var isPast = release.ReleaseAt < DateTime.UtcNow.AddMinutes(-10);
+        var isSoon = !isPast && (release.ReleaseAt - DateTime.UtcNow).TotalHours <= 24;
         var accentColor = isSoon ? palette.WarmAccent : palette.CoolAccent;
 
         // Left accent bar
@@ -213,8 +214,9 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
     private static Control CreateReleaseBadge(ReleaseMapItem release, bool isSoon, ReleasePalette palette)
     {
-        var bg = isSoon ? palette.WarmBadge : palette.CoolBadge;
-        var fg = isSoon ? palette.WarmBadgeText : palette.CoolBadgeText;
+        var isPast = release.ReleaseAt < DateTime.UtcNow.AddMinutes(-10);
+        var bg = isPast ? palette.PillBg : isSoon ? palette.WarmBadge : palette.CoolBadge;
+        var fg = isPast ? palette.CoolAccent : isSoon ? palette.WarmBadgeText : palette.CoolBadgeText;
 
         var content = new StackPanel
         {
@@ -224,9 +226,13 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
             Spacing = 2
         };
 
+        var iconKind = isPast
+            ? Material.Icons.MaterialIconKind.CheckCircleOutline
+            : (isSoon ? Material.Icons.MaterialIconKind.Fire : Material.Icons.MaterialIconKind.ClockOutline);
+
         content.Children.Add(new Material.Icons.Avalonia.MaterialIcon
         {
-            Kind = isSoon ? Material.Icons.MaterialIconKind.Fire : Material.Icons.MaterialIconKind.ClockOutline,
+            Kind = iconKind,
             Width = 14,
             Height = 14,
             Foreground = BrushFrom(fg),

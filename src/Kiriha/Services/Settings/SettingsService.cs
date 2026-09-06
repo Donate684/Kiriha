@@ -23,7 +23,7 @@ public partial class SettingsService : IDisposable, ISettingsService
     private readonly string _settingsPath;
 
     private readonly SemaphoreSlim _saveLock = new(1, 1);
-    private readonly object _stateLock = new();
+    private readonly Lock _stateLock = new();
     private long _uiVersion;
     private long _systemVersion;
     private long _playerVersion;
@@ -45,7 +45,7 @@ public partial class SettingsService : IDisposable, ISettingsService
 
     public void Update(Action<AppSettings> update, bool save = true)
     {
-        if (update == null) throw new ArgumentNullException(nameof(update));
+        ArgumentNullException.ThrowIfNull(update);
 
         lock (_stateLock)
         {
@@ -60,7 +60,7 @@ public partial class SettingsService : IDisposable, ISettingsService
 
     public void Update(Action<AppSettings> update, SettingsSection changedSections, bool save = true)
     {
-        if (update == null) throw new ArgumentNullException(nameof(update));
+        ArgumentNullException.ThrowIfNull(update);
 
         lock (_stateLock)
         {
@@ -75,7 +75,7 @@ public partial class SettingsService : IDisposable, ISettingsService
 
     public T Read<T>(Func<AppSettings, T> read)
     {
-        if (read == null) throw new ArgumentNullException(nameof(read));
+        ArgumentNullException.ThrowIfNull(read);
 
         lock (_stateLock)
         {

@@ -46,17 +46,17 @@ public partial class MpvPlayer
 
         string codec = (string.IsNullOrWhiteSpace(vcodec) || vcodec == "-") ? "" : $"Codec: {vcodec}";
         string dec = (string.IsNullOrWhiteSpace(decoder) || decoder == "-") ? "" : $"Decoder: {decoder}";
-        string codecDec = string.Join(" | ", new[] { codec, dec }.Where(s => !string.IsNullOrEmpty(s)));
+        string codecDec = JoinNonEmpty(" | ", codec, dec);
 
         bool isHwDecActive = !string.IsNullOrWhiteSpace(hwdec) && hwdec != "no" && hwdec != "-";
         
         string hw = isHwDecActive ? $"HWDec: {hwdec}{(string.IsNullOrWhiteSpace(interop) || interop == "-" ? "" : $" ({interop})")}" : "HWDec: off";
         string vout = (string.IsNullOrWhiteSpace(vo) || vo == "-") ? "" : $"VO: {vo}{(string.IsNullOrWhiteSpace(gpuContext) || gpuContext == "-" ? "" : $" ({gpuContext})")}";
-        string hwVo = string.Join(" | ", new[] { hw, vout }.Where(s => !string.IsNullOrEmpty(s)));
+        string hwVo = JoinNonEmpty(" | ", hw, vout);
 
         string dropStr = (string.IsNullOrWhiteSpace(dropped) || dropped == "-" || dropped == "0") ? "" : $"{dropped} (Dec)";
         string voDropStr = (string.IsNullOrWhiteSpace(voDropped) || voDropped == "-" || voDropped == "0") ? "" : $"{voDropped} (VO)";
-        string drops = string.Join(" / ", new[] { dropStr, voDropStr }.Where(s => !string.IsNullOrEmpty(s)));
+        string drops = JoinNonEmpty(" / ", dropStr, voDropStr);
         if (!string.IsNullOrEmpty(drops)) drops = "Dropped: " + drops;
 
         return new MpvRuntimeDiagnostics
@@ -77,5 +77,12 @@ public partial class MpvPlayer
     internal static string FormatDouble(double value)
     {
         return value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string JoinNonEmpty(string separator, string a, string b)
+    {
+        if (string.IsNullOrEmpty(a)) return b;
+        if (string.IsNullOrEmpty(b)) return a;
+        return $"{a}{separator}{b}";
     }
 }

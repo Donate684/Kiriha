@@ -37,7 +37,8 @@ public sealed class SmoothScrollBehavior
 
     public SmoothScrollBehavior(ScrollViewer sv)
     {
-        _sv = sv ?? throw new ArgumentNullException(nameof(sv));
+        ArgumentNullException.ThrowIfNull(sv);
+        _sv = sv;
         _targetY = sv.Offset.Y;
 
         // Tunnel with handledEventsToo so we intercept before ScrollViewer applies

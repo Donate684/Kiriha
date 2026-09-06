@@ -21,11 +21,11 @@ public partial class HistorySectionViewModel : ViewModelBase
     public ObservableCollection<AnalyticsBar> YearDistribution { get; } = new();
     public ObservableCollection<AnalyticsBar> ReleaseYearCompletions { get; } = new();
     
-    public IReadOnlyList<string> MonthHeaders { get; } = new[]
-    {
+    public IReadOnlyList<string> MonthHeaders { get; } =
+    [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
+    ];
 
     [ObservableProperty] private int _recentHistoryEpisodes;
     [ObservableProperty] private int _recentHistoryTitles;

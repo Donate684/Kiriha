@@ -12,7 +12,7 @@ public sealed class PlayerCommandServer : IDisposable
 {
     private readonly Action<string[]> _handleCommand;
     private readonly CancellationTokenSource _cts = new();
-    private readonly object _pipeGate = new();
+    private readonly Lock _pipeGate = new();
     private NamedPipeServerStream? _currentPipe;
     private Task? _loopTask;
 

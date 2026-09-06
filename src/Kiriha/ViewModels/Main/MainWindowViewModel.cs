@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.Settings;
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -33,21 +33,26 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
     // IViewModelFactory delivers a fresh transient instance on each navigation —
     // see DI registrations: WelcomeViewModel and SearchViewModel are AddTransient.
     private readonly IViewModelFactory _viewModelFactory;
-
     private readonly ISettingsService _settingsService;
+    private readonly IProgressUpdateService _progressService;
+    private readonly ILocalizer _localizer;
 
     public MainWindowViewModel(
         IViewModelFactory viewModelFactory,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IProgressUpdateService progressService,
+        ILocalizer localizer)
     {
         _viewModelFactory = viewModelFactory;
         _settingsService = settingsService;
+        _progressService = progressService;
+        _localizer = localizer;
 
         // Load saved sidebar state
         IsPaneOpen = _settingsService.Current.UI.IsPaneOpen;
 
-        // Register for navigation messages
-        WeakReferenceMessenger.Default.Register(this);
+        // Register for messages
+        WeakReferenceMessenger.Default.RegisterAll(this);
 
         // Start on Welcome page
         NavigateWelcome();

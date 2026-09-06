@@ -28,7 +28,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
     private const int ImageQueueCapacity = 512;
     private const int ShikiQueueCapacity = 256;
 
-    private readonly object _dedupeLock = new();
+    private readonly Lock _dedupeLock = new();
     private readonly HashSet<int> _queuedForImage = new();
     private readonly HashSet<int> _queuedForShiki = new();
     private readonly Channel<AnimeEntity> _imageQueue = CreateQueue(ImageQueueCapacity);

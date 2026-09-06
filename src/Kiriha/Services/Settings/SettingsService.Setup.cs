@@ -8,7 +8,7 @@ public partial class SettingsService
 {
     public bool NeedsFirstStartup()
     {
-        var required = new[] { "language", "theme", "mal_login" };
+        string[] required = ["language", "theme", "mal_login"];
         return Read(settings => required.Any(step => !settings.System.CompletedSetupSteps.Contains(step)));
     }
 

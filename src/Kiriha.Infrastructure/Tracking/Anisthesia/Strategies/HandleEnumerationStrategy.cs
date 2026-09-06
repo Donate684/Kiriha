@@ -16,7 +16,7 @@ namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
 public class HandleEnumerationStrategy
 {
-    private static readonly FrozenSet<string> _videoExtensions = new[] { ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly FrozenSet<string> _videoExtensions = FrozenSet.ToFrozenSet([".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm"], StringComparer.OrdinalIgnoreCase);
 
 #if WINDOWS
     // P/Invoke constants and structures

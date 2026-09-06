@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using Kiriha.Core;
 using System.Collections.Generic;
@@ -64,7 +64,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             var apiList = await primaryTracker.GetUserAnimeListAsync(ct);
             if (apiList == null) return false;
 
-            var currentItems = await _animeRepository.GetSnapshotAsync(new[] { MediaKind.Anime });
+            var currentItems = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
             var localCount = currentItems.Count;
             if (localCount >= 50 && apiList.Count < localCount * 0.7)
             {
@@ -79,8 +79,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             await ProcessSyncResults(apiList, currentItems, status, ct);
 
             status?.Report("sync.saving.to_db");
-            var snapshot = await _animeRepository.GetSnapshotAsync(new[] { MediaKind.Anime });
-            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, new[] { MediaKind.Anime }, ct);
+            var snapshot = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
+            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, [MediaKind.Anime], ct);
 
             var fullList = await _uiDispatcher.InvokeAsync(() => _animeRepository.Collection.ToList());
             await Task.Run(() => _recognitionCache.BuildIndex(fullList));
@@ -117,7 +117,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             var apiList = await primaryTracker.GetUserMangaListAsync(ct);
             if (apiList == null) return false;
 
-            var kinds = new[] { MediaKind.Manga, MediaKind.LightNovel };
+            MediaKind[] kinds = [MediaKind.Manga, MediaKind.LightNovel];
             var currentItems = await _animeRepository.GetSnapshotAsync(kinds);
             var localCount = currentItems.Count;
             if (localCount >= 50 && apiList.Count < localCount * 0.7)

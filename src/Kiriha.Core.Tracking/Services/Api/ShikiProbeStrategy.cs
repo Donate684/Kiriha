@@ -7,18 +7,18 @@ public sealed class ShikiProbeStrategy
 {
     private readonly ShikiHostState _state;
 
-    public static readonly IReadOnlyList<string> KnownOriginalHosts = new[]
-    {
+    public static readonly IReadOnlyList<string> KnownOriginalHosts =
+    [
         "shikimori.one",
         "shikimori.io"
-    };
+    ];
 
-    public static readonly IReadOnlyList<string> KnownForkHosts = new[]
-    {
+    public static readonly IReadOnlyList<string> KnownForkHosts =
+    [
         "shikimori.rip",
         "shikimori.net",
         "shikimori.fi",
-    };
+    ];
 
     public ShikiProbeStrategy(ShikiHostState state)
     {

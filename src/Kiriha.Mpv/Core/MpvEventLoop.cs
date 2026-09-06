@@ -8,13 +8,13 @@ namespace Kiriha.Mpv;
 
 internal sealed class MpvEventLoop : IDisposable
 {
-    private readonly object _gate;
+    private readonly Lock _gate;
     private readonly Func<IntPtr> _getHandle;
     private readonly Action<MpvEvent> _handleEvent;
     private readonly CancellationTokenSource _cts = new();
     private Task? _loopTask;
 
-    public MpvEventLoop(object gate, Func<IntPtr> getHandle, Action<MpvEvent> handleEvent)
+    public MpvEventLoop(Lock gate, Func<IntPtr> getHandle, Action<MpvEvent> handleEvent)
     {
         _gate = gate;
         _getHandle = getHandle;

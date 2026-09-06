@@ -34,7 +34,7 @@ public class PlayerParser
     public static List<AnisthesiaPlayer> ParseData(string data)
     {
         var players = new List<AnisthesiaPlayer>();
-        var lines = data.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
+        var lines = data.Split(["\n", "\r\n"], StringSplitOptions.None);
         AnisthesiaPlayer? current = null;
         State state = State.ExpectPlayerName;
 

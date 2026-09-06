@@ -10,4 +10,5 @@ public interface IProgressUpdateService
     Task<UserAnimeStatus?> SmartIncrementProgressAsync(AnimeEntity item, int nextProgress);
     Task SmartDecrementProgressAsync(AnimeEntity item);
     Task SetScoreAsync(AnimeEntity item, int score);
+    Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1);
 }

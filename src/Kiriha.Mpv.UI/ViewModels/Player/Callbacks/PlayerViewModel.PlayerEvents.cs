@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Kiriha.Mpv;
@@ -9,7 +10,7 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 public partial class PlayerViewModel
 {
     private int _isPlaybackStateUpdatePending;
-    private readonly object _playbackStateLock = new();
+    private readonly Lock _playbackStateLock = new();
     private PlaybackState? _pendingPlaybackState;
 
     private void OnPlayerFileLoaded(object? sender, EventArgs e)

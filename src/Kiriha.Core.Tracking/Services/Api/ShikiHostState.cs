@@ -1,12 +1,13 @@
 using System;
 using Kiriha.Core.Tracking.Api;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Kiriha.Core.Tracking.Api;
 
 public sealed class ShikiHostState
 {
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
 
     private readonly HashSet<string> _originalHosts;
     private readonly HashSet<string> _forkHosts;

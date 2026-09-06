@@ -17,7 +17,7 @@ public partial class SeasonalViewModel
     public void EnqueueItemForViewport(AnimeEntity item)
     {
         if (item == null) return;
-        _queueService.EnqueueForViewport(new[] { item });
+        _queueService.EnqueueForViewport([item]);
     }
 
     [RelayCommand]

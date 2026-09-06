@@ -18,12 +18,12 @@ public class DetectionManager
     private readonly List<AnisthesiaPlayer> _players;
     private readonly ISettingsService _settingsService;
     private readonly FrozenDictionary<string, List<AnisthesiaPlayer>> _exactExecutableMap;
-    private readonly (Regex Regex, AnisthesiaPlayer Player)[] _regexExecutableRules;
+    private readonly (Regex Regex, AnisthesiaPlayer Player, List<AnisthesiaPlayer> PlayerList)[] _regexExecutableRules;
 
-    private static readonly FrozenSet<string> JunkPatterns = new[]
-    {
+    private static readonly FrozenSet<string> JunkPatterns = FrozenSet.ToFrozenSet(
+    [
         "vlc media player", "mpc-hc", "potplayer", "mpv", "kmplayer", "zoom player", "ready", "opening..."
-    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    ], StringComparer.OrdinalIgnoreCase);
 
     public DetectionManager(List<AnisthesiaPlayer> players, ISettingsService settingsService)
     {
@@ -31,7 +31,7 @@ public class DetectionManager
         _settingsService = settingsService;
 
         var exactDict = new Dictionary<string, List<AnisthesiaPlayer>>(StringComparer.OrdinalIgnoreCase);
-        var regexList = new List<(Regex, AnisthesiaPlayer)>();
+        var regexList = new List<(Regex, AnisthesiaPlayer, List<AnisthesiaPlayer>)>();
 
         foreach (var player in players)
         {
@@ -39,7 +39,7 @@ public class DetectionManager
             {
                 if (exe.StartsWith('^'))
                 {
-                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled), player));
+                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled), player, new List<AnisthesiaPlayer>(1) { player }));
                 }
                 else
                 {
@@ -92,8 +92,18 @@ public class DetectionManager
                         {
                             if (_regexExecutableRules[r].Regex.IsMatch(procName))
                             {
-                                matchingPlayers ??= new List<AnisthesiaPlayer>(1);
-                                matchingPlayers.Add(_regexExecutableRules[r].Player);
+                                if (matchingPlayers == null)
+                                {
+                                    matchingPlayers = _regexExecutableRules[r].PlayerList;
+                                }
+                                else
+                                {
+                                    if (ReferenceEquals(matchingPlayers, _regexExecutableRules[r].PlayerList))
+                                    {
+                                        matchingPlayers = new List<AnisthesiaPlayer>(matchingPlayers);
+                                    }
+                                    matchingPlayers.Add(_regexExecutableRules[r].Player);
+                                }
                             }
                         }
                     }
@@ -112,7 +122,8 @@ public class DetectionManager
                     }
 
                     uint pid = (uint)proc.Id;
-                    IntPtr hWnd = proc.MainWindowHandle;
+                    IntPtr hWnd = IntPtr.Zero;
+                    bool hWndEvaluated = false;
 
                     for (int i = 0; i < matchingPlayers.Count; i++)
                     {
@@ -131,9 +142,21 @@ public class DetectionManager
                         foreach (var strategy in player.Strategies)
                         {
                             if (strategy == StrategyType.OpenFiles)
+                            {
                                 result = HandleEnumerationStrategy.Apply(player, pid);
-                            else if (strategy == StrategyType.WindowTitle && hWnd != IntPtr.Zero)
-                                result = WindowTitleStrategy.Apply(player, pid, hWnd);
+                            }
+                            else if (strategy == StrategyType.WindowTitle)
+                            {
+                                if (!hWndEvaluated)
+                                {
+                                    hWnd = proc.MainWindowHandle;
+                                    hWndEvaluated = true;
+                                }
+                                if (hWnd != IntPtr.Zero)
+                                {
+                                    result = WindowTitleStrategy.Apply(player, pid, hWnd);
+                                }
+                            }
 
                             if (result != null)
                             {

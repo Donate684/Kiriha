@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Kiriha.Utils.Collections;
 
@@ -16,7 +17,7 @@ internal sealed class LruStringMemoizer<TVal> where TVal : class
     private readonly int _capacity;
     private readonly Dictionary<string, LinkedListNode<Entry>> _map;
     private readonly LinkedList<Entry> _order = new();
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
 
     public LruStringMemoizer(int capacity)
     {

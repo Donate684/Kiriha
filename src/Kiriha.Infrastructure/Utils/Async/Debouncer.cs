@@ -12,7 +12,7 @@ public class Debouncer : IDisposable
     private readonly TimeSpan _delay;
     private readonly Func<CancellationToken, Task> _action;
     private CancellationTokenSource? _cts;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _isDisposed;
 
     public Debouncer(TimeSpan delay, Func<CancellationToken, Task> action)
@@ -84,7 +84,7 @@ public class Debouncer<T> : IDisposable
     private readonly TimeSpan _delay;
     private readonly Func<T, CancellationToken, Task> _action;
     private CancellationTokenSource? _cts;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _isDisposed;
 
     public Debouncer(TimeSpan delay, Func<T, CancellationToken, Task> action)

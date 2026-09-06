@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace Kiriha.Mpv;
 
@@ -8,7 +9,7 @@ internal sealed class MpvPropertyCache
     private static readonly TimeSpan RuntimeInfoRefreshInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan TimePositionEventInterval = TimeSpan.FromMilliseconds(16);
 
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private PlaybackState _playbackState = new(0, 0, false, false, false);
     private double _lastPublishedTimePosition;
     private long _lastTimePositionTickMs;
