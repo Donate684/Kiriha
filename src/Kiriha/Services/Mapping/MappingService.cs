@@ -129,17 +129,14 @@ public partial class MappingService : IMappingService
         }
 
         // 4. User List Normalized Match
-        string normTitle = Normalize(cleanTitle);
-        string normSearchTitle = Normalize(searchTitle);
-
-        localMatch = index.FindNormalized(normSearchTitle, parsedEpisode, IsValidMatch);
+        localMatch = index.FindNormalized(normSearch, parsedEpisode, IsValidMatch);
 
         // Same season-aware guard as in step 3: never collapse a "Season 2+"
         // query down to the base title here, otherwise the normalized fallback
         // silently maps "Sousou no Frieren 2nd Season - 01" to the S1 entry.
-        if (localMatch == null && normSearchTitle != normTitle && parsedSeason <= 1)
+        if (localMatch == null && normSearch != normClean && parsedSeason <= 1)
         {
-            localMatch = index.FindNormalized(normTitle, parsedEpisode, IsValidMatch);
+            localMatch = index.FindNormalized(normClean, parsedEpisode, IsValidMatch);
         }
 
         if (localMatch != null && IsValidMatch(localMatch, parsedEpisode))
@@ -151,7 +148,7 @@ public partial class MappingService : IMappingService
         return null;
     }
 
-    private sealed class UserListIndex
+    public sealed class UserListIndex
     {
         private readonly Dictionary<int, AnimeEntity> _byId = new();
         private readonly Dictionary<string, List<AnimeEntity>> _exact = new(StringComparer.OrdinalIgnoreCase);

@@ -30,7 +30,7 @@ public class MediaMatchingPipeline
         _trackers = trackers;
     }
 
-    public async Task<MediaMatchResult> RunAsync(ParsedMedia media, List<AnimeEntity> userList)
+    public async Task<MediaMatchResult> RunAsync(ParsedMedia media, IReadOnlyList<AnimeEntity> userList)
     {
         if (_mappingService.IsNegativelyMapped(media.OriginalTitle) ||
             _mappingService.IsNegativelyMapped(media.AnimeTitle))
@@ -46,7 +46,15 @@ public class MediaMatchingPipeline
 
         if (malId.HasValue)
         {
-            var matched = userList.FirstOrDefault(x => x.Id == malId.Value);
+            AnimeEntity? matched = null;
+            for (int i = 0; i < userList.Count; i++)
+            {
+                if (userList[i].Id == malId.Value)
+                {
+                    matched = userList[i];
+                    break;
+                }
+            }
             if (matched == null)
             {
                 var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled);

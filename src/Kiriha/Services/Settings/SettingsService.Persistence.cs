@@ -63,7 +63,16 @@ public partial class SettingsService
                 EnsureDirectory();
                 var save = PrepareJsonForSave();
                 var json = EncryptForSave(save.Settings);
+
+                if (string.Equals(json, _lastSavedJson, StringComparison.Ordinal))
+                {
+                    MarkVersionsSaved(save.Versions);
+                    Log.Debug("Settings save skipped (async): content unchanged ({Path})", _settingsPath);
+                    return;
+                }
+
                 AtomicWrite(_settingsPath, json);
+                _lastSavedJson = json;
                 MarkVersionsSaved(save.Versions);
                 Log.Debug("Settings saved (async) to {Path}", _settingsPath);
             }).ConfigureAwait(false);
@@ -85,7 +94,16 @@ public partial class SettingsService
         EnsureDirectory();
         var save = PrepareJsonForSave();
         var json = EncryptForSave(save.Settings);
+
+        if (string.Equals(json, _lastSavedJson, StringComparison.Ordinal))
+        {
+            MarkVersionsSaved(save.Versions);
+            Log.Debug("Settings save skipped: content unchanged ({Path})", _settingsPath);
+            return;
+        }
+
         AtomicWrite(_settingsPath, json);
+        _lastSavedJson = json;
         MarkVersionsSaved(save.Versions);
         Log.Information("Settings saved to {Path}", _settingsPath);
     }

@@ -19,8 +19,6 @@ public sealed partial class MpvThumbnailer : IDisposable
 
     private readonly Lock _gate = new();
     private readonly SemaphoreSlim _captureGate = new(1, 1);
-    private readonly string _thumbnailDirectory;
-    private readonly FileStream _lockFile;
     private readonly Dictionary<int, MpvThumbnailCacheEntry> _cache = new();
     private IntPtr _handle;
     private string? _loadedPath;
@@ -34,10 +32,6 @@ public sealed partial class MpvThumbnailer : IDisposable
 
     public MpvThumbnailer()
     {
-        _thumbnailDirectory = Path.Combine(Path.GetTempPath(), "Kiriha", "timeline-thumbs", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_thumbnailDirectory);
-        _lockFile = new FileStream(Path.Combine(_thumbnailDirectory, ".lock"), FileMode.Create, FileAccess.Write, FileShare.Read);
-
         _handle = LibMpvNative.mpv_create();
         if (_handle == IntPtr.Zero)
             throw new InvalidOperationException("Failed to create mpv thumbnailer instance.");
@@ -69,15 +63,13 @@ public sealed partial class MpvThumbnailer : IDisposable
         SetOption("vf", $"lavfi=[scale=w={ThumbnailWidth}:h={ThumbnailHeight}:force_original_aspect_ratio=decrease:flags=bicubic,pad=w={ThumbnailWidth}:h={ThumbnailHeight}:x=(ow-iw)/2:y=(oh-ih)/2]");
         SetOption("demuxer-max-bytes", "16MiB");
         SetOption("demuxer-max-back-bytes", "4MiB");
-        SetOption("screenshot-format", "jpg");
-        SetOption("screenshot-jpeg-quality", "90");
 
         Check(LibMpvNative.mpv_initialize(_handle), "initialize mpv thumbnailer");
     }
 
     private CancellationTokenSource? _currentCaptureCts;
 
-    public async Task<string?> GetThumbnailAsync(string videoPath, double timeSeconds, CancellationToken externalCancellationToken)
+    public async Task<MpvThumbnailFrame?> GetThumbnailAsync(string videoPath, double timeSeconds, CancellationToken externalCancellationToken)
     {
         if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
             return null;
@@ -85,10 +77,10 @@ public sealed partial class MpvThumbnailer : IDisposable
         var bucket = ToBucket(timeSeconds);
         lock (_gate)
         {
-            if (_cache.TryGetValue(bucket, out var cached) && File.Exists(cached.Path))
+            if (_cache.TryGetValue(bucket, out var cached))
             {
                 cached.LastUsedUtc = DateTime.UtcNow;
-                return cached.Path;
+                return cached.Frame;
             }
         }
 
@@ -110,10 +102,10 @@ public sealed partial class MpvThumbnailer : IDisposable
             {
                 lock (_gate)
                 {
-                    if (_cache.TryGetValue(bucket, out var cached) && File.Exists(cached.Path))
+                    if (_cache.TryGetValue(bucket, out var cached))
                     {
                         cached.LastUsedUtc = DateTime.UtcNow;
-                        return cached.Path;
+                        return cached.Frame;
                     }
                 }
 
@@ -152,10 +144,6 @@ public sealed partial class MpvThumbnailer : IDisposable
                     LeaveActiveCall();
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // ignore
-            }
             finally
             {
                 _captureGate.Release();
@@ -163,17 +151,26 @@ public sealed partial class MpvThumbnailer : IDisposable
         }, cancellationToken);
     }
 
-
-
-    ~MpvThumbnailer()
+    private void SetOption(string name, string value)
     {
-        Dispose(false);
+        Check(LibMpvNative.mpv_set_option_string(_handle, name, value), $"set thumbnail option {name}");
+    }
+
+    private static void Check(int error, string operation)
+    {
+        if (error < 0)
+            throw new InvalidOperationException($"mpv thumbnailer failed to {operation}: {LibMpvNative.GetErrorString(error)}");
     }
 
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    ~MpvThumbnailer()
+    {
+        Dispose(false);
     }
 
     private void Dispose(bool disposing)
@@ -186,6 +183,7 @@ public sealed partial class MpvThumbnailer : IDisposable
                     return;
 
                 _disposed = true;
+                _cache.Clear();
                 if (_handle != IntPtr.Zero)
                 {
                     LibMpvNative.mpv_wakeup(_handle);
@@ -200,17 +198,6 @@ public sealed partial class MpvThumbnailer : IDisposable
 
             try { _captureGate?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Failed to dispose capture gate"); }
             try { _currentCaptureCts?.Cancel(); _currentCaptureCts?.Dispose(); } catch { }
-            try { _lockFile?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Failed to dispose lock file"); }
-            try
-            {
-                if (Directory.Exists(_thumbnailDirectory))
-                    Directory.Delete(_thumbnailDirectory, recursive: true);
-            }
-            catch (Exception ex)
-            {
-                Log.Debug(ex, "Failed to delete thumbnail directory during dispose");
-                // Temp cleanup is allowed to fail when an image is still being released by UI.
-            }
         }
         else
         {
@@ -226,6 +213,4 @@ public sealed partial class MpvThumbnailer : IDisposable
             }
         }
     }
-
-
 }

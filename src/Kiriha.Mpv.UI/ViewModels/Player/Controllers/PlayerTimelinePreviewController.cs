@@ -16,7 +16,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
     private CancellationTokenSource? _warmUpCts;
     private int _requestId;
     private int _previewBucket = -1;
-    private string? _previewImagePath;
+    private int _displayedBucket = -1;
 
     public PlayerTimelinePreviewController(PlayerOverlayViewModel overlay)
     {
@@ -77,17 +77,33 @@ public sealed class PlayerTimelinePreviewController : IDisposable
     {
         try
         {
-            var path = await thumbnailer.GetThumbnailAsync(videoUrl, timeSeconds, token);
-            if (token.IsCancellationRequested || requestId != _requestId || string.IsNullOrWhiteSpace(path))
+            // Debounce rapid scrub gestures so intermediate transient frames are not processed
+            await Task.Delay(50, token).ConfigureAwait(false);
+            if (token.IsCancellationRequested || requestId != _requestId)
+                return;
+
+            var frame = await thumbnailer.GetThumbnailAsync(videoUrl, timeSeconds, token);
+            if (token.IsCancellationRequested || requestId != _requestId || frame == null)
                 return;
 
             Bitmap? bitmap = null;
             try
             {
-                if (!File.Exists(path))
-                    return;
-
-                bitmap = new Bitmap(path);
+                var pinnedHandle = System.Runtime.InteropServices.GCHandle.Alloc(frame.BgraPixels, System.Runtime.InteropServices.GCHandleType.Pinned);
+                try
+                {
+                    bitmap = new Bitmap(
+                        Avalonia.Platform.PixelFormat.Bgra8888,
+                        Avalonia.Platform.AlphaFormat.Opaque,
+                        pinnedHandle.AddrOfPinnedObject(),
+                        new Avalonia.PixelSize(frame.Width, frame.Height),
+                        new Avalonia.Vector(96, 96),
+                        frame.Stride);
+                }
+                finally
+                {
+                    pinnedHandle.Free();
+                }
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
@@ -96,11 +112,11 @@ public sealed class PlayerTimelinePreviewController : IDisposable
                         if (requestId != _requestId)
                             return;
 
-                        if (string.Equals(_previewImagePath, path, StringComparison.Ordinal))
+                        if (_displayedBucket == bucket)
                             return;
 
                         _overlay.SetTimelinePreviewImage(bitmap);
-                        _previewImagePath = path;
+                        _displayedBucket = bucket;
                         bitmap = null;
                     }
                     finally
@@ -112,7 +128,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             catch (Exception ex)
             {
                 bitmap?.Dispose();
-                Serilog.Log.Debug(ex, "Failed to decode timeline preview image");
+                Serilog.Log.Debug(ex, "Failed to decode timeline preview frame");
             }
         }
         catch (OperationCanceledException)
@@ -128,6 +144,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
     {
         _requestId++;
         _previewBucket = -1;
+        _displayedBucket = -1;
         _thumbnailCts?.Cancel();
         _thumbnailCts?.Dispose();
         _thumbnailCts = null;
@@ -167,7 +184,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
         _warmUpCts?.Cancel();
         _warmUpCts?.Dispose();
         _warmUpCts = null;
-        _previewImagePath = null;
+        _displayedBucket = -1;
         _thumbnailer?.Dispose();
         _thumbnailer = null;
         _overlay.ClearTimelinePreview();

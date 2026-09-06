@@ -57,9 +57,45 @@ public class DetectionManager
         _regexExecutableRules = regexList.ToArray();
     }
 
+    private readonly List<(uint Pid, string ProcessName)> _processBuffer = new(350);
+
     public Task<(HashSet<string> RunningPlayers, ParsedMedia? Media)> DetectSessionAsync()
     {
         return Task.FromResult(DetectSession());
+    }
+
+    private List<AnisthesiaPlayer>? GetMatchingPlayers(string procName)
+    {
+        if (_exactExecutableMap.TryGetValue(procName, out var exactMatches))
+        {
+            return exactMatches;
+        }
+
+        if (_regexExecutableRules.Length > 0)
+        {
+            List<AnisthesiaPlayer>? matchingPlayers = null;
+            for (int r = 0; r < _regexExecutableRules.Length; r++)
+            {
+                if (_regexExecutableRules[r].Regex.IsMatch(procName))
+                {
+                    if (matchingPlayers == null)
+                    {
+                        matchingPlayers = _regexExecutableRules[r].PlayerList;
+                    }
+                    else
+                    {
+                        if (ReferenceEquals(matchingPlayers, _regexExecutableRules[r].PlayerList))
+                        {
+                            matchingPlayers = new List<AnisthesiaPlayer>(matchingPlayers);
+                        }
+                        matchingPlayers.Add(_regexExecutableRules[r].Player);
+                    }
+                }
+            }
+            return matchingPlayers;
+        }
+
+        return null;
     }
 
     public (HashSet<string> RunningPlayers, ParsedMedia? Media) DetectSession()
@@ -67,47 +103,19 @@ public class DetectionManager
         var running = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (!OperatingSystem.IsWindows()) return (running, null);
 
-        var processes = Process.GetProcesses();
+        var allowedProcesses = _settingsService.Current?.System?.Scrobbler?.AllowedProcesses;
+        var hasFilter = allowedProcesses != null && allowedProcesses.Count > 0;
         ParsedMedia? detectedMedia = null;
 
-        try
+        // Fast low-allocation path: query Windows toolhelp snapshot without allocating Process objects
+        if (WindowsProcessSnapshot.TryEnumerateProcesses(_processBuffer))
         {
-            var allowedProcesses = _settingsService.Current?.System?.Scrobbler?.AllowedProcesses;
-            var hasFilter = allowedProcesses != null && allowedProcesses.Count > 0;
-
-            foreach (var proc in processes)
+            for (int p = 0; p < _processBuffer.Count; p++)
             {
+                var (pid, procName) = _processBuffer[p];
                 try
                 {
-                    string procName = proc.ProcessName;
-                    List<AnisthesiaPlayer>? matchingPlayers = null;
-
-                    if (_exactExecutableMap.TryGetValue(procName, out var exactMatches))
-                    {
-                        matchingPlayers = exactMatches;
-                    }
-                    else if (_regexExecutableRules.Length > 0)
-                    {
-                        for (int r = 0; r < _regexExecutableRules.Length; r++)
-                        {
-                            if (_regexExecutableRules[r].Regex.IsMatch(procName))
-                            {
-                                if (matchingPlayers == null)
-                                {
-                                    matchingPlayers = _regexExecutableRules[r].PlayerList;
-                                }
-                                else
-                                {
-                                    if (ReferenceEquals(matchingPlayers, _regexExecutableRules[r].PlayerList))
-                                    {
-                                        matchingPlayers = new List<AnisthesiaPlayer>(matchingPlayers);
-                                    }
-                                    matchingPlayers.Add(_regexExecutableRules[r].Player);
-                                }
-                            }
-                        }
-                    }
-
+                    var matchingPlayers = GetMatchingPlayers(procName);
                     if (matchingPlayers == null || matchingPlayers.Count == 0) continue;
 
                     for (int i = 0; i < matchingPlayers.Count; i++)
@@ -115,11 +123,90 @@ public class DetectionManager
                         running.Add(matchingPlayers[i].Name);
                     }
 
-                    if (detectedMedia != null)
+                    if (detectedMedia != null) continue;
+
+                    IntPtr hWnd = IntPtr.Zero;
+                    bool hWndEvaluated = false;
+
+                    for (int i = 0; i < matchingPlayers.Count; i++)
                     {
-                        // Media already detected, only collecting running player names
-                        continue;
+                        var player = matchingPlayers[i];
+
+                        if (!hasFilter)
+                        {
+                            if (player.Type == PlayerType.WebBrowser) continue;
+                        }
+                        else if (allowedProcesses?.Contains(player.Name) != true)
+                        {
+                            continue;
+                        }
+
+                        ParsedMedia? result = null;
+                        foreach (var strategy in player.Strategies)
+                        {
+                            if (strategy == StrategyType.OpenFiles)
+                            {
+                                result = HandleEnumerationStrategy.Apply(player, pid);
+                            }
+                            else if (strategy == StrategyType.WindowTitle)
+                            {
+                                if (!hWndEvaluated)
+                                {
+                                    try
+                                    {
+                                        using var pObj = Process.GetProcessById((int)pid);
+                                        hWnd = pObj.MainWindowHandle;
+                                    }
+                                    catch { }
+                                    hWndEvaluated = true;
+                                }
+                                if (hWnd != IntPtr.Zero)
+                                {
+                                    result = WindowTitleStrategy.Apply(player, pid, hWnd);
+                                }
+                            }
+
+                            if (result != null)
+                            {
+                                if (IsJunk(result.AnimeTitle, player))
+                                {
+                                    result = null;
+                                    continue;
+                                }
+                                result.ProcessName = procName;
+                                result.Pid = pid;
+                                detectedMedia = result;
+                                break;
+                            }
+                        }
+
+                        if (detectedMedia != null) break;
                     }
+                }
+                catch { /* Access denied or process exited */ }
+            }
+
+            return (running, detectedMedia);
+        }
+
+        // Fallback for non-Windows or when Toolhelp32 snapshot fails
+        var processes = Process.GetProcesses();
+        try
+        {
+            foreach (var proc in processes)
+            {
+                try
+                {
+                    string procName = proc.ProcessName;
+                    var matchingPlayers = GetMatchingPlayers(procName);
+                    if (matchingPlayers == null || matchingPlayers.Count == 0) continue;
+
+                    for (int i = 0; i < matchingPlayers.Count; i++)
+                    {
+                        running.Add(matchingPlayers[i].Name);
+                    }
+
+                    if (detectedMedia != null) continue;
 
                     uint pid = (uint)proc.Id;
                     IntPtr hWnd = IntPtr.Zero;

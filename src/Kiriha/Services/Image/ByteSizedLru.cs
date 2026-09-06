@@ -10,7 +10,7 @@ namespace Kiriha.Services.Data.Image;
 /// than the entire budget are silently dropped instead of evicting everything
 /// on a single insert.
 /// </summary>
-internal sealed class ByteSizedLru<TKey, TVal>
+public sealed class ByteSizedLru<TKey, TVal>
     where TKey : notnull
     where TVal : class
 {
@@ -33,8 +33,11 @@ internal sealed class ByteSizedLru<TKey, TVal>
         {
             if (_map.TryGetValue(key, out var node))
             {
-                _order.Remove(node);
-                _order.AddFirst(node);
+                if (_order.First != node)
+                {
+                    _order.Remove(node);
+                    _order.AddFirst(node);
+                }
                 value = node.Value.Value;
                 return true;
             }
@@ -53,14 +56,21 @@ internal sealed class ByteSizedLru<TKey, TVal>
             if (_map.TryGetValue(key, out var existing))
             {
                 _used -= _sizer(existing.Value.Value);
-                _order.Remove(existing);
-                _map.Remove(key);
+                existing.Value = new Entry(key, value);
+                if (_order.First != existing)
+                {
+                    _order.Remove(existing);
+                    _order.AddFirst(existing);
+                }
+                _used += size;
             }
-
-            var node = new LinkedListNode<Entry>(new Entry(key, value));
-            _order.AddFirst(node);
-            _map[key] = node;
-            _used += size;
+            else
+            {
+                var node = new LinkedListNode<Entry>(new Entry(key, value));
+                _order.AddFirst(node);
+                _map[key] = node;
+                _used += size;
+            }
 
             while (_used > _budget && _order.Last is { } tail)
             {

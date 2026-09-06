@@ -23,6 +23,7 @@ public partial class SettingsService : IDisposable, ISettingsService
     private readonly string _settingsPath;
 
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private string? _lastSavedJson;
     private readonly Lock _stateLock = new();
     private long _uiVersion;
     private long _systemVersion;

@@ -1,13 +1,15 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace Kiriha.Mpv;
 
-internal static class ThumbnailTempCleaner
+/// <summary>
+/// One-shot cleaner for legacy temporary directories created by older versions of Kiriha.
+/// MpvThumbnailer now generates all frames purely in RAM with 0 bytes written to disk.
+/// </summary>
+public static class ThumbnailTempCleaner
 {
-    private static readonly TimeSpan FileAgeThreshold = TimeSpan.FromSeconds(10);
     public static void StartCleanupTask()
     {
         Task.Run(() =>
@@ -17,39 +19,13 @@ internal static class ThumbnailTempCleaner
                 var baseDir = Path.Combine(Path.GetTempPath(), "Kiriha", "timeline-thumbs");
                 if (Directory.Exists(baseDir))
                 {
-                    foreach (var dir in Directory.GetDirectories(baseDir))
-                    {
-                        try
-                        {
-                            var lockFilePath = Path.Combine(dir, ".lock");
-                            bool isLocked = false;
-
-                            if (File.Exists(lockFilePath))
-                            {
-                                try
-                                {
-                                    using var fs = new FileStream(lockFilePath, FileMode.Open, FileAccess.Write, FileShare.None);
-                                }
-                                catch (IOException)
-                                {
-                                    isLocked = true;
-                                }
-                            }
-                            else if (DateTime.UtcNow - Directory.GetCreationTimeUtc(dir) < FileAgeThreshold)
-                            {
-                                isLocked = true;
-                            }
-
-                            if (!isLocked)
-                            {
-                                Directory.Delete(dir, recursive: true);
-                            }
-                        }
-                        catch (Exception ex) { Log.Debug(ex, "Failed to clean up thumbnail directory: {Dir}", dir); }
-                    }
+                    Directory.Delete(baseDir, recursive: true);
                 }
             }
-            catch (Exception ex) { Log.Debug(ex, "Failed to enumerate root thumbnail directory"); }
+            catch
+            {
+                // Best effort cleanup only
+            }
         });
     }
 }

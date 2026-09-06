@@ -201,4 +201,31 @@ public sealed class AnimeEntityTests
         // Reset delegate
         AnimeEntityPresentation.GetUseRussianTitles = () => false;
     }
+
+    [Fact]
+    public void Presentation_IsLazyAndNotAllocatedInDefaultConstructor()
+    {
+        var item = new AnimeEntity { Title = "Lazy Test" };
+        Assert.False(item.IsPresentationCreated);
+
+        var presentation = item.Presentation;
+        Assert.NotNull(presentation);
+        Assert.True(item.IsPresentationCreated);
+        Assert.Same(presentation, item.Presentation);
+    }
+
+    [Fact]
+    public void Clone_ResetsPresentationInstance()
+    {
+        var item = new AnimeEntity { Id = 1, Title = "Original", Progress = 5 };
+        var originalPresentation = item.Presentation;
+        Assert.NotNull(originalPresentation);
+
+        var clone = item.Clone();
+        clone.Progress = 10;
+
+        Assert.NotSame(originalPresentation, clone.Presentation);
+        Assert.Equal(5, originalPresentation.EffectiveProgress);
+        Assert.Equal(10, clone.Presentation.EffectiveProgress);
+    }
 }

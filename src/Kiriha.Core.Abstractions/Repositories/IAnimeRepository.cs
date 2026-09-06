@@ -15,6 +15,7 @@ public interface IAnimeRepository
     bool IsRecentlyDeleted(int animeId);
     Task AddOrUpdateAnimeAsync(AnimeEntity anime);
     Task<List<AnimeEntity>> GetSnapshotAsync(MediaKind[] kinds);
+    Task<IReadOnlyList<AnimeEntity>> GetSnapshotAsync();
     System.Collections.ObjectModel.ObservableCollection<AnimeEntity> Collection { get; }
     void AddToCollection(AnimeEntity entity);
     Task ApplySyncBatchAsync(List<AnimeEntity> toRemove, List<System.Action> uiBatch);

@@ -7,6 +7,7 @@ public partial class AnimeEntity
     public AnimeEntity Clone()
     {
         var clone = (AnimeEntity)this.MemberwiseClone();
+        clone._presentation = null;
         clone.AlternativeTitles = new List<string>(AlternativeTitles);
         clone.Genres = new List<string>(Genres);
         clone.Studios = new List<string>(Studios);

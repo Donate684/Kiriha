@@ -126,7 +126,7 @@ public partial class TrackingService
             const int repoInitTimeoutMs = 5000;
             try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(repoInitTimeoutMs)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
-            var userList = await _uiDispatcher.InvokeAsync(() => _animeRepo.GetCollection().ToList());
+            var userList = await _animeRepo.GetSnapshotAsync();
 
             var result = await _pipeline.RunAsync(media, userList);
 

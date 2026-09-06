@@ -36,6 +36,9 @@ public static class LibMpvNative
     public static extern int mpv_command_async(IntPtr ctx, ulong reply_userdata, IntPtr args);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int mpv_command_node(IntPtr ctx, ref MpvNode args, out MpvNode result);
+
+    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mpv_set_property(IntPtr ctx, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int format, ref double data);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
@@ -107,6 +110,7 @@ public static class LibMpvNative
     public const int MPV_FORMAT_NODE = 6;
     public const int MPV_FORMAT_NODE_ARRAY = 7;
     public const int MPV_FORMAT_NODE_MAP = 8;
+    public const int MPV_FORMAT_BYTE_ARRAY = 9;
 
     public const int MPV_EVENT_NONE = 0;
     public const int MPV_EVENT_SHUTDOWN = 1;
@@ -254,4 +258,11 @@ public readonly struct MpvNodeList
     public readonly int Num;
     public readonly IntPtr Values;
     public readonly IntPtr Keys;
+
+    public MpvNodeList(int num, IntPtr values, IntPtr keys)
+    {
+        Num = num;
+        Values = values;
+        Keys = keys;
+    }
 }

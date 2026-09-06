@@ -15,12 +15,22 @@ public partial class AnimeSyncOrchestrator
 {
     private async Task ProcessSyncResults(List<AnimeEntity> apiList, List<AnimeEntity> currentItems, IProgress<string>? status, CancellationToken ct)
     {
-        var apiMap = apiList.ToDictionary(x => x.Id);
-        var existingMap = currentItems.ToDictionary(x => x.Id);
+        var apiMap = new Dictionary<int, AnimeEntity>(apiList.Count);
+        for (int i = 0; i < apiList.Count; i++) apiMap[apiList[i].Id] = apiList[i];
 
-        var toRemove = currentItems.Where(x => !apiMap.ContainsKey(x.Id)).ToList();
+        var existingMap = new Dictionary<int, AnimeEntity>(currentItems.Count);
+        for (int i = 0; i < currentItems.Count; i++) existingMap[currentItems[i].Id] = currentItems[i];
 
-        var uiBatch = new List<Action>();
+        var toRemove = new List<AnimeEntity>();
+        for (int i = 0; i < currentItems.Count; i++)
+        {
+            if (!apiMap.ContainsKey(currentItems[i].Id))
+            {
+                toRemove.Add(currentItems[i]);
+            }
+        }
+
+        var uiBatch = new List<Action>(50);
         int total = apiList.Count;
 
         for (int i = 0; i < total; i++)

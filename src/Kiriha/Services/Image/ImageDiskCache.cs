@@ -38,7 +38,6 @@ public class ImageDiskCache
                 var fileInfo = new FileInfo(candidatePath);
                 if (fileInfo.Length > 0)
                 {
-                    try { fileInfo.LastWriteTime = DateTime.UtcNow; } catch (Exception ex) { Log.Debug(ex, "Failed to update LastWriteTime for {FilePath}", candidatePath); }
                     localPath = candidatePath;
                 }
                 else

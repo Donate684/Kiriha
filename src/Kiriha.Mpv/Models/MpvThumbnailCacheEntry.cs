@@ -4,11 +4,11 @@ namespace Kiriha.Mpv;
 
 internal sealed class MpvThumbnailCacheEntry
 {
-    public MpvThumbnailCacheEntry(string path)
+    public MpvThumbnailCacheEntry(MpvThumbnailFrame frame)
     {
-        Path = path;
+        Frame = frame;
     }
 
-    public string Path { get; }
+    public MpvThumbnailFrame Frame { get; }
     public DateTime LastUsedUtc { get; set; } = DateTime.UtcNow;
 }

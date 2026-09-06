@@ -26,6 +26,7 @@ public partial class SettingsService
             var loaded = LoadSettingsFile(_settingsPath)
                 ?? throw new JsonException("Settings file contained null JSON");
             SetCurrent(loaded);
+            _lastSavedJson = EncryptForSave(loaded);
 
             Log.Information("Settings loaded from {Path} elapsedMs={ElapsedMs}", _settingsPath, sw.ElapsedMilliseconds);
         }

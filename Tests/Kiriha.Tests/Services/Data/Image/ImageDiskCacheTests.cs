@@ -56,7 +56,7 @@ public class ImageDiskCacheTests : IDisposable
     }
 
     [Fact]
-    public async Task ResolveLocalPathAsync_HttpUrlCached_ReturnsCachedPathAndUpdatesLastWriteTime()
+    public async Task ResolveLocalPathAsync_HttpUrlCached_ReturnsCachedPathWithoutModifyingLastWriteTime()
     {
         var cache = new ImageDiskCache(_cacheRoot, _downloader);
         var url = "http://example.com/image.jpg";
@@ -64,14 +64,15 @@ public class ImageDiskCacheTests : IDisposable
         var cachedFile = Path.Combine(_cacheRoot, fileName);
         
         File.WriteAllText(cachedFile, "data");
-        var oldDate = DateTime.Now.AddDays(-2);
-        File.SetLastWriteTime(cachedFile, oldDate);
+        var originalDate = DateTime.Now.AddDays(-2);
+        File.SetLastWriteTime(cachedFile, originalDate);
 
         var result = await cache.ResolveLocalPathAsync(url);
 
         Assert.Equal(cachedFile, result);
-        var newDate = File.GetLastWriteTime(cachedFile);
-        Assert.True(newDate > oldDate);
+        var afterDate = File.GetLastWriteTime(cachedFile);
+        // LastWriteTime should NOT be touched during read (zero disk writes)
+        Assert.Equal(originalDate, afterDate);
     }
 
     [Fact]

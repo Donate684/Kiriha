@@ -31,13 +31,26 @@ public sealed class BulkObservableCollection<T> : ObservableCollection<T>
         if (items == null) return;
         CheckReentrancy();
 
-        bool any = false;
-        foreach (var item in items)
+        if (Items is List<T> list)
         {
-            Items.Add(item);
-            any = true;
+            int initialCount = list.Count;
+            if (items is ICollection<T> col)
+            {
+                list.Capacity = Math.Max(list.Capacity, list.Count + col.Count);
+            }
+            list.AddRange(items);
+            if (list.Count == initialCount) return;
         }
-        if (!any) return;
+        else
+        {
+            bool any = false;
+            foreach (var item in items)
+            {
+                Items.Add(item);
+                any = true;
+            }
+            if (!any) return;
+        }
 
         OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
         OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
@@ -51,11 +64,28 @@ public sealed class BulkObservableCollection<T> : ObservableCollection<T>
     public void Reset(IEnumerable<T> items)
     {
         CheckReentrancy();
-        Items.Clear();
-        if (items != null)
+
+        if (Items is List<T> list)
         {
-            foreach (var item in items) Items.Add(item);
+            list.Clear();
+            if (items != null)
+            {
+                if (items is ICollection<T> col)
+                {
+                    list.Capacity = Math.Max(list.Capacity, col.Count);
+                }
+                list.AddRange(items);
+            }
         }
+        else
+        {
+            Items.Clear();
+            if (items != null)
+            {
+                foreach (var item in items) Items.Add(item);
+            }
+        }
+
         OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
         OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));

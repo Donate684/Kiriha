@@ -9,9 +9,15 @@ public partial class AnimeEntity
 {
     private string _fallbackSeason = string.Empty;
 
+    internal AnimeEntityPresentation? _presentation;
+
     [NotMapped]
     [JsonIgnore]
-    public AnimeEntityPresentation Presentation { get; }
+    public bool IsPresentationCreated => _presentation != null;
+
+    [NotMapped]
+    [JsonIgnore]
+    public AnimeEntityPresentation Presentation => _presentation ??= new AnimeEntityPresentation(this);
 
     [NotMapped]
     [JsonIgnore]
@@ -27,15 +33,14 @@ public partial class AnimeEntity
 
     public AnimeEntity()
     {
-        Presentation = new AnimeEntityPresentation(this);
     }
 
     protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
     {
         base.OnPropertyChanged(propertyName);
-        if (propertyName == "Presentation")
+        if (propertyName == "Presentation" || string.IsNullOrEmpty(propertyName))
         {
-            Presentation?.RaiseAll();
+            _presentation?.RaiseAll();
         }
     }
 

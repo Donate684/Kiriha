@@ -15,9 +15,6 @@ namespace Kiriha.Services.Data.Repository;
 
 public sealed partial class UserAnimeRepository
 {
-    private static readonly TimeSpan ProgressCheckpointInterval = TimeSpan.FromSeconds(10);
-    private long _lastProgressCheckpointTicks;
-
     public async Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
@@ -80,8 +77,6 @@ public sealed partial class UserAnimeRepository
             await UpsertAsync(item);
             return;
         }
-
-        await CheckpointProgressWriteAsync(context, item);
     }
 
     public async Task UpdateScoreAsync(AnimeEntity item, string score)
@@ -118,19 +113,5 @@ public sealed partial class UserAnimeRepository
         {
             Log.Debug("Skipping metadata-only update for non-user anime {Title} (ID: {Id})", item.Title, item.Id);
         }
-    }
-
-    private async Task CheckpointProgressWriteAsync(AppDbContext context, AnimeEntity item)
-    {
-        var nowTicks = DateTime.UtcNow.Ticks;
-        var lastTicks = Interlocked.Read(ref _lastProgressCheckpointTicks);
-        if (lastTicks != 0 && nowTicks - lastTicks < ProgressCheckpointInterval.Ticks)
-            return;
-
-        if (Interlocked.CompareExchange(ref _lastProgressCheckpointTicks, nowTicks, lastTicks) != lastTicks)
-            return;
-
-        try { await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(PASSIVE);"); }
-        catch (System.Exception ex) { Log.Warning(ex, "wal_checkpoint(PASSIVE) failed after updating progress for {Title}", item.Title); }
     }
 }

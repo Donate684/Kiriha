@@ -43,7 +43,8 @@ internal static class DataServicesRegistration
         services.AddDbContextFactory<AppDbContext>(options =>
         {
             options.UseSqlite($"Data Source={dbPath}")
-                   .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                   .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                   .AddInterceptors(new SqlitePragmaConnectionInterceptor());
 #if DEBUG
             // Sensitive data logging leaks parameter values (incl. tokens stored on entities)
             // into the EF logger. Keep it strictly out of release builds.

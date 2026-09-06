@@ -33,7 +33,11 @@ partial class Program
 
         if (enableLogging)
         {
-            loggerConfig.WriteTo.File(logTemplate, rollingInterval: RollingInterval.Day);
+            loggerConfig.WriteTo.File(
+                logTemplate,
+                rollingInterval: RollingInterval.Day,
+                buffered: true,
+                flushToDiskInterval: TimeSpan.FromSeconds(5));
         }
 
         Log.Logger = loggerConfig.CreateLogger();

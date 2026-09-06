@@ -82,7 +82,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             var snapshot = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
             await _userAnimeRepo.SyncFromRemoteAsync(snapshot, [MediaKind.Anime], ct);
 
-            var fullList = await _uiDispatcher.InvokeAsync(() => _animeRepository.Collection.ToList());
+            var fullList = await _animeRepository.GetSnapshotAsync();
             await Task.Run(() => _recognitionCache.BuildIndex(fullList));
 
             WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());

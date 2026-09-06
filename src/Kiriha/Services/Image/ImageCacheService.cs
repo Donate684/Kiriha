@@ -31,6 +31,7 @@ public class ImageCacheService : IDisposable
     private readonly ImageCacheCleanup _cleanup;
 
     private readonly SemaphoreSlim _decodeSemaphore = new(12, 12);
+    private readonly ConcurrentDictionary<string, string> _urlToPathMap = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly BitmapMemoryCache _memCache = new(
         encodedBudgetBytes: 32L * 1024 * 1024,
@@ -61,9 +62,21 @@ public class ImageCacheService : IDisposable
 
     public async Task<Bitmap?> LoadBitmapAsync(string url, int decodeWidth = 300, CancellationToken ct = default)
     {
+        if (string.IsNullOrEmpty(url)) return null;
+
+        // In-memory fast path: if URL was already mapped to a local file and is present in L1 memory cache,
+        // return instantly without any disk checks or hashing.
+        if (_urlToPathMap.TryGetValue(url, out var knownPath))
+        {
+            if (_memCache.TryRentBitmap(knownPath, decodeWidth, out var memRented) && memRented != null)
+                return memRented;
+        }
+
         string localPath = await _diskCache.ResolveLocalPathAsync(url, ct);
 
-        if (string.IsNullOrEmpty(localPath) || !File.Exists(localPath)) return null;
+        if (string.IsNullOrEmpty(localPath)) return null;
+
+        _urlToPathMap[url] = localPath;
 
         if (_memCache.TryRentBitmap(localPath, decodeWidth, out var rented) && rented != null)
             return rented;
@@ -111,7 +124,11 @@ public class ImageCacheService : IDisposable
         return _cleanup.PerformSmartCleanupAsync(activePaths);
     }
 
-    public void ClearMemoryCache() => _memCache.Clear();
+    public void ClearMemoryCache()
+    {
+        _urlToPathMap.Clear();
+        _memCache.Clear();
+    }
 
     public virtual Task<string> GetLocalPathOrDownload(string url, CancellationToken ct = default)
     {
@@ -122,6 +139,7 @@ public class ImageCacheService : IDisposable
     {
         _downloader.Dispose();
         _decodeSemaphore.Dispose();
+        _urlToPathMap.Clear();
         _memCache.Clear();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Services.Data.Core;
 using System;
 using System.Diagnostics;
@@ -23,7 +23,7 @@ namespace Kiriha.Services.Data.Core;
 ///     re-create tables and failing.
 ///   * WAL pragmas applied in a single batched statement (one round-trip on
 ///     cold start). <c>synchronous=NORMAL</c> is the safe-default for WAL —
-///     durable across process kill — and <c>wal_autocheckpoint=200</c> caps
+///     durable across process kill — and <c>wal_autocheckpoint=1000</c> caps
 ///     how much the WAL can outgrow the main file before being folded back.
 /// </summary>
 public sealed class DatabaseInitializer : IDatabaseInitializer
@@ -62,7 +62,7 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
                 // WAL + sane defaults in a single batch (one round-trip on cold start).
                 stage.Restart();
                 await context.Database.ExecuteSqlRawAsync(
-                    "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=200;");
+                    "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000;");
                 Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
                 Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);

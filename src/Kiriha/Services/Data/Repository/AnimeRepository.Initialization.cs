@@ -26,7 +26,7 @@ public partial class AnimeRepository
             Log.Information("StartupTiming: anime repo waited for database elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
             stage.Restart();
-            var cached = (await _userAnimeRepo.GetAllAsync()).Select(x => x.ToViewModel()).ToList();
+            var cached = await _userAnimeRepo.GetAllAsync();
             Log.Information(
                 "StartupTiming: cached anime loaded count={Count} elapsedMs={ElapsedMs}",
                 cached?.Count ?? 0,
@@ -39,7 +39,12 @@ public partial class AnimeRepository
                 {
                     Collection.Reset(cached);
                     _idIndex.Clear();
-                    foreach (var item in cached) _idIndex[item.Id] = item;
+                    _idIndex.EnsureCapacity(cached.Count);
+                    for (int i = 0; i < cached.Count; i++)
+                    {
+                        var item = cached[i];
+                        _idIndex[item.Id] = item;
+                    }
                 }
                 else
                 {
@@ -48,7 +53,14 @@ public partial class AnimeRepository
                 }
             });
 
-            await Task.Run(() => _recognitionCache.BuildIndex(Collection));
+            if (cached != null && cached.Count > 0)
+            {
+                await Task.Run(() => _recognitionCache.BuildIndex(cached));
+            }
+            else
+            {
+                _recognitionCache.Clear();
+            }
 
             Log.Information(
                 "StartupTiming: cached anime applied to UI collection count={Count} elapsedMs={ElapsedMs}",

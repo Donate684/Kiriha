@@ -2,8 +2,10 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Core;
 using Kiriha.Core.Domain.Constants;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -45,6 +47,7 @@ public sealed class SeasonalCacheStore
     // concurrent renames into the same destination is a coin flip on NTFS.
     private readonly Dictionary<string, SemaphoreSlim> _writeLocks = new();
     private readonly Lock _writeLocksGate = new();
+    private readonly ConcurrentDictionary<string, string> _lastSavedHashes = new(StringComparer.OrdinalIgnoreCase);
 
     public SeasonalCacheStore()
     {
@@ -64,6 +67,7 @@ public sealed class SeasonalCacheStore
         if (!Directory.Exists(_root)) return results;
 
         var threshold = DateTime.UtcNow - Ttl;
+        Span<byte> hashBytes = stackalloc byte[32];
 
         foreach (var file in Directory.EnumerateFiles(_root, "*.json"))
         {
@@ -81,11 +85,11 @@ public sealed class SeasonalCacheStore
                 var name = Path.GetFileNameWithoutExtension(file);
                 if (!TryParseKey(name, out int year, out string season)) continue;
 
-                List<AnimeEntity>? items;
-                using (var stream = File.OpenRead(file))
-                {
-                    items = JsonSerializer.Deserialize<List<AnimeEntity>>(stream, JsonOptions);
-                }
+                var fileBytes = File.ReadAllBytes(file);
+                SHA256.HashData(fileBytes, hashBytes);
+                _lastSavedHashes[MakeKey(year, season)] = Convert.ToHexString(hashBytes);
+
+                var items = JsonSerializer.Deserialize<List<AnimeEntity>>(fileBytes, JsonOptions);
                 if (items == null || items.Count == 0) continue;
 
                 results.Add((year, season, items));
@@ -119,12 +123,21 @@ public sealed class SeasonalCacheStore
             {
                 try
                 {
-                    Directory.CreateDirectory(_root);
-                    using (var stream = File.Create(tmpPath))
+                    var bytes = JsonSerializer.SerializeToUtf8Bytes(items, JsonOptions);
+                    Span<byte> hashBytes = stackalloc byte[32];
+                    SHA256.HashData(bytes, hashBytes);
+                    var hash = Convert.ToHexString(hashBytes);
+
+                    if (_lastSavedHashes.TryGetValue(key, out var lastHash) && string.Equals(hash, lastHash, StringComparison.Ordinal))
                     {
-                        JsonSerializer.Serialize(stream, items, JsonOptions);
+                        Log.Debug("SeasonalCacheStore: cache unchanged for {Key}, skipped write", key);
+                        return;
                     }
+
+                    Directory.CreateDirectory(_root);
+                    File.WriteAllBytes(tmpPath, bytes);
                     File.Move(tmpPath, finalPath, overwrite: true);
+                    _lastSavedHashes[key] = hash;
                 }
                 catch (Exception ex)
                 {

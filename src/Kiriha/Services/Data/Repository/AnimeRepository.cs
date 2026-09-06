@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Mapping;
 using System;
 using System.Collections.Generic;
@@ -36,6 +36,9 @@ public partial class AnimeRepository : IAnimeRepository
     public Task InitializationTask => _initTcs.Task;
     public bool IsInitializing => Volatile.Read(ref _initStarted) == 1 && !_initTcs.Task.IsCompleted;
 
+    private readonly Lock _snapshotLock = new();
+    private IReadOnlyList<AnimeEntity>? _cachedSnapshot;
+
     public BulkObservableCollection<AnimeEntity> Collection { get; } = new();
     System.Collections.ObjectModel.ObservableCollection<AnimeEntity> IAnimeRepository.Collection => Collection;
 
@@ -56,6 +59,29 @@ public partial class AnimeRepository : IAnimeRepository
         _backgroundTasks = backgroundTasks;
         _uiDispatcher = uiDispatcher;
         _recognitionCache = recognitionCache;
+
+        Collection.CollectionChanged += (s, e) =>
+        {
+            lock (_snapshotLock)
+            {
+                _cachedSnapshot = null;
+            }
+        };
+    }
+
+    public async Task<IReadOnlyList<AnimeEntity>> GetSnapshotAsync()
+    {
+        lock (_snapshotLock)
+        {
+            if (_cachedSnapshot != null) return _cachedSnapshot;
+        }
+
+        var snapshot = await _uiDispatcher.InvokeAsync(() => Collection.ToList());
+        lock (_snapshotLock)
+        {
+            _cachedSnapshot ??= snapshot;
+            return _cachedSnapshot;
+        }
     }
 
     public async Task ApplySyncBatchAsync(List<AnimeEntity> toRemove, List<Action> uiBatch)
