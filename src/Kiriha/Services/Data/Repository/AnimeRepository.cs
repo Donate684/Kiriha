@@ -31,6 +31,7 @@ public partial class AnimeRepository : IAnimeRepository
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted;
     private readonly Dictionary<int, CancellationTokenSource> _recentlyDeletedIds = new();
+    private readonly Lock _recentlyDeletedLock = new();
     private readonly Dictionary<int, AnimeEntity> _idIndex = new();
 
     public Task InitializationTask => _initTcs.Task;

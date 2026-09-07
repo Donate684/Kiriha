@@ -68,7 +68,18 @@ public static class PlayerProcessBridge
         string? titleEn,
         string? episodeText)
     {
-        TryForward([
+        ForwardMetadata(originalTitle, animeId, titleRu, titleEn, titleRomaji: null, episodeText);
+    }
+
+    public static void ForwardMetadata(
+        string originalTitle,
+        int animeId,
+        string? titleRu,
+        string? titleEn,
+        string? titleRomaji,
+        string? episodeText)
+    {
+        string[] args = [
             "--player",
             UpdateMetadataArg,
             "--original-title",
@@ -79,8 +90,21 @@ public static class PlayerProcessBridge
             titleRu ?? string.Empty,
             "--title-en",
             titleEn ?? string.Empty,
+            "--title-romaji",
+            titleRomaji ?? string.Empty,
             "--episode",
             episodeText ?? string.Empty
-        ], timeoutMs: 100);
+        ];
+
+        Task.Run(async () =>
+        {
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                if (TryForward(args, timeoutMs: 1000))
+                    return;
+
+                try { await Task.Delay(100).ConfigureAwait(false); } catch { }
+            }
+        });
     }
 }

@@ -76,7 +76,7 @@ namespace AnitomySharp
                 if (token.Category != Token.TokenCategory.Unknown) continue;
 
                 var word = token.Content;
-                word = word.Trim(" -".ToCharArray());
+                word = word.Trim([' ', '-']);
                 if (string.IsNullOrEmpty(word)) continue;
 
                 // Don't bother if the word is a number that cannot be CRC

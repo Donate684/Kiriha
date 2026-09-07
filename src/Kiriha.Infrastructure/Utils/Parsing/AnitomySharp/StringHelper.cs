@@ -50,7 +50,12 @@ namespace AnitomySharp
         /// </summary>
         public static bool IsHexadecimalString(string str)
         {
-            return !string.IsNullOrEmpty(str) && str.All(IsHexadecimalChar);
+            if (string.IsNullOrEmpty(str)) return false;
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (!IsHexadecimalChar(str[i])) return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -60,8 +65,12 @@ namespace AnitomySharp
         {
             if (string.IsNullOrEmpty(str)) return false;
 
-            var length = (double)str.Length;
-            return str.Where(IsLatinChar).Count() / length >= 0.5;
+            int latinCount = 0;
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (IsLatinChar(str[i])) latinCount++;
+            }
+            return (double)latinCount / str.Length >= 0.5;
         }
 
         /// <summary>
@@ -69,7 +78,12 @@ namespace AnitomySharp
         /// </summary>
         public static bool IsNumericString(string str)
         {
-            return str.All(char.IsDigit);
+            if (string.IsNullOrEmpty(str)) return false;
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (!char.IsDigit(str[i])) return false;
+            }
+            return true;
         }
 
         /// <summary>

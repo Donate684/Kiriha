@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,8 +20,8 @@ public partial class HistoryViewModel
         {
             var collection = _animeRepo.Collection;
             var posterMap = collection
-                .GroupBy(x => x.Id)
-                .ToDictionary(g => g.Key, g => g.First());
+                .DistinctBy(x => x.Id)
+                .ToDictionary(x => x.Id);
             foreach (var item in _rawItems)
             {
                 if (posterMap.TryGetValue(item.AnimeId, out var anime))

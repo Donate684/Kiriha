@@ -208,7 +208,7 @@ namespace AnitomySharp
         {
             if (StringHelper.IsNumericString(word)) return false;
 
-            word = word.Trim(" -".ToCharArray());
+            word = word.Trim([' ', '-']);
 
             var numericFront = char.IsDigit(word[0]);
             var numericBack = char.IsDigit(word[word.Length - 1]);
@@ -394,9 +394,15 @@ namespace AnitomySharp
         private bool MatchPartialEpisodePattern(string word, Token token)
         {
             if (string.IsNullOrEmpty(word)) return false;
-            var foundIdx = Enumerable.Range(0, word.Length)
-              .DefaultIfEmpty(word.Length)
-              .FirstOrDefault(value => !char.IsDigit(word[value]));
+            int foundIdx = word.Length;
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (!char.IsDigit(word[i]))
+                {
+                    foundIdx = i;
+                    break;
+                }
+            }
             var suffixLength = word.Length - foundIdx;
 
             bool IsValidSuffix(int c) => c >= 'A' && c <= 'C' || c >= 'a' && c <= 'c';
@@ -461,7 +467,7 @@ namespace AnitomySharp
             // All patterns contain at least one non-numeric character
             if (StringHelper.IsNumericString(word)) return false;
 
-            word = word.Trim(" -".ToCharArray());
+            word = word.Trim([' ', '-']);
 
             var numericFront = char.IsDigit(word[0]);
             var numericBack = char.IsDigit(word[word.Length - 1]);

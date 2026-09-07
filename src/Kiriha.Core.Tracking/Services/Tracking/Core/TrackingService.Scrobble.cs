@@ -90,7 +90,7 @@ public partial class TrackingService
         {
             ParsedMedia? prev;
             lock (_state) prev = _currentMedia;
-            if (prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode)
+            if (prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode && string.Equals(prev.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase))
             {
                 if (HandleSameMediaUpdate(prev, media)) return;
             }
@@ -150,7 +150,29 @@ public partial class TrackingService
     {
         if (ReferenceEquals(a, b)) return true;
         if (a == null || b == null) return false;
-        return a.AnimeTitle == b.AnimeTitle && a.Episode == b.Episode;
+        return a.AnimeTitle == b.AnimeTitle && a.Episode == b.Episode && string.Equals(a.OriginalTitle, b.OriginalTitle, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void NotifyCurrentMediaMetadataUpdated(AnimeEntity matched)
+    {
+        ParsedMedia? media;
+        lock (_state)
+        {
+            if (_matchedAnime == null || _matchedAnime.Id != matched.Id)
+                return;
+
+            _matchedAnime = matched;
+            media = _currentMedia;
+        }
+
+        if (media != null)
+        {
+            var effectiveMedia = (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
+                ? media.WithEpisode("1")
+                : media;
+
+            NotifyPlayerMetadata(effectiveMedia, matched);
+        }
     }
 
     private static void NotifyPlayerMetadata(ParsedMedia media, AnimeEntity matched)
@@ -161,8 +183,9 @@ public partial class TrackingService
         PlayerProcessBridge.ForwardMetadata(
             media.OriginalTitle,
             matched.Id,
-            matched.RussianTitle ?? matched.Title,
-            matched.EnglishTitle ?? matched.Title,
+            matched.RussianTitle,
+            matched.EnglishTitle,
+            matched.Title,
             media.Episode);
     }
 

@@ -1,11 +1,12 @@
 using System;
+using System.Buffers;
 
 namespace Kiriha;
 
 partial class Program
 {
-    private static readonly string[] SensitiveQueryKeys = { "code", "token", "access_token", "refresh_token", "client_secret" };
-    private static readonly char[] SensitiveArgSeparators = { '&', ' ', '?', '#' };
+    private static readonly string[] SensitiveQueryKeys = ["code", "token", "access_token", "refresh_token", "client_secret"];
+    private static readonly SearchValues<char> SensitiveArgSeparators = SearchValues.Create("& ?#");
 
     /// <summary>
     /// Masks OAuth-sensitive query parameters in command-line arguments so they don't
@@ -23,9 +24,9 @@ partial class Program
             {
                 var idx = a.IndexOf(key + "=", StringComparison.OrdinalIgnoreCase);
                 if (idx < 0) continue;
-                var end = a.IndexOfAny(SensitiveArgSeparators, idx);
-                if (end < 0) end = a.Length;
-                a = a.Substring(0, idx + key.Length + 1) + "***" + (end < a.Length ? a.Substring(end) : "");
+                var endRel = a.AsSpan(idx).IndexOfAny(SensitiveArgSeparators);
+                var end = endRel < 0 ? a.Length : idx + endRel;
+                a = string.Concat(a.AsSpan(0, idx + key.Length + 1), "***", a.AsSpan(end));
             }
             masked[i] = a;
         }

@@ -1,4 +1,4 @@
-﻿using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Data.Settings;
 using Kiriha.Infrastructure.Player;
 using System;
 using System.Linq;
@@ -52,13 +52,14 @@ public sealed partial class PlayerModeCoordinator
         var originalTitle = GetArgValue(args, "--original-title") ?? string.Empty;
         var titleRu = GetArgValue(args, "--title-ru") ?? string.Empty;
         var titleEn = GetArgValue(args, "--title-en") ?? string.Empty;
+        var titleRomaji = GetArgValue(args, "--title-romaji") ?? string.Empty;
         var episodeText = GetArgValue(args, "--episode") ?? string.Empty;
         int? animeId = int.TryParse(GetArgValue(args, "--anime-id"), out var parsedAnimeId) ? parsedAnimeId : null;
 
         if (_app.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
-        var metadata = new PlayerMediaMetadata(originalTitle, titleRu, titleEn, episodeText, animeId);
+        var metadata = new PlayerMediaMetadata(originalTitle, titleRu, titleEn, episodeText, animeId, titleRomaji);
         var playerWindows = desktop.Windows.OfType<PlayerWindow>().ToArray();
         var updated = false;
 
@@ -75,6 +76,11 @@ public sealed partial class PlayerModeCoordinator
         }
 
         if (!updated && playerWindows.LastOrDefault()?.DataContext is PlayerViewModel fallbackVm)
-            fallbackVm.ApplyExternalMetadata(metadata);
+        {
+            if (fallbackVm.MatchesOriginalTitle(originalTitle) || string.IsNullOrEmpty(fallbackVm.AnimeTitleEn))
+            {
+                fallbackVm.ApplyExternalMetadata(metadata);
+            }
+        }
     }
 }

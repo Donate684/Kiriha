@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Tracking.Sync;
+using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services.Data.Core;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.Data.Repository;
@@ -65,8 +65,8 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
             {
                 var vm = (SeasonalViewModel)r;
                 var userStore = vm._animeRepo.Collection
-                    .GroupBy(x => x.Id)
-                    .ToDictionary(x => x.Key, x => x.First().Status);
+                    .DistinctBy(x => x.Id)
+                    .ToDictionary(x => x.Id, x => x.Status);
                 vm.UpdateUserList(userStore);
             });
         });

@@ -101,7 +101,7 @@ public partial class TrackingService
         // Check if it's the same media
         ParsedMedia? prev;
         lock (_state) prev = _currentMedia;
-        if (!forceMatch && prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode)
+        if (!forceMatch && prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode && string.Equals(prev.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase))
         {
             if (HandleSameMediaUpdate(prev, media)) return;
         }

@@ -1,4 +1,4 @@
-﻿using Kiriha.Models;
+using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -49,11 +49,11 @@ public partial class OverviewSectionViewModel : ViewModelBase
     private void AddStatusDistribution(IReadOnlyCollection<AnimeEntity> items)
     {
         var groups = items
-            .GroupBy(x => x.Status)
+            .CountBy(x => x.Status)
             .Select(x => new
             {
                 Status = x.Key,
-                Count = x.Count()
+                Count = x.Value
             })
             .OrderByDescending(x => x.Count)
             .ToList();

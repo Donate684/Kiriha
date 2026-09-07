@@ -16,8 +16,8 @@ public partial class TastesSectionViewModel
     {
         var groups = values
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .GroupBy(x => x.Trim())
-            .Select(x => new { Label = x.Key, Count = x.Count() })
+            .CountBy(x => x.Trim())
+            .Select(x => new { Label = x.Key, Count = x.Value })
             .OrderByDescending(x => x.Count)
             .ThenBy(x => x.Label)
             .Take(take)

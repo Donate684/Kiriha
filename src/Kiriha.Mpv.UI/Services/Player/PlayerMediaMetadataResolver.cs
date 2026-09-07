@@ -78,13 +78,14 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
             }
 
             return match == null
-                ? new PlayerMediaMetadata(originalTitle, extractedTitle, string.Empty, episodeText, null)
+                ? new PlayerMediaMetadata(originalTitle, extractedTitle, string.Empty, episodeText, null, extractedTitle)
                 : new PlayerMediaMetadata(
                     originalTitle,
                     match.RussianTitle ?? match.Title ?? extractedTitle,
                     match.EnglishTitle ?? match.Title ?? string.Empty,
                     episodeText,
-                    match.Id);
+                    match.Id,
+                    match.Title ?? extractedTitle);
         }
         catch (Exception ex)
         {

@@ -178,13 +178,14 @@ public static class SmartTrackAutoloader
 
     private static string NormalizeForConfidence(string input)
     {
-        var chars = input.ToCharArray();
-        for (int i = 0; i < chars.Length; i++)
+        return string.Create(input.Length, input, static (span, state) =>
         {
-            if (!char.IsLetterOrDigit(chars[i]))
-                chars[i] = ' ';
-        }
-        return new string(chars).ToLowerInvariant();
+            for (int i = 0; i < state.Length; i++)
+            {
+                char c = state[i];
+                span[i] = char.IsLetterOrDigit(c) ? char.ToLowerInvariant(c) : ' ';
+            }
+        });
     }
 
     private static IEnumerable<string> EnumerateFilesWithDepth(string path, int maxDepth)

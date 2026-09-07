@@ -36,7 +36,7 @@ public sealed class PlayerCommandServer : IDisposable
                 pipe = new NamedPipeServerStream(
                     PlayerProcessBridge.PipeName,
                     PipeDirection.In,
-                    1,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous);
 

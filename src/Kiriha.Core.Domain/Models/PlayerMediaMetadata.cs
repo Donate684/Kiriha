@@ -5,7 +5,8 @@ public sealed record PlayerMediaMetadata(
     string TitleRu,
     string TitleEn,
     string EpisodeText,
-    int? AnimeId)
+    int? AnimeId,
+    string TitleRomaji = "")
 {
     public static PlayerMediaMetadata FromVideoPath(string videoPath)
     {
@@ -13,6 +14,6 @@ public sealed record PlayerMediaMetadata(
             ? string.Empty
             : System.IO.Path.GetFileNameWithoutExtension(videoPath);
 
-        return new PlayerMediaMetadata(fallbackTitle, fallbackTitle, string.Empty, string.Empty, null);
+        return new PlayerMediaMetadata(fallbackTitle, fallbackTitle, string.Empty, string.Empty, null, fallbackTitle);
     }
 }

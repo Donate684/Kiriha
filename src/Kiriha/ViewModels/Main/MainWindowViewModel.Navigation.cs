@@ -83,8 +83,8 @@ public partial class MainWindowViewModel
 
         var itemsSnapshot = animeList.AnimeItems.ToArray();
         var userStore = await Task.Run(() => itemsSnapshot
-            .GroupBy(x => x.Id)
-            .ToDictionary(x => x.Key, x => x.First().Status));
+            .DistinctBy(x => x.Id)
+            .ToDictionary(x => x.Id, x => x.Status));
 
         seasonal.UpdateUserList(userStore);
         // Trigger the initial Shikimori/MAL load on the very first navigation

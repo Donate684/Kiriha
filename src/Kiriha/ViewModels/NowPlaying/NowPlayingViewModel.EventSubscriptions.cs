@@ -70,6 +70,7 @@ public partial class NowPlayingViewModel
         try
         {
             await _shikiMetadataService.EnsureLocalizedAsync(anime, _disposeCts.Token);
+            _trackingService.NotifyCurrentMediaMetadataUpdated(anime);
         }
         catch (OperationCanceledException)
         {

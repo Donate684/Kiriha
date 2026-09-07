@@ -15,6 +15,7 @@ public partial class MappingService
     /// "Dota Dragons Blood" → "Kuutei Dragons" (~23 points).
     /// </summary>
     private const float MinConfidenceScore = 50f;
+    private static readonly string[] CriticalKeywords = ["movie", "ova", "oad", "special", "ii", "2", "iii", "3", "iv", "4", "v", "5"];
 
     public virtual async Task<int?> SearchOnMalAsync(string title)
     {
@@ -84,11 +85,13 @@ public partial class MappingService
         var queryWords = normQ.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         var bestMalMatch = searchResults.Take(5)
-            .Select((r, index) =>
+            .Index()
+            .Select(entry =>
             {
+                var (index, r) = entry;
                 float score = 0;
 
-                var titles = new List<string> { r.Title };
+                List<string> titles = [r.Title];
                 if (!string.IsNullOrEmpty(r.EnglishTitle)) titles.Add(r.EnglishTitle);
                 if (!string.IsNullOrEmpty(r.JapaneseTitle)) titles.Add(r.JapaneseTitle);
                 if (r.AlternativeTitles != null) titles.AddRange(r.AlternativeTitles);
@@ -103,8 +106,7 @@ public partial class MappingService
 
                     if (normT == normQ) currentScore = 100;
 
-                    string[] criticalKeywords = { "movie", "ova", "oad", "special", "ii", "2", "iii", "3", "iv", "4", "v", "5" };
-                    foreach (var word in criticalKeywords)
+                    foreach (var word in CriticalKeywords)
                     {
                         bool inQuery = queryWords.Contains(word, StringComparer.OrdinalIgnoreCase);
                         bool inTitle = titleWords.Contains(word, StringComparer.OrdinalIgnoreCase);

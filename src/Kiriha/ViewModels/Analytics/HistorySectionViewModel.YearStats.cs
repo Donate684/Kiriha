@@ -15,8 +15,8 @@ public partial class HistorySectionViewModel
     {
         var groups = completed
             .Where(x => x.StartYear.HasValue)
-            .GroupBy(x => x.StartYear!.Value)
-            .Select(x => new { Year = x.Key, Count = x.Count() })
+            .CountBy(x => x.StartYear!.Value)
+            .Select(x => new { Year = x.Key, Count = x.Value })
             .OrderByDescending(x => x.Year)
             .Take(12)
             .OrderBy(x => x.Year)
@@ -39,8 +39,8 @@ public partial class HistorySectionViewModel
     {
         var groups = completed
             .Where(x => x.StartYear.HasValue)
-            .GroupBy(x => x.StartYear!.Value)
-            .Select(x => new { Year = x.Key, Count = x.Count() })
+            .CountBy(x => x.StartYear!.Value)
+            .Select(x => new { Year = x.Key, Count = x.Value })
             .OrderByDescending(x => x.Year)
             .ToList();
 

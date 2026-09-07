@@ -8,6 +8,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
+using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,8 @@ namespace AnitomySharp
     {
         private const string Dashes = "-\u2010\u2011\u2012\u2013\u2014\u2015";
         private const string DashesWithSpace = " -\u2010\u2011\u2012\u2013\u2014\u2015";
+        private static readonly char[] DashesWithSpaceChars = DashesWithSpace.ToCharArray();
+        private static readonly SearchValues<char> ResolutionSeparators = SearchValues.Create("xX\u00D7");
 
         private static readonly FrozenDictionary<string, string> Ordinals = new Dictionary<string, string>
     {
@@ -102,24 +106,26 @@ namespace AnitomySharp
             const int minWidthSize = 3;
             const int minHeightSize = 3;
 
-            if (str.Length >= minWidthSize + 1 + minHeightSize)
+            var span = str.AsSpan();
+            if (span.Length >= minWidthSize + 1 + minHeightSize)
             {
-                var pos = str.IndexOfAny("xX\u00D7".ToCharArray());
-                if (pos == -1 || pos < minWidthSize || pos > str.Length - (minHeightSize + 1)) return false;
-                return !str.Where((t, i) => i != pos && !char.IsDigit(t)).Any();
-            }
-
-            if (str.Length < minHeightSize + 1) return false;
-            {
-                if (char.ToLower(str[str.Length - 1]) != 'p') return false;
-                for (var i = 0; i < str.Length - 1; i++)
+                var pos = span.IndexOfAny(ResolutionSeparators);
+                if (pos == -1 || pos < minWidthSize || pos > span.Length - (minHeightSize + 1)) return false;
+                for (int i = 0; i < span.Length; i++)
                 {
-                    if (!char.IsDigit(str[i])) return false;
+                    if (i != pos && !char.IsDigit(span[i])) return false;
                 }
-
                 return true;
             }
 
+            if (span.Length < minHeightSize + 1) return false;
+            if (char.ToLowerInvariant(span[^1]) != 'p') return false;
+            for (var i = 0; i < span.Length - 1; i++)
+            {
+                if (!char.IsDigit(span[i])) return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -296,7 +302,7 @@ namespace AnitomySharp
 
             if (!keepDelimiters)
             {
-                element = new StringBuilder(element.ToString().Trim(DashesWithSpace.ToCharArray()));
+                element = new StringBuilder(element.ToString().Trim(DashesWithSpaceChars));
             }
 
             if (!string.IsNullOrEmpty(element.ToString()))

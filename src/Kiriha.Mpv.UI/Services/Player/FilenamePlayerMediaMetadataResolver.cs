@@ -36,12 +36,14 @@ public sealed class FilenamePlayerMediaMetadataResolver : IPlayerMediaMetadataRe
                 }
             }
 
+            var resolvedTitle = string.IsNullOrWhiteSpace(title) ? filename : title;
             return new PlayerMediaMetadata(
                 originalTitle,
-                string.IsNullOrWhiteSpace(title) ? filename : title,
+                resolvedTitle,
                 string.Empty,
                 episode ?? string.Empty,
-                null);
+                null,
+                resolvedTitle);
         }
         catch (Exception ex)
         {

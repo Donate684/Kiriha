@@ -95,38 +95,36 @@ namespace AnitomySharp
         /// <param name="token">the token</param>
         /// <param name="flags">the flags the token must conform against</param>
         /// <returns>true if the token conforms to the set of <code>flags</code>; false otherwise</returns>
-        private static bool CheckTokenFlags(Token token, ICollection<TokenFlag> flags)
+        private static bool CheckTokenFlags(Token token, ReadOnlySpan<TokenFlag> flags)
         {
-            // Simple alias to check if flag is a part of the set
-            bool CheckFlag(TokenFlag flag)
+            bool hasEnclosedMask = false;
+            bool hasCategoryMask = false;
+
+            for (int i = 0; i < flags.Length; i++)
             {
-                return flags.Contains(flag);
+                var f = flags[i];
+                if (FlagMaskEnclosed.Contains(f)) hasEnclosedMask = true;
+                if (FlagMaskCategories.Contains(f)) hasCategoryMask = true;
             }
 
             // Make sure token is the correct closure
-            if (flags.Any(f => FlagMaskEnclosed.Contains(f)))
+            if (hasEnclosedMask)
             {
-                var success = CheckFlag(TokenFlag.FlagEnclosed) == token.Enclosed;
-                if (!success) return false; // Not enclosed correctly (e.g. enclosed when we're looking for non-enclosed).
+                var success = flags.Contains(TokenFlag.FlagEnclosed) == token.Enclosed;
+                if (!success) return false; // Not enclosed correctly
             }
 
             // Make sure token is the correct category
-            if (!flags.Any(f => FlagMaskCategories.Contains(f))) return true;
-            var secondarySuccess = false;
+            if (!hasCategoryMask) return true;
 
-            void CheckCategory(TokenFlag fe, TokenFlag fn, TokenCategory c)
-            {
-                if (secondarySuccess) return;
-                var result = CheckFlag(fe) ? token.Category == c : CheckFlag(fn) && token.Category != c;
-                secondarySuccess = result;
-            }
+            static bool CheckCategory(ReadOnlySpan<TokenFlag> f, Token t, TokenFlag fe, TokenFlag fn, TokenCategory c) =>
+                f.Contains(fe) ? t.Category == c : f.Contains(fn) && t.Category != c;
 
-            CheckCategory(TokenFlag.FlagBracket, TokenFlag.FlagNotBracket, TokenCategory.Bracket);
-            CheckCategory(TokenFlag.FlagDelimiter, TokenFlag.FlagNotDelimiter, TokenCategory.Delimiter);
-            CheckCategory(TokenFlag.FlagIdentifier, TokenFlag.FlagNotIdentifier, TokenCategory.Identifier);
-            CheckCategory(TokenFlag.FlagUnknown, TokenFlag.FlagNotUnknown, TokenCategory.Unknown);
-            CheckCategory(TokenFlag.FlagNotValid, TokenFlag.FlagValid, TokenCategory.Invalid);
-            return secondarySuccess;
+            return CheckCategory(flags, token, TokenFlag.FlagBracket, TokenFlag.FlagNotBracket, TokenCategory.Bracket)
+                || CheckCategory(flags, token, TokenFlag.FlagDelimiter, TokenFlag.FlagNotDelimiter, TokenCategory.Delimiter)
+                || CheckCategory(flags, token, TokenFlag.FlagIdentifier, TokenFlag.FlagNotIdentifier, TokenCategory.Identifier)
+                || CheckCategory(flags, token, TokenFlag.FlagUnknown, TokenFlag.FlagNotUnknown, TokenCategory.Unknown)
+                || CheckCategory(flags, token, TokenFlag.FlagNotValid, TokenFlag.FlagValid, TokenCategory.Invalid);
         }
 
         /// <summary>
@@ -137,9 +135,14 @@ namespace AnitomySharp
         /// <param name="end">the search ending position.</param>
         /// <param name="flags">the search flags</param>
         /// <returns>the search result</returns>
-        public static int FindToken(List<Token> tokens, int begin, int end, params TokenFlag[] flags)
+        public static int FindToken(List<Token> tokens, int begin, int end, params ReadOnlySpan<TokenFlag> flags)
         {
-            return FindTokenBase(tokens, begin, end, i => i < tokens.Count, i => i + 1, flags);
+            for (var i = begin; i < end && i < tokens.Count; i++)
+            {
+                if (CheckTokenFlags(tokens[i], flags))
+                    return i;
+            }
+            return end;
         }
 
         /// <summary>
@@ -149,9 +152,14 @@ namespace AnitomySharp
         /// <param name="first">the search starting position.</param>
         /// <param name="flags">the search flags</param>
         /// <returns>the search result</returns>
-        public static int FindNextToken(List<Token> tokens, int first, params TokenFlag[] flags)
+        public static int FindNextToken(List<Token> tokens, int first, params ReadOnlySpan<TokenFlag> flags)
         {
-            return FindTokenBase(tokens, first + 1, tokens.Count, i => i < tokens.Count, i => i + 1, flags);
+            for (var i = first + 1; i < tokens.Count; i++)
+            {
+                if (CheckTokenFlags(tokens[i], flags))
+                    return i;
+            }
+            return tokens.Count;
         }
 
         /// <summary>
@@ -161,42 +169,14 @@ namespace AnitomySharp
         /// <param name="begin">the search starting position. Exclusive of position.Pos</param>
         /// <param name="flags">the search flags</param>
         /// <returns>the search result</returns>
-        public static int FindPrevToken(List<Token> tokens, int begin, params TokenFlag[] flags)
+        public static int FindPrevToken(List<Token> tokens, int begin, params ReadOnlySpan<TokenFlag> flags)
         {
-            return FindTokenBase(tokens, begin - 1, -1, i => i >= 0, i => i - 1, flags);
-        }
-
-        /// <summary>
-        /// Given a list of tokens finds the first token that passes <see cref="CheckTokenFlags"/>.
-        /// </summary>
-        /// <param name="tokens">the list of the tokens to search</param>
-        /// <param name="begin">the start index of the search.</param>
-        /// <param name="end">the end index of the search.</param>
-        /// <param name="shouldContinue">a function that returns whether or not we should continue searching</param>
-        /// <param name="next">a function that returns the next search index</param>
-        /// <param name="flags">the flags that each token should be validated against</param>
-        /// <returns>the found token</returns>
-        private static int FindTokenBase(
-          List<Token> tokens,
-          int begin,
-          int end,
-          Func<int, bool> shouldContinue,
-          Func<int, int> next,
-          params TokenFlag[] flags)
-        {
-            var find = new List<TokenFlag>();
-            find.AddRange(flags);
-
-            for (var i = begin; shouldContinue(i); i = next(i))
+            for (var i = begin - 1; i >= 0; i--)
             {
-                var token = tokens[i];
-                if (CheckTokenFlags(token, find))
-                {
+                if (CheckTokenFlags(tokens[i], flags))
                     return i;
-                }
             }
-
-            return end;
+            return -1;
         }
 
         public static bool InListRange(int pos, List<Token> list)

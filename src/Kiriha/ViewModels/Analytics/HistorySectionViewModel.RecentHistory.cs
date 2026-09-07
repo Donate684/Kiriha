@@ -15,8 +15,8 @@ public partial class HistorySectionViewModel
     {
         var today = DateTime.Today;
         var posterMap = items
-            .GroupBy(x => x.Id)
-            .ToDictionary(x => x.Key, x => x.First().MainPictureUrl);
+            .DistinctBy(x => x.Id)
+            .ToDictionary(x => x.Id, x => x.MainPictureUrl);
         var watched = history
             .Where(x => x.ActionType is 1 or 4 or 6)
             .Where(x => x.Timestamp.ToLocalTime().Date < today && x.Timestamp.ToLocalTime().Date >= today.AddDays(-RecentHistoryDays))

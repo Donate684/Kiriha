@@ -54,22 +54,28 @@ public class MaintenanceService : IDisposable
                 await Task.Delay(task.InitialDelay, combinedCt);
             }
 
-            while (!combinedCt.IsCancellationRequested)
+            async Task ExecuteSafeAsync()
             {
                 try
                 {
                     await task.ExecuteAsync(combinedCt);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (combinedCt.IsCancellationRequested)
                 {
-                    break;
+                    throw;
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "MaintenanceService: Error executing {TaskName}", task.GetType().Name);
                 }
+            }
 
-                await Task.Delay(task.Interval, combinedCt);
+            await ExecuteSafeAsync();
+
+            using var timer = new PeriodicTimer(task.Interval);
+            while (await timer.WaitForNextTickAsync(combinedCt))
+            {
+                await ExecuteSafeAsync();
             }
         }
         catch (OperationCanceledException)

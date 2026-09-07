@@ -42,12 +42,14 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _animeTitle = string.Empty;
     [ObservableProperty] private string _animeTitleRu = string.Empty;
     [ObservableProperty] private string _animeTitleEn = string.Empty;
+    [ObservableProperty] private string _animeTitleRomaji = string.Empty;
     [ObservableProperty] private string _episodeTitle = string.Empty;
     [ObservableProperty] private string _rawEpisodeText = string.Empty;
 
 
     private int? _animeId;
     private bool _isInitializing;
+    private string? _previousVideoUrlForMetadata;
 
     public PlayerViewModel(
         string videoUrl,
@@ -66,6 +68,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         ApplyPlayerSettings();
         ApplyMetadata(metadata ?? metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl));
 
+        _previousVideoUrlForMetadata = videoUrl;
         VideoUrl = videoUrl; // Sets VideoUrl and triggers OnVideoUrlChanged if needed, but since it's constructor, we already set the fields above.
         _isInitializing = false;
     }

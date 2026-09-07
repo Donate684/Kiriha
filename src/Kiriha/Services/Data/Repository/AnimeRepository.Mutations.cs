@@ -14,13 +14,13 @@ public partial class AnimeRepository
     private static readonly TimeSpan RecentDeleteExpiryDelay = TimeSpan.FromSeconds(60);
     public bool IsRecentlyDeleted(int animeId)
     {
-        lock (_recentlyDeletedIds) return _recentlyDeletedIds.ContainsKey(animeId);
+        lock (_recentlyDeletedLock) return _recentlyDeletedIds.ContainsKey(animeId);
     }
 
 
     public async Task AddOrUpdateAnimeAsync(AnimeEntity item)
     {
-        lock (_recentlyDeletedIds)
+        lock (_recentlyDeletedLock)
         {
             if (_recentlyDeletedIds.TryGetValue(item.Id, out var cts))
             {
@@ -50,7 +50,7 @@ public partial class AnimeRepository
     public async Task RemoveAnimeLocalAsync(int animeId)
     {
         var newCts = new CancellationTokenSource();
-        lock (_recentlyDeletedIds)
+        lock (_recentlyDeletedLock)
         {
             if (_recentlyDeletedIds.TryGetValue(animeId, out var oldCts))
             {
@@ -69,7 +69,7 @@ public partial class AnimeRepository
             catch (OperationCanceledException) { }
             finally
             {
-                lock (_recentlyDeletedIds)
+                lock (_recentlyDeletedLock)
                 {
                     if (_recentlyDeletedIds.TryGetValue(animeId, out var currentCts) && currentCts == newCts)
                     {

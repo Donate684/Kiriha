@@ -74,17 +74,28 @@ namespace AnitomySharp
         private string GetDelimiters(TokenRange range)
         {
             var delimiters = new StringBuilder();
+            var allowed = _options.AllowedDelimiters;
 
-            bool IsDelimiter(char c)
+            int limit = Math.Min(_filename.Length, range.Offset + range.Size);
+            for (int i = range.Offset; i < limit; i++)
             {
-                if (StringHelper.IsAlphanumericChar(c)) return false;
-                return _options.AllowedDelimiters.Contains(c.ToString()) && !delimiters.ToString().Contains(c.ToString());
-            }
-
-            foreach (var i in Enumerable.Range(range.Offset, Math.Min(_filename.Length, range.Offset + range.Size) - range.Offset)
-              .Where(value => IsDelimiter(_filename[value])))
-            {
-                delimiters.Append(_filename[i]);
+                char c = _filename[i];
+                if (!StringHelper.IsAlphanumericChar(c) && allowed.Contains(c))
+                {
+                    bool alreadyFound = false;
+                    for (int j = 0; j < delimiters.Length; j++)
+                    {
+                        if (delimiters[j] == c)
+                        {
+                            alreadyFound = true;
+                            break;
+                        }
+                    }
+                    if (!alreadyFound)
+                    {
+                        delimiters.Append(c);
+                    }
+                }
             }
 
             return delimiters.ToString();
@@ -192,12 +203,19 @@ namespace AnitomySharp
                 return;
             }
 
+            var delimSpan = delimiters.AsSpan();
             for (int i = range.Offset, end = range.Offset + range.Size; i < end;)
             {
-                var found = Enumerable.Range(i, Math.Min(end, _filename.Length) - i)
-                  .Where(c => delimiters.Contains(_filename[c].ToString()))
-                  .DefaultIfEmpty(end)
-                  .FirstOrDefault();
+                int limit = Math.Min(end, _filename.Length);
+                int found = end;
+                for (int pos = i; pos < limit; pos++)
+                {
+                    if (delimSpan.Contains(_filename[pos]))
+                    {
+                        found = pos;
+                        break;
+                    }
+                }
 
                 var subRange = new TokenRange(i, found - i);
                 if (subRange.Size > 0)

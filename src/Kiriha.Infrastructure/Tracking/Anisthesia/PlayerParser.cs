@@ -20,7 +20,7 @@ public class PlayerParser
         ExpectWindowTitle,
     }
 
-    private static int GetIndentation(string line)
+    private static int GetIndentation(ReadOnlySpan<char> line)
     {
         int count = 0;
         foreach (char c in line)
@@ -34,20 +34,19 @@ public class PlayerParser
     public static List<AnisthesiaPlayer> ParseData(string data)
     {
         var players = new List<AnisthesiaPlayer>();
-        var lines = data.Split(["\n", "\r\n"], StringSplitOptions.None);
         AnisthesiaPlayer? current = null;
         State state = State.ExpectPlayerName;
 
-        foreach (var rawLine in lines)
+        foreach (var rawLine in data.AsSpan().EnumerateLines())
         {
-            if (string.IsNullOrWhiteSpace(rawLine)) continue;
+            if (rawLine.IsWhiteSpace()) continue;
             int indent = GetIndentation(rawLine);
-            string line = rawLine.Trim();
+            var line = rawLine.Trim();
             if (line.StartsWith("#")) continue;
 
             if (indent == 0)
             {
-                current = new AnisthesiaPlayer { Name = line };
+                current = new AnisthesiaPlayer { Name = line.ToString() };
                 players.Add(current);
                 state = State.ExpectSection;
                 continue;
@@ -71,29 +70,29 @@ public class PlayerParser
 
             if (indent == 2)
             {
-                if (state == State.ExpectWindow) current.WindowClasses.Add(line);
-                else if (state == State.ExpectExecutable) current.Executables.Add(line);
+                if (state == State.ExpectWindow) current.WindowClasses.Add(line.ToString());
+                else if (state == State.ExpectExecutable) current.Executables.Add(line.ToString());
                 else if (state == State.ExpectStrategy)
                 {
                     line = line.TrimEnd(':');
-                    if (line == "window_title")
+                    if (line is "window_title")
                     {
                         current.Strategies.Add(StrategyType.WindowTitle);
                         state = State.ExpectWindowTitle;
                     }
-                    else if (line == "open_files") current.Strategies.Add(StrategyType.OpenFiles);
-                    else if (line == "ui_automation") current.Strategies.Add(StrategyType.UiAutomation);
+                    else if (line is "open_files") current.Strategies.Add(StrategyType.OpenFiles);
+                    else if (line is "ui_automation") current.Strategies.Add(StrategyType.UiAutomation);
                 }
                 else if (state == State.ExpectType)
                 {
-                    current.Type = line == "web_browser" ? PlayerType.WebBrowser : PlayerType.Default;
+                    current.Type = line is "web_browser" ? PlayerType.WebBrowser : PlayerType.Default;
                 }
                 continue;
             }
 
             if (indent == 3 && state == State.ExpectWindowTitle)
             {
-                current.WindowTitleFormat = line;
+                current.WindowTitleFormat = line.ToString();
             }
         }
         return players;

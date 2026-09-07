@@ -11,7 +11,28 @@ public partial class PlayerViewModel
 
         if (string.IsNullOrEmpty(value) || _isInitializing) return;
 
-        ApplyMetadata(_metadataResolver?.Resolve(value) ?? PlayerMediaMetadata.FromVideoPath(value));
+        var resolved = _metadataResolver?.Resolve(value) ?? PlayerMediaMetadata.FromVideoPath(value);
+
+        // If the resolver didn't find an anime in DB, but we already have anime context from a previous file
+        // in the same directory, preserve the known titles and anime ID!
+        if (resolved.AnimeId == null && _animeId.HasValue && (!string.IsNullOrEmpty(AnimeTitleRu) || !string.IsNullOrEmpty(AnimeTitleRomaji)))
+        {
+            var prevDir = System.IO.Path.GetDirectoryName(_previousVideoUrlForMetadata);
+            var newDir = System.IO.Path.GetDirectoryName(value);
+            if (!string.IsNullOrEmpty(prevDir) && string.Equals(prevDir, newDir, StringComparison.OrdinalIgnoreCase))
+            {
+                resolved = resolved with
+                {
+                    AnimeId = _animeId,
+                    TitleRu = AnimeTitleRu,
+                    TitleEn = AnimeTitleEn,
+                    TitleRomaji = !string.IsNullOrEmpty(AnimeTitleRomaji) ? AnimeTitleRomaji : resolved.TitleRomaji
+                };
+            }
+        }
+        _previousVideoUrlForMetadata = value;
+
+        ApplyMetadata(resolved);
         UpdateNavigationAvailability();
     }
 
@@ -21,11 +42,20 @@ public partial class PlayerViewModel
         OriginalTitle = metadata.OriginalTitle;
         AnimeTitleRu = metadata.TitleRu;
         AnimeTitleEn = metadata.TitleEn;
+        AnimeTitleRomaji = !string.IsNullOrWhiteSpace(metadata.TitleRomaji)
+            ? metadata.TitleRomaji
+            : (!string.IsNullOrWhiteSpace(metadata.TitleEn) ? metadata.TitleEn : metadata.TitleRu);
         RawEpisodeText = metadata.EpisodeText;
         EpisodeTitle = string.IsNullOrEmpty(metadata.EpisodeText)
             ? string.Empty
             : $"\u0421\u0435\u0440\u0438\u044F {metadata.EpisodeText}";
-        AnimeTitle = AnimeTitleRu;
+        AnimeTitle = !string.IsNullOrWhiteSpace(AnimeTitleRu) ? AnimeTitleRu : AnimeTitleRomaji;
+
+        OnPropertyChanged(nameof(TopTitle));
+        OnPropertyChanged(nameof(BottomTitle));
+        OnPropertyChanged(nameof(HasBottomTitle));
+        OnPropertyChanged(nameof(EpisodeTitle));
+        OnPropertyChanged(nameof(HasEpisodeAndBottom));
         OnPropertyChanged(nameof(TrackingTitle));
     }
 
@@ -41,7 +71,31 @@ public partial class PlayerViewModel
             return true;
 
         var current = System.IO.Path.GetFileNameWithoutExtension(VideoUrl);
-        return string.Equals(current, originalTitle, StringComparison.OrdinalIgnoreCase);
+        if (string.Equals(current, originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(OriginalTitle) && string.Equals(OriginalTitle, originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(AnimeTitleRomaji) && string.Equals(AnimeTitleRomaji, originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(AnimeTitle) && string.Equals(AnimeTitle, originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(AnimeTitleRu) && string.Equals(AnimeTitleRu, originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(AnimeTitleEn) && string.Equals(AnimeTitleEn, originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrEmpty(current) && current.Contains(originalTitle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrEmpty(current) && originalTitle.Contains(current, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
     }
 
     /// <summary>
@@ -56,16 +110,29 @@ public partial class PlayerViewModel
             if (!string.IsNullOrWhiteSpace(filename))
                 return $"[KirihaPlayer] {filename}";
 
-            var title = !string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu;
+            var title = !string.IsNullOrEmpty(AnimeTitleRomaji)
+                ? AnimeTitleRomaji
+                : (!string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu);
             return $"[KirihaPlayer] {title}";
         }
     }
+
+    public bool UseRussianTitles => _settingsService?.Current.UI.UseRussianTitles ?? false;
 
     public string TopTitle
     {
         get
         {
-            return !string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu;
+            if (UseRussianTitles && !string.IsNullOrWhiteSpace(AnimeTitleRu))
+                return AnimeTitleRu;
+
+            if (!string.IsNullOrWhiteSpace(AnimeTitleRomaji))
+                return AnimeTitleRomaji;
+
+            if (!string.IsNullOrWhiteSpace(AnimeTitleEn))
+                return AnimeTitleEn;
+
+            return !string.IsNullOrWhiteSpace(AnimeTitleRu) ? AnimeTitleRu : AnimeTitle;
         }
     }
 
@@ -73,8 +140,25 @@ public partial class PlayerViewModel
     {
         get
         {
-            if (!string.IsNullOrEmpty(AnimeTitleEn) && AnimeTitleEn != AnimeTitleRu)
+            var top = TopTitle;
+
+            if (UseRussianTitles && !string.IsNullOrWhiteSpace(AnimeTitleRu))
+            {
+                if (!string.IsNullOrWhiteSpace(AnimeTitleEn) && !string.Equals(AnimeTitleEn, top, StringComparison.OrdinalIgnoreCase))
+                    return AnimeTitleEn;
+
+                if (!string.IsNullOrWhiteSpace(AnimeTitleRomaji) && !string.Equals(AnimeTitleRomaji, top, StringComparison.OrdinalIgnoreCase))
+                    return AnimeTitleRomaji;
+
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(AnimeTitleEn) && !string.Equals(AnimeTitleEn, top, StringComparison.OrdinalIgnoreCase))
+                return AnimeTitleEn;
+
+            if (!string.IsNullOrWhiteSpace(AnimeTitleRu) && !string.Equals(AnimeTitleRu, top, StringComparison.OrdinalIgnoreCase))
                 return AnimeTitleRu;
+
             return string.Empty;
         }
     }
@@ -89,6 +173,7 @@ public partial class PlayerViewModel
         OnPropertyChanged(nameof(HasBottomTitle));
         OnPropertyChanged(nameof(HasEpisodeAndBottom));
     }
+
     partial void OnAnimeTitleEnChanged(string value)
     {
         OnPropertyChanged(nameof(TopTitle));
@@ -96,6 +181,15 @@ public partial class PlayerViewModel
         OnPropertyChanged(nameof(HasBottomTitle));
         OnPropertyChanged(nameof(HasEpisodeAndBottom));
     }
+
+    partial void OnAnimeTitleRomajiChanged(string value)
+    {
+        OnPropertyChanged(nameof(TopTitle));
+        OnPropertyChanged(nameof(BottomTitle));
+        OnPropertyChanged(nameof(HasBottomTitle));
+        OnPropertyChanged(nameof(HasEpisodeAndBottom));
+    }
+
     partial void OnEpisodeTitleChanged(string value)
     {
         OnPropertyChanged(nameof(HasEpisodeAndBottom));
