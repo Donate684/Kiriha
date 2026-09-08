@@ -71,6 +71,9 @@ public static class PlayerProcessBridge
         ForwardMetadata(originalTitle, animeId, titleRu, titleEn, titleRomaji: null, episodeText);
     }
 
+    private static string? s_lastForwardedKey;
+    private static readonly Lock s_forwardGate = new();
+
     public static void ForwardMetadata(
         string originalTitle,
         int animeId,
@@ -79,6 +82,14 @@ public static class PlayerProcessBridge
         string? titleRomaji,
         string? episodeText)
     {
+        var key = $"{originalTitle}|{animeId}|{titleRu}|{titleEn}|{titleRomaji}|{episodeText}";
+        lock (s_forwardGate)
+        {
+            if (string.Equals(s_lastForwardedKey, key, StringComparison.Ordinal))
+                return;
+            s_lastForwardedKey = key;
+        }
+
         string[] args = [
             "--player",
             UpdateMetadataArg,

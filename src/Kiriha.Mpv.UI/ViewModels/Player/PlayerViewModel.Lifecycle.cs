@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Serilog;
 using Kiriha.Core.Domain.Models.Api;
 
@@ -40,9 +40,11 @@ public partial class PlayerViewModel
 
     private InternalPlayerState CreatePlayerState()
     {
-        var titleToUse = !string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu;
-        if (string.IsNullOrEmpty(titleToUse))
-            titleToUse = AnimeTitle;
+        var titleToUse = !string.IsNullOrEmpty(AnimeTitleRomaji)
+            ? AnimeTitleRomaji
+            : (!string.IsNullOrEmpty(AnimeTitleEn)
+                ? AnimeTitleEn
+                : (!string.IsNullOrEmpty(AnimeTitleRu) ? AnimeTitleRu : AnimeTitle));
 
         return new InternalPlayerState
         {

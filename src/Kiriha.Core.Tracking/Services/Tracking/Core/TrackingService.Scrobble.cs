@@ -43,7 +43,6 @@ public partial class TrackingService
 
         if (currentMatched != null)
         {
-            NotifyPlayerMetadata(media, currentMatched);
             UpdateDiscordPresence(media, currentMatched);
         }
 
@@ -89,10 +88,21 @@ public partial class TrackingService
         try
         {
             ParsedMedia? prev;
-            lock (_state) prev = _currentMedia;
-            if (prev != null && prev.AnimeTitle == media.AnimeTitle && prev.Episode == media.Episode && string.Equals(prev.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase))
+            AnimeEntity? existingMatched;
+            lock (_state)
             {
-                if (HandleSameMediaUpdate(prev, media)) return;
+                prev = _currentMedia;
+                existingMatched = _matchedAnime;
+            }
+
+            bool isSameMediaFile = prev != null &&
+                string.Equals(prev.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase) &&
+                prev.Episode == media.Episode &&
+                (prev.AnimeTitle == media.AnimeTitle || existingMatched?.Id == animeId);
+
+            if (isSameMediaFile)
+            {
+                if (HandleSameMediaUpdate(prev!, media)) return;
             }
 
             lock (_state)
@@ -114,6 +124,11 @@ public partial class TrackingService
             var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.GetCollection()));
             var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId);
 
+            if (matched == null && existingMatched != null && existingMatched.Id == animeId)
+            {
+                matched = existingMatched;
+            }
+
             if (matched == null)
             {
                 var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled);
@@ -132,6 +147,14 @@ public partial class TrackingService
                         Serilog.Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId}", animeId);
                     }
                 }
+            }
+
+            if (matched != null && existingMatched != null && existingMatched.Id == matched.Id)
+            {
+                if (string.IsNullOrEmpty(matched.RussianTitle) && !string.IsNullOrEmpty(existingMatched.RussianTitle))
+                    matched.RussianTitle = existingMatched.RussianTitle;
+                if (string.IsNullOrEmpty(matched.RussianSynopsis) && !string.IsNullOrEmpty(existingMatched.RussianSynopsis))
+                    matched.RussianSynopsis = existingMatched.RussianSynopsis;
             }
 
             ParsedMedia? cur;

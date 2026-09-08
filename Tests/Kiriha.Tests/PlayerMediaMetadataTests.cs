@@ -206,4 +206,46 @@ public sealed class PlayerMediaMetadataTests
         Assert.True(vm.MatchesOriginalTitle("Провожающая в последний путь Фрирен"));
         Assert.True(vm.MatchesOriginalTitle("Frieren: Beyond Journey's End"));
     }
+
+    [Fact]
+    public void PlayerViewModel_ApplyExternalMetadata_DoesNotOverwriteRussianTitleWithEmptyString()
+    {
+        var settings = new AppSettings();
+        settings.UI.UseRussianTitles = true;
+        var mockSettings = new Moq.Mock<ISettingsService>();
+        mockSettings.Setup(s => s.Current).Returns(settings);
+        var mockLocalizer = new Moq.Mock<ILocalizer>();
+
+        var vm = new Kiriha.Mpv.UI.ViewModels.Player.PlayerViewModel(
+            @"C:\Anime\Ghost Meets Gal - 01.mkv",
+            null,
+            null,
+            mockSettings.Object,
+            mockLocalizer.Object);
+
+        // First apply Russian metadata (e.g. fetched from Shikimori)
+        vm.ApplyExternalMetadata(new PlayerMediaMetadata(
+            "Ghost Meets Gal - 01",
+            "Призрак встречает гяру!",
+            "",
+            "01",
+            58494,
+            "Ghost Meets Gal!"));
+
+        Assert.Equal("Призрак встречает гяру!", vm.TopTitle);
+        Assert.Equal("Ghost Meets Gal!", vm.BottomTitle);
+
+        // Now simulate incoming metadata with empty titleRu (e.g. bare MAL lookup that lacks Russian title)
+        vm.ApplyExternalMetadata(new PlayerMediaMetadata(
+            "Ghost Meets Gal - 01",
+            "",
+            "",
+            "01",
+            58494,
+            "Ghost Meets Gal!"));
+
+        // Russian title MUST NOT be wiped out with empty string!
+        Assert.Equal("Призрак встречает гяру!", vm.TopTitle);
+        Assert.Equal("Ghost Meets Gal!", vm.BottomTitle);
+    }
 }
