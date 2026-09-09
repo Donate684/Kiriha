@@ -7,6 +7,11 @@ public partial class PlayerViewModel
 {
     partial void OnVideoUrlChanged(string value)
     {
+        ResolveAndApplyMetadata(value);
+    }
+
+    internal void ResolveAndApplyMetadata(string value)
+    {
         OnPropertyChanged(nameof(TrackingTitle));
 
         if (string.IsNullOrEmpty(value) || _isInitializing) return;
@@ -14,26 +19,60 @@ public partial class PlayerViewModel
         var resolved = _metadataResolver?.Resolve(value) ?? PlayerMediaMetadata.FromVideoPath(value);
 
         // If the resolver didn't find an anime in DB, but we already have anime context from a previous file
-        // in the same directory, preserve the known titles and anime ID!
-        if (resolved.AnimeId == null && _animeId.HasValue && (!string.IsNullOrEmpty(AnimeTitleRu) || !string.IsNullOrEmpty(AnimeTitleRomaji)))
+        // of the same anime series in the same directory, preserve the known titles and anime ID!
+        if (resolved.AnimeId == null && _animeId.HasValue && IsSameAnimeSeries(resolved, value))
         {
-            var prevDir = System.IO.Path.GetDirectoryName(_previousVideoUrlForMetadata);
-            var newDir = System.IO.Path.GetDirectoryName(value);
-            if (!string.IsNullOrEmpty(prevDir) && string.Equals(prevDir, newDir, StringComparison.OrdinalIgnoreCase))
+            resolved = resolved with
             {
-                resolved = resolved with
-                {
-                    AnimeId = _animeId,
-                    TitleRu = AnimeTitleRu,
-                    TitleEn = AnimeTitleEn,
-                    TitleRomaji = !string.IsNullOrEmpty(AnimeTitleRomaji) ? AnimeTitleRomaji : resolved.TitleRomaji
-                };
-            }
+                AnimeId = _animeId,
+                TitleRu = AnimeTitleRu,
+                TitleEn = AnimeTitleEn,
+                TitleRomaji = !string.IsNullOrEmpty(AnimeTitleRomaji) ? AnimeTitleRomaji : resolved.TitleRomaji
+            };
         }
         _previousVideoUrlForMetadata = value;
 
         ApplyMetadata(resolved, overwriteAll: true);
         UpdateNavigationAvailability();
+    }
+
+    private bool IsSameAnimeSeries(PlayerMediaMetadata newResolved, string newVideoUrl)
+    {
+        if (string.IsNullOrEmpty(_previousVideoUrlForMetadata) || string.IsNullOrEmpty(newVideoUrl))
+            return false;
+
+        var prevDir = System.IO.Path.GetDirectoryName(_previousVideoUrlForMetadata);
+        var newDir = System.IO.Path.GetDirectoryName(newVideoUrl);
+        if (string.IsNullOrEmpty(prevDir) || !string.Equals(prevDir, newDir, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var newTitle = !string.IsNullOrWhiteSpace(newResolved.TitleRomaji)
+            ? newResolved.TitleRomaji
+            : (!string.IsNullOrWhiteSpace(newResolved.TitleRu) ? newResolved.TitleRu : newResolved.OriginalTitle);
+        if (string.IsNullOrWhiteSpace(newTitle))
+            return false;
+
+        return IsTitleMatch(newTitle, AnimeTitleRomaji) ||
+               IsTitleMatch(newTitle, AnimeTitleEn) ||
+               IsTitleMatch(newTitle, AnimeTitleRu);
+    }
+
+    private static bool IsTitleMatch(string a, string? b)
+    {
+        if (string.IsNullOrWhiteSpace(b)) return false;
+        if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase)) return true;
+
+        var normA = NormalizeTitle(a);
+        var normB = NormalizeTitle(b);
+        if (string.IsNullOrEmpty(normA) || string.IsNullOrEmpty(normB)) return false;
+
+        return string.Equals(normA, normB, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeTitle(string s)
+    {
+        var chars = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(s, char.IsLetterOrDigit));
+        return new string(chars);
     }
 
     private void ApplyMetadata(PlayerMediaMetadata metadata, bool overwriteAll = false)
@@ -79,7 +118,7 @@ public partial class PlayerViewModel
     public bool MatchesOriginalTitle(string originalTitle)
     {
         if (string.IsNullOrWhiteSpace(originalTitle))
-            return true;
+            return false;
 
         var current = System.IO.Path.GetFileNameWithoutExtension(VideoUrl);
         if (string.Equals(current, originalTitle, StringComparison.OrdinalIgnoreCase))
@@ -100,11 +139,23 @@ public partial class PlayerViewModel
         if (!string.IsNullOrWhiteSpace(AnimeTitleEn) && string.Equals(AnimeTitleEn, originalTitle, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (!string.IsNullOrEmpty(current) && current.Contains(originalTitle, StringComparison.OrdinalIgnoreCase))
+        if (IsTitleMatch(current, originalTitle))
             return true;
 
-        if (!string.IsNullOrEmpty(current) && originalTitle.Contains(current, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(OriginalTitle) && IsTitleMatch(OriginalTitle, originalTitle))
             return true;
+
+        if (!string.IsNullOrWhiteSpace(AnimeTitleRomaji) && IsTitleMatch(AnimeTitleRomaji, originalTitle))
+            return true;
+
+        if (!string.IsNullOrEmpty(current) && current.Length >= 4 && originalTitle.Length >= 4)
+        {
+            if (current.Contains(originalTitle, StringComparison.OrdinalIgnoreCase) ||
+                originalTitle.Contains(current, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
 
         return false;
     }

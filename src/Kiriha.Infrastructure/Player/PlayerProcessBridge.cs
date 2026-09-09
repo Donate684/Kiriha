@@ -58,6 +58,10 @@ public static class PlayerProcessBridge
 
     public static Task StopResidentAsync()
     {
+        lock (s_forwardGate)
+        {
+            s_lastForwardedKey = null;
+        }
         return Task.Run(() => TryForward(["--player", ShutdownArg], timeoutMs: 500));
     }
 
@@ -87,7 +91,6 @@ public static class PlayerProcessBridge
         {
             if (string.Equals(s_lastForwardedKey, key, StringComparison.Ordinal))
                 return;
-            s_lastForwardedKey = key;
         }
 
         string[] args = [
@@ -112,7 +115,13 @@ public static class PlayerProcessBridge
             for (int attempt = 0; attempt < 3; attempt++)
             {
                 if (TryForward(args, timeoutMs: 1000))
+                {
+                    lock (s_forwardGate)
+                    {
+                        s_lastForwardedKey = key;
+                    }
                     return;
+                }
 
                 try { await Task.Delay(100).ConfigureAwait(false); } catch { }
             }

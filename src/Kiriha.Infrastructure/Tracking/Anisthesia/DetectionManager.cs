@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure.Platform;
 using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
 namespace Kiriha.Infrastructure.Tracking.Anisthesia;
@@ -158,6 +158,11 @@ public class DetectionManager
                                         hWnd = pObj.MainWindowHandle;
                                     }
                                     catch { }
+
+                                    if (hWnd == IntPtr.Zero)
+                                    {
+                                        hWnd = Win32Api.FindMainWindow(pid);
+                                    }
                                     hWndEvaluated = true;
                                 }
                                 if (hWnd != IntPtr.Zero)
@@ -237,6 +242,10 @@ public class DetectionManager
                                 if (!hWndEvaluated)
                                 {
                                     hWnd = proc.MainWindowHandle;
+                                    if (hWnd == IntPtr.Zero)
+                                    {
+                                        hWnd = Win32Api.FindMainWindow(pid);
+                                    }
                                     hWndEvaluated = true;
                                 }
                                 if (hWnd != IntPtr.Zero)

@@ -227,7 +227,7 @@ MPC-HC
 		open_files
 		# Depends on: Options -> Player -> Title bar
 		window_title:
-			^Media Player Classic Home Cinema|MPC-HC|(.+)
+			^Media Player Classic Home Cinema$|^MPC-HC$|^(.+) - MPC-HC.*|(.+)
 
 MPCSTAR
 	windows:

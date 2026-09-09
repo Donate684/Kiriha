@@ -141,9 +141,11 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
 
                     // Update only if title or episode or playing state changed
                     if (lastDetected == null ||
+                        !string.Equals(lastDetected.OriginalTitle, detected.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
                         lastDetected.AnimeTitle != detected.AnimeTitle ||
                         lastDetected.Episode != detected.Episode ||
-                        lastDetected.IsPlaying != detected.IsPlaying)
+                        lastDetected.IsPlaying != detected.IsPlaying ||
+                        lastDetected.ProcessName != detected.ProcessName)
                     {
                         lastDetected = detected;
                         MediaDetected?.Invoke(this, detected);

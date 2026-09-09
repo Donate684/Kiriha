@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Tracking.Feed;
@@ -37,9 +37,8 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
 
         foreach (var p in _anisthesia.AvailablePlayers.OrderBy(x => x.Name))
         {
-            // If the list is NOT empty, we check if it contains the process.
-            // If the list IS empty, it means nothing is selected.
-            bool isEnabled = !listWasEmpty && allowed.Contains(p.Name);
+            // If the list is empty, default behavior permits all video players (except browsers).
+            bool isEnabled = listWasEmpty ? (p.Type != PlayerType.WebBrowser) : allowed.Contains(p.Name);
             bool isRunning = running.Contains(p.Name);
 
             var item = new PlayerSelectionItem(p.Name, p.Type, isEnabled, isRunning);

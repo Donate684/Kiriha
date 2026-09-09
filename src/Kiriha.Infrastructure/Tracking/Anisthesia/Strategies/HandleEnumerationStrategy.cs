@@ -16,9 +16,8 @@ namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
 public class HandleEnumerationStrategy
 {
-    private static readonly FrozenSet<string> _videoExtensions = FrozenSet.ToFrozenSet([".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm"], StringComparer.OrdinalIgnoreCase);
+    private static readonly FrozenSet<string> _videoExtensions = FrozenSet.ToFrozenSet([".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm", ".webm", ".ts", ".m4v", ".m2ts"], StringComparer.OrdinalIgnoreCase);
 
-#if WINDOWS
     // P/Invoke constants and structures
     private const int SystemExtendedHandleInformation = 64;
     private const int STATUS_INFO_LENGTH_MISMATCH = unchecked((int)0xC0000004);
@@ -62,6 +61,8 @@ public class HandleEnumerationStrategy
     public static unsafe List<string> GetOpenFiles(uint pid)
     {
         var files = new List<string>();
+        if (!OperatingSystem.IsWindows() || pid == 0) return files;
+
         var seenFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         IntPtr processHandle = OpenProcess(PROCESS_DUP_HANDLE, false, pid);
         if (processHandle == IntPtr.Zero) return files;
@@ -73,18 +74,20 @@ public class HandleEnumerationStrategy
             try
             {
                 int returnLength;
+                int status;
 
-                while (NtQuerySystemInformation(SystemExtendedHandleInformation, buffer, bufferSize, out returnLength) == STATUS_INFO_LENGTH_MISMATCH)
+                while ((status = NtQuerySystemInformation(SystemExtendedHandleInformation, buffer, bufferSize, out returnLength)) == STATUS_INFO_LENGTH_MISMATCH)
                 {
-                    bufferSize = returnLength;
+                    bufferSize = Math.Max(returnLength + 65536, bufferSize * 2);
                     Marshal.FreeHGlobal(buffer);
-                    buffer = IntPtr.Zero;
                     buffer = Marshal.AllocHGlobal(bufferSize);
                 }
 
-                long handleCount = Marshal.ReadInt64(buffer);
+                if (status != STATUS_SUCCESS) return files;
+
+                long handleCount = IntPtr.Size == 8 ? Marshal.ReadInt64(buffer) : Marshal.ReadInt32(buffer);
                 int entrySize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-                IntPtr currentPtr = buffer + 16; // Skip NumberOfHandles and Reserved (8+8 bytes)
+                IntPtr currentPtr = buffer + IntPtr.Size * 2; // Skip NumberOfHandles and Reserved
 
                 char[] pathBuffer = System.Buffers.ArrayPool<char>.Shared.Rent(32768);
                 try
@@ -94,10 +97,9 @@ public class HandleEnumerationStrategy
                         SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX* entry = (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX*)currentPtr;
                         currentPtr += entrySize;
 
-                        if ((uint)entry->UniqueProcessId != pid) continue;
+                        if ((nuint)entry->UniqueProcessId != (nuint)pid) continue;
 
                         // Simple access mask check (FILE_READ_DATA = 0x0001)
-                        // Anisthesia uses more complex checks, but let's start with basic
                         if ((entry->GrantedAccess & 0x0001) == 0) continue;
 
                         if (DuplicateHandle(processHandle, entry->HandleValue, GetCurrentProcess(), out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
@@ -112,7 +114,17 @@ public class HandleEnumerationStrategy
                                         string path;
                                         if (pathLen >= 4 && pathBuffer[0] == '\\' && pathBuffer[1] == '\\' && pathBuffer[2] == '?' && pathBuffer[3] == '\\')
                                         {
-                                            path = new string(pathBuffer, 4, (int)pathLen - 4);
+                                            if (pathLen >= 8 && (pathBuffer[4] == 'U' || pathBuffer[4] == 'u') &&
+                                                                (pathBuffer[5] == 'N' || pathBuffer[5] == 'n') &&
+                                                                (pathBuffer[6] == 'C' || pathBuffer[6] == 'c') &&
+                                                                pathBuffer[7] == '\\')
+                                            {
+                                                path = "\\\\" + new string(pathBuffer, 8, (int)pathLen - 8);
+                                            }
+                                            else
+                                            {
+                                                path = new string(pathBuffer, 4, (int)pathLen - 4);
+                                            }
                                         }
                                         else
                                         {
@@ -167,6 +179,8 @@ public class HandleEnumerationStrategy
 
     public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid)
     {
+        if (!OperatingSystem.IsWindows() || pid == 0) return null;
+
         var files = GetOpenFiles(pid);
 
         foreach (var file in files)
@@ -231,9 +245,5 @@ public class HandleEnumerationStrategy
 
         return null;
     }
-#else
-    public static List<string> GetOpenFiles(uint pid) => new();
-    public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid) => null;
-#endif
 }
 

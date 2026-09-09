@@ -53,8 +53,23 @@ public partial class PlayerViewModel
         if (string.IsNullOrWhiteSpace(videoUrl))
             return;
 
+        videoUrl = videoUrl.Trim().Trim('"');
+        try
+        {
+            if (System.IO.Path.IsPathRooted(videoUrl))
+            {
+                videoUrl = System.IO.Path.GetFullPath(videoUrl);
+            }
+        }
+        catch
+        {
+            // Ignore path normalization failure for URLs/streams
+        }
+
         if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
             VideoUrl = videoUrl;
+        else
+            ResolveAndApplyMetadata(videoUrl);
 
         ApplyTimelineSnapshot(_timeline.Reset());
         IsPlaying = PlayerAutoPlay;

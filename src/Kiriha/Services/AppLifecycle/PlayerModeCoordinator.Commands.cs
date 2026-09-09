@@ -77,7 +77,7 @@ public sealed partial class PlayerModeCoordinator
 
         if (!updated && playerWindows.LastOrDefault()?.DataContext is PlayerViewModel fallbackVm)
         {
-            if (fallbackVm.MatchesOriginalTitle(originalTitle) || string.IsNullOrEmpty(fallbackVm.AnimeTitleEn))
+            if (fallbackVm.MatchesOriginalTitle(originalTitle))
             {
                 fallbackVm.ApplyExternalMetadata(metadata);
             }

@@ -48,6 +48,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
 
     private int? _animeId;
+    public int? AnimeId => _animeId;
     private bool _isInitializing;
     private string? _previousVideoUrlForMetadata;
 
