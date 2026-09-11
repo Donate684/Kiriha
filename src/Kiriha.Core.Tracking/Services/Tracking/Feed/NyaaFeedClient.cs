@@ -47,7 +47,7 @@ public class NyaaFeedClient
 
         try
         {
-            using var ms = new MemoryStream(bytes, writable: false);
+            using var ms = new ReadOnlyMemoryStream(bytes);
             return XDocument.Load(ms);
         }
         catch (Exception ex)

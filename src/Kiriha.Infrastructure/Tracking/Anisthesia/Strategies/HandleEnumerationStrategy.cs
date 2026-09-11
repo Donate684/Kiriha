@@ -63,7 +63,7 @@ public class HandleEnumerationStrategy
         var files = new List<string>();
         if (!OperatingSystem.IsWindows() || pid == 0) return files;
 
-        var seenFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> seenFiles = [with(StringComparer.OrdinalIgnoreCase)];
         IntPtr processHandle = OpenProcess(PROCESS_DUP_HANDLE, false, pid);
         if (processHandle == IntPtr.Zero) return files;
 

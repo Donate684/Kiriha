@@ -72,7 +72,7 @@ public partial class WatchNextSectionViewModel
 
     private string ToResourceKey(string value)
     {
-        var chars = new List<char>(value.Length);
+        List<char> chars = [with(capacity: value.Length)];
         var lastWasSeparator = false;
         foreach (var c in value.ToLowerInvariant())
         {

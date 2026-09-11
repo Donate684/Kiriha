@@ -24,6 +24,40 @@ public partial class ShikiApiService
         return Task.FromResult<AnimeEntity?>(null);
     }
 
+    public async Task<EpisodeAiringInfo?> GetAiringInfoAsync(int malId, bool force = false, CancellationToken ct = default)
+    {
+        if (malId <= 0) return null;
+
+        try
+        {
+            var result = await _httpCache.SendForResultAsync(
+                requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, ShikiBaseUrl + $"animes/{malId}")),
+                throttle: innerCt => _rateLimiter.ThrottleAsync(innerCt),
+                ct: ct,
+                localTtl: force ? TimeSpan.Zero : TimeSpan.FromHours(6));
+
+            if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Log.Warning("Shikimori: anime {MalId} not found (404)", malId);
+                return null;
+            }
+
+            if (result.Body == null || result.Body.Length == 0)
+            {
+                return null;
+            }
+
+            using var doc = JsonDocument.Parse(result.Body);
+            return ShikiParser.ParseAiringInfo(doc.RootElement, malId);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Shikimori: failed to fetch next airing for MAL {MalId}", malId);
+            return null;
+        }
+    }
+
     public Task<List<AnimeEntity>> SearchMangaAsync(string query, CancellationToken ct = default)
     {
         return Task.FromResult(new List<AnimeEntity>());

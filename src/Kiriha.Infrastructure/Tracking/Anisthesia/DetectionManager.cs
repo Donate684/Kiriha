@@ -100,7 +100,7 @@ public class DetectionManager
 
     public (HashSet<string> RunningPlayers, ParsedMedia? Media) DetectSession()
     {
-        var running = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> running = [with(StringComparer.OrdinalIgnoreCase)];
         if (!OperatingSystem.IsWindows()) return (running, null);
 
         var allowedProcesses = _settingsService.Current?.System?.Scrobbler?.AllowedProcesses;
@@ -128,7 +128,7 @@ public class DetectionManager
                     IntPtr hWnd = IntPtr.Zero;
                     bool hWndEvaluated = false;
 
-                    for (int i = 0; i < matchingPlayers.Count; i++)
+                    playersLoop: for (int i = 0; i < matchingPlayers.Count; i++)
                     {
                         var player = matchingPlayers[i];
 
@@ -152,12 +152,13 @@ public class DetectionManager
                             {
                                 if (!hWndEvaluated)
                                 {
-                                    try
+                                    if (Process.TryGetProcessById((int)pid, out var pObj))
                                     {
-                                        using var pObj = Process.GetProcessById((int)pid);
-                                        hWnd = pObj.MainWindowHandle;
+                                        using (pObj)
+                                        {
+                                            hWnd = pObj.MainWindowHandle;
+                                        }
                                     }
-                                    catch { }
 
                                     if (hWnd == IntPtr.Zero)
                                     {
@@ -181,11 +182,9 @@ public class DetectionManager
                                 result.ProcessName = procName;
                                 result.Pid = pid;
                                 detectedMedia = result;
-                                break;
+                                break playersLoop;
                             }
                         }
-
-                        if (detectedMedia != null) break;
                     }
                 }
                 catch { /* Access denied or process exited */ }

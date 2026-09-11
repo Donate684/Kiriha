@@ -3,10 +3,15 @@ using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Core.Abstractions.Messages;
 
-public record MediaChangedMessage(ParsedMedia? Media);
+/// <summary>
+/// Closed hierarchy of tracking messages published across the application.
+/// </summary>
+public closed record class TrackingMessage;
 
-public record AnimeMatchedMessage(AnimeEntity? Anime);
+public record MediaChangedMessage(ParsedMedia? Media) : TrackingMessage;
 
-public record TrackingCountdownMessage(string Countdown);
+public record AnimeMatchedMessage(AnimeEntity? Anime) : TrackingMessage;
 
-public record TrackingStatusMessage(string Status);
+public record TrackingCountdownMessage(string Countdown) : TrackingMessage;
+
+public record TrackingStatusMessage(string Status) : TrackingMessage;

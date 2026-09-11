@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
          and we want it to stay clean: silent regressions in null-safety are a top
@@ -13,7 +13,7 @@
     <RootNamespace>Kiriha</RootNamespace>
     <Title>Kiriha</Title>
     <ApplicationIcon>Assets\kiriha.ico</ApplicationIcon>
-    <Version>1.3.22</Version>
+    <Version>1.3.23</Version>
 
 
     <!-- Optimization: Ahead-of-time compilation for faster startup -->
@@ -61,7 +61,6 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Threading.RateLimiting" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />

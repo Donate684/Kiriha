@@ -7,7 +7,7 @@ namespace Kiriha.Infrastructure.Platform;
 /// <summary>
 /// Thin wrapper over <see cref="Process.Start(ProcessStartInfo)"/> for opening
 /// URLs and files via the OS shell. Windows-only: the project targets
-/// <c>net10.0-windows</c>, so the previous Linux/macOS branches were dead
+/// <c>net11.0-windows</c>, so the previous Linux/macOS branches were dead
 /// code and have been retired. Add them back behind a runtime check only if
 /// the target framework changes.
 /// </summary>

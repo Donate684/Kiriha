@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Repositories;
 using System;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Shared;
@@ -29,6 +29,7 @@ public partial class ShikiApiService : IShikiApiService
     private readonly ShikiTokenService _tokenService;
     private readonly ShikiHostResolver _hostResolver;
     private readonly HttpConditionalCache _httpCache;
+    private readonly ShikiRateLimiter _rateLimiter;
     private readonly System.Collections.Concurrent.ConcurrentDictionary<int, (ShikiPersonResponse? Value, DateTime SystemDateTime)> _personCache = new();
 
     public string Name => "Shikimori";
@@ -46,12 +47,19 @@ public partial class ShikiApiService : IShikiApiService
 
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    public ShikiApiService(HttpClient httpClient, ISettingsService settingsService, ShikiTokenService tokenService, ShikiHostResolver hostResolver, IHttpCacheRepository httpCacheRepo)
+    public ShikiApiService(
+        HttpClient httpClient,
+        ISettingsService settingsService,
+        ShikiTokenService tokenService,
+        ShikiHostResolver hostResolver,
+        IHttpCacheRepository httpCacheRepo,
+        ShikiRateLimiter? rateLimiter = null)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
         _tokenService = tokenService;
         _hostResolver = hostResolver;
+        _rateLimiter = rateLimiter ?? new ShikiRateLimiter();
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,

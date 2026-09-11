@@ -48,8 +48,9 @@ public class HardcodeAnalysisTests
     /// Files (relative to SrcRoot, forward-slash) where inline http(s) URLs are acceptable
     /// because that IS the canonical declaration (constants files, generated ports, etc.)
     /// </summary>
-    private static readonly HashSet<string> UrlAllowedFiles = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> UrlAllowedFiles =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         // Legitimate constant definitions
         "Kiriha.Core.Domain/Constants/AppConstants.cs",
         "Kiriha.Core.Domain/Constants/ApiKeys.cs",
@@ -65,7 +66,7 @@ public class HardcodeAnalysisTests
 
         // UI credits model — decorative display data, not API config
         "Kiriha/Models/AboutCredits.cs",
-    };
+    ];
 
     /// <summary>
     /// Const string VALUES (case-sensitive) that are intentionally duplicated across files.
@@ -171,8 +172,9 @@ public class HardcodeAnalysisTests
     /// intentional semantic colours without a theme resource equivalent
     /// (e.g. signal-green for "connected", signal-red for error).
     /// </summary>
-    private static readonly HashSet<string> XamlHardcodedColorAllowList = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> XamlHardcodedColorAllowList =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         // Transparent / fully-transparent placeholders used in animation origins
         "#00000000",
 
@@ -192,16 +194,13 @@ public class HardcodeAnalysisTests
         "#BFFFFFFF", "#30FFFFFF", "#A0FFFFFF", "#D0FFFFFF", "#25FFFFFF", "#40FFFFFF",
         "#A8FFFFFF", "#20FFFFFF", "#16FFFFFF", "#CCFFFFFF", "#D8FFFFFF", "#80FFFFFF", 
         "#55FFFFFF", "#E6FFFFFF", "#70FFFFFF",
-    };
+    ];
 
     /// <summary>
     /// AXAML files (relative to SrcRoot, forward-slash) where inline http(s) URLs are
     /// acceptable — add paths here only for files that intentionally embed URLs (e.g. help links).
     /// </summary>
-    private static readonly HashSet<string> XamlUrlAllowedFiles = new(StringComparer.OrdinalIgnoreCase)
-    {
-        // Empty — all Avalonia xmlns URIs are filtered by the test itself (xmlns attribute pattern).
-    };
+    private static readonly HashSet<string> XamlUrlAllowedFiles = [with(StringComparer.OrdinalIgnoreCase)];
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 

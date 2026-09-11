@@ -93,7 +93,8 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ISettingsService>(),
                 sp.GetRequiredService<ShikiTokenService>(),
                 sp.GetRequiredService<ShikiHostResolver>(),
-                sp.GetRequiredService<IHttpCacheRepository>()));
+                sp.GetRequiredService<IHttpCacheRepository>(),
+                sp.GetRequiredService<ShikiRateLimiter>()));
 
         services.AddForwardedSingleton<IShikiApiService, ITrackerService>();
 

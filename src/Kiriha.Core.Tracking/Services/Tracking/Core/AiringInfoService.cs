@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Kiriha.Core;
 using System.Linq;
 using System.Threading;
@@ -18,6 +18,7 @@ public class AiringInfoService : IAiringInfoService
     private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeSyncOrchestrator _syncOrchestrator;
     private readonly IUiDispatcher _uiDispatcher;
+    private readonly ISettingsService? _settingsService;
     private readonly AiringInfoFetcher _fetcher;
     private readonly AiringInfoCache _cache;
 
@@ -27,12 +28,25 @@ public class AiringInfoService : IAiringInfoService
         IAnimeSyncOrchestrator syncOrchestrator,
         INotificationService notificationService,
         IUiDispatcher uiDispatcher)
+        : this(aniListApi, null!, null!, animeRepo, syncOrchestrator, notificationService, uiDispatcher)
+    {
+    }
+
+    public AiringInfoService(
+        IAniListApiService aniListApi,
+        IShikiApiService shikiApi,
+        ISettingsService settingsService,
+        IAnimeRepository animeRepo,
+        IAnimeSyncOrchestrator syncOrchestrator,
+        INotificationService notificationService,
+        IUiDispatcher uiDispatcher)
     {
         _animeRepo = animeRepo;
         _syncOrchestrator = syncOrchestrator;
         _uiDispatcher = uiDispatcher;
+        _settingsService = settingsService;
 
-        _fetcher = new AiringInfoFetcher(aniListApi);
+        _fetcher = new AiringInfoFetcher(aniListApi, shikiApi, settingsService);
         _cache = new AiringInfoCache(animeRepo, notificationService, uiDispatcher);
     }
 
@@ -46,7 +60,8 @@ public class AiringInfoService : IAiringInfoService
 
         if (!isTrackableStatus && !anime.NextEpisodeAt.HasValue) return;
 
-        Log.Information("AiringInfoService: Immediate AniList sync requested for {Title} (ID: {Id})", anime.Title, anime.Id);
+        var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
+        Log.Information("AiringInfoService: Immediate {Source} sync requested for {Title} (ID: {Id})", source, anime.Title, anime.Id);
 
         var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force: true, ct);
         if (_animeRepo.IsRecentlyDeleted(anime.Id)) return;
@@ -68,7 +83,8 @@ public class AiringInfoService : IAiringInfoService
             return;
         }
 
-        Log.Information("AiringInfoService: Checking AniList airing info (Force: {Force})...", force);
+        var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
+        Log.Information("AiringInfoService: Checking {Source} airing info (Force: {Force})...", source, force);
 
         var threshold = DateTime.UtcNow.AddHours(-6);
         // Snapshot on UI thread - ObservableCollection is not thread-safe.
@@ -89,7 +105,7 @@ public class AiringInfoService : IAiringInfoService
             return;
         }
 
-        Log.Information("AiringInfoService: Found {Count} anime to sync from AniList.", toSync.Count);
+        Log.Information("AiringInfoService: Found {Count} anime to sync from {Source}.", toSync.Count, source);
 
         var semaphore = new SemaphoreSlim(4);
         int completed = 0;
@@ -107,7 +123,7 @@ public class AiringInfoService : IAiringInfoService
                 var progressMsg = UIUtils.GetLoc("sync.syncing.episodes_progress", currentCompleted.ToString(), total.ToString(), anime.Title);
                 progress?.Report(progressMsg);
 
-                Log.Information("AiringInfoService: Syncing AniList airing info for {Title} (ID: {Id})...", anime.Title, anime.Id);
+                Log.Information("AiringInfoService: Syncing {Source} airing info for {Title} (ID: {Id})...", source, anime.Title, anime.Id);
 
                 var now = DateTime.UtcNow;
                 var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
@@ -127,6 +143,6 @@ public class AiringInfoService : IAiringInfoService
 
         await Task.WhenAll(tasks);
 
-        Log.Information("AiringInfoService: AniList sync cycle completed.");
+        Log.Information("AiringInfoService: {Source} sync cycle completed.", source);
     }
 }

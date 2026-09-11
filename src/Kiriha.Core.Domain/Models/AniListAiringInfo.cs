@@ -8,4 +8,8 @@ public sealed record AniListAiringInfo(
     string? Status,
     int? NextEpisode,
     DateTime? NextEpisodeAt,
-    int? TotalEpisodes);
+    int? TotalEpisodes)
+{
+    public EpisodeAiringInfo ToEpisodeAiringInfo() =>
+        new(AniListId, MalId, Status, NextEpisode, NextEpisodeAt, TotalEpisodes);
+}

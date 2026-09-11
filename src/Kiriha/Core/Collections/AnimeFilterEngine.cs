@@ -51,11 +51,16 @@ public static class AnimeFilterEngine
 
 internal static class AnimeComparerFactory
 {
+    private static readonly IEqualityComparer<(string, bool, bool)> KeyComparer =
+        EqualityComparer<(string, bool, bool)>.Create(
+            (x, y) => string.Equals(x.Item1, y.Item1, StringComparison.OrdinalIgnoreCase) && x.Item2 == y.Item2 && x.Item3 == y.Item3,
+            obj => HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Item1), obj.Item2, obj.Item3));
+
     private static readonly FrozenDictionary<(string, bool, bool), IComparer<AnimeEntity>> Comparers;
 
     static AnimeComparerFactory()
     {
-        var comparers = new Dictionary<(string, bool, bool), IComparer<AnimeEntity>>(StringTupleComparer.Instance);
+        var comparers = new Dictionary<(string, bool, bool), IComparer<AnimeEntity>>(KeyComparer);
         string[] sortOptions = ["Title", "RussianTitle", "EnglishTitle", "Score", "Progress", "Date", "Popularity", ""];
         bool[] bools = [false, true];
 
@@ -70,7 +75,7 @@ internal static class AnimeComparerFactory
             }
         }
 
-        Comparers = comparers.ToFrozenDictionary(StringTupleComparer.Instance);
+        Comparers = comparers.ToFrozenDictionary(KeyComparer);
     }
 
     public static IComparer<AnimeEntity> GetComparer(string? sortBy, bool isSeasonal, bool prioritizeNewEpisodes)
@@ -79,19 +84,6 @@ internal static class AnimeComparerFactory
         return Comparers.TryGetValue(key, out var comparer)
             ? comparer
             : new AnimeEntityComparer(sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes);
-    }
-
-    private sealed class StringTupleComparer : IEqualityComparer<(string, bool, bool)>
-    {
-        public static readonly StringTupleComparer Instance = new();
-
-        public bool Equals((string, bool, bool) x, (string, bool, bool) y) =>
-            string.Equals(x.Item1, y.Item1, StringComparison.OrdinalIgnoreCase) &&
-            x.Item2 == y.Item2 &&
-            x.Item3 == y.Item3;
-
-        public int GetHashCode((string, bool, bool) obj) =>
-            HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Item1), obj.Item2, obj.Item3);
     }
 
     private sealed class AnimeEntityComparer : IComparer<AnimeEntity>

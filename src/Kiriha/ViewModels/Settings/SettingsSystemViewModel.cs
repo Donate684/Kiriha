@@ -1,9 +1,10 @@
-﻿using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Services.Data.Settings;
 using System;
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Services;
 using Kiriha.Services.Data;
@@ -33,6 +34,17 @@ public partial class SettingsSystemViewModel : ObservableObject
     [ObservableProperty] private bool _notifyNewEpisodes;
     [ObservableProperty] private bool _notifyAppUpdate;
     [ObservableProperty] private decimal? _newEpisodeNotificationDelayMinutes;
+    [ObservableProperty] private EpisodeAiringSource _airingSource;
+
+    public record AiringSourceOption(string Name, EpisodeAiringSource Value);
+
+    public List<AiringSourceOption> AvailableAiringSources { get; } = new()
+    {
+        new AiringSourceOption("AniList (anilist.co)", EpisodeAiringSource.AniList),
+        new AiringSourceOption("Shikimori (shikimori.one)", EpisodeAiringSource.Shikimori)
+    };
+
+    [ObservableProperty] private AiringSourceOption _selectedAiringSource;
 
     public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService)
     {
@@ -54,6 +66,8 @@ public partial class SettingsSystemViewModel : ObservableObject
         NotifyNewEpisodes = _settingsService.Current.System.NotifyNewEpisodes;
         NotifyAppUpdate = _settingsService.Current.System.NotifyAppUpdate;
         NewEpisodeNotificationDelayMinutes = _settingsService.Current.System.NewEpisodeNotificationDelayMinutes;
+        AiringSource = _settingsService.Current.System.AiringSource;
+        _selectedAiringSource = AvailableAiringSources.Find(x => x.Value == AiringSource) ?? AvailableAiringSources[0];
     }
 
     partial void OnAutoLaunchChanged(bool value)
@@ -96,6 +110,15 @@ public partial class SettingsSystemViewModel : ObservableObject
         {
             var minutes = (int)Math.Max(0, value.Value);
             _settingsService.Update(settings => settings.System.NewEpisodeNotificationDelayMinutes = minutes, SettingsSection.System);
+        }
+    }
+
+    partial void OnSelectedAiringSourceChanged(AiringSourceOption value)
+    {
+        if (value != null)
+        {
+            AiringSource = value.Value;
+            _settingsService.Update(settings => settings.System.AiringSource = value.Value, SettingsSection.System);
         }
     }
 }

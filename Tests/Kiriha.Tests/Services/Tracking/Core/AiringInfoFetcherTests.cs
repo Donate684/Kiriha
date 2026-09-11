@@ -1,10 +1,12 @@
+using System;
+using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using System;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Core;
+using Kiriha.Models;
+using Moq;
 using Xunit;
 
 namespace Kiriha.Tests.Services.Tracking.Core;
@@ -61,5 +63,55 @@ public class AiringInfoFetcherTests
 
         Assert.Equal(6, aired);
         Assert.Null(nextSlot);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task FetchAndResolveAsync_ShikimoriSource_CallsShikiApi()
+    {
+        var aniListMock = new Moq.Mock<IAniListApiService>();
+        var shikiMock = new Moq.Mock<IShikiApiService>();
+        var settingsMock = new Moq.Mock<ISettingsService>();
+
+        var settings = new AppSettings();
+        settings.System.AiringSource = EpisodeAiringSource.Shikimori;
+        settingsMock.Setup(s => s.Current).Returns(settings);
+
+        shikiMock.Setup(s => s.GetAiringInfoAsync(123, false, default))
+            .ReturnsAsync(new EpisodeAiringInfo(123, 123, "ongoing", 8, DateTime.UtcNow.AddDays(1), 12, 7));
+
+        var fetcher = new AiringInfoFetcher(aniListMock.Object, shikiMock.Object, settingsMock.Object);
+        var anime = new AnimeEntity { Id = 123, EpisodesAired = 7 };
+
+        var (airing, aired, nextSlot) = await fetcher.FetchAndResolveAsync(anime, false, default);
+
+        Assert.NotNull(airing);
+        Assert.Equal(7, aired);
+        shikiMock.Verify(s => s.GetAiringInfoAsync(123, false, default), Moq.Times.Once);
+        aniListMock.Verify(s => s.GetNextAiringAsync(Moq.It.IsAny<int>(), Moq.It.IsAny<bool>(), default), Moq.Times.Never);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task FetchAndResolveAsync_AniListSource_CallsAniListApi()
+    {
+        var aniListMock = new Moq.Mock<IAniListApiService>();
+        var shikiMock = new Moq.Mock<IShikiApiService>();
+        var settingsMock = new Moq.Mock<ISettingsService>();
+
+        var settings = new AppSettings();
+        settings.System.AiringSource = EpisodeAiringSource.AniList;
+        settingsMock.Setup(s => s.Current).Returns(settings);
+
+        aniListMock.Setup(s => s.GetNextAiringAsync(123, false, default))
+            .ReturnsAsync(new AniListAiringInfo(1, 123, null, 8, DateTime.UtcNow.AddDays(1), 12));
+
+        var fetcher = new AiringInfoFetcher(aniListMock.Object, shikiMock.Object, settingsMock.Object);
+        var anime = new AnimeEntity { Id = 123, EpisodesAired = 7 };
+
+        var (airing, aired, nextSlot) = await fetcher.FetchAndResolveAsync(anime, false, default);
+
+        Assert.NotNull(airing);
+        Assert.Equal(7, aired);
+        aniListMock.Verify(s => s.GetNextAiringAsync(123, false, default), Moq.Times.Once);
+        shikiMock.Verify(s => s.GetAiringInfoAsync(Moq.It.IsAny<int>(), Moq.It.IsAny<bool>(), default), Moq.Times.Never);
     }
 }

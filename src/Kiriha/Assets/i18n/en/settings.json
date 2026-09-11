@@ -72,6 +72,10 @@
     "title": "Airing Information",
     "subtitle": "Show number of aired episodes and countdown to the next one"
   },
+  "airing_source": {
+    "title": "Episode Airing Source",
+    "subtitle": "Service used to check new episodes and airing schedules"
+  },
   "auto_launch": {
     "title": "Auto Launch",
     "subtitle": "Launch app on Windows startup"

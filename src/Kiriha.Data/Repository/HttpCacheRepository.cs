@@ -68,9 +68,9 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
         if (data.Length < 128) return data;
 
         using var ms = new MemoryStream();
-        using (var gz = new GZipStream(ms, CompressionLevel.Fastest, leaveOpen: true))
+        using (var zstd = new ZstandardStream(ms, CompressionMode.Compress, leaveOpen: true))
         {
-            gz.Write(data);
+            zstd.Write(data);
         }
         var compressed = ms.ToArray();
         return compressed.Length < data.Length ? compressed : data;
@@ -78,22 +78,40 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
 
     public static byte[] DecompressIfNeeded(byte[] data)
     {
+        // 1. Zstandard frame header: 0x28, 0xB5, 0x2F, 0xFD
+        if (data.Length >= 4 && data[0] == 0x28 && data[1] == 0xB5 && data[2] == 0x2F && data[3] == 0xFD)
+        {
+            try
+            {
+                using var inMs = new ReadOnlyMemoryStream(data);
+                using var zstd = new ZstandardStream(inMs, CompressionMode.Decompress);
+                using var outMs = new MemoryStream();
+                zstd.CopyTo(outMs);
+                return outMs.ToArray();
+            }
+            catch
+            {
+                return data;
+            }
+        }
+
+        // 2. Legacy GZip frame header: 0x1F, 0x8B (backward compatibility for existing SQLite entries)
         if (data.Length >= 2 && data[0] == 0x1F && data[1] == 0x8B)
         {
             try
             {
-                using var ms = new MemoryStream(data);
-                using var gz = new GZipStream(ms, CompressionMode.Decompress);
+                using var inMs = new ReadOnlyMemoryStream(data);
+                using var gz = new GZipStream(inMs, CompressionMode.Decompress);
                 using var outMs = new MemoryStream();
                 gz.CopyTo(outMs);
                 return outMs.ToArray();
             }
             catch
             {
-                // Fallback in the rare event of data corruption
                 return data;
             }
         }
+
         return data;
     }
 }

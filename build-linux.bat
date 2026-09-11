@@ -3,7 +3,7 @@ setlocal
 
 echo.
 echo === Building Kiriha for Linux (linux-x64) ===
-dotnet publish .\src\Kiriha\Kiriha.csproj -c Release -f net10.0 -r linux-x64 --self-contained true -p:PublishSingleFile=true -o .\publish_linux
+dotnet publish .\src\Kiriha\Kiriha.csproj -c Release -f net11.0 -r linux-x64 --self-contained true -p:PublishSingleFile=true -o .\publish_linux
 
 if errorlevel 1 (
     echo.

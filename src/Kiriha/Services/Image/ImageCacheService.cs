@@ -94,7 +94,7 @@ public class ImageCacheService : IDisposable
                     Bitmap bmp;
                     if (_memCache.TryGetEncoded(localPath, out var bytes) && bytes != null)
                     {
-                        using var ms = new MemoryStream(bytes, writable: false);
+                        using var ms = new ReadOnlyMemoryStream(bytes);
                         bmp = Bitmap.DecodeToWidth(ms, decodeWidth);
                     }
                     else
