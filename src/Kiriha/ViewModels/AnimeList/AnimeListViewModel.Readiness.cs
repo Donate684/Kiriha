@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.AppLifecycle;
-using Serilog;
 using Kiriha.Utils.Async;
+using Serilog;
 
 namespace Kiriha.ViewModels.AnimeList;
 

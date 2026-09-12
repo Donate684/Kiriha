@@ -1,8 +1,8 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Extensions;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Microsoft.Extensions.DependencyInjection;
-using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Infrastructure.Tracking;
 
@@ -18,6 +18,7 @@ public static class InfrastructureTrackingRegistration
         services.AddForwardedSingleton<AnisthesiaService, IExternalMediaDetector>();
         services.AddSingleton<InternalPlayerServer>();
         services.AddForwardedSingleton<InternalPlayerServer, IInternalPlayerServer>();
+        services.AddSingleton<IStartupManager, Platform.WindowsStartupManager>();
 
         return services;
     }

@@ -7,6 +7,7 @@ namespace Kiriha.ViewModels.History;
 /// </summary>
 public abstract class HistoryTimelineItem
 {
+    private protected HistoryTimelineItem() { }
 }
 
 /// <summary>

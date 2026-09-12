@@ -1,15 +1,15 @@
-﻿using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
-using Kiriha.Services.Data.Settings;
-using System;
+﻿using System;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Services.Data;
-using Kiriha.ViewModels.AnimeList;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Services.Data;
+using Kiriha.Services.Data.Settings;
+using Kiriha.ViewModels.AnimeList;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Startup;
 
 namespace Kiriha.ViewModels.Startup;
 

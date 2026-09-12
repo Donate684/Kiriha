@@ -1,12 +1,12 @@
-﻿using Kiriha.Core.Domain.Models;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Platform;
+using Kiriha.Models;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;

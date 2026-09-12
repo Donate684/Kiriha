@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -23,14 +23,14 @@ namespace Kiriha.Core.Abstractions.Repositories;
 /// </summary>
 public interface IUserAnimeRepository
 {
-    Task<List<AnimeEntity>> GetAllAsync();
-    Task<List<AnimeEntity>> GetByMediaKindAsync(MediaKind kind);
-    Task UpsertAsync(AnimeEntity item);
-    Task UpdateAsync(AnimeEntity item);
-    Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null);
-    Task UpdateScoreAsync(AnimeEntity item, string score);
-    Task UpdateMetadataAsync(AnimeEntity item);
-    Task DeleteAsync(int id);
+    Task<List<AnimeEntity>> GetAllAsync(CancellationToken ct = default);
+    Task<List<AnimeEntity>> GetByMediaKindAsync(MediaKind kind, CancellationToken ct = default);
+    Task UpsertAsync(AnimeEntity item, CancellationToken ct = default);
+    Task UpdateAsync(AnimeEntity item, CancellationToken ct = default);
+    Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null, CancellationToken ct = default);
+    Task UpdateScoreAsync(AnimeEntity item, string score, CancellationToken ct = default);
+    Task UpdateMetadataAsync(AnimeEntity item, CancellationToken ct = default);
+    Task DeleteAsync(int id, CancellationToken ct = default);
 
     /// <summary>
     /// Mirrors a remote tracker snapshot into the local table: upserts items
@@ -41,5 +41,5 @@ public interface IUserAnimeRepository
     Task SyncFromRemoteAsync(IEnumerable<AnimeEntity> items, MediaKind[]? syncKinds = null, CancellationToken ct = default);
 
     /// <summary>Local poster paths for items currently tracked. Used by image cache cleanup.</summary>
-    Task<List<string>> GetActiveLocalImagePathsAsync();
+    Task<List<string>> GetActiveLocalImagePathsAsync(CancellationToken ct = default);
 }

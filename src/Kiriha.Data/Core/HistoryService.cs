@@ -1,15 +1,14 @@
-﻿using Kiriha.Services.Data.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Repositories;
-using Serilog;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Services.Data.Core;
+using Serilog;
 
 namespace Kiriha.Services.Data.Core;
 
@@ -25,11 +24,11 @@ public class HistoryService : IHistoryService
         _repo = repo;
     }
 
-    public async Task<List<HistoryItem>> GetHistoryAsync(int limit = 1000)
+    public async Task<List<HistoryItem>> GetHistoryAsync(int limit = 1000, CancellationToken ct = default)
     {
         try
         {
-            return await _repo.GetAsync(limit);
+            return await _repo.GetAsync(limit, ct);
         }
         catch (Exception ex)
         {
@@ -38,7 +37,7 @@ public class HistoryService : IHistoryService
         }
     }
 
-    public async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null)
+    public async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
     {
         try
         {
@@ -65,7 +64,7 @@ public class HistoryService : IHistoryService
                 Detail = detail?.ToString() ?? ""
             };
 
-            await _repo.AddAsync(entry);
+            await _repo.AddAsync(entry, ct);
             Log.Debug("History entry added for {Id} {Title} (Ep {Ep})", animeId, title, episode);
         }
         catch (Exception ex)

@@ -1,7 +1,7 @@
-using Kiriha.Services.Data.Settings;
 using Avalonia.Controls;
-using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Services.Data;
+using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.Views.Player;
 

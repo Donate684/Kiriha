@@ -1,17 +1,16 @@
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Services.Data;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 

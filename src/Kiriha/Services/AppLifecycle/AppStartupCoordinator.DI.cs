@@ -1,16 +1,16 @@
-﻿using Kiriha.Core.Abstractions.Services.AppLifecycle;
-using Kiriha.Core.Tracking;
-using Kiriha.Infrastructure.Tracking;
-using Kiriha.Services.Data.Settings;
-using Kiriha.Services.Data.Metadata;
 using System;
 using System.Diagnostics;
 using Kiriha.Composition;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Core.Tracking;
 using Kiriha.Infrastructure.Platform;
+using Kiriha.Infrastructure.Tracking;
 using Kiriha.Services.Data;
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.AppLifecycle;
 
@@ -43,6 +43,7 @@ public sealed partial class AppStartupCoordinator
     {
         PathHelper.EnsureDirectoriesExist();
 
+        services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IBackgroundTaskSupervisor, BackgroundTaskSupervisor>();
 
         services

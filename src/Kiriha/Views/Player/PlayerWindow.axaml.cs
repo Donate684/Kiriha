@@ -9,12 +9,12 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Mpv;
+using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.Services.Data;
 using Kiriha.Services.Data.Settings;
-using Kiriha.Mpv.UI.ViewModels.Player;
 using Serilog;
-using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Views.Player;
 

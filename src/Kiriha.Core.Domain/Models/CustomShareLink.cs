@@ -14,7 +14,7 @@ namespace Kiriha.Core.Domain.Models;
 /// </summary>
 public partial class CustomShareLink : DomainObservableObject
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string Id { get; set; } = Guid.CreateVersion7().ToString("N");
 
     private string _name = string.Empty;
     public string Name

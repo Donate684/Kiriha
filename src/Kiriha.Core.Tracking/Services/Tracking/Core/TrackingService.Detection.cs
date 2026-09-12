@@ -2,15 +2,14 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Messages;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure.Player;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure.Player;
 using Kiriha.Utils.Async;
 using Serilog;
 

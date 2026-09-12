@@ -1,8 +1,8 @@
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Core;
 using System;
 using System.Threading.Tasks;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Services.Data.Repository;
@@ -19,12 +19,12 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
         _contextFactory = contextFactory;
     }
 
-    public async Task<MalSearchCache?> GetAsync(string queryNormalized)
+    public async Task<MalSearchCache?> GetAsync(string queryNormalized, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(queryNormalized)) return null;
-        using var context = await _contextFactory.CreateDbContextAsync();
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entry = await context.MalSearchCache.AsNoTracking()
-            .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized);
+            .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized, ct);
         if (entry == null) return null;
 
         var ttl = entry.AnimeId == 0 ? NegativeTtl : PositiveTtl;
@@ -33,12 +33,12 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
         return entry;
     }
 
-    public async Task UpsertAsync(string queryNormalized, int animeId, float score)
+    public async Task UpsertAsync(string queryNormalized, int animeId, float score, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(queryNormalized)) return;
-        using var context = await _contextFactory.CreateDbContextAsync();
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.MalSearchCache.AsTracking()
-            .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized);
+            .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized, ct);
         var now = DateTime.UtcNow;
         if (existing == null)
         {
@@ -56,6 +56,6 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
             existing.Score = score;
             existing.CreatedAt = now;
         }
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
     }
 }

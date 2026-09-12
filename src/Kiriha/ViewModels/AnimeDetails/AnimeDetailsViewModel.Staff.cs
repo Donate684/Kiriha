@@ -1,11 +1,11 @@
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using Avalonia.Media;
-using Serilog;
-using Kiriha.Core.Domain.Models.Entities;
+using Avalonia.Threading;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models.Entities;
+using Serilog;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 

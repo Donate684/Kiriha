@@ -10,13 +10,13 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Mpv;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Kiriha.Mpv;
 using Xunit;
 
 namespace Kiriha.Tests;

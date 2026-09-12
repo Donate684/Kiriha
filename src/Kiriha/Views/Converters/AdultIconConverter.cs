@@ -1,8 +1,8 @@
-using Kiriha.ViewModels.Settings;
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Kiriha.ViewModels;
+using Kiriha.ViewModels.Settings;
 
 namespace Kiriha.Views.Converters;
 

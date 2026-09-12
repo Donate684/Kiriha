@@ -1,8 +1,3 @@
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -12,9 +7,14 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Infrastructure;
-using Serilog;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Infrastructure;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Startup;
+using Serilog;
 
 namespace Kiriha.ViewModels.Dialogs;
 

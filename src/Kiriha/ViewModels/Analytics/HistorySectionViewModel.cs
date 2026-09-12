@@ -1,5 +1,3 @@
-using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,8 +5,10 @@ using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Localization;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Localization;
+using Kiriha.Models;
 
 namespace Kiriha.ViewModels.Analytics;
 

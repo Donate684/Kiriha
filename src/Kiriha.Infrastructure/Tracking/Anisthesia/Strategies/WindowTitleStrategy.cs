@@ -1,12 +1,11 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure.Platform;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure.Platform;
 
 namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 

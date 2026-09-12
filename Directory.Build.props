@@ -9,6 +9,8 @@
          availability before lifting it. -->
     <LangVersion>15.0</LangVersion>
     <Features>runtime-async=on</Features>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AvaloniaVersion>12.1.2</AvaloniaVersion>
     <AvaloniaSubpackagesVersion>12.0.0</AvaloniaSubpackagesVersion>
   </PropertyGroup>

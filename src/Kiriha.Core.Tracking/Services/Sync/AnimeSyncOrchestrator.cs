@@ -1,20 +1,19 @@
 
 using System;
-using Kiriha.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Domain.Constants;
+using Kiriha.Core;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Tracking.Api;
-
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Api;
+using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;

@@ -1,19 +1,19 @@
-﻿using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Startup;
 using Serilog;
-using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.ViewModels.Dialogs;
 

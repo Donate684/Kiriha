@@ -1,15 +1,15 @@
+using System;
+using System.Collections.Generic;
 using Kiriha.ViewModels.Analytics;
 using Kiriha.ViewModels.AnimeList;
+using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.History;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Seasonal;
 using Kiriha.ViewModels.Settings;
-using Kiriha.ViewModels.Torrents;
 using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Dialogs;
-using System;
-using System.Collections.Generic;
+using Kiriha.ViewModels.Torrents;
 
 namespace Kiriha.ViewModels.Main;
 

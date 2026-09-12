@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Models;
 
 namespace Kiriha.Services.Data.Settings;
 

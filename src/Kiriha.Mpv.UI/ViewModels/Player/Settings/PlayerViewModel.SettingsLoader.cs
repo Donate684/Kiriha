@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 using System.Linq;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 

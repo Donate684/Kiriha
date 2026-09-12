@@ -1,11 +1,11 @@
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core;
-using Kiriha.Core.Domain.Models;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Kiriha.Core;
 using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Platform;
 using Xunit;

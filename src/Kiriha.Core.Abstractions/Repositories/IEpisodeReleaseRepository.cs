@@ -15,14 +15,14 @@ namespace Kiriha.Core.Abstractions.Repositories;
 /// </summary>
 public interface IEpisodeReleaseRepository
 {
-    Task<List<EpisodeRelease>> GetByMalIdAsync(int malId);
+    Task<List<EpisodeRelease>> GetByMalIdAsync(int malId, CancellationToken ct = default);
 
     /// <summary>UTC timestamp of the last successful fetch, or null on miss.</summary>
-    Task<DateTime?> GetFetchedAtAsync(int malId);
+    Task<DateTime?> GetFetchedAtAsync(int malId, CancellationToken ct = default);
 
     /// <summary>
     /// Replaces the entire episode list for <paramref name="malId"/> and stamps
     /// <see cref="EpisodeListMeta.FetchedAt"/> in the same SaveChanges call.
     /// </summary>
-    Task ReplaceAsync(int malId, IEnumerable<EpisodeRelease> episodes);
+    Task ReplaceAsync(int malId, IEnumerable<EpisodeRelease> episodes, CancellationToken ct = default);
 }

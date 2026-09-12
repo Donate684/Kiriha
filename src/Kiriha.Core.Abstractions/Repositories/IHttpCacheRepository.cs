@@ -16,7 +16,7 @@ namespace Kiriha.Core.Abstractions.Repositories;
 /// </summary>
 public interface IHttpCacheRepository
 {
-    Task<HttpCacheEntry?> GetAsync(string urlHash);
+    Task<HttpCacheEntry?> GetAsync(string urlHash, CancellationToken ct = default);
 
-    Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body);
+    Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body, CancellationToken ct = default);
 }

@@ -1,6 +1,3 @@
-using Kiriha.Services.Data.Core;
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Repository;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -8,8 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Repository;
 
 namespace Kiriha.ViewModels.Analytics;
 

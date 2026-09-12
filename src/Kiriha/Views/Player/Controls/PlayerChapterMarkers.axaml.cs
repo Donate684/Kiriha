@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Avalonia;
@@ -7,6 +7,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Media;
 using Kiriha.Mpv.UI.ViewModels.Player;
+using Path = Avalonia.Controls.Shapes.Path;
 
 namespace Kiriha.Views.Player.Controls;
 

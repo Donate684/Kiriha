@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Async;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
+using Kiriha.Utils.Async;
 
 namespace Kiriha.ViewModels.AnimeList;
 

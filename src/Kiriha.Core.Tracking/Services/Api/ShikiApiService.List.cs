@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Tracking.Sync;
-
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Sync;
+using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

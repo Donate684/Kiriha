@@ -19,7 +19,7 @@ namespace Kiriha.Core.Abstractions.Repositories;
 public interface IMalSearchCacheRepository
 {
     /// <summary>Returns a non-expired cache hit, or null on miss / expired entry.</summary>
-    Task<MalSearchCache?> GetAsync(string queryNormalized);
+    Task<MalSearchCache?> GetAsync(string queryNormalized, CancellationToken ct = default);
 
-    Task UpsertAsync(string queryNormalized, int animeId, float score);
+    Task UpsertAsync(string queryNormalized, int animeId, float score, CancellationToken ct = default);
 }

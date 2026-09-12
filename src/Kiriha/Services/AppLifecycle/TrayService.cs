@@ -68,7 +68,7 @@ public sealed class TrayService
         }
     }
 
-    public async void Exit()
+    public async Task ExitAsync()
     {
         if (_app.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
@@ -86,4 +86,7 @@ public sealed class TrayService
 
         desktop.Shutdown();
     }
+
+    [Obsolete("Use ExitAsync instead.")]
+    public async void Exit() => await ExitAsync();
 }

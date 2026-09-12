@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Infrastructure;
-
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure;
 
 namespace Kiriha.Core.Tracking.Sync;
 

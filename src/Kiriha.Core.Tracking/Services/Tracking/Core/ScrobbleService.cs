@@ -3,14 +3,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
-using Kiriha.Core.Tracking.Sync;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Sync;
 using Serilog;
-using Kiriha.Core.Abstractions.Infrastructure;
 
 namespace Kiriha.Core.Tracking.Core;
 
@@ -86,7 +86,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         // Check if the detected episode skips ahead beyond the next expected one.
         if (ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode)
         {
-            var msg = string.Format("scrobbler.status.episode_skipped");
+            var msg = _localizer.GetLoc("scrobbler.status.episode_skipped");
             CountdownUpdated?.Invoke(this, msg);
             Log.Information("ScrobbleService: episode skip detected (progress={Progress}, ep={Ep}), notifying instead of updating",
                 match.Progress, ep);
@@ -150,7 +150,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
                 if (!isPlaying)
                 {
-                    CountdownUpdated?.Invoke(this, string.Format("scrobbler.status.paused"));
+                    CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.paused"));
                     await Task.Delay(1000, ct);
                     continue;
                 }
@@ -195,13 +195,13 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 _notificationService.NotifyAnimeCompleted(match);
             }
 
-            CountdownUpdated?.Invoke(this, string.Format("scrobbler.status.updated"));
+            CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.updated"));
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             Log.Error(ex, "Scrobble countdown error");
-            CountdownUpdated?.Invoke(this, string.Format("common.errors.generic"));
+            CountdownUpdated?.Invoke(this, _localizer.GetLoc("common.errors.generic"));
         }
     }
 

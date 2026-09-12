@@ -1,14 +1,14 @@
-using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core;
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
+using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Models;
 using Serilog;
 
 namespace Kiriha.ViewModels.Torrents;

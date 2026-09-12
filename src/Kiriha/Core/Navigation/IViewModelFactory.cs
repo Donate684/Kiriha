@@ -1,11 +1,11 @@
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
 using System;
 using Kiriha.ViewModels;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Search;
+using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Startup;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiriha.Core.Navigation;

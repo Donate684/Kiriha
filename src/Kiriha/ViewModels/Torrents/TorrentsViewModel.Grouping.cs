@@ -1,9 +1,9 @@
-using Kiriha.Core.Domain.Models.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 
 namespace Kiriha.ViewModels.Torrents;
 

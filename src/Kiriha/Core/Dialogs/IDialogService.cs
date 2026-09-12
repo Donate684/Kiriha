@@ -1,9 +1,9 @@
-using Kiriha.Core.Domain.Models.Entities;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 
 namespace Kiriha.Core.Dialogs;
 

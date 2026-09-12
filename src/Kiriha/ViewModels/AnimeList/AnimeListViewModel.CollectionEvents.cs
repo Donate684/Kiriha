@@ -1,6 +1,6 @@
 using System.Collections.Specialized;
-using Serilog;
 using Kiriha.Utils.Async;
+using Serilog;
 
 namespace Kiriha.ViewModels.AnimeList;
 

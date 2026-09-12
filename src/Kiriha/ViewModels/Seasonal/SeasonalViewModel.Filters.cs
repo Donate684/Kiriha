@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 
 namespace Kiriha.ViewModels.Seasonal;
 

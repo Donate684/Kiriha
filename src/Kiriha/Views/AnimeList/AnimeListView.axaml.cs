@@ -1,12 +1,12 @@
-using Kiriha.Services.Data.Settings;
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Models;
+using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;

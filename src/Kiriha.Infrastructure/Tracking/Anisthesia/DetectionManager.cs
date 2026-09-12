@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,6 +11,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
+using Serilog;
 
 namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
@@ -187,7 +189,10 @@ public class DetectionManager
                         }
                     }
                 }
-                catch { /* Access denied or process exited */ }
+                catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or UnauthorizedAccessException)
+                {
+                    Log.Debug(ex, "Process access denied or process exited while inspecting {ProcessName}", procName);
+                }
             }
 
             return (running, detectedMedia);
@@ -268,7 +273,10 @@ public class DetectionManager
                         }
                     }
                 }
-                catch { /* Access denied or process exited */ }
+                catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or UnauthorizedAccessException)
+                {
+                    Log.Debug(ex, "Process access denied or process exited in fallback process enumeration");
+                }
             }
         }
         finally

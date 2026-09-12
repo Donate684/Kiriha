@@ -1,16 +1,16 @@
-﻿using Kiriha.Core.Tracking.Api;
-using Kiriha.Services.Data.Settings;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Services;
-using Kiriha.Core.Tracking.Auth;
-using Kiriha.Services.Data;
-using Serilog;
-using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Tracking.Api;
+using Kiriha.Core.Tracking.Auth;
+using Kiriha.Models;
+using Kiriha.Services;
+using Kiriha.Services.Data;
+using Kiriha.Services.Data.Settings;
+using Serilog;
 
 namespace Kiriha.ViewModels.Settings;
 

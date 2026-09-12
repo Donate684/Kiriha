@@ -1,10 +1,10 @@
-using Kiriha.Core.Domain.Models.Entities;
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 using Kiriha.ViewModels.Seasonal;
 using Kiriha.Views.Seasonal;
 

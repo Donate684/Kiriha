@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Kiriha.Core.Domain.Models;
@@ -13,8 +14,8 @@ namespace Kiriha.Core.Abstractions.Repositories;
 /// </summary>
 public interface IHistoryRepository
 {
-    Task AddAsync(HistoryItem item);
+    Task AddAsync(HistoryItem item, CancellationToken ct = default);
 
     /// <summary>Most recent <paramref name="limit"/> entries, newest first.</summary>
-    Task<List<HistoryItem>> GetAsync(int limit = 1000);
+    Task<List<HistoryItem>> GetAsync(int limit = 1000, CancellationToken ct = default);
 }

@@ -1,10 +1,10 @@
-using Kiriha.Core.Abstractions.Services.AppLifecycle;
-using Kiriha.Core.Domain.Models.Entities;
 using System;
-using Kiriha.Core;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.Themes.Fluent;
+using Kiriha.Core;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.AppLifecycle;
 using Material.Icons.Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,7 +70,13 @@ public partial class App : Application
     }
     public void UpdateTrayMenu() => _trayService?.UpdateTrayMenu();
     private void TrayRestore_Click(object? sender, EventArgs e) => _trayService?.RestoreMainWindow();
-    private void TrayExit_Click(object? sender, EventArgs e) => _trayService?.Exit();
+    private async void TrayExit_Click(object? sender, EventArgs e)
+    {
+        if (_trayService != null)
+        {
+            await _trayService.ExitAsync();
+        }
+    }
     private static Avalonia.Controls.ResourceDictionary? _customAccentDictionary;
     public static void ApplyCustomAccentColor(string? hexCode)
     {

@@ -1,7 +1,7 @@
 using System;
-using Kiriha.Core.Tracking.Api;
 using System.Collections.Generic;
 using System.Threading;
+using Kiriha.Core.Tracking.Api;
 
 namespace Kiriha.Core.Tracking.Api;
 

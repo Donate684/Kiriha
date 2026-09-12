@@ -1,5 +1,5 @@
-using Kiriha.Core.Domain.Models.Entities;
 using System;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 

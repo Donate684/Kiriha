@@ -1,10 +1,10 @@
-using Kiriha.ViewModels.Dialogs;
 using System;
 using Avalonia;
-using Avalonia.Input;
 using Avalonia.Controls;
-using Kiriha.ViewModels;
+using Avalonia.Input;
 using Avalonia.Media;
+using Kiriha.ViewModels;
+using Kiriha.ViewModels.Dialogs;
 
 namespace Kiriha.Views;
 

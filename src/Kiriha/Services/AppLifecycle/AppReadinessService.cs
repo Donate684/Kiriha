@@ -1,23 +1,23 @@
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Services.Data.Core;
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Services.Data.Settings;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Infrastructure.Player;
-using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Core.Tracking.Sync;
+using Kiriha.Infrastructure.Player;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Services.Data;
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Repository;
+using Kiriha.Services.Data.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System.Collections.Generic;
 
 namespace Kiriha.Services.AppLifecycle;
 

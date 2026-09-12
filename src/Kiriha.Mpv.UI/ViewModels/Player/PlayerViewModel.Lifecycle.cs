@@ -1,6 +1,6 @@
 using System;
-using Serilog;
 using Kiriha.Core.Domain.Models.Api;
+using Serilog;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 

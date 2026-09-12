@@ -1,5 +1,5 @@
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Models;
 
 namespace Kiriha.ViewModels.Settings;
 

@@ -1,16 +1,16 @@
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Services.Data.Settings;
 using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Tracking;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Services;
 using Kiriha.Services.Data;
-using Kiriha.Core.Tracking;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Abstractions.Services;
+using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -18,6 +18,7 @@ public partial class SettingsSystemViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
     private readonly DiscordService _discordService;
+    private readonly IStartupManager _startupManager;
 
     [ObservableProperty] private bool _autoLaunch;
     [ObservableProperty] private bool _launchMinimized;
@@ -46,10 +47,11 @@ public partial class SettingsSystemViewModel : ObservableObject
 
     [ObservableProperty] private AiringSourceOption _selectedAiringSource;
 
-    public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService)
+    public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService, IStartupManager startupManager)
     {
         _settingsService = settingsService;
         _discordService = discordService;
+        _startupManager = startupManager;
 
         AutoLaunch = _settingsService.Current.System.AutoLaunch;
         LaunchMinimized = _settingsService.Current.System.LaunchMinimized;
@@ -73,14 +75,14 @@ public partial class SettingsSystemViewModel : ObservableObject
     partial void OnAutoLaunchChanged(bool value)
     {
         _settingsService.Update(settings => settings.System.AutoLaunch = value, SettingsSection.System);
-        if (value) StartupService.EnableStartup(LaunchMinimized);
-        else StartupService.DisableStartup();
+        if (value) _startupManager.EnableStartup(LaunchMinimized);
+        else _startupManager.DisableStartup();
     }
 
     partial void OnLaunchMinimizedChanged(bool value)
     {
         _settingsService.Update(settings => settings.System.LaunchMinimized = value, SettingsSection.System);
-        if (AutoLaunch) StartupService.EnableStartup(value);
+        if (AutoLaunch) _startupManager.EnableStartup(value);
     }
 
     partial void OnCloseToTrayChanged(bool value) => _settingsService.Update(settings => settings.System.CloseToTray = value, SettingsSection.System);

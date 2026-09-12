@@ -3,12 +3,12 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Mpv;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Mpv.UI.ViewModels.Player.Settings;
-using Kiriha.Mpv.UI.Services.Player;
-using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Mpv;
+using Kiriha.Mpv.UI.Services.Player;
+using Kiriha.Mpv.UI.ViewModels.Player.Settings;
+using Kiriha.Services.Data;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 

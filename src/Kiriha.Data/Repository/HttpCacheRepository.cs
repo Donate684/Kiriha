@@ -1,10 +1,10 @@
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Core;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Services.Data.Repository;
@@ -20,12 +20,12 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
         _contextFactory = contextFactory;
     }
 
-    public async Task<HttpCacheEntry?> GetAsync(string urlHash)
+    public async Task<HttpCacheEntry?> GetAsync(string urlHash, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(urlHash)) return null;
-        using var context = await _contextFactory.CreateDbContextAsync();
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entry = await context.HttpResponseCache.AsNoTracking()
-            .FirstOrDefaultAsync(e => e.UrlHash == urlHash);
+            .FirstOrDefaultAsync(e => e.UrlHash == urlHash, ct);
         if (entry == null) return null;
         if (DateTime.UtcNow - entry.CreatedAt > Ttl) return null;
 
@@ -33,14 +33,14 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
         return entry;
     }
 
-    public async Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body)
+    public async Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(urlHash) || body == null) return;
         var storedBody = Compress(body);
 
-        using var context = await _contextFactory.CreateDbContextAsync();
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.HttpResponseCache.AsTracking()
-            .FirstOrDefaultAsync(e => e.UrlHash == urlHash);
+            .FirstOrDefaultAsync(e => e.UrlHash == urlHash, ct);
         var now = DateTime.UtcNow;
         if (existing == null)
         {
@@ -60,7 +60,7 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
             existing.Body = storedBody;
             existing.CreatedAt = now;
         }
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
     }
 
     public static byte[] Compress(byte[] data)

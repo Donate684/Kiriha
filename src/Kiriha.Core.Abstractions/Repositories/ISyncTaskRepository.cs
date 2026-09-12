@@ -15,17 +15,17 @@ namespace Kiriha.Core.Abstractions.Repositories;
 public interface ISyncTaskRepository
 {
     /// <summary>Persists a new task and returns its assigned id.</summary>
-    Task<int> AddAsync(SyncTaskEntity task);
+    Task<int> AddAsync(SyncTaskEntity task, CancellationToken ct = default);
 
     /// <summary>All currently queued tasks, ordered by id ascending (FIFO).</summary>
-    Task<List<SyncTaskEntity>> GetPendingAsync();
+    Task<List<SyncTaskEntity>> GetPendingAsync(CancellationToken ct = default);
 
-    Task UpdateAsync(SyncTaskEntity task);
+    Task UpdateAsync(SyncTaskEntity task, CancellationToken ct = default);
 
     /// <summary>Idempotent: a concurrent removal is treated as success.</summary>
-    Task RemoveAsync(int id);
+    Task RemoveAsync(int id, CancellationToken ct = default);
 
-    Task RemoveManyAsync(IEnumerable<int> ids);
+    Task RemoveManyAsync(IEnumerable<int> ids, CancellationToken ct = default);
 
-    Task RemoveForAnimeAsync(int animeId);
+    Task RemoveForAnimeAsync(int animeId, CancellationToken ct = default);
 }

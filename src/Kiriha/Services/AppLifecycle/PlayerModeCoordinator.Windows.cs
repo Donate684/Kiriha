@@ -1,11 +1,11 @@
-﻿using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Settings;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Mpv.UI.ViewModels.Player;
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Settings;
 using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;
-using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Services.AppLifecycle;
 

@@ -1,6 +1,6 @@
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 
 namespace Kiriha.Services.Data.Mapping;
 

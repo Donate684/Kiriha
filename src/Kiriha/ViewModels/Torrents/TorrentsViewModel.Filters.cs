@@ -1,10 +1,10 @@
-﻿using Kiriha.Services.Data.Settings;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Services.Data;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Models;
+using Kiriha.Services.Data;
+using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.ViewModels.Torrents;
 

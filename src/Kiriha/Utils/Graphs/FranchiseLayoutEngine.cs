@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Kiriha.Utils.Graphs;
 

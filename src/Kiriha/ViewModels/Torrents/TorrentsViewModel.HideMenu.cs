@@ -1,10 +1,10 @@
-﻿using Kiriha.Services.Data.Settings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data;
-using Kiriha.Core.Abstractions.Services;
+using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.ViewModels.Torrents;
 

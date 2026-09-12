@@ -1,14 +1,14 @@
 using System;
-using Kiriha.Core.Shared;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Infrastructure;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Shared;
+using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -38,7 +38,7 @@ public class MalAuthService
     {
         var codeVerifier = GenerateCodeVerifier();
         var authUrl = GetAuthUrl(codeVerifier);
-        string successMessage = string.Format("auth.success", "MyAnimeList");
+        string successMessage = "Successfully authorized MyAnimeList!";
         var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage);
 
         if (string.IsNullOrEmpty(code)) return null;

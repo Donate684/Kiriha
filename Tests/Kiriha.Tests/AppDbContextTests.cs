@@ -1,9 +1,9 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Services.Data.Core;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 using Kiriha.Services.Data;
+using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Tests;

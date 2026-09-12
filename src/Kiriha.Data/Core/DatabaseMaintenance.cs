@@ -1,10 +1,9 @@
-using Kiriha.Services.Data.Core;
 using System;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Kiriha.Core.Domain.Models;
+using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 

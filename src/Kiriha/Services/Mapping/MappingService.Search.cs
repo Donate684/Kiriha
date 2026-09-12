@@ -1,8 +1,8 @@
-using Kiriha.Services.Data.Mapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Kiriha.Services.Data.Mapping;
 using Serilog;
 
 namespace Kiriha.Services.Data.Mapping;

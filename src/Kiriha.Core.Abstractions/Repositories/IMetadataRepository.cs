@@ -14,15 +14,15 @@ namespace Kiriha.Core.Abstractions.Repositories;
 public interface IMetadataRepository
 {
     /// <summary>Returns the cached entry, or null if we've never fetched it.</summary>
-    Task<ShikiMetadata?> GetAsync(int id);
+    Task<ShikiMetadata?> GetAsync(int id, CancellationToken ct = default);
 
     /// <summary>
     /// Inserts or updates the entry. <see cref="ShikiMetadata.FetchedAt"/> is
     /// stamped to <see cref="DateTime.UtcNow"/> unconditionally so the TTL
     /// window is reset on every successful upsert.
     /// </summary>
-    Task UpsertAsync(ShikiMetadata meta);
+    Task UpsertAsync(ShikiMetadata meta, CancellationToken ct = default);
 
     /// <summary>Returns a set of all currently cached metadata IDs.</summary>
-    Task<HashSet<int>> GetAllIdsAsync();
+    Task<HashSet<int>> GetAllIdsAsync(CancellationToken ct = default);
 }

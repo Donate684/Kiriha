@@ -1,9 +1,9 @@
 using System;
-using Kiriha.Core.Tracking.Api;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Tracking.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

@@ -1,5 +1,3 @@
-using Kiriha.Services.Data.Settings;
-using Kiriha.Services.Data.Metadata;
 using System;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,6 +5,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Services.Data;
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

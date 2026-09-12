@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using DiscordRPC;
 using DiscordRPC.Logging;
-using Kiriha.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Infrastructure.Tracking.Integration;

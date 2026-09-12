@@ -1,8 +1,8 @@
 using System;
-using Kiriha.Models;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure;
-using Kiriha.Core.Abstractions.Services;
+using Kiriha.Models;
 
 namespace Kiriha.ViewModels.History;
 
@@ -10,7 +10,7 @@ namespace Kiriha.ViewModels.History;
 /// Display entry for history. Represents either a single HistoryItem or a
 /// merged range of consecutive episode-watches for the same anime on the same day.
 /// </summary>
-public class HistoryEntryVm : HistoryTimelineItem
+public sealed class HistoryEntryVm : HistoryTimelineItem
 {
     public bool IsFirstInGroup { get; set; }
     public bool IsLastInGroup { get; set; }

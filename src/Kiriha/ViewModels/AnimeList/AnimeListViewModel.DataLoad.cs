@@ -1,7 +1,7 @@
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Utils.Async;
 using Kiriha.Infrastructure;
+using Kiriha.Models;
+using Kiriha.Utils.Async;
 
 namespace Kiriha.ViewModels.AnimeList;
 

@@ -1,16 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kiriha.Infrastructure;
-using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Api;
-
-using Kiriha.Core.Domain.Models;
+using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -49,7 +48,7 @@ public partial class ShikiAuthService
 
         var mirror = ActiveMirror;
         var authUrl = GetAuthUrl();
-        string successMessage = string.Format("auth.success", "Shikimori");
+        string successMessage = "Successfully authorized Shikimori!";
         var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage);
 
         if (string.IsNullOrEmpty(code)) return null;

@@ -243,4 +243,63 @@ public class ModernizationGuardTests
             $"Found {violations.Count} 'static readonly (Dictionary|HashSet)' fields that should use FrozenDictionary / FrozenSet:\n" +
             string.Join("\n", violations));
     }
+
+    [Fact]
+    public void NoTaskRunInDatabaseInitializer_ShouldBeZero()
+    {
+        var dbInitPath = Path.Combine(SrcRoot, "Kiriha.Data", "Core", "DatabaseInitializer.cs");
+        Assert.True(File.Exists(dbInitPath), $"File not found: {dbInitPath}");
+
+        var content = File.ReadAllText(dbInitPath);
+        Assert.DoesNotContain("Task.Run", content);
+    }
+
+    [Fact]
+    public void NoBareCatchInDetectionManager_ShouldBeZero()
+    {
+        var detectionManagerPath = Path.Combine(SrcRoot, "Kiriha.Infrastructure", "Tracking", "Anisthesia", "DetectionManager.cs");
+        Assert.True(File.Exists(detectionManagerPath), $"File not found: {detectionManagerPath}");
+
+        var content = File.ReadAllText(detectionManagerPath);
+        Assert.DoesNotMatch(@"catch\s*\{", content);
+    }
+
+    [Fact]
+    public void TrayService_Exit_ReturnsTask()
+    {
+        var trayServiceType = typeof(Kiriha.Services.AppLifecycle.TrayService);
+        var exitAsyncMethod = trayServiceType.GetMethod("ExitAsync");
+        Assert.NotNull(exitAsyncMethod);
+        Assert.Equal(typeof(System.Threading.Tasks.Task), exitAsyncMethod.ReturnType);
+    }
+
+    [Fact]
+    public void ParsedMedia_RecordClass_WithExpressionSupportsClone()
+    {
+        var media = new Kiriha.Core.Domain.Models.ParsedMedia
+        {
+            AnimeTitle = "Steins;Gate",
+            Episode = "1",
+            ProcessName = "mpv.exe",
+            Pid = 1234
+        };
+
+        var cloned = media with { Episode = "2" };
+
+        Assert.Equal("Steins;Gate", cloned.AnimeTitle);
+        Assert.Equal("2", cloned.Episode);
+        Assert.Equal("mpv.exe", cloned.ProcessName);
+        Assert.Equal(1234u, cloned.Pid);
+        Assert.NotSame(media, cloned);
+    }
+
+    [Fact]
+    public void CustomShareLink_GeneratesValidUuidV7String()
+    {
+        var link = new Kiriha.Core.Domain.Models.CustomShareLink();
+        Assert.NotNull(link.Id);
+        Assert.Equal(32, link.Id.Length);
+        Assert.True(Guid.TryParseExact(link.Id, "N", out var parsedGuid));
+        Assert.NotEqual(Guid.Empty, parsedGuid);
+    }
 }

@@ -1,16 +1,16 @@
-using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Services.Data.Settings;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Services.Data;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Models;
+using Kiriha.Services.Data;
+using Kiriha.Services.Data.Repository;
+using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.ViewModels.Torrents;
 

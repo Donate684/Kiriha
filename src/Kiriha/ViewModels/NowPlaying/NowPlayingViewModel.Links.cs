@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Infrastructure.Platform;
-using Avalonia.Input.Platform;
 
 namespace Kiriha.ViewModels.NowPlaying;
 

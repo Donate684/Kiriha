@@ -1,11 +1,11 @@
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure.Tracking.Integration;
 using Serilog;
 
 namespace Kiriha.Services.Maintenance;

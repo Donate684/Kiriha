@@ -1,18 +1,18 @@
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Startup;
-using Kiriha.ViewModels.Settings;
 using System.Threading.Tasks;
-using Avalonia.Input.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Infrastructure.Platform;
-using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure.Platform;
+using Kiriha.Models;
+using Kiriha.ViewModels.Dialogs;
+using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.NowPlaying;
+using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Startup;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 

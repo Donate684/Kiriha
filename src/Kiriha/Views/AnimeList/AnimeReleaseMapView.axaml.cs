@@ -1,19 +1,19 @@
 using System;
-using Kiriha.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
+using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
-using Avalonia.Markup.Xaml;
-using Kiriha.Localization;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Infrastructure;
+using Kiriha.Localization;
+using Kiriha.Models;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;

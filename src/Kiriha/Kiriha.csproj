@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net11.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
          and we want it to stay clean: silent regressions in null-safety are a top
          source of NREs that bubble up as user-visible crashes. -->
@@ -30,20 +29,6 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Tests\**" />
-    <EmbeddedResource Remove="Tests\**" />
-    <None Remove="Tests\**" />
-    <Compile Remove="Kiriha.Core\**" />
-    <EmbeddedResource Remove="Kiriha.Core\**" />
-    <None Remove="Kiriha.Core\**" />
-    <Compile Remove="Kiriha.Core.*\**" />
-    <EmbeddedResource Remove="Kiriha.Core.*\**" />
-    <None Remove="Kiriha.Core.*\**" />
-    <Compile Remove="Kiriha.Data\**" />
-    <EmbeddedResource Remove="Kiriha.Data\**" />
-    <None Remove="Kiriha.Data\**" />
-  </ItemGroup>
 
   <!-- Package versions live in Directory.Packages.props (CPM). -->
   <ItemGroup>

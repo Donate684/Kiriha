@@ -1,12 +1,12 @@
-﻿using Kiriha.Core.Domain.Models.Entities;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Models;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Models;
 using Kiriha.ViewModels.Settings;
 using Serilog;
 

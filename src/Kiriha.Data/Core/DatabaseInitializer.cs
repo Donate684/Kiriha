@@ -1,9 +1,9 @@
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data.Core;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -51,22 +51,19 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         try
         {
             var total = Stopwatch.StartNew();
-            await Task.Run(async () =>
-            {
-                using var context = await _contextFactory.CreateDbContextAsync();
+            using var context = await _contextFactory.CreateDbContextAsync();
 
-                var stage = Stopwatch.StartNew();
-                await context.Database.MigrateAsync();
-                Log.Information("StartupTiming: database migrations elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
+            var stage = Stopwatch.StartNew();
+            await context.Database.MigrateAsync();
+            Log.Information("StartupTiming: database migrations elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
-                // WAL + sane defaults in a single batch (one round-trip on cold start).
-                stage.Restart();
-                await context.Database.ExecuteSqlRawAsync(
-                    "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000;");
-                Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
+            // WAL + sane defaults in a single batch (one round-trip on cold start).
+            stage.Restart();
+            await context.Database.ExecuteSqlRawAsync(
+                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000;");
+            Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
-                Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
-            });
+            Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
             _initTcs.TrySetResult();
         }
         catch (Exception ex)

@@ -21,9 +21,9 @@ internal sealed class LruStringMemoizer<TVal> where TVal : class
 
     public LruStringMemoizer(int capacity)
     {
-        if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
         _capacity = capacity;
-        _map = new Dictionary<string, LinkedListNode<Entry>>(capacity);
+        _map = [with(capacity)];
     }
 
     public TVal GetOrAdd(string key, Func<string, TVal> factory)

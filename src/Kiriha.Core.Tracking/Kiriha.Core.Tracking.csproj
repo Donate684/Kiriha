@@ -16,10 +16,6 @@
 
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    
-    <UseWPF Condition="$(TargetFramework.Contains('-windows'))">true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>

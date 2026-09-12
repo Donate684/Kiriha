@@ -1,26 +1,26 @@
-﻿using Kiriha.Core.Tracking.Auth;
-using Kiriha.Core.Tracking.Api;
-using Kiriha.Core;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Image;
-using Kiriha.Services.Data.Mapping;
-using Kiriha.Services.Data.Settings;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Models;
+using Kiriha.Core;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Tracking;
+using Kiriha.Core.Tracking.Api;
+using Kiriha.Core.Tracking.Auth;
+using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Tracking.Feed;
+using Kiriha.Infrastructure;
+using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Models;
 using Kiriha.Services;
 using Kiriha.Services.Data;
-using Kiriha.Core.Tracking;
+using Kiriha.Services.Data.Core;
+using Kiriha.Services.Data.Image;
+using Kiriha.Services.Data.Mapping;
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
-using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Infrastructure;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -54,14 +54,15 @@ public partial class SettingsViewModel : ViewModelBase
         MappingService mappingService,
         SeasonalViewModel seasonalViewModel,
         SystemIntegrationService systemIntegrationService,
-        FaviconService faviconService)
+        FaviconService faviconService,
+        IStartupManager startupManager)
     {
         _settingsService = settingsService;
         _faviconService = faviconService;
 
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService);
-        System = new SettingsSystemViewModel(settingsService, discordService);
+        System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
 
         Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver);
         Update = new SettingsUpdateViewModel(updateService);

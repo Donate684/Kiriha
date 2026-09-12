@@ -1,7 +1,7 @@
-using Kiriha.ViewModels.Dialogs;
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
+using Kiriha.ViewModels.Dialogs;
 
 namespace Kiriha.ViewModels.Main;
 

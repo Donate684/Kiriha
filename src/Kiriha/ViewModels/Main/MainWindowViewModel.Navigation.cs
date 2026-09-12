@@ -1,12 +1,12 @@
-using Kiriha.Core.Navigation;
-using CommunityToolkit.Mvvm.Input;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Navigation;
+using Kiriha.Models;
 using Kiriha.Utils.Async;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Startup;
-using Kiriha.Models;
-using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.ViewModels.Main;
 

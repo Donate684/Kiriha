@@ -1,10 +1,10 @@
-using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Mpv.UI.Services.Player;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Models;
-using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Mpv.UI.Services.Player;
 
 namespace Kiriha.Tests;
 
