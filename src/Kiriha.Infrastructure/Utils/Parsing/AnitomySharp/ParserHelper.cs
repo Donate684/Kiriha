@@ -28,18 +28,18 @@ namespace AnitomySharp
         private static readonly char[] DashesWithSpaceChars = DashesWithSpace.ToCharArray();
         private static readonly SearchValues<char> ResolutionSeparators = SearchValues.Create("xX\u00D7");
 
-        private static readonly FrozenDictionary<string, string> Ordinals = new (string, string)[]
+        private static readonly FrozenDictionary<string, string> Ordinals = new KeyValuePair<string, string>[]
         {
-            ("1st", "1"), ("First", "1"),
-            ("2nd", "2"), ("Second", "2"),
-            ("3rd", "3"), ("Third", "3"),
-            ("4th", "4"), ("Fourth", "4"),
-            ("5th", "5"), ("Fifth", "5"),
-            ("6th", "6"), ("Sixth", "6"),
-            ("7th", "7"), ("Seventh", "7"),
-            ("8th", "8"), ("Eighth", "8"),
-            ("9th", "9"), ("Ninth", "9")
-        }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+            new("1st", "1"), new("First", "1"),
+            new("2nd", "2"), new("Second", "2"),
+            new("3rd", "3"), new("Third", "3"),
+            new("4th", "4"), new("Fourth", "4"),
+            new("5th", "5"), new("Fifth", "5"),
+            new("6th", "6"), new("Sixth", "6"),
+            new("7th", "7"), new("Seventh", "7"),
+            new("8th", "8"), new("Eighth", "8"),
+            new("9th", "9"), new("Ninth", "9")
+        }.ToFrozenDictionary();
 
         private readonly Parser _parser;
 

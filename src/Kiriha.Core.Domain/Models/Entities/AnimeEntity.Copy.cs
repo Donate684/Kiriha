@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 
@@ -55,7 +56,7 @@ public partial class AnimeEntity
             target.LastEpisodeAt = LastEpisodeAt;
         }
 
-        if (StatusDetailed == "finished_airing" || StatusDetailed == "finished airing") target.NextEpisodeAt = null;
+        if (AppConstants.AiringStatus.IsFinishedAiring(StatusDetailed)) target.NextEpisodeAt = null;
         else if (NextEpisodeAt.HasValue) target.NextEpisodeAt = NextEpisodeAt;
 
         target.Genres = new List<string>(Genres);

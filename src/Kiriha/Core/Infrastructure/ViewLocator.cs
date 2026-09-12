@@ -46,21 +46,21 @@ namespace Kiriha.Infrastructure;
 /// </summary>
 public class ViewLocator : IDataTemplate
 {
-    private static readonly FrozenDictionary<Type, Func<Control>> Map = new (Type, Func<Control>)[]
+    private static readonly FrozenDictionary<Type, Func<Control>> Map = new KeyValuePair<Type, Func<Control>>[]
     {
-        (typeof(AmbiguousMatchViewModel), () => new AmbiguousMatchView()),
-        (typeof(AnimeListViewModel), () => new AnimeListView()),
-        (typeof(AnalyticsViewModel), () => new AnalyticsView()),
-        (typeof(FirstStartupViewModel), () => new FirstStartupView()),
-        (typeof(HistoryViewModel), () => new HistoryView()),
-        (typeof(NowPlayingViewModel), () => new NowPlayingView()),
-        (typeof(SearchViewModel), () => new SearchView()),
-        (typeof(SeasonalViewModel), () => new SeasonalView()),
-        (typeof(SettingsViewModel), () => new SettingsView()),
-        (typeof(TorrentsViewModel), () => new TorrentsView()),
-        (typeof(UpdateDialogViewModel), () => new UpdateDialogView()),
-        (typeof(WelcomeViewModel), () => new WelcomeView()),
-    }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+        new(typeof(AmbiguousMatchViewModel), () => new AmbiguousMatchView()),
+        new(typeof(AnimeListViewModel), () => new AnimeListView()),
+        new(typeof(AnalyticsViewModel), () => new AnalyticsView()),
+        new(typeof(FirstStartupViewModel), () => new FirstStartupView()),
+        new(typeof(HistoryViewModel), () => new HistoryView()),
+        new(typeof(NowPlayingViewModel), () => new NowPlayingView()),
+        new(typeof(SearchViewModel), () => new SearchView()),
+        new(typeof(SeasonalViewModel), () => new SeasonalView()),
+        new(typeof(SettingsViewModel), () => new SettingsView()),
+        new(typeof(TorrentsViewModel), () => new TorrentsView()),
+        new(typeof(UpdateDialogViewModel), () => new UpdateDialogView()),
+        new(typeof(WelcomeViewModel), () => new WelcomeView()),
+    }.ToFrozenDictionary();
 
     public Control? Build(object? param)
     {

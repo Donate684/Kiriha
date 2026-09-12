@@ -1,4 +1,5 @@
 using System;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;
@@ -90,7 +91,7 @@ public partial class AnimeEntityPresentation
         }
     }
 
-    public int ResolvedAiredEpisodes => _item.StatusDetailed == "finished_airing" && _item.TotalEpisodes > 0
+    public int ResolvedAiredEpisodes => AppConstants.AiringStatus.IsFinishedAiring(_item.StatusDetailed) && _item.TotalEpisodes > 0
         ? _item.TotalEpisodes
         : _item.EpisodesAired;
 }

@@ -72,9 +72,16 @@ public partial class App : Application
     private void TrayRestore_Click(object? sender, EventArgs e) => _trayService?.RestoreMainWindow();
     private async void TrayExit_Click(object? sender, EventArgs e)
     {
-        if (_trayService != null)
+        try
         {
-            await _trayService.ExitAsync();
+            if (_trayService != null)
+            {
+                await _trayService.ExitAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "App.TrayExit_Click failed");
         }
     }
     private static Avalonia.Controls.ResourceDictionary? _customAccentDictionary;

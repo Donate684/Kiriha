@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;
@@ -20,7 +21,7 @@ public partial class AnimeEntityPresentation
 
             if (_item.NextEpisodeAt.HasValue)
             {
-                if (_item.StatusDetailed?.Equals("finished_airing", StringComparison.OrdinalIgnoreCase) == true || _item.StatusDetailed?.Equals("finished airing", StringComparison.OrdinalIgnoreCase) == true)
+                if (AppConstants.AiringStatus.IsFinishedAiring(_item.StatusDetailed))
                     return false;
 
                 var diff = _item.NextEpisodeAt.Value - _now;
@@ -43,7 +44,7 @@ public partial class AnimeEntityPresentation
             if (IsNewEpisode && HasNewEpisodes) return GetLoc("anime.labels.new_ep");
             if (_item.NextEpisodeAt.HasValue)
             {
-                if (_item.StatusDetailed?.Equals("finished_airing", StringComparison.OrdinalIgnoreCase) == true || _item.StatusDetailed?.Equals("finished airing", StringComparison.OrdinalIgnoreCase) == true)
+                if (AppConstants.AiringStatus.IsFinishedAiring(_item.StatusDetailed))
                     return string.Empty;
 
                 var diff = _item.NextEpisodeAt.Value - _now;
@@ -142,15 +143,15 @@ public partial class AnimeEntityPresentation
         {
             return _item.StatusDetailed?.ToLowerInvariant() switch
             {
-                "currently_airing" or "currently airing" => GetLoc("anime.status.currently_airing"),
-                "finished_airing" or "finished airing" => GetLoc("anime.status.finished_airing"),
-                "not_yet_aired" or "not yet aired" or "anons" => GetLoc("anime.status.not_yet_aired"),
+                AppConstants.AiringStatus.CurrentlyAiring or AppConstants.AiringStatus.CurrentlyAiringSpaced => GetLoc("anime.status.currently_airing"),
+                AppConstants.AiringStatus.FinishedAiring or AppConstants.AiringStatus.FinishedAiringSpaced => GetLoc("anime.status.finished_airing"),
+                AppConstants.AiringStatus.NotYetAired or AppConstants.AiringStatus.NotYetAiredSpaced or AppConstants.AiringStatus.Anons => GetLoc("anime.status.not_yet_aired"),
                 _ => _item.StatusDetailed != null ? GetLoc("anime.status." + _item.StatusDetailed.ToLowerInvariant().Replace(" ", "_")) : GetLoc("anime.status.unknown")
             };
         }
     }
 
-    public bool ShowAiredInfo => IsAnime && !(_item.StatusDetailed?.Equals("finished_airing", StringComparison.OrdinalIgnoreCase) == true || _item.StatusDetailed?.Equals("finished airing", StringComparison.OrdinalIgnoreCase) == true);
+    public bool ShowAiredInfo => IsAnime && !AppConstants.AiringStatus.IsFinishedAiring(_item.StatusDetailed);
 
     public bool HasGenres => _item.Genres != null && _item.Genres.Count > 0;
 

@@ -1,6 +1,9 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using Avalonia;
 using Kiriha.Core.Abstractions.Services;
@@ -9,6 +12,7 @@ using Serilog;
 namespace Kiriha.Services.Data.Metadata;
 public class LocalizationService : ILocalizer
 {
+    private readonly ConcurrentDictionary<string, CompositeFormat> _formatCache = new();
     private string _currentLanguage = "en";
     private readonly string[] _namespaces =
     {
@@ -24,7 +28,12 @@ public class LocalizationService : ILocalizer
     public string GetLoc(string key, params object?[] args)
     {
         var pattern = GetLoc(key);
-        try { return string.Format(pattern, args); }
+        if (args is null || args.Length == 0) return pattern;
+        try
+        {
+            var composite = _formatCache.GetOrAdd(pattern, static p => CompositeFormat.Parse(p));
+            return string.Format(CultureInfo.CurrentCulture, composite, args);
+        }
         catch { return pattern; }
     }
     public void LoadLanguage(string langCode)
@@ -32,6 +41,7 @@ public class LocalizationService : ILocalizer
         try
         {
             _currentLanguage = langCode;
+            _formatCache.Clear();
             var resources = new Dictionary<string, string>();
             // 1. Load English as base (fallback)
             LoadAllNamespaces("en", resources);

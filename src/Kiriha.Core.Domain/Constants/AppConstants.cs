@@ -70,6 +70,24 @@ public static class AppConstants
         public const string GitHubReleases = "https://github.com/donate684/kiriha/releases";
     }
 
+    public static class AiringStatus
+    {
+        public const string FinishedAiring = "finished_airing";
+        public const string FinishedAiringSpaced = "finished airing";
+        public const string CurrentlyAiring = "currently_airing";
+        public const string CurrentlyAiringSpaced = "currently airing";
+        public const string NotYetAired = "not_yet_aired";
+        public const string NotYetAiredSpaced = "not yet aired";
+        public const string Anons = "anons";
+
+        public static bool IsFinishedAiring(string? statusDetailed)
+        {
+            if (string.IsNullOrWhiteSpace(statusDetailed)) return false;
+            return statusDetailed.Equals(FinishedAiring, StringComparison.OrdinalIgnoreCase)
+                || statusDetailed.Equals(FinishedAiringSpaced, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     public static class AnimeTypes
     {
         public const string Tv = "tv";

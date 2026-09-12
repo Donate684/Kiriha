@@ -50,10 +50,17 @@ public partial class FranchiseGraphWindow : KirihaWindowBase
     {
         base.OnOpened(e);
 
-        if (DataContext is FranchiseGraphViewModel vm)
+        try
         {
-            await vm.LoadGraphAsync();
-            CenterGraph();
+            if (DataContext is FranchiseGraphViewModel vm)
+            {
+                await vm.LoadGraphAsync();
+                CenterGraph();
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "FranchiseGraphWindow.OnOpened failed");
         }
     }
 

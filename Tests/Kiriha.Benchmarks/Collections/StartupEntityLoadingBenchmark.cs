@@ -42,7 +42,7 @@ public class StartupEntityLoadingBenchmark
                 EpisodesAired = 24,
                 Synopsis = "Sample synopsis text for testing startup memory allocations.",
                 RussianSynopsis = "Пример описания для тестирования памяти при старте.",
-                StatusDetailed = "finished_airing",
+                StatusDetailed = AppConstants.AiringStatus.FinishedAiring,
                 StartSeason = "winter",
                 StartYear = 2026,
                 Genres = new List<string> { "Action", "Fantasy", "Adventure" },

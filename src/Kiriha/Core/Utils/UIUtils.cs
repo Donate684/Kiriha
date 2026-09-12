@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Text;
 using Avalonia;
 using Kiriha.Core;
 using Kiriha.Infrastructure.Platform;
@@ -12,6 +16,8 @@ namespace Kiriha.Core;
 /// </summary>
 public static class UIUtils
 {
+    private static readonly ConcurrentDictionary<string, CompositeFormat> FormatCache = new();
+
     /// <summary>
     /// Looks up a localised string by key from <c>Application.Resources</c>.
     /// Returns the key itself on miss, which surfaces unlocalised entries
@@ -30,7 +36,12 @@ public static class UIUtils
     public static string GetLoc(string key, params object?[] args)
     {
         var pattern = GetLoc(key);
-        try { return string.Format(pattern, args); }
+        if (args is null || args.Length == 0) return pattern;
+        try
+        {
+            var composite = FormatCache.GetOrAdd(pattern, static p => CompositeFormat.Parse(p));
+            return string.Format(CultureInfo.CurrentCulture, composite, args);
+        }
         catch { return pattern; }
     }
 

@@ -156,4 +156,25 @@ public sealed class CoreModernizationRefactoringTests
 
         try { File.Delete(dbPath); } catch { }
     }
+
+    [Theory]
+    [InlineData("finished_airing", true)]
+    [InlineData("finished airing", true)]
+    [InlineData("FINISHED_AIRING", true)]
+    [InlineData("Finished Airing", true)]
+    [InlineData("currently_airing", false)]
+    [InlineData("not_yet_aired", false)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    public void AiringStatus_IsFinishedAiring_ValidatesCorrectly(string? status, bool expected)
+    {
+        Assert.Equal(expected, Kiriha.Core.Domain.Constants.AppConstants.AiringStatus.IsFinishedAiring(status));
+    }
+
+    [Fact]
+    public void UIUtils_GetLoc_WithFormatArgs_FormatsCorrectly()
+    {
+        var formatted = Kiriha.Core.UIUtils.GetLoc("Episodes {0} of {1}", 12, 24);
+        Assert.Equal("Episodes 12 of 24", formatted);
+    }
 }

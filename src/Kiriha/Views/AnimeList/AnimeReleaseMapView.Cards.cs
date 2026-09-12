@@ -60,15 +60,29 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         };
         card.Tapped += async (_, e) =>
         {
-            e.Handled = true;
-            await OpenAnimeDetailsAsync(release.Item);
+            try
+            {
+                e.Handled = true;
+                await OpenAnimeDetailsAsync(release.Item);
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "AnimeReleaseMapView card.Tapped failed");
+            }
         };
         card.KeyDown += async (_, e) =>
         {
             if (e.Key is Key.Enter or Key.Space)
             {
-                e.Handled = true;
-                await OpenAnimeDetailsAsync(release.Item);
+                try
+                {
+                    e.Handled = true;
+                    await OpenAnimeDetailsAsync(release.Item);
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error(ex, "AnimeReleaseMapView card.KeyDown failed");
+                }
             }
         };
 

@@ -88,5 +88,15 @@ public sealed class TrayService
     }
 
     [Obsolete("Use ExitAsync instead.")]
-    public async void Exit() => await ExitAsync();
+    public async void Exit()
+    {
+        try
+        {
+            await ExitAsync();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "TrayService.Exit failed");
+        }
+    }
 }

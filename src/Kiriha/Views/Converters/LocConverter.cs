@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
@@ -13,6 +15,8 @@ namespace Kiriha.Views.Converters;
 
 public class LocConverter : IValueConverter
 {
+    private static readonly ConcurrentDictionary<string, CompositeFormat> FormatCache = new();
+
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is Enum e)
@@ -73,9 +77,10 @@ public class LocConverter : IValueConverter
             {
                 try
                 {
+                    var composite = FormatCache.GetOrAdd(formatStr, static p => CompositeFormat.Parse(p));
                     if (value is AnimeEntity ai)
-                        return string.Format(formatStr, ai.EpisodesAired, ai.TotalEpisodes);
-                    return string.Format(formatStr, value);
+                        return string.Format(CultureInfo.CurrentCulture, composite, ai.EpisodesAired, ai.TotalEpisodes);
+                    return string.Format(CultureInfo.CurrentCulture, composite, value);
                 }
                 catch { return value?.ToString(); }
             }

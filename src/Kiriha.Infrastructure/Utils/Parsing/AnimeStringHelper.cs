@@ -11,47 +11,47 @@ namespace Kiriha.Utils.Parsing;
 
 public static class AnimeStringHelper
 {
-    private static readonly FrozenDictionary<string, string> RomanNumerals = new (string, string)[]
+    private static readonly FrozenDictionary<string, string> RomanNumerals = new KeyValuePair<string, string>[]
     {
-        ("i", "1"), ("ii", "2"), ("iii", "3"), ("iv", "4"), ("v", "5"),
-        ("vi", "6"), ("vii", "7"), ("viii", "8"), ("ix", "9"), ("x", "10"),
-        ("xi", "11"), ("xii", "12"), ("xiii", "13"), ("xiv", "14"), ("xv", "15")
-    }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+        new("i", "1"), new("ii", "2"), new("iii", "3"), new("iv", "4"), new("v", "5"),
+        new("vi", "6"), new("vii", "7"), new("viii", "8"), new("ix", "9"), new("x", "10"),
+        new("xi", "11"), new("xii", "12"), new("xiii", "13"), new("xiv", "14"), new("xv", "15")
+    }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<string, string> Ordinals = new (string, string)[]
+    private static readonly FrozenDictionary<string, string> Ordinals = new KeyValuePair<string, string>[]
     {
-        ("first", "1st"), ("second", "2nd"), ("third", "3rd"),
-        ("fourth", "4th"), ("fifth", "5th"), ("sixth", "6th"),
-        ("seventh", "7th"), ("eighth", "8th"), ("ninth", "9th")
-    }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+        new("first", "1st"), new("second", "2nd"), new("third", "3rd"),
+        new("fourth", "4th"), new("fifth", "5th"), new("sixth", "6th"),
+        new("seventh", "7th"), new("eighth", "8th"), new("ninth", "9th")
+    }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<string, string> SeasonsMap = new (string, string)[]
+    private static readonly FrozenDictionary<string, string> SeasonsMap = new KeyValuePair<string, string>[]
     {
-        ("1st season", "1"), ("season 1", "1"), ("series 1", "1"), ("s1", "1"),
-        ("2nd season", "2"), ("season 2", "2"), ("series 2", "2"), ("s2", "2"),
-        ("3rd season", "3"), ("season 3", "3"), ("series 3", "3"), ("s3", "3"),
-        ("4th season", "4"), ("season 4", "4"), ("series 4", "4"), ("s4", "4"),
-        ("5th season", "5"), ("season 5", "5"), ("series 5", "5"), ("s5", "5"),
-        ("6th season", "6"), ("season 6", "6"), ("series 6", "6"), ("s6", "6")
-    }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+        new("1st season", "1"), new("season 1", "1"), new("series 1", "1"), new("s1", "1"),
+        new("2nd season", "2"), new("season 2", "2"), new("series 2", "2"), new("s2", "2"),
+        new("3rd season", "3"), new("season 3", "3"), new("series 3", "3"), new("s3", "3"),
+        new("4th season", "4"), new("season 4", "4"), new("series 4", "4"), new("s4", "4"),
+        new("5th season", "5"), new("season 5", "5"), new("series 5", "5"), new("s5", "5"),
+        new("6th season", "6"), new("season 6", "6"), new("series 6", "6"), new("s6", "6")
+    }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<string, string> GenericReplacements = new (string, string)[]
+    private static readonly FrozenDictionary<string, string> GenericReplacements = new KeyValuePair<string, string>[]
     {
-        ("&", "and"),
-        ("the animation", ""),
-        ("the", ""),
-        ("episode", ""),
-        ("oad", "ova"),
-        ("oav", "ova"),
-        ("specials", "sp"),
-        ("special", "sp"),
-        ("(tv)", "")
-    }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+        new("&", "and"),
+        new("the animation", ""),
+        new("the", ""),
+        new("episode", ""),
+        new("oad", "ova"),
+        new("oav", "ova"),
+        new("specials", "sp"),
+        new("special", "sp"),
+        new("(tv)", "")
+    }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<string, string> WapuroMap = new (string, string)[]
+    private static readonly FrozenDictionary<string, string> WapuroMap = new KeyValuePair<string, string>[]
     {
-        ("wa", "ha"), ("e", "he"), ("o", "wo")
-    }.ToFrozenDictionary(x => x.Item1, x => x.Item2);
+        new("wa", "ha"), new("e", "he"), new("o", "wo")
+    }.ToFrozenDictionary();
 
     // Pre-compiled Regexes for maximum performance
     private static readonly Regex SpacesRegex = new(@"\s+", RegexOptions.Compiled);

@@ -45,19 +45,33 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
     private async void ReleaseHero_Tapped(object? sender, TappedEventArgs e)
     {
-        if (_currentHeroItem != null)
+        try
         {
-            e.Handled = true;
-            await OpenAnimeDetailsAsync(_currentHeroItem);
+            if (_currentHeroItem != null)
+            {
+                e.Handled = true;
+                await OpenAnimeDetailsAsync(_currentHeroItem);
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "AnimeReleaseMapView.ReleaseHero_Tapped failed");
         }
     }
 
     private async void ReleaseHero_KeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key is Key.Enter or Key.Space && _currentHeroItem != null)
+        try
         {
-            e.Handled = true;
-            await OpenAnimeDetailsAsync(_currentHeroItem);
+            if (e.Key is Key.Enter or Key.Space && _currentHeroItem != null)
+            {
+                e.Handled = true;
+                await OpenAnimeDetailsAsync(_currentHeroItem);
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "AnimeReleaseMapView.ReleaseHero_KeyDown failed");
         }
     }
 
