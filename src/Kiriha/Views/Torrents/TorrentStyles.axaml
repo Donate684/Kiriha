@@ -5,9 +5,9 @@
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Padding" Value="10,4"/>
             <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -134,6 +134,34 @@
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
+        <!-- ═══ Filter notification banner ═══ -->
+        <Style Selector="Border.FilterNotice">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8,5"/>
+        </Style>
+
+        <!-- ═══ Search Query Preview box ═══ -->
+        <Style Selector="Border.PreviewBox">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="6,4"/>
+        </Style>
+
+        <!-- ═══ Custom query input box ═══ -->
+        <Style Selector="TextBox.CustomQueryInput">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
         <!-- ═══ Filter toggle row ═══ -->
         <Style Selector="ToggleButton.FilterToggle">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
@@ -208,7 +236,7 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="0,7"/>
+            <Setter Property="Padding" Value="0,5"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>

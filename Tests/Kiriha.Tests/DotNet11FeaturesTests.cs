@@ -260,6 +260,23 @@ public class DotNet11FeaturesTests
     }
 
     [Fact]
+    public void Process_StartAndForget_ThrowsIfUseShellExecuteIsTrue()
+    {
+        var psi = new ProcessStartInfo("cmd.exe", "/c exit 0")
+        {
+            UseShellExecute = true
+        };
+        Assert.Throws<InvalidOperationException>(() => Process.StartAndForget(psi));
+    }
+
+    [Fact]
+    public void ShellLauncher_OpenUrl_SafelyHandlesEmptyOrNull()
+    {
+        Kiriha.Infrastructure.Platform.ShellLauncher.OpenUrl(string.Empty);
+        Kiriha.Infrastructure.Platform.ShellLauncher.OpenUrl(null!);
+    }
+
+    [Fact]
     public void ProcessStartInfo_KillOnParentExit_SupportedOnWindows()
     {
         var psi = new ProcessStartInfo("cmd.exe", "/c exit 0")

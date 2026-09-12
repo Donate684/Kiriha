@@ -32,6 +32,7 @@ public partial class TorrentsViewModel : ViewModelBase
         [TorrentSortMode.Newest, TorrentSortMode.Matched, TorrentSortMode.ReleaseGroup];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private string _searchQuery = string.Empty;
 
     [ObservableProperty]

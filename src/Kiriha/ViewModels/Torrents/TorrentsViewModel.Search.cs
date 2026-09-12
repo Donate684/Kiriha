@@ -24,7 +24,14 @@ public partial class TorrentsViewModel
 
         if (value != null)
         {
-            SearchQuery = value.Title;
+            if (UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery))
+            {
+                SearchQuery = CustomQuery;
+            }
+            else
+            {
+                SearchQuery = value.Title;
+            }
             PerformSearchCommand.Execute(null);
         }
     }

@@ -18,7 +18,7 @@ public partial class AppSettings
         public System.Collections.Generic.List<int> HiddenAnimeIds { get; set; } = new();
 
         /// <summary>When true, filter toggles are remembered per anime title.</summary>
-        public bool FiltersPerTitle { get; set; } = false;
+        public bool FiltersPerTitle { get; set; } = true;
         public System.Collections.Generic.Dictionary<int, TorrentFilterSet> PerTitleFilters { get; set; } = new();
     }
 
@@ -33,5 +33,7 @@ public partial class AppSettings
         public bool FilterToonsHub { get; set; }
         public bool FilterHevc { get; set; }
         public bool Filter1080p { get; set; }
+        public bool UseCustomQuery { get; set; }
+        public string? CustomQuery { get; set; }
     }
 }

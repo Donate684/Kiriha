@@ -47,7 +47,8 @@ public static class PlayerProcessBridge
             Arguments = isDotnet && !string.IsNullOrEmpty(assemblyPath)
                 ? $"\"{assemblyPath}\" --player {ResidentArg}"
                 : $"--player {ResidentArg}",
-            UseShellExecute = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
             WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
             WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
         };

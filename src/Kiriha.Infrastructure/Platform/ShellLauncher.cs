@@ -20,7 +20,7 @@ public static class ShellLauncher
         {
             // UseShellExecute=true so the system browser handles registration
             // and protocol resolution (about:, file:, custom schemes, etc.).
-            Process.StartAndForget(new ProcessStartInfo(url) { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true })?.Dispose();
         }
         catch (Exception ex)
         {

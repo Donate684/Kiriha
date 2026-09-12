@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -14,57 +14,125 @@ public partial class TorrentsViewModel
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _onlyCrunchyroll;
 
     partial void OnOnlyCrunchyrollChanged(bool value) => PersistFilter(nameof(OnlyCrunchyroll), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterNetflix;
 
     partial void OnFilterNetflixChanged(bool value) => PersistFilter(nameof(FilterNetflix), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterAmazon;
 
     partial void OnFilterAmazonChanged(bool value) => PersistFilter(nameof(FilterAmazon), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterHidive;
 
     partial void OnFilterHidiveChanged(bool value) => PersistFilter(nameof(FilterHidive), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterVaryg;
 
     partial void OnFilterVarygChanged(bool value) => PersistFilter(nameof(FilterVaryg), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterEraiRaws;
 
     partial void OnFilterEraiRawsChanged(bool value) => PersistFilter(nameof(FilterEraiRaws), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterToonsHub;
 
     partial void OnFilterToonsHubChanged(bool value) => PersistFilter(nameof(FilterToonsHub), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterHevc;
 
     partial void OnFilterHevcChanged(bool value) => PersistFilter(nameof(FilterHevc), value);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filter1080p;
 
     partial void OnFilter1080pChanged(bool value) => PersistFilter(nameof(Filter1080p), value);
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
+    private bool _useCustomQuery;
+
+    partial void OnUseCustomQueryChanged(bool value)
+    {
+        if (_suppressFilterPersist) return;
+
+        if (value)
+        {
+            if (string.IsNullOrWhiteSpace(CustomQuery) && SelectedAnime != null)
+            {
+                CustomQuery = SelectedAnime.Title;
+            }
+            if (!string.IsNullOrWhiteSpace(CustomQuery))
+            {
+                SearchQuery = CustomQuery;
+            }
+        }
+        else
+        {
+            if (SelectedAnime != null)
+            {
+                SearchQuery = SelectedAnime.Title;
+            }
+        }
+
+        PersistCustomQuerySettings();
+        PerformSearchCommand.Execute(null);
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
+    private string _customQuery = string.Empty;
+
+    partial void OnCustomQueryChanged(string value)
+    {
+        if (_suppressFilterPersist) return;
+
+        if (UseCustomQuery)
+        {
+            SearchQuery = value;
+            PersistCustomQuerySettings();
+        }
+    }
+
+    public string PreviewQuery => TorrentQueryBuilder.Build(
+        SearchQuery,
+        new TorrentQueryFilters(
+            FilterVaryg,
+            FilterEraiRaws,
+            FilterToonsHub,
+            Filter1080p,
+            FilterHevc,
+            OnlyCrunchyroll,
+            FilterNetflix,
+            FilterAmazon,
+            FilterHidive));
 
     [ObservableProperty]
     private bool _filtersPerTitle;
@@ -93,7 +161,7 @@ public partial class TorrentsViewModel
         _filterToonsHub = _settingsService.Current.Torrents.FilterToonsHub;
         _filterHevc = _settingsService.Current.Torrents.FilterHevc;
         _filter1080p = _settingsService.Current.Torrents.Filter1080p;
-        _filtersPerTitle = _settingsService.Current.Torrents.FiltersPerTitle;
+        _filtersPerTitle = true;
     }
 
     private void PersistFilter(string name, bool value)
@@ -164,11 +232,33 @@ public partial class TorrentsViewModel
             FilterToonsHub = src.FilterToonsHub;
             FilterHevc = src.FilterHevc;
             Filter1080p = src.Filter1080p;
+            UseCustomQuery = src.UseCustomQuery;
+            CustomQuery = src.CustomQuery ?? (SelectedAnime?.Title ?? string.Empty);
         }
         finally
         {
             _suppressFilterPersist = false;
         }
+    }
+
+    private void PersistCustomQuerySettings()
+    {
+        if (_suppressFilterPersist) return;
+
+        _settingsService.Update(settings =>
+        {
+            var cfg = settings.Torrents;
+            if (FiltersPerTitle && SelectedAnime != null)
+            {
+                if (!cfg.PerTitleFilters.TryGetValue(SelectedAnime.Id, out var target))
+                {
+                    target = new AppSettings.TorrentFilterSet();
+                    cfg.PerTitleFilters[SelectedAnime.Id] = target;
+                }
+                target.UseCustomQuery = UseCustomQuery;
+                target.CustomQuery = CustomQuery;
+            }
+        }, SettingsSection.Torrents);
     }
 
     private static AppSettings.TorrentFilterSet CreateGlobalFilterSet(AppSettings.TorrentConfig cfg) => new()
@@ -182,6 +272,8 @@ public partial class TorrentsViewModel
         FilterToonsHub = cfg.FilterToonsHub,
         FilterHevc = cfg.FilterHevc,
         Filter1080p = cfg.Filter1080p,
+        UseCustomQuery = false,
+        CustomQuery = null,
     };
 
     private static void ApplyFilterValue(AppSettings.TorrentFilterSet target, string name, bool value)

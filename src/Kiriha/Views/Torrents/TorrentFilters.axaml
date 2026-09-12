@@ -50,89 +50,133 @@
                             </Style>
                         </Button.Styles>
                         <StackPanel Orientation="Horizontal" Spacing="5">
-                            <material:MaterialIcon Kind="FilterVariant" Width="16" Height="16"
+                            <material:MaterialIcon Kind="CogOutline" Width="16" Height="16"
                                                    Foreground="{Binding $parent[Button].Foreground}"/>
-                            <TextBlock Text="{DynamicResource l.torrents.search.filters_button}"
+                            <TextBlock Text="{DynamicResource l.torrents.search.settings_button}"
                                        FontSize="12" VerticalAlignment="Center"
                                        Foreground="{Binding $parent[Button].Foreground}"/>
                         </StackPanel>
                         <Button.Flyout>
                         <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
-                            <StackPanel Spacing="8" Margin="12,10">
+                        <StackPanel Spacing="4" Margin="8,6">
 
-                                <!-- Per-title toggle -->
-                                <ToggleButton Classes="FilterToggle"
-                                              ToolTip.Tip="{DynamicResource l.torrents.search.per_title_hint}"
-                                              IsChecked="{Binding FiltersPerTitle, Mode=TwoWay}">
-                                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                                        <TextBlock Grid.Column="0" Text="{DynamicResource l.torrents.search.per_title_toggle}"
-                                                   FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center" Margin="8,0,0,0">
-                                            <Ellipse Classes="SwitchThumb"/>
-                                        </Border>
+                                <!-- Per-title notice -->
+                                <Border Classes="FilterNotice" Margin="0,0,0,0">
+                                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
+                                        <material:MaterialIcon Grid.Column="0" Kind="InformationOutline"
+                                                               Width="16" Height="16"
+                                                               Foreground="{DynamicResource SystemAccentColor}"
+                                                               VerticalAlignment="Top" Margin="0,1,0,0"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{DynamicResource l.torrents.search.per_title_notice}"
+                                                   FontSize="11" LineHeight="15"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
-                                </ToggleButton>
+                                </Border>
 
                                 <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}"/>
 
                                 <!-- Release groups -->
-                                <StackPanel Spacing="6">
+                                <StackPanel Spacing="4">
                                     <TextBlock Classes="FlyoutSection"
                                                Text="{DynamicResource l.torrents.search.filter_sections.release_groups}"/>
                                     <WrapPanel ItemWidth="NaN" Orientation="Horizontal">
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterVaryg, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.varyg}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterEraiRaws, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.erai_raws}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterToonsHub, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.toonshub}"/>
                                     </WrapPanel>
                                 </StackPanel>
 
                                 <!-- Quality -->
-                                <StackPanel Spacing="6">
+                                <StackPanel Spacing="4">
                                     <TextBlock Classes="FlyoutSection"
                                                Text="{DynamicResource l.torrents.search.filter_sections.quality}"/>
                                     <WrapPanel Orientation="Horizontal">
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding Filter1080p, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.p1080}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterHevc, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.hevc}"/>
                                     </WrapPanel>
                                 </StackPanel>
 
                                 <!-- Source -->
-                                <StackPanel Spacing="6">
+                                <StackPanel Spacing="4">
                                     <TextBlock Classes="FlyoutSection"
                                                Text="{DynamicResource l.torrents.search.filter_sections.source}"/>
                                     <WrapPanel Orientation="Horizontal">
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding OnlyCrunchyroll, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.only_crunchyroll}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterNetflix, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.netflix}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterAmazon, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.amazon}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,6,6"
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterHidive, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.hidive}"/>
                                     </WrapPanel>
+                                </StackPanel>
+
+                                <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,0,0,0"/>
+
+                                <!-- Search formula customization -->
+                                <StackPanel Spacing="6">
+                                    <CheckBox IsChecked="{Binding UseCustomQuery, Mode=TwoWay}">
+                                        <TextBlock Text="{DynamicResource l.torrents.search.custom_formula_toggle}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                   VerticalAlignment="Center"/>
+                                    </CheckBox>
+
+                                    <TextBox Classes="CustomQueryInput"
+                                             Text="{Binding CustomQuery, Mode=TwoWay}"
+                                             IsVisible="{Binding UseCustomQuery}"
+                                             PlaceholderText="{DynamicResource l.torrents.search.custom_formula_placeholder}"
+                                             Height="28" VerticalContentAlignment="Center">
+                                        <TextBox.KeyBindings>
+                                            <KeyBinding Gesture="Enter" Command="{Binding PerformSearchCommand}"/>
+                                        </TextBox.KeyBindings>
+                                    </TextBox>
+
+                                    <!-- Query preview -->
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{DynamicResource l.torrents.search.preview_label}"
+                                                   FontSize="9" FontWeight="SemiBold" Opacity="0.5"
+                                                   LetterSpacing="0.3"/>
+                                        <Border Classes="PreviewBox">
+                                            <Grid ColumnDefinitions="Auto, *">
+                                                <material:MaterialIcon Grid.Column="0" Kind="Magnify"
+                                                                       Width="12" Height="12"
+                                                                       Opacity="0.45" Margin="0,0,5,0"
+                                                                       VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding PreviewQuery}"
+                                                           FontSize="10"
+                                                           FontFamily="Consolas, Cascadia Code, monospace"
+                                                           TextWrapping="Wrap"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
                                 </StackPanel>
 
                                 <!-- Reset -->
                                 <Button Classes="FilterReset"
                                         Command="{Binding ClearFiltersCommand}"
                                         IsEnabled="{Binding HasActiveFilters}"
-                                        Margin="0,4,0,0">
+                                        Margin="0,2,0,0">
                                     <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
                                         <material:MaterialIcon Kind="FilterRemove" Width="14" Height="14"
                                                               Foreground="{Binding $parent[Button].Foreground}"/>

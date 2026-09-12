@@ -68,14 +68,14 @@ public partial class CrashReportViewModel : ObservableObject
             if (!string.IsNullOrEmpty(_crashFilePath) && File.Exists(_crashFilePath))
             {
                 // Open folder and select the crash file (Windows Explorer).
-                Process.StartAndForget(new ProcessStartInfo("explorer.exe", $"/select,\"{_crashFilePath}\"")
+                Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{_crashFilePath}\"")
                 {
                     UseShellExecute = true
-                });
+                })?.Dispose();
             }
             else
             {
-                Process.StartAndForget(new ProcessStartInfo(dir) { UseShellExecute = true });
+                Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true })?.Dispose();
             }
         }
         catch (Exception ex)

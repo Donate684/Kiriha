@@ -5,7 +5,8 @@
     "netflix": "Netflix",
     "amazon": "Amazon",
     "hidive": "HIDIVE",
-    "filters_button": "Фильтры",
+    "filters_button": "Настройки",
+    "settings_button": "Настройки",
     "sort_label": "Сортировка",
     "clear_filters": "Сбросить",
     "filters": {
@@ -18,6 +19,10 @@
     },
     "per_title_toggle": "Отдельные фильтры для каждого тайтла",
     "per_title_hint": "Фильтры будут запоминаться отдельно по каждому аниме",
+    "per_title_notice": "Настройки фильтров действуют для каждого тайтла отдельно, а не глобально.",
+    "custom_formula_toggle": "Изменить формулу поиска",
+    "custom_formula_placeholder": "Поисковый запрос для этого тайтла...",
+    "preview_label": "ПРЕВЬЮ ЗАПРОСА",
     "filter_sections": {
       "release_groups": "Релизёры",
       "quality": "Качество",

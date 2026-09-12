@@ -5,7 +5,8 @@
     "netflix": "Netflix",
     "amazon": "Amazon",
     "hidive": "HIDIVE",
-    "filters_button": "Filters",
+    "filters_button": "Settings",
+    "settings_button": "Settings",
     "sort_label": "Sort",
     "clear_filters": "Clear",
     "filters": {
@@ -18,6 +19,10 @@
     },
     "per_title_toggle": "Per-title filters",
     "per_title_hint": "Filters are remembered separately for each anime",
+    "per_title_notice": "Filter settings apply to each title separately, not globally.",
+    "custom_formula_toggle": "Custom search formula",
+    "custom_formula_placeholder": "Search query for this title...",
+    "preview_label": "QUERY PREVIEW",
     "filter_sections": {
       "release_groups": "Release groups",
       "quality": "Quality",

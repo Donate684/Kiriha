@@ -20,7 +20,7 @@
             <SolidColorBrush x:Key="ModalSidebarFill" Color="#FFF3F3F3"/>
             <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="Transparent"/>
             <!-- Luxury Overlay -->
-            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#E6FFFFFF"/>
+            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="LuxuryFlyoutBorder" Color="#22000000"/>
             <!-- Scrollbar -->
             <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#08000000"/>
@@ -104,7 +104,7 @@
             <SolidColorBrush x:Key="ModalSidebarFill" Color="#FF171717"/>
             <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="Transparent"/>
             <!-- Luxury Overlay -->
-            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#E6181818"/>
+            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#FF1E1E1E"/>
             <SolidColorBrush x:Key="LuxuryFlyoutBorder" Color="#22FFFFFF"/>
             <!-- Scrollbar -->
             <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#0AFFFFFF"/>

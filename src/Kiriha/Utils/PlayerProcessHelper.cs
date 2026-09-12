@@ -17,7 +17,7 @@ public static class PlayerProcessHelper
         {
             FileName = processPath,
             Arguments = isDotnet ? $"\"{assemblyPath}\" --player" : "--player",
-            UseShellExecute = true,
+            UseShellExecute = false,
             WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
         };
 

@@ -18,7 +18,7 @@ public static class OAuthHelper
         listener.Start();
 
         Log.Information("Opening browser for authorization...");
-        Process.StartAndForget(new ProcessStartInfo(authUrl) { UseShellExecute = true });
+        Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true })?.Dispose();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
