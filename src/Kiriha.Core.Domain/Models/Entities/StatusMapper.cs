@@ -71,7 +71,7 @@ public static class StatusMapper
     // Enum -> Shikimori API string
     public static string? ToShiki(UserAnimeStatus? status)
     {
-        if (status == null || status == UserAnimeStatus.None) return null;
+        if (status is null || status == UserAnimeStatus.None) return null;
         return status switch
         {
             UserAnimeStatus.Watching => "watching",

@@ -68,7 +68,7 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
                 (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchTitleLower) ||
                 (a.Title != null && a.Title.ToLower() == searchTitleLower));
 
-            if (match == null && parsedSeason <= 1)
+            if (match is null && parsedSeason <= 1)
             {
                 var extractedTitleLower = extractedTitle.ToLower();
                 match = db.UserAnime.FirstOrDefault(a =>
@@ -77,7 +77,7 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
                     (a.Title != null && a.Title.ToLower() == extractedTitleLower));
             }
 
-            return match == null
+            return match is null
                 ? new PlayerMediaMetadata(originalTitle, extractedTitle, string.Empty, episodeText, null, extractedTitle)
                 : new PlayerMediaMetadata(
                     originalTitle,

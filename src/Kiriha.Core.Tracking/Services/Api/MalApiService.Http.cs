@@ -39,7 +39,7 @@ public partial class MalApiService
     {
         var token = await EnsureValidTokenAsync(ct);
         var statusCode = await SendOnceAsync(requestFactory, token, ct);
-        if (statusCode == null) return SyncOutcome.TransientFailure;
+        if (statusCode is null) return SyncOutcome.TransientFailure;
 
         if (statusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -54,7 +54,7 @@ public partial class MalApiService
                 return SyncOutcome.PermanentFailure;
             }
             statusCode = await SendOnceAsync(requestFactory, token, ct);
-            if (statusCode == null) return SyncOutcome.TransientFailure;
+            if (statusCode is null) return SyncOutcome.TransientFailure;
         }
 
         return MapStatusToOutcome(statusCode.Value);

@@ -29,7 +29,7 @@ public sealed class PlayerPlaybackController
 
     public void Detach()
     {
-        if (_player == null)
+        if (_player is null)
             return;
 
         _player.FileLoaded -= OnFileLoaded;
@@ -126,7 +126,7 @@ public sealed class PlayerPlaybackController
     public async Task<(List<TrackInfo> Tracks, List<ChapterInfo> Chapters)?> GetTracksAndChaptersAsync()
     {
         var player = _player;
-        if (player == null)
+        if (player is null)
             return null;
 
         try

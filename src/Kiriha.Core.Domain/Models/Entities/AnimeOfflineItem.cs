@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Kiriha.Core.Domain.Extensions;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 
@@ -26,7 +27,7 @@ public class AnimeOfflineItem
             var upper = _type.ToUpperInvariant();
             return (upper == "TV" || upper == "OVA" || upper == "ONA")
                 ? upper
-                : char.ToUpperInvariant(_type[0]) + _type.Substring(1).ToLowerInvariant();
+                : _type.ToLowerInvariant().UppercaseFirst();
         }
         set => _type = value;
     }

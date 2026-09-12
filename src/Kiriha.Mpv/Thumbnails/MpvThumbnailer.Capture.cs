@@ -24,7 +24,7 @@ public sealed partial class MpvThumbnailer
             if (cancellationToken.WaitHandle.WaitOne(45))
                 cancellationToken.ThrowIfCancellationRequested();
 
-            if (!TryCaptureRawScreenshot(handle, out var frame) || frame == null)
+            if (!TryCaptureRawScreenshot(handle, out var frame) || frame is null)
                 return null;
 
             lock (_gate)

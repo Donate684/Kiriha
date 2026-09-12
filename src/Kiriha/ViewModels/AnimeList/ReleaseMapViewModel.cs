@@ -22,40 +22,40 @@ public sealed record ReleaseMapDayGroup(DateTime Date, string Label, IReadOnlyLi
 
 public class ReleaseMapViewModel
 {
-    private static readonly FrozenDictionary<string, string> FallbackStrings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenDictionary<string, string> FallbackStrings = new (string, string)[]
     {
-        ["schedule.today"] = "Today",
-        ["schedule.tomorrow"] = "Tomorrow",
-        ["schedule.yesterday"] = "Yesterday",
-        ["schedule.day_before_yesterday"] = "2 days ago",
-        ["schedule.days_ago"] = "{0}d ago",
-        ["schedule.hours_ago"] = "{0}h ago",
-        ["schedule.minutes_ago"] = "{0}m ago",
-        ["schedule.days_later"] = "in {0} d.",
-        ["schedule.days_abbrev"] = "{0} d.",
-        ["schedule.days_hours"] = "{0}d {1}h",
-        ["schedule.days_only"] = "{0}d",
-        ["schedule.hours_minutes"] = "{0}h {1}m",
-        ["schedule.minutes_only"] = "{0}m",
-        ["schedule.now"] = "now",
-        ["schedule.next_episode"] = "next episode",
-        ["schedule.episode_format"] = "Ep {0}",
-        ["schedule.latest_ep"] = "Latest episode",
-        ["schedule.premiere"] = "Premiere",
-        ["schedule.premiere_lower"] = "premiere",
-        ["schedule.releases_this_week"] = "{0} {1} this week",
-        ["schedule.releases_past_days"] = "{0} {1} in recent days",
-        ["schedule.release_1"] = "release",
-        ["schedule.release_2_4"] = "releases",
-        ["schedule.release_5_0"] = "releases",
-        ["schedule.no_dates"] = "No dates",
-        ["schedule.after_sync"] = "after sync",
-        ["schedule.no_future_dates"] = "No future dates in current data",
-        ["schedule.no_past_releases"] = "No recent releases",
-        ["schedule.no_past_releases_desc"] = "No new episodes from your list were released recently",
-        ["schedule.no_upcoming_releases"] = "No upcoming releases",
-        ["schedule.after_sync_roadmap"] = "After synchronization, the episode roadmap will appear here"
-    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        ("schedule.today", "Today"),
+        ("schedule.tomorrow", "Tomorrow"),
+        ("schedule.yesterday", "Yesterday"),
+        ("schedule.day_before_yesterday", "2 days ago"),
+        ("schedule.days_ago", "{0}d ago"),
+        ("schedule.hours_ago", "{0}h ago"),
+        ("schedule.minutes_ago", "{0}m ago"),
+        ("schedule.days_later", "in {0} d."),
+        ("schedule.days_abbrev", "{0} d."),
+        ("schedule.days_hours", "{0}d {1}h"),
+        ("schedule.days_only", "{0}d"),
+        ("schedule.hours_minutes", "{0}h {1}m"),
+        ("schedule.minutes_only", "{0}m"),
+        ("schedule.now", "now"),
+        ("schedule.next_episode", "next episode"),
+        ("schedule.episode_format", "Ep {0}"),
+        ("schedule.latest_ep", "Latest episode"),
+        ("schedule.premiere", "Premiere"),
+        ("schedule.premiere_lower", "premiere"),
+        ("schedule.releases_this_week", "{0} {1} this week"),
+        ("schedule.releases_past_days", "{0} {1} in recent days"),
+        ("schedule.release_1", "release"),
+        ("schedule.release_2_4", "releases"),
+        ("schedule.release_5_0", "releases"),
+        ("schedule.no_dates", "No dates"),
+        ("schedule.after_sync", "after sync"),
+        ("schedule.no_future_dates", "No future dates in current data"),
+        ("schedule.no_past_releases", "No recent releases"),
+        ("schedule.no_past_releases_desc", "No new episodes from your list were released recently"),
+        ("schedule.no_upcoming_releases", "No upcoming releases"),
+        ("schedule.after_sync_roadmap", "After synchronization, the episode roadmap will appear here")
+    }.ToFrozenDictionary(x => x.Item1, x => x.Item2, StringComparer.OrdinalIgnoreCase);
 
     public static string GetLoc(string key)
     {

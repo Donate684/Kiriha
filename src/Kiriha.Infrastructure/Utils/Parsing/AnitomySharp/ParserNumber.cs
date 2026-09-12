@@ -355,7 +355,7 @@ namespace AnitomySharp
 
             if (!KeywordManager.FindAndSet(KeywordManager.Normalize(prefix), ref category, ref options)) return false;
             _parser.Elements.Add(new Element(Element.ElementCategory.ElementAnimeType, prefix));
-            var number = word.Substring(numberBegin);
+            var number = word[numberBegin..];
             if (!MatchEpisodePatterns(number, token) && !SetEpisodeNumber(number, token, true)) return false;
             var foundIdx = _parser.Tokens.IndexOf(token);
             if (foundIdx == -1) return true;

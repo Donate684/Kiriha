@@ -65,7 +65,7 @@ public partial class MalApiService
             while (!string.IsNullOrEmpty(nextUrl))
             {
                 var bytes = await GetWithCacheAsync(nextUrl, ct);
-                if (bytes == null) break;
+                if (bytes is null) break;
 
                 using var json = JsonDocument.Parse(bytes);
 

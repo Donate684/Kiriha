@@ -105,10 +105,10 @@ public static class SmartTrackAutoloader
         int lastDotIndex = trackBaseName.LastIndexOf('.');
         if (lastDotIndex > 0)
         {
-            string langCode = trackBaseName.Substring(lastDotIndex + 1);
+            string langCode = trackBaseName[(lastDotIndex + 1)..];
             if (langCode.Length >= 2 && langCode.Length <= 5)
             {
-                trackBaseName = trackBaseName.Substring(0, lastDotIndex);
+                trackBaseName = trackBaseName[..lastDotIndex];
             }
         }
 

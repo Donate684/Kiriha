@@ -28,7 +28,7 @@ public partial class RssFeedService
     /// </summary>
     public async Task<int?> SyncEpisodesFromNyaaAsync(AnimeEntity anime, CancellationToken ct = default)
     {
-        if (anime == null) return null;
+        if (anime is null) return null;
         if (!NyaaTorrentParser.NeedsNyaaCheck(anime))
         {
             Log.Debug("RssFeedService: Skipping Nyaa probe for {Title} - next episode not due yet", anime.Title);
@@ -39,7 +39,7 @@ public partial class RssFeedService
         {
             Log.Debug("RssFeedService: Syncing {Title} from Nyaa.si search...", anime.Title);
             var doc = await _nyaaClient.FetchSearchAsync(anime.Title, ct);
-            if (doc == null) return null;
+            if (doc is null) return null;
 
             var items = doc.Descendants("item").Take(20).ToList(); // Top 20 results are enough
 
@@ -50,7 +50,7 @@ public partial class RssFeedService
                 if (string.IsNullOrEmpty(title)) continue;
 
                 int? epNum = NyaaTorrentParser.ExtractSingleEpisodeNumber(title);
-                if (epNum == null) continue; // batch / range / multi-ep — skip
+                if (epNum is null) continue; // batch / range / multi-ep — skip
 
                 var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
                 var animeTitle = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
@@ -79,7 +79,7 @@ public partial class RssFeedService
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             var doc = await _nyaaClient.FetchSearchAsync(query, cts.Token);
-            if (doc == null) return new List<TorrentEntity>();
+            if (doc is null) return [];
 
             Log.Information("Torrents: Parsing XML response...");
             var items = doc.Descendants("item").ToList();
@@ -95,7 +95,7 @@ public partial class RssFeedService
             foreach (var item in items)
             {
                 var torrent = NyaaTorrentParser.ParseItem(item);
-                if (torrent == null) continue;
+                if (torrent is null) continue;
 
                 // Match only if this torrent contains an episode the user hasn't watched yet
                 if (!string.IsNullOrEmpty(torrent.AnimeTitle))
@@ -119,7 +119,7 @@ public partial class RssFeedService
         catch (Exception ex)
         {
             Log.Error(ex, "RssFeedService: Search failed for {Query}", query);
-            return new List<TorrentEntity>();
+            return [];
         }
     }
 }

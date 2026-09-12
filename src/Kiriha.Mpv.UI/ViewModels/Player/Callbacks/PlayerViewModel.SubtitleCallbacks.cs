@@ -11,7 +11,7 @@ public partial class PlayerViewModel
 {
     partial void OnPreferredSubtitleLanguagesChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         PreferredSubtitleLanguages = NormalizeLanguageList(value, "Russian,rus,ru");
         _settingsService.Update(settings => settings.Player.PreferredSubtitleLanguages = PreferredSubtitleLanguages, SettingsSection.Player);
         ApplyTrackLanguagePreferences();
@@ -23,12 +23,12 @@ public partial class PlayerViewModel
 
         if (_isApplyingSettings) return;
         ApplySubtitleStyleOverride();
-        if (_settingsService == null) return;
+        if (_settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SubtitleStyleOverrideEnabled = value, SettingsSection.Player);
     }
     partial void OnSubtitleStyleHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), SettingsSection.Player);
     }
     partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, "Candara Bold"));
@@ -45,7 +45,7 @@ public partial class PlayerViewModel
 
     private void SaveSubtitleStyle(Action<AppSettings.PlayerConfig> update)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
         ApplySubtitleStyleOverride();
     }

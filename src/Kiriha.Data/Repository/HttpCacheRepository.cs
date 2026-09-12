@@ -14,10 +14,12 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
     private static readonly TimeSpan Ttl = TimeSpan.FromDays(30);
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly TimeProvider _clock;
 
-    public HttpCacheRepository(IDbContextFactory<AppDbContext> contextFactory)
+    public HttpCacheRepository(IDbContextFactory<AppDbContext> contextFactory, TimeProvider? clock = null)
     {
         _contextFactory = contextFactory;
+        _clock = clock ?? TimeProvider.System;
     }
 
     public async Task<HttpCacheEntry?> GetAsync(string urlHash, CancellationToken ct = default)
@@ -26,8 +28,8 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entry = await context.HttpResponseCache.AsNoTracking()
             .FirstOrDefaultAsync(e => e.UrlHash == urlHash, ct);
-        if (entry == null) return null;
-        if (DateTime.UtcNow - entry.CreatedAt > Ttl) return null;
+        if (entry is null) return null;
+        if (_clock.GetUtcNow().UtcDateTime - entry.CreatedAt > Ttl) return null;
 
         entry.Body = DecompressIfNeeded(entry.Body);
         return entry;
@@ -35,14 +37,14 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
 
     public async Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body, CancellationToken ct = default)
     {
-        if (string.IsNullOrEmpty(urlHash) || body == null) return;
+        if (string.IsNullOrEmpty(urlHash) || body is null) return;
         var storedBody = Compress(body);
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.HttpResponseCache.AsTracking()
             .FirstOrDefaultAsync(e => e.UrlHash == urlHash, ct);
-        var now = DateTime.UtcNow;
-        if (existing == null)
+        var now = _clock.GetUtcNow().UtcDateTime;
+        if (existing is null)
         {
             context.HttpResponseCache.Add(new HttpCacheEntry
             {

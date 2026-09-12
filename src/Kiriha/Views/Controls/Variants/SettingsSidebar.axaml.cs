@@ -26,7 +26,7 @@ public partial class SettingsSidebar : UserControl
         // populated by the XAML loader, so guard against null here AND
         // against the suppress flag during programmatic clearing.
         if (_suppressNavSync) return;
-        if (NavCustom == null) return;
+        if (NavCustom is null) return;
         if (Nav.SelectedIndex < 0) return;
 
         _suppressNavSync = true;
@@ -42,7 +42,7 @@ public partial class SettingsSidebar : UserControl
     private void NavCustom_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_suppressNavSync) return;
-        if (Nav == null) return;
+        if (Nav is null) return;
         if (NavCustom.SelectedIndex < 0) return;
 
         _suppressNavSync = true;

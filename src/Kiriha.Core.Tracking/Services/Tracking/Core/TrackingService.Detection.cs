@@ -54,7 +54,7 @@ public partial class TrackingService
                 if (_manualMapInProgress) return;
             }
 
-            await MatchMediaAsync(media);
+            await MatchMediaAsync(media).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { /* shutdown */ }
         catch (Exception ex) { Log.Error(ex, "TrackingService: OnMediaDetected failed for {Title}", media?.AnimeTitle); }

@@ -23,7 +23,7 @@ public sealed class TrayService
     public void DisableTrayIcons()
     {
         var icons = TrayIcon.GetIcons(_app);
-        if (icons == null)
+        if (icons is null)
             return;
 
         foreach (var icon in icons.ToArray())
@@ -38,11 +38,11 @@ public sealed class TrayService
     public void UpdateTrayMenu()
     {
         var icons = TrayIcon.GetIcons(_app);
-        if (icons == null || icons.Count == 0)
+        if (icons is null || icons.Count == 0)
             return;
 
         var tray = icons[0];
-        if (tray.Menu == null)
+        if (tray.Menu is null)
             return;
 
         tray.ToolTipText = _app.Resources["l.common.app_name"] as string;

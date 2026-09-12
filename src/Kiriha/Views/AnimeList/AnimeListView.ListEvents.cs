@@ -28,7 +28,7 @@ public partial class AnimeListView
     
     private void QueueVisibleItems()
     {
-        if (_gridRepeater?.ItemsSourceView == null) return;
+        if (_gridRepeater?.ItemsSourceView is null) return;
 
         // Iterate through currently realized elements to ensure they are queued
         // This handles the case where items were prepared before OnLoaded or events were attached.

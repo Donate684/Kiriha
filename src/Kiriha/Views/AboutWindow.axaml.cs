@@ -37,7 +37,7 @@ public partial class AboutWindow : KirihaWindowBase
     public new void ApplyMica()
     {
         var settings = SettingsService?.Current;
-        if (settings == null) return;
+        if (settings is null) return;
         if (settings.UI.EnableMica)
         {
             TransparencyLevelHint = [Avalonia.Controls.WindowTransparencyLevel.Mica, Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur];

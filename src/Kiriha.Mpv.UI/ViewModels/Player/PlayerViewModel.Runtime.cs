@@ -147,7 +147,7 @@ public partial class PlayerViewModel
     private async Task UpdateTracksAsync(CancellationToken token)
     {
         var result = await _playback.GetTracksAndChaptersAsync();
-        if (result == null || token.IsCancellationRequested)
+        if (result is null || token.IsCancellationRequested)
             return;
 
         var (tracks, chapters) = result.Value;
@@ -249,7 +249,7 @@ public partial class PlayerViewModel
     {
         _playback.SetAudioNormalization(value);
 
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.NormalizeAudio = value, SettingsSection.Player);
     }
 

@@ -9,7 +9,7 @@ public static class WindowExtensions
     public static void CenterOnOwnerOrScreenSafe(this Window window)
     {
         var screen = window.Screens.ScreenFromWindow(window) ?? window.Screens.Primary;
-        if (screen == null) return;
+        if (screen is null) return;
 
         var scale = screen.Scaling > 0 ? screen.Scaling : 1.0;
         var workArea = screen.WorkingArea;

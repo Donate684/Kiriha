@@ -95,7 +95,7 @@ public partial class ShikiMetadataService
     /// </summary>
     public async Task EnsureLocalizedAsync(AnimeEntity item, CancellationToken ct = default)
     {
-        if (item == null) return;
+        if (item is null) return;
         bool useRussian = _settingsService.Current.UI.UseRussianTitles || _settingsService.Current.UI.UseRussianDescriptions;
         if (!useRussian) return;
         if (!string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(item.RussianSynopsis)) return;
@@ -105,7 +105,7 @@ public partial class ShikiMetadataService
         TimeSpan? maxAge = missingData ? TimeSpan.FromHours(12) : null;
 
         var meta = await GetOrFetchMetadataAsync(item.Id, maxAge: maxAge, onFetched: null, item.MediaKind);
-        if (meta == null) return;
+        if (meta is null) return;
 
         bool changed = await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, meta));
         if (changed)
@@ -153,7 +153,7 @@ public partial class ShikiMetadataService
                 throttle: ct => _rateLimiter.ThrottleAsync(ct),
                 ct: ct);
 
-            if (bytes == null) return null;
+            if (bytes is null) return null;
 
             var list = System.Text.Json.JsonSerializer.Deserialize<List<ShikiMetadata>>(bytes);
             if (list != null && list.Count > 0)

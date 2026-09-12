@@ -79,7 +79,7 @@ public partial class SettingsUiViewModel : ObservableObject
 
     partial void OnSelectedThemeChanged(ThemeOption value)
     {
-        if (Application.Current == null || value == null) return;
+        if (Application.Current is null || value is null) return;
         _settingsService.Update(settings => settings.UI.Theme = value.Value, SettingsSection.UI);
         Application.Current.RequestedThemeVariant = value.Value switch
         {

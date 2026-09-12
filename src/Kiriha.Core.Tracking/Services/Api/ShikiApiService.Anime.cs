@@ -42,7 +42,7 @@ public partial class ShikiApiService
                 return null;
             }
 
-            if (result.Body == null || result.Body.Length == 0)
+            if (result.Body is null || result.Body.Length == 0)
             {
                 return null;
             }
@@ -75,7 +75,7 @@ public partial class ShikiApiService
             ct: ct,
             localTtl: TimeSpan.FromDays(30));
 
-        if (bytes == null) return null;
+        if (bytes is null) return null;
 
         try
         {
@@ -100,7 +100,7 @@ public partial class ShikiApiService
             ct: ct,
             localTtl: TimeSpan.FromDays(30));
 
-        if (bytes == null) return null;
+        if (bytes is null) return null;
 
         try
         {

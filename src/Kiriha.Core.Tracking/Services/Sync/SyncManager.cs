@@ -80,7 +80,7 @@ public partial class SyncManager : ISyncManager, IHostedService
             catch (OperationCanceledException) { /* host gave up waiting */ }
             catch (Exception ex) { Log.Warning(ex, "SyncManager: loop task ended with an exception"); }
         }
-        if (_loopTask == null || _loopTask.IsCompleted)
+        if (_loopTask is null || _loopTask.IsCompleted)
         {
             _cts.Dispose();
             _queueSignal.Dispose();

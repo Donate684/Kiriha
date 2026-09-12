@@ -20,7 +20,7 @@ public partial class PlayerViewModel
 
         // If the resolver didn't find an anime in DB, but we already have anime context from a previous file
         // of the same anime series in the same directory, preserve the known titles and anime ID!
-        if (resolved.AnimeId == null && _animeId.HasValue && IsSameAnimeSeries(resolved, value))
+        if (resolved.AnimeId is null && _animeId.HasValue && IsSameAnimeSeries(resolved, value))
         {
             resolved = resolved with
             {

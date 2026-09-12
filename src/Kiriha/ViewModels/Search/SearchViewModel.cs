@@ -103,7 +103,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     /// </summary>
     public void EnqueueItemForViewport(AnimeEntity item)
     {
-        if (item == null) return;
+        if (item is null) return;
         _queueService.EnqueueForViewport([item]);
     }
 

@@ -12,7 +12,7 @@ public partial class PlayerViewModel
 {
     partial void OnScreenshotDirectoryChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         var normalized = NormalizeScreenshotDirectory(value);
         _settingsService.Update(settings => settings.Player.ScreenshotDirectory = normalized, SettingsSection.Player);
         ApplyScreenshotOptions();
@@ -23,13 +23,13 @@ public partial class PlayerViewModel
         if (!string.Equals(value, normalized, StringComparison.Ordinal))
             ScreenshotFormat = normalized;
 
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotFormat = normalized, SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotResolutionChanged(ScreenshotResolutionOption? value)
     {
-        if (_isApplyingSettings || _settingsService == null || value == null) return;
+        if (_isApplyingSettings || _settingsService is null || value is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotResolutionMode = value.Value, SettingsSection.Player);
     }
     partial void OnScreenshotPngCompressionChanged(int value)
@@ -41,7 +41,7 @@ public partial class PlayerViewModel
             return;
         }
 
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotPngCompression = normalized, SettingsSection.Player);
         ApplyScreenshotOptions();
     }
@@ -54,24 +54,24 @@ public partial class PlayerViewModel
             return;
         }
 
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotQuality = normalized, SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotHighBitDepthChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotHighBitDepth = value, SettingsSection.Player);
         ApplyScreenshotOptions();
     }
     partial void OnScreenshotWithSubtitlesHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotWithSubtitlesHotkey = NormalizeHotkey(value, "S"), SettingsSection.Player);
     }
     partial void OnScreenshotWithoutSubtitlesHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ScreenshotWithoutSubtitlesHotkey = NormalizeHotkey(value, "Shift+S"), SettingsSection.Player);
     }
 

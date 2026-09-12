@@ -68,7 +68,7 @@ public class LocConverter : IValueConverter
         // Formatting logic: param="format:l.Key"
         if (param != null && param.StartsWith("format:"))
         {
-            string formatKey = param.Substring(7);
+            string formatKey = param[7..];
             if (Application.Current != null && Application.Current.Resources.TryGetResource(formatKey, ThemeVariant.Default, out var formatObj) && formatObj is string formatStr)
             {
                 try

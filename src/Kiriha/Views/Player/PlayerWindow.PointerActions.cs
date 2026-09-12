@@ -60,7 +60,7 @@ public partial class PlayerWindow
             _leftClickTimer?.Stop();
             _pendingLeftClickAction = action;
 
-            if (_leftClickTimer == null)
+            if (_leftClickTimer is null)
             {
                 _leftClickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
                 _leftClickTimer.Tick += (s, args) =>

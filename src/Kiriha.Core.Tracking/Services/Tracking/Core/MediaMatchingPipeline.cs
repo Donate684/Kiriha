@@ -57,7 +57,7 @@ public class MediaMatchingPipeline
                     break;
                 }
             }
-            if (matched == null)
+            if (matched is null)
             {
                 var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled);
                 if (activeTracker != null)

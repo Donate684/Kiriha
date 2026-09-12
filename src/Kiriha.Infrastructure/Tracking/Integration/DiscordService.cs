@@ -56,7 +56,7 @@ public class DiscordService : IDisposable, IDiscordService
     {
         lock (_gate)
         {
-            if (_client == null || !_settingsService.Current.System.EnableDiscordRPC) return;
+            if (_client is null || !_settingsService.Current.System.EnableDiscordRPC) return;
 
             try
             {
@@ -128,7 +128,7 @@ public class DiscordService : IDisposable, IDiscordService
     {
         if (string.IsNullOrEmpty(value)) return value;
         if (value.Length < 2) return value.PadRight(2, '\u200B');
-        return value.Length > 128 ? value.Substring(0, 125) + "..." : value;
+        return value.Length > 128 ? value[..125] + "..." : value;
     }
 
     public virtual void ClearPresence()
@@ -145,7 +145,7 @@ public class DiscordService : IDisposable, IDiscordService
         {
             if (enabled)
             {
-                if (_client == null) Initialize();
+                if (_client is null) Initialize();
                 else if (!_client.IsInitialized) _client.Initialize();
             }
             else

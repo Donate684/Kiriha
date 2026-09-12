@@ -87,7 +87,7 @@ namespace AnitomySharp
             }
 
             /** remove file extension */
-            extension = filename.Substring(position + 1);
+            extension = filename[(position + 1)..];
             if (extension.Length > 4 || !extension.All(char.IsLetterOrDigit))
             {
                 return false;
@@ -100,7 +100,7 @@ namespace AnitomySharp
                 return false;
             }
 
-            filename = filename.Substring(0, position);
+            filename = filename[..position];
             return true;
         }
     }

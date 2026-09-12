@@ -89,7 +89,7 @@ public partial class PlayerChapterMarkers : UserControl
 
     private void DrawChapterMarkers()
     {
-        if (ChapterCanvas == null) return;
+        if (ChapterCanvas is null) return;
 
         if (DataContext is not PlayerViewModel vm || !vm.ShowChapterMarkers || vm.Duration <= 0 || vm.Chapters.Count == 0)
         {

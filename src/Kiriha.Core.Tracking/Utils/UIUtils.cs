@@ -5,7 +5,7 @@ internal static class UIUtils
 {
     public static string GetLoc(string key, params object[] args)
     {
-        if (args == null || args.Length == 0) return key;
+        if (args is null || args.Length == 0) return key;
         return $"{key} [{string.Join(", ", args)}]";
     }
 }

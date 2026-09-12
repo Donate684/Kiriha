@@ -40,7 +40,7 @@ public partial class AnimeEntityPresentation
         {
             if (_item.Status == UserAnimeStatus.Dropped) return string.Empty;
 
-            if (IsNewEpisode && HasNewEpisodes) return AnimeEntityPresentation.GetLoc("anime.labels.new_ep");
+            if (IsNewEpisode && HasNewEpisodes) return GetLoc("anime.labels.new_ep");
             if (_item.NextEpisodeAt.HasValue)
             {
                 if (_item.StatusDetailed?.Equals("finished_airing", StringComparison.OrdinalIgnoreCase) == true || _item.StatusDetailed?.Equals("finished airing", StringComparison.OrdinalIgnoreCase) == true)
@@ -51,16 +51,16 @@ public partial class AnimeEntityPresentation
                 if (diff.TotalSeconds <= 0)
                 {
                     if (diff.TotalHours < -48) return string.Empty;
-                    return AnimeEntityPresentation.GetLoc("anime.labels.new_ep") + "?";
+                    return GetLoc("anime.labels.new_ep") + "?";
                 }
 
                 if (diff.TotalDays >= 1)
-                    return $"{(int)diff.TotalDays}{AnimeEntityPresentation.GetLoc("common.time.day_abbr")}";
+                    return $"{(int)diff.TotalDays}{GetLoc("common.time.day_abbr")}";
 
                 if (diff.TotalHours >= 1)
-                    return $"{diff.Hours}{AnimeEntityPresentation.GetLoc("common.time.hour_abbr")} {diff.Minutes}{AnimeEntityPresentation.GetLoc("common.time.min_abbr")}";
+                    return $"{diff.Hours}{GetLoc("common.time.hour_abbr")} {diff.Minutes}{GetLoc("common.time.min_abbr")}";
 
-                return $"{diff.Minutes}{AnimeEntityPresentation.GetLoc("common.time.min_abbr")}";
+                return $"{diff.Minutes}{GetLoc("common.time.min_abbr")}";
             }
 
             return string.Empty;
@@ -91,12 +91,12 @@ public partial class AnimeEntityPresentation
             if (isManga)
             {
                 if (IsCompleted && !_item.IsRewatching)
-                    return AnimeEntityPresentation.GetLoc("anime.labels.total_ch_finished", total);
-                return AnimeEntityPresentation.GetLoc("anime.labels.total_ch_format", total);
+                    return GetLoc("anime.labels.total_ch_finished", total);
+                return GetLoc("anime.labels.total_ch_format", total);
             }
             if (IsCompleted && !_item.IsRewatching)
-                return AnimeEntityPresentation.GetLoc("anime.labels.total_ep_finished", total);
-            return AnimeEntityPresentation.GetLoc("anime.labels.total_ep_format", total);
+                return GetLoc("anime.labels.total_ep_finished", total);
+            return GetLoc("anime.labels.total_ep_format", total);
         }
     }
 
@@ -106,7 +106,7 @@ public partial class AnimeEntityPresentation
         {
             var episodes = _item.TotalEpisodes > 0 ? _item.TotalEpisodes.ToString() : "?";
             var format = IsCompleted && !_item.IsRewatching ? "anime.labels.total_ep_finished" : "anime.labels.total_ep_format";
-            var totalPart = AnimeEntityPresentation.GetLoc(format, episodes);
+            var totalPart = GetLoc(format, episodes);
             if (IsCompleted && !_item.IsRewatching) return totalPart;
             return $"{_item.Progress} {totalPart}";
         }
@@ -118,7 +118,7 @@ public partial class AnimeEntityPresentation
         {
             var chapters = _item.Chapters > 0 ? _item.Chapters.ToString() : "?";
             var format = IsCompleted && !_item.IsRewatching ? "anime.labels.total_ch_finished" : "anime.labels.total_ch_format";
-            var totalPart = AnimeEntityPresentation.GetLoc(format, chapters);
+            var totalPart = GetLoc(format, chapters);
             if (IsCompleted && !_item.IsRewatching) return totalPart;
             return $"{_item.ChaptersRead} {totalPart}";
         }
@@ -130,7 +130,7 @@ public partial class AnimeEntityPresentation
         {
             var volumes = _item.Volumes > 0 ? _item.Volumes.ToString() : "?";
             var format = IsCompleted && !_item.IsRewatching ? "anime.labels.total_vol_finished" : "anime.labels.total_vol_format";
-            var totalPart = AnimeEntityPresentation.GetLoc(format, volumes);
+            var totalPart = GetLoc(format, volumes);
             if (IsCompleted && !_item.IsRewatching) return totalPart;
             return $"{_item.VolumesRead} {totalPart}";
         }
@@ -142,10 +142,10 @@ public partial class AnimeEntityPresentation
         {
             return _item.StatusDetailed?.ToLowerInvariant() switch
             {
-                "currently_airing" or "currently airing" => AnimeEntityPresentation.GetLoc("anime.status.currently_airing"),
-                "finished_airing" or "finished airing" => AnimeEntityPresentation.GetLoc("anime.status.finished_airing"),
-                "not_yet_aired" or "not yet aired" or "anons" => AnimeEntityPresentation.GetLoc("anime.status.not_yet_aired"),
-                _ => _item.StatusDetailed != null ? AnimeEntityPresentation.GetLoc("anime.status." + _item.StatusDetailed.ToLowerInvariant().Replace(" ", "_")) : AnimeEntityPresentation.GetLoc("anime.status.unknown")
+                "currently_airing" or "currently airing" => GetLoc("anime.status.currently_airing"),
+                "finished_airing" or "finished airing" => GetLoc("anime.status.finished_airing"),
+                "not_yet_aired" or "not yet aired" or "anons" => GetLoc("anime.status.not_yet_aired"),
+                _ => _item.StatusDetailed != null ? GetLoc("anime.status." + _item.StatusDetailed.ToLowerInvariant().Replace(" ", "_")) : GetLoc("anime.status.unknown")
             };
         }
     }

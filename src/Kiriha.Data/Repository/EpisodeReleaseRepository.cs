@@ -44,7 +44,7 @@ public sealed class EpisodeReleaseRepository : IEpisodeReleaseRepository
 
         var meta = await context.EpisodeListMeta.AsTracking().FirstOrDefaultAsync(m => m.MalId == malId, ct);
         var now = DateTime.UtcNow;
-        if (meta == null)
+        if (meta is null)
             context.EpisodeListMeta.Add(new EpisodeListMeta { MalId = malId, FetchedAt = now });
         else
             meta.FetchedAt = now;

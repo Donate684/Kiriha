@@ -24,14 +24,14 @@ public class MalTokenManager : IDisposable
     public async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false)
     {
         var tokens = _settingsService.Current.Api.Mal;
-        if (tokens == null) return null;
+        if (tokens is null) return null;
         if (!forceRefresh && !tokens.IsExpired) return tokens.AccessToken;
 
         await _tokenRefreshLock.WaitAsync(ct);
         try
         {
             tokens = _settingsService.Current.Api.Mal;
-            if (tokens == null) return null;
+            if (tokens is null) return null;
             if (!forceRefresh && !tokens.IsExpired) return tokens.AccessToken;
 
             var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);

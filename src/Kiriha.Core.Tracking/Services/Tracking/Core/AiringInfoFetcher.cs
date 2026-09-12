@@ -41,7 +41,7 @@ public class AiringInfoFetcher
             airing = aniAiring?.ToEpisodeAiringInfo();
         }
 
-        if (airing == null) return (null, anime.EpisodesAired, anime.NextEpisodeAt);
+        if (airing is null) return (null, anime.EpisodesAired, anime.NextEpisodeAt);
 
         var (aired, nextSlot) = ResolveAired(anime, airing);
         return (airing, aired, nextSlot);

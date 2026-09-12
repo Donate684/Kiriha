@@ -181,7 +181,7 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
     [RelayCommand]
     private void RemoveCustomLink(CustomShareLink? link)
     {
-        if (link == null) return;
+        if (link is null) return;
         // Don't delete the cached favicon: it's keyed by host and may be
         // shared with other links pointing at the same site. The cache
         // directory holds tiny files and is self-healing on re-fetch.

@@ -43,7 +43,7 @@ public class NyaaFeedClient
             },
             ct: ct);
 
-        if (bytes == null || bytes.Length == 0) return null;
+        if (bytes is null || bytes.Length == 0) return null;
 
         try
         {

@@ -50,35 +50,35 @@ public partial class PlayerViewModel
     }
     partial void OnVolumeUpHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.VolumeUpHotkey = NormalizeHotkey(value, "Up"), SettingsSection.Player);
     }
     partial void OnVolumeDownHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.VolumeDownHotkey = NormalizeHotkey(value, "Down"), SettingsSection.Player);
     }
     partial void OnSeekBackwardHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SeekBackwardHotkey = NormalizeHotkey(value, "Left"), SettingsSection.Player);
     }
     partial void OnSeekForwardHotkeyChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SeekForwardHotkey = NormalizeHotkey(value, "Right"), SettingsSection.Player);
     }
 
     private void SaveHotkey(string value, string fallback, Action<AppSettings.PlayerConfig, string> update)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         var normalized = NormalizeHotkey(value, fallback);
         _settingsService.Update(settings => update(settings.Player, normalized), SettingsSection.Player);
     }
 
     partial void OnEnableSonokoIntegrationChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.EnableSonokoIntegration = value, SettingsSection.Player);
     }
 

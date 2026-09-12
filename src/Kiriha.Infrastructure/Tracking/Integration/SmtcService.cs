@@ -30,7 +30,7 @@ public class SmtcService : IDisposable
         try
         {
 #if WINDOWS
-            if (_manager == null && OperatingSystem.IsWindows())
+            if (_manager is null && OperatingSystem.IsWindows())
             {
                 _manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
                 Log.Information("SMTC Session Manager initialized.");
@@ -46,7 +46,7 @@ public class SmtcService : IDisposable
     public (TimeSpan Position, TimeSpan Duration, DateTimeOffset LastUpdatedTime)? GetTimeline(string processName)
     {
 #if WINDOWS
-        if (_manager == null || !OperatingSystem.IsWindows()) return null;
+        if (_manager is null || !OperatingSystem.IsWindows()) return null;
 
         try
         {

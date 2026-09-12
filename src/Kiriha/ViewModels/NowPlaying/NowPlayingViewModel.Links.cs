@@ -11,7 +11,7 @@ public partial class NowPlayingViewModel
     [RelayCommand]
     private async Task CopyMalLink()
     {
-        if (MatchedAnime == null) return;
+        if (MatchedAnime is null) return;
         string url = $"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}";
         await CopyToClipboard(url);
     }
@@ -19,7 +19,7 @@ public partial class NowPlayingViewModel
     [RelayCommand]
     private async Task CopyShikiLink()
     {
-        if (MatchedAnime == null) return;
+        if (MatchedAnime is null) return;
         string url = $"{ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror)}{MatchedAnime.Id}";
         await CopyToClipboard(url);
     }
@@ -27,14 +27,14 @@ public partial class NowPlayingViewModel
     [RelayCommand]
     private void OpenMalLink()
     {
-        if (MatchedAnime == null) return;
+        if (MatchedAnime is null) return;
         ShellLauncher.OpenUrl($"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}");
     }
 
     [RelayCommand]
     private void OpenShikiLink()
     {
-        if (MatchedAnime == null) return;
+        if (MatchedAnime is null) return;
         ShellLauncher.OpenUrl($"{ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror)}{MatchedAnime.Id}");
     }
 

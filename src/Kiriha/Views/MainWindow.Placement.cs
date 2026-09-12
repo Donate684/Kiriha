@@ -110,7 +110,7 @@ public partial class MainWindow
         try
         {
             var screens = Screens;
-            if (screens == null || screens.All == null || screens.All.Count == 0) return;
+            if (screens is null || screens.All is null || screens.All.Count == 0) return;
 
             // Pick the screen the window currently lives on; fall back to
             // primary if Avalonia can't decide (e.g. window is off-screen).
@@ -185,7 +185,7 @@ public partial class MainWindow
         try
         {
             var settings = SettingsService;
-            if (settings == null) return;
+            if (settings is null) return;
             settings.Update(current =>
             {
                 var placement = current.UI.Window ??= new AppSettings.WindowPlacement();

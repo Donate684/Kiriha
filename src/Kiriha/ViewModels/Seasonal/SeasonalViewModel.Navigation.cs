@@ -16,7 +16,7 @@ public partial class SeasonalViewModel
 
     public void EnqueueItemForViewport(AnimeEntity item)
     {
-        if (item == null) return;
+        if (item is null) return;
         _queueService.EnqueueForViewport([item]);
     }
 

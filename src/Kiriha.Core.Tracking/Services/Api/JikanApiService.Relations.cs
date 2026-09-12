@@ -41,7 +41,7 @@ public partial class JikanApiService
         }
 
         using var json = await GetJsonAsync($"{endpointType}/{malId}/relations", ct);
-        if (json == null) return new List<AnimeRelation>();
+        if (json is null) return [];
 
         var result = new List<AnimeRelation>();
         if (json.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)

@@ -169,7 +169,7 @@ public partial class PlayerViewModel
 
     partial void OnSmartTrackAutoloadChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(
             settings => settings.Player.SmartTrackAutoload = value,
             SettingsSection.Player);

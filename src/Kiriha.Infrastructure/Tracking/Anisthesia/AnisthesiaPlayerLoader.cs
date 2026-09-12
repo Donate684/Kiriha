@@ -15,10 +15,10 @@ public static class AnisthesiaPlayerLoader
         {
             var assembly = typeof(AnisthesiaPlayerLoader).Assembly;
             using var stream = assembly.GetManifestResourceStream("Kiriha.Infrastructure.Tracking.Anisthesia.players.anisthesia");
-            if (stream == null)
+            if (stream is null)
             {
                 Log.Warning("AnisthesiaPlayerLoader: Could not find embedded resource players.anisthesia.");
-                return new List<AnisthesiaPlayer>();
+                return [];
             }
             using var reader = new StreamReader(stream);
             var data = reader.ReadToEnd();
@@ -29,7 +29,7 @@ public static class AnisthesiaPlayerLoader
         catch (Exception ex)
         {
             Log.Error(ex, "AnisthesiaPlayerLoader: Failed to load embedded players data. Fallback to empty list.");
-            return new List<AnisthesiaPlayer>();
+            return [];
         }
     }
 }

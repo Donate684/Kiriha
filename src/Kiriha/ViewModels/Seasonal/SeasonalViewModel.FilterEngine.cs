@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Extensions;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure;
@@ -181,7 +182,7 @@ internal sealed class SeasonalCategoryBuckets
     {
         string loc = _localizer.GetLoc(key);
         if (loc == key && key != "TV" && key != "OVA" && key != "ONA")
-            loc = char.ToUpper(loc[0]) + loc.Substring(1);
+            loc = loc.UppercaseFirst();
         return _localizer.GetLoc("filters.header_format", loc, count.ToString());
     }
 }

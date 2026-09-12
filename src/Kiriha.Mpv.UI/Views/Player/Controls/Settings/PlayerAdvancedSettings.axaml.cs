@@ -19,19 +19,26 @@ namespace Kiriha.Mpv.UI.Views.Player.Controls.Settings
             if (DataContext is not PlayerViewModel vm)
                 return;
 
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null) return;
-
-            var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            try
             {
-                Title = vm.ScreenshotFolderTitle,
-                AllowMultiple = false
-            });
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel is null) return;
 
-            var folder = folders.FirstOrDefault();
-            var path = folder?.TryGetLocalPath();
-            if (!string.IsNullOrWhiteSpace(path))
-                vm.ScreenshotDirectory = path;
+                var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = vm.ScreenshotFolderTitle,
+                    AllowMultiple = false
+                });
+
+                var folder = folders.FirstOrDefault();
+                var path = folder?.TryGetLocalPath();
+                if (!string.IsNullOrWhiteSpace(path))
+                    vm.ScreenshotDirectory = path;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "Failed to open screenshot folder picker");
+            }
         }
     }
 }

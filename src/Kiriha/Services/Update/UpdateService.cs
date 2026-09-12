@@ -81,7 +81,7 @@ public class UpdateService
 
     public async Task<bool> DownloadAndInstallAsync(Action<int>? progressCallback = null, CancellationToken ct = default)
     {
-        if (_updateInfo == null)
+        if (_updateInfo is null)
         {
             Log.Warning("DownloadAndInstallAsync called but no update info is available.");
             return false;
@@ -120,7 +120,7 @@ public class UpdateService
 
     public void RestartAndApply()
     {
-        if (_updateInfo == null) return;
+        if (_updateInfo is null) return;
 
         Log.Information("Restarting application to apply updates...");
         _updateManager.ApplyUpdatesAndRestart(_updateInfo);

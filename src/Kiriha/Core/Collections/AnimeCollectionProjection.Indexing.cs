@@ -13,13 +13,13 @@ public sealed partial class AnimeCollectionProjection
 {
     private void AddItems(IEnumerable<AnimeEntity>? items)
     {
-        if (items == null) return;
+        if (items is null) return;
         foreach (var item in items) Add(item);
     }
 
     private void RemoveItems(IEnumerable<AnimeEntity>? items)
     {
-        if (items == null) return;
+        if (items is null) return;
         foreach (var item in items) Remove(item);
     }
 

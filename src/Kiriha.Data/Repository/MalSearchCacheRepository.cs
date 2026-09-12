@@ -13,10 +13,12 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
     private static readonly TimeSpan NegativeTtl = TimeSpan.FromDays(7);
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly TimeProvider _clock;
 
-    public MalSearchCacheRepository(IDbContextFactory<AppDbContext> contextFactory)
+    public MalSearchCacheRepository(IDbContextFactory<AppDbContext> contextFactory, TimeProvider? clock = null)
     {
         _contextFactory = contextFactory;
+        _clock = clock ?? TimeProvider.System;
     }
 
     public async Task<MalSearchCache?> GetAsync(string queryNormalized, CancellationToken ct = default)
@@ -25,10 +27,10 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entry = await context.MalSearchCache.AsNoTracking()
             .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized, ct);
-        if (entry == null) return null;
+        if (entry is null) return null;
 
         var ttl = entry.AnimeId == 0 ? NegativeTtl : PositiveTtl;
-        if (DateTime.UtcNow - entry.CreatedAt > ttl) return null;
+        if (_clock.GetUtcNow().UtcDateTime - entry.CreatedAt > ttl) return null;
 
         return entry;
     }
@@ -39,8 +41,8 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.MalSearchCache.AsTracking()
             .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized, ct);
-        var now = DateTime.UtcNow;
-        if (existing == null)
+        var now = _clock.GetUtcNow().UtcDateTime;
+        if (existing is null)
         {
             context.MalSearchCache.Add(new MalSearchCache
             {

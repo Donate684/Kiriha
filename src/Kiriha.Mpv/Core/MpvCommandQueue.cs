@@ -95,7 +95,7 @@ internal sealed class MpvCommandQueue
 
     private bool IsSuperseded(QueuedMpvCommand command)
     {
-        if (command.CoalescingKey == null)
+        if (command.CoalescingKey is null)
             return false;
 
         lock (_pendingGate)

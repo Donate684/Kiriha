@@ -44,7 +44,7 @@ public sealed class AnimeRelationRepository : IAnimeRelationRepository
 
         var meta = await context.Set<AnimeRelationMeta>().AsTracking().FirstOrDefaultAsync(m => m.MalId == sourceMalId, ct);
         var now = DateTime.UtcNow;
-        if (meta == null)
+        if (meta is null)
             context.Set<AnimeRelationMeta>().Add(new AnimeRelationMeta { MalId = sourceMalId, FetchedAt = now });
         else
             meta.FetchedAt = now;

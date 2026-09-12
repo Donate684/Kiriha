@@ -15,7 +15,7 @@ partial class Program
     /// </summary>
     private static string MaskSensitiveArgs(string[] args)
     {
-        if (args == null || args.Length == 0) return string.Empty;
+        if (args is null || args.Length == 0) return string.Empty;
         var masked = new string[args.Length];
         for (int i = 0; i < args.Length; i++)
         {

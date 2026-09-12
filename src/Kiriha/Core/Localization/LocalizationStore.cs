@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Kiriha.Core.Domain.Extensions;
 
 namespace Kiriha.Localization;
 
@@ -9,7 +10,7 @@ public static class LocalizationStore
 
     public static string Translate(string keyToUse)
     {
-        if (Application.Current == null) return keyToUse;
+        if (Application.Current is null) return keyToUse;
 
         string lowerKey = keyToUse.ToLowerInvariant().Replace(" ", "");
         string snakeKey = PascalToSnake(keyToUse);
@@ -42,10 +43,7 @@ public static class LocalizationStore
         if (Application.Current.Resources.TryGetValue($"l.{key}", out var translatedExact))
             return translatedExact?.ToString() ?? keyToUse;
 
-        if (!string.IsNullOrEmpty(keyToUse))
-            return char.ToUpper(keyToUse[0]) + (keyToUse.Length > 1 ? keyToUse.Substring(1) : "");
-
-        return keyToUse;
+        return keyToUse.UppercaseFirst();
     }
 
     public static string PascalToSnake(string input)

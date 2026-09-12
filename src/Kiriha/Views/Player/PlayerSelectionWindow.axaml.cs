@@ -23,7 +23,7 @@ public partial class PlayerSelectionWindow : Window
     public void ApplyMica()
     {
         var settings = _settingsService?.Current;
-        if (settings == null) return;
+        if (settings is null) return;
         if (settings.UI.EnableMica)
         {
             TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];

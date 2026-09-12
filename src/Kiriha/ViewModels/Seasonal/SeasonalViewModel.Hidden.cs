@@ -29,7 +29,7 @@ public partial class SeasonalViewModel
                 (toUnhide ??= new List<int>()).Add(id);
         }
 
-        if (toUnhide == null) return;
+        if (toUnhide is null) return;
 
         foreach (var id in toUnhide)
         {
@@ -47,7 +47,7 @@ public partial class SeasonalViewModel
     [RelayCommand]
     public void ToggleHiddenSeasonal(AnimeEntity? item)
     {
-        if (item == null) return;
+        if (item is null) return;
 
         bool isHidden = _hiddenSeasonalIds.Contains(item.Id);
         if (!isHidden && item.Status != UserAnimeStatus.None) return;

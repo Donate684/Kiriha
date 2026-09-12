@@ -12,19 +12,19 @@ public partial class PlayerViewModel
 {
     partial void OnPlayerAutoPlayChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.AutoPlay = value, SettingsSection.Player);
     }
 
     partial void OnSinglePlayerWindowChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SingleWindow = value, SettingsSection.Player);
     }
 
     partial void OnRememberPlayerVolumeChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings =>
         {
             settings.Player.RememberVolume = value;
@@ -34,49 +34,49 @@ public partial class PlayerViewModel
 
     partial void OnAutoHideControlsChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.AutoHideControls = value, SettingsSection.Player);
     }
 
     partial void OnAutoHideTimeoutChanged(double value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.AutoHideTimeout = value, SettingsSection.Player);
     }
 
     partial void OnShowChapterMarkersChanged(bool value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.ShowChapterMarkers = value, SettingsSection.Player);
     }
 
     partial void OnLeftClickActionChanged(PlayerMouseActionOption? value)
     {
-        if (_isApplyingSettings || _settingsService == null || value == null) return;
+        if (_isApplyingSettings || _settingsService is null || value is null) return;
         _settingsService.Update(settings => settings.Player.LeftClickAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnRightClickActionChanged(PlayerMouseActionOption? value)
     {
-        if (_isApplyingSettings || _settingsService == null || value == null) return;
+        if (_isApplyingSettings || _settingsService is null || value is null) return;
         _settingsService.Update(settings => settings.Player.RightClickAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnMiddleClickActionChanged(PlayerMouseActionOption? value)
     {
-        if (_isApplyingSettings || _settingsService == null || value == null) return;
+        if (_isApplyingSettings || _settingsService is null || value is null) return;
         _settingsService.Update(settings => settings.Player.MiddleClickAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnWheelUpActionChanged(PlayerWheelActionOption? value)
     {
-        if (_isApplyingSettings || _settingsService == null || value == null) return;
+        if (_isApplyingSettings || _settingsService is null || value is null) return;
         _settingsService.Update(settings => settings.Player.WheelUpAction = value.Value, SettingsSection.Player);
     }
 
     partial void OnWheelDownActionChanged(PlayerWheelActionOption? value)
     {
-        if (_isApplyingSettings || _settingsService == null || value == null) return;
+        if (_isApplyingSettings || _settingsService is null || value is null) return;
         _settingsService.Update(settings => settings.Player.WheelDownAction = value.Value, SettingsSection.Player);
     }
 
@@ -89,7 +89,7 @@ public partial class PlayerViewModel
             return;
         }
 
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.WheelVolumeStep = normalized, SettingsSection.Player);
     }
 
@@ -102,7 +102,7 @@ public partial class PlayerViewModel
             return;
         }
 
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SeekStep = normalized, SettingsSection.Player);
     }
 
@@ -120,7 +120,7 @@ public partial class PlayerViewModel
     
     partial void OnPreferredAudioLanguagesChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         PreferredAudioLanguages = NormalizeLanguageList(value, "Japanese,jpn,ja");
         _settingsService.Update(settings => settings.Player.PreferredAudioLanguages = PreferredAudioLanguages, SettingsSection.Player);
         ApplyTrackLanguagePreferences();
@@ -128,7 +128,7 @@ public partial class PlayerViewModel
 
     private void SavePlayerPanelButtons(Action<AppSettings.PlayerConfig> update)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
     }
 

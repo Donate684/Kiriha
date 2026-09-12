@@ -20,14 +20,14 @@ public class ShikiTokenService
     public async Task<string?> EnsureValidTokenAsync(CancellationToken ct)
     {
         var tokens = _settingsService.Current.Api.Shiki;
-        if (tokens == null) return null;
+        if (tokens is null) return null;
         if (!tokens.IsExpired) return tokens.AccessToken;
 
         await _tokenLock.WaitAsync(ct);
         try
         {
             tokens = _settingsService.Current.Api.Shiki;
-            if (tokens == null || !tokens.IsExpired) return tokens?.AccessToken;
+            if (tokens is null || !tokens.IsExpired) return tokens?.AccessToken;
 
             var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);
             if (newTokens != null)

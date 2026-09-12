@@ -41,7 +41,7 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id, ct);
-        if (existing == null)
+        if (existing is null)
         {
             Log.Information("Inserting new Anime {Title} (ID: {Id})", item.Title, item.Id);
             context.UserAnime.Add(item);
@@ -57,7 +57,7 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id, ct);
-        if (existing == null)
+        if (existing is null)
         {
             Log.Warning("Attempted to update non-existent anime {Title} (ID: {Id})", item.Title, item.Id);
             // Fall back to upsert so the caller's intent is preserved instead of silently dropped.
@@ -76,7 +76,7 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.UserAnime.FirstOrDefaultAsync(x => x.Id == id, ct);
-        if (existing == null) return;
+        if (existing is null) return;
         context.UserAnime.Remove(existing);
         await context.SaveChangesAsync(ct);
     }

@@ -41,7 +41,7 @@ public class NotificationService : INotificationService
 
     public virtual void NotifyNewEpisode(AnimeEntity anime, int episodeNumber)
     {
-        if (anime == null) return;
+        if (anime is null) return;
         if (!_settingsService.Current.System.NotifyNewEpisodes) return;
         if (episodeNumber <= 0) return;
 
@@ -98,7 +98,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public virtual void NotifyScrobbleSkipped(AnimeEntity anime, int detectedEp)
     {
-        if (anime == null) return;
+        if (anime is null) return;
 
         var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
         var ru = anime.RussianTitle;
@@ -117,7 +117,7 @@ public class NotificationService : INotificationService
 
     public virtual void NotifyAnimeCompleted(AnimeEntity anime)
     {
-        if (anime == null) return;
+        if (anime is null) return;
 
         var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
         var ru = anime.RussianTitle;

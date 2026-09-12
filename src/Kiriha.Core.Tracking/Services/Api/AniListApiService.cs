@@ -115,13 +115,13 @@ public class AniListApiService : IDisposable, IAniListApiService
         try
         {
             var entry = await _cache.GetAsync(cacheKey);
-            if (entry == null || entry.Body.Length == 0) return (false, null);
+            if (entry is null || entry.Body.Length == 0) return (false, null);
 
             var cached = JsonSerializer.Deserialize<AniListAiringCacheEntry>(entry.Body, JsonOptions);
-            if (cached == null) return (false, null);
+            if (cached is null) return (false, null);
 
             var age = DateTime.UtcNow - entry.CreatedAt;
-            var ttl = cached.Value == null ? EmptyTtl : DefaultTtl;
+            var ttl = cached.Value is null ? EmptyTtl : DefaultTtl;
             if (!allowStale && age > ttl) return (false, null);
             return (true, cached.Value);
         }

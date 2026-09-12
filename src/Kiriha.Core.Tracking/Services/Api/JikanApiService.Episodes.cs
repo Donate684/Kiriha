@@ -53,7 +53,7 @@ public partial class JikanApiService
         {
             ct.ThrowIfCancellationRequested();
             using var json = await GetJsonAsync($"anime/{malId}/episodes?page={page}", ct);
-            if (json == null) break;
+            if (json is null) break;
 
             if (json.RootElement.TryGetProperty("data", out var data))
             {
@@ -151,7 +151,7 @@ public partial class JikanApiService
         // Persist even null results so we don't keep retrying forum on shows
         // whose topics don't follow the "Episode N" naming convention. The TTL
         // still ensures we re-check periodically.
-        // Skip caching only if the network call itself failed (json == null),
+        // Skip caching only if the network call itself failed (json is null),
         // so a transient outage doesn't poison the cache for 12 h.
         if (json != null)
         {

@@ -28,7 +28,7 @@ public sealed class BulkObservableCollection<T> : ObservableCollection<T>
     /// </summary>
     public void AddRange(IEnumerable<T> items)
     {
-        if (items == null) return;
+        if (items is null) return;
         CheckReentrancy();
 
         if (Items is List<T> list)

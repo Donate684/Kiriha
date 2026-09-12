@@ -34,7 +34,7 @@ public class AiringInfoCache
         {
             if (finalAiredCount != anime.EpisodesAired)
             {
-                bool isFirstSyncJumpFromZero = anime.LastEpisodesSync == null && anime.EpisodesAired == 0;
+                bool isFirstSyncJumpFromZero = anime.LastEpisodesSync is null && anime.EpisodesAired == 0;
 
                 if (!isFirstSyncJumpFromZero && finalAiredCount > anime.EpisodesAired)
                 {

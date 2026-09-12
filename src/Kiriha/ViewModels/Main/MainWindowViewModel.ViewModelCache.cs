@@ -36,7 +36,7 @@ public partial class MainWindowViewModel
 
     private T EnsureCachedViewModel<T>(ref T? backingField) where T : ViewModelBase
     {
-        if (backingField == null)
+        if (backingField is null)
         {
             backingField = _viewModelFactory.Create<T>();
             _cachedVms.Add(backingField);

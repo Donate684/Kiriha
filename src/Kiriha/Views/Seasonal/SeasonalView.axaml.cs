@@ -83,7 +83,7 @@ public partial class SeasonalView : UserControl
 
     private void QueueVisibleItems()
     {
-        if (_gridRepeater?.ItemsSourceView == null || _gridRepeater.ItemsSourceView.Count == 0) return;
+        if (_gridRepeater?.ItemsSourceView is null || _gridRepeater.ItemsSourceView.Count == 0) return;
 
         bool foundAny = false;
         for (int i = 0; i < Math.Min(_gridRepeater.ItemsSourceView.Count, 50); i++)

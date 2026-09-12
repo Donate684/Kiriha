@@ -43,9 +43,9 @@ public static class EmberTitleResolver
             {
                 // Strip EMBER from the directory name so it doesn't get parsed as part of the anime title
                 if (dirName.EndsWith("-EMBER", System.StringComparison.OrdinalIgnoreCase))
-                    dirName = dirName.Substring(0, dirName.Length - 6).Trim();
+                    dirName = dirName[..^6].Trim();
                 else if (dirName.EndsWith(" EMBER", System.StringComparison.OrdinalIgnoreCase))
-                    dirName = dirName.Substring(0, dirName.Length - 6).Trim();
+                    dirName = dirName[..^6].Trim();
                 else if (dirName.IndexOf("EMBER", System.StringComparison.OrdinalIgnoreCase) >= 0)
                     dirName = System.Text.RegularExpressions.Regex.Replace(dirName, @"\bEMBER\b", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
 

@@ -56,15 +56,15 @@ internal static class AudioSessionProbe
             var enumerator = (IMMDeviceEnumerator)enumeratorObj!;
 
             int hr = enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device);
-            if (hr != 0 || device == null) return AudioState.Unknown;
+            if (hr != 0 || device is null) return AudioState.Unknown;
 
             var iidMgr = typeof(IAudioSessionManager2).GUID;
             hr = device.Activate(ref iidMgr, 0, IntPtr.Zero, out mgrObj);
-            if (hr != 0 || mgrObj == null) return AudioState.Unknown;
+            if (hr != 0 || mgrObj is null) return AudioState.Unknown;
 
             var mgr = (IAudioSessionManager2)mgrObj;
             hr = mgr.GetSessionEnumerator(out sessions);
-            if (hr != 0 || sessions == null) return AudioState.Unknown;
+            if (hr != 0 || sessions is null) return AudioState.Unknown;
 
             sessions.GetCount(out int count);
             for (int i = 0; i < count; i++)
@@ -72,7 +72,7 @@ internal static class AudioSessionProbe
                 IAudioSessionControl? ctl = null;
                 try
                 {
-                    if (sessions.GetSession(i, out ctl) != 0 || ctl == null) continue;
+                    if (sessions.GetSession(i, out ctl) != 0 || ctl is null) continue;
                     var ctl2 = (IAudioSessionControl2)ctl;
                     if (ctl2.GetProcessId(out uint sessionPid) != 0) continue;
                     if (sessionPid != pid) continue;

@@ -123,7 +123,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
     [RelayCommand]
     private async Task NodeClicked(FranchiseGraphVisualNode node)
     {
-        if (node == null || node.Node == null) return;
+        if (node is null || node.Node is null) return;
 
         MediaKind kind = node.Node.Kind.ToLowerInvariant() switch
         {

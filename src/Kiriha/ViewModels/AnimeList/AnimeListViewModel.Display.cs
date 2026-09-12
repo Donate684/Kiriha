@@ -24,7 +24,7 @@ public partial class AnimeListViewModel
 
     public void EnqueueItemForViewport(AnimeEntity item)
     {
-        if (item == null) return;
+        if (item is null) return;
         _queueService.EnqueueForViewport([item]);
     }
 
@@ -78,7 +78,7 @@ public partial class AnimeListViewModel
     [RelayCommand]
     public async Task ApplyScoreFromMenu(RatingOption rating)
     {
-        if (ActiveItem == null || rating == null) return;
+        if (ActiveItem is null || rating is null) return;
         int.TryParse(rating.Value, out int score);
         await _progressService.SetScoreAsync(ActiveItem, score);
     }
@@ -86,7 +86,7 @@ public partial class AnimeListViewModel
     [RelayCommand]
     public async Task SetScore(AnimeEntity item)
     {
-        if (item == null) return;
+        if (item is null) return;
         int.TryParse(item.Score, out int score);
         await _progressService.SetScoreAsync(item, score);
     }

@@ -12,7 +12,7 @@ public partial class JikanApiService
 {
     public async Task<List<AnimeStaff>> GetStaffAsync(int malId, MediaKind mediaKind = MediaKind.Anime, EpisodeFreshness freshness = EpisodeFreshness.Default, CancellationToken ct = default)
     {
-        if (mediaKind != MediaKind.Anime) return new List<AnimeStaff>();
+        if (mediaKind != MediaKind.Anime) return [];
 
         if (freshness != EpisodeFreshness.ForceRefresh)
         {
@@ -40,7 +40,7 @@ public partial class JikanApiService
         }
 
         using var json = await GetJsonAsync($"anime/{malId}/staff", ct);
-        if (json == null) return new List<AnimeStaff>();
+        if (json is null) return [];
 
         var result = new List<AnimeStaff>();
         if (json.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)

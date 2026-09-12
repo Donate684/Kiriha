@@ -94,7 +94,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                     var meta = await _metadataRepo.GetAsync(cacheId);
 
                     // If not in database metadata cache, fetch from Shikimori API
-                    if (meta == null)
+                    if (meta is null)
                     {
                         performedNetworkCall = true;
                         meta = await _shikiMetadata.GetOrFetchMetadataAsync(item.Id, null, null, item.MediaKind);

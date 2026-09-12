@@ -18,7 +18,7 @@ public partial class SettingsService
         try
         {
             var backup = LoadSettingsFile(backupPath);
-            if (backup == null)
+            if (backup is null)
                 return null;
 
             if (primaryException != null)

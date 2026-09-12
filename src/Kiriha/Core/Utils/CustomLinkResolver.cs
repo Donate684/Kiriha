@@ -30,7 +30,7 @@ public static class CustomLinkResolver
 {
     public static string Resolve(string template, AnimeEntity? anime)
     {
-        if (string.IsNullOrEmpty(template) || anime == null) return template ?? string.Empty;
+        if (string.IsNullOrEmpty(template) || anime is null) return template ?? string.Empty;
 
         var title = anime.Title ?? string.Empty;
         var english = !string.IsNullOrEmpty(anime.EnglishTitle) ? anime.EnglishTitle! : title;

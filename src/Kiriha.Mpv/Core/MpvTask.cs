@@ -8,7 +8,7 @@ internal static class MpvTask
 {
     public static bool Wait(Task? task, TimeSpan timeout, string operation)
     {
-        if (task == null)
+        if (task is null)
             return true;
 
         try

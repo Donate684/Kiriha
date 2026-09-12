@@ -44,7 +44,7 @@ public partial class CrashReportViewModel : ObservableObject
         try
         {
             var clipboard = GetClipboard();
-            if (clipboard == null)
+            if (clipboard is null)
             {
                 StatusText = _localizer.GetLoc("crash.status.copy_unavailable");
                 return;

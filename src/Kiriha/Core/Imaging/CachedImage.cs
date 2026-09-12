@@ -46,7 +46,7 @@ public static class CachedImage
             return;
         }
 
-        if (_imageCache == null) return;
+        if (_imageCache is null) return;
 
         try
         {

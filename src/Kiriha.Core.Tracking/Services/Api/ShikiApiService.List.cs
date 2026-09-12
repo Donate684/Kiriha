@@ -21,14 +21,14 @@ public partial class ShikiApiService
     public async Task<SyncOutcome> UpdateProgressAsync(int animeId, int episodes, UserAnimeStatus? status = null, int? score = null, bool? isRewatching = null, int? rewatchCount = null, CancellationToken ct = default)
     {
         // No tokens at all — user disabled the tracker. Nothing to retry.
-        if (_settingsService.Current.Api.Shiki == null) return SyncOutcome.PermanentFailure;
+        if (_settingsService.Current.Api.Shiki is null) return SyncOutcome.PermanentFailure;
 
-        if (_settingsService.Current.Api.Shiki.UserId == null)
+        if (_settingsService.Current.Api.Shiki.UserId is null)
         {
             var userId = await GetCurrentUserIdAsync(ct);
-            if (userId == null) return SyncOutcome.TransientFailure;
+            if (userId is null) return SyncOutcome.TransientFailure;
             var current = _settingsService.Current.Api.Shiki;
-            if (current == null) return SyncOutcome.PermanentFailure;
+            if (current is null) return SyncOutcome.PermanentFailure;
             _settingsService.Update(settings =>
             {
                 if (settings.Api.Shiki != null) settings.Api.Shiki.UserId = userId;
@@ -38,7 +38,7 @@ public partial class ShikiApiService
 
         // Re-read to pick up any token-refresh side effects.
         var tokens = _settingsService.Current.Api.Shiki;
-        if (tokens == null) return SyncOutcome.PermanentFailure;
+        if (tokens is null) return SyncOutcome.PermanentFailure;
 
         var userRate = new Dictionary<string, object>
         {
@@ -61,19 +61,19 @@ public partial class ShikiApiService
     public async Task<SyncOutcome> SaveFullListStatusAsync(AnimeEntity item, CancellationToken ct = default)
     {
         var tokens = _settingsService.Current.Api.Shiki;
-        if (tokens == null) return SyncOutcome.PermanentFailure;
+        if (tokens is null) return SyncOutcome.PermanentFailure;
 
-        if (tokens.UserId == null)
+        if (tokens.UserId is null)
         {
             var userId = await GetCurrentUserIdAsync(ct);
-            if (userId == null) return SyncOutcome.TransientFailure;
+            if (userId is null) return SyncOutcome.TransientFailure;
             _settingsService.Update(settings =>
             {
                 if (settings.Api.Shiki != null) settings.Api.Shiki.UserId = userId;
             }, save: false);
             _settingsService.SaveImmediate();
             tokens = _settingsService.Current.Api.Shiki;
-            if (tokens == null) return SyncOutcome.PermanentFailure;
+            if (tokens is null) return SyncOutcome.PermanentFailure;
         }
 
         bool isManga = item.MediaKind != MediaKind.Anime;
@@ -112,14 +112,14 @@ public partial class ShikiApiService
 
     public async Task<SyncOutcome> UpdateMangaProgressAsync(int mangaId, int chapters, int? volumes = null, UserAnimeStatus? status = null, int? score = null, CancellationToken ct = default)
     {
-        if (_settingsService.Current.Api.Shiki == null) return SyncOutcome.PermanentFailure;
+        if (_settingsService.Current.Api.Shiki is null) return SyncOutcome.PermanentFailure;
 
-        if (_settingsService.Current.Api.Shiki.UserId == null)
+        if (_settingsService.Current.Api.Shiki.UserId is null)
         {
             var userId = await GetCurrentUserIdAsync(ct);
-            if (userId == null) return SyncOutcome.TransientFailure;
+            if (userId is null) return SyncOutcome.TransientFailure;
             var current = _settingsService.Current.Api.Shiki;
-            if (current == null) return SyncOutcome.PermanentFailure;
+            if (current is null) return SyncOutcome.PermanentFailure;
             _settingsService.Update(settings =>
             {
                 if (settings.Api.Shiki != null) settings.Api.Shiki.UserId = userId;
@@ -128,7 +128,7 @@ public partial class ShikiApiService
         }
 
         var tokens = _settingsService.Current.Api.Shiki;
-        if (tokens == null) return SyncOutcome.PermanentFailure;
+        if (tokens is null) return SyncOutcome.PermanentFailure;
 
         var userRate = new Dictionary<string, object>
         {

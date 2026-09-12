@@ -24,7 +24,7 @@ public partial class NowPlayingViewModel
     {
         CustomShareLinks.Clear();
         
-        if (value == null)
+        if (value is null)
         {
             _allAlternativeTitles = [];
             return;

@@ -40,7 +40,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
         {
             _overlay.ShowTimelinePreview(timeSeconds, left);
 
-            if (_thumbnailer == null)
+            if (_thumbnailer is null)
             {
                 _thumbnailer = CreateThumbnailer();
                 if (_thumbnailer != null)
@@ -48,7 +48,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             }
 
             var thumbnailer = _thumbnailer;
-            if (thumbnailer == null)
+            if (thumbnailer is null)
                 return;
 
             var bucket = MpvThumbnailer.GetCacheBucket(timeSeconds);
@@ -83,7 +83,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
                 return;
 
             var frame = await thumbnailer.GetThumbnailAsync(videoUrl, timeSeconds, token);
-            if (token.IsCancellationRequested || requestId != _requestId || frame == null)
+            if (token.IsCancellationRequested || requestId != _requestId || frame is null)
                 return;
 
             Bitmap? bitmap = null;
@@ -154,7 +154,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
     public void WarmUp(string videoUrl)
     {
         var thumbnailer = _thumbnailer;
-        if (thumbnailer == null || string.IsNullOrWhiteSpace(videoUrl))
+        if (thumbnailer is null || string.IsNullOrWhiteSpace(videoUrl))
             return;
 
         _warmUpCts?.Cancel();

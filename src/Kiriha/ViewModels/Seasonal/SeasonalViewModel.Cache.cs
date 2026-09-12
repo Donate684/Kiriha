@@ -131,7 +131,7 @@ public partial class SeasonalViewModel
             {
                 var fresh = await _apiService.GetSeasonalAnimeAsync(year, season, ct);
                 if (ct.IsCancellationRequested) return;
-                if (fresh == null || !fresh.Any()) return;
+                if (fresh is null || !fresh.Any()) return;
 
                 SaveSeasonalCache(year, season, fresh);
                 if (year == CurrentYear && season == CurrentSeason)

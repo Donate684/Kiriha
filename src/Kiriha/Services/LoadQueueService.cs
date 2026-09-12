@@ -61,7 +61,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
     {
         foreach (var item in items)
         {
-            if (item == null) continue;
+            if (item is null) continue;
 
             bool needsImage = !string.IsNullOrEmpty(item.MainPictureUrl);
             bool needsShiki = (_settings.Current.UI.UseRussianTitles && string.IsNullOrEmpty(item.RussianTitle)) ||

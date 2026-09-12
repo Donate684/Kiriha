@@ -50,7 +50,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0) return false;
 
         var primaryTracker = _trackers.FirstOrDefault(t => t.IsEnabled);
-        if (primaryTracker == null)
+        if (primaryTracker is null)
         {
             Log.Warning("No active trackers found for synchronization.");
             Interlocked.Exchange(ref _syncing, 0);
@@ -61,7 +61,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         {
             status?.Report(UIUtils.GetLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserAnimeListAsync(ct);
-            if (apiList == null) return false;
+            if (apiList is null) return false;
 
             var currentItems = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
             var localCount = currentItems.Count;
@@ -103,7 +103,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0) return false;
 
         var primaryTracker = _trackers.FirstOrDefault(t => t.IsEnabled);
-        if (primaryTracker == null)
+        if (primaryTracker is null)
         {
             Log.Warning("No active trackers found for synchronization.");
             Interlocked.Exchange(ref _syncing, 0);
@@ -114,7 +114,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         {
             status?.Report(UIUtils.GetLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserMangaListAsync(ct);
-            if (apiList == null) return false;
+            if (apiList is null) return false;
 
             MediaKind[] kinds = [MediaKind.Manga, MediaKind.LightNovel];
             var currentItems = await _animeRepository.GetSnapshotAsync(kinds);

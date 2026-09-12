@@ -100,7 +100,7 @@ namespace AnitomySharp
                             ParseHelper.CheckExtentKeyword(Element.ElementCategory.ElementEpisodeNumber, i, token);
                             continue;
                         case Element.ElementCategory.ElementReleaseVersion:
-                            word = word.Substring(1);
+                            word = word[1..];
                             break;
                         case Element.ElementCategory.ElementVolumePrefix:
                             ParseHelper.CheckExtentKeyword(Element.ElementCategory.ElementVolumeNumber, i, token);
@@ -292,7 +292,7 @@ namespace AnitomySharp
 
                 // Ignore if it's only a dash
                 if (tokenEnd - tokenBegin <= 2 && ParserHelper.IsDashCharacter(Tokens[tokenBegin].Content[0])) continue;
-                //if (tokenBegin.Pos == null || tokenEnd.Pos == null) continue;
+                //if (tokenBegin.Pos is null || tokenEnd.Pos is null) continue;
                 ParseHelper.BuildElement(Element.ElementCategory.ElementEpisodeTitle, false, Tokens.GetRange(tokenBegin, tokenEnd - tokenBegin));
                 return;
             } while (Token.InListRange(tokenBegin, Tokens));

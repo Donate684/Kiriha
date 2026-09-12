@@ -136,7 +136,7 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
                     }
 
                     // Update only if title or episode or playing state changed
-                    if (lastDetected == null ||
+                    if (lastDetected is null ||
                         !string.Equals(lastDetected.OriginalTitle, detected.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
                         lastDetected.AnimeTitle != detected.AnimeTitle ||
                         lastDetected.Episode != detected.Episode ||

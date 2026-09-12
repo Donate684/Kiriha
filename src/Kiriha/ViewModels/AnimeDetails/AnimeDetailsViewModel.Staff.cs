@@ -21,7 +21,7 @@ public partial class AnimeDetailsViewModel
             if (string.IsNullOrEmpty(s.Positions)) continue;
             var roles = s.Positions.Split(',').Select(r => r.Trim()).ToList();
             var matchedRole = roles.FirstOrDefault(r => keyRoles.Contains(r));
-            if (matchedRole == null) continue;
+            if (matchedRole is null) continue;
 
             if (staffPlusVms.Count >= 10) break;
             if (s.PersonMalId == 0) continue;

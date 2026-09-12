@@ -100,7 +100,7 @@ public class ManualMappingService
         {
             var json = File.ReadAllText(_mappingFilePath);
             var loaded = JsonSerializer.Deserialize<Dictionary<string, int>>(json);
-            if (loaded == null) return;
+            if (loaded is null) return;
             foreach (var kv in loaded) _manualMappings[kv.Key] = kv.Value;
         }
         catch (Exception ex)

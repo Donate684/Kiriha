@@ -30,7 +30,7 @@ public sealed class MetadataRepository : IMetadataRepository
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.Metadata.AsTracking().FirstOrDefaultAsync(m => m.Id == meta.Id, ct);
-        if (existing == null)
+        if (existing is null)
             context.Metadata.Add(meta);
         else
             context.Entry(existing).CurrentValues.SetValues(meta);

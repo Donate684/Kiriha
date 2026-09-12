@@ -33,7 +33,7 @@ public class HistoryService : IHistoryService
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to get history from database");
-            return new List<HistoryItem>();
+            return [];
         }
     }
 

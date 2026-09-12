@@ -74,7 +74,7 @@ namespace AnitomySharp
                 return true;
             }
 
-            if (obj == null || GetType() != obj.GetType())
+            if (obj is null || GetType() != obj.GetType())
             {
                 return false;
             }

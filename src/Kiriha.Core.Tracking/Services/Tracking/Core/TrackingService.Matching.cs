@@ -22,7 +22,7 @@ public partial class TrackingService
         lock (_state)
         {
             media = _currentMedia;
-            if (media == null) return;
+            if (media is null) return;
             _manualMapInProgress = true;
         }
 
@@ -46,7 +46,7 @@ public partial class TrackingService
         lock (_state)
         {
             media = _currentMedia;
-            if (media == null) return;
+            if (media is null) return;
             _manualMapInProgress = true;
         }
 
@@ -69,7 +69,7 @@ public partial class TrackingService
         lock (_state)
         {
             media = _currentMedia;
-            if (media == null) return;
+            if (media is null) return;
             _manualMapInProgress = true;
         }
 
@@ -90,7 +90,7 @@ public partial class TrackingService
     {
         ParsedMedia? media;
         lock (_state) media = _currentMedia;
-        if (media == null) return false;
+        if (media is null) return false;
         return _mappingService.IsManuallyMapped(media.AnimeTitle) ||
                _mappingService.IsManuallyMapped(media.OriginalTitle);
     }

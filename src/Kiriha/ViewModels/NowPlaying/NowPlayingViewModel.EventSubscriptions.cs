@@ -38,7 +38,7 @@ public partial class NowPlayingViewModel
         // - different id: stale background match for a previous media — would clobber UI choice
         // We let through the matching id so we can clear the pending guard below.
         var pending = Volatile.Read(ref _pendingManualMatchId);
-        if (pending != 0 && (anime == null || anime.Id != pending)) return;
+        if (pending != 0 && (anime is null || anime.Id != pending)) return;
         if (pending != 0 && anime != null && anime.Id == pending)
         {
             Interlocked.CompareExchange(ref _pendingManualMatchId, 0, pending);

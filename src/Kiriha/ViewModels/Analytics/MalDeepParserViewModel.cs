@@ -73,7 +73,7 @@ public partial class MalDeepParserViewModel : ViewModelBase
         {
             targets = allItems.Where(x =>
                 x.Id > 0 &&
-                (x.DateStarted == null || (x.Status == UserAnimeStatus.Completed && x.DateCompleted == null)))
+                (x.DateStarted is null || (x.Status == UserAnimeStatus.Completed && x.DateCompleted is null)))
                 .ToList();
         }
         else

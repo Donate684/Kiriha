@@ -34,7 +34,7 @@ public partial class RssFeedService
         try
         {
             var doc = await _nyaaClient.FetchGlobalFeedAsync(CancellationToken.None);
-            if (doc == null) return;
+            if (doc is null) return;
 
             var items = doc.Descendants("item").ToList();
 
@@ -100,7 +100,7 @@ public partial class RssFeedService
                     torrent.IsMatched = true;
                 }
 
-                if (existing == null)
+                if (existing is null)
                 {
                     newTorrents.Add(torrent);
                 }

@@ -117,7 +117,7 @@ public partial class MappingService : IMappingService
         // parsed from the filename ("2nd Season", "S02", etc.) — otherwise we'd
         // happily match e.g. "Sousou no Frieren 2nd Season - 01" to the S1 entry
         // in the user list. Let SearchOnMalAsync handle these cases instead.
-        if (localMatch == null && searchTitle != cleanTitle && parsedSeason <= 1)
+        if (localMatch is null && searchTitle != cleanTitle && parsedSeason <= 1)
         {
             localMatch = index.FindExact(cleanTitle, parsedEpisode, IsValidMatch);
         }
@@ -134,7 +134,7 @@ public partial class MappingService : IMappingService
         // Same season-aware guard as in step 3: never collapse a "Season 2+"
         // query down to the base title here, otherwise the normalized fallback
         // silently maps "Sousou no Frieren 2nd Season - 01" to the S1 entry.
-        if (localMatch == null && normSearch != normClean && parsedSeason <= 1)
+        if (localMatch is null && normSearch != normClean && parsedSeason <= 1)
         {
             localMatch = index.FindNormalized(normClean, parsedEpisode, IsValidMatch);
         }

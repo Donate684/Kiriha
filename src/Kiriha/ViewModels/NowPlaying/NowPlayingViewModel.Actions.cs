@@ -26,7 +26,7 @@ public partial class NowPlayingViewModel
     [RelayCommand]
     private async Task AddToWatching()
     {
-        if (MatchedAnime == null) return;
+        if (MatchedAnime is null) return;
 
         try
         {

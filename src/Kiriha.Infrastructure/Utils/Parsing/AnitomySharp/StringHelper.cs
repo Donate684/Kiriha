@@ -97,7 +97,7 @@ namespace AnitomySharp
         public static string SubstringWithCheck(string str, int start, int count)
         {
             if (start + count > str.Length) count = str.Length - start;
-            return str.Substring(start, count);
+            return str[start..(start + count)];
         }
     }
 }

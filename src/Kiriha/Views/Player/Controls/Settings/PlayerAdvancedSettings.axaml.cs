@@ -20,7 +20,7 @@ namespace Kiriha.Views.Player.Controls.Settings
                 return;
 
             var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null) return;
+            if (topLevel is null) return;
 
             var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {

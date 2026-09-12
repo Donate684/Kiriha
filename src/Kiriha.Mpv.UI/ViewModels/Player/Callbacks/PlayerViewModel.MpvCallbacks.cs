@@ -10,7 +10,7 @@ public partial class PlayerViewModel
 {
     partial void OnMpvVideoPresetChanged(string value)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         var preset = NormalizeMpvOption(value, "default");
         
         _isApplyingSettings = true;
@@ -91,13 +91,13 @@ public partial class PlayerViewModel
 
     private void SaveMpvOption(Action<AppSettings.PlayerConfig> update)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
     }
 
     private void SaveVideoProcessingOption(Action<AppSettings.PlayerConfig> update)
     {
-        if (_isApplyingSettings || _settingsService == null) return;
+        if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => update(settings.Player), SettingsSection.Player);
         ApplyVideoProcessingOptions();
     }

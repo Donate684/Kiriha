@@ -18,7 +18,7 @@ public partial class App : Application
     private TrayService? _trayService;
     public override void OnFrameworkInitializationCompleted()
     {
-        AnimeEntityPresentation.GetLoc = (k, args) => Kiriha.Core.UIUtils.GetLoc(k, args);
+        AnimeEntityPresentation.SetDefaultGetLoc((k, args) => Kiriha.Core.UIUtils.GetLoc(k, args));
         AppStartupCoordinator.InstallUnhandledExceptionHandler();
         var args = Environment.GetCommandLineArgs();
         var isPlayerMode = PlayerModeCoordinator.IsPlayerMode(args);
@@ -80,7 +80,7 @@ public partial class App : Application
     private static Avalonia.Controls.ResourceDictionary? _customAccentDictionary;
     public static void ApplyCustomAccentColor(string? hexCode)
     {
-        if (Current == null) return;
+        if (Current is null) return;
         Avalonia.Media.Color baseColor;
         if (string.IsNullOrWhiteSpace(hexCode) || !Avalonia.Media.Color.TryParse(hexCode, out var c))
         {

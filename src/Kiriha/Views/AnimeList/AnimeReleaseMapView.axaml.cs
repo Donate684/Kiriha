@@ -69,7 +69,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
         {
             if (DataContext is not AnimeListViewModel vm) return;
             var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null) return;
+            if (topLevel is null) return;
 
             if (await vm.DialogService.ShowAnimeDetailsAsync(topLevel, item))
             {
@@ -149,7 +149,7 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
     private static void SetButtonActive(Button? btn, bool active)
     {
-        if (btn == null) return;
+        if (btn is null) return;
         if (active)
         {
             if (!btn.Classes.Contains("Active"))

@@ -87,14 +87,14 @@ public partial class TorrentsViewModel
     [RelayCommand]
     public void DownloadMagnet(TorrentEntity torrent)
     {
-        if (torrent == null || string.IsNullOrEmpty(torrent.MagnetLink)) return;
+        if (torrent is null || string.IsNullOrEmpty(torrent.MagnetLink)) return;
         UIUtils.OpenUrl(torrent.MagnetLink);
     }
 
     [RelayCommand]
     public void DownloadTorrentFile(TorrentEntity torrent)
     {
-        if (torrent == null || string.IsNullOrEmpty(torrent.DownloadLink)) return;
+        if (torrent is null || string.IsNullOrEmpty(torrent.DownloadLink)) return;
         UIUtils.OpenUrl(torrent.DownloadLink);
     }
 

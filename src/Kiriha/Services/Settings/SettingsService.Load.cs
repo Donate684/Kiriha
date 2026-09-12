@@ -76,7 +76,7 @@ public partial class SettingsService
     {
         var json = ReadAllTextShared(path);
         var loaded = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettings);
-        if (loaded == null)
+        if (loaded is null)
             return null;
 
         DecryptTokens(loaded.Api.Mal, loaded.Api);

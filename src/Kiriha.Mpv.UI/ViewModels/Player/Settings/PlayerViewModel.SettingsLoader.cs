@@ -10,7 +10,7 @@ public partial class PlayerViewModel
 {
     private void ApplyPlayerSettings()
     {
-        if (_settingsService == null)
+        if (_settingsService is null)
             return;
 
         _isApplyingSettings = true;

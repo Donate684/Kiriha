@@ -53,7 +53,7 @@ public sealed class InternalPlayerStateClient : IDisposable
 
     public void Publish(InternalPlayerState state)
     {
-        if (_disposed || _writer == null || _client?.IsConnected != true)
+        if (_disposed || _writer is null || _client?.IsConnected != true)
         {
             lock (_stateGate)
             {
@@ -68,7 +68,7 @@ public sealed class InternalPlayerStateClient : IDisposable
 
     public void PublishClosed()
     {
-        if (_writer == null || _client?.IsConnected != true)
+        if (_writer is null || _client?.IsConnected != true)
             return;
 
         try
@@ -85,7 +85,7 @@ public sealed class InternalPlayerStateClient : IDisposable
         await _writeGate.WaitAsync();
         try
         {
-            if (_disposed || _writer == null || _client?.IsConnected != true)
+            if (_disposed || _writer is null || _client?.IsConnected != true)
                 return;
 
             await _writer.WriteLineAsync(JsonSerializer.Serialize(state, InternalPlayerStateJsonContext.Default.InternalPlayerState));
@@ -131,7 +131,7 @@ public sealed class InternalPlayerStateClient : IDisposable
 
     private static void DisposeIgnoringBrokenPipe(IDisposable? disposable)
     {
-        if (disposable == null)
+        if (disposable is null)
             return;
 
         try

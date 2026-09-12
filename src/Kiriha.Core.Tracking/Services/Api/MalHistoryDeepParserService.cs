@@ -60,7 +60,7 @@ public class MalHistoryDeepParserService : IMalHistoryDeepParserService
             }
 
             var result = MalHistoryParser.Parse(html);
-            if (result == null)
+            if (result is null)
             {
                 return null;
             }

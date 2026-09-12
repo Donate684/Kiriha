@@ -69,7 +69,7 @@ public static class CrashReportBuilder
             var latest = Directory.GetFiles(logsDir, "kiriha-*.txt", SearchOption.TopDirectoryOnly)
                                   .OrderByDescending(f => f)
                                   .FirstOrDefault();
-            if (latest == null) return "(no log file found)";
+            if (latest is null) return "(no log file found)";
 
             var queue = new Queue<string>(maxLines);
             using var fs = new FileStream(latest, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);

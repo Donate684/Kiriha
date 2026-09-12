@@ -81,7 +81,7 @@ public sealed class SmoothScrollBehavior
     {
         if (_frameRequested) return;
         var top = TopLevel.GetTopLevel(_sv);
-        if (top == null) return;
+        if (top is null) return;
         _frameRequested = true;
         top.RequestAnimationFrame(OnFrame);
     }

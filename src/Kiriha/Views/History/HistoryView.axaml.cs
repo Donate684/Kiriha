@@ -68,7 +68,7 @@ public partial class HistoryView : UserControl
     private void OnElementPrepared(object? sender, ItemsRepeaterElementPreparedEventArgs e)
     {
         var card = FindRevealCard(e.Element);
-        if (card == null) return;
+        if (card is null) return;
 
         if (!_initialRevealActive)
         {

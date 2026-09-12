@@ -86,7 +86,7 @@ public partial class JikanApiService : IDisposable
             throttle: ThrottleAsync,
             ct: ct);
 
-        if (bytes == null) return null;
+        if (bytes is null) return null;
         try { return JsonDocument.Parse(bytes); }
         catch (Exception ex)
         {

@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Extensions;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Platform;
@@ -90,7 +91,7 @@ public sealed class SeasonalCacheStore
                 _lastSavedHashes[MakeKey(year, season)] = Convert.ToHexString(hashBytes);
 
                 var items = JsonSerializer.Deserialize<List<AnimeEntity>>(fileBytes, JsonOptions);
-                if (items == null || items.Count == 0) continue;
+                if (items is null || items.Count == 0) continue;
 
                 results.Add((year, season, items));
             }
@@ -107,7 +108,7 @@ public sealed class SeasonalCacheStore
 
     public async Task SaveAsync(int year, string season, IReadOnlyList<AnimeEntity> items)
     {
-        if (items == null || items.Count == 0) return;
+        if (items is null || items.Count == 0) return;
         if (string.IsNullOrEmpty(season)) return;
 
         string key = MakeKey(year, season);
@@ -174,10 +175,7 @@ public sealed class SeasonalCacheStore
         var idx = name.IndexOf('_');
         if (idx <= 0 || idx == name.Length - 1) return false;
         if (!int.TryParse(name.AsSpan(0, idx), out year)) return false;
-        season = name.Substring(idx + 1);
-        // Capitalize first letter to match AppConstants.Seasons.* casing.
-        if (season.Length > 0)
-            season = char.ToUpperInvariant(season[0]) + season.Substring(1);
+        season = name[(idx + 1)..].UppercaseFirst();
         return true;
     }
 

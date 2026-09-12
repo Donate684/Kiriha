@@ -25,7 +25,7 @@ public class KirihaWindowBase : Window
     public void ApplyMica()
     {
         var settings = SettingsService?.Current;
-        if (settings == null) return;
+        if (settings is null) return;
         if (settings.UI.EnableMica)
         {
             TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];

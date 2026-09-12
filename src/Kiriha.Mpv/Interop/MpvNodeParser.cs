@@ -22,7 +22,7 @@ internal static class MpvNodeParser
 
             var type = GetMapString(trackNode, "type");
             var id = GetMapString(trackNode, "id");
-            if (type == null || id == null)
+            if (type is null || id is null)
                 continue;
 
             tracks.Add(new TrackInfo

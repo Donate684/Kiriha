@@ -123,12 +123,12 @@ public partial class TrackingService
             var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.GetCollection()));
             var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId);
 
-            if (matched == null && existingMatched != null && existingMatched.Id == animeId)
+            if (matched is null && existingMatched != null && existingMatched.Id == animeId)
             {
                 matched = existingMatched;
             }
 
-            if (matched == null)
+            if (matched is null)
             {
                 var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled);
                 if (activeTracker != null)
@@ -171,7 +171,7 @@ public partial class TrackingService
     private static bool IsSameMedia(ParsedMedia? a, ParsedMedia? b)
     {
         if (ReferenceEquals(a, b)) return true;
-        if (a == null || b == null) return false;
+        if (a is null || b is null) return false;
         return a.AnimeTitle == b.AnimeTitle && a.Episode == b.Episode && string.Equals(a.OriginalTitle, b.OriginalTitle, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -180,7 +180,7 @@ public partial class TrackingService
         ParsedMedia? media;
         lock (_state)
         {
-            if (_matchedAnime == null || _matchedAnime.Id != matched.Id)
+            if (_matchedAnime is null || _matchedAnime.Id != matched.Id)
                 return;
 
             _matchedAnime = matched;

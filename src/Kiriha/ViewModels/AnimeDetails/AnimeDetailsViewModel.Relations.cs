@@ -1,6 +1,7 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Domain.Extensions;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
@@ -76,14 +77,14 @@ public partial class AnimeDetailsViewModel
             "ona" => "ONA",
             "special" => "Special",
             "music" => "Music",
-            _ => char.ToUpper(t[0]) + t.Substring(1)
+            _ => t.UppercaseFirst()
         };
     }
 
     [RelayCommand]
     private async Task NavigateToRelation(AnimeRelation relation)
     {
-        if (relation == null || string.IsNullOrEmpty(relation.TargetType)) return;
+        if (relation is null || string.IsNullOrEmpty(relation.TargetType)) return;
 
         var type = relation.TargetType.ToLowerInvariant();
         MediaKind kind;

@@ -52,7 +52,7 @@ public class PlayerParser
                 continue;
             }
 
-            if (current == null) continue;
+            if (current is null) continue;
 
             if (indent == 1)
             {

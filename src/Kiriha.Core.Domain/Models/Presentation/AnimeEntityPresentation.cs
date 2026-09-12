@@ -1,32 +1,84 @@
 using System;
 using System.ComponentModel;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Entities;
 
-public delegate string GetLocDelegate(string key, params object[] args);
+public delegate string GetLocDelegate(string key, params object?[] args);
 
 public partial class AnimeEntityPresentation : INotifyPropertyChanged
 {
-    public static GetLocDelegate GetLoc { get; set; } = (k, args) => k;
-    public static Func<bool> GetUseRussianTitles { get; set; } = () => false;
+    private sealed class DefaultFallbackLocalizer : ILocalizer
+    {
+        public string GetLoc(string key) => key;
+        public string GetLoc(string key, params object?[] args) => args != null && args.Length > 0 ? string.Format(key, args) : key;
+    }
+
+    private sealed class DelegateLocalizer(GetLocDelegate del) : ILocalizer
+    {
+        public string GetLoc(string key) => del(key);
+        public string GetLoc(string key, params object?[] args) => del(key, args ?? []);
+    }
+
+    private static ILocalizer _defaultLocalizer = new DefaultFallbackLocalizer();
+    public static ILocalizer DefaultLocalizer
+    {
+        get => _defaultLocalizer;
+        set => _defaultLocalizer = value ?? new DefaultFallbackLocalizer();
+    }
+
+    public static TimeProvider DefaultClock { get; set; } = TimeProvider.System;
+    public static Func<bool> DefaultGetUseRussianTitles { get; set; } = () => false;
+
+    public static void SetDefaultGetLoc(GetLocDelegate getLoc)
+    {
+        DefaultLocalizer = getLoc != null ? new DelegateLocalizer(getLoc) : new DefaultFallbackLocalizer();
+    }
+
+    public static Func<bool> GetUseRussianTitles
+    {
+        get => DefaultGetUseRussianTitles;
+        set => DefaultGetUseRussianTitles = value ?? (() => false);
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private readonly AnimeEntity _item;
+    private readonly ILocalizer? _localizer;
+    private readonly TimeProvider? _clock;
+    private readonly Func<bool>? _getUseRussianTitles;
     private DateTime _now;
 
     public AnimeEntityPresentation(AnimeEntity item)
+        : this(item, null, null, null)
     {
-        _item = item;
-        _now = DateTime.UtcNow;
     }
 
     public AnimeEntityPresentation(AnimeEntity item, DateTime now)
+        : this(item, null, null, null)
     {
-        _item = item;
         _now = now;
     }
+
+    public AnimeEntityPresentation(
+        AnimeEntity item,
+        ILocalizer? localizer = null,
+        TimeProvider? clock = null,
+        Func<bool>? getUseRussianTitles = null)
+    {
+        _item = item;
+        _localizer = localizer;
+        _clock = clock;
+        _getUseRussianTitles = getUseRussianTitles;
+        _now = EffectiveClock.GetUtcNow().UtcDateTime;
+    }
+
+    public ILocalizer EffectiveLocalizer => _localizer ?? DefaultLocalizer;
+    public TimeProvider EffectiveClock => _clock ?? DefaultClock;
+    public bool EffectiveUseRussianTitles => (_getUseRussianTitles ?? DefaultGetUseRussianTitles)();
+
+    private string GetLoc(string key, params object?[] args) => EffectiveLocalizer.GetLoc(key, args);
 
     private string? _cachedSecondaryTitle;
     private bool _secondaryTitleComputed;
@@ -34,7 +86,7 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
 
     public void RaiseAll()
     {
-        _now = DateTime.UtcNow;
+        _now = EffectiveClock.GetUtcNow().UtcDateTime;
         _secondaryTitleComputed = false;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
@@ -45,7 +97,7 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     {
         get
         {
-            bool useRussian = GetUseRussianTitles();
+            bool useRussian = EffectiveUseRussianTitles;
             if (_secondaryTitleComputed && _cachedUseRussianTitles == useRussian)
             {
                 return _cachedSecondaryTitle;

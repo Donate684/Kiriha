@@ -38,7 +38,7 @@ public partial class MainWindow : KirihaWindowBase
     {
         // Force transparency hints for testing, ignoring the check for a moment if needed
         var settings = SettingsService?.Current;
-        if (settings == null) return;
+        if (settings is null) return;
         if (settings.UI.EnableMica)
         {
             TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];

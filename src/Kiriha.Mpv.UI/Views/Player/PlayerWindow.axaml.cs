@@ -94,7 +94,7 @@ public partial class PlayerWindow : Window
         {
             Log.Information("Initializing MPV player with libmpv render API");
             var playerSettings = _settingsService?.Current.Player;
-            if (playerSettings == null) return;
+            if (playerSettings is null) return;
             var mpvOptions = new MpvOptions(
                 playerSettings.MpvHwdec,
                 playerSettings.MpvVideoOutput,

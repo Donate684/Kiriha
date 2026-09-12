@@ -55,7 +55,7 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
         _gl = gl;
         TryCreateRenderContext();
 
-        if (_player == null || !_renderContextReady)
+        if (_player is null || !_renderContextReady)
             return;
 
         var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
@@ -88,7 +88,7 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
 
     private void TryCreateRenderContext()
     {
-        if (_player == null || _gl == null || _getProcAddress == null || _renderContextReady)
+        if (_player is null || _gl is null || _getProcAddress is null || _renderContextReady)
             return;
 
         try
@@ -105,7 +105,7 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
 
     private IntPtr GetProcAddress(IntPtr context, IntPtr name)
     {
-        if (_gl == null || name == IntPtr.Zero)
+        if (_gl is null || name == IntPtr.Zero)
             return IntPtr.Zero;
 
         var procName = Marshal.PtrToStringUTF8(name);

@@ -16,7 +16,7 @@ public partial class TorrentsViewModel
     [RelayCommand]
     public void ToggleHideAnime(HideableAnimeItem? item)
     {
-        if (item == null) return;
+        if (item is null) return;
         item.IsHidden = !item.IsHidden;
     }
 

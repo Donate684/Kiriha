@@ -19,7 +19,7 @@ public partial class MalApiService
         try
         {
             var bytes = await GetWithCacheAsync(url, ct);
-            if (bytes == null) return list;
+            if (bytes is null) return list;
 
             using var json = JsonDocument.Parse(bytes);
 
@@ -38,7 +38,7 @@ public partial class MalApiService
         try
         {
             var bytes = await GetWithCacheAsync($"anime/{animeId}?fields={AnimeFields}&nsfw=true", ct, localTtl: TimeSpan.FromDays(30));
-            if (bytes == null) return null;
+            if (bytes is null) return null;
 
             using var json = JsonDocument.Parse(bytes);
             return MalMapper.MapJsonToAnimeEntity(json.RootElement);
@@ -54,7 +54,7 @@ public partial class MalApiService
         try
         {
             var bytes = await GetWithCacheAsync(url, ct);
-            if (bytes == null) return list;
+            if (bytes is null) return list;
 
             using var json = JsonDocument.Parse(bytes);
 
@@ -73,7 +73,7 @@ public partial class MalApiService
         try
         {
             var bytes = await GetWithCacheAsync($"manga/{mangaId}?fields={MangaFields}&nsfw=true", ct, localTtl: TimeSpan.FromDays(30));
-            if (bytes == null) return null;
+            if (bytes is null) return null;
 
             using var json = JsonDocument.Parse(bytes);
             return MalMapper.MapJsonToAnimeEntity(json.RootElement);

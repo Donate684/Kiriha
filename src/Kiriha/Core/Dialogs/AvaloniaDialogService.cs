@@ -50,7 +50,7 @@ public sealed class AvaloniaDialogService : IDialogService
     public async Task<bool> ShowAnimeDetailsAsync(Control? sourceControl, AnimeEntity item, CancellationToken ct = default)
     {
         var owner = ResolveOwner(sourceControl);
-        if (owner == null) return false;
+        if (owner is null) return false;
 
         // Resolve dependencies via DI scope. Note the dialog's VM is currently
         // not registered in the container (it carries a load of per-call state),
@@ -98,7 +98,7 @@ public sealed class AvaloniaDialogService : IDialogService
     public async Task ShowUpdateDialogAsync(bool isDownloaded = false, CancellationToken ct = default)
     {
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
-            || desktop.MainWindow == null)
+            || desktop.MainWindow is null)
             return;
 
         try

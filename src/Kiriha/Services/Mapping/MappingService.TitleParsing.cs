@@ -12,7 +12,7 @@ public partial class MappingService
 {
     private bool IsValidMatch(AnimeEntity match, int? episodeNumber)
     {
-        if (episodeNumber == null) return true;
+        if (episodeNumber is null) return true;
         if (match.TotalEpisodes <= 1) return true;
         if (episodeNumber > match.TotalEpisodes) return false;
         return true;
@@ -79,7 +79,7 @@ public partial class MappingService
 
         string cleanTitle = titleElement != null ? titleElement.Value : Path.GetFileNameWithoutExtension(title);
 
-        if (episodeElement == null)
+        if (episodeElement is null)
         {
             if (subTitleElement != null && !cleanTitle.Contains(subTitleElement.Value, StringComparison.OrdinalIgnoreCase))
                 cleanTitle = $"{cleanTitle} {subTitleElement.Value}";

@@ -153,7 +153,7 @@ public partial class AnimeEditViewModel : ObservableObject
     {
         get
         {
-            if (_originalAnime == null || _anime == null) return false;
+            if (_originalAnime is null || _anime is null) return false;
 
             var currentScore = GetCleanScore(_anime.Score);
             var origScore = GetCleanScore(_originalAnime.Score);
@@ -190,7 +190,7 @@ public partial class AnimeEditViewModel : ObservableObject
         string rawScore = _anime.Score;
         if (rawScore != "-" && rawScore.Contains(' '))
         {
-            _anime.Score = rawScore.Substring(0, rawScore.IndexOf(' '));
+            _anime.Score = rawScore[..rawScore.IndexOf(' ')];
         }
 
         bool scoreChanged = _originalAnime.Score != _anime.Score && _anime.Score != "-" && !string.IsNullOrEmpty(_anime.Score);

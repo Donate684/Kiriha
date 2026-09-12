@@ -14,7 +14,7 @@ internal static class ToastRenderer
     /// </summary>
     public static void Show(IReadOnlyList<string> lines)
     {
-        if (lines == null || lines.Count == 0) return;
+        if (lines is null || lines.Count == 0) return;
         try
         {
 #if WINDOWS

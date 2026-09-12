@@ -92,7 +92,7 @@ public partial class SettingsCacheViewModel : ObservableObject
             foreach (var stat in stats)
             {
                 var item = CacheItems.FirstOrDefault(x => x.Target == stat.Target);
-                if (item == null) continue;
+                if (item is null) continue;
                 item.ItemCount = stat.ItemCount;
                 item.SizeBytes = stat.SizeBytes;
             }

@@ -184,7 +184,7 @@ public partial class ShikiMetadataService : IDisposable
                 return new ShikiMetadata { Id = GetCacheId(animeId, mediaKind), Russian = "", Description = "" };
             }
 
-            if (result.Body == null) return null; // transient failure — retry next tick
+            if (result.Body is null) return null; // transient failure — retry next tick
 
             var metadata = System.Text.Json.JsonSerializer.Deserialize<ShikiMetadata>(result.Body);
             if (metadata != null)

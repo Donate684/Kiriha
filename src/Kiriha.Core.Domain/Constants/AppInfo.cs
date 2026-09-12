@@ -37,7 +37,7 @@ public static class AppInfo
                 // InformationalVersion sometimes carries a "+commit" build metadata suffix —
                 // strip it so the UA looks like "Kiriha/0.2.0", not "Kiriha/0.2.0+abc123".
                 var plus = info.IndexOf('+');
-                return plus >= 0 ? info.Substring(0, plus) : info;
+                return plus >= 0 ? info[..plus] : info;
             }
             return asm.GetName().Version?.ToString(3) ?? "0.0.0";
         }

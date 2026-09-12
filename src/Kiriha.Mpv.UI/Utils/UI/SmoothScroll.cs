@@ -27,7 +27,7 @@ public static class SmoothScroll
             var enabled = e.NewValue is true;
             var existing = sv.GetValue(BehaviorProperty);
 
-            if (enabled && existing == null)
+            if (enabled && existing is null)
             {
                 var b = SmoothScrollBehavior.Attach(sv);
                 sv.SetValue(BehaviorProperty, b);

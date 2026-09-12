@@ -44,7 +44,7 @@ public sealed class AnimeStaffRepository : IAnimeStaffRepository
 
         var meta = await context.Set<AnimeStaffMeta>().AsTracking().FirstOrDefaultAsync(m => m.MalId == sourceMalId, ct);
         var now = DateTime.UtcNow;
-        if (meta == null)
+        if (meta is null)
             context.Set<AnimeStaffMeta>().Add(new AnimeStaffMeta { MalId = sourceMalId, FetchedAt = now });
         else
             meta.FetchedAt = now;

@@ -66,7 +66,7 @@ public class AiringInfoService : IAiringInfoService
         var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force: true, ct);
         if (_animeRepo.IsRecentlyDeleted(anime.Id)) return;
 
-        if (airing == null)
+        if (airing is null)
         {
             await _cache.MarkSyncedAsync(anime, DateTime.UtcNow);
             return;
@@ -95,7 +95,7 @@ public class AiringInfoService : IAiringInfoService
                     var s = x.StatusDetailed?.ToLowerInvariant();
                     return (s == "currently_airing" || s == "currently airing" || x.NextEpisodeAt.HasValue) &&
                            x.Status == UserAnimeStatus.Watching &&
-                           (force || x.LastEpisodesSync == null || x.LastEpisodesSync < threshold);
+                           (force || x.LastEpisodesSync is null || x.LastEpisodesSync < threshold);
                 })
                 .ToList());
 
@@ -127,7 +127,7 @@ public class AiringInfoService : IAiringInfoService
 
                 var now = DateTime.UtcNow;
                 var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
-                if (airing == null)
+                if (airing is null)
                 {
                     await _cache.MarkSyncedAsync(anime, now);
                     return;

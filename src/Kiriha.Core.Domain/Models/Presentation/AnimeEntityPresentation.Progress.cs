@@ -48,7 +48,7 @@ public partial class AnimeEntityPresentation
         {
             if (IsCompleted && !_item.IsRewatching) return TotalPart;
             if (IsManga && _item.VolumesRead > 0)
-                return $"{ProgressPart} {TotalPart} | {_item.VolumesRead} {AnimeEntityPresentation.GetLoc("anime.labels.total_vol_format", _item.Volumes > 0 ? _item.Volumes.ToString() : "?")}";
+                return $"{ProgressPart} {TotalPart} | {_item.VolumesRead} {GetLoc("anime.labels.total_vol_format", _item.Volumes > 0 ? _item.Volumes.ToString() : "?")}";
             return $"{ProgressPart} {TotalPart}";
         }
     }

@@ -12,7 +12,7 @@ public partial class NowPlayingViewModel
     [RelayCommand]
     private async Task ManualMatch()
     {
-        if (CurrentMedia == null) return;
+        if (CurrentMedia is null) return;
 
         SearchQuery = CurrentMedia.AnimeTitle;
         await SearchSuggestions();
@@ -44,7 +44,7 @@ public partial class NowPlayingViewModel
     [RelayCommand]
     private void ConfirmMatch()
     {
-        if (PendingMatch == null) return;
+        if (PendingMatch is null) return;
         MatchedAnime = PendingMatch;
         PendingMatch = null;
     }

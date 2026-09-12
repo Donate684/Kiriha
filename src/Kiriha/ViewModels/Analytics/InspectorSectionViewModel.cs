@@ -135,7 +135,7 @@ public partial class InspectorSectionViewModel : ViewModelBase
         foreach (var item in items)
         {
             // 1. Missing end date: Completed but DateCompleted is null
-            if (item.Status == UserAnimeStatus.Completed && item.DateCompleted == null)
+            if (item.Status == UserAnimeStatus.Completed && item.DateCompleted is null)
             {
                 uniqueProblemAnimeIds.Add(item.Id);
                 Issues.Add(new ProfileIssueItem
@@ -155,7 +155,7 @@ public partial class InspectorSectionViewModel : ViewModelBase
             }
 
             // 2. Missing start date: Watching or Completed but DateStarted is null
-            if ((item.Status == UserAnimeStatus.Watching || item.Status == UserAnimeStatus.Completed) && item.DateStarted == null)
+            if ((item.Status == UserAnimeStatus.Watching || item.Status == UserAnimeStatus.Completed) && item.DateStarted is null)
             {
                 uniqueProblemAnimeIds.Add(item.Id);
                 Issues.Add(new ProfileIssueItem
@@ -316,7 +316,7 @@ public partial class InspectorSectionViewModel : ViewModelBase
     [RelayCommand]
     public async Task FixIssue(ProfileIssueItem item)
     {
-        if (item == null) return;
+        if (item is null) return;
 
         bool updated = false;
         var anime = item.Anime;
@@ -373,7 +373,7 @@ public partial class InspectorSectionViewModel : ViewModelBase
     [RelayCommand]
     public async Task OpenDetails(ProfileIssueItem item)
     {
-        if (item == null) return;
+        if (item is null) return;
         await _dialogService.ShowAnimeDetailsAsync(null, item.Anime);
     }
 

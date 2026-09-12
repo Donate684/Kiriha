@@ -55,7 +55,7 @@ public partial class HistorySectionViewModel : ViewModelBase
     [RelayCommand]
     public void OpenFavorite(AnalyticsFavoriteRow? row)
     {
-        if (row == null || row.Entries.Count == 0) return;
+        if (row is null || row.Entries.Count == 0) return;
 
         HistoryPopupTitle = row.Name;
         HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_favorite_subtitle"), row.Count, row.MeanScore, row.WeightedScore);
@@ -65,7 +65,7 @@ public partial class HistorySectionViewModel : ViewModelBase
     [RelayCommand]
     public void OpenDailyHistory(AnalyticsDailyHistoryPoint? point)
     {
-        if (point == null || point.Count == 0) return;
+        if (point is null || point.Count == 0) return;
 
         HistoryPopupTitle = point.DaysAgo == 1
             ? LocalizationStore.Translate("analytics.history.yesterday")
@@ -77,7 +77,7 @@ public partial class HistorySectionViewModel : ViewModelBase
     [RelayCommand]
     public void OpenMonthlyHistory(AnalyticsMonthlyHistoryCell? cell)
     {
-        if (cell == null || cell.Count == 0) return;
+        if (cell is null || cell.Count == 0) return;
 
         HistoryPopupTitle = string.Format(LocalizationStore.Translate("analytics.history.popup_monthly_title"), cell.MonthName);
         HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_monthly_subtitle"), cell.Count);

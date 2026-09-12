@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Kiriha.Services.AppLifecycle.Shutdown;
+using Serilog;
 
 namespace Kiriha.Services.AppLifecycle;
 
@@ -35,13 +36,21 @@ public sealed class ShutdownCoordinator
         if (Interlocked.Exchange(ref _shutdownRequested, 1) != 0)
             return;
 
-        await DrainAsync();
+        try
+        {
+            await DrainAsync();
 
-        if (_serviceProvider is IDisposable disposable)
-            disposable.Dispose();
+            if (_serviceProvider is IDisposable disposable)
+                disposable.Dispose();
 
-        if (sender is IClassicDesktopStyleApplicationLifetime desktop)
-            await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+            if (sender is IClassicDesktopStyleApplicationLifetime desktop)
+                await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error during application shutdown");
+        }
     }
 
     public async Task DrainAsync()

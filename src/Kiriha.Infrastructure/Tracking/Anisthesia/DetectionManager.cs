@@ -80,7 +80,7 @@ public class DetectionManager
             {
                 if (_regexExecutableRules[r].Regex.IsMatch(procName))
                 {
-                    if (matchingPlayers == null)
+                    if (matchingPlayers is null)
                     {
                         matchingPlayers = _regexExecutableRules[r].PlayerList;
                     }
@@ -118,7 +118,7 @@ public class DetectionManager
                 try
                 {
                     var matchingPlayers = GetMatchingPlayers(procName);
-                    if (matchingPlayers == null || matchingPlayers.Count == 0) continue;
+                    if (matchingPlayers is null || matchingPlayers.Count == 0) continue;
 
                     for (int i = 0; i < matchingPlayers.Count; i++)
                     {
@@ -208,7 +208,7 @@ public class DetectionManager
                 {
                     string procName = proc.ProcessName;
                     var matchingPlayers = GetMatchingPlayers(procName);
-                    if (matchingPlayers == null || matchingPlayers.Count == 0) continue;
+                    if (matchingPlayers is null || matchingPlayers.Count == 0) continue;
 
                     for (int i = 0; i < matchingPlayers.Count; i++)
                     {
