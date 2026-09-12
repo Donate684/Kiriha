@@ -130,20 +130,23 @@ public partial class TrackingService
 
             var result = await _pipeline.RunAsync(media, userList);
 
-            if (result.NegativelyMapped)
+            switch (result)
             {
-                Log.Information("TrackingService: '{Title}' is negatively mapped, skipping auto-match", media.AnimeTitle);
-                return;
-            }
+                case MediaNegativelyMapped:
+                    Log.Information("TrackingService: '{Title}' is negatively mapped, skipping auto-match", media.AnimeTitle);
+                    return;
 
-            // Race: another media event may have arrived while we were mapping.
-            ParsedMedia? cur;
-            lock (_state) cur = _currentMedia;
-            if (!IsSameMedia(cur, media)) return;
+                case MediaMatchSuccess success:
+                    // Race: another media event may have arrived while we were mapping.
+                    ParsedMedia? cur;
+                    lock (_state) cur = _currentMedia;
+                    if (!IsSameMedia(cur, media)) return;
 
-            if (result.Success)
-            {
-                ApplyMatchedMedia(media, result.MatchedAnime);
+                    ApplyMatchedMedia(media, success.MatchedAnime);
+                    break;
+
+                case MediaMatchNotFound:
+                    break;
             }
         }
         catch (Exception ex)

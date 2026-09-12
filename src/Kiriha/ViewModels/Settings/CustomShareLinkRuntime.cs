@@ -51,7 +51,7 @@ public partial class CustomShareLinkRuntime : ObservableObject
         if (string.IsNullOrWhiteSpace(Url)) return;
         try
         {
-            Process.Start(new ProcessStartInfo
+            Process.StartAndForget(new ProcessStartInfo
             {
                 FileName = Url,
                 UseShellExecute = true

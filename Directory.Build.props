@@ -8,6 +8,7 @@
          and a future maintainer is forced to consciously verify the sub-package
          availability before lifting it. -->
     <LangVersion>15.0</LangVersion>
+    <Features>runtime-async=on</Features>
     <AvaloniaVersion>12.1.2</AvaloniaVersion>
     <AvaloniaSubpackagesVersion>12.0.0</AvaloniaSubpackagesVersion>
   </PropertyGroup>

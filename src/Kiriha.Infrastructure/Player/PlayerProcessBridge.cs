@@ -52,7 +52,12 @@ public static class PlayerProcessBridge
             WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
         };
 
-        try { System.Diagnostics.Process.Start(startInfo); }
+        if (OperatingSystem.IsWindows())
+        {
+            startInfo.KillOnParentExit = true;
+        }
+
+        try { System.Diagnostics.Process.StartAndForget(startInfo); }
         catch (Exception ex) { Log.Debug(ex, "Failed to start resident player process"); }
     }
 

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models;
 
@@ -6,6 +7,7 @@ namespace Kiriha.Core.Abstractions.Messages;
 /// <summary>
 /// Closed hierarchy of tracking messages published across the application.
 /// </summary>
+[JsonPolymorphic(InferClosedTypePolymorphism = true)]
 public closed record class TrackingMessage;
 
 public record MediaChangedMessage(ParsedMedia? Media) : TrackingMessage;

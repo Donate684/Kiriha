@@ -9,9 +9,10 @@ internal static class MpvNodeParser
 {
     internal static List<TrackInfo> ParseTracks(MpvNode root)
     {
-        var tracks = new List<TrackInfo>();
         if (!TryGetNodeList(root, LibMpvNative.MPV_FORMAT_NODE_ARRAY, out var list))
-            return tracks;
+            return [];
+
+        List<TrackInfo> tracks = [with(capacity: list.Num)];
 
         for (int i = 0; i < list.Num; i++)
         {
@@ -39,9 +40,10 @@ internal static class MpvNodeParser
 
     internal static List<ChapterInfo> ParseChapters(MpvNode root)
     {
-        var chapters = new List<ChapterInfo>();
         if (!TryGetNodeList(root, LibMpvNative.MPV_FORMAT_NODE_ARRAY, out var list))
-            return chapters;
+            return [];
+
+        List<ChapterInfo> chapters = [with(capacity: list.Num)];
 
         for (int i = 0; i < list.Num; i++)
         {
@@ -67,13 +69,13 @@ internal static class MpvNodeParser
             return false;
         }
 
-        unsafe { list = *(MpvNodeList*)node.U.List; }
+        list = unsafe(*(MpvNodeList*)node.U.List);
         return list.Num > 0 && list.Values != IntPtr.Zero;
     }
 
     private static MpvNode ReadNode(IntPtr values, int index)
     {
-        unsafe { return *(MpvNode*)IntPtr.Add(values, index * sizeof(MpvNode)); }
+        return unsafe(*(MpvNode*)IntPtr.Add(values, index * sizeof(MpvNode)));
     }
 
     private static bool TryGetMapValue(MpvNode mapNode, string key, out MpvNode value)

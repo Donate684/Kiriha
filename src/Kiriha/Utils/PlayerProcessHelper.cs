@@ -21,9 +21,14 @@ public static class PlayerProcessHelper
             WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
         };
 
+        if (OperatingSystem.IsWindows())
+        {
+            startInfo.KillOnParentExit = true;
+        }
+
         try
         {
-            Process.Start(startInfo);
+            Process.StartAndForget(startInfo);
         }
         catch (Exception ex)
         {

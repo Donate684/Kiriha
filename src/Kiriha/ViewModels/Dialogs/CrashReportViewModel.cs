@@ -1,4 +1,4 @@
-﻿using Kiriha.ViewModels.Main;
+using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.Startup;
@@ -68,14 +68,14 @@ public partial class CrashReportViewModel : ObservableObject
             if (!string.IsNullOrEmpty(_crashFilePath) && File.Exists(_crashFilePath))
             {
                 // Open folder and select the crash file (Windows Explorer).
-                Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{_crashFilePath}\"")
+                Process.StartAndForget(new ProcessStartInfo("explorer.exe", $"/select,\"{_crashFilePath}\"")
                 {
                     UseShellExecute = true
                 });
             }
             else
             {
-                Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+                Process.StartAndForget(new ProcessStartInfo(dir) { UseShellExecute = true });
             }
         }
         catch (Exception ex)

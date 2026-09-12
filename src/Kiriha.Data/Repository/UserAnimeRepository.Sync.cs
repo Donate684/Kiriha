@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Kiriha.Core.Domain.Collections;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,6 @@ public sealed partial class UserAnimeRepository
     public async Task SyncFromRemoteAsync(IEnumerable<AnimeEntity> items, MediaKind[]? syncKinds = null, CancellationToken ct = default)
     {
         var incomingItems = items.ToList(); // materialize to avoid multiple evaluations
-        var incomingIds = incomingItems.Select(x => x.Id).ToHashSet();
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
 
@@ -53,26 +53,27 @@ public sealed partial class UserAnimeRepository
             }
 
             var existingItems = await query.ToListAsync(ct);
-            var toRemove = existingItems.Where(x => !incomingIds.Contains(x.Id)).ToList();
-            if (toRemove.Count > 0)
+            var reconciliation = CollectionReconciliation.Reconcile(
+                existingItems,
+                incomingItems,
+                x => x.Id,
+                x => x.Id);
+
+            if (reconciliation.LocalOnly.Count > 0)
             {
-                context.UserAnime.RemoveRange(toRemove);
-                var sample = string.Join(", ", toRemove.Take(10).Select(x => $"{x.Id}:{x.Title}"));
-                Log.Information("Sync: Removing {Count} items from DB. Sample: {Sample}", toRemove.Count, sample);
+                context.UserAnime.RemoveRange(reconciliation.LocalOnly);
+                var sample = string.Join(", ", reconciliation.LocalOnly.Take(10).Select(x => $"{x.Id}:{x.Title}"));
+                Log.Information("Sync: Removing {Count} items from DB. Sample: {Sample}", reconciliation.LocalOnly.Count, sample);
             }
 
-            var existingItemsDict = existingItems.ToDictionary(x => x.Id);
-
-            foreach (var item in incomingItems)
+            foreach (var (existing, item) in reconciliation.Matched)
             {
-                if (existingItemsDict.TryGetValue(item.Id, out var existing))
-                {
-                    context.Entry(existing).CurrentValues.SetValues(item);
-                }
-                else
-                {
-                    context.UserAnime.Add(item);
-                }
+                context.Entry(existing).CurrentValues.SetValues(item);
+            }
+
+            if (reconciliation.RemoteOnly.Count > 0)
+            {
+                context.UserAnime.AddRange(reconciliation.RemoteOnly);
             }
 
             await context.SaveChangesAsync(ct);

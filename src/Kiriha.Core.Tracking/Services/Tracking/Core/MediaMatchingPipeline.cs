@@ -11,13 +11,16 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public class MediaMatchResult
-{
-    public bool NegativelyMapped { get; init; }
-    public bool Success { get; init; }
-    public int? MalId { get; init; }
-    public AnimeEntity? MatchedAnime { get; init; }
-}
+public record class MediaMatchSuccess(AnimeEntity? MatchedAnime, int MalId);
+
+public record class MediaNegativelyMapped;
+
+public record class MediaMatchNotFound;
+
+/// <summary>
+/// First-class C# 15 discriminated union representing the outcome of media matching.
+/// </summary>
+public union MediaMatchResult(MediaMatchSuccess, MediaNegativelyMapped, MediaMatchNotFound);
 
 public class MediaMatchingPipeline
 {
@@ -35,7 +38,7 @@ public class MediaMatchingPipeline
         if (_mappingService.IsNegativelyMapped(media.OriginalTitle) ||
             _mappingService.IsNegativelyMapped(media.AnimeTitle))
         {
-            return new MediaMatchResult { NegativelyMapped = true };
+            return new MediaNegativelyMapped();
         }
 
         int? malId = await _mappingService.GetIdFromTitleAsync(media.OriginalTitle, userList);
@@ -75,9 +78,9 @@ public class MediaMatchingPipeline
                 }
             }
 
-            return new MediaMatchResult { Success = true, MatchedAnime = matched, MalId = malId.Value };
+            return new MediaMatchSuccess(matched, malId.Value);
         }
 
-        return new MediaMatchResult { Success = false };
+        return new MediaMatchNotFound();
     }
 }

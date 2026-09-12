@@ -216,7 +216,7 @@ public class DetectionManager
                     IntPtr hWnd = IntPtr.Zero;
                     bool hWndEvaluated = false;
 
-                    for (int i = 0; i < matchingPlayers.Count; i++)
+                    fallbackPlayersLoop: for (int i = 0; i < matchingPlayers.Count; i++)
                     {
                         var player = matchingPlayers[i];
 
@@ -263,11 +263,9 @@ public class DetectionManager
                                 result.ProcessName = procName;
                                 result.Pid = pid;
                                 detectedMedia = result;
-                                break;
+                                break fallbackPlayersLoop;
                             }
                         }
-
-                        if (detectedMedia != null) break;
                     }
                 }
                 catch { /* Access denied or process exited */ }

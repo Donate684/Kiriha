@@ -196,7 +196,27 @@ public sealed class HttpConditionalCache
     private static string HashUrl(string url)
     {
         Span<byte> hash = stackalloc byte[32];
-        SHA256.HashData(Encoding.UTF8.GetBytes(url), hash);
+        int maxBytes = Encoding.UTF8.GetMaxByteCount(url.Length);
+        if (maxBytes <= 512)
+        {
+            Span<byte> utf8 = stackalloc byte[maxBytes];
+            int written = Encoding.UTF8.GetBytes(url, utf8);
+            SHA256.HashData(utf8[..written], hash);
+        }
+        else
+        {
+            byte[] rented = System.Buffers.ArrayPool<byte>.Shared.Rent(maxBytes);
+            try
+            {
+                int written = Encoding.UTF8.GetBytes(url, rented);
+                SHA256.HashData(rented.AsSpan(0, written), hash);
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
+
         return Convert.ToHexString(hash);
     }
 }

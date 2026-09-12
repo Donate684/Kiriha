@@ -204,4 +204,106 @@ public class DotNet11FeaturesTests
         Assert.Null(playlist[99, true]);
         Assert.Null(playlist[-1, true]);
     }
+
+    [Fact]
+    public void UnionType_MediaMatchResult_ExhaustiveMatch()
+    {
+        Kiriha.Core.Tracking.Core.MediaMatchResult r1 = new Kiriha.Core.Tracking.Core.MediaMatchSuccess(new AnimeEntity { Id = 10, Title = "Frieren" }, 10);
+        Kiriha.Core.Tracking.Core.MediaMatchResult r2 = new Kiriha.Core.Tracking.Core.MediaNegativelyMapped();
+        Kiriha.Core.Tracking.Core.MediaMatchResult r3 = new Kiriha.Core.Tracking.Core.MediaMatchNotFound();
+
+        static string Describe(Kiriha.Core.Tracking.Core.MediaMatchResult res) => res switch
+        {
+            Kiriha.Core.Tracking.Core.MediaMatchSuccess s => $"Success:{s.MalId}:{s.MatchedAnime?.Title}",
+            Kiriha.Core.Tracking.Core.MediaNegativelyMapped => "NegativelyMapped",
+            Kiriha.Core.Tracking.Core.MediaMatchNotFound => "NotFound"
+        };
+
+        Assert.Equal("Success:10:Frieren", Describe(r1));
+        Assert.Equal("NegativelyMapped", Describe(r2));
+        Assert.Equal("NotFound", Describe(r3));
+    }
+
+    [Fact]
+    public void JsonSerializer_InferClosedTypePolymorphism_TrackingMessage()
+    {
+        TrackingMessage msg = new TrackingCountdownMessage("00:42");
+        string json = System.Text.Json.JsonSerializer.Serialize(msg);
+        Assert.Contains("00:42", json);
+
+        var deserialized = System.Text.Json.JsonSerializer.Deserialize<TrackingMessage>(json);
+        Assert.NotNull(deserialized);
+        Assert.IsType<TrackingCountdownMessage>(deserialized);
+        Assert.Equal("00:42", ((TrackingCountdownMessage)deserialized).Countdown);
+    }
+
+    [Fact]
+    public void NumberBase_TryParsePartial_ParsesEpisodePrefixCorrectly()
+    {
+        ReadOnlySpan<char> span = "12v2 [1080p]";
+        bool parsed = int.TryParsePartial(span, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int value, out int charsConsumed);
+        Assert.True(parsed);
+        Assert.Equal(12, value);
+        Assert.Equal(2, charsConsumed);
+        Assert.Equal('v', span[charsConsumed]);
+    }
+
+    [Fact]
+    public void Process_StartAndForget_LaunchesWithoutLeakingHandle()
+    {
+        var psi = new ProcessStartInfo("cmd.exe", "/c exit 0")
+        {
+            CreateNoWindow = true,
+            UseShellExecute = false
+        };
+        Process.StartAndForget(psi);
+    }
+
+    [Fact]
+    public void ProcessStartInfo_KillOnParentExit_SupportedOnWindows()
+    {
+        var psi = new ProcessStartInfo("cmd.exe", "/c exit 0")
+        {
+            UseShellExecute = false,
+            KillOnParentExit = true
+        };
+
+        Assert.True(psi.KillOnParentExit);
+    }
+
+    [Fact]
+    public void StringStream_ReadsDirectlyWithoutByteAllocation()
+    {
+        string text = "Kiriha anime desktop stream test";
+        using var stream = new StringStream(text, System.Text.Encoding.UTF8);
+
+        Assert.True(stream.CanRead);
+        Assert.False(stream.CanWrite);
+
+        using var reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+        string result = reader.ReadToEnd();
+        Assert.Equal(text, result);
+    }
+
+    [Fact]
+    public void Char_Equals_SupportsStringComparison()
+    {
+        char lowerA = 'a';
+        Assert.True(lowerA.Equals('A', StringComparison.OrdinalIgnoreCase));
+        Assert.False(lowerA.Equals('A', StringComparison.Ordinal));
+
+        char lowerYa = 'я';
+        Assert.True(lowerYa.Equals('Я', StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Utf_Validation_DetectsValidAndInvalidSubsequences()
+    {
+        ReadOnlySpan<char> validChars = "デスノート Kiriha 🎬";
+        Assert.True(System.Text.Unicode.Utf16.IsValid(validChars));
+
+        ReadOnlySpan<byte> invalidBytes = [0xC3, 0x28];
+        int badIndex = System.Text.Unicode.Utf8.IndexOfInvalidSubsequence(invalidBytes);
+        Assert.Equal(0, badIndex);
+    }
 }
