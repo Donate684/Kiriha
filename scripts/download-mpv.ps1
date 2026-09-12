@@ -1,3 +1,7 @@
+param(
+    [string]$Token = $(if ($env:GITHUB_TOKEN) { $env:GITHUB_TOKEN } elseif ($env:GH_TOKEN) { $env:GH_TOKEN } else { "" })
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectDir = $PSScriptRoot
@@ -6,59 +10,113 @@ if ([string]::IsNullOrEmpty($projectDir)) {
 }
 $mpvDir = Join-Path $projectDir "..\subprojects\mpv"
 $versionFile = Join-Path $mpvDir "version.txt"
+$dllExists = Test-Path (Join-Path $mpvDir "libmpv-2.dll")
 
-# 1. Fetch releases from GitHub API
+# Known pinned release fallback in case dynamic metadata fetching fails
+$fallbackVersion = "mpv-dev-x86_64-v3-20260911-git-14f2d48cbc.7z"
+$fallbackUrl = "https://github.com/zhongfly/mpv-winbuild/releases/download/2026-09-11-14f2d48cbc/mpv-dev-x86_64-v3-20260911-git-14f2d48cbc.7z"
+
+$latestVersion = $null
+$downloadUrl = $null
+
+# 1. Fetch releases from GitHub REST API
 $apiUrl = "https://api.github.com/repos/zhongfly/mpv-winbuild/releases"
+$headers = @{
+    "User-Agent" = "Kiriha-Build"
+}
+if (-not [string]::IsNullOrEmpty($Token)) {
+    $headers["Authorization"] = "Bearer $Token"
+}
+
 Write-Host "Fetching latest libmpv version info from GitHub API (zhongfly/mpv-winbuild)..."
+$releases = $null
 try {
-    $releases = Invoke-RestMethod -Uri $apiUrl -TimeoutSec 15
+    $releases = Invoke-RestMethod -Uri $apiUrl -Headers $headers -TimeoutSec 15
 } catch {
-    Write-Warning "Failed to fetch GitHub releases: $_. If libmpv-2.dll exists, we will skip download."
-    if (Test-Path (Join-Path $mpvDir "libmpv-2.dll")) {
-        exit 0
-    } else {
-        throw "Failed to download libmpv metadata, and libmpv-2.dll is missing!"
-    }
+    Write-Warning "Direct GitHub REST API call failed: $_"
 }
 
-# Find the latest x86_64-v3 dev build
-$latestItem = $null
-foreach ($release in $releases) {
-    $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-v3-*.7z" } | Select-Object -First 1
-    if ($null -ne $asset) {
-        $latestItem = $asset
-        break
-    }
-}
-
-if ($null -eq $latestItem) {
-    # Fallback to standard x86_64 if v3 is not found
-    foreach ($release in $releases) {
-        $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-*.7z" } | Select-Object -First 1
-        if ($null -ne $asset) {
-            $latestItem = $asset
-            break
+# 2. If REST API failed, try GitHub CLI (`gh api`) if installed
+if ($null -eq $releases) {
+    $ghCmd = Get-Command gh -ErrorAction SilentlyContinue
+    if ($ghCmd) {
+        try {
+            Write-Host "Attempting metadata retrieval via GitHub CLI (gh)..."
+            $ghOutput = & gh api repos/zhongfly/mpv-winbuild/releases --cache 1h 2>$null
+            if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrEmpty($ghOutput)) {
+                $releases = $ghOutput | ConvertFrom-Json
+            }
+        } catch {
+            Write-Warning "GitHub CLI call failed: $_"
         }
     }
 }
 
-if ($null -eq $latestItem) {
-    throw "No matching libmpv package found in GitHub releases!"
+# Extract asset from REST / CLI releases if available
+if ($null -ne $releases) {
+    foreach ($release in $releases) {
+        $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-v3-*.7z" } | Select-Object -First 1
+        if ($null -ne $asset) {
+            $latestVersion = $asset.name
+            $downloadUrl = $asset.browser_download_url
+            break
+        }
+    }
+    if ($null -eq $latestVersion) {
+        # Fallback to standard x86_64 if v3 is not found
+        foreach ($release in $releases) {
+            $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-*.7z" } | Select-Object -First 1
+            if ($null -ne $asset) {
+                $latestVersion = $asset.name
+                $downloadUrl = $asset.browser_download_url
+                break
+            }
+        }
+    }
 }
 
-$latestVersion = $latestItem.name
-$downloadUrl = $latestItem.browser_download_url
+# 3. Fallback: Web redirect + expanded_assets scraping (immune to GitHub REST API rate limits)
+if ($null -eq $latestVersion -or $null -eq $downloadUrl) {
+    Write-Host "Falling back to GitHub Releases web page scraping (bypassing API rate limit)..."
+    try {
+        $latestReleaseUrl = "https://github.com/zhongfly/mpv-winbuild/releases/latest"
+        $effectiveUrl = & curl.exe -sI -L -w "%{url_effective}" -o NUL "$latestReleaseUrl"
+        $tag = $effectiveUrl.Trim().Split('/')[-1]
+        if (-not [string]::IsNullOrEmpty($tag)) {
+            $assetsUrl = "https://github.com/zhongfly/mpv-winbuild/releases/expanded_assets/$tag"
+            $htmlLines = & curl.exe -sL "$assetsUrl"
+            $html = $htmlLines -join "`n"
+            if ($html -match 'href="(?<url>[^"]*(?<ver>mpv-dev-x86_64-v3-[^"]+\.7z))"') {
+                $latestVersion = $Matches['ver']
+                $downloadUrl = "https://github.com" + $Matches['url']
+            } elseif ($html -match 'href="(?<url>[^"]*(?<ver>mpv-dev-x86_64-[^"]+\.7z))"') {
+                $latestVersion = $Matches['ver']
+                $downloadUrl = "https://github.com" + $Matches['url']
+            }
+        }
+    } catch {
+        Write-Warning "Web scraping fallback failed: $_"
+    }
+}
 
-Write-Host "Latest version on GitHub: $latestVersion"
+# 4. Ultimate Fallback: Pinned Release URL
+if ($null -eq $latestVersion -or $null -eq $downloadUrl) {
+    if ($dllExists) {
+        Write-Warning "Could not resolve latest libmpv release, but libmpv-2.dll is already present. Skipping update."
+        exit 0
+    }
+    Write-Warning "Could not resolve latest release dynamically. Falling back to pinned release: $fallbackVersion"
+    $latestVersion = $fallbackVersion
+    $downloadUrl = $fallbackUrl
+}
 
-# 2. Check if we already have this version
+Write-Host "Target libmpv version: $latestVersion"
+
+# Check if current installed version matches target
 $currentVersion = ""
 if (Test-Path $versionFile) {
-    $currentVersion = Get-Content $versionFile -Raw
-    $currentVersion = $currentVersion.Trim()
+    $currentVersion = (Get-Content $versionFile -Raw).Trim()
 }
-
-$dllExists = Test-Path (Join-Path $mpvDir "libmpv-2.dll")
 
 if ($dllExists -and ($currentVersion -eq $latestVersion)) {
     Write-Host "libmpv is already up to date ($currentVersion)."
@@ -67,33 +125,31 @@ if ($dllExists -and ($currentVersion -eq $latestVersion)) {
 
 Write-Host "Updating libmpv from '$currentVersion' to '$latestVersion'..."
 
-# 3. Create temp directory
+# Create temp directory
 $tempDir = Join-Path $env:TEMP "mpv_download_$(Get-Random)"
 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 $archivePath = Join-Path $tempDir "mpv.7z"
 
 try {
-    # 4. Download archive using curl.exe
+    # Download archive using curl.exe with retry
     Write-Host "Downloading $downloadUrl ..."
-    & curl.exe -L -s -S -o "$archivePath" "$downloadUrl"
+    & curl.exe -L -s -S --retry 3 --retry-delay 2 -o "$archivePath" "$downloadUrl"
     if ($LASTEXITCODE -ne 0) {
         throw "curl.exe failed to download the archive with exit code $LASTEXITCODE."
     }
 
-    # 5. Extract archive using built-in Windows tar
+    # Extract archive using built-in Windows tar
     Write-Host "Extracting archive..."
     $extractDir = Join-Path $tempDir "extracted"
     New-Item -ItemType Directory -Path $extractDir -Force | Out-Null
     
-    # Run tar.exe to extract
     & tar.exe -xf "$archivePath" -C "$extractDir"
     
-    # 6. Copy files to target directory
+    # Copy files to target directory
     if (-not (Test-Path $mpvDir)) {
         New-Item -ItemType Directory -Path $mpvDir -Force | Out-Null
     }
 
-    # Find libmpv-2.dll and include folder in the extracted files
     $dllFile = Get-ChildItem -Path $extractDir -Filter "libmpv-2.dll" -Recurse | Select-Object -First 1
     $includeDir = Get-ChildItem -Path $extractDir -Directory -Filter "include" -Recurse | Select-Object -First 1
     $implibFile = Get-ChildItem -Path $extractDir -Filter "libmpv.dll.a" -Recurse | Select-Object -First 1
@@ -123,7 +179,6 @@ try {
     Write-Host "libmpv successfully updated to $latestVersion!"
 }
 finally {
-    # 7. Clean up
     if (Test-Path $tempDir) {
         Write-Host "Cleaning up temporary files..."
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue

@@ -11,6 +11,9 @@ jobs:
     permissions:
       contents: write # Required for creating and uploading to GitHub Releases
 
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -22,6 +25,14 @@ jobs:
           dotnet-quality: 'preview'
           cache: true
           cache-dependency-path: '**/Directory.Packages.props'
+
+      - name: Cache libmpv
+        uses: actions/cache@v4
+        with:
+          path: subprojects/mpv
+          key: libmpv-win-x64-${{ hashFiles('scripts/download-mpv.ps1') }}
+          restore-keys: |
+            libmpv-win-x64-
 
       - name: Extract version
         id: version
