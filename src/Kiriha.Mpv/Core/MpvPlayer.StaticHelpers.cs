@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Kiriha.Mpv;
@@ -84,5 +85,24 @@ public partial class MpvPlayer
         if (string.IsNullOrEmpty(a)) return b;
         if (string.IsNullOrEmpty(b)) return a;
         return $"{a}{separator}{b}";
+    }
+
+    internal static string? ResolveFontsDirectory()
+    {
+        string baseDir = AppContext.BaseDirectory;
+        string[] candidates =
+        [
+            Path.Combine(baseDir, "Assets", "Fonts"),
+            Path.Combine(baseDir, "mpv", "fonts"),
+            Path.Combine(baseDir, "fonts")
+        ];
+
+        foreach (var dir in candidates)
+        {
+            if (Directory.Exists(dir))
+                return dir;
+        }
+
+        return null;
     }
 }

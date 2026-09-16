@@ -44,6 +44,12 @@ public static class MpvPlayerBuilder
             MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "demuxer-max-back-bytes", "8MiB"), "limit back buffer");
             player.ScreenshotManager.ConfigureScreenshots(handle);
 
+            var fontsDir = MpvPlayer.ResolveFontsDirectory();
+            if (!string.IsNullOrEmpty(fontsDir))
+            {
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "sub-fonts-dir", fontsDir), "set fonts directory");
+            }
+
             int res = LibMpvNative.mpv_initialize(handle);
             if (res < 0)
             {

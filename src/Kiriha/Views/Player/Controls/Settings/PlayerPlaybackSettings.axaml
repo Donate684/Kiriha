@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:mpv="clr-namespace:Kiriha.Mpv"
@@ -6,10 +6,13 @@
              xmlns:conv="using:Kiriha.Views.Converters"
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Views.Player.Controls.Settings.PlayerPlaybackSettings">
+    <UserControl.Resources>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+    </UserControl.Resources>
     <StackPanel Spacing="10">
                                 <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.playback}"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.autoplay}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.autoplay_sub}"/>
@@ -19,10 +22,18 @@
                                                   IsChecked="{Binding PlayerAutoPlay}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="PlayerAutoPlay"
+                                            IsVisible="{Binding PlayerAutoPlay, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.single_window}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.single_window_sub}"/>
@@ -32,20 +43,36 @@
                                                   IsChecked="{Binding SinglePlayerWindow}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SinglePlayerWindow"
+                                            IsVisible="{Binding SinglePlayerWindow, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
                                 <StackPanel Spacing="6" Margin="0,4,0,0">
-                                    <Grid ColumnDefinitions="*,Auto">
+                                    <Grid ColumnDefinitions="*,Auto,32">
                                         <StackPanel Grid.Column="0" Spacing="2">
                                             <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.default_speed}"/>
                                             <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.default_speed_sub}"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="1"
-                                                   Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}Ã—'}"
+                                                   Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}×'}"
                                                    Foreground="#99FFFFFF"
                                                    FontSize="12"
-                                                   VerticalAlignment="Top"/>
+                                                   VerticalAlignment="Center"/>
+                                        <Button Grid.Column="2"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="PlaybackSpeed"
+                                                IsVisible="{Binding PlaybackSpeed, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1.0}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
                                     </Grid>
                                     <Slider Minimum="0.25" Maximum="2"
                                             TickFrequency="0.25"

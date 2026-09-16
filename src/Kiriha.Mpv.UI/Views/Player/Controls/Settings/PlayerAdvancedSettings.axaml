@@ -7,12 +7,15 @@
              xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerAdvancedSettings">
+    <UserControl.Resources>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+    </UserControl.Resources>
     <StackPanel Spacing="10">
                                 <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.settings_adv.title}"/>
                                 <TextBlock Classes="player-settings-row-title"
                                            Text="{DynamicResource l.player.settings_adv.screenshots}"
                                            Margin="0,6,0,0"/>
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.folder}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{Binding ScreenshotDirectory}" TextWrapping="Wrap"/>
@@ -23,8 +26,16 @@
                                             Click="OnChooseScreenshotDirectoryClick">
                                         <material:MaterialIcon Kind="FolderOpenOutline" Width="18" Height="18" Foreground="White"/>
                                     </Button>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotDirectory"
+                                            IsVisible="{Binding ScreenshotDirectory, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=''}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.format}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_png}"/>
@@ -33,8 +44,16 @@
                                               ItemsSource="{Binding ScreenshotFormatOptions}"
                                               SelectedItem="{Binding ScreenshotFormat}"
                                               VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotFormat"
+                                            IsVisible="{Binding ScreenshotFormat, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=png}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.size}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.frame_or_window}"/>
@@ -49,8 +68,16 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotResolution"
+                                            IsVisible="{Binding ScreenshotResolution.Value, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=video}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.png_compression}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_0_9}"/>
@@ -61,8 +88,16 @@
                                                    Increment="1"
                                                    Value="{Binding ScreenshotPngCompression}"
                                                    VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotPngCompression"
+                                            IsVisible="{Binding ScreenshotPngCompression, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=4}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.jpg_webp_quality}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_0_100}"/>
@@ -73,8 +108,16 @@
                                                    Increment="1"
                                                    Value="{Binding ScreenshotQuality}"
                                                    VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotQuality"
+                                            IsVisible="{Binding ScreenshotQuality, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=95}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.high_bit_depth}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_off}"/>
@@ -84,8 +127,16 @@
                                                   IsChecked="{Binding ScreenshotHighBitDepth}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotHighBitDepth"
+                                            IsVisible="{Binding ScreenshotHighBitDepth, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=False}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.hotkey_sub}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.hotkey_sub_ex}"/>
@@ -94,8 +145,16 @@
                                              Text="{Binding ScreenshotWithSubtitlesHotkey}"
                                              PlaceholderText="S"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotWithSubtitlesHotkey"
+                                            IsVisible="{Binding ScreenshotWithSubtitlesHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=S}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.hotkey_no_sub}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.hotkey_no_sub_ex}"/>
@@ -104,12 +163,20 @@
                                              Text="{Binding ScreenshotWithoutSubtitlesHotkey}"
                                              PlaceholderText="Shift+S"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ScreenshotWithoutSubtitlesHotkey"
+                                            IsVisible="{Binding ScreenshotWithoutSubtitlesHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='Shift+S'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
                                 <TextBlock Classes="player-settings-row-title"
                                            Text="{DynamicResource l.player.settings_adv.sub_style}"
                                            Margin="0,6,0,0"/>
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.force_style}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_u}"/>
@@ -119,17 +186,33 @@
                                                   IsChecked="{Binding SubtitleStyleOverrideEnabled}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleStyleOverrideEnabled"
+                                            IsVisible="{Binding SubtitleStyleOverrideEnabled, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=False}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.font}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_font}"/>
                                     </StackPanel>
-                                    <TextBox Grid.Column="1" Text="{Binding SubtitleFont}" PlaceholderText="Candara Bold" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Column="1" Text="{Binding SubtitleFont}" PlaceholderText="Lato ExtraBold" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleFont"
+                                            IsVisible="{Binding SubtitleFont, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='Lato ExtraBold'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.size}"/>
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.font_size}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_size}"/>
                                     </StackPanel>
                                     <NumericUpDown Grid.Column="1"
@@ -138,29 +221,61 @@
                                                    Increment="1"
                                                    Value="{Binding SubtitleFontSize}"
                                                    VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleFontSize"
+                                            IsVisible="{Binding SubtitleFontSize, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=80}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.text_color}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_fff}"/>
                                     </StackPanel>
                                     <TextBox Grid.Column="1" Text="{Binding SubtitleColor}" PlaceholderText="#FFFFFF" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleColor"
+                                            IsVisible="{Binding SubtitleColor, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='#FFFFFF'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.border_color}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_000}"/>
                                     </StackPanel>
                                     <TextBox Grid.Column="1" Text="{Binding SubtitleBorderColor}" PlaceholderText="#000000" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleBorderColor"
+                                            IsVisible="{Binding SubtitleBorderColor, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='#000000'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.shadow_color}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_000}"/>
                                     </StackPanel>
                                     <TextBox Grid.Column="1" Text="{Binding SubtitleShadowColor}" PlaceholderText="#000000" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleShadowColor"
+                                            IsVisible="{Binding SubtitleShadowColor, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='#000000'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.border}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_border}"/>
@@ -171,8 +286,16 @@
                                                    Increment="0.1"
                                                    Value="{Binding SubtitleBorderSize}"
                                                    VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleBorderSize"
+                                            IsVisible="{Binding SubtitleBorderSize, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=4}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.shadow_offset}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_shadow}"/>
@@ -183,8 +306,16 @@
                                                    Increment="0.1"
                                                    Value="{Binding SubtitleShadowOffset}"
                                                    VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleShadowOffset"
+                                            IsVisible="{Binding SubtitleShadowOffset, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1.5}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.bottom_margin}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_margin}"/>
@@ -195,8 +326,16 @@
                                                    Increment="1"
                                                    Value="{Binding SubtitleMarginY}"
                                                    VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleMarginY"
+                                            IsVisible="{Binding SubtitleMarginY, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=60}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.scale_window}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.scale_window_ex}"/>
@@ -206,13 +345,21 @@
                                                   IsChecked="{Binding SubtitleScaleByWindow}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleScaleByWindow"
+                                            IsVisible="{Binding SubtitleScaleByWindow, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
                                 <Border Classes="player-settings-divider"/>
                                 <TextBlock Classes="player-settings-row-title"
                                            Text="{DynamicResource l.player.settings_adv.sonoko_integration}"
                                            Margin="0,6,0,0"/>
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.sonoko_enable}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.sonoko_enable_ex}"/>
@@ -222,8 +369,16 @@
                                                   IsChecked="{Binding EnableSonokoIntegration}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="EnableSonokoIntegration"
+                                            IsVisible="{Binding EnableSonokoIntegration, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=False}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44" IsVisible="{Binding EnableSonokoIntegration}">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44" IsVisible="{Binding EnableSonokoIntegration}">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.sonoko_hotkey}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.sonoko_hotkey_ex}"/>
@@ -232,6 +387,14 @@
                                              Text="{Binding SonokoIntegrationHotkey}"
                                              PlaceholderText="T"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SonokoIntegrationHotkey"
+                                            IsVisible="{Binding SonokoIntegrationHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=T}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
                                 <Border Height="110" IsHitTestVisible="False"/>

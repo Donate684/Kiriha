@@ -10,4 +10,5 @@
                     xmlns:material="using:Material.Icons.Avalonia"
                     xmlns:conv="using:Kiriha.Views.Converters">
 <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+<conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
 </ResourceDictionary>

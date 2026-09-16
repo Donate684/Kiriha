@@ -72,6 +72,12 @@ public class MpvTrackManager
             if (!enabled)
                 return;
 
+            var fontsDir = MpvPlayer.ResolveFontsDirectory();
+            if (!string.IsNullOrEmpty(fontsDir))
+            {
+                MpvPlayer.SetMpvOption(handle, "sub-fonts-dir", fontsDir, "set subtitle fonts directory");
+            }
+
             MpvPlayer.SetMpvOption(handle, "sub-font", font, "set subtitle font");
             MpvPlayer.SetMpvOption(handle, "sub-font-size", MpvPlayer.FormatDouble(fontSize), "set subtitle font size");
             MpvPlayer.SetMpvOption(handle, "sub-color", color, "set subtitle color");

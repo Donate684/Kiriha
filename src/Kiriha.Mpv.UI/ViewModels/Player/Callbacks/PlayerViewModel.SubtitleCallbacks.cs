@@ -31,7 +31,7 @@ public partial class PlayerViewModel
         if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), SettingsSection.Player);
     }
-    partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, "Candara Bold"));
+    partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, "Lato ExtraBold"));
     partial void OnSubtitleFontSizeChanged(double value) => SaveSubtitleStyle(x => x.SubtitleFontSize = Math.Clamp(value, 1, 300));
     partial void OnSubtitleColorChanged(string value) => SaveSubtitleStyle(x => x.SubtitleColor = NormalizeSubtitleColor(value, "#FFFFFF"));
     partial void OnSubtitleBorderColorChanged(string value) => SaveSubtitleStyle(x => x.SubtitleBorderColor = NormalizeSubtitleColor(value, "#000000"));
@@ -54,7 +54,7 @@ public partial class PlayerViewModel
     {
         _settingsApplier.ApplySubtitleStyle(new PlayerSubtitleStyleOptions(
             SubtitleStyleOverrideEnabled,
-            NormalizeMpvOption(SubtitleFont, "Candara Bold"),
+            NormalizeMpvOption(SubtitleFont, "Lato ExtraBold"),
             Math.Clamp(SubtitleFontSize, 1, 300),
             NormalizeSubtitleColor(SubtitleColor, "#FFFFFF"),
             NormalizeSubtitleColor(SubtitleBorderColor, "#000000"),

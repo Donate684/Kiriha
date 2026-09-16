@@ -7,10 +7,13 @@
              xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerInterfaceSettings">
+    <UserControl.Resources>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+    </UserControl.Resources>
     <StackPanel Spacing="10">
                                 <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.settings_interface.title}"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.hide_controls}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.hide_controls_sub}"/>
@@ -20,10 +23,18 @@
                                                   IsChecked="{Binding AutoHideControls}"
                                                   OnContent="{DynamicResource l.player.settings_interface.on}"
                                                   OffContent="{DynamicResource l.player.settings_interface.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="AutoHideControls"
+                                            IsVisible="{Binding AutoHideControls, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.hide_timeout}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.hide_timeout_sub}"/>
@@ -36,10 +47,18 @@
                                                    Increment="0.5"
                                                    FormatString="0.0 сек"
                                                    Value="{Binding AutoHideTimeout}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="AutoHideTimeout"
+                                            IsVisible="{Binding AutoHideTimeout, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1.5}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.chapter_markers}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.chapter_markers_sub}"/>
@@ -49,6 +68,14 @@
                                                   IsChecked="{Binding ShowChapterMarkers}"
                                                   OnContent="{DynamicResource l.player.settings_interface.on}"
                                                   OffContent="{DynamicResource l.player.settings_interface.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ShowChapterMarkers"
+                                            IsVisible="{Binding ShowChapterMarkers, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
@@ -56,7 +83,7 @@
                                            Text="{DynamicResource l.player.settings_interface.mouse_actions}"
                                            Margin="0,6,0,0"/>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.lmb}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.lmb_sub}"/>
@@ -71,9 +98,17 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="LeftClickAction"
+                                            IsVisible="{Binding LeftClickAction.Value, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=TogglePlayPause}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.rmb}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.rmb_sub}"/>
@@ -88,9 +123,17 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="RightClickAction"
+                                            IsVisible="{Binding RightClickAction.Value, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=OpenSettings}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.mmb}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.mmb_sub}"/>
@@ -105,6 +148,14 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="MiddleClickAction"
+                                            IsVisible="{Binding MiddleClickAction.Value, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=ToggleFullscreen}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
                                 <Border Classes="player-settings-divider"/>
@@ -113,7 +164,7 @@
                                            Text="{DynamicResource l.player.settings_interface.mouse_wheel}"
                                            Margin="0,6,0,0"/>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.wheel_up}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.wheel_up_sub}"/>
@@ -128,9 +179,17 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="WheelUpAction"
+                                            IsVisible="{Binding WheelUpAction.Value, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=VolumeUp}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.wheel_down}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.wheel_down_sub}"/>
@@ -145,9 +204,17 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="WheelDownAction"
+                                            IsVisible="{Binding WheelDownAction.Value, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=VolumeDown}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.volume_step}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.volume_step_sub}"/>
@@ -156,9 +223,17 @@
                                               ItemsSource="{Binding WheelStepOptions}"
                                               SelectedItem="{Binding WheelVolumeStep}"
                                               VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="WheelVolumeStep"
+                                            IsVisible="{Binding WheelVolumeStep, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=5}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.seek_step}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.seek_step_sub}"/>
@@ -167,6 +242,14 @@
                                               ItemsSource="{Binding SeekStepOptions}"
                                               SelectedItem="{Binding SeekStep}"
                                               VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SeekStep"
+                                            IsVisible="{Binding SeekStep, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
                                 <Border Classes="player-settings-divider"/>
@@ -175,7 +258,7 @@
                                            Text="{DynamicResource l.player.settings_interface.hotkeys}"
                                            Margin="0,6,0,0"/>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.play_pause}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_space}"/>
@@ -184,9 +267,17 @@
                                              Text="{Binding TogglePlayPauseHotkey}"
                                              PlaceholderText="Space"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="TogglePlayPauseHotkey"
+                                            IsVisible="{Binding TogglePlayPauseHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Space}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.fullscreen}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_f}"/>
@@ -195,9 +286,17 @@
                                              Text="{Binding ToggleFullscreenHotkey}"
                                              PlaceholderText="F"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ToggleFullscreenHotkey"
+                                            IsVisible="{Binding ToggleFullscreenHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=F}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.exit_fullscreen}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_esc}"/>
@@ -206,9 +305,17 @@
                                              Text="{Binding ExitFullscreenHotkey}"
                                              PlaceholderText="Escape"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ExitFullscreenHotkey"
+                                            IsVisible="{Binding ExitFullscreenHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Escape}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.mute}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_m}"/>
@@ -217,9 +324,17 @@
                                              Text="{Binding ToggleMuteHotkey}"
                                              PlaceholderText="M"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="ToggleMuteHotkey"
+                                            IsVisible="{Binding ToggleMuteHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=M}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.next_audio}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_a}"/>
@@ -228,9 +343,17 @@
                                              Text="{Binding CycleAudioHotkey}"
                                              PlaceholderText="A"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="CycleAudioHotkey"
+                                            IsVisible="{Binding CycleAudioHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=A}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.next_subtitle}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_v}"/>
@@ -239,9 +362,17 @@
                                              Text="{Binding CycleSubtitleHotkey}"
                                              PlaceholderText="V"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="CycleSubtitleHotkey"
+                                            IsVisible="{Binding CycleSubtitleHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=V}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.prev_file}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_p}"/>
@@ -250,9 +381,17 @@
                                              Text="{Binding PreviousMediaHotkey}"
                                              PlaceholderText="P"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="PreviousMediaHotkey"
+                                            IsVisible="{Binding PreviousMediaHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=P}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.next_file}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_n}"/>
@@ -261,9 +400,17 @@
                                              Text="{Binding NextMediaHotkey}"
                                              PlaceholderText="N"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="NextMediaHotkey"
+                                            IsVisible="{Binding NextMediaHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=N}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.speed_down}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_open_bracket}"/>
@@ -272,9 +419,17 @@
                                              Text="{Binding SpeedDownHotkey}"
                                              PlaceholderText="OemOpenBrackets"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SpeedDownHotkey"
+                                            IsVisible="{Binding SpeedDownHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=OemOpenBrackets}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.speed_up}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_close_bracket}"/>
@@ -283,9 +438,17 @@
                                              Text="{Binding SpeedUpHotkey}"
                                              PlaceholderText="OemCloseBrackets"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SpeedUpHotkey"
+                                            IsVisible="{Binding SpeedUpHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=OemCloseBrackets}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.vol_up}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_up}"/>
@@ -294,9 +457,17 @@
                                              Text="{Binding VolumeUpHotkey}"
                                              PlaceholderText="Up"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="VolumeUpHotkey"
+                                            IsVisible="{Binding VolumeUpHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Up}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.vol_down}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_down}"/>
@@ -305,9 +476,17 @@
                                              Text="{Binding VolumeDownHotkey}"
                                              PlaceholderText="Down"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="VolumeDownHotkey"
+                                            IsVisible="{Binding VolumeDownHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Down}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.seek_back}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_left}"/>
@@ -316,9 +495,17 @@
                                              Text="{Binding SeekBackwardHotkey}"
                                              PlaceholderText="Left"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SeekBackwardHotkey"
+                                            IsVisible="{Binding SeekBackwardHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Left}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.seek_forward}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_right}"/>
@@ -327,9 +514,17 @@
                                              Text="{Binding SeekForwardHotkey}"
                                              PlaceholderText="Right"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SeekForwardHotkey"
+                                            IsVisible="{Binding SeekForwardHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Right}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.subtitle_style}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_u}"/>
@@ -338,6 +533,14 @@
                                              Text="{Binding SubtitleStyleHotkey}"
                                              PlaceholderText="U"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleStyleHotkey"
+                                            IsVisible="{Binding SubtitleStyleHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=U}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
 
                                 <Border Classes="player-settings-divider"/>
@@ -347,17 +550,127 @@
                                            Margin="0,6,0,0"/>
 
                                 <UniformGrid Columns="2" Margin="0,0,0,0">
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_play_pause}" IsChecked="{Binding ShowPlayPauseButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_seek_10s}" IsChecked="{Binding ShowSkipButtons}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_mute}" IsChecked="{Binding ShowMuteButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_vol_slider}" IsChecked="{Binding ShowVolumeSlider}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_time}" IsChecked="{Binding ShowTimeDisplay}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_speed}" IsChecked="{Binding ShowSpeedButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_subtitles}" IsChecked="{Binding ShowSubtitleButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_sub_pos}" IsChecked="{Binding ShowSubtitlePositionButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_audio}" IsChecked="{Binding ShowAudioButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_sub_style}" IsChecked="{Binding ShowSubtitleStyleButton}"/>
-                                    <CheckBox Content="{DynamicResource l.player.settings_interface.btn_screenshot}" IsChecked="{Binding ShowScreenshotButton}"/>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_play_pause}" IsChecked="{Binding ShowPlayPauseButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowPlayPauseButton"
+                                                IsVisible="{Binding ShowPlayPauseButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_seek_10s}" IsChecked="{Binding ShowSkipButtons}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowSkipButtons"
+                                                IsVisible="{Binding ShowSkipButtons, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_mute}" IsChecked="{Binding ShowMuteButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowMuteButton"
+                                                IsVisible="{Binding ShowMuteButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_vol_slider}" IsChecked="{Binding ShowVolumeSlider}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowVolumeSlider"
+                                                IsVisible="{Binding ShowVolumeSlider, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_time}" IsChecked="{Binding ShowTimeDisplay}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowTimeDisplay"
+                                                IsVisible="{Binding ShowTimeDisplay, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_speed}" IsChecked="{Binding ShowSpeedButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowSpeedButton"
+                                                IsVisible="{Binding ShowSpeedButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_subtitles}" IsChecked="{Binding ShowSubtitleButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowSubtitleButton"
+                                                IsVisible="{Binding ShowSubtitleButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_sub_pos}" IsChecked="{Binding ShowSubtitlePositionButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowSubtitlePositionButton"
+                                                IsVisible="{Binding ShowSubtitlePositionButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_audio}" IsChecked="{Binding ShowAudioButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowAudioButton"
+                                                IsVisible="{Binding ShowAudioButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_sub_style}" IsChecked="{Binding ShowSubtitleStyleButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowSubtitleStyleButton"
+                                                IsVisible="{Binding ShowSubtitleStyleButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2,8,2">
+                                        <CheckBox Grid.Column="0" Content="{DynamicResource l.player.settings_interface.btn_screenshot}" IsChecked="{Binding ShowScreenshotButton}" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="ShowScreenshotButton"
+                                                IsVisible="{Binding ShowScreenshotButton, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
+                                    </Grid>
                                 </UniformGrid>
 
                                 <Border Height="110" IsHitTestVisible="False"/>

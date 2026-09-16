@@ -23,7 +23,7 @@ public static class AboutCredits
     public static IReadOnlyList<CreditEntry> Libraries { get; } =
     [
         new CreditEntry("C#",                             "The main programming language",             "https://learn.microsoft.com/dotnet/csharp/"),
-        new CreditEntry(".NET 10",                        "MIT · Application runtime",                 "https://dotnet.microsoft.com/"),
+        new CreditEntry(".NET",                           "MIT · Application runtime",                 "https://dotnet.microsoft.com/"),
         new CreditEntry("Avalonia UI",                    "MIT · Cross-platform XAML framework",       "https://avaloniaui.net"),
         new CreditEntry("mpv / libmpv",                   "GPLv2+ · Video player engine",              "https://mpv.io"),
         new CreditEntry("CommunityToolkit.Mvvm",          "MIT · MVVM source generators",              "https://github.com/CommunityToolkit/dotnet"),

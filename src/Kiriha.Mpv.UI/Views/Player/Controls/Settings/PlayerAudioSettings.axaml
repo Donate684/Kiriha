@@ -6,10 +6,13 @@
              xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerAudioSettings">
+    <UserControl.Resources>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+    </UserControl.Resources>
     <StackPanel Spacing="10">
                                 <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.audio}"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.remember_volume}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.remember_volume_sub}"/>
@@ -19,10 +22,18 @@
                                                   IsChecked="{Binding RememberPlayerVolume}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="RememberPlayerVolume"
+                                            IsVisible="{Binding RememberPlayerVolume, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="56">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.normalize_audio}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.normalize_audio_sub}"/>
@@ -32,11 +43,19 @@
                                                   IsChecked="{Binding NormalizeAudio}"
                                                   OnContent="{DynamicResource l.player.settings_adv.on}"
                                                   OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="NormalizeAudio"
+                                            IsVisible="{Binding NormalizeAudio, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=False}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
                                 <StackPanel Spacing="6" Margin="0,4,0,0">
-                                    <Grid ColumnDefinitions="*,Auto">
+                                    <Grid ColumnDefinitions="*,Auto,32">
                                         <StackPanel Grid.Column="0" Spacing="2">
                                             <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_audio.default_volume}"/>
                                             <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_audio.default_volume_sub}"/>
@@ -45,7 +64,15 @@
                                                    Text="{Binding Volume, StringFormat='{}{0:0}%'}"
                                                    Foreground="#99FFFFFF"
                                                    FontSize="12"
-                                                   VerticalAlignment="Top"/>
+                                                   VerticalAlignment="Center"/>
+                                        <Button Grid.Column="2"
+                                                Classes="player-settings-reset-btn"
+                                                Command="{Binding ResetSettingCommand}"
+                                                CommandParameter="Volume"
+                                                IsVisible="{Binding Volume, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=100}"
+                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                        </Button>
                                     </Grid>
                                     <Slider Minimum="0" Maximum="100"
                                             Value="{Binding Volume}"

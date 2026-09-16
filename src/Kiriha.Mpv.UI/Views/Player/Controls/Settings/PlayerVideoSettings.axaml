@@ -7,10 +7,13 @@
              xmlns:conv="using:Kiriha.Mpv.UI.Views.Converters"
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Mpv.UI.Views.Player.Controls.Settings.PlayerVideoSettings">
+    <UserControl.Resources>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+    </UserControl.Resources>
     <StackPanel Spacing="10">
         <TextBlock Classes="player-settings-title" Text="{DynamicResource l.settings.player.video_preset_title}"/>
 
-        <Grid ColumnDefinitions="*,180" MinHeight="44">
+        <Grid ColumnDefinitions="*,180,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.settings.player.video_preset_title}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.settings.player.video_preset_sub}" TextWrapping="Wrap"/>
@@ -21,6 +24,14 @@
                 <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_quality}" Tag="quality"/>
                 <ComboBoxItem Content="{DynamicResource l.settings.player.video_preset_custom}" Tag="custom"/>
             </ComboBox>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvVideoPreset"
+                    IsVisible="{Binding MpvVideoPreset, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=default}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
 
         <Border Classes="player-settings-divider"/>
@@ -28,28 +39,68 @@
                    Text="{DynamicResource l.player.settings_adv.scaling_processing}"
                    Margin="0,6,0,0"/>
         
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.scale}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_lanczos}"/>
             </StackPanel>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvScaleOptions}" SelectedItem="{Binding MpvScale}" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" SelectedValue="{Binding MpvScale}" SelectedValueBinding="{Binding Tag}" x:CompileBindings="False" VerticalAlignment="Center">
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_bilinear}" Tag="bilinear"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_spline36}" Tag="spline36"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_lanczos}" Tag="lanczos"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_ewa_lanczossharp}" Tag="ewa_lanczossharp"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_mitchell}" Tag="mitchell"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_oversample}" Tag="oversample"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_nearest}" Tag="nearest"/>
+            </ComboBox>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvScale"
+                    IsVisible="{Binding MpvScale, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=bilinear}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.cscale}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_lanczos}"/>
             </StackPanel>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding MpvScaleOptions}" SelectedItem="{Binding MpvChromaScale}" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" SelectedValue="{Binding MpvChromaScale}" SelectedValueBinding="{Binding Tag}" x:CompileBindings="False" VerticalAlignment="Center">
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_bilinear}" Tag="bilinear"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_spline36}" Tag="spline36"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_lanczos}" Tag="lanczos"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_ewa_lanczossharp}" Tag="ewa_lanczossharp"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_mitchell}" Tag="mitchell"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_oversample}" Tag="oversample"/>
+                <ComboBoxItem Content="{DynamicResource l.player.settings_adv.opt_nearest}" Tag="nearest"/>
+            </ComboBox>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvChromaScale"
+                    IsVisible="{Binding MpvChromaScale, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=bilinear}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.dither_depth}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_auto}"/>
             </StackPanel>
             <ComboBox Grid.Column="1" ItemsSource="{Binding MpvDitherDepthOptions}" SelectedItem="{Binding MpvDitherDepth}" VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvDitherDepth"
+                    IsVisible="{Binding MpvDitherDepth, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=auto}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+        <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.correct_downscaling}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_yes}"/>
@@ -59,8 +110,16 @@
                           IsChecked="{Binding MpvCorrectDownscaling}"
                           OnContent="{DynamicResource l.player.settings_adv.on}"
                           OffContent="{DynamicResource l.player.settings_adv.off}"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvCorrectDownscaling"
+                    IsVisible="{Binding MpvCorrectDownscaling, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=False}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+        <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.deband}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.deband_desc}"/>
@@ -70,8 +129,16 @@
                           IsChecked="{Binding MpvDeband}"
                           OnContent="{DynamicResource l.player.settings_adv.on}"
                           OffContent="{DynamicResource l.player.settings_adv.off}"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvDeband"
+                    IsVisible="{Binding MpvDeband, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=False}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.deband_iterations}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_3}"/>
@@ -82,8 +149,16 @@
                            Increment="1"
                            Value="{Binding MpvDebandIterations}"
                            VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvDebandIterations"
+                    IsVisible="{Binding MpvDebandIterations, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.deband_threshold}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.default_30}"/>
@@ -94,65 +169,80 @@
                            Increment="1"
                            Value="{Binding MpvDebandThreshold}"
                            VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvDebandThreshold"
+                    IsVisible="{Binding MpvDebandThreshold, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=30}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
         
         <Border Classes="player-settings-divider"/>
         
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.hwdec}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.hwdec_desc}"/>
             </StackPanel>
             <ComboBox Grid.Column="1" ItemsSource="{Binding MpvHwdecOptions}" SelectedItem="{Binding MpvHwdec}" VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvHwdec"
+                    IsVisible="{Binding MpvHwdec, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=auto}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.vo}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.vo_desc}"/>
             </StackPanel>
             <ComboBox Grid.Column="1" ItemsSource="{Binding MpvVoOptions}" SelectedItem="{Binding MpvVideoOutput}" VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvVideoOutput"
+                    IsVisible="{Binding MpvVideoOutput, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=gpu-next}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.gpu_api}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.gpu_api_desc}"/>
             </StackPanel>
             <ComboBox Grid.Column="1" ItemsSource="{Binding MpvGpuApiOptions}" SelectedItem="{Binding MpvGpuApi}" VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvGpuApi"
+                    IsVisible="{Binding MpvGpuApi, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=auto}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
-        <Grid ColumnDefinitions="*,220" MinHeight="44">
+        <Grid ColumnDefinitions="*,220,32" MinHeight="44">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                 <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.gpu_context}"/>
                 <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.gpu_context_desc}"/>
             </StackPanel>
             <ComboBox Grid.Column="1" ItemsSource="{Binding MpvGpuContextOptions}" SelectedItem="{Binding MpvGpuContext}" VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="MpvGpuContext"
+                    IsVisible="{Binding MpvGpuContext, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=auto}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+            </Button>
         </Grid>
         
-        <Border Classes="player-settings-divider"/>
-        <TextBlock Classes="player-settings-row-title"
-                   Text="{DynamicResource l.player.settings_adv.playback_smoothness}"
-                   Margin="0,6,0,0"/>
-        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
-            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.video_sync}"/>
-                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.video_sync_desc}" TextWrapping="Wrap"/>
-            </StackPanel>
-            <ToggleSwitch Grid.Column="1"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding MpvVideoSync}"
-                          OnContent="{DynamicResource l.player.settings_adv.on}"
-                          OffContent="{DynamicResource l.player.settings_adv.off}"/>
-        </Grid>
-        <Grid ColumnDefinitions="*,Auto" MinHeight="44">
-            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_adv.interpolation}"/>
-                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_adv.interpolation_desc}" TextWrapping="Wrap"/>
-            </StackPanel>
-            <ToggleSwitch Grid.Column="1"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding MpvInterpolation}"
-                          OnContent="{DynamicResource l.player.settings_adv.on}"
-                          OffContent="{DynamicResource l.player.settings_adv.off}"/>
-        </Grid>
+
 
         <Border Height="110" IsHitTestVisible="False"/>
     </StackPanel>

@@ -6,9 +6,12 @@
              xmlns:conv="using:Kiriha.Views.Converters"
              x:DataType="vmPlayer:PlayerViewModel"
              x:Class="Kiriha.Views.Player.Controls.Settings.PlayerTrackSettings">
+    <UserControl.Resources>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+    </UserControl.Resources>
     <StackPanel Spacing="10">
                                 <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.tracks}"/>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_track.pref_audio}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_track.pref_audio_sub}"/>
@@ -17,8 +20,16 @@
                                              Text="{Binding PreferredAudioLanguages}"
                                              PlaceholderText="Japanese,jpn,ja"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="PreferredAudioLanguages"
+                                            IsVisible="{Binding PreferredAudioLanguages, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='Japanese,jpn,ja'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,220" MinHeight="44">
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_track.pref_sub}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_track.pref_sub_sub}"/>
@@ -27,8 +38,16 @@
                                              Text="{Binding PreferredSubtitleLanguages}"
                                              PlaceholderText="Russian,rus,ru"
                                              VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="PreferredSubtitleLanguages"
+                                            IsVisible="{Binding PreferredSubtitleLanguages, Converter={StaticResource SettingModifiedConverter}, ConverterParameter='Russian,rus,ru'}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="44">
                                     <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_track.smart_autoload}"/>
                                         <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_track.smart_autoload_desc}" TextWrapping="Wrap"/>
@@ -37,6 +56,14 @@
                                                   IsChecked="{Binding SmartTrackAutoload}"
                                                   OnContent="{DynamicResource l.common.status.on}"
                                                   OffContent="{DynamicResource l.common.status.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SmartTrackAutoload"
+                                            IsVisible="{Binding SmartTrackAutoload, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
                                 </Grid>
                                 <Border Height="110" IsHitTestVisible="False"/>
                             </StackPanel>
