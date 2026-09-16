@@ -64,6 +64,13 @@ public partial class TorrentsViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
     [NotifyPropertyChangedFor(nameof(PreviewQuery))]
+    private bool _filterJudas;
+
+    partial void OnFilterJudasChanged(bool value) => PersistFilter(nameof(FilterJudas), value);
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _filterHevc;
 
     partial void OnFilterHevcChanged(bool value) => PersistFilter(nameof(FilterHevc), value);
@@ -127,6 +134,7 @@ public partial class TorrentsViewModel
             FilterVaryg,
             FilterEraiRaws,
             FilterToonsHub,
+            FilterJudas,
             Filter1080p,
             FilterHevc,
             OnlyCrunchyroll,
@@ -141,7 +149,7 @@ public partial class TorrentsViewModel
     private bool _suppressFilterPersist;
 
     public bool HasActiveFilters =>
-        FilterVaryg || FilterEraiRaws || FilterToonsHub || Filter1080p || FilterHevc
+        FilterVaryg || FilterEraiRaws || FilterToonsHub || FilterJudas || Filter1080p || FilterHevc
         || OnlyCrunchyroll || FilterNetflix || FilterAmazon || FilterHidive;
 
     partial void OnFiltersPerTitleChanged(bool value)
@@ -159,6 +167,7 @@ public partial class TorrentsViewModel
         _filterVaryg = _settingsService.Current.Torrents.FilterVaryg;
         _filterEraiRaws = _settingsService.Current.Torrents.FilterEraiRaws;
         _filterToonsHub = _settingsService.Current.Torrents.FilterToonsHub;
+        _filterJudas = _settingsService.Current.Torrents.FilterJudas;
         _filterHevc = _settingsService.Current.Torrents.FilterHevc;
         _filter1080p = _settingsService.Current.Torrents.Filter1080p;
         _filtersPerTitle = true;
@@ -196,6 +205,7 @@ public partial class TorrentsViewModel
                 cfg.FilterVaryg = target.FilterVaryg;
                 cfg.FilterEraiRaws = target.FilterEraiRaws;
                 cfg.FilterToonsHub = target.FilterToonsHub;
+                cfg.FilterJudas = target.FilterJudas;
                 cfg.FilterHevc = target.FilterHevc;
                 cfg.Filter1080p = target.Filter1080p;
             }
@@ -230,6 +240,7 @@ public partial class TorrentsViewModel
             FilterVaryg = src.FilterVaryg;
             FilterEraiRaws = src.FilterEraiRaws;
             FilterToonsHub = src.FilterToonsHub;
+            FilterJudas = src.FilterJudas;
             FilterHevc = src.FilterHevc;
             Filter1080p = src.Filter1080p;
             UseCustomQuery = src.UseCustomQuery;
@@ -270,6 +281,7 @@ public partial class TorrentsViewModel
         FilterVaryg = cfg.FilterVaryg,
         FilterEraiRaws = cfg.FilterEraiRaws,
         FilterToonsHub = cfg.FilterToonsHub,
+        FilterJudas = cfg.FilterJudas,
         FilterHevc = cfg.FilterHevc,
         Filter1080p = cfg.Filter1080p,
         UseCustomQuery = false,
@@ -287,6 +299,7 @@ public partial class TorrentsViewModel
             case nameof(FilterVaryg): target.FilterVaryg = value; break;
             case nameof(FilterEraiRaws): target.FilterEraiRaws = value; break;
             case nameof(FilterToonsHub): target.FilterToonsHub = value; break;
+            case nameof(FilterJudas): target.FilterJudas = value; break;
             case nameof(FilterHevc): target.FilterHevc = value; break;
             case nameof(Filter1080p): target.Filter1080p = value; break;
         }
@@ -298,6 +311,7 @@ public partial class TorrentsViewModel
         FilterVaryg = false;
         FilterEraiRaws = false;
         FilterToonsHub = false;
+        FilterJudas = false;
         Filter1080p = false;
         FilterHevc = false;
         OnlyCrunchyroll = false;

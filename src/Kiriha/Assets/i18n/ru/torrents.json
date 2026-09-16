@@ -5,14 +5,15 @@
     "netflix": "Netflix",
     "amazon": "Amazon",
     "hidive": "HIDIVE",
-    "filters_button": "Настройки",
-    "settings_button": "Настройки",
+    "filters_button": "Фильтры",
+    "settings_button": "Фильтры",
     "sort_label": "Сортировка",
     "clear_filters": "Сбросить",
     "filters": {
       "varyg": "VARYG",
       "erai_raws": "Erai-raws",
       "toonshub": "ToonsHub",
+      "judas": "Judas",
       "p1080": "1080p",
       "hevc": "HEVC",
       "crunchyroll": "CR"

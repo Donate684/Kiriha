@@ -43,6 +43,7 @@ public partial class TorrentsViewModel
             FilterVaryg,
             FilterEraiRaws,
             FilterToonsHub,
+            FilterJudas,
             Filter1080p,
             FilterHevc,
             OnlyCrunchyroll,
@@ -125,6 +126,7 @@ internal readonly record struct TorrentQueryFilters(
     bool FilterVaryg,
     bool FilterEraiRaws,
     bool FilterToonsHub,
+    bool FilterJudas,
     bool Filter1080p,
     bool FilterHevc,
     bool OnlyCrunchyroll,
@@ -141,6 +143,7 @@ internal static class TorrentQueryBuilder
         query = Append(query, filters.FilterVaryg, "VARYG");
         query = Append(query, filters.FilterEraiRaws, "Erai-raws");
         query = Append(query, filters.FilterToonsHub, "ToonsHub");
+        query = Append(query, filters.FilterJudas, "Judas");
         query = Append(query, filters.Filter1080p, "1080p");
         query = Append(query, filters.FilterHevc, "HEVC");
         query = Append(query, filters.OnlyCrunchyroll, "CR");

@@ -59,6 +59,16 @@
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.ShowAiringInfo}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
+                    <Border Classes="Divider" IsVisible="{Binding Ui.ShowAiringInfo}"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding Ui.ShowAiringInfo}">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.airing_source.title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.airing_source.subtitle}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding System.AvailableAiringSources}" SelectedItem="{Binding System.SelectedAiringSource}" Width="200" CornerRadius="6">
+                            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">

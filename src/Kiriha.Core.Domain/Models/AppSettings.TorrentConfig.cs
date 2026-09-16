@@ -13,6 +13,7 @@ public partial class AppSettings
         public bool FilterVaryg { get; set; } = false;
         public bool FilterEraiRaws { get; set; } = false;
         public bool FilterToonsHub { get; set; } = false;
+        public bool FilterJudas { get; set; } = false;
         public bool FilterHevc { get; set; } = false;
         public bool Filter1080p { get; set; } = false;
         public System.Collections.Generic.List<int> HiddenAnimeIds { get; set; } = new();
@@ -31,6 +32,7 @@ public partial class AppSettings
         public bool FilterVaryg { get; set; }
         public bool FilterEraiRaws { get; set; }
         public bool FilterToonsHub { get; set; }
+        public bool FilterJudas { get; set; }
         public bool FilterHevc { get; set; }
         public bool Filter1080p { get; set; }
         public bool UseCustomQuery { get; set; }

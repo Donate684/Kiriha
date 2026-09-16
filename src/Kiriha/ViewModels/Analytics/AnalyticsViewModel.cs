@@ -24,7 +24,6 @@ public partial class AnalyticsViewModel : ViewModelBase
     public WatchNextSectionViewModel WatchNext { get; }
     public ReadNextSectionViewModel ReadNext { get; }
     public HistorySectionViewModel History { get; }
-    public InspectorSectionViewModel Inspector { get; }
 
     [ObservableProperty] private bool _hasData;
     [ObservableProperty] private bool _isRefreshing;
@@ -67,19 +66,10 @@ public partial class AnalyticsViewModel : ViewModelBase
         set { if (value) SelectedSection = 5; }
     }
 
-    public bool IsInspectorSelected
-    {
-        get => SelectedSection == 6;
-        set { if (value) SelectedSection = 6; }
-    }
-
     public AnalyticsViewModel(
         IAnimeRepository animeRepo,
         HistoryService historyService,
-        ILocalizer localizer,
-        ISyncManager syncManager,
-        Kiriha.Core.Dialogs.IDialogService dialogService,
-        Kiriha.Core.Abstractions.Services.Tracking.IMalHistoryDeepParserService deepParserService)
+        ILocalizer localizer)
     {
         _animeRepo = animeRepo;
         _historyService = historyService;
@@ -88,13 +78,6 @@ public partial class AnalyticsViewModel : ViewModelBase
         WatchNext = new(localizer);
         ReadNext = new(localizer);
         History = new();
-        Inspector = new(animeRepo, syncManager, dialogService, localizer, deepParserService);
-    }
-
-    [RelayCommand]
-    public void OpenInspector()
-    {
-        SelectedSection = 6;
     }
 
     partial void OnSelectedSectionChanged(int value)
@@ -105,7 +88,6 @@ public partial class AnalyticsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsWatchNextSelected));
         OnPropertyChanged(nameof(IsReadNextSelected));
         OnPropertyChanged(nameof(IsHistorySelected));
-        OnPropertyChanged(nameof(IsInspectorSelected));
     }
 
     [RelayCommand]
@@ -147,7 +129,6 @@ public partial class AnalyticsViewModel : ViewModelBase
             WatchNext.Refresh(animes);
             ReadNext.Refresh(mangas);
             History.Refresh(history, items, completed);
-            Inspector.Refresh(items);
         }
         finally
         {

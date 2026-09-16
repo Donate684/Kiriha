@@ -50,15 +50,15 @@
                             </Style>
                         </Button.Styles>
                         <StackPanel Orientation="Horizontal" Spacing="5">
-                            <material:MaterialIcon Kind="CogOutline" Width="16" Height="16"
+                            <material:MaterialIcon Kind="FilterVariant" Width="16" Height="16"
                                                    Foreground="{Binding $parent[Button].Foreground}"/>
-                            <TextBlock Text="{DynamicResource l.torrents.search.settings_button}"
+                            <TextBlock Text="{DynamicResource l.torrents.search.filters_button}"
                                        FontSize="12" VerticalAlignment="Center"
                                        Foreground="{Binding $parent[Button].Foreground}"/>
                         </StackPanel>
                         <Button.Flyout>
                         <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
-                        <StackPanel Spacing="4" Margin="8,6">
+                        <StackPanel Spacing="4" Margin="8,6" HorizontalAlignment="Stretch">
 
                                 <!-- Per-title notice -->
                                 <Border Classes="FilterNotice" Margin="0,0,0,0">
@@ -91,6 +91,9 @@
                                         <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterToonsHub, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.toonshub}"/>
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
+                                                      IsChecked="{Binding FilterJudas, Mode=TwoWay}"
+                                                      Content="{DynamicResource l.torrents.search.filters.judas}"/>
                                     </WrapPanel>
                                 </StackPanel>
 

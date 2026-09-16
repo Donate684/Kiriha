@@ -123,9 +123,6 @@ public static class TrackingServicesRegistration
         services.AddSingleton<AnimeProgressService>();
         services.AddForwardedSingleton<AnimeProgressService, IProgressUpdateService>();
         services.AddSingleton<ISyncManager, SyncManager>();
-        services.AddSingleton<Kiriha.Core.Abstractions.Services.Tracking.IMalHistoryDeepParserService, Kiriha.Core.Tracking.Services.Api.MalHistoryDeepParserService>(sp =>
-            new Kiriha.Core.Tracking.Services.Api.MalHistoryDeepParserService(
-                sp.GetRequiredService<System.Net.Http.IHttpClientFactory>().CreateClient("MalClient")));
 
         return services;
     }

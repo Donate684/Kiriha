@@ -16,7 +16,6 @@ public static class AppConstants
             public const string AuthUrl = "https://myanimelist.net/v1/oauth2/authorize";
             public const string WebsiteUrl = "https://myanimelist.net/anime/";
             public const string BaseWebsiteUrl = "https://myanimelist.net/";
-            public const string AjaxHistoryUrl = "https://myanimelist.net/ajaxtb.php";
             public const string AnimeListUrl = "https://myanimelist.net/animelist";
             public const string MangaListUrl = "https://myanimelist.net/mangalist";
             public const string NotLoggedIn = "Not logged in";
