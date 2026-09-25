@@ -34,6 +34,37 @@
                                            FontSize="8.5" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
+
+                        <Border Classes="Badge ScoreBadge"
+                                ToolTip.Tip="{DynamicResource l.filters.sort.score}">
+                            <Border.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="Presentation.HasEffectiveScore"/>
+                                    <Binding Path="$parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).IsScoreSort"/>
+                                    <Binding Path="Score" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                                </MultiBinding>
+                            </Border.IsVisible>
+                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                <material:MaterialIcon Kind="Star" Width="10" Height="10" Foreground="{DynamicResource RatingStarForegroundBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Presentation.EffectiveScoreDisplay}"
+                                           FontSize="8.5" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="Badge PopularityBadge"
+                                ToolTip.Tip="{DynamicResource l.filters.sort.popularity}">
+                            <Border.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="Presentation.HasPopularity"/>
+                                    <Binding Path="$parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).IsPopularitySort"/>
+                                </MultiBinding>
+                            </Border.IsVisible>
+                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                <material:MaterialIcon Kind="Fire" Width="10" Height="10" Foreground="{DynamicResource OrangeredAccentBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Presentation.PopularityDisplay}"
+                                           FontSize="8.5" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <Border Classes="Badge" Background="{Binding Presentation.AiringBadgeColor}"
                                     IsVisible="{Binding Presentation.AiringBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">

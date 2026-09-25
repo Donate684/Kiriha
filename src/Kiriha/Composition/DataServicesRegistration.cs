@@ -16,6 +16,7 @@ using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Franchise;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -73,7 +74,8 @@ internal static class DataServicesRegistration
         services.AddSingleton<IHttpCacheRepository, HttpCacheRepository>();
         services.AddSingleton<IEpisodeReleaseRepository, EpisodeReleaseRepository>();
         services.AddSingleton<IAnimeRelationRepository, AnimeRelationRepository>();
-        services.AddSingleton<IAnimeStaffRepository, AnimeStaffRepository>();
+        services.AddSingleton<FranchiseService>();
+        services.AddSingleton<IFranchiseService>(sp => sp.GetRequiredService<FranchiseService>());
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
         services.AddSingleton<LocalizationService>();

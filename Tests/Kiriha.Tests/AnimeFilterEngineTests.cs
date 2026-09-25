@@ -73,6 +73,20 @@ public sealed class AnimeFilterEngineTests
     }
 
     [Fact]
+    public void ApplySorting_ScoreTiesBrokenByPopularity()
+    {
+        var items = new List<AnimeEntity>
+        {
+            new() { Id = 1, Title = "Anime A", MeanScore = "8.5", Popularity = 500 },
+            new() { Id = 2, Title = "Anime B", MeanScore = "8.5", Popularity = 100 },
+            new() { Id = 3, Title = "Anime C", MeanScore = "9.0", Popularity = 1000 },
+        };
+
+        var sorted = items.ApplySorting(AppConstants.Sorting.Score, isSeasonal: true).Select(x => x.Id).ToArray();
+        Assert.Equal(new[] { 3, 2, 1 }, sorted);
+    }
+
+    [Fact]
     public void ApplySorting_DateSeasonalSortsChronologicallyWithNullsLast()
     {
         var sorted = SampleItems().ApplySorting(AppConstants.Sorting.Date, isSeasonal: true).Select(x => x.Id).ToArray();
@@ -94,6 +108,22 @@ public sealed class AnimeFilterEngineTests
         var sorted = SampleItems().ApplySorting("unknown").Select(x => x.Title).ToArray();
 
         Assert.Equal(new[] { "Cowboy Bebop", "Frieren", "Fullmetal Alchemist", "Mystery Adult" }, sorted);
+    }
+
+    [Fact]
+    public void ApplySorting_RussianTitleSortsByRussianTitle()
+    {
+        var items = new List<AnimeEntity>
+        {
+            new AnimeEntity { Id = 1, Title = "Mahou Shoujo", RussianTitle = "Проект" },
+            new AnimeEntity { Id = 2, Title = "Ojisan", RussianTitle = "Дядечка" },
+            new AnimeEntity { Id = 3, Title = "Romelia", RussianTitle = "Военная" },
+            new AnimeEntity { Id = 4, Title = "Ao Ashi", RussianTitle = null },
+            new AnimeEntity { Id = 5, Title = "Black Clover", RussianTitle = null },
+        };
+
+        var sorted = items.ApplySorting(AppConstants.Sorting.RussianTitle, isSeasonal: true).Select(x => x.Id).ToArray();
+        Assert.Equal(new[] { 3, 2, 1, 4, 5 }, sorted);
     }
 
     private static List<AnimeEntity> SampleItems() =>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
@@ -25,6 +25,7 @@ public partial class SeasonalViewModel
         _filterOnHold = settings.SeasonalStatusFilters.Contains("OnHold");
         _filterPlanToWatch = settings.SeasonalStatusFilters.Contains("PlanToWatch");
         _filterDropped = settings.SeasonalStatusFilters.Contains("Dropped");
+        _filterFranchise = settings.SeasonalStatusFilters.Contains("Franchise");
     }
 
     private void SetCurrentSeasonFromClock()
@@ -59,6 +60,7 @@ public partial class SeasonalViewModel
                 if (FilterOnHold) s.SeasonalStatusFilters.Add("OnHold");
                 if (FilterPlanToWatch) s.SeasonalStatusFilters.Add("PlanToWatch");
                 if (FilterDropped) s.SeasonalStatusFilters.Add("Dropped");
+                if (FilterFranchise) s.SeasonalStatusFilters.Add("Franchise");
             }, SettingsSection.UI, save: false);
 
             await _settingsService.SaveAsync();

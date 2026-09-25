@@ -27,6 +27,8 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
     private readonly ISyncManager _syncManager;
     private readonly IDialogService _dialogService;
     private readonly ILocalizer _localizer;
+    private readonly IFranchiseService _franchiseService;
+    private readonly IMetadataRepository _metadataRepo;
 
     public IDialogService DialogService => _dialogService;
 
@@ -38,7 +40,9 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         SeasonalCacheStore cacheStore,
         ISyncManager syncManager,
         IDialogService dialogService,
-        ILocalizer localizer)
+        ILocalizer localizer,
+        IFranchiseService franchiseService,
+        IMetadataRepository metadataRepo)
     {
         _apiService = apiService;
         _settingsService = settingsService;
@@ -48,6 +52,8 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         _syncManager = syncManager;
         _dialogService = dialogService;
         _localizer = localizer;
+        _franchiseService = franchiseService;
+        _metadataRepo = metadataRepo;
 
         HydrateDiskCacheOnce();
         LoadSettingsState();
@@ -71,8 +77,27 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
             });
         });
 
+        _franchiseService.IndexRebuilt += OnFranchiseIndexRebuilt;
+
         RefreshLocalization();
         _isInitializing = false;
         ScheduleDeferredInitialLoad();
+    }
+
+    private void OnFranchiseIndexRebuilt()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (DisplayItems == null || DisplayItems.Count == 0) return;
+            var index = _franchiseService.GetIndex();
+            foreach (var item in DisplayItems)
+            {
+                var newCtx = index.TryGetValue(item.Id, out var ctx) ? ctx : null;
+                if (item.Franchise != newCtx)
+                {
+                    item.Franchise = newCtx;
+                }
+            }
+        });
     }
 }

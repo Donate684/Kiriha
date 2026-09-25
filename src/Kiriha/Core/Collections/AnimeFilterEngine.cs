@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Kiriha.Core;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
@@ -111,17 +113,19 @@ internal static class AnimeComparerFactory
                 if (badgeCompare != 0) return badgeCompare;
             }
 
-            return _sortBy switch
-            {
-                "Score" => CompareScore(x, y),
-                "Progress" => CompareProgress(x, y),
-                "Date" => CompareDate(x, y),
-                "Popularity" => ComparePopularity(x, y),
-                "EnglishTitle" => CompareEnglishTitle(x, y),
-                "RussianTitle" => CompareRussianTitle(x, y),
-                "Title" => CompareTitle(x, y),
-                _ => CompareTitle(x, y)
-            };
+            if (string.Equals(_sortBy, AppConstants.Sorting.Score, StringComparison.OrdinalIgnoreCase))
+                return CompareScore(x, y);
+            if (string.Equals(_sortBy, "Progress", StringComparison.OrdinalIgnoreCase))
+                return CompareProgress(x, y);
+            if (string.Equals(_sortBy, AppConstants.Sorting.Date, StringComparison.OrdinalIgnoreCase))
+                return CompareDate(x, y);
+            if (string.Equals(_sortBy, AppConstants.Sorting.Popularity, StringComparison.OrdinalIgnoreCase))
+                return ComparePopularity(x, y);
+            if (string.Equals(_sortBy, "EnglishTitle", StringComparison.OrdinalIgnoreCase))
+                return CompareEnglishTitle(x, y);
+            if (string.Equals(_sortBy, AppConstants.Sorting.RussianTitle, StringComparison.OrdinalIgnoreCase))
+                return CompareRussianTitle(x, y);
+            return CompareTitle(x, y);
         }
 
         private int CompareScore(AnimeEntity x, AnimeEntity y)
@@ -129,7 +133,10 @@ internal static class AnimeComparerFactory
             double xScore = _isSeasonal ? x.MeanScoreValue : x.ScoreValue;
             double yScore = _isSeasonal ? y.MeanScoreValue : y.ScoreValue;
             int cmp = yScore.CompareTo(xScore);
-            return cmp != 0 ? cmp : CompareTitle(x, y);
+            if (cmp != 0) return cmp;
+
+            int popCmp = ComparePopularity(x, y);
+            return popCmp != 0 ? popCmp : CompareTitle(x, y);
         }
 
         private static int CompareProgress(AnimeEntity x, AnimeEntity y)
@@ -168,25 +175,37 @@ internal static class AnimeComparerFactory
             return cmp != 0 ? cmp : CompareTitle(x, y);
         }
 
+        private static readonly StringComparer RuComparer = CultureInfo.GetCultureInfo("ru-RU").CompareInfo.GetStringComparer(CompareOptions.IgnoreCase);
+
         private static int CompareEnglishTitle(AnimeEntity x, AnimeEntity y)
         {
-            string xt = !string.IsNullOrEmpty(x.EnglishTitle) ? x.EnglishTitle : (x.Title ?? string.Empty);
-            string yt = !string.IsNullOrEmpty(y.EnglishTitle) ? y.EnglishTitle : (y.Title ?? string.Empty);
-            int cmp = StringComparer.CurrentCulture.Compare(xt, yt);
+            string xt = !string.IsNullOrWhiteSpace(x.EnglishTitle) ? x.EnglishTitle.Trim() : (x.Title ?? string.Empty).Trim();
+            string yt = !string.IsNullOrWhiteSpace(y.EnglishTitle) ? y.EnglishTitle.Trim() : (y.Title ?? string.Empty).Trim();
+            int cmp = StringComparer.CurrentCultureIgnoreCase.Compare(xt, yt);
             return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
         }
 
         private static int CompareRussianTitle(AnimeEntity x, AnimeEntity y)
         {
-            string xt = !string.IsNullOrEmpty(x.RussianTitle) ? x.RussianTitle : (x.Title ?? string.Empty);
-            string yt = !string.IsNullOrEmpty(y.RussianTitle) ? y.RussianTitle : (y.Title ?? string.Empty);
-            int cmp = StringComparer.CurrentCulture.Compare(xt, yt);
-            return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
+            bool xHasRu = !string.IsNullOrWhiteSpace(x.RussianTitle);
+            bool yHasRu = !string.IsNullOrWhiteSpace(y.RussianTitle);
+
+            if (xHasRu && yHasRu)
+            {
+                int cmp = RuComparer.Compare(x.RussianTitle!.Trim(), y.RussianTitle!.Trim());
+                return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
+            }
+
+            if (xHasRu && !yHasRu) return -1;
+            if (!xHasRu && yHasRu) return 1;
+
+            int titleCmp = RuComparer.Compare(x.Title ?? string.Empty, y.Title ?? string.Empty);
+            return titleCmp != 0 ? titleCmp : x.Id.CompareTo(y.Id);
         }
 
         private static int CompareTitle(AnimeEntity x, AnimeEntity y)
         {
-            int cmp = StringComparer.CurrentCulture.Compare(x.Title ?? string.Empty, y.Title ?? string.Empty);
+            int cmp = StringComparer.CurrentCultureIgnoreCase.Compare(x.Title ?? string.Empty, y.Title ?? string.Empty);
             return cmp != 0 ? cmp : x.Id.CompareTo(y.Id);
         }
     }

@@ -28,7 +28,10 @@ internal sealed record SeasonalFilterRequest(
     bool FilterCompleted,
     bool FilterOnHold,
     bool FilterPlanToWatch,
-    bool FilterDropped, ILocalizer Localizer);
+    bool FilterDropped,
+    bool FilterFranchise,
+    IReadOnlyDictionary<int, FranchiseContext> FranchiseIndex,
+    ILocalizer Localizer);
 
 internal sealed record SeasonalFilterResult(
     IReadOnlyList<AnimeEntity> Items,
@@ -62,7 +65,7 @@ internal static class SeasonalFilterEngine
     {
         bool anyStatusFilter = request.FilterWatching || request.FilterCompleted || request.FilterOnHold ||
                                request.FilterPlanToWatch || request.FilterDropped;
-        bool anyFilter = request.FilterNotInList || anyStatusFilter || request.ShowHidden;
+        bool anyFilter = request.FilterNotInList || anyStatusFilter || request.FilterFranchise || request.ShowHidden;
 
         if (!anyFilter)
         {
@@ -80,12 +83,21 @@ internal static class SeasonalFilterEngine
                 ? storedStatus
                 : UserAnimeStatus.None;
 
-            return (request.FilterNotInList && status == UserAnimeStatus.None) ||
-                   (request.FilterWatching && status == UserAnimeStatus.Watching) ||
-                   (request.FilterCompleted && status == UserAnimeStatus.Completed) ||
-                   (request.FilterOnHold && status == UserAnimeStatus.OnHold) ||
-                   (request.FilterPlanToWatch && status == UserAnimeStatus.PlanToWatch) ||
-                   (request.FilterDropped && status == UserAnimeStatus.Dropped);
+            bool matchesStatus = (request.FilterNotInList && status == UserAnimeStatus.None) ||
+                                 (request.FilterWatching && status == UserAnimeStatus.Watching) ||
+                                 (request.FilterCompleted && status == UserAnimeStatus.Completed) ||
+                                 (request.FilterOnHold && status == UserAnimeStatus.OnHold) ||
+                                 (request.FilterPlanToWatch && status == UserAnimeStatus.PlanToWatch) ||
+                                 (request.FilterDropped && status == UserAnimeStatus.Dropped);
+
+            if (request.FilterFranchise)
+            {
+                bool hasFranchise = request.FranchiseIndex.TryGetValue(x.Id, out var ctx) && ctx.HasRelation;
+                if (!hasFranchise) return false;
+                return (request.FilterNotInList || anyStatusFilter) ? matchesStatus : true;
+            }
+
+            return matchesStatus;
         });
     }
 }

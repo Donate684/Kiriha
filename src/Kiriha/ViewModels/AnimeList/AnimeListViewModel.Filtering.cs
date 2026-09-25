@@ -32,9 +32,13 @@ public partial class AnimeListViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
     [NotifyPropertyChangedFor(nameof(IsDateSort))]
+    [NotifyPropertyChangedFor(nameof(IsScoreSort))]
+    [NotifyPropertyChangedFor(nameof(IsPopularitySort))]
     private string _sortBy = "Title";
     public string DisplaySortBy => _localizer.GetLoc("filters.sort." + SortBy.ToLower());
     public bool IsDateSort => string.Equals(SortBy, AppConstants.Sorting.Date, StringComparison.OrdinalIgnoreCase);
+    public bool IsScoreSort => string.Equals(SortBy, AppConstants.Sorting.Score, StringComparison.OrdinalIgnoreCase);
+    public bool IsPopularitySort => string.Equals(SortBy, AppConstants.Sorting.Popularity, StringComparison.OrdinalIgnoreCase);
     public System.Collections.Generic.List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
     [ObservableProperty] private bool _prioritizeNewEpisodes;
 

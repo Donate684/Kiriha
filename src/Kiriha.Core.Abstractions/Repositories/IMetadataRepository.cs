@@ -25,4 +25,7 @@ public interface IMetadataRepository
 
     /// <summary>Returns a set of all currently cached metadata IDs.</summary>
     Task<HashSet<int>> GetAllIdsAsync(CancellationToken ct = default);
+
+    /// <summary>Returns cached metadata for the requested IDs in a single batch query.</summary>
+    Task<Dictionary<int, ShikiMetadata>> GetBatchAsync(IEnumerable<int> ids, CancellationToken ct = default);
 }

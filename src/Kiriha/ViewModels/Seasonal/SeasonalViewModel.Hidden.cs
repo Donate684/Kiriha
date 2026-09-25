@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -69,6 +69,17 @@ public partial class SeasonalViewModel
             }
         }, SettingsSection.UI, save: false);
         _ = _settingsService.SaveAsync();
-        ApplyFilters();
+
+        if (isHidden)
+        {
+            // Unhiding: need full refilter to reinsert the item in correct sorted position
+            ApplyFilters();
+        }
+        else
+        {
+            // Hiding: remove in-place to preserve scroll position
+            DisplayItems.Remove(item);
+            RefreshCategoryHeaders();
+        }
     }
 }

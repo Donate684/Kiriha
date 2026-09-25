@@ -109,5 +109,11 @@ public partial class SeasonalView : UserControl
         }
     }
 
-
+    private void SortListBox_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (DataContext is SeasonalViewModel vm)
+        {
+            vm.ApplyFilters();
+        }
+    }
 }

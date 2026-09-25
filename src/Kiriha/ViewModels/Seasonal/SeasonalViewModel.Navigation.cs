@@ -18,6 +18,7 @@ public partial class SeasonalViewModel
     {
         if (item is null) return;
         _queueService.EnqueueForViewport([item]);
+        _franchiseService.EnqueueForResolution(item);
     }
 
     [RelayCommand]

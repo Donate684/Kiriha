@@ -44,9 +44,18 @@ public partial class SeasonalViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
+    [NotifyPropertyChangedFor(nameof(IsDateSort))]
+    [NotifyPropertyChangedFor(nameof(IsScoreSort))]
+    [NotifyPropertyChangedFor(nameof(IsPopularitySort))]
+    [NotifyPropertyChangedFor(nameof(IsRussianTitleSort))]
     private string _sortBy = "";
 
     public string DisplaySortBy => _localizer.GetLoc("filters.sort." + SortBy.ToLower());
+
+    public bool IsDateSort => string.Equals(SortBy, AppConstants.Sorting.Date, StringComparison.OrdinalIgnoreCase);
+    public bool IsScoreSort => string.Equals(SortBy, AppConstants.Sorting.Score, StringComparison.OrdinalIgnoreCase);
+    public bool IsPopularitySort => string.Equals(SortBy, AppConstants.Sorting.Popularity, StringComparison.OrdinalIgnoreCase);
+    public bool IsRussianTitleSort => string.Equals(SortBy, AppConstants.Sorting.RussianTitle, StringComparison.OrdinalIgnoreCase);
 
     public List<string> SortOptions { get; } = new()
     {
@@ -83,6 +92,7 @@ public partial class SeasonalViewModel
     [ObservableProperty] private bool _filterOnHold;
     [ObservableProperty] private bool _filterPlanToWatch;
     [ObservableProperty] private bool _filterDropped;
+    [ObservableProperty] private bool _filterFranchise;
     [ObservableProperty] private bool _filterNsfw;
     [ObservableProperty] private bool _showHidden;
 

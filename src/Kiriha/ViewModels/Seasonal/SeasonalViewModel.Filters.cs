@@ -38,7 +38,9 @@ public partial class SeasonalViewModel
             FilterOnHold: FilterOnHold,
             FilterPlanToWatch: FilterPlanToWatch,
             FilterDropped: FilterDropped,
-            _localizer);
+            FilterFranchise: FilterFranchise,
+            FranchiseIndex: _franchiseService.GetIndex(),
+            Localizer: _localizer);
 
         var result = await Task.Run(() => SeasonalFilterEngine.Apply(request));
         if (requestId != _applyFiltersRequestCount) return;
@@ -69,6 +71,11 @@ public partial class SeasonalViewModel
         {
             item.Status = userStore.TryGetValue(item.Id, out var status) ? status : UserAnimeStatus.None;
             item.IsHiddenInSeasons = _hiddenSeasonalIds.Contains(item.Id);
+            item.Franchise = _franchiseService.GetFranchiseContext(item.Id);
+            if (item.Franchise == null && (item.Status == UserAnimeStatus.None || item.Status == UserAnimeStatus.PlanToWatch))
+            {
+                _franchiseService.EnqueueForResolution(item);
+            }
         }
 
         CurrentHeader = result.Header;
@@ -81,7 +88,7 @@ public partial class SeasonalViewModel
         OtherHeader = result.Headers["Other"];
 
         IsFilterActive = FilterNotInList || FilterWatching || FilterCompleted || FilterOnHold ||
-                         FilterPlanToWatch || FilterDropped || FilterNsfw || ShowHidden ||
+                         FilterPlanToWatch || FilterDropped || FilterFranchise || FilterNsfw || ShowHidden ||
                          !string.IsNullOrEmpty(SearchQuery);
     }
 
@@ -112,8 +119,50 @@ public partial class SeasonalViewModel
         FilterOnHold = false;
         FilterPlanToWatch = false;
         FilterDropped = false;
+        FilterFranchise = false;
         FilterNsfw = false;
         ShowHidden = false;
+    }
+
+    /// <summary>
+    /// Lightweight header refresh after in-place item removal (e.g. hide).
+    /// Rebuilds category bucket counts without recreating DisplayItems,
+    /// so the scroll position is preserved.
+    /// </summary>
+    internal void RefreshCategoryHeaders()
+    {
+        var userStore = _userAnimeStore;
+        var request = new SeasonalFilterRequest(
+            Items: _allSeasonalItems ?? new List<AnimeEntity>(),
+            UserStore: userStore,
+            SearchQuery: SearchQuery,
+            SortBy: SortBy,
+            FilterNsfw: FilterNsfw,
+            SelectedCategory: SelectedCategory,
+            CurrentYear: CurrentYear,
+            CurrentSeason: CurrentSeason,
+            HiddenIds: _hiddenSeasonalIds.Count == 0 ? new HashSet<int>() : new HashSet<int>(_hiddenSeasonalIds),
+            ShowHidden: ShowHidden,
+            FilterNotInList: FilterNotInList,
+            FilterWatching: FilterWatching,
+            FilterCompleted: FilterCompleted,
+            FilterOnHold: FilterOnHold,
+            FilterPlanToWatch: FilterPlanToWatch,
+            FilterDropped: FilterDropped,
+            FilterFranchise: FilterFranchise,
+            FranchiseIndex: _franchiseService.GetIndex(),
+            Localizer: _localizer);
+
+        var result = SeasonalFilterEngine.Apply(request);
+
+        CurrentHeader = result.Header;
+        NewHeader = result.Headers["New"];
+        ContinuingHeader = result.Headers["Continuing"];
+        MoviesHeader = result.Headers["Movies"];
+        OvaHeader = result.Headers["OVA"];
+        OnaHeader = result.Headers["ONA"];
+        SpecialsHeader = result.Headers["Specials"];
+        OtherHeader = result.Headers["Other"];
     }
 
     partial void OnSearchQueryChanged(string? value) => ApplyFilters();
@@ -124,6 +173,7 @@ public partial class SeasonalViewModel
     partial void OnFilterOnHoldChanged(bool value) => ApplyFilters();
     partial void OnFilterPlanToWatchChanged(bool value) => ApplyFilters();
     partial void OnFilterDroppedChanged(bool value) => ApplyFilters();
+    partial void OnFilterFranchiseChanged(bool value) => ApplyFilters();
     partial void OnFilterNsfwChanged(bool value) => ApplyFilters();
     partial void OnShowHiddenChanged(bool value) => ApplyFilters();
 }

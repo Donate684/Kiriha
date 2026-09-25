@@ -27,6 +27,12 @@ public sealed class AnimeRelationRepository : IAnimeRelationRepository
             .ToListAsync(ct);
     }
 
+    public async Task<List<AnimeRelation>> GetAllAsync(CancellationToken ct = default)
+    {
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        return await context.Set<AnimeRelation>().AsNoTracking().ToListAsync(ct);
+    }
+
     public async Task<DateTime?> GetFetchedAtAsync(int sourceMalId, CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);

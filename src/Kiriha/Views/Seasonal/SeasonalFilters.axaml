@@ -89,6 +89,16 @@
                                             </Border>
                                         </Grid>
                                     </ToggleButton>
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterFranchise}">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{DynamicResource l.filters.options.franchise_sequels}"
+                                                       FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="1" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
                                     <ToggleButton Classes="FilterToggle" IsChecked="{Binding ShowHidden}">
                                         <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
                                             <TextBlock Grid.Column="0" Text="{DynamicResource l.filters.options.show_hidden}"

@@ -12,6 +12,8 @@
         <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
         <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter"/>
         <conv:StatusNoneConverter x:Key="StatusNoneConverter"/>
+        <conv:FranchiseToColorConverter x:Key="FranchiseToColorConverter"/>
+        <conv:FranchiseToIconConverter x:Key="FranchiseToIconConverter"/>
         <conv:LocConverter x:Key="LocConverter"/>
         <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
 
@@ -36,7 +38,7 @@
                         <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"
                                Height="165" Width="110"/>
 
-                        <!-- Top-left badges: Status + Airing date -->
+                        <!-- Top-left badges: Status / Franchise + Airing date -->
                         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5" Spacing="3">
                             <Border Classes="Badge"
                                     IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}"
@@ -49,12 +51,59 @@
                                 </StackPanel>
                             </Border>
 
+                            <Border Classes="Badge FranchiseBadge"
+                                    IsVisible="{Binding Presentation.HasFranchiseBadge}"
+                                    Background="{Binding Franchise, Converter={StaticResource FranchiseToColorConverter}}"
+                                    ToolTip.Tip="{Binding Presentation.FranchiseTooltip}">
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="{Binding Franchise, Converter={StaticResource FranchiseToIconConverter}}"
+                                                           Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Presentation.FranchiseBadgeText}"
+                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
                             <Border Classes="Badge DateBadge"
-                                    IsVisible="{Binding Presentation.HasAiringDate}"
                                     ToolTip.Tip="{DynamicResource l.schedule.premiere}">
+                                <Border.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="Presentation.HasAiringDate"/>
+                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsDateSort"/>
+                                    </MultiBinding>
+                                </Border.IsVisible>
                                 <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
                                     <material:MaterialIcon Kind="CalendarOutline" Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding Presentation.AiringDateDisplay}"
+                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Badge ScoreBadge"
+                                    ToolTip.Tip="{DynamicResource l.filters.sort.score}">
+                                <Border.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="Presentation.HasMeanScore"/>
+                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsScoreSort"/>
+                                    </MultiBinding>
+                                </Border.IsVisible>
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="Star" Width="10" Height="10" Foreground="{DynamicResource RatingStarForegroundBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Presentation.MeanScoreDisplay}"
+                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Badge PopularityBadge"
+                                    ToolTip.Tip="{DynamicResource l.filters.sort.popularity}">
+                                <Border.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="Presentation.HasPopularity"/>
+                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsPopularitySort"/>
+                                    </MultiBinding>
+                                </Border.IsVisible>
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="Fire" Width="10" Height="10" Foreground="{DynamicResource OrangeredAccentBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Presentation.PopularityDisplay}"
                                                FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
@@ -123,8 +172,13 @@
                             </Border.Background>
                             <StackPanel Orientation="Horizontal" Spacing="3" Margin="5,10,5,6" VerticalAlignment="Bottom">
                                 <!-- Score pill -->
-                                <Border Background="#88000000" CornerRadius="5" Padding="5,2"
-                                        IsVisible="{Binding MeanScore, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <Border Background="#88000000" CornerRadius="5" Padding="5,2">
+                                    <Border.IsVisible>
+                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                            <Binding Path="MeanScore" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+                                            <Binding Path="!$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsScoreSort"/>
+                                        </MultiBinding>
+                                    </Border.IsVisible>
                                     <StackPanel Orientation="Horizontal" Spacing="3">
                                         <material:MaterialIcon Kind="Star" Width="9" Height="9" Foreground="{DynamicResource RatingStarForegroundBrush}" VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding MeanScore}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>

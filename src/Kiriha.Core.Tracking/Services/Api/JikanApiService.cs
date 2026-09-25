@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -41,7 +41,6 @@ public partial class JikanApiService : IDisposable
     private readonly HttpClient _httpClient;
     private readonly IEpisodeReleaseRepository _episodes;
     private readonly IAnimeRelationRepository _relations;
-    private readonly IAnimeStaffRepository _staff;
     private readonly HttpConditionalCache _httpCache;
     // Jikan official limit: 3 RPS / 60 RPM. 1100 ms between calls (~0.9 RPS) keeps us
     // under both windows even when the per-second bucket resets at the end of a minute.
@@ -62,12 +61,11 @@ public partial class JikanApiService : IDisposable
     // (latestEpisodeOrNull, fetchedAtUtc).
     private readonly ConcurrentDictionary<int, (int? Value, DateTime FetchedAt)> _forumCache = new();
 
-    public JikanApiService(HttpClient httpClient, IEpisodeReleaseRepository episodes, IAnimeRelationRepository relations, IAnimeStaffRepository staff, IHttpCacheRepository httpCacheRepo)
+    public JikanApiService(HttpClient httpClient, IEpisodeReleaseRepository episodes, IAnimeRelationRepository relations, IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _episodes = episodes;
         _relations = relations;
-        _staff = staff;
         _httpCache = new HttpConditionalCache(httpClient, httpCacheRepo, "Jikan");
     }
 

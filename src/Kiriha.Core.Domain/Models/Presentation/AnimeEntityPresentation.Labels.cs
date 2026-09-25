@@ -75,6 +75,22 @@ public partial class AnimeEntityPresentation
     public string AiringDateDisplay =>
         _item.AiringDate?.ToString("d MMM yyyy", System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
 
+    public bool HasPopularity => _item.Popularity > 0;
+
+    public string PopularityDisplay => _item.Popularity > 0 ? $"#{_item.Popularity}" : string.Empty;
+
+    public bool HasMeanScore => !string.IsNullOrWhiteSpace(_item.MeanScore) && _item.MeanScore != "-" && _item.MeanScoreValue > 0;
+
+    public string MeanScoreDisplay => HasMeanScore ? _item.MeanScore! : string.Empty;
+
+    public bool HasScore => !string.IsNullOrWhiteSpace(_item.Score) && _item.Score != "-" && _item.ScoreValue > 0;
+
+    public string ScoreDisplay => HasScore ? _item.Score! : string.Empty;
+
+    public bool HasEffectiveScore => HasMeanScore || HasScore;
+
+    public string EffectiveScoreDisplay => HasScore ? ScoreDisplay : MeanScoreDisplay;
+
     public string AiringBadgeColor
     {
         get

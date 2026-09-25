@@ -87,31 +87,4 @@ public partial class ShikiApiService
             return null;
         }
     }
-
-    public async Task<ShikiPersonResponse?> GetPersonWorksAsync(int personId, CancellationToken ct = default)
-    {
-        if (_personCache.TryGetValue(personId, out var hit) && (DateTime.UtcNow - hit.SystemDateTime) < TimeSpan.FromHours(1))
-        {
-            return hit.Value;
-        }
-
-        var bytes = await _httpCache.SendAsync(
-            requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, ShikiBaseUrl + $"people/{personId}")),
-            ct: ct,
-            localTtl: TimeSpan.FromDays(30));
-
-        if (bytes is null) return null;
-
-        try
-        {
-            var result = JsonSerializer.Deserialize<ShikiPersonResponse>(bytes);
-            _personCache[personId] = (result, DateTime.UtcNow);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "ShikiApiService: failed to deserialize person data for {PersonId}", personId);
-            return null;
-        }
-    }
 }

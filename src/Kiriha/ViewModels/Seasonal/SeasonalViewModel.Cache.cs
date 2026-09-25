@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
@@ -60,7 +61,7 @@ public partial class SeasonalViewModel
     public void InvalidateCache()
     {
         _seasonalCache.Clear();
-        _allSeasonalItems = new List<AnimeEntity>();
+        SetAllSeasonalItems(new List<AnimeEntity>());
         DisplayItems = new AvaloniaList<AnimeEntity>();
 
         if (!_isDisposed && Volatile.Read(ref _initialLoadStarted) != 0)
@@ -93,19 +94,21 @@ public partial class SeasonalViewModel
         {
             if (hasCache)
             {
-                _allSeasonalItems = cached!;
+                SetAllSeasonalItems(cached!);
+                await HydrateMetadataAsync(_allSeasonalItems, ct);
                 await ApplyFiltersAsync();
                 _ = RefreshSeasonalCacheInBackground(capturedYear, capturedSeason, ct);
             }
             else
             {
-                _allSeasonalItems = new List<AnimeEntity>();
+                SetAllSeasonalItems(new List<AnimeEntity>());
                 var fresh = await _apiService.GetSeasonalAnimeAsync(capturedYear, capturedSeason, ct);
                 if (ct.IsCancellationRequested) return;
                 if (fresh != null && fresh.Any())
                 {
+                    await HydrateMetadataAsync(fresh, ct);
                     SaveSeasonalCache(capturedYear, capturedSeason, fresh);
-                    _allSeasonalItems = fresh;
+                    SetAllSeasonalItems(fresh);
                 }
                 await ApplyFiltersAsync();
             }
@@ -124,6 +127,51 @@ public partial class SeasonalViewModel
         }
     }
 
+    private async Task HydrateMetadataAsync(IReadOnlyList<AnimeEntity> items, CancellationToken ct)
+    {
+        if (items is null || items.Count == 0) return;
+        var missingIds = items
+            .Where(x => string.IsNullOrEmpty(x.RussianTitle) || string.IsNullOrEmpty(x.RussianSynopsis))
+            .Select(x => x.Id)
+            .ToList();
+
+        if (missingIds.Count == 0) return;
+
+        try
+        {
+            var metaDict = await _metadataRepo.GetBatchAsync(missingIds, ct);
+            if (metaDict.Count == 0) return;
+
+            bool updatedAny = false;
+            foreach (var item in items)
+            {
+                if (metaDict.TryGetValue(item.Id, out var meta))
+                {
+                    if (string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(meta.Russian))
+                    {
+                        item.RussianTitle = meta.Russian;
+                        updatedAny = true;
+                    }
+                    if (string.IsNullOrEmpty(item.RussianSynopsis) && !string.IsNullOrEmpty(meta.Description))
+                    {
+                        item.RussianSynopsis = Kiriha.Utils.Parsing.AnimeStringHelper.CleanShikiDescription(meta.Description);
+                        updatedAny = true;
+                    }
+                }
+            }
+
+            if (updatedAny)
+            {
+                var list = items as List<AnimeEntity> ?? items.ToList();
+                SaveSeasonalCache(CurrentYear, CurrentSeason, list);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "SeasonalViewModel: HydrateMetadataAsync failed");
+        }
+    }
+
     private Task RefreshSeasonalCacheInBackground(int year, string season, CancellationToken ct) =>
         Task.Run(async () =>
         {
@@ -133,10 +181,12 @@ public partial class SeasonalViewModel
                 if (ct.IsCancellationRequested) return;
                 if (fresh is null || !fresh.Any()) return;
 
+                await HydrateMetadataAsync(fresh, ct);
+
                 SaveSeasonalCache(year, season, fresh);
                 if (year == CurrentYear && season == CurrentSeason)
                 {
-                    _allSeasonalItems = fresh;
+                    SetAllSeasonalItems(fresh);
                     await ApplyFiltersAsync();
                 }
             }
@@ -153,6 +203,42 @@ public partial class SeasonalViewModel
         _ = _cacheStore.SaveAsync(year, season, items);
     }
 
+    private void SetAllSeasonalItems(List<AnimeEntity> items)
+    {
+        DetachItemListeners(_allSeasonalItems);
+        _allSeasonalItems = items;
+        AttachItemListeners(_allSeasonalItems);
+    }
+
+    private void AttachItemListeners(IEnumerable<AnimeEntity>? items)
+    {
+        if (items is null) return;
+        foreach (var item in items)
+        {
+            item.PropertyChanged += OnSeasonalItemPropertyChanged;
+        }
+    }
+
+    private void DetachItemListeners(IEnumerable<AnimeEntity>? items)
+    {
+        if (items is null) return;
+        foreach (var item in items)
+        {
+            item.PropertyChanged -= OnSeasonalItemPropertyChanged;
+        }
+    }
+
+    private void OnSeasonalItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if ((e.PropertyName == nameof(AnimeEntity.RussianTitle) && IsRussianTitleSort) ||
+            (e.PropertyName == nameof(AnimeEntity.MeanScore) && IsScoreSort) ||
+            (e.PropertyName == nameof(AnimeEntity.Popularity) && IsPopularitySort) ||
+            (e.PropertyName == nameof(AnimeEntity.AiringDate) && IsDateSort))
+        {
+            ApplyFilters();
+        }
+    }
+
     public void Dispose()
     {
         if (_isDisposed) return;
@@ -165,6 +251,8 @@ public partial class SeasonalViewModel
             cts.Dispose();
         }
 
+        DetachItemListeners(_allSeasonalItems);
+        _franchiseService.IndexRebuilt -= OnFranchiseIndexRebuilt;
         _filterDebouncer?.Dispose();
         _applyFilterDebouncer?.Dispose();
     }

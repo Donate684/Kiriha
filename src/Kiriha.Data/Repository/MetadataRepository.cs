@@ -43,4 +43,15 @@ public sealed class MetadataRepository : IMetadataRepository
         var ids = await context.Metadata.Select(m => m.Id).ToListAsync(ct);
         return new HashSet<int>(ids);
     }
+
+    public async Task<Dictionary<int, ShikiMetadata>> GetBatchAsync(IEnumerable<int> ids, CancellationToken ct = default)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0) return new Dictionary<int, ShikiMetadata>();
+
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        return await context.Metadata.AsNoTracking()
+            .Where(m => idList.Contains(m.Id))
+            .ToDictionaryAsync(m => m.Id, ct);
+    }
 }

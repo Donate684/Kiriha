@@ -143,15 +143,4 @@ public static class AppConstants
         public const string BlockedByRoskomnadzor = "Заблокировано по требованию Роскомнадзора";
         public const string CyrillicChe = "Ч";
     }
-
-    public static class StaffRoles
-    {
-        public static readonly string[] Director = ["режисс", "director"];
-        public static readonly string[] NotDirector = ["звук", "sound", "эпизод", "episode", "анимаци", "animation", "ассистент", "assistant", "помощник", "второй", "co-director"];
-        public static readonly string[] SeriesComposition = ["компоновка", "структура", "series composition"];
-        public static readonly string[] Script = ["сценар", "script"];
-        public static readonly string[] Music = ["композитор", "музык", "music"];
-        public static readonly string[] CharacterDesign = ["дизайн персонажей", "character design"];
-        public static readonly string[] OriginalCreator = ["оригинал", "автор", "creator"];
-    }
 }

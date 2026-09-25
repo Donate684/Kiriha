@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
@@ -46,8 +46,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
     public System.Collections.ObjectModel.ObservableCollection<AnimeOfflineItem> _relatedAnime = new();
 
     public System.Collections.ObjectModel.ObservableCollection<RelationItemVm> Relations { get; } = new();
-
-    public System.Collections.ObjectModel.ObservableCollection<StaffPlusItemVm> StaffPlus { get; } = new();
 
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
@@ -132,16 +130,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
         catch (System.Exception ex)
         {
             Log.Warning(ex, "Failed to fetch relations for {Id}", Anime.Id);
-        }
-
-        try
-        {
-            var staffList = await _jikanApiService.GetStaffAsync(Anime.Id, Anime.MediaKind);
-            _ = ProcessStaffPlusAsync(staffList);
-        }
-        catch (System.Exception ex)
-        {
-            Log.Warning(ex, "Failed to fetch staff for {Id}", Anime.Id);
         }
     }
 

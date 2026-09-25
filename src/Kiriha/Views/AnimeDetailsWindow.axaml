@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -185,7 +185,7 @@
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
 
-        <!-- Relation/Staff Buttons -->
+        <!-- Relation Buttons -->
         <Style Selector="Button.RelationCardButton">
             <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
@@ -235,9 +235,6 @@
 
                     <!-- == RELATIONS == -->
                     <details:AnimeDetailsRelations />
-
-                    <!-- == STAFF+ == -->
-                    <details:AnimeDetailsStaff />
 
                 </StackPanel>
             </ScrollViewer>

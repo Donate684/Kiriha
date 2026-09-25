@@ -30,4 +30,23 @@ public partial class AnimeEntity
         get => _isHideConfirming;
         set => SetProperty(ref _isHideConfirming, value);
     }
+
+    private FranchiseContext? _franchise;
+
+    /// <summary>
+    /// Transient franchise relation context with the user's library.
+    /// </summary>
+    [NotMapped]
+    [JsonIgnore]
+    public FranchiseContext? Franchise
+    {
+        get => _franchise;
+        set
+        {
+            if (SetProperty(ref _franchise, value))
+            {
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
 }

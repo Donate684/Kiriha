@@ -29,7 +29,6 @@ public partial class ShikiApiService : IShikiApiService
     private readonly ShikiHostResolver _hostResolver;
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiRateLimiter _rateLimiter;
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<int, (ShikiPersonResponse? Value, DateTime SystemDateTime)> _personCache = new();
 
     public string Name => "Shikimori";
 
