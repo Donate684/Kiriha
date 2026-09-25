@@ -29,10 +29,10 @@
 
     <!-- ═══ Glass pill badges over poster ═══ -->
     <Style Selector="Border.Badge">
-        <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Padding" Value="8,3"/>
+        <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="Padding" Value="5,2"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="BoxShadow" Value="0 2 8 0 #66000000"/>
+        <Setter Property="BoxShadow" Value="0 2 6 0 #55000000"/>
     </Style>
 
     <!-- ═══ Airing date badge ═══ -->

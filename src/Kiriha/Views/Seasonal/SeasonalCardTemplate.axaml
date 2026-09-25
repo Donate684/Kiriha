@@ -9,6 +9,7 @@
                     x:Class="Kiriha.Views.Seasonal.SeasonalCardTemplate">
 
         <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
+        <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
         <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter"/>
         <conv:StatusNoneConverter x:Key="StatusNoneConverter"/>
         <conv:LocConverter x:Key="LocConverter"/>
@@ -40,8 +41,12 @@
                             <Border Classes="Badge"
                                     IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}"
                                     Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
-                                <TextBlock Text="{Binding Status, Converter={StaticResource LocConverter}}"
-                                           FontSize="8" Foreground="White" FontWeight="SemiBold"/>
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                                           Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Status, Converter={StaticResource LocConverter}}"
+                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
                             </Border>
 
                             <Border Classes="Badge DateBadge"
