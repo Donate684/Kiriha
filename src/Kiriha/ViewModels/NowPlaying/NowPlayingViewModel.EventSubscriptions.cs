@@ -46,18 +46,20 @@ public partial class NowPlayingViewModel
 
         MatchedAnime = anime;
         OnPropertyChanged(nameof(CurrentMedia));
+        OnPropertyChanged(nameof(DisplayEpisodeNumber));
         if (anime != null)
         {
             IsManuallyMapped = _trackingService.IsManuallyMapped();
             LogDetection(CurrentMedia ?? new ParsedMedia { AnimeTitle = anime.Title }, _localizer.GetLoc("scrobbler.status.matched"));
 
-            // Force fetch + apply Russian metadata if enabled and missing.
-            // EnsureLocalizedAsync handles the cache-miss → API fetch path
-            // AND copies meta.Russian/Description into the AnimeEntity; the
-            // previous code only called RefreshMetadata() which raises
-            // PropertyChanged but never wrote the fetched values, so the
-            // UI stayed empty whenever the DB had no Shiki row yet.
-            EnsureLocalizedSafeAsync(anime).SafeFireAndForget("NowPlaying.AnimeMatched");
+            if (anime.IsMissingDetails)
+            {
+                EnsureFullDetailsSafeAsync(anime).SafeFireAndForget("NowPlaying.AnimeMatched");
+            }
+            else
+            {
+                EnsureLocalizedSafeAsync(anime).SafeFireAndForget("NowPlaying.AnimeMatchedLoc");
+            }
         }
         else
         {

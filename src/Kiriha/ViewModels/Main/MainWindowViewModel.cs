@@ -80,10 +80,19 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
     {
         if (disposing)
         {
-            if (CurrentPage is IDisposable disposable && !_cachedVms.Contains(CurrentPage))
+            if (CurrentPage is IDisposable currentDisposable && !_cachedVms.Contains(CurrentPage))
             {
-                disposable.Dispose();
+                currentDisposable.Dispose();
             }
+
+            foreach (var vm in _cachedVms)
+            {
+                if (vm is IDisposable d)
+                {
+                    d.Dispose();
+                }
+            }
+            _cachedVms.Clear();
 
             (UpdateDialog as IDisposable)?.Dispose();
 

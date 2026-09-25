@@ -121,7 +121,18 @@ public partial class AnimeEntity : DomainObservableObject
     }
     public int Popularity { get; set; }
     public int? Rank { get; set; }
-    public DateTime? AiringDate { get; set; }
+    private DateTime? _airingDate;
+    public DateTime? AiringDate
+    {
+        get => _airingDate;
+        set
+        {
+            if (SetProperty(ref _airingDate, value))
+            {
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
     public string? StartSeason { get; set; }
     public int? StartYear { get; set; }
     private string? _rating;

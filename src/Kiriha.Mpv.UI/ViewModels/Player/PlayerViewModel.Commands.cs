@@ -75,6 +75,21 @@ public partial class PlayerViewModel
     }
 
     [RelayCommand]
+    public void AdjustSubtitleDelay(double delta)
+    {
+        _subtitleDelay = Math.Round(_subtitleDelay + delta, 3);
+        _playback.AdjustSubtitleDelay(delta);
+        ShowSubtitleDelayOsd(_subtitleDelay);
+    }
+
+    private void ShowSubtitleDelayOsd(double delaySeconds)
+    {
+        int delayMs = (int)Math.Round(delaySeconds * 1000);
+        string sign = delayMs > 0 ? "+" : "";
+        ShowOsd(_localizer.GetLoc("player.osd.sub_delay"), $"{sign}{delayMs} {_localizer.GetLoc("player.osd.ms")}");
+    }
+
+    [RelayCommand]
     private void TakeScreenshot()
     {
         TakeScreenshot(includeSubtitles: false);

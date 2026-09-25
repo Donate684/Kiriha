@@ -109,12 +109,12 @@ public partial class App : Application
         }
         var newDict = new Avalonia.Controls.ResourceDictionary();
         newDict["SystemAccentColor"] = baseColor;
-        newDict["SystemAccentColorDark1"] = baseColor;
-        newDict["SystemAccentColorDark2"] = baseColor;
-        newDict["SystemAccentColorDark3"] = baseColor;
-        newDict["SystemAccentColorLight1"] = baseColor;
-        newDict["SystemAccentColorLight2"] = baseColor;
-        newDict["SystemAccentColorLight3"] = baseColor;
+        newDict["SystemAccentColorDark1"] = Darken(baseColor, 0.1);
+        newDict["SystemAccentColorDark2"] = Darken(baseColor, 0.2);
+        newDict["SystemAccentColorDark3"] = Darken(baseColor, 0.3);
+        newDict["SystemAccentColorLight1"] = Lighten(baseColor, 0.1);
+        newDict["SystemAccentColorLight2"] = Lighten(baseColor, 0.2);
+        newDict["SystemAccentColorLight3"] = Lighten(baseColor, 0.3);
         if (_customAccentDictionary != null)
         {
             Current.Resources.MergedDictionaries.Remove(_customAccentDictionary);
@@ -122,6 +122,22 @@ public partial class App : Application
         
         _customAccentDictionary = newDict;
         Current.Resources.MergedDictionaries.Add(_customAccentDictionary);
+    }
+
+    private static Avalonia.Media.Color Lighten(Avalonia.Media.Color c, double factor)
+    {
+        return Avalonia.Media.Color.FromArgb(c.A,
+            (byte)Math.Min(255, c.R + (255 - c.R) * factor),
+            (byte)Math.Min(255, c.G + (255 - c.G) * factor),
+            (byte)Math.Min(255, c.B + (255 - c.B) * factor));
+    }
+
+    private static Avalonia.Media.Color Darken(Avalonia.Media.Color c, double factor)
+    {
+        return Avalonia.Media.Color.FromArgb(c.A,
+            (byte)(c.R * (1 - factor)),
+            (byte)(c.G * (1 - factor)),
+            (byte)(c.B * (1 - factor)));
     }
     private static Avalonia.Media.Color GetWindowsAccentColor()
     {

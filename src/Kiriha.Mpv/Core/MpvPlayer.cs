@@ -16,6 +16,7 @@ public partial class MpvPlayer : IDisposable
     private const ulong SeekablePropertyId = 4;
     private const ulong IdleActivePropertyId = 5;
     private const ulong TrackListPropertyId = 6;
+    private const ulong SubDelayPropertyId = 7;
 
 
     private readonly Lock _gate = new();
@@ -40,6 +41,7 @@ public partial class MpvPlayer : IDisposable
     public event Action? RenderUpdateRequested;
     public event Action<PlaybackState>? PlaybackStateChanged;
     public event Action? TracksChanged;
+    public event Action<double>? SubtitleDelayChanged;
 
     internal MpvPlayer()
     {
@@ -159,6 +161,10 @@ public partial class MpvPlayer : IDisposable
     public void CycleSubtitle() => TrackManager.CycleSubtitle();
 
     public void AdjustSubtitlePosition(double delta) => TrackManager.AdjustSubtitlePosition(delta);
+
+    public void AdjustSubtitleDelay(double delta) => TrackManager.AdjustSubtitleDelay(delta);
+
+    public double GetSubtitleDelay() => ReadDoubleProperty("sub-delay", 0);
 
     public void CycleAudio() => TrackManager.CycleAudio();
 

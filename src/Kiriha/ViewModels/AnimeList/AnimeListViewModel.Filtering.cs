@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure;
@@ -30,8 +31,10 @@ public partial class AnimeListViewModel
     // Sorting
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplaySortBy))]
+    [NotifyPropertyChangedFor(nameof(IsDateSort))]
     private string _sortBy = "Title";
     public string DisplaySortBy => _localizer.GetLoc("filters.sort." + SortBy.ToLower());
+    public bool IsDateSort => string.Equals(SortBy, AppConstants.Sorting.Date, StringComparison.OrdinalIgnoreCase);
     public System.Collections.Generic.List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
     [ObservableProperty] private bool _prioritizeNewEpisodes;
 

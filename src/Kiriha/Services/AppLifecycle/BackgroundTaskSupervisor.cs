@@ -21,6 +21,7 @@ public sealed class BackgroundTaskSupervisor : IBackgroundTaskSupervisor, IDispo
     private readonly CancellationTokenSource _shutdownCts = new();
     private int _nextId;
     private int _stopped;
+    private int _disposed;
 
     public Task Run(string name, Func<CancellationToken, Task> operation, CancellationToken cancellationToken = default)
     {
@@ -100,6 +101,7 @@ public sealed class BackgroundTaskSupervisor : IBackgroundTaskSupervisor, IDispo
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
         _shutdownCts.Cancel();
         _shutdownCts.Dispose();
     }

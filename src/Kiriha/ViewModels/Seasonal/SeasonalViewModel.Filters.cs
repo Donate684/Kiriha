@@ -19,7 +19,6 @@ public partial class SeasonalViewModel
         if (_isInitializing) return;
 
         int requestId = Interlocked.Increment(ref _applyFiltersRequestCount);
-        _queueService.ClearQueues();
 
         var userStore = _userAnimeStore;
         var request = new SeasonalFilterRequest(
@@ -52,14 +51,8 @@ public partial class SeasonalViewModel
         });
     }
 
-    private void ApplyFilterResult(SeasonalFilterResult result, Dictionary<int, UserAnimeStatus> userStore)
+    private void ApplyFilterResult(SeasonalFilterResult result, IReadOnlyDictionary<int, UserAnimeStatus> userStore)
     {
-        foreach (var item in result.Items)
-        {
-            item.Status = userStore.TryGetValue(item.Id, out var status) ? status : UserAnimeStatus.None;
-            item.IsHiddenInSeasons = _hiddenSeasonalIds.Contains(item.Id);
-        }
-
         if (SelectedCategory != result.ResolvedCategory)
         {
             SelectedCategory = result.ResolvedCategory;
@@ -68,6 +61,14 @@ public partial class SeasonalViewModel
         if (!IsSameDisplayList(result.Items))
         {
             DisplayItems = new AvaloniaList<AnimeEntity>(result.Items);
+        }
+
+        // Mutate Status/IsHidden ONLY on DisplayItems — not on cached source items.
+        // This prevents corrupting the static _seasonalCache when switching seasons.
+        foreach (var item in DisplayItems)
+        {
+            item.Status = userStore.TryGetValue(item.Id, out var status) ? status : UserAnimeStatus.None;
+            item.IsHiddenInSeasons = _hiddenSeasonalIds.Contains(item.Id);
         }
 
         CurrentHeader = result.Header;

@@ -78,7 +78,7 @@
                                     <TextBlock FontSize="11" Foreground="#D0FFFFFF" VerticalAlignment="Center">
                                         <Run Text="{DynamicResource l.anime.labels.episode}"/>
                                         <Run Text=" "/>
-                                        <Run FontWeight="Bold" Foreground="White" Text="{Binding CurrentMedia.Episode}"/>
+                                        <Run FontWeight="Bold" Foreground="White" Text="{Binding DisplayEpisodeNumber}"/>
                                         <Run Text="{DynamicResource l.anime.labels.of}"/>
                                         <Run Text="{Binding MatchedAnime.TotalEpisodes}"/>
                                     </TextBlock>
@@ -97,9 +97,9 @@
 
                                 <!-- Score -->
                                 <Border Width="1" Height="12" Background="#40FFFFFF" VerticalAlignment="Center"
-                                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                        IsVisible="{Binding MatchedAnime.MeanScore, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                 <StackPanel Orientation="Horizontal" Spacing="4"
-                                            IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            IsVisible="{Binding MatchedAnime.MeanScore, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                     <material:MaterialIcon Kind="Star" Width="12" Height="12" Foreground="Gold"
                                                            VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding MatchedAnime.MeanScore}" FontSize="11" FontWeight="SemiBold"

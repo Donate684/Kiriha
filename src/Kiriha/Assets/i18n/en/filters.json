@@ -23,15 +23,15 @@
   "score": {
     "label": "Score",
     "masterpiece": "Masterpiece",
-    "excellent": "Excellent",
-    "very_good": "Very Good",
+    "amazing": "Delight",
+    "great": "Great",
     "good": "Good",
+    "fine": "Fine",
     "average": "Average",
-    "mediocre": "Mediocre",
+    "weak": "Weak",
     "bad": "Bad",
-    "very_bad": "Very Bad",
-    "horrible": "Horrible",
-    "appalling": "Appalling"
+    "terrible": "Terrible",
+    "bottom": "Rock Bottom"
   },
   "popularity": "Popularity",
   "adult": {

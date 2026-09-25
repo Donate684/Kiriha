@@ -23,15 +23,15 @@
   "score": {
     "label": "Оценка",
     "masterpiece": "Шедевр",
-    "excellent": "Отлично",
-    "very_good": "Очень хорошо",
+    "amazing": "Восторг",
+    "great": "Отлично",
     "good": "Хорошо",
-    "average": "Средне",
-    "mediocre": "Так себе",
+    "fine": "Неплохо",
+    "average": "Нормально",
+    "weak": "Слабо",
     "bad": "Плохо",
-    "very_bad": "Очень плохо",
-    "horrible": "Ужасно",
-    "appalling": "Кошмар"
+    "terrible": "Ужасно",
+    "bottom": "Дно"
   },
   "popularity": "Популярность",
   "adult": {

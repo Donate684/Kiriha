@@ -67,6 +67,27 @@ public partial class PlayerWindow
             return;
         }
 
+        if (MatchesHotkey(e, vm.SubtitleDelayEarlierHotkey))
+        {
+            e.Handled = true;
+            vm.AdjustSubtitleDelay(-0.1);
+            return;
+        }
+
+        if (MatchesHotkey(e, vm.SubtitleDelayLaterHotkey))
+        {
+            e.Handled = true;
+            vm.AdjustSubtitleDelay(0.1);
+            return;
+        }
+
+        if (e.Key == Key.Z && actualModifiers == KeyModifiers.Shift)
+        {
+            e.Handled = true;
+            vm.AdjustSubtitleDelay(0.1);
+            return;
+        }
+
         if (MatchesHotkey(e, vm.VolumeUpHotkey))
         {
             e.Handled = true;

@@ -543,6 +543,44 @@
                                     </Button>
                                 </Grid>
 
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.sub_delay_earlier}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_z}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SubtitleDelayEarlierHotkey}"
+                                             PlaceholderText="Z"
+                                             VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleDelayEarlierHotkey"
+                                            IsVisible="{Binding SubtitleDelayEarlierHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Z}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,220,32" MinHeight="44">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_interface.sub_delay_later}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_interface.default_x}"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SubtitleDelayLaterHotkey}"
+                                             PlaceholderText="X"
+                                             VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SubtitleDelayLaterHotkey"
+                                            IsVisible="{Binding SubtitleDelayLaterHotkey, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=X}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
+                                </Grid>
+
                                 <Border Classes="player-settings-divider"/>
 
                                 <TextBlock Classes="player-settings-row-title"

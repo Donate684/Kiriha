@@ -13,6 +13,7 @@ public sealed class PlayerPlaybackController
     public event EventHandler<MpvPlaybackEndedEventArgs>? PlaybackEnded;
     public event Action<PlaybackState>? PlaybackStateChanged;
     public event Action? TracksChanged;
+    public event Action<double>? SubtitleDelayChanged;
 
     public bool HasPlayer => _player != null;
 
@@ -25,6 +26,7 @@ public sealed class PlayerPlaybackController
         _player.PlaybackEnded += OnPlaybackEnded;
         _player.PlaybackStateChanged += OnPlaybackStateChanged;
         _player.TracksChanged += OnTracksChanged;
+        _player.SubtitleDelayChanged += OnSubtitleDelayChanged;
     }
 
     public void Detach()
@@ -36,6 +38,7 @@ public sealed class PlayerPlaybackController
         _player.PlaybackEnded -= OnPlaybackEnded;
         _player.PlaybackStateChanged -= OnPlaybackStateChanged;
         _player.TracksChanged -= OnTracksChanged;
+        _player.SubtitleDelayChanged -= OnSubtitleDelayChanged;
         _player = null;
     }
 
@@ -54,6 +57,8 @@ public sealed class PlayerPlaybackController
     public void FrameStep() => _player?.FrameStep();
     public void FrameBackStep() => _player?.FrameBackStep();
     public void AdjustSubtitlePosition(double delta) => _player?.AdjustSubtitlePosition(delta);
+    public void AdjustSubtitleDelay(double delta) => _player?.AdjustSubtitleDelay(delta);
+    public double GetSubtitleDelay() => _player?.GetSubtitleDelay() ?? 0;
     public void TakeScreenshot(bool includeSubtitles, string resolutionMode) => _player?.TakeScreenshot(includeSubtitles, resolutionMode);
     public void SetTrack(string type, string id) => _player?.SetTrack(type, id);
     public void SetOptionString(string name, string value) => _player?.SetOptionString(name, value);
@@ -145,4 +150,5 @@ public sealed class PlayerPlaybackController
     private void OnPlaybackEnded(object? sender, MpvPlaybackEndedEventArgs e) => PlaybackEnded?.Invoke(sender, e);
     private void OnPlaybackStateChanged(PlaybackState state) => PlaybackStateChanged?.Invoke(state);
     private void OnTracksChanged() => TracksChanged?.Invoke();
+    private void OnSubtitleDelayChanged(double delay) => SubtitleDelayChanged?.Invoke(delay);
 }

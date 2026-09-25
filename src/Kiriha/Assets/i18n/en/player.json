@@ -157,6 +157,10 @@
     "default_right": "Skip the video forward",
     "subtitle_style": "Subtitle style",
     "default_u": "Change how the text looks on the screen",
+    "sub_delay_earlier": "Subtitle delay -100ms",
+    "default_z": "Shift subtitles 100ms earlier",
+    "sub_delay_later": "Subtitle delay +100ms",
+    "default_x": "Shift subtitles 100ms later",
     "panel_buttons": "Panel buttons",
     "btn_play_pause": "Play / Pause",
     "btn_seek_10s": "Seek 10s",
@@ -224,7 +228,9 @@
     "seconds": "sec",
     "subtitle_style": "Subtitle style",
     "enabled": "enabled",
-    "disabled": "disabled"
+    "disabled": "disabled",
+    "sub_delay": "Subtitle delay",
+    "ms": "ms"
   },
   "options": {
     "none": "None",

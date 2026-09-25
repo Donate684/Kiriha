@@ -73,6 +73,8 @@ public partial class AppSettings
         public string ReloadSubtitlesHotkey { get; set; } = "Q";
         public string FrameStepForwardHotkey { get; set; } = "OemPeriod";
         public string FrameStepBackwardHotkey { get; set; } = "OemComma";
+        public string SubtitleDelayEarlierHotkey { get; set; } = "Z";
+        public string SubtitleDelayLaterHotkey { get; set; } = "X";
         public string MpvScale { get; set; } = "bilinear";
         public string MpvChromaScale { get; set; } = "bilinear";
         public string MpvDitherDepth { get; set; } = "auto";

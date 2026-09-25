@@ -35,13 +35,23 @@
                         <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"
                                Height="165" Width="110"/>
 
-                        <!-- Status badge top-left -->
-                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5"
-                                    IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}">
+                        <!-- Top-left badges: Status + Airing date -->
+                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5" Spacing="3">
                             <Border Classes="Badge"
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}"
                                     Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
                                 <TextBlock Text="{Binding Status, Converter={StaticResource LocConverter}}"
                                            FontSize="8" Foreground="White" FontWeight="SemiBold"/>
+                            </Border>
+
+                            <Border Classes="Badge DateBadge"
+                                    IsVisible="{Binding Presentation.HasAiringDate}"
+                                    ToolTip.Tip="{DynamicResource l.schedule.premiere}">
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="CalendarOutline" Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Presentation.AiringDateDisplay}"
+                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
                             </Border>
                         </StackPanel>
 

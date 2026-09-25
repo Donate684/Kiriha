@@ -29,6 +29,7 @@
                                              Content="{DynamicResource l.anime.labels.alternative_titles}"/>
                             </StackPanel>
                         </Border>
+                        <ProgressBar IsIndeterminate="True" Height="2" Margin="0" IsVisible="{Binding IsLoadingDetails}"/>
 
                         <Panel Margin="18,18,18,18">
 

@@ -21,6 +21,7 @@ public partial class PlayerViewModel
             HasPlaybackError = false;
             PlaybackErrorMessage = string.Empty;
             PlaybackStatusMessage = _localizer.GetLoc("player.state.ready");
+            _subtitleDelay = 0;
             UpdateNavigationAvailability();
             RefreshDurationFromPlayer();
             UpdateTracks();
@@ -139,6 +140,14 @@ public partial class PlayerViewModel
         {
             var info = _playback.GetRuntimeVideoInfo();
             Dispatcher.UIThread.Post(() => MpvRuntimeInfo = info);
+        });
+    }
+
+    private void OnPlayerSubtitleDelayChanged(double subDelay)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _subtitleDelay = subDelay;
         });
     }
 }

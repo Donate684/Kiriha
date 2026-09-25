@@ -29,6 +29,7 @@ public partial class PlayerViewModel
         _playback.PlaybackEnded -= OnPlayerPlaybackEnded;
         _playback.PlaybackStateChanged -= OnPlayerPlaybackStateChanged;
         _playback.TracksChanged -= OnPlayerTracksChanged;
+        _playback.SubtitleDelayChanged -= OnPlayerSubtitleDelayChanged;
 
         try { _statePublisher.PublishClosed(); } catch (Exception ex) { Log.Debug(ex, "Error publishing closed state"); }
 

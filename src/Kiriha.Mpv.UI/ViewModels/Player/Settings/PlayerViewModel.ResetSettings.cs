@@ -166,6 +166,12 @@ public partial class PlayerViewModel
             case "FrameStepBackwardHotkey":
                 FrameStepBackwardHotkey = def.FrameStepBackwardHotkey;
                 break;
+            case "SubtitleDelayEarlierHotkey":
+                SubtitleDelayEarlierHotkey = def.SubtitleDelayEarlierHotkey;
+                break;
+            case "SubtitleDelayLaterHotkey":
+                SubtitleDelayLaterHotkey = def.SubtitleDelayLaterHotkey;
+                break;
             case "ShowPlayPauseButton":
                 ShowPlayPauseButton = def.ShowPlayPauseButton;
                 break;

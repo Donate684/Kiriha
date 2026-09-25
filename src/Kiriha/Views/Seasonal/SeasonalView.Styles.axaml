@@ -35,6 +35,14 @@
         <Setter Property="BoxShadow" Value="0 2 8 0 #66000000"/>
     </Style>
 
+    <!-- ═══ Airing date badge ═══ -->
+    <Style Selector="Border.DateBadge">
+        <Setter Property="Background" Value="#99000000"/>
+        <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="Padding" Value="5,2"/>
+        <Setter Property="BoxShadow" Value="0 2 6 0 #55000000"/>
+    </Style>
+
     <!-- ═══ Hide / Un-hide button (revealed on card hover) ═══ -->
     <Style Selector="Border.HideBtn">
         <Setter Property="Background" Value="#CC000000"/>

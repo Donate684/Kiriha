@@ -138,12 +138,26 @@ internal static class AnimeComparerFactory
             return cmp != 0 ? cmp : CompareTitle(x, y);
         }
 
-        private static int CompareDate(AnimeEntity x, AnimeEntity y)
+        private int CompareDate(AnimeEntity x, AnimeEntity y)
         {
+            if (_isSeasonal)
+            {
+                var xDateVal = x.AiringDate;
+                var yDateVal = y.AiringDate;
+                if (xDateVal.HasValue && yDateVal.HasValue)
+                {
+                    int cmp = xDateVal.GetValueOrDefault().CompareTo(yDateVal.GetValueOrDefault());
+                    return cmp != 0 ? cmp : CompareTitle(x, y);
+                }
+                if (xDateVal.HasValue) return -1;
+                if (yDateVal.HasValue) return 1;
+                return CompareTitle(x, y);
+            }
+
             DateTime xDate = x.AiringDate ?? DateTime.MinValue;
             DateTime yDate = y.AiringDate ?? DateTime.MinValue;
-            int cmp = yDate.CompareTo(xDate);
-            return cmp != 0 ? cmp : CompareTitle(x, y);
+            int defaultCmp = yDate.CompareTo(xDate);
+            return defaultCmp != 0 ? defaultCmp : CompareTitle(x, y);
         }
 
         private static int ComparePopularity(AnimeEntity x, AnimeEntity y)

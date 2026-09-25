@@ -30,6 +30,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private DispatcherTimer? _timer;
     private bool _isApplyingSettings;
     private bool _mpvRuntimeDiagnosticsVisible;
+    private double _subtitleDelay;
 
     public PlayerOverlayViewModel Overlay { get; } = new();
 

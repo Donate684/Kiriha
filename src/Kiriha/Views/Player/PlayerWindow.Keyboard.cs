@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -64,6 +64,27 @@ public partial class PlayerWindow
         {
             e.Handled = true;
             vm.MoveSubtitleDown();
+            return;
+        }
+
+        if (MatchesHotkey(e, vm.SubtitleDelayEarlierHotkey))
+        {
+            e.Handled = true;
+            vm.AdjustSubtitleDelay(-0.1);
+            return;
+        }
+
+        if (MatchesHotkey(e, vm.SubtitleDelayLaterHotkey))
+        {
+            e.Handled = true;
+            vm.AdjustSubtitleDelay(0.1);
+            return;
+        }
+
+        if (e.Key == Key.Z && actualModifiers == KeyModifiers.Shift)
+        {
+            e.Handled = true;
+            vm.AdjustSubtitleDelay(0.1);
             return;
         }
 

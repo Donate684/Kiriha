@@ -52,6 +52,7 @@ public partial class MpvPlayer
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, SeekablePropertyId, "seekable", LibMpvNative.MPV_FORMAT_FLAG), "observe seekable");
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, IdleActivePropertyId, "idle-active", LibMpvNative.MPV_FORMAT_FLAG), "observe idle active");
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, TrackListPropertyId, "track-list", LibMpvNative.MPV_FORMAT_NONE), "observe track list");
+        Check(LibMpvNative.mpv_observe_property(_mpvHandle, SubDelayPropertyId, "sub-delay", LibMpvNative.MPV_FORMAT_DOUBLE), "observe sub delay");
     }
 
     private static void UnobservePlaybackProperties(IntPtr handle)
@@ -62,6 +63,7 @@ public partial class MpvPlayer
         LibMpvNative.mpv_unobserve_property(handle, SeekablePropertyId);
         LibMpvNative.mpv_unobserve_property(handle, IdleActivePropertyId);
         LibMpvNative.mpv_unobserve_property(handle, TrackListPropertyId);
+        LibMpvNative.mpv_unobserve_property(handle, SubDelayPropertyId);
     }
 
     private void HandlePropertyChange(MpvEvent mpvEvent)
@@ -113,6 +115,12 @@ public partial class MpvPlayer
                 var isIdleActive = Marshal.ReadInt32(property.Data) != 0;
                 if (_propertyCache.TryUpdateLoaded(!isIdleActive))
                     PublishPlaybackState();
+                break;
+
+            case SubDelayPropertyId when property.Format == LibMpvNative.MPV_FORMAT_DOUBLE:
+                double subDelay;
+                unsafe { subDelay = *(double*)property.Data; }
+                SubtitleDelayChanged?.Invoke(subDelay);
                 break;
         }
     }

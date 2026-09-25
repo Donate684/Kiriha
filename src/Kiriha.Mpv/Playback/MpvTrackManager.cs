@@ -23,6 +23,13 @@ public class MpvTrackManager
             "adjust subtitle position"));
     }
 
+    public void AdjustSubtitleDelay(double delta)
+    {
+        _player.Enqueue(handle => MpvPlayer.Check(
+            LibMpvNative.mpv_command_string(handle, "add", "sub-delay", MpvPlayer.FormatDouble(delta)),
+            "adjust subtitle delay"));
+    }
+
     public void CycleAudio()
     {
         _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "cycle", "aid"), "cycle audio"));

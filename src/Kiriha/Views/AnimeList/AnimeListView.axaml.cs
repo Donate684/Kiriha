@@ -54,19 +54,7 @@ public partial class AnimeListView : UserControl
     {
         base.OnLoaded(e);
 
-        if (DataContext is not AnimeListViewModel vm) return;
-        var settings = vm.SettingsService;
-
-        // Ensure ItemsRepeater uses the Poster First template
-        if (_gridRepeater != null && this.TryFindResource("CardTemplatePosterFirst", this.ActualThemeVariant, out var resource) && resource is IDataTemplate dt)
-        {
-            _gridRepeater.ItemTemplate = dt;
-            if (_gridRepeater.Layout is Avalonia.Layout.UniformGridLayout layout)
-            {
-                layout.MinItemWidth = 172;
-                layout.MinItemHeight = 326;
-            }
-        }
+        if (DataContext is not AnimeListViewModel) return;
 
         BeginInitialRevealWindow();
         // Initial viewport kickstart

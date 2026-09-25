@@ -40,16 +40,20 @@ public sealed class ShutdownCoordinator
         {
             await DrainAsync();
 
+            if (sender is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                Volatile.Write(ref _shutdownReady, 1);
+                await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+            }
+
             if (_serviceProvider is IDisposable disposable)
                 disposable.Dispose();
-
-            if (sender is IClassicDesktopStyleApplicationLifetime desktop)
-                await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             Log.Error(ex, "Error during application shutdown");
+            Volatile.Write(ref _shutdownReady, 1);
         }
     }
 

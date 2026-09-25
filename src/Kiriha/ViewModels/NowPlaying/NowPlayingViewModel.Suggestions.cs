@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -7,6 +7,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Models;
+using Kiriha.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;
@@ -30,14 +31,18 @@ public partial class NowPlayingViewModel
         {
             MatchedAnime = suggestion;
             IsManuallyMapped = true;
+            if (suggestion.IsMissingDetails)
+            {
+                EnsureFullDetailsSafeAsync(suggestion).SafeFireAndForget("NowPlaying.SelectSuggestion");
+            }
             await _trackingService.ManualMapAsync(suggestion.Id);
-            MatchedAnime = suggestion;
-            IsManuallyMapped = true;
         }
-        catch
+        catch (Exception ex)
         {
             Volatile.Write(ref _pendingManualMatchId, 0);
-            throw;
+            MatchedAnime = null;
+            IsManuallyMapped = false;
+            Log.Error(ex, "Failed to manually map anime {Id}", suggestion.Id);
         }
     }
 

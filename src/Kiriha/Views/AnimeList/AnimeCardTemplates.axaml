@@ -3,9 +3,6 @@
                     x:Class="Kiriha.Views.AnimeList.AnimeCardTemplates">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://Kiriha/Views/AnimeList/AnimeCardFloatingMagazineTemplate.axaml"/>
-        <ResourceInclude Source="avares://Kiriha/Views/AnimeList/AnimeCardWideTemplate.axaml"/>
-        <ResourceInclude Source="avares://Kiriha/Views/AnimeList/AnimeCardMinimalTemplate.axaml"/>
         <ResourceInclude Source="avares://Kiriha/Views/AnimeList/AnimeCardPosterFirstTemplate.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 
@@ -13,25 +10,10 @@
     <SolidColorBrush x:Key="AnimeCardRewatchingBadgeBackground" Color="#2E7D32"/>
     <SolidColorBrush x:Key="AnimeCardAiredProgressBackground" Color="#E53935"/>
     <Color x:Key="AnimeCardShadowColor">#AA000000</Color>
-    <SolidColorBrush x:Key="AnimeCardMinimalProgressTrackBackground" Color="#20FFFFFF"/>
-    <SolidColorBrush x:Key="AnimeCardMinimalTextSecondaryForeground" Color="#70FFFFFF"/>
-    <SolidColorBrush x:Key="AnimeCardMinimalTextTertiaryForeground" Color="#A0FFFFFF"/>
 
     <LinearGradientBrush x:Key="AnimeCardBadgeReadabilityGradient" StartPoint="0%,0%" EndPoint="0%,100%">
         <GradientStop Color="#66000000" Offset="0"/>
         <GradientStop Color="#00000000" Offset="1"/>
-    </LinearGradientBrush>
-    
-    <LinearGradientBrush x:Key="AnimeCardMinimalBadgeReadabilityGradient" StartPoint="0%,0%" EndPoint="0%,100%">
-        <GradientStop Color="#55000000" Offset="0"/>
-        <GradientStop Color="#00000000" Offset="1"/>
-    </LinearGradientBrush>
-
-    <LinearGradientBrush x:Key="AnimeCardMinimalOverlayGradient" StartPoint="0%,0%" EndPoint="0%,100%">
-        <GradientStop Color="#00000000" Offset="0"/>
-        <GradientStop Color="#00000000" Offset="0.25"/>
-        <GradientStop Color="#BB000000" Offset="0.6"/>
-        <GradientStop Color="#EE000000" Offset="1"/>
     </LinearGradientBrush>
 
 </ResourceDictionary>

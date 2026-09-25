@@ -14,6 +14,8 @@ public partial class AnimeListViewModel
 
     private void OnAiringTick(object? sender, EventArgs e)
     {
+        if (_isDisposed) return;
+
         // Only items with a future-dated next episode (or recently-aired
         // unconfirmed state, i.e. up to 48 h overdue - see AiringBadgeText)
         // need their countdown re-evaluated. Skipping the rest keeps the

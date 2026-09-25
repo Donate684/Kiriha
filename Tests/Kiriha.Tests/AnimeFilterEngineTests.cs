@@ -73,6 +73,22 @@ public sealed class AnimeFilterEngineTests
     }
 
     [Fact]
+    public void ApplySorting_DateSeasonalSortsChronologicallyWithNullsLast()
+    {
+        var sorted = SampleItems().ApplySorting(AppConstants.Sorting.Date, isSeasonal: true).Select(x => x.Id).ToArray();
+
+        Assert.Equal(new[] { 3, 2, 1, 4 }, sorted);
+    }
+
+    [Fact]
+    public void ApplySorting_DateNonSeasonalSortsDescendingWithNullsLast()
+    {
+        var sorted = SampleItems().ApplySorting(AppConstants.Sorting.Date, isSeasonal: false).Select(x => x.Id).ToArray();
+
+        Assert.Equal(new[] { 1, 2, 3, 4 }, sorted);
+    }
+
+    [Fact]
     public void ApplySorting_TitleFallbackIsStableDefault()
     {
         var sorted = SampleItems().ApplySorting("unknown").Select(x => x.Title).ToArray();

@@ -24,15 +24,15 @@ public static class RatingHelper
             return score switch
             {
                 >= 10 => new RatingOption("10", $"({UIUtils.GetLoc("filters.score.masterpiece")})"),
-                >= 9 => new RatingOption("9", $"({UIUtils.GetLoc("filters.score.excellent")})"),
-                >= 8 => new RatingOption("8", $"({UIUtils.GetLoc("filters.score.very_good")})"),
+                >= 9 => new RatingOption("9", $"({UIUtils.GetLoc("filters.score.amazing")})"),
+                >= 8 => new RatingOption("8", $"({UIUtils.GetLoc("filters.score.great")})"),
                 >= 7 => new RatingOption("7", $"({UIUtils.GetLoc("filters.score.good")})"),
-                >= 6 => new RatingOption("6", $"({UIUtils.GetLoc("filters.score.average")})"),
-                >= 5 => new RatingOption("5", $"({UIUtils.GetLoc("filters.score.mediocre")})"),
-                >= 4 => new RatingOption("4", $"({UIUtils.GetLoc("filters.score.bad")})"),
-                >= 3 => new RatingOption("3", $"({UIUtils.GetLoc("filters.score.very_bad")})"),
-                >= 2 => new RatingOption("2", $"({UIUtils.GetLoc("filters.score.horrible")})"),
-                >= 1 => new RatingOption("1", $"({UIUtils.GetLoc("filters.score.appalling")})"),
+                >= 6 => new RatingOption("6", $"({UIUtils.GetLoc("filters.score.fine")})"),
+                >= 5 => new RatingOption("5", $"({UIUtils.GetLoc("filters.score.average")})"),
+                >= 4 => new RatingOption("4", $"({UIUtils.GetLoc("filters.score.weak")})"),
+                >= 3 => new RatingOption("3", $"({UIUtils.GetLoc("filters.score.bad")})"),
+                >= 2 => new RatingOption("2", $"({UIUtils.GetLoc("filters.score.terrible")})"),
+                >= 1 => new RatingOption("1", $"({UIUtils.GetLoc("filters.score.bottom")})"),
                 _ => new RatingOption("-", "")
             };
         }

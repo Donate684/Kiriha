@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -67,6 +67,14 @@ public partial class PlayerViewModel
     {
         if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SeekForwardHotkey = NormalizeHotkey(value, "Right"), SettingsSection.Player);
+    }
+    partial void OnSubtitleDelayEarlierHotkeyChanged(string value)
+    {
+        SaveHotkey(value, "Z", (settings, hotkey) => settings.SubtitleDelayEarlierHotkey = hotkey);
+    }
+    partial void OnSubtitleDelayLaterHotkeyChanged(string value)
+    {
+        SaveHotkey(value, "X", (settings, hotkey) => settings.SubtitleDelayLaterHotkey = hotkey);
     }
 
     private void SaveHotkey(string value, string fallback, Action<AppSettings.PlayerConfig, string> update)

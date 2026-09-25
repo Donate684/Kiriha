@@ -20,6 +20,7 @@ public partial class PlayerViewModel
         _playback.PlaybackEnded += OnPlayerPlaybackEnded;
         _playback.PlaybackStateChanged += OnPlayerPlaybackStateChanged;
         _playback.TracksChanged += OnPlayerTracksChanged;
+        _playback.SubtitleDelayChanged += OnPlayerSubtitleDelayChanged;
         _playback.SetVolume(Volume);
         _playback.SetSpeed(PlaybackSpeed);
         _playback.SetAudioNormalization(NormalizeAudio);
@@ -72,6 +73,7 @@ public partial class PlayerViewModel
             ResolveAndApplyMetadata(videoUrl);
 
         ApplyTimelineSnapshot(_timeline.Reset());
+        _subtitleDelay = 0;
         IsPlaying = PlayerAutoPlay;
         IsLoading = true;
         HasPlaybackError = false;

@@ -170,7 +170,7 @@ public partial class TorrentsViewModel
         _filterJudas = _settingsService.Current.Torrents.FilterJudas;
         _filterHevc = _settingsService.Current.Torrents.FilterHevc;
         _filter1080p = _settingsService.Current.Torrents.Filter1080p;
-        _filtersPerTitle = true;
+        _filtersPerTitle = _settingsService.Current.Torrents.FiltersPerTitle;
     }
 
     private void PersistFilter(string name, bool value)

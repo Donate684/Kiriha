@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -55,12 +55,15 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     private readonly ShikiMetadataService _shikiMetadataService;
     private readonly IMalApiService _malApi;
 
-    [ObservableProperty] private ParsedMedia? _currentMedia;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayEpisodeNumber))]
+    private ParsedMedia? _currentMedia;
     
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotInList))]
     [NotifyPropertyChangedFor(nameof(AllAlternativeTitles))]
     [NotifyPropertyChangedFor(nameof(HasAlternativeTitles))]
+    [NotifyPropertyChangedFor(nameof(DisplayEpisodeNumber))]
     private AnimeEntity? _matchedAnime;
     
     [ObservableProperty] private AnimeEntity? _pendingMatch;
@@ -69,8 +72,14 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     [ObservableProperty] private bool _isSearching;
 
     [ObservableProperty] private bool _isManuallyMapped;
+    [ObservableProperty] private bool _isLoadingDetails;
 
     public bool IsNotInList => MatchedAnime != null && MatchedAnime.Status == UserAnimeStatus.None;
+
+    public string DisplayEpisodeNumber =>
+        !string.IsNullOrWhiteSpace(CurrentMedia?.Episode)
+            ? CurrentMedia.Episode
+            : (MatchedAnime?.TotalEpisodes == 1 ? "1" : "?");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplayStatus))]

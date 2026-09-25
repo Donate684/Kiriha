@@ -130,7 +130,8 @@ public partial class TrackingService
 
             if (matched is null)
             {
-                var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled);
+                var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled)
+                    ?? System.Linq.Enumerable.FirstOrDefault(_trackers.OfType<IMalApiService>());
                 if (activeTracker != null)
                 {
                     try
@@ -138,12 +139,33 @@ public partial class TrackingService
                         var fetched = await activeTracker.GetAnimeDetailsAsync(animeId);
                         if (fetched != null)
                         {
-                            matched = new AnimeEntity { Id = fetched.Id, Title = fetched.Title, RussianTitle = fetched.RussianTitle, EnglishTitle = fetched.EnglishTitle, TotalEpisodes = fetched.TotalEpisodes, Progress = fetched.Progress, MainPictureUrl = fetched.MainPictureUrl, Status = UserAnimeStatus.None }; // Ensure it's not scrobbled or auto-added incorrectly
+                            matched = fetched.Clone();
+                            matched.Status = UserAnimeStatus.None; // Ensure it's not scrobbled or auto-added incorrectly
                         }
                     }
                     catch (Exception ex)
                     {
                         Serilog.Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId}", animeId);
+                    }
+                }
+            }
+            else if (matched.IsMissingDetails)
+            {
+                var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled)
+                    ?? System.Linq.Enumerable.FirstOrDefault(_trackers.OfType<IMalApiService>());
+                if (activeTracker != null)
+                {
+                    try
+                    {
+                        var fetched = await activeTracker.GetAnimeDetailsAsync(animeId);
+                        if (fetched != null)
+                        {
+                            matched.MergeFullDetails(fetched);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Serilog.Log.Warning(ex, "Failed to enrich anime details for ID {AnimeId}", animeId);
                     }
                 }
             }

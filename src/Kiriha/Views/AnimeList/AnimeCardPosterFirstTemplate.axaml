@@ -17,19 +17,35 @@
                     <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
                     <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"/>
 
-                    <!-- Airing + rewatching badges (top-left) -->
+                    <!-- Top-Left: date + airing + rewatching pills -->
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
-                                Margin="9" Orientation="Horizontal" Spacing="4">
-                        <Border Classes="Badge" Background="{Binding Presentation.AiringBadgeColor}"
-                                IsVisible="{Binding Presentation.AiringBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                            <TextBlock Text="{Binding Presentation.AiringBadgeText}"
-                                       FontSize="9" Foreground="White" FontWeight="SemiBold"/>
+                                Margin="9" Orientation="Vertical" Spacing="3">
+                        <Border Classes="Badge DateBadge"
+                                ToolTip.Tip="{DynamicResource l.schedule.premiere}">
+                            <Border.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="Presentation.HasAiringDate"/>
+                                    <Binding Path="$parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).IsDateSort"/>
+                                </MultiBinding>
+                            </Border.IsVisible>
+                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                <material:MaterialIcon Kind="CalendarOutline" Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Presentation.AiringDateDisplay}"
+                                           FontSize="8.5" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
-                        <Border Classes="Badge" Background="{DynamicResource AnimeCardRewatchingBadgeBackground}"
-                                IsVisible="{Binding IsRewatching}">
-                            <TextBlock Text="{DynamicResource l.anime.status.rewatching}"
-                                       FontSize="9" Foreground="White" FontWeight="SemiBold"/>
-                        </Border>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Border Classes="Badge" Background="{Binding Presentation.AiringBadgeColor}"
+                                    IsVisible="{Binding Presentation.AiringBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Text="{Binding Presentation.AiringBadgeText}"
+                                           FontSize="9" Foreground="White" FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Classes="Badge" Background="{DynamicResource AnimeCardRewatchingBadgeBackground}"
+                                    IsVisible="{Binding IsRewatching}">
+                                <TextBlock Text="{DynamicResource l.anime.status.rewatching}"
+                                           FontSize="9" Foreground="White" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Score badge (top-right) -->

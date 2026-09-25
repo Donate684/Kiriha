@@ -14,7 +14,7 @@ namespace Kiriha.ViewModels.Seasonal;
 public partial class SeasonalViewModel
 {
     private List<AnimeEntity> _allSeasonalItems = new();
-    private Dictionary<int, UserAnimeStatus> _userAnimeStore = new();
+    private volatile IReadOnlyDictionary<int, UserAnimeStatus> _userAnimeStore = new Dictionary<int, UserAnimeStatus>();
     private HashSet<int> _hiddenSeasonalIds = new();
     private static readonly ConcurrentDictionary<(int, string), List<AnimeEntity>> _seasonalCache = new();
     private static int _diskHydrated;

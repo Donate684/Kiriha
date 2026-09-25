@@ -59,7 +59,8 @@ public class MediaMatchingPipeline
             }
             if (matched is null)
             {
-                var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled);
+                var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled)
+                    ?? _trackers.OfType<IMalApiService>().FirstOrDefault();
                 if (activeTracker != null)
                 {
                     try
@@ -67,12 +68,33 @@ public class MediaMatchingPipeline
                         var fetched = await activeTracker.GetAnimeDetailsAsync(malId.Value);
                         if (fetched != null)
                         {
-                            matched = new AnimeEntity { Id = fetched.Id, Title = fetched.Title, RussianTitle = fetched.RussianTitle, EnglishTitle = fetched.EnglishTitle, TotalEpisodes = fetched.TotalEpisodes, Progress = fetched.Progress, MainPictureUrl = fetched.MainPictureUrl, Status = UserAnimeStatus.None };
+                            matched = fetched.Clone();
+                            matched.Status = UserAnimeStatus.None;
                         }
                     }
                     catch (Exception ex)
                     {
                         Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId}", malId.Value);
+                    }
+                }
+            }
+            else if (matched.IsMissingDetails)
+            {
+                var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled)
+                    ?? _trackers.OfType<IMalApiService>().FirstOrDefault();
+                if (activeTracker != null)
+                {
+                    try
+                    {
+                        var fetched = await activeTracker.GetAnimeDetailsAsync(malId.Value);
+                        if (fetched != null)
+                        {
+                            matched.MergeFullDetails(fetched);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "Failed to enrich anime details for ID {AnimeId}", malId.Value);
                     }
                 }
             }
