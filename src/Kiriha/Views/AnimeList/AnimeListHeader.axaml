@@ -1,10 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+             xmlns:genres="using:Kiriha.Core.Domain.Models.Genres"
+             xmlns:formats="using:Kiriha.Core.Domain.Models.Formats"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.AnimeList.AnimeListHeader"
-             x:DataType="vmAnimeList:AnimeListViewModel">
+             x:DataType="vmAnimeList:AnimeListViewModel"
+             x:Name="AnimeListHeaderRoot">
     <UserControl.Resources>
         <conv:LocConverter x:Key="LocConverter"/>
     </UserControl.Resources>
@@ -12,17 +15,196 @@
         <Border Grid.Row="0" Margin="20,4,20,12" Padding="8,6" Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
                 BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
             <Grid ColumnDefinitions="*, Auto, Auto, Auto">
-                <!-- Search -->
-                <TextBox Grid.Column="0" PlaceholderText="{DynamicResource l.common.actions.search}"
-                         Text="{Binding SearchQuery}"
-                         VerticalAlignment="Center" Height="34"
-                         Background="Transparent" BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         FontSize="13" Padding="8,0">
-                    <TextBox.InnerRightContent>
-                        <material:MaterialIcon Kind="Magnify" Width="18" Height="18" Margin="0,0,8,0" Opacity="0.3"/>
-                    </TextBox.InnerRightContent>
-                </TextBox>
+                <!-- Discord-Style Search Container -->
+                <Grid x:Name="SearchBarContainer" Grid.Column="0" VerticalAlignment="Center">
+                    <Grid ColumnDefinitions="Auto, *">
+                        <!-- Active Tag Chips (Formats & Genres) -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Margin="4,0,2,0">
+                            <!-- Format Chips -->
+                            <ItemsControl ItemsSource="{Binding SelectedFormats}"
+                                          VerticalAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="formats:FormatDefinition">
+                                        <Border Background="{DynamicResource SystemAccentColorLight3}"
+                                                BorderBrush="{DynamicResource SystemAccentColor}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="7,2,3,2"
+                                                VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <material:MaterialIcon Kind="MovieOutline" Width="12" Height="12"
+                                                                       Foreground="{DynamicResource SystemAccentColor}"
+                                                                       VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding RussianName}" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <Button Command="{Binding #AnimeListHeaderRoot.((vmAnimeList:AnimeListViewModel)DataContext).RemoveFormatTagCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent" BorderThickness="0"
+                                                        Padding="1" Width="16" Height="16"
+                                                        CornerRadius="8"
+                                                        Cursor="Hand" VerticalAlignment="Center">
+                                                    <material:MaterialIcon Kind="Close" Width="10" Height="10" Opacity="0.7"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Genre Chips -->
+                            <ItemsControl ItemsSource="{Binding SelectedGenres}"
+                                          VerticalAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="genres:GenreDefinition">
+                                        <Border Background="{DynamicResource SystemAccentColorLight3}"
+                                                BorderBrush="{DynamicResource SystemAccentColor}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="7,2,3,2"
+                                                VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <material:MaterialIcon Kind="TagOutline" Width="12" Height="12"
+                                                                       Foreground="{DynamicResource SystemAccentColor}"
+                                                                       VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding RussianName}" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <Button Command="{Binding #AnimeListHeaderRoot.((vmAnimeList:AnimeListViewModel)DataContext).RemoveGenreTagCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent" BorderThickness="0"
+                                                        Padding="1" Width="16" Height="16"
+                                                        CornerRadius="8"
+                                                        Cursor="Hand" VerticalAlignment="Center">
+                                                    <material:MaterialIcon Kind="Close" Width="10" Height="10" Opacity="0.7"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- Search Input -->
+                        <TextBox x:Name="SearchBox" Grid.Column="1"
+                                 PlaceholderText="{DynamicResource l.common.actions.search}"
+                                 Text="{Binding SearchQuery, Mode=TwoWay}"
+                                 VerticalAlignment="Center" Height="34"
+                                 Background="Transparent" BorderThickness="0"
+                                 VerticalContentAlignment="Center"
+                                 FontSize="13" Padding="6,0"
+                                 KeyDown="SearchBox_KeyDown">
+                            <TextBox.InnerRightContent>
+                                <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
+                                    <Button Command="{Binding ClearSearchCommand}"
+                                            IsVisible="{Binding HasSearchOrFilters}"
+                                            Background="Transparent" BorderThickness="0"
+                                            Padding="3" CornerRadius="6"
+                                            Cursor="Hand" VerticalAlignment="Center"
+                                            ToolTip.Tip="{DynamicResource l.common.actions.clear}">
+                                        <material:MaterialIcon Kind="CloseCircleOutline" Width="16" Height="16" Opacity="0.45"/>
+                                    </Button>
+                                    <material:MaterialIcon Kind="Magnify" Width="18" Height="18" Margin="2,0,4,0" Opacity="0.3" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </TextBox.InnerRightContent>
+                        </TextBox>
+                    </Grid>
+
+                    <!-- Discord-Style Auto-Suggestion Popup -->
+                    <Popup IsOpen="{Binding IsSuggestionsOpen, Mode=TwoWay}"
+                           PlacementTarget="{Binding #SearchBarContainer}"
+                           Placement="Bottom"
+                           HorizontalOffset="0"
+                           VerticalOffset="6"
+                           IsLightDismissEnabled="True">
+                        <Border Background="{DynamicResource LuxuryFlyoutBackground}"
+                                BorderBrush="{DynamicResource LuxuryFlyoutBorder}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                MinWidth="320"
+                                MaxWidth="420"
+                                BoxShadow="0 8 28 0 #45000000"
+                                Padding="6">
+                            <StackPanel Spacing="3">
+                                <Grid ColumnDefinitions="*, Auto" Margin="8,4,8,4">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5">
+                                        <material:MaterialIcon Kind="TagMultipleOutline" Width="13" Height="13"
+                                                               Foreground="{DynamicResource SystemAccentColor}"
+                                                               VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource l.anime.labels.type}"
+                                                   FontSize="11" FontWeight="Bold" Opacity="0.6"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Text="/" FontSize="11" Opacity="0.4" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource l.anime.labels.genres}"
+                                                   FontSize="11" FontWeight="Bold" Opacity="0.6"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Opacity="0.35" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="KeyboardReturn" Width="13" Height="13" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <ListBox ItemsSource="{Binding TagSuggestions}"
+                                         SelectedItem="{Binding SelectedSuggestion}"
+                                         Classes="SuggestionList"
+                                         Background="Transparent" BorderThickness="0"
+                                         MaxHeight="260">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vmAnimeList:SearchTagSuggestionItem">
+                                            <Button Command="{Binding #AnimeListHeaderRoot.((vmAnimeList:AnimeListViewModel)DataContext).AddTagSuggestionCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Padding="6,5" CornerRadius="8"
+                                                    Cursor="Hand">
+                                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                                    <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7"
+                                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                                            Margin="0,0,8,0" VerticalAlignment="Center">
+                                                        <Panel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <material:MaterialIcon Kind="MovieOutline" Width="14" Height="14"
+                                                                                   Foreground="{DynamicResource SystemAccentColor}"
+                                                                                   IsVisible="{Binding IsFormat}"/>
+                                                            <material:MaterialIcon Kind="TagOutline" Width="14" Height="14"
+                                                                                   Foreground="{DynamicResource SystemAccentColor}"
+                                                                                   IsVisible="{Binding IsGenre}"/>
+                                                        </Panel>
+                                                    </Border>
+
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                            <TextBlock Text="{Binding Subtitle}" FontSize="11" Opacity="0.5"
+                                                                       VerticalAlignment="Bottom"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <Border Grid.Column="2" IsVisible="{Binding HasCount}"
+                                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                                            CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding DisplayCount}" FontSize="11" Opacity="0.7" FontWeight="SemiBold"/>
+                                                    </Border>
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
 
                 <!-- MediaKind Slider Toggle -->
                 <ToggleButton Grid.Column="1" Margin="12,0" VerticalAlignment="Center"
@@ -132,24 +314,93 @@
                         </StackPanel>
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
-                                <StackPanel Spacing="6" Margin="10">
-                                            <!-- NSFW toggle row -->
-                                            <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterNsfw}">
-                                            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-                                                <Border Grid.Column="0" Width="22" Height="22" CornerRadius="6"
-                                                        Background="{DynamicResource FilterRedTintBrush}" VerticalAlignment="Center" Margin="0,0,8,0">
-                                                    <material:MaterialIcon Kind="AlertOctagonOutline" Width="13" Height="13"
-                                                                          Foreground="{DynamicResource FilterRedBrush}"
-                                                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.visibility.adult_only}"
-                                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                                <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
-                                                    <Ellipse Classes="SwitchThumb"/>
-                                                </Border>
-                                            </Grid>
-                                            </ToggleButton>
+                                <StackPanel Spacing="8" Margin="10">
+                                    <!-- NSFW toggle row -->
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterNsfw}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                            <Border Grid.Column="0" Width="22" Height="22" CornerRadius="6"
+                                                    Background="{DynamicResource FilterRedTintBrush}" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <material:MaterialIcon Kind="AlertOctagonOutline" Width="13" Height="13"
+                                                                      Foreground="{DynamicResource FilterRedBrush}"
+                                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.visibility.adult_only}"
+                                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+
+                                    <!-- Types Header -->
+                                    <Grid ColumnDefinitions="*, Auto" Margin="2,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <material:MaterialIcon Kind="MovieOutline" Width="14" Height="14" Opacity="0.6" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{DynamicResource l.anime.labels.type}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedFormats.Count, StringFormat='({0})'}"
+                                                   IsVisible="{Binding HasSelectedFormats}"
+                                                   FontSize="11" Foreground="{DynamicResource SystemAccentColor}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Types Quick-Pick Chips -->
+                                    <ItemsControl ItemsSource="{Binding FormatFilterItems}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vmAnimeList:FormatFilterItemViewModel">
+                                                <ToggleButton Content="{Binding DisplayName}"
+                                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                              Classes="GenreChipToggle"
+                                                              Margin="0,0,4,4"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Divider -->
+                                    <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,2"/>
+
+                                    <!-- Genres Header -->
+                                    <Grid ColumnDefinitions="*, Auto" Margin="2,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <material:MaterialIcon Kind="TagOutline" Width="14" Height="14" Opacity="0.6" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{DynamicResource l.anime.labels.genres}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding SelectedGenres.Count, StringFormat='({0})'}"
+                                                   IsVisible="{Binding HasSelectedGenres}"
+                                                   FontSize="11" Foreground="{DynamicResource SystemAccentColor}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Genres Quick-Pick Scrollable Chips -->
+                                    <ScrollViewer MaxHeight="160" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding GenreFilterItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vmAnimeList:GenreFilterItemViewModel">
+                                                    <ToggleButton Content="{Binding DisplayName}"
+                                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                  Classes="GenreChipToggle"
+                                                                  Margin="0,0,4,4"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <!-- Clear filters button -->
+                                    <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,2"
+                                            IsVisible="{Binding IsFilterActive}"/>
+                                    <Button Command="{Binding ClearFiltersCommand}"
+                                            IsVisible="{Binding IsFilterActive}"
+                                            Classes="FilterReset"
+                                            Content="{DynamicResource l.common.actions.clear}"/>
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>

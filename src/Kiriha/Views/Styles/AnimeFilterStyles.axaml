@@ -4,8 +4,8 @@
         <!-- ═══ Filter flyout presenter (Luxury/Glass style) ═══ -->
         <Style Selector="FlyoutPresenter.FilterFlyout">
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="MinWidth" Value="232"/>
-            <Setter Property="MaxWidth" Value="260"/>
+            <Setter Property="MinWidth" Value="250"/>
+            <Setter Property="MaxWidth" Value="320"/>
             <Setter Property="CornerRadius" Value="14"/>
             <!-- Semi-transparent background + shadow for depth -->
             <Setter Property="Background" Value="{DynamicResource LuxuryFlyoutBackground}"/>
@@ -108,6 +108,57 @@
         </Style>
         <Style Selector="Button.FilterReset:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource AccentFillColorSelectedTextBackground}"/>
+        </Style>
+
+        <!-- ═══ Genre suggestion list inside Discord-style search popup ═══ -->
+        <Style Selector="ListBox.SuggestionList">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.SuggestionList ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBox.SuggestionList ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+        </Style>
+        <Style Selector="ListBox.SuggestionList ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+        </Style>
+
+        <!-- ═══ Genre chip toggle buttons inside Filters flyout ═══ -->
+        <Style Selector="ToggleButton.GenreChipToggle">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ToggleButton.GenreChipToggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+        </Style>
+        <Style Selector="ToggleButton.GenreChipToggle:checked">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="ToggleButton.GenreChipToggle:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="TextBlock.Foreground" Value="White"/>
         </Style>
 
 </Styles>

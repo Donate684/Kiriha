@@ -79,6 +79,8 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         _sortBy = _settingsService.Current.UI.ListSortBy;
         _prioritizeNewEpisodes = _settingsService.Current.UI.ListPrioritizeNewEpisodes;
         IsFilterActive = _filterNsfw;
+        InitializeGenreFilterItems();
+        InitializeFormatFilterItems();
 
         _filterRefreshDebouncer = new Kiriha.Utils.Async.Debouncer(
             TimeSpan.FromMilliseconds(180),

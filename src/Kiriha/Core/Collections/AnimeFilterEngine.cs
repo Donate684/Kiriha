@@ -7,7 +7,10 @@ using Kiriha.Core;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Models.Genres;
 using Kiriha.Models;
+
+using Kiriha.Core.Domain.Models.Formats;
 
 namespace Kiriha.Core;
 
@@ -16,15 +19,96 @@ namespace Kiriha.Core;
 /// </summary>
 public static class AnimeFilterEngine
 {
-    public static IEnumerable<AnimeEntity> ApplySearch(this IEnumerable<AnimeEntity> query, string? searchQuery)
+    public static IEnumerable<AnimeEntity> ApplySearch(
+        this IEnumerable<AnimeEntity> query,
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys = null)
+        => ApplySearch(query, searchQuery, activeGenreKeys, null);
+
+    public static IEnumerable<AnimeEntity> ApplySearch(
+        this IEnumerable<AnimeEntity> query,
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys,
+        IReadOnlyCollection<string>? activeFormatKeys)
     {
-        if (string.IsNullOrWhiteSpace(searchQuery)) return query;
+        var parsed = AnimeSearchQueryParser.Parse(searchQuery);
+
+        HashSet<string>? requiredGenreKeys = null;
+        if (activeGenreKeys != null && activeGenreKeys.Count > 0)
+        {
+            requiredGenreKeys = new HashSet<string>(activeGenreKeys, StringComparer.OrdinalIgnoreCase);
+        }
+        if (parsed.ExtractedGenreKeys.Count > 0)
+        {
+            requiredGenreKeys ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var k in parsed.ExtractedGenreKeys)
+            {
+                requiredGenreKeys.Add(k);
+            }
+        }
+
+        HashSet<string>? requiredFormatKeys = null;
+        if (activeFormatKeys != null && activeFormatKeys.Count > 0)
+        {
+            requiredFormatKeys = new HashSet<string>(activeFormatKeys, StringComparer.OrdinalIgnoreCase);
+        }
+        if (parsed.ExtractedFormatKeys.Count > 0)
+        {
+            requiredFormatKeys ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var k in parsed.ExtractedFormatKeys)
+            {
+                requiredFormatKeys.Add(k);
+            }
+        }
+
+        bool hasTitleSearch = parsed.HasTitleSearch;
+        string? titleSearch = hasTitleSearch ? parsed.TitleSearchText : null;
+
+        if (requiredGenreKeys == null && requiredFormatKeys == null && !hasTitleSearch)
+        {
+            return query;
+        }
 
         return query.Where(x =>
-            (x.Title?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) == true) ||
-            (x.RussianTitle?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) == true) ||
-            (x.EnglishTitle?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) == true) ||
-            (x.JapaneseTitle?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) == true));
+        {
+            if (requiredFormatKeys != null && requiredFormatKeys.Count > 0)
+            {
+                bool matchesFormat = false;
+                foreach (var req in requiredFormatKeys)
+                {
+                    if (FormatCatalog.MatchesFormat(x.Type, req))
+                    {
+                        matchesFormat = true;
+                        break;
+                    }
+                }
+                if (!matchesFormat) return false;
+            }
+
+            if (requiredGenreKeys != null && requiredGenreKeys.Count > 0)
+            {
+                if (x.Genres == null || x.Genres.Count == 0) return false;
+
+                foreach (var req in requiredGenreKeys)
+                {
+                    bool hasGenre = x.Genres.Any(g =>
+                        (GenreCatalog.TryFindGenre(g, out var def) && def != null && string.Equals(def.Key, req, StringComparison.OrdinalIgnoreCase)) ||
+                        string.Equals(GenreCatalog.NormalizeLookup(g), req, StringComparison.OrdinalIgnoreCase));
+
+                    if (!hasGenre) return false;
+                }
+            }
+
+            if (titleSearch != null)
+            {
+                return (x.Title?.Contains(titleSearch, StringComparison.OrdinalIgnoreCase) == true) ||
+                       (x.RussianTitle?.Contains(titleSearch, StringComparison.OrdinalIgnoreCase) == true) ||
+                       (x.EnglishTitle?.Contains(titleSearch, StringComparison.OrdinalIgnoreCase) == true) ||
+                       (x.JapaneseTitle?.Contains(titleSearch, StringComparison.OrdinalIgnoreCase) == true);
+            }
+
+            return true;
+        });
     }
 
     /// <summary>

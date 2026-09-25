@@ -95,6 +95,17 @@ public static class AppConstants
         public const string Ona = "ona";
         public const string Special = "special";
         public const string TvSpecial = "tv_special";
+
+        public static readonly string[] TagPrefixes = ["type:", "format:", "тип:", "формат:"];
+
+        public static readonly Models.Formats.FormatDefinition[] Definitions =
+        [
+            new(Movie, "Movie", "Фильм", ["фильм", "мувик", "полнометражка", "полнометражный", "film"]),
+            new(Ova, "OVA", "OVA", ["ова", "овашка", "овашka"]),
+            new(Ona, "ONA", "ONA", ["она", "веб"]),
+            new(Special, "Special", "Спешл", ["спешл", "спецвыпуск", "тв_спешл", "tv_special"]),
+            new(Tv, "TV Series", "ТВ Сериал", ["тв", "сериал", "тв сериал", "series"]),
+        ];
     }
 
     public static class Sorting
@@ -142,5 +153,95 @@ public static class AppConstants
     {
         public const string BlockedByRoskomnadzor = "Заблокировано по требованию Роскомнадзора";
         public const string CyrillicChe = "Ч";
+    }
+
+    public static class Genres
+    {
+        public static readonly string[] TagPrefixes = ["tag:", "genre:", "тег:", "жанр:"];
+
+        public static readonly Models.Genres.GenreDefinition[] Definitions =
+        [
+            new("ecchi", "Ecchi", "Эччи", ["этти", "етти", "echhi", "эти"]),
+            new("drama", "Drama", "Драма", ["драматическое", "dram"]),
+            new("comedy", "Comedy", "Комедия", ["юмор", "комедии"]),
+            new("action", "Action", "Экшен", ["экшн", "боевик"]),
+            new("adventure", "Adventure", "Приключения", ["приключение"]),
+            new("fantasy", "Fantasy", "Фэнтези", ["фентези"]),
+            new("romance", "Romance", "Романтика", ["романтическое", "любовь"]),
+            new("slice_of_life", "Slice of Life", "Повседневность", ["слайс", "slice"]),
+            new("sci_fi", "Sci-Fi", "Научная фантастика", ["scifi", "sci fi", "сайфай", "фантастика"]),
+            new("supernatural", "Supernatural", "Сверхъестественное", ["сверхъестесственное"]),
+            new("mystery", "Mystery", "Мистика", ["тайна"]),
+            new("horror", "Horror", "Ужасы", ["хоррор"]),
+            new("psychological", "Psychological", "Психологическое", ["психология"]),
+            new("thriller", "Thriller", "Триллер"),
+            new("isekai", "Isekai", "Исекай", ["исэкай", "попаданцы"]),
+            new("harem", "Harem", "Гарем"),
+            new("mecha", "Mecha", "Меха", ["роботы", "мех"]),
+            new("military", "Military", "Военное", ["война", "армия"]),
+            new("music", "Music", "Музыка", ["музыкальное"]),
+            new("parody", "Parody", "Пародия"),
+            new("school", "School", "Школа", ["школьное", "школьная"]),
+            new("space", "Space", "Космос", ["космическое"]),
+            new("sports", "Sports", "Спорт", ["спортивное"]),
+            new("super_power", "Super Power", "Суперспособности", ["суперсила", "способности"]),
+            new("vampire", "Vampire", "Вампиры", ["вампир"]),
+            new("historical", "Historical", "Историческое", ["история"]),
+            new("gourmet", "Gourmet", "Кулинария", ["еда", "готовка"]),
+            new("magic", "Magic", "Магия", ["волшебство", "магическое"]),
+            new("martial_arts", "Martial Arts", "Боевые искусства", ["драки"]),
+            new("shounen", "Shounen", "Сёнен", ["сенен", "shonen"]),
+            new("shoujo", "Shoujo", "Сёдзё", ["седзе", "shojo"]),
+            new("seinen", "Seinen", "Сэйнэн", ["сейнен"]),
+            new("josei", "Josei", "Дзёсей", ["дзесей"]),
+            new("police", "Police", "Полиция", ["полицейские"]),
+            new("samurai", "Samurai", "Самураи", ["самурай"]),
+            new("boys_love", "Boys Love", "Сёнен-ай", ["сенен-ай", "сенен ай", "bl", "яой"]),
+            new("girls_love", "Girls Love", "Сёдзё-ай", ["седзе-ай", "седзе ай", "gl", "юри"]),
+            new("kids", "Kids", "Детское", ["дети"]),
+            new("erotica", "Erotica", "Эротика"),
+            new("award_winning", "Award Winning", "Удостоено наград", ["награды"]),
+            new("avant_garde", "Avant Garde", "Авангард"),
+            new("suspense", "Suspense", "Саспенс"),
+            new("hentai", "Hentai", "Хентай"),
+            new("adult_cast", "Adult Cast", "Взрослые персонажи", ["взрослые"]),
+            new("anthropomorphic", "Anthropomorphic", "Антропоморфизм", ["фурри", "зверолюди"]),
+            new("cgdct", "CGDCT", "Милые девочки делают милые вещи", ["милые девочки", "кют"]),
+            new("childcare", "Childcare", "Воспитание детей", ["воспитание"]),
+            new("combat_sports", "Combat Sports", "Единоборства"),
+            new("crossdressing", "Crossdressing", "Кроссдрессинг", ["трапы", "переодевание"]),
+            new("delinquents", "Delinquents", "Хулиганы", ["гопники", "бандиты"]),
+            new("detective", "Detective", "Детектив", ["расследование"]),
+            new("educational", "Educational", "Образовательное", ["обучающее"]),
+            new("gag_humor", "Gag Humor", "Гэг-юмор", ["гэги"]),
+            new("gore", "Gore", "Гуро", ["расчлененка", "кровь"]),
+            new("high_stakes_game", "High Stakes Game", "Игры с высокими ставками", ["азартные игры"]),
+            new("idols_female", "Idols (Female)", "Айдолы (девушки)", ["айдолы"]),
+            new("idols_male", "Idols (Male)", "Айдолы (парни)"),
+            new("iyashikei", "Iyashikei", "Иясикэй", ["исцеление"]),
+            new("love_polygon", "Love Polygon", "Любовный многоугольник", ["треугольник"]),
+            new("love_status_quo", "Love Status Quo", "Любовный статус-кво"),
+            new("magical_sex_shift", "Magical Sex Shift", "Магическая смена пола", ["смена пола"]),
+            new("mahou_shoujo", "Mahou Shoujo", "Махо-сёдзё", ["махо седзе", "волшебницы"]),
+            new("organized_crime", "Organized Crime", "Криминал", ["мафия", "якудза"]),
+            new("otaku_culture", "Otaku Culture", "Отаку-культура", ["отаку"]),
+            new("performing_arts", "Performing Arts", "Сценическое искусство", ["театр", "сцена"]),
+            new("pets", "Pets", "Питомцы", ["животные"]),
+            new("racing", "Racing", "Гонки", ["авто"]),
+            new("reincarnation", "Reincarnation", "Перерождение", ["реинкарнация"]),
+            new("reverse_harem", "Reverse Harem", "Обратный гарем", ["реверс-гарем"]),
+            new("showbiz", "Showbiz", "Шоу-бизнес"),
+            new("strategy_game", "Strategy Game", "Стратегические игры", ["стратегия"]),
+            new("survival", "Survival", "Выживание", ["выживач"]),
+            new("team_sports", "Team Sports", "Командные виды спорта", ["командный спорт"]),
+            new("time_travel", "Time Travel", "Путешествия во времени", ["таймтревел", "петля времени"]),
+            new("urban_fantasy", "Urban Fantasy", "Городское фэнтези", ["городское фентези"]),
+            new("video_game", "Video Game", "Видеоигры", ["игры", "гейминг"]),
+            new("villainess", "Villainess", "Злодейка", ["злодейки"]),
+            new("visual_arts", "Visual Arts", "Изобразительное искусство", ["рисование", "арт"]),
+            new("workplace", "Workplace", "Рабочие будни", ["работа", "офис"]),
+            new("medical", "Medical", "Медицина", ["врачи"]),
+            new("mythology", "Mythology", "Мифология", ["мифы"])
+        ];
     }
 }

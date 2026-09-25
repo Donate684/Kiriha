@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Models.Genres;
 using Kiriha.Models;
 
 namespace Kiriha.Core;
@@ -88,7 +90,9 @@ public sealed partial class AnimeCollectionProjection
             or nameof(AnimeEntity.Rating)
             or nameof(AnimeEntity.Status)
             or nameof(AnimeEntity.IsRewatching)
-            or nameof(AnimeEntity.MediaKind);
+            or nameof(AnimeEntity.MediaKind)
+            or nameof(AnimeEntity.Genres)
+            or nameof(AnimeEntity.Type);
     }
 
     private static UserAnimeStatus GetListStatus(AnimeEntity item)
@@ -109,6 +113,27 @@ public sealed partial class AnimeCollectionProjection
         ]));
     }
 
+    private static IReadOnlySet<string> ComputeGenreKeys(AnimeEntity item)
+    {
+        if (item.Genres == null || item.Genres.Count == 0) return FrozenSet<string>.Empty;
+
+        var keys = new HashSet<string>(item.Genres.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var g in item.Genres)
+        {
+            if (GenreCatalog.TryFindGenre(g, out var def) && def != null)
+            {
+                keys.Add(def.Key);
+            }
+            else
+            {
+                var norm = GenreCatalog.NormalizeLookup(g);
+                if (norm.Length > 0) keys.Add(norm);
+            }
+        }
+
+        return keys.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    }
+
     private static bool ComputeIsNsfw(AnimeEntity item) => item.IsNsfw;
 
     private static string Normalize(string? value)
@@ -120,12 +145,13 @@ public sealed partial class AnimeCollectionProjection
         AnimeEntity Item,
         UserAnimeStatus ListStatus,
         string SearchableText,
+        IReadOnlySet<string> GenreKeys,
         bool IsNsfw,
         MediaKind Kind)
     {
         public static Entry From(AnimeEntity item)
         {
-            return new Entry(item, GetListStatus(item), BuildSearchableText(item), ComputeIsNsfw(item), item.MediaKind);
+            return new Entry(item, GetListStatus(item), BuildSearchableText(item), ComputeGenreKeys(item), ComputeIsNsfw(item), item.MediaKind);
         }
     }
 }
