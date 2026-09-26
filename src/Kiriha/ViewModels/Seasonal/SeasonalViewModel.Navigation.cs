@@ -12,6 +12,7 @@ public partial class SeasonalViewModel
     {
         OnPropertyChanged(nameof(DisplaySeason));
         OnPropertyChanged(nameof(DisplaySortBy));
+        foreach (var item in _allSeasonalItems) item.RefreshMetadata();
     }
 
     public void EnqueueItemForViewport(AnimeEntity item)

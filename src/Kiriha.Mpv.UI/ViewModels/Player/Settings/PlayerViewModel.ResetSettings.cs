@@ -20,6 +20,9 @@ public partial class PlayerViewModel
             case "SinglePlayerWindow":
                 SinglePlayerWindow = def.SingleWindow;
                 break;
+            case "RememberPlaybackPosition":
+                RememberPlaybackPosition = def.RememberPlaybackPosition;
+                break;
             case "PlaybackSpeed":
                 PlaybackSpeed = def.PlaybackSpeed;
                 break;
@@ -278,6 +281,7 @@ public partial class PlayerViewModel
     {
         ResetSetting("PlayerAutoPlay");
         ResetSetting("SinglePlayerWindow");
+        ResetSetting("RememberPlaybackPosition");
         ResetSetting("PlaybackSpeed");
     }
 

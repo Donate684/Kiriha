@@ -72,4 +72,19 @@ public class MpvPlaybackController
     {
         _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "frame-back-step"), "frame back step"));
     }
+
+    public void WriteWatchLaterConfig()
+    {
+        _player.Enqueue(handle => LibMpvNative.mpv_command_string(handle, "write-watch-later-config"));
+    }
+
+    public void DeleteWatchLaterConfig()
+    {
+        _player.Enqueue(handle => LibMpvNative.mpv_command_string(handle, "delete-watch-later-config"));
+    }
+
+    public void SetSavePositionOnQuit(bool enabled)
+    {
+        _player.Enqueue(handle => LibMpvNative.mpv_set_property_string(handle, "save-position-on-quit", enabled ? "yes" : "no"));
+    }
 }

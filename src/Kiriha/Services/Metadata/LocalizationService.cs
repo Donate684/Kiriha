@@ -21,6 +21,16 @@ public class LocalizationService : ILocalizer
         "updates", "auth", "search", "torrents", "notifications", "crash",
         "about", "player", "analytics", "schedule"
     };
+    public string CurrentLanguage => _currentLanguage;
+    public CultureInfo CurrentCulture => GetCultureForLanguage(_currentLanguage);
+
+    public static CultureInfo GetCultureForLanguage(string? langCode)
+    {
+        return string.Equals(langCode, Kiriha.Core.Domain.Constants.AppConstants.Languages.Ru, StringComparison.OrdinalIgnoreCase)
+            ? CultureInfo.GetCultureInfo("ru-RU")
+            : CultureInfo.GetCultureInfo("en-US");
+    }
+
     public string GetLoc(string key)
     {
         return Application.Current?.Resources[$"l.{key}"] as string ?? key;
@@ -32,7 +42,7 @@ public class LocalizationService : ILocalizer
         try
         {
             var composite = _formatCache.GetOrAdd(pattern, static p => CompositeFormat.Parse(p));
-            return string.Format(CultureInfo.CurrentCulture, composite, args);
+            return string.Format(CurrentCulture, composite, args);
         }
         catch { return pattern; }
     }
@@ -42,6 +52,13 @@ public class LocalizationService : ILocalizer
         {
             _currentLanguage = langCode;
             _formatCache.Clear();
+
+            var culture = GetCultureForLanguage(langCode);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+
             var resources = new Dictionary<string, string>();
             // 1. Load English as base (fallback)
             LoadAllNamespaces("en", resources);
@@ -58,7 +75,7 @@ public class LocalizationService : ILocalizer
                     Application.Current.Resources[$"l.{kvp.Key}"] = kvp.Value;
                 }
             }
-            Log.Information("Language loaded: {Lang} ({Count} keys)", langCode, resources.Count);
+            Log.Information("Language loaded: {Lang} ({Count} keys, Culture: {Culture})", langCode, resources.Count, culture.Name);
         }
         catch (Exception ex)
         {

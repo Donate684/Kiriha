@@ -36,12 +36,7 @@ public partial class SeasonalViewModel
             _hiddenSeasonalIds.Remove(id);
         }
 
-        _settingsService.Update(settings =>
-        {
-            foreach (var id in toUnhide)
-                settings.UI.HiddenSeasonalIds?.Remove(id);
-        }, SettingsSection.UI, save: false);
-        _ = _settingsService.SaveAsync();
+        _ = _seasonalHiddenRepo.RemoveRangeAsync(toUnhide);
     }
 
     [RelayCommand]
@@ -52,23 +47,18 @@ public partial class SeasonalViewModel
         bool isHidden = _hiddenSeasonalIds.Contains(item.Id);
         if (!isHidden && item.Status != UserAnimeStatus.None) return;
 
-        _settingsService.Update(settings =>
+        if (isHidden)
         {
-            var list = settings.UI.HiddenSeasonalIds ??= new List<int>();
-            if (isHidden)
-            {
-                _hiddenSeasonalIds.Remove(item.Id);
-                list.Remove(item.Id);
-                item.IsHiddenInSeasons = false;
-            }
-            else
-            {
-                _hiddenSeasonalIds.Add(item.Id);
-                if (!list.Contains(item.Id)) list.Add(item.Id);
-                item.IsHiddenInSeasons = true;
-            }
-        }, SettingsSection.UI, save: false);
-        _ = _settingsService.SaveAsync();
+            _hiddenSeasonalIds.Remove(item.Id);
+            item.IsHiddenInSeasons = false;
+            _ = _seasonalHiddenRepo.RemoveAsync(item.Id);
+        }
+        else
+        {
+            _hiddenSeasonalIds.Add(item.Id);
+            item.IsHiddenInSeasons = true;
+            _ = _seasonalHiddenRepo.AddAsync(item.Id);
+        }
 
         if (isHidden)
         {

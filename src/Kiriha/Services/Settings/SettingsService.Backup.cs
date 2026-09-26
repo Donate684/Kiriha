@@ -1,45 +1,72 @@
 using System;
 using System.IO;
 using System.Text;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Serilog;
 
 namespace Kiriha.Services.Data.Settings;
 
 public partial class SettingsService
 {
-    private AppSettings? TryLoadBackupSettings(Exception? primaryException = null)
+    private T? TryLoadWithBackup<T>(string path, JsonTypeInfo<T> typeInfo) where T : class
     {
-        var backupPath = GetBackupPath(_settingsPath);
-        if (!File.Exists(backupPath))
-            return null;
-
-        try
+        if (File.Exists(path))
         {
-            var backup = LoadSettingsFile(backupPath);
-            if (backup is null)
-                return null;
-
-            if (primaryException != null)
-                Log.Warning(primaryException, "Settings load failed; restored from backup {BackupPath}", backupPath);
-            else
-                Log.Warning("Settings merge: using backup settings from {BackupPath}", backupPath);
-
-            return backup;
+            try
+            {
+                var json = ReadAllTextShared(path);
+                var obj = JsonSerializer.Deserialize(json, typeInfo);
+                if (obj is not null)
+                    return obj;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Primary settings file {Path} is corrupted, attempting to restore from backup", path);
+            }
         }
-        catch (Exception backupException)
+
+        var backupPath = GetBackupPath(path);
+        if (File.Exists(backupPath))
         {
-            if (primaryException != null)
-                Log.Error(backupException, "Error loading settings backup after primary load failed");
-            else
-                Log.Warning(backupException, "Settings merge: failed to read backup settings");
-
-            return null;
+            try
+            {
+                var json = ReadAllTextShared(backupPath);
+                var obj = JsonSerializer.Deserialize(json, typeInfo);
+                if (obj is not null)
+                {
+                    Log.Information("Successfully restored {Path} from backup {BackupPath}", path, backupPath);
+                    return obj;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to restore settings from backup {BackupPath}", backupPath);
+            }
         }
+
+        return null;
     }
 
     private static string GetBackupPath(string path) => path + ".bak";
+
+    private static void AtomicWrite(string path, string content)
+    {
+        var dir = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
+
+        var tmp = path + ".tmp";
+        File.WriteAllText(tmp, content);
+        if (File.Exists(path))
+        {
+            File.Replace(tmp, path, CanBackupCurrentSettings(path) ? GetBackupPath(path) : null);
+        }
+        else
+        {
+            File.Move(tmp, path);
+        }
+    }
 
     private static bool CanBackupCurrentSettings(string path)
     {
@@ -69,5 +96,16 @@ public partial class SettingsService
         {
             return false;
         }
+    }
+
+    private static string ReadAllTextShared(string path)
+    {
+        using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return reader.ReadToEnd();
     }
 }

@@ -7,7 +7,9 @@ public sealed record MpvOptions(
     string GpuContext,
     string VideoSync = "no",
     bool Interpolation = false,
-    string TemporalScale = "oversample")
+    string TemporalScale = "oversample",
+    bool SavePositionOnQuit = true,
+    string? WatchLaterDirectory = null)
 {
     public static MpvOptions Default { get; } = new("auto", "gpu-next", "auto", "auto");
 }

@@ -120,7 +120,6 @@ public partial class HistoryViewModel
         if (date == now) return _localizer.GetLoc("common.time.today");
         if (date == now.AddDays(-1)) return _localizer.GetLoc("common.time.yesterday");
 
-        var culture = _settings.Current.UI.LanguageCode == AppConstants.Languages.Ru ? new System.Globalization.CultureInfo("ru-RU") : new System.Globalization.CultureInfo("en-US");
-        return date.ToString("d MMMM", culture);
+        return date.ToString("d MMMM", _localizer.CurrentCulture);
     }
 }

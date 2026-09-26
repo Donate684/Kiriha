@@ -25,6 +25,20 @@ public static class PathHelper
 
     public static string GetSettingsPath() => Path.Combine(BasePath, AppConstants.System.FileNames.Settings);
 
+    public static string GetLegacySettingsPath() => Path.Combine(BasePath, AppConstants.System.FileNames.LegacySettings);
+
+    public static string GetSettingsDirPath() => Path.Combine(BasePath, AppConstants.System.FileNames.SettingsDir);
+
+    public static string GetSettingsAppPath() => Path.Combine(GetSettingsDirPath(), AppConstants.System.FileNames.SettingsApp);
+
+    public static string GetSettingsPlayerPath() => Path.Combine(GetSettingsDirPath(), AppConstants.System.FileNames.SettingsPlayer);
+
+    public static string GetSettingsTorrentsPath() => Path.Combine(GetSettingsDirPath(), AppConstants.System.FileNames.SettingsTorrents);
+
+    public static string GetSettingsAuthPath() => Path.Combine(GetSettingsDirPath(), AppConstants.System.FileNames.SettingsAuth);
+
+    public static string GetSettingsWindowPath() => Path.Combine(GetSettingsDirPath(), AppConstants.System.FileNames.SettingsWindow);
+
     public static string GetTempPath() => Path.Combine(Path.GetTempPath(), AppConstants.System.AppName);
 
     /// <summary>
@@ -38,6 +52,8 @@ public static class PathHelper
     /// </summary>
     public static string GetSeasonalCachePath() => Path.Combine(BasePath, "seasonal_cache");
 
+    public static string GetMpvWatchLaterPath() => Path.Combine(BasePath, AppConstants.System.FileNames.MpvWatchLaterDir);
+
     public static string GetAppDir() => AppDir;
 
     public static void EnsureDirectoriesExist()
@@ -45,5 +61,7 @@ public static class PathHelper
         Directory.CreateDirectory(BasePath);
         Directory.CreateDirectory(GetLogsPath());
         Directory.CreateDirectory(GetImageCachePath());
+        Directory.CreateDirectory(GetSettingsDirPath());
+        Directory.CreateDirectory(GetMpvWatchLaterPath());
     }
 }

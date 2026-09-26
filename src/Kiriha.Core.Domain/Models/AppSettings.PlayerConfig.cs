@@ -8,6 +8,7 @@ public partial class AppSettings
     {
         public bool AutoPlay { get; set; } = true;
         public bool SingleWindow { get; set; } = true;
+        public bool RememberPlaybackPosition { get; set; } = true;
         public bool RememberVolume { get; set; } = true;
         public bool NormalizeAudio { get; set; } = false;
         public double Volume { get; set; } = 100;

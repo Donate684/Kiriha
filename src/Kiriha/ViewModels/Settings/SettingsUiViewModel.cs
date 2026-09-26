@@ -14,6 +14,7 @@ using Kiriha.Services.Data;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.AnimeList;
+using Kiriha.ViewModels.Seasonal;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -22,6 +23,7 @@ public partial class SettingsUiViewModel : ObservableObject
     private readonly ISettingsService _settingsService;
     private readonly AnimeListViewModel _animeListViewModel;
     private readonly LocalizationService _localizationService;
+    private readonly SeasonalViewModel? _seasonalViewModel;
 
     public record ThemeOption(string Name, ThemeType Value);
     public record LanguageOption(string Name, string Code);
@@ -56,11 +58,13 @@ public partial class SettingsUiViewModel : ObservableObject
     public SettingsUiViewModel(
         ISettingsService settingsService,
         AnimeListViewModel animeListViewModel,
-        LocalizationService localizationService)
+        LocalizationService localizationService,
+        SeasonalViewModel? seasonalViewModel = null)
     {
         _settingsService = settingsService;
         _animeListViewModel = animeListViewModel;
         _localizationService = localizationService;
+        _seasonalViewModel = seasonalViewModel;
 
         _selectedLanguage = AvailableLanguages.FirstOrDefault(x => x.Code == _settingsService.Current.UI.LanguageCode) ?? AvailableLanguages[0];
         _selectedTheme = AvailableThemes.FirstOrDefault(x => x.Value == _settingsService.Current.UI.Theme) ?? AvailableThemes[0];
@@ -123,12 +127,14 @@ public partial class SettingsUiViewModel : ObservableObject
     {
         _settingsService.Update(settings => settings.UI.UseRussianTitles = value, SettingsSection.UI);
         _animeListViewModel.RefreshLocalization();
+        _seasonalViewModel?.RefreshLocalization();
     }
 
     partial void OnUseRussianDescriptionsChanged(bool value)
     {
         _settingsService.Update(settings => settings.UI.UseRussianDescriptions = value, SettingsSection.UI);
         _animeListViewModel.RefreshLocalization();
+        _seasonalViewModel?.RefreshLocalization();
     }
 
     partial void OnUiScaleChanged(double value)
@@ -147,6 +153,7 @@ public partial class SettingsUiViewModel : ObservableObject
     {
         _settingsService.Update(settings => settings.UI.ShowAiringInfo = value, SettingsSection.UI);
         _animeListViewModel.RefreshLocalization();
+        _seasonalViewModel?.RefreshLocalization();
     }
 
     partial void OnSelectedLanguageChanged(LanguageOption? value)
@@ -159,6 +166,7 @@ public partial class SettingsUiViewModel : ObservableObject
             var theme = _settingsService.Read(settings => settings.UI.Theme);
             SelectedTheme = AvailableThemes.FirstOrDefault(x => x.Value == theme) ?? AvailableThemes[0];
             _animeListViewModel.RefreshLocalization();
+            _seasonalViewModel?.RefreshLocalization();
             if (Application.Current is App app) app.UpdateTrayMenu();
         }
     }

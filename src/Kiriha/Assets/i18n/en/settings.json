@@ -135,6 +135,8 @@
     "keep_alive_sub": "Launch a separate player process in advance so videos open faster",
     "single_window": "Single player window",
     "single_window_sub": "When opening a new video, replace the file in the already open window",
+    "remember_position": "Remember playback position",
+    "remember_position_sub": "Resume video playback from where the player was closed",
     "video_preset_title": "Video Quality",
     "video_preset_sub": "Determines the GPU load during playback. Custom — manual adjustment.",
     "video_preset_default": "Default (mpv)",

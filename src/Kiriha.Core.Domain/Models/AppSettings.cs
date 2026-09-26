@@ -48,6 +48,7 @@ public partial class AppSettings
         /// Hidden from the seasonal grid by default; toggle <c>SeasonalShowHidden</c>
         /// to bring them back for un-hiding.
         /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public List<int> HiddenSeasonalIds { get; set; } = new();
         public bool SeasonalShowHidden { get; set; } = false;
 
@@ -56,6 +57,7 @@ public partial class AppSettings
         /// the user-resized window comes back at the same size/position no
         /// matter how the app was started (shortcut, --minimized, tray, etc.).
         /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public WindowPlacement Window { get; set; } = new();
     }
 

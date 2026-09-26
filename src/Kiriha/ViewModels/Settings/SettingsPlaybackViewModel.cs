@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -27,6 +27,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     [ObservableProperty] private bool _isSystemPlayer;
     [ObservableProperty] private bool _keepPlayerProcessAlive;
     [ObservableProperty] private bool _singlePlayerWindow = true;
+    [ObservableProperty] private bool _rememberPlaybackPosition = true;
     [ObservableProperty] private bool _smartTrackAutoload = true;
     [ObservableProperty] private string _mpvVideoPreset = "default";
     [ObservableProperty] private string _mpvHwdec = "auto";
@@ -50,6 +51,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
         IsSystemPlayer = _systemIntegrationService.IsRegistered();
         KeepPlayerProcessAlive = _settingsService.Current.System.KeepPlayerProcessAlive;
         SinglePlayerWindow = _settingsService.Current.Player.SingleWindow;
+        RememberPlaybackPosition = _settingsService.Current.Player.RememberPlaybackPosition;
         SmartTrackAutoload = _settingsService.Current.Player.SmartTrackAutoload;
         MpvVideoPreset = NormalizeMpvOption(_settingsService.Current.Player.MpvVideoPreset, "default");
         MpvHwdec = NormalizeMpvOption(_settingsService.Current.Player.MpvHwdec, "auto");
@@ -68,6 +70,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     }
 
     partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, SettingsSection.Player);
+    partial void OnRememberPlaybackPositionChanged(bool value) => _settingsService.Update(settings => settings.Player.RememberPlaybackPosition = value, SettingsSection.Player);
     partial void OnSmartTrackAutoloadChanged(bool value) => _settingsService.Update(settings => settings.Player.SmartTrackAutoload = value, SettingsSection.Player);
 
     partial void OnMpvVideoPresetChanged(string value)

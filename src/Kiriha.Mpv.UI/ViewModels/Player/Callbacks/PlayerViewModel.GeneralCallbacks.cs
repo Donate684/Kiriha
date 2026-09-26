@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Linq;
 using Kiriha.Core.Abstractions.Services;
@@ -20,6 +20,13 @@ public partial class PlayerViewModel
     {
         if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SingleWindow = value, SettingsSection.Player);
+    }
+
+    partial void OnRememberPlaybackPositionChanged(bool value)
+    {
+        if (_isApplyingSettings || _settingsService is null) return;
+        _settingsService.Update(settings => settings.Player.RememberPlaybackPosition = value, SettingsSection.Player);
+        _playback.SetSavePositionOnQuit(value);
     }
 
     partial void OnRememberPlayerVolumeChanged(bool value)

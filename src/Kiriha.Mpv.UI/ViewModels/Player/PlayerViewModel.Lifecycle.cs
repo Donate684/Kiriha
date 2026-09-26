@@ -25,11 +25,28 @@ public partial class PlayerViewModel
 
         try { Overlay.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing overlay"); }
 
+        if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl))
+        {
+            if (RememberPlaybackPosition && !_isEofReached && Duration > 0 && CurrentTime > 0)
+            {
+                if (CurrentTime < Duration * 0.95)
+                {
+                    _playback.WriteWatchLaterConfig();
+                }
+                else
+                {
+                    _playback.DeleteWatchLaterConfig();
+                    _playback.SetSavePositionOnQuit(false);
+                }
+            }
+        }
+
         _playback.FileLoaded -= OnPlayerFileLoaded;
         _playback.PlaybackEnded -= OnPlayerPlaybackEnded;
         _playback.PlaybackStateChanged -= OnPlayerPlaybackStateChanged;
         _playback.TracksChanged -= OnPlayerTracksChanged;
         _playback.SubtitleDelayChanged -= OnPlayerSubtitleDelayChanged;
+        _playback.EofReachedChanged -= OnPlayerEofReachedChanged;
 
         try { _statePublisher.PublishClosed(); } catch (Exception ex) { Log.Debug(ex, "Error publishing closed state"); }
 

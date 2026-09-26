@@ -177,27 +177,20 @@ public partial class TorrentsViewModel
     {
         if (_suppressFilterPersist) return;
 
-        _settingsService.Update(settings =>
+        if (FiltersPerTitle && SelectedAnime != null)
         {
-            var cfg = settings.Torrents;
-            AppSettings.TorrentFilterSet target;
-            if (FiltersPerTitle && SelectedAnime != null)
-            {
-                if (!cfg.PerTitleFilters.TryGetValue(SelectedAnime.Id, out target!))
-                {
-                    target = new AppSettings.TorrentFilterSet();
-                    cfg.PerTitleFilters[SelectedAnime.Id] = target;
-                }
-            }
-            else
-            {
-                target = CreateGlobalFilterSet(cfg);
-            }
-
+            var target = _torrentFilterRepo.TryGetCachedFilter(SelectedAnime.Id) ?? new AppSettings.TorrentFilterSet();
             ApplyFilterValue(target, name, value);
-
-            if (!(FiltersPerTitle && SelectedAnime != null))
+            _ = _torrentFilterRepo.SaveFilterAsync(SelectedAnime.Id, target);
+        }
+        else
+        {
+            _settingsService.Update(settings =>
             {
+                var cfg = settings.Torrents;
+                var target = CreateGlobalFilterSet(cfg);
+                ApplyFilterValue(target, name, value);
+
                 cfg.OnlyCrunchyroll = target.OnlyCrunchyroll;
                 cfg.FilterNetflix = target.FilterNetflix;
                 cfg.FilterAmazon = target.FilterAmazon;
@@ -208,8 +201,8 @@ public partial class TorrentsViewModel
                 cfg.FilterJudas = target.FilterJudas;
                 cfg.FilterHevc = target.FilterHevc;
                 cfg.Filter1080p = target.Filter1080p;
-            }
-        }, SettingsSection.Torrents);
+            }, SettingsSection.Torrents);
+        }
         PerformSearchCommand.Execute(null);
     }
 
@@ -217,13 +210,9 @@ public partial class TorrentsViewModel
     {
         var cfg = _settingsService.Current.Torrents;
         AppSettings.TorrentFilterSet src;
-        if (FiltersPerTitle && SelectedAnime != null && cfg.PerTitleFilters.TryGetValue(SelectedAnime.Id, out var saved))
+        if (FiltersPerTitle && SelectedAnime != null)
         {
-            src = saved;
-        }
-        else if (FiltersPerTitle && SelectedAnime != null)
-        {
-            src = new AppSettings.TorrentFilterSet();
+            src = _torrentFilterRepo.TryGetCachedFilter(SelectedAnime.Id) ?? new AppSettings.TorrentFilterSet();
         }
         else
         {
@@ -256,20 +245,13 @@ public partial class TorrentsViewModel
     {
         if (_suppressFilterPersist) return;
 
-        _settingsService.Update(settings =>
+        if (FiltersPerTitle && SelectedAnime != null)
         {
-            var cfg = settings.Torrents;
-            if (FiltersPerTitle && SelectedAnime != null)
-            {
-                if (!cfg.PerTitleFilters.TryGetValue(SelectedAnime.Id, out var target))
-                {
-                    target = new AppSettings.TorrentFilterSet();
-                    cfg.PerTitleFilters[SelectedAnime.Id] = target;
-                }
-                target.UseCustomQuery = UseCustomQuery;
-                target.CustomQuery = CustomQuery;
-            }
-        }, SettingsSection.Torrents);
+            var target = _torrentFilterRepo.TryGetCachedFilter(SelectedAnime.Id) ?? new AppSettings.TorrentFilterSet();
+            target.UseCustomQuery = UseCustomQuery;
+            target.CustomQuery = CustomQuery;
+            _ = _torrentFilterRepo.SaveFilterAsync(SelectedAnime.Id, target);
+        }
     }
 
     private static AppSettings.TorrentFilterSet CreateGlobalFilterSet(AppSettings.TorrentConfig cfg) => new()

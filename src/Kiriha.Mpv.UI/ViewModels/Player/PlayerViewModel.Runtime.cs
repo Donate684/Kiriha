@@ -21,6 +21,7 @@ public partial class PlayerViewModel
         _playback.PlaybackStateChanged += OnPlayerPlaybackStateChanged;
         _playback.TracksChanged += OnPlayerTracksChanged;
         _playback.SubtitleDelayChanged += OnPlayerSubtitleDelayChanged;
+        _playback.EofReachedChanged += OnPlayerEofReachedChanged;
         _playback.SetVolume(Volume);
         _playback.SetSpeed(PlaybackSpeed);
         _playback.SetAudioNormalization(NormalizeAudio);
@@ -66,6 +67,18 @@ public partial class PlayerViewModel
         {
             // Ignore path normalization failure for URLs/streams
         }
+
+        if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl))
+        {
+            if (RememberPlaybackPosition && !_isEofReached && Duration > 0 && CurrentTime > 0)
+            {
+                if (CurrentTime < Duration * 0.95)
+                    _playback.WriteWatchLaterConfig();
+                else
+                    _playback.DeleteWatchLaterConfig();
+            }
+        }
+        _isEofReached = false;
 
         if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
             VideoUrl = videoUrl;

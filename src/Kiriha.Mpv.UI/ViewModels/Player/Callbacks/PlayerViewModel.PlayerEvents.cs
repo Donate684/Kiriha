@@ -12,11 +12,13 @@ public partial class PlayerViewModel
     private int _isPlaybackStateUpdatePending;
     private readonly Lock _playbackStateLock = new();
     private PlaybackState? _pendingPlaybackState;
+    private bool _isEofReached;
 
     private void OnPlayerFileLoaded(object? sender, EventArgs e)
     {
         Dispatcher.UIThread.Post(() =>
         {
+            _isEofReached = false;
             IsLoading = false;
             HasPlaybackError = false;
             PlaybackErrorMessage = string.Empty;
@@ -66,6 +68,13 @@ public partial class PlayerViewModel
 
         Dispatcher.UIThread.Post(() =>
         {
+            _isEofReached = true;
+            if (RememberPlaybackPosition)
+            {
+                _playback.DeleteWatchLaterConfig();
+                _playback.SetSavePositionOnQuit(false);
+            }
+
             IsLoading = false;
             IsPlaying = false;
             if (e.HasError)
@@ -79,6 +88,23 @@ public partial class PlayerViewModel
 
             _statePublisher.Publish();
         });
+    }
+
+    private void OnPlayerEofReachedChanged(bool isEof)
+    {
+        _isEofReached = isEof;
+        if (isEof)
+        {
+            if (RememberPlaybackPosition)
+            {
+                _playback.DeleteWatchLaterConfig();
+                _playback.SetSavePositionOnQuit(false);
+            }
+        }
+        else
+        {
+            _playback.SetSavePositionOnQuit(RememberPlaybackPosition);
+        }
     }
 
     private void OnPlayerPlaybackStateChanged(PlaybackState state)

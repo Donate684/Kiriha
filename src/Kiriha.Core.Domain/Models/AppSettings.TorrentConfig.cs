@@ -16,10 +16,13 @@ public partial class AppSettings
         public bool FilterJudas { get; set; } = false;
         public bool FilterHevc { get; set; } = false;
         public bool Filter1080p { get; set; } = false;
+        [System.Text.Json.Serialization.JsonIgnore]
         public System.Collections.Generic.List<int> HiddenAnimeIds { get; set; } = new();
 
         /// <summary>When true, filter toggles are remembered per anime title.</summary>
         public bool FiltersPerTitle { get; set; } = true;
+
+        [System.Text.Json.Serialization.JsonIgnore]
         public System.Collections.Generic.Dictionary<int, TorrentFilterSet> PerTitleFilters { get; set; } = new();
     }
 

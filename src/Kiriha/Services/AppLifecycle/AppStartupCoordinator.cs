@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure;
 using Kiriha.Services.Data;
 using Kiriha.Services.Data.Image;
@@ -53,6 +54,7 @@ public sealed partial class AppStartupCoordinator
 
         sw.Restart();
         var loc = _serviceProvider.GetRequiredService<LocalizationService>();
+        AnimeEntityPresentation.DefaultLocalizer = loc;
         loc.LoadLanguage(settings.Current.UI.LanguageCode);
         Log.Information("StartupTiming: localization loaded elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
 

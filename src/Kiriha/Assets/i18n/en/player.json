@@ -187,6 +187,8 @@
     "autoplay_sub": "The video will start playing by itself as soon as you open it",
     "single_window": "Single player window",
     "single_window_sub": "New videos will open right here, instead of opening a bunch of new windows",
+    "remember_position": "Remember playback position",
+    "remember_position_sub": "Resume playback from where you left off",
     "default_speed": "Default speed",
     "default_speed_sub": "The speed at which all new videos will start playing"
   },

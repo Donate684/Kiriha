@@ -157,3 +157,33 @@ public class AnimeStaffMetaConfiguration : IEntityTypeConfiguration<AnimeStaffMe
         builder.Property(e => e.MalId).ValueGeneratedNever();
     }
 }
+
+public class HiddenSeasonalAnimeConfiguration : IEntityTypeConfiguration<HiddenSeasonalAnime>
+{
+    public void Configure(EntityTypeBuilder<HiddenSeasonalAnime> builder)
+    {
+        builder.ToTable("hidden_seasonal_anime");
+        builder.HasKey(e => e.AnimeId);
+        builder.Property(e => e.AnimeId).ValueGeneratedNever();
+    }
+}
+
+public class HiddenTorrentAnimeConfiguration : IEntityTypeConfiguration<HiddenTorrentAnime>
+{
+    public void Configure(EntityTypeBuilder<HiddenTorrentAnime> builder)
+    {
+        builder.ToTable("hidden_torrent_anime");
+        builder.HasKey(e => e.AnimeId);
+        builder.Property(e => e.AnimeId).ValueGeneratedNever();
+    }
+}
+
+public class TorrentTitleFilterConfiguration : IEntityTypeConfiguration<TorrentTitleFilter>
+{
+    public void Configure(EntityTypeBuilder<TorrentTitleFilter> builder)
+    {
+        builder.ToTable("torrent_title_filters");
+        builder.HasKey(e => e.AnimeId);
+        builder.Property(e => e.AnimeId).ValueGeneratedNever();
+    }
+}

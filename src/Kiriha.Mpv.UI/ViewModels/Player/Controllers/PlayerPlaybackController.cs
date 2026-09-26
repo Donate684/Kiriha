@@ -14,6 +14,7 @@ public sealed class PlayerPlaybackController
     public event Action<PlaybackState>? PlaybackStateChanged;
     public event Action? TracksChanged;
     public event Action<double>? SubtitleDelayChanged;
+    public event Action<bool>? EofReachedChanged;
 
     public bool HasPlayer => _player != null;
 
@@ -27,6 +28,7 @@ public sealed class PlayerPlaybackController
         _player.PlaybackStateChanged += OnPlaybackStateChanged;
         _player.TracksChanged += OnTracksChanged;
         _player.SubtitleDelayChanged += OnSubtitleDelayChanged;
+        _player.EofReachedChanged += OnEofReachedChanged;
     }
 
     public void Detach()
@@ -39,10 +41,14 @@ public sealed class PlayerPlaybackController
         _player.PlaybackStateChanged -= OnPlaybackStateChanged;
         _player.TracksChanged -= OnTracksChanged;
         _player.SubtitleDelayChanged -= OnSubtitleDelayChanged;
+        _player.EofReachedChanged -= OnEofReachedChanged;
         _player = null;
     }
 
     public void Load(string videoUrl) => _player?.Load(videoUrl);
+    public void WriteWatchLaterConfig() => _player?.WriteWatchLaterConfig();
+    public void DeleteWatchLaterConfig() => _player?.DeleteWatchLaterConfig();
+    public void SetSavePositionOnQuit(bool enabled) => _player?.SetSavePositionOnQuit(enabled);
     public void AddSubtitle(string path) => _player?.AddSubtitle(path);
     public void AddAudioTrack(string path) => _player?.AddAudioTrack(path);
     public void Play() => _player?.Play();
@@ -151,4 +157,5 @@ public sealed class PlayerPlaybackController
     private void OnPlaybackStateChanged(PlaybackState state) => PlaybackStateChanged?.Invoke(state);
     private void OnTracksChanged() => TracksChanged?.Invoke();
     private void OnSubtitleDelayChanged(double delay) => SubtitleDelayChanged?.Invoke(delay);
+    private void OnEofReachedChanged(bool isEof) => EofReachedChanged?.Invoke(isEof);
 }

@@ -19,6 +19,7 @@ public partial class TorrentsViewModel : ViewModelBase
     private readonly RssFeedService _rssService;
     private readonly IAnimeRepository _animeRepo;
     private readonly ISettingsService _settingsService;
+    private readonly ITorrentFilterRepository _torrentFilterRepo;
 
     public ObservableCollection<TorrentEntity> Torrents { get; } = new();
 
@@ -44,11 +45,16 @@ public partial class TorrentsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isHideMode;
 
-    public TorrentsViewModel(RssFeedService rssService, IAnimeRepository animeRepo, ISettingsService settingsService)
+    public TorrentsViewModel(
+        RssFeedService rssService,
+        IAnimeRepository animeRepo,
+        ISettingsService settingsService,
+        ITorrentFilterRepository torrentFilterRepo)
     {
         _rssService = rssService;
         _animeRepo = animeRepo;
         _settingsService = settingsService;
+        _torrentFilterRepo = torrentFilterRepo;
 
         LoadFilterSettings();
 

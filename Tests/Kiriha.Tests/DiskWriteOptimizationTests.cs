@@ -28,21 +28,20 @@ public class DiskWriteOptimizationTests
     {
         var tempDir = Path.Combine(Path.GetTempPath(), "KirihaTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
-        var settingsPath = Path.Combine(tempDir, "settings.json");
 
         try
         {
-            var service = new SettingsService(settingsPath);
+            var service = new SettingsService(tempDir);
             service.SaveImmediate(); // Initial creation
 
-            Assert.True(File.Exists(settingsPath));
-            var writeTime1 = File.GetLastWriteTimeUtc(settingsPath);
+            Assert.True(File.Exists(service.PlayerSettingsPath));
+            var writeTime1 = File.GetLastWriteTimeUtc(service.PlayerSettingsPath);
 
             Thread.Sleep(100);
 
             // Second save with zero changes -> dirty check must kick in and skip AtomicWrite
             service.SaveImmediate();
-            var writeTime2 = File.GetLastWriteTimeUtc(settingsPath);
+            var writeTime2 = File.GetLastWriteTimeUtc(service.PlayerSettingsPath);
 
             Assert.Equal(writeTime1, writeTime2);
 
@@ -50,7 +49,7 @@ public class DiskWriteOptimizationTests
             service.Update(s => s.Player.Volume = (s.Player.Volume == 100 ? 50 : 100), SettingsSection.Player, save: false);
             Thread.Sleep(100);
             service.SaveImmediate();
-            var writeTime3 = File.GetLastWriteTimeUtc(settingsPath);
+            var writeTime3 = File.GetLastWriteTimeUtc(service.PlayerSettingsPath);
 
             Assert.NotEqual(writeTime2, writeTime3);
         }

@@ -30,6 +30,9 @@ public sealed class DatabaseInitializerTests
             Assert.True(await TableExistsAsync(context, "user_anime"));
             Assert.True(await TableExistsAsync(context, "history"));
             Assert.True(await TableExistsAsync(context, "sync_tasks"));
+            Assert.True(await TableExistsAsync(context, "hidden_seasonal_anime"));
+            Assert.True(await TableExistsAsync(context, "hidden_torrent_anime"));
+            Assert.True(await TableExistsAsync(context, "torrent_title_filters"));
             Assert.True(await TableExistsAsync(context, "__EFMigrationsHistory"));
         }
         finally

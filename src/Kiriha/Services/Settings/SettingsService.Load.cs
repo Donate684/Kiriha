@@ -1,10 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Models;
 using Serilog;
 
 namespace Kiriha.Services.Data.Settings;
@@ -16,84 +14,109 @@ public partial class SettingsService
         var sw = Stopwatch.StartNew();
         try
         {
-            if (!File.Exists(_settingsPath))
+            EnsureDirectory();
+
+            bool hasSplitFiles = File.Exists(_appSettingsPath)
+                || File.Exists(_playerSettingsPath)
+                || File.Exists(_torrentsSettingsPath)
+                || File.Exists(_authSettingsPath)
+                || File.Exists(_windowSettingsPath);
+
+            if (hasSplitFiles)
             {
-                Log.Information("Settings file not found, creating new one");
-                SaveImmediate();
+                var loaded = new AppSettings();
+
+                var appConfig = TryLoadWithBackup(_appSettingsPath, AppSettingsJsonContext.Default.AppConfigFile);
+                if (appConfig != null)
+                {
+                    loaded.UI = appConfig.UI;
+                    loaded.System = appConfig.System;
+                    loaded.CustomLinks = appConfig.CustomLinks;
+                }
+
+                var playerConfig = TryLoadWithBackup(_playerSettingsPath, AppSettingsJsonContext.Default.PlayerConfig);
+                if (playerConfig != null)
+                {
+                    loaded.Player = playerConfig;
+                }
+
+                var torrentsConfig = TryLoadWithBackup(_torrentsSettingsPath, AppSettingsJsonContext.Default.TorrentConfig);
+                if (torrentsConfig != null)
+                {
+                    loaded.Torrents = torrentsConfig;
+                }
+
+                var apiConfig = TryLoadWithBackup(_authSettingsPath, AppSettingsJsonContext.Default.ApiConfig);
+                if (apiConfig != null)
+                {
+                    DecryptTokens(apiConfig.Mal, apiConfig);
+                    DecryptTokens(apiConfig.Shiki, apiConfig);
+                    loaded.Api = apiConfig;
+                }
+
+                var windowConfig = TryLoadWithBackup(_windowSettingsPath, AppSettingsJsonContext.Default.WindowPlacement);
+                if (windowConfig != null)
+                {
+                    loaded.UI.Window = windowConfig;
+                }
+
+                SetCurrent(loaded);
+                UpdateCachedSavedJson(loaded);
+                Log.Information("Settings loaded from {Dir} elapsedMs={ElapsedMs}", _settingsDir, sw.ElapsedMilliseconds);
                 return;
             }
 
-            var loaded = LoadSettingsFile(_settingsPath)
-                ?? throw new JsonException("Settings file contained null JSON");
-            SetCurrent(loaded);
-            _lastSavedJson = EncryptForSave(loaded);
+            if (File.Exists(_legacySettingsPath))
+            {
+                Log.Information("Migrating legacy settings from {Path}", _legacySettingsPath);
+                var legacy = LoadLegacySettingsFile(_legacySettingsPath);
+                if (legacy != null)
+                {
+                    SetCurrent(legacy);
+                    SaveImmediate();
+                    Log.Information("Legacy settings migrated to split files in {Dir} elapsedMs={ElapsedMs}", _settingsDir, sw.ElapsedMilliseconds);
+                    return;
+                }
+            }
 
-            Log.Information("Settings loaded from {Path} elapsedMs={ElapsedMs}", _settingsPath, sw.ElapsedMilliseconds);
-        }
-        catch (IOException ex)
-        {
-            Log.Error(ex, "Error loading settings; file is temporarily unavailable, fallback will not be saved automatically");
+            Log.Information("Settings files not found, initializing defaults in {Dir}", _settingsDir);
             SetCurrent(new AppSettings());
-            Log.Information("Settings fallback initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
+            SaveImmediate();
         }
         catch (Exception ex)
         {
-            var backup = TryLoadBackupSettings(ex);
-            if (backup != null)
-            {
-                SetCurrent(backup);
-                MarkAllSectionsChanged();
-                Log.Information("Settings restored from backup elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-                return;
-            }
-
-            Log.Error(ex, "Error loading settings");
+            Log.Error(ex, "Error loading settings, fallback to defaults");
             SetCurrent(new AppSettings());
             MarkAllSectionsChanged();
-            Log.Information("Settings fallback initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
         }
     }
 
-    private AppSettings? TryLoadSettingsFromDisk()
+    private void UpdateCachedSavedJson(AppSettings settings)
+    {
+        _lastSavedAppJson = SerializeAppConfig(settings);
+        _lastSavedPlayerJson = JsonSerializer.Serialize(settings.Player, AppSettingsJsonContext.Default.PlayerConfig);
+        _lastSavedTorrentsJson = JsonSerializer.Serialize(settings.Torrents, AppSettingsJsonContext.Default.TorrentConfig);
+        _lastSavedAuthJson = SerializeAuth(settings.Api);
+        _lastSavedWindowJson = JsonSerializer.Serialize(settings.UI.Window, AppSettingsJsonContext.Default.WindowPlacement);
+    }
+
+    private AppSettings? LoadLegacySettingsFile(string path)
     {
         try
         {
-            if (!File.Exists(_settingsPath))
+            var json = ReadAllTextShared(path);
+            var loaded = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettings);
+            if (loaded is null)
                 return null;
 
-            return LoadSettingsFile(_settingsPath) ?? TryLoadBackupSettings();
+            DecryptTokens(loaded.Api.Mal, loaded.Api);
+            DecryptTokens(loaded.Api.Shiki, loaded.Api);
+            return loaded;
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Settings merge: failed to read current settings from disk");
-            return TryLoadBackupSettings();
+            Log.Warning(ex, "Failed to load legacy settings from {Path}", path);
+            return null;
         }
     }
-
-
-
-    private AppSettings? LoadSettingsFile(string path)
-    {
-        var json = ReadAllTextShared(path);
-        var loaded = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettings);
-        if (loaded is null)
-            return null;
-
-        DecryptTokens(loaded.Api.Mal, loaded.Api);
-        DecryptTokens(loaded.Api.Shiki, loaded.Api);
-        return loaded;
-    }
-
-    private static string ReadAllTextShared(string path)
-    {
-        using var stream = new FileStream(
-            path,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete);
-        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-        return reader.ReadToEnd();
-    }
-
-
 }

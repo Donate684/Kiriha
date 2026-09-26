@@ -280,7 +280,7 @@ public class ReleaseMapViewModel
         if (diff > 1) return string.Format(GetLoc("schedule.days_later"), diff);
         if (diff < -2) return string.Format(GetLoc("schedule.days_ago"), Math.Abs(diff));
 
-        return releaseAt.ToLocalTime().ToString("dd MMM", CultureInfo.CurrentCulture);
+        return releaseAt.ToLocalTime().ToString("dd MMM", GetReleaseCulture());
     }
 
     public static string FormatBadgeDate(DateTime releaseAt)
@@ -302,7 +302,7 @@ public class ReleaseMapViewModel
         if (diff < 0)
             return string.Format(GetLoc("schedule.days_ago"), Math.Abs(diff));
 
-        return releaseAt.ToLocalTime().ToString("dd MMM", CultureInfo.CurrentCulture);
+        return releaseAt.ToLocalTime().ToString("dd MMM", GetReleaseCulture());
     }
 
     public static string FormatMonthShort(DateTime date)
@@ -313,7 +313,7 @@ public class ReleaseMapViewModel
 
     public static CultureInfo GetReleaseCulture()
     {
-        return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru"
+        return (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru" || CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ru")
             ? CultureInfo.GetCultureInfo("ru-RU")
             : CultureInfo.CurrentCulture;
     }

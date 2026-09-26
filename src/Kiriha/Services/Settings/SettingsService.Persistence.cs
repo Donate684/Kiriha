@@ -1,11 +1,9 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Models;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Domain.Models.Api;
 using Serilog;
 
 namespace Kiriha.Services.Data.Settings;
@@ -24,12 +22,11 @@ public partial class SettingsService
             }
             else
             {
-                Log.Warning("SettingsService: SaveImmediate timed out waiting for save lock, skipping save to avoid deadlock.");
+                Log.Warning("SettingsService: SaveImmediate timed out waiting for save lock");
             }
         }
         catch (ObjectDisposedException)
         {
-            // Ignore if disposed
         }
         finally
         {
@@ -58,24 +55,7 @@ public partial class SettingsService
             if (CanSkipSave())
                 return;
 
-            await Task.Run(() =>
-            {
-                EnsureDirectory();
-                var save = PrepareJsonForSave();
-                var json = EncryptForSave(save.Settings);
-
-                if (string.Equals(json, _lastSavedJson, StringComparison.Ordinal))
-                {
-                    MarkVersionsSaved(save.Versions);
-                    Log.Debug("Settings save skipped (async): content unchanged ({Path})", _settingsPath);
-                    return;
-                }
-
-                AtomicWrite(_settingsPath, json);
-                _lastSavedJson = json;
-                MarkVersionsSaved(save.Versions);
-                Log.Debug("Settings saved (async) to {Path}", _settingsPath);
-            }).ConfigureAwait(false);
+            await Task.Run(InternalSaveSync).ConfigureAwait(false);
         }
         finally
         {
@@ -92,38 +72,7 @@ public partial class SettingsService
             return;
 
         EnsureDirectory();
-        var save = PrepareJsonForSave();
-        var json = EncryptForSave(save.Settings);
 
-        if (string.Equals(json, _lastSavedJson, StringComparison.Ordinal))
-        {
-            MarkVersionsSaved(save.Versions);
-            Log.Debug("Settings save skipped: content unchanged ({Path})", _settingsPath);
-            return;
-        }
-
-        AtomicWrite(_settingsPath, json);
-        _lastSavedJson = json;
-        MarkVersionsSaved(save.Versions);
-        Log.Information("Settings saved to {Path}", _settingsPath);
-    }
-
-    /// <summary>
-    /// Writes settings to a temp sibling file, then atomically replaces the destination.
-    /// Prevents corrupted/half-written settings (and therefore token loss) if the process
-    /// is killed mid-write or the disk fills up.
-    /// </summary>
-    private static void AtomicWrite(string path, string content)
-    {
-        var tmp = path + ".tmp";
-        File.WriteAllText(tmp, content);
-        // File.Replace requires the destination to exist; fall back to Move on first save.
-        if (File.Exists(path)) File.Replace(tmp, path, CanBackupCurrentSettings(path) ? GetBackupPath(path) : null);
-        else File.Move(tmp, path);
-    }
-
-    private PendingSettingsSave PrepareJsonForSave()
-    {
         AppSettings snapshot;
         SettingsVersions versions;
         lock (_stateLock)
@@ -132,33 +81,105 @@ public partial class SettingsService
             versions = GetVersions();
         }
 
-        var merged = TryLoadSettingsFromDisk() ?? snapshot;
+        bool forceAll = versions.Ui == 0 && versions.System == 0 && versions.Player == 0
+            && versions.Torrents == 0 && versions.Api == 0 && versions.CustomLinks == 0 && versions.Window == 0;
 
-        if (versions.Ui != 0) merged.UI = snapshot.UI;
-        if (versions.System != 0) merged.System = snapshot.System;
-        if (versions.Player != 0) merged.Player = snapshot.Player;
-        if (versions.Torrents != 0) merged.Torrents = snapshot.Torrents;
-        if (versions.Api != 0) merged.Api = snapshot.Api;
-        if (versions.CustomLinks != 0) merged.CustomLinks = snapshot.CustomLinks;
+        // 1. app.json
+        if (forceAll || versions.Ui != 0 || versions.System != 0 || versions.CustomLinks != 0 || !File.Exists(_appSettingsPath))
+        {
+            var appJson = SerializeAppConfig(snapshot);
+            if (!string.Equals(appJson, _lastSavedAppJson, StringComparison.Ordinal) || !File.Exists(_appSettingsPath))
+            {
+                AtomicWrite(_appSettingsPath, appJson);
+                _lastSavedAppJson = appJson;
+            }
+        }
 
-        return new PendingSettingsSave(merged, versions);
+        // 2. player.json
+        if (forceAll || versions.Player != 0 || !File.Exists(_playerSettingsPath))
+        {
+            var playerJson = JsonSerializer.Serialize(snapshot.Player, AppSettingsJsonContext.Default.PlayerConfig);
+            if (!string.Equals(playerJson, _lastSavedPlayerJson, StringComparison.Ordinal) || !File.Exists(_playerSettingsPath))
+            {
+                AtomicWrite(_playerSettingsPath, playerJson);
+                _lastSavedPlayerJson = playerJson;
+            }
+        }
+
+        // 3. torrents.json
+        if (forceAll || versions.Torrents != 0 || !File.Exists(_torrentsSettingsPath))
+        {
+            var torrentsJson = JsonSerializer.Serialize(snapshot.Torrents, AppSettingsJsonContext.Default.TorrentConfig);
+            if (!string.Equals(torrentsJson, _lastSavedTorrentsJson, StringComparison.Ordinal) || !File.Exists(_torrentsSettingsPath))
+            {
+                AtomicWrite(_torrentsSettingsPath, torrentsJson);
+                _lastSavedTorrentsJson = torrentsJson;
+            }
+        }
+
+        // 4. auth.json
+        if (forceAll || versions.Api != 0 || !File.Exists(_authSettingsPath))
+        {
+            var authJson = SerializeAuth(snapshot.Api);
+            if (!string.Equals(authJson, _lastSavedAuthJson, StringComparison.Ordinal) || !File.Exists(_authSettingsPath))
+            {
+                AtomicWrite(_authSettingsPath, authJson);
+                _lastSavedAuthJson = authJson;
+            }
+        }
+
+        // 5. window.json
+        if (forceAll || versions.Window != 0 || !File.Exists(_windowSettingsPath))
+        {
+            var windowJson = JsonSerializer.Serialize(snapshot.UI.Window, AppSettingsJsonContext.Default.WindowPlacement);
+            if (!string.Equals(windowJson, _lastSavedWindowJson, StringComparison.Ordinal) || !File.Exists(_windowSettingsPath))
+            {
+                AtomicWrite(_windowSettingsPath, windowJson);
+                _lastSavedWindowJson = windowJson;
+            }
+        }
+
+        MarkVersionsSaved(versions);
     }
 
-    private string EncryptForSave(AppSettings settings)
+    private static string SerializeAppConfig(AppSettings settings)
     {
-        var clone = CloneSettings(settings);
-        EncryptTokens(clone.Api.Mal);
-        EncryptTokens(clone.Api.Shiki);
-        return JsonSerializer.Serialize(clone, AppSettingsJsonContext.Default.AppSettings);
+        var file = new AppConfigFile
+        {
+            UI = settings.UI,
+            System = settings.System,
+            CustomLinks = settings.CustomLinks
+        };
+        return JsonSerializer.Serialize(file, AppSettingsJsonContext.Default.AppConfigFile);
     }
 
-
+    private string SerializeAuth(AppSettings.ApiConfig api)
+    {
+        var clone = new AppSettings.ApiConfig
+        {
+            ShikiMirror = api.ShikiMirror,
+            Mal = api.Mal == null ? null : new MalTokens
+            {
+                AccessToken = api.Mal.AccessToken,
+                RefreshToken = api.Mal.RefreshToken,
+                ExpiresIn = api.Mal.ExpiresIn,
+                CreatedAt = api.Mal.CreatedAt
+            },
+            Shiki = api.Shiki == null ? null : new ShikiTokens
+            {
+                AccessToken = api.Shiki.AccessToken,
+                RefreshToken = api.Shiki.RefreshToken,
+                CreatedAt = api.Shiki.CreatedAt,
+                ExpiresIn = api.Shiki.ExpiresIn
+            }
+        };
+        EncryptTokens(clone.Mal);
+        EncryptTokens(clone.Shiki);
+        return JsonSerializer.Serialize(clone, AppSettingsJsonContext.Default.ApiConfig);
+    }
 
     private bool CanSkipSave()
     {
-        if (!File.Exists(_settingsPath))
-            return false;
-
         lock (_stateLock)
         {
             return _uiVersion == 0
@@ -166,11 +187,15 @@ public partial class SettingsService
                 && _playerVersion == 0
                 && _torrentsVersion == 0
                 && _apiVersion == 0
-                && _customLinksVersion == 0;
+                && _customLinksVersion == 0
+                && _windowVersion == 0
+                && File.Exists(_appSettingsPath)
+                && File.Exists(_playerSettingsPath)
+                && File.Exists(_torrentsSettingsPath)
+                && File.Exists(_authSettingsPath)
+                && File.Exists(_windowSettingsPath);
         }
     }
-
-    private readonly record struct PendingSettingsSave(AppSettings Settings, SettingsVersions Versions);
 
     private readonly record struct SettingsVersions(
         long Ui,
@@ -178,12 +203,12 @@ public partial class SettingsService
         long Player,
         long Torrents,
         long Api,
-        long CustomLinks);
+        long CustomLinks,
+        long Window);
 
     private void EnsureDirectory()
     {
-        var directory = Path.GetDirectoryName(_settingsPath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            Directory.CreateDirectory(directory);
+        if (!string.IsNullOrEmpty(_settingsDir) && !Directory.Exists(_settingsDir))
+            Directory.CreateDirectory(_settingsDir);
     }
 }

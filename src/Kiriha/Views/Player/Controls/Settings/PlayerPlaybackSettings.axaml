@@ -54,6 +54,27 @@
                                 </Grid>
                                 <Border Classes="player-settings-divider"/>
 
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.remember_position}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.remember_position_sub}"/>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding RememberPlaybackPosition}"
+                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
+                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="RememberPlaybackPosition"
+                                            IsVisible="{Binding RememberPlaybackPosition, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
                                 <StackPanel Spacing="6" Margin="0,4,0,0">
                                     <Grid ColumnDefinitions="*,Auto,32">
                                         <StackPanel Grid.Column="0" Spacing="2">

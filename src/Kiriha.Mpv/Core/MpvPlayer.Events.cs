@@ -53,6 +53,7 @@ public partial class MpvPlayer
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, IdleActivePropertyId, "idle-active", LibMpvNative.MPV_FORMAT_FLAG), "observe idle active");
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, TrackListPropertyId, "track-list", LibMpvNative.MPV_FORMAT_NONE), "observe track list");
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, SubDelayPropertyId, "sub-delay", LibMpvNative.MPV_FORMAT_DOUBLE), "observe sub delay");
+        Check(LibMpvNative.mpv_observe_property(_mpvHandle, EofReachedPropertyId, "eof-reached", LibMpvNative.MPV_FORMAT_FLAG), "observe eof reached");
     }
 
     private static void UnobservePlaybackProperties(IntPtr handle)
@@ -64,6 +65,7 @@ public partial class MpvPlayer
         LibMpvNative.mpv_unobserve_property(handle, IdleActivePropertyId);
         LibMpvNative.mpv_unobserve_property(handle, TrackListPropertyId);
         LibMpvNative.mpv_unobserve_property(handle, SubDelayPropertyId);
+        LibMpvNative.mpv_unobserve_property(handle, EofReachedPropertyId);
     }
 
     private void HandlePropertyChange(MpvEvent mpvEvent)
@@ -121,6 +123,11 @@ public partial class MpvPlayer
                 double subDelay;
                 unsafe { subDelay = *(double*)property.Data; }
                 SubtitleDelayChanged?.Invoke(subDelay);
+                break;
+
+            case EofReachedPropertyId when property.Format == LibMpvNative.MPV_FORMAT_FLAG:
+                var isEof = Marshal.ReadInt32(property.Data) != 0;
+                EofReachedChanged?.Invoke(isEof);
                 break;
         }
     }

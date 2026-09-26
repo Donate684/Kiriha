@@ -68,12 +68,12 @@ public partial class AnimeEntityPresentation
         }
     }
 
-    public string NextEpisodeAtDisplay => _item.NextEpisodeAt?.ToLocalTime().ToString("g") ?? "-";
+    public string NextEpisodeAtDisplay => _item.NextEpisodeAt?.ToLocalTime().ToString("g", EffectiveCulture) ?? "-";
 
     public bool HasAiringDate => _item.AiringDate.HasValue;
 
     public string AiringDateDisplay =>
-        _item.AiringDate?.ToString("d MMM yyyy", System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+        _item.AiringDate?.ToString("d MMM yyyy", EffectiveCulture) ?? string.Empty;
 
     public bool HasPopularity => _item.Popularity > 0;
 

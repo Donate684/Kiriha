@@ -12,10 +12,13 @@ partial class Program
         bool enableLogging = false;
         try
         {
-            var settingsPath = Kiriha.Infrastructure.Platform.PathHelper.GetSettingsPath();
-            if (File.Exists(settingsPath))
+            var appSettingsPath = Kiriha.Infrastructure.Platform.PathHelper.GetSettingsAppPath();
+            var legacySettingsPath = Kiriha.Infrastructure.Platform.PathHelper.GetLegacySettingsPath();
+            var path = File.Exists(appSettingsPath) ? appSettingsPath : (File.Exists(legacySettingsPath) ? legacySettingsPath : null);
+
+            if (path != null)
             {
-                var content = File.ReadAllText(settingsPath);
+                var content = File.ReadAllText(path);
                 using var doc = System.Text.Json.JsonDocument.Parse(content);
                 enableLogging = doc.RootElement
                     .GetProperty("System")

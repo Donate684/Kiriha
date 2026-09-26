@@ -143,9 +143,17 @@ public static class AppConstants
         {
             public const string Database = "kiriha.db";
             public const string Settings = "config.json";
+            public const string LegacySettings = "config.json";
+            public const string SettingsDir = "settings";
+            public const string SettingsApp = "app.json";
+            public const string SettingsPlayer = "player.json";
+            public const string SettingsTorrents = "torrents.json";
+            public const string SettingsAuth = "auth.json";
+            public const string SettingsWindow = "window.json";
             public const string Mappings = "title_mappings.json";
             public const string LogsDir = "logs";
             public const string CacheDir = "cacheimg";
+            public const string MpvWatchLaterDir = "watch_later";
         }
     }
 

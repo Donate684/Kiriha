@@ -61,7 +61,7 @@ public partial class SettingsViewModel : ViewModelBase
         _faviconService = faviconService;
 
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
-        Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService);
+        Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
         System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
 
         Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver);

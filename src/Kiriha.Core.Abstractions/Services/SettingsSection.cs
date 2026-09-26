@@ -12,5 +12,6 @@ public enum SettingsSection
     Torrents = 1 << 3,
     Api = 1 << 4,
     CustomLinks = 1 << 5,
-    All = UI | System | Player | Torrents | Api | CustomLinks
+    Window = 1 << 6,
+    All = UI | System | Player | Torrents | Api | CustomLinks | Window
 }

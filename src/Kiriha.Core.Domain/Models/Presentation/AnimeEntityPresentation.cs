@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 
@@ -13,12 +14,14 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     {
         public string GetLoc(string key) => key;
         public string GetLoc(string key, params object?[] args) => args != null && args.Length > 0 ? string.Format(key, args) : key;
+        public CultureInfo CurrentCulture => CultureInfo.CurrentCulture;
     }
 
     private sealed class DelegateLocalizer(GetLocDelegate del) : ILocalizer
     {
         public string GetLoc(string key) => del(key);
         public string GetLoc(string key, params object?[] args) => del(key, args ?? []);
+        public CultureInfo CurrentCulture => CultureInfo.CurrentCulture;
     }
 
     private static ILocalizer _defaultLocalizer = new DefaultFallbackLocalizer();
@@ -77,6 +80,7 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     public ILocalizer EffectiveLocalizer => _localizer ?? DefaultLocalizer;
     public TimeProvider EffectiveClock => _clock ?? DefaultClock;
     public bool EffectiveUseRussianTitles => (_getUseRussianTitles ?? DefaultGetUseRussianTitles)();
+    public CultureInfo EffectiveCulture => EffectiveLocalizer.CurrentCulture;
 
     private string GetLoc(string key, params object?[] args) => EffectiveLocalizer.GetLoc(key, args);
 

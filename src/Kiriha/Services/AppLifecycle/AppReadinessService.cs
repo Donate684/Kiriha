@@ -31,6 +31,8 @@ public sealed class AppReadinessService
     private readonly SmtcService _smtcService;
     private readonly MaintenanceService _maintenanceService;
     private readonly SettingsService _settingsService;
+    private readonly ISeasonalHiddenRepository _seasonalHiddenRepo;
+    private readonly ITorrentFilterRepository _torrentFilterRepo;
     private readonly IEnumerable<IHostedService> _hostedServices;
 
     private readonly TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -47,6 +49,8 @@ public sealed class AppReadinessService
         SmtcService smtcService,
         MaintenanceService maintenanceService,
         SettingsService settingsService,
+        ISeasonalHiddenRepository seasonalHiddenRepo,
+        ITorrentFilterRepository torrentFilterRepo,
         IEnumerable<IHostedService> hostedServices)
     {
         _databaseInitializer = databaseInitializer;
@@ -57,6 +61,8 @@ public sealed class AppReadinessService
         _smtcService = smtcService;
         _maintenanceService = maintenanceService;
         _settingsService = settingsService;
+        _seasonalHiddenRepo = seasonalHiddenRepo;
+        _torrentFilterRepo = torrentFilterRepo;
         _hostedServices = hostedServices;
     }
 
@@ -91,6 +97,8 @@ public sealed class AppReadinessService
             var stage = Stopwatch.StartNew();
             await _databaseInitializer.InitializeAsync();
             await _databaseInitializer.InitializationTask;
+            await _seasonalHiddenRepo.InitializeAsync();
+            await _torrentFilterRepo.InitializeAsync();
             Log.Information("StartupTiming: readiness database stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
             stage.Restart();

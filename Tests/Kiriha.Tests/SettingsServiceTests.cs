@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Services.Data;
@@ -9,14 +9,18 @@ namespace Kiriha.Tests;
 public sealed class SettingsServiceTests
 {
     [Fact]
-    public void Constructor_CreatesSettingsFileWhenMissing()
+    public void Constructor_CreatesSettingsFilesWhenMissing()
     {
         var path = CreateTempSettingsPath();
         try
         {
             using var service = new SettingsService(path);
 
-            Assert.True(File.Exists(path));
+            Assert.True(File.Exists(service.AppSettingsPath));
+            Assert.True(File.Exists(service.PlayerSettingsPath));
+            Assert.True(File.Exists(service.TorrentsSettingsPath));
+            Assert.True(File.Exists(service.AuthSettingsPath));
+            Assert.True(File.Exists(service.WindowSettingsPath));
             Assert.Equal("en", service.Current.UI.LanguageCode);
         }
         finally
@@ -171,7 +175,8 @@ public sealed class SettingsServiceTests
                 initial.SaveImmediate();
             }
 
-            using var lockHandle = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            var appPath = Path.Combine(Path.GetDirectoryName(path)!, "app.json");
+            using var lockHandle = new FileStream(appPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             using var service = new SettingsService(path);
 
             Assert.Equal("ru", service.Current.UI.LanguageCode);
@@ -195,13 +200,13 @@ public sealed class SettingsServiceTests
                 initial.SaveImmediate();
             }
 
-            using (var lockHandle = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            var appPath = Path.Combine(Path.GetDirectoryName(path)!, "app.json");
+            using (var lockHandle = new FileStream(appPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
             using (new SettingsService(path))
             {
             }
 
             using var reloaded = new SettingsService(path);
-
             Assert.Equal("ru", reloaded.Current.UI.LanguageCode);
         }
         finally
@@ -218,18 +223,20 @@ public sealed class SettingsServiceTests
         {
             using (var service = new SettingsService(path))
             {
-                service.Update(settings => settings.UI.LanguageCode = "ru", save: false);
+                service.Update(settings => settings.UI.LanguageCode = "ru", SettingsSection.UI, save: false);
                 service.SaveImmediate();
 
-                service.Update(settings => settings.UI.LanguageCode = "uk", save: false);
+                service.Update(settings => settings.UI.LanguageCode = "uk", SettingsSection.UI, save: false);
                 service.SaveImmediate();
             }
 
-            using var current = new SettingsService(path);
-            using var backup = new SettingsService(path + ".bak");
+            var appBakPath = Path.Combine(Path.GetDirectoryName(path)!, "app.json.bak");
+            Assert.True(File.Exists(appBakPath));
+            var bakContent = File.ReadAllText(appBakPath);
+            Assert.Contains("\"ru\"", bakContent);
 
+            using var current = new SettingsService(path);
             Assert.Equal("uk", current.Current.UI.LanguageCode);
-            Assert.Equal("ru", backup.Current.UI.LanguageCode);
         }
         finally
         {
@@ -245,23 +252,22 @@ public sealed class SettingsServiceTests
         {
             using (var service = new SettingsService(path))
             {
-                service.Update(settings => settings.UI.LanguageCode = "ru", save: false);
+                service.Update(settings => settings.UI.LanguageCode = "ru", SettingsSection.UI, save: false);
                 service.SaveImmediate();
 
-                service.Update(settings => settings.UI.LanguageCode = "uk", save: false);
+                service.Update(settings => settings.UI.LanguageCode = "uk", SettingsSection.UI, save: false);
                 service.SaveImmediate();
             }
-            File.WriteAllText(path, "broken json");
+
+            var appPath = Path.Combine(Path.GetDirectoryName(path)!, "app.json");
+            File.WriteAllText(appPath, "broken json");
 
             using (new SettingsService(path))
             {
             }
 
             using var restored = new SettingsService(path);
-            using var backup = new SettingsService(path + ".bak");
-
             Assert.Equal("ru", restored.Current.UI.LanguageCode);
-            Assert.Equal("ru", backup.Current.UI.LanguageCode);
         }
         finally
         {
@@ -326,17 +332,57 @@ public sealed class SettingsServiceTests
                     AccessToken = "mal-access-token",
                     RefreshToken = "mal-refresh-token",
                     ExpiresIn = 3600
-                }, save: false);
+                }, SettingsSection.Api, save: false);
                 service.SaveImmediate();
             }
 
-            var rawJson = File.ReadAllText(path);
+            var authPath = Path.Combine(Path.GetDirectoryName(path)!, "auth.json");
+            var rawJson = File.ReadAllText(authPath);
             Assert.DoesNotContain("mal-access-token", rawJson);
             Assert.DoesNotContain("mal-refresh-token", rawJson);
 
             using var reloaded = new SettingsService(path);
             Assert.Equal("mal-access-token", reloaded.Current.Api.Mal?.AccessToken);
             Assert.Equal("mal-refresh-token", reloaded.Current.Api.Mal?.RefreshToken);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public void Load_MigratesLegacyConfigJsonToSplitFiles()
+    {
+        var path = CreateTempSettingsPath();
+        try
+        {
+            var dir = Path.GetDirectoryName(path)!;
+            var legacyJson = """
+            {
+              "UI": {
+                "LanguageCode": "ru",
+                "Theme": 1
+              },
+              "Player": {
+                "Volume": 77
+              },
+              "Torrents": {
+                "OnlyCrunchyroll": true
+              }
+            }
+            """;
+            File.WriteAllText(path, legacyJson);
+
+            using var service = new SettingsService(path);
+
+            Assert.Equal("ru", service.Current.UI.LanguageCode);
+            Assert.Equal(77, service.Current.Player.Volume);
+            Assert.True(service.Current.Torrents.OnlyCrunchyroll);
+
+            Assert.True(File.Exists(service.AppSettingsPath));
+            Assert.True(File.Exists(service.PlayerSettingsPath));
+            Assert.True(File.Exists(service.TorrentsSettingsPath));
         }
         finally
         {

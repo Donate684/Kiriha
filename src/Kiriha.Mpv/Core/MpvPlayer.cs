@@ -17,6 +17,7 @@ public partial class MpvPlayer : IDisposable
     private const ulong IdleActivePropertyId = 5;
     private const ulong TrackListPropertyId = 6;
     private const ulong SubDelayPropertyId = 7;
+    private const ulong EofReachedPropertyId = 8;
 
 
     private readonly Lock _gate = new();
@@ -42,6 +43,7 @@ public partial class MpvPlayer : IDisposable
     public event Action<PlaybackState>? PlaybackStateChanged;
     public event Action? TracksChanged;
     public event Action<double>? SubtitleDelayChanged;
+    public event Action<bool>? EofReachedChanged;
 
     internal MpvPlayer()
     {
@@ -89,6 +91,12 @@ public partial class MpvPlayer : IDisposable
     public void SetSpeed(double speed) => PlaybackController.SetSpeed(speed);
 
     public void SetAudioNormalization(bool enabled) => PlaybackController.SetAudioNormalization(enabled);
+
+    public void WriteWatchLaterConfig() => PlaybackController.WriteWatchLaterConfig();
+
+    public void DeleteWatchLaterConfig() => PlaybackController.DeleteWatchLaterConfig();
+
+    public void SetSavePositionOnQuit(bool enabled) => PlaybackController.SetSavePositionOnQuit(enabled);
 
     public void SetTrackLanguagePreferences(string audioLanguages, string subtitleLanguages) => TrackManager.SetTrackLanguagePreferences(audioLanguages, subtitleLanguages);
 

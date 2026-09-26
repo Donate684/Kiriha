@@ -29,6 +29,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
     private readonly ILocalizer _localizer;
     private readonly IFranchiseService _franchiseService;
     private readonly IMetadataRepository _metadataRepo;
+    private readonly ISeasonalHiddenRepository _seasonalHiddenRepo;
 
     public IDialogService DialogService => _dialogService;
 
@@ -42,7 +43,8 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         IDialogService dialogService,
         ILocalizer localizer,
         IFranchiseService franchiseService,
-        IMetadataRepository metadataRepo)
+        IMetadataRepository metadataRepo,
+        ISeasonalHiddenRepository seasonalHiddenRepo)
     {
         _apiService = apiService;
         _settingsService = settingsService;
@@ -54,6 +56,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         _localizer = localizer;
         _franchiseService = franchiseService;
         _metadataRepo = metadataRepo;
+        _seasonalHiddenRepo = seasonalHiddenRepo;
 
         HydrateDiskCacheOnce();
         LoadSettingsState();

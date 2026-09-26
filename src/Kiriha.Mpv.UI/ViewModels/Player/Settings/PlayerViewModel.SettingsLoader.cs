@@ -19,6 +19,7 @@ public partial class PlayerViewModel
             var settings = _settingsService.Current.Player;
             PlayerAutoPlay = settings.AutoPlay;
             SinglePlayerWindow = settings.SingleWindow;
+            RememberPlaybackPosition = settings.RememberPlaybackPosition;
             RememberPlayerVolume = settings.RememberVolume;
             NormalizeAudio = settings.NormalizeAudio;
             AutoHideControls = settings.AutoHideControls;

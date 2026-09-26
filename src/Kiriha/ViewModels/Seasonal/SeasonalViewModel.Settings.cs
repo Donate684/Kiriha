@@ -18,7 +18,7 @@ public partial class SeasonalViewModel
         _sortBy = settings.SeasonalSortBy;
         _filterNsfw = settings.ShowNsfw;
         _showHidden = settings.SeasonalShowHidden;
-        _hiddenSeasonalIds = new HashSet<int>(settings.HiddenSeasonalIds ?? new List<int>());
+        _hiddenSeasonalIds = new HashSet<int>(_seasonalHiddenRepo.GetHiddenIds());
         _filterNotInList = settings.SeasonalStatusFilters.Contains("NotInList");
         _filterWatching = settings.SeasonalStatusFilters.Contains("Watching");
         _filterCompleted = settings.SeasonalStatusFilters.Contains("Completed");

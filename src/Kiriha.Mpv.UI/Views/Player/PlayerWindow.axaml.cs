@@ -101,7 +101,9 @@ public partial class PlayerWindow : Window
                 playerSettings.MpvGpuApi,
                 playerSettings.MpvGpuContext,
                 VideoSync: playerSettings.MpvVideoSync ? "display-resample" : "no",
-                Interpolation: playerSettings.MpvInterpolation);
+                Interpolation: playerSettings.MpvInterpolation,
+                SavePositionOnQuit: playerSettings.RememberPlaybackPosition,
+                WatchLaterDirectory: Kiriha.Infrastructure.Platform.PathHelper.GetMpvWatchLaterPath());
 
             _player = MpvPlayerBuilder.Build(mpvOptions);
 

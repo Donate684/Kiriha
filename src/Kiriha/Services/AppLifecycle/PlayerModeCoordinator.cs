@@ -38,6 +38,7 @@ public sealed partial class PlayerModeCoordinator
 
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
         var localization = _serviceProvider.GetRequiredService<LocalizationService>();
+        Kiriha.Core.Domain.Models.Entities.AnimeEntityPresentation.DefaultLocalizer = localization;
         localization.LoadLanguage(settingsService.Current.UI.LanguageCode);
 
         if (!PlayerProcessBridge.IsResident(args))

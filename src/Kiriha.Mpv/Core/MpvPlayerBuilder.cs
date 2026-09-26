@@ -38,6 +38,23 @@ public static class MpvPlayerBuilder
             MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "idle", "yes"), "enable idle");
             MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "keep-open", "yes"), "enable keep-open");
 
+            if (opts.SavePositionOnQuit)
+            {
+                if (!string.IsNullOrWhiteSpace(opts.WatchLaterDirectory))
+                {
+                    try { System.IO.Directory.CreateDirectory(opts.WatchLaterDirectory); } catch { }
+                    MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "watch-later-directory", opts.WatchLaterDirectory), "set watch later directory");
+                }
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "save-position-on-quit", "yes"), "enable save-position-on-quit");
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "write-filename-in-watch-later-config", "yes"), "write filename in watch-later config");
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "watch-later-options", "start"), "set watch-later options to position only");
+            }
+            else
+            {
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "save-position-on-quit", "no"), "disable save-position-on-quit");
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "resume-playback", "no"), "disable resume-playback");
+            }
+
             // Keep the embedded player modest: mpv defaults are tuned for a full player,
             // while Kiriha mostly needs enough buffer for smooth anime playback.
             MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "demuxer-max-bytes", "32MiB"), "limit demuxer cache");

@@ -63,6 +63,8 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
                 "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000;");
             Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
+            await LegacyUserStateMigration.MigrateAsync(context);
+
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
             _initTcs.TrySetResult();
         }
