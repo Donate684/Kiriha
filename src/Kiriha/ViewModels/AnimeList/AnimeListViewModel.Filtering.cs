@@ -240,6 +240,11 @@ public partial class AnimeListViewModel
             IsSuggestionsOpen = false;
             ScheduleFilterRefresh();
         }
+        else
+        {
+            RemoveTokenFromSearchQuery(genre);
+            IsSuggestionsOpen = false;
+        }
     }
 
     [RelayCommand]
@@ -307,6 +312,11 @@ public partial class AnimeListViewModel
             RemoveFormatTokenFromSearchQuery(format);
             IsSuggestionsOpen = false;
             ScheduleFilterRefresh();
+        }
+        else
+        {
+            RemoveFormatTokenFromSearchQuery(format);
+            IsSuggestionsOpen = false;
         }
     }
 
@@ -458,22 +468,80 @@ public partial class AnimeListViewModel
         var trimmed = _searchQuery.Trim();
         if (trimmed.StartsWith('#'))
         {
-            SearchQuery = string.Empty;
-            return;
+            var afterHash = trimmed[1..].Trim();
+            if (string.IsNullOrEmpty(afterHash) || MatchesGenreToken(afterHash, genre))
+            {
+                SearchQuery = string.Empty;
+                return;
+            }
         }
 
-        if (GenreCatalog.TryFindGenre(trimmed, out var match) && match?.Key == genre.Key)
+        if (MatchesGenreToken(trimmed, genre))
         {
             SearchQuery = string.Empty;
             return;
         }
 
         var words = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-        words.RemoveAll(w =>
-            (w.StartsWith('#') && GenreCatalog.TryFindGenre(w[1..], out var g) && g?.Key == genre.Key) ||
-            (GenreCatalog.TryFindGenre(w, out var direct) && direct?.Key == genre.Key));
+        int initialCount = words.Count;
+        words.RemoveAll(w => MatchesGenreToken(w, genre));
+
+        if (words.Count == initialCount && initialCount == 1)
+        {
+            SearchQuery = string.Empty;
+            return;
+        }
 
         SearchQuery = string.Join(" ", words);
+    }
+
+    private static bool MatchesGenreToken(string token, GenreDefinition genre)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return false;
+        var clean = token.Trim();
+        if (clean.StartsWith('#'))
+        {
+            clean = clean[1..];
+        }
+        if (clean.Length == 0) return true;
+
+        if (GenreCatalog.TryFindGenre(clean, out var g) && g?.Key == genre.Key)
+        {
+            return true;
+        }
+
+        var norm = GenreCatalog.NormalizeLookup(clean);
+        if (norm.Length == 0) return false;
+
+        var normKey = GenreCatalog.NormalizeLookup(genre.Key);
+        var normRu = GenreCatalog.NormalizeLookup(genre.RussianName);
+        var normEn = GenreCatalog.NormalizeLookup(genre.EnglishName);
+
+        if (normRu.StartsWith(norm, StringComparison.OrdinalIgnoreCase) ||
+            normEn.StartsWith(norm, StringComparison.OrdinalIgnoreCase) ||
+            normKey.StartsWith(norm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (genre.Aliases != null && genre.Aliases.Any(a => GenreCatalog.NormalizeLookup(a).StartsWith(norm, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        if (normRu.Contains(norm, StringComparison.OrdinalIgnoreCase) ||
+            normEn.Contains(norm, StringComparison.OrdinalIgnoreCase) ||
+            normKey.Contains(norm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (genre.Aliases != null && genre.Aliases.Any(a => GenreCatalog.NormalizeLookup(a).Contains(norm, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private void RemoveFormatTokenFromSearchQuery(FormatDefinition format)
@@ -483,22 +551,80 @@ public partial class AnimeListViewModel
         var trimmed = _searchQuery.Trim();
         if (trimmed.StartsWith('#'))
         {
-            SearchQuery = string.Empty;
-            return;
+            var afterHash = trimmed[1..].Trim();
+            if (string.IsNullOrEmpty(afterHash) || MatchesFormatToken(afterHash, format))
+            {
+                SearchQuery = string.Empty;
+                return;
+            }
         }
 
-        if (FormatCatalog.TryFindFormat(trimmed, out var match) && match?.Key == format.Key)
+        if (MatchesFormatToken(trimmed, format))
         {
             SearchQuery = string.Empty;
             return;
         }
 
         var words = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-        words.RemoveAll(w =>
-            (w.StartsWith('#') && FormatCatalog.TryFindFormat(w[1..], out var f) && f?.Key == format.Key) ||
-            (FormatCatalog.TryFindFormat(w, out var direct) && direct?.Key == format.Key));
+        int initialCount = words.Count;
+        words.RemoveAll(w => MatchesFormatToken(w, format));
+
+        if (words.Count == initialCount && initialCount == 1)
+        {
+            SearchQuery = string.Empty;
+            return;
+        }
 
         SearchQuery = string.Join(" ", words);
+    }
+
+    private static bool MatchesFormatToken(string token, FormatDefinition format)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return false;
+        var clean = token.Trim();
+        if (clean.StartsWith('#'))
+        {
+            clean = clean[1..];
+        }
+        if (clean.Length == 0) return true;
+
+        if (FormatCatalog.TryFindFormat(clean, out var f) && f?.Key == format.Key)
+        {
+            return true;
+        }
+
+        var norm = FormatCatalog.NormalizeLookup(clean);
+        if (norm.Length == 0) return false;
+
+        var normKey = FormatCatalog.NormalizeLookup(format.Key);
+        var normRu = FormatCatalog.NormalizeLookup(format.RussianName);
+        var normEn = FormatCatalog.NormalizeLookup(format.EnglishName);
+
+        if (normRu.StartsWith(norm, StringComparison.OrdinalIgnoreCase) ||
+            normEn.StartsWith(norm, StringComparison.OrdinalIgnoreCase) ||
+            normKey.StartsWith(norm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (format.Aliases != null && format.Aliases.Any(a => FormatCatalog.NormalizeLookup(a).StartsWith(norm, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        if (normRu.Contains(norm, StringComparison.OrdinalIgnoreCase) ||
+            normEn.Contains(norm, StringComparison.OrdinalIgnoreCase) ||
+            normKey.Contains(norm, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (format.Aliases != null && format.Aliases.Any(a => FormatCatalog.NormalizeLookup(a).Contains(norm, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private void UpdateTagSuggestions(string query)
