@@ -1,53 +1,216 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
+             xmlns:u="using:Kiriha.Utils.Graphs"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
-             xmlns:core="using:Kiriha.Core"
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsRelations"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
     <UserControl.Resources>
         <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+        <conv:StatusNoneConverter x:Key="StatusNoneConverter"/>
+        <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter"/>
+        <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
+        <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
+        <conv:LocConverter x:Key="LocConverter"/>
     </UserControl.Resources>
-                    <Border Classes="ContentCard" IsVisible="{Binding Relations.Count, Converter={StaticResource IntToBoolConverter}}">
-                        <StackPanel>
-                            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
-                                <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.relations}" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
-                                <Button Grid.Column="1" Content="{DynamicResource l.anime.labels.franchise_graph}" Command="{Binding ShowFranchiseGraphCommand}" 
-                                        FontSize="11" Padding="10,5" CornerRadius="6" 
-                                        Background="{DynamicResource SubtleFillColorSecondary}" />
-                            </Grid>
-                            <ItemsControl ItemsSource="{Binding Relations}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vmAnimeDetails:RelationItemVm">
-                                        <Button Classes="RelationCardButton" HorizontalAlignment="Stretch" Margin="0,0,0,6"
-                                                Command="{Binding $parent[Window].((vmAnimeDetails:AnimeDetailsViewModel)DataContext).NavigateToRelationCommand}"
-                                                CommandParameter="{Binding Relation}">
-                                            <Grid ColumnDefinitions="Auto, *, Auto">
-                                                <!-- Image -->
-                                                <Border Grid.Column="0" Width="42" Height="58" CornerRadius="6" Margin="0,0,12,0" ClipToBounds="True">
-                                                    <Panel>
-                                                        <Border Background="{DynamicResource CardBackgroundBrush}"/>
-                                                        <Image asyncImageLoader:ImageLoader.Source="{Binding ImageUrl}" Stretch="UniformToFill"/>
-                                                    </Panel>
-                                                </Border>
-                                                
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Relation.TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
-                                                    <TextBlock Text="{Binding Relation.RelationType}" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
-                                                </StackPanel>
-                                                
-                                                <Border Grid.Column="2" Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" IsVisible="{Binding DisplayTargetType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                                    <TextBlock Text="{Binding DisplayTargetType}" FontSize="10" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis"/>
-                                                </Border>
-                                            </Grid>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+
+    <UserControl.Styles>
+        <Style Selector="Button.FranchiseTimelineCardButton">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.FranchiseTimelineCardButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+        </Style>
+        <Style Selector="Button.FranchiseTimelineCardButton.current">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Panel>
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- OPTION A: RICH FRANCHISE CHRONOLOGY (when franchise exists)    -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <Border Classes="ContentCard" IsVisible="{Binding HasFranchiseTimeline}">
+            <StackPanel Spacing="10">
+                <!-- Header -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <material:MaterialIcon Kind="TimelineClockOutline" Width="18" Height="18" Foreground="{DynamicResource SystemAccentColor}"/>
+                        <TextBlock Text="{DynamicResource l.anime.labels.franchise_chronology}" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Franchise Completion Counter Badge -->
+                    <Border Grid.Column="1" Background="{DynamicResource SubtleFillColorSecondary}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1" CornerRadius="8" Padding="8,4" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding FranchiseProgressTooltip}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <material:MaterialIcon Kind="ProgressCheck" Width="15" Height="15"
+                                                   Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding FranchiseProgressSummary}" FontSize="11" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="6" Padding="6,1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding FranchiseCompletionPercentText}" FontSize="10" FontWeight="Bold"
+                                           Foreground="White" VerticalAlignment="Center"/>
+                            </Border>
                         </StackPanel>
                     </Border>
+                </Grid>
+
+                <!-- Chronological Franchise Feed -->
+                <ItemsControl ItemsSource="{Binding FranchiseTimeline}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="u:FranchiseGraphVisualNode">
+                            <Grid ColumnDefinitions="38, *" Margin="0,0,0,8">
+                                <!-- Step Number & Rail Line (Column 0) -->
+                                <Panel Grid.Column="0">
+                                    <Canvas Width="0" Height="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Rectangle Canvas.Left="-1" Canvas.Top="0" Width="2" Height="86"
+                                                   Fill="{DynamicResource DividerStrokeColorDefault}"
+                                                   IsVisible="{Binding !IsLastInTimeline}"/>
+                                    </Canvas>
+                                    <Border Width="26" Height="26" CornerRadius="13"
+                                            Background="{DynamicResource CardBackgroundFillDefault}"
+                                            BorderBrush="{DynamicResource SystemAccentColor}"
+                                            BorderThickness="2"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StepIndex}" FontSize="10" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource SystemAccentColor}"/>
+                                    </Border>
+                                </Panel>
+
+                                <!-- Card Button (Column 1) -->
+                                <Button Grid.Column="1" Classes="FranchiseTimelineCardButton"
+                                        Margin="6,0,0,0"
+                                        Command="{Binding $parent[Window].((vmAnimeDetails:AnimeDetailsViewModel)DataContext).NavigateToFranchiseNodeCommand}"
+                                        CommandParameter="{Binding}">
+                                    <Classes.current>
+                                        <Binding Path="IsCurrent"/>
+                                    </Classes.current>
+
+                                    <Grid ColumnDefinitions="64, *" ClipToBounds="True" Height="78">
+                                        <!-- Poster -->
+                                        <Border Grid.Column="0" CornerRadius="9,0,0,9" ClipToBounds="True" Background="{DynamicResource SubtleFillColorSecondary}">
+                                            <Image asyncImageLoader:ImageLoader.Source="{Binding DisplayImageUrl}" Stretch="UniformToFill"/>
+                                        </Border>
+
+                                        <!-- Content -->
+                                        <Grid Grid.Column="1" Margin="12,8,12,7" RowDefinitions="Auto, *, Auto">
+                                            <!-- Top row: Format & Role & Year -->
+                                            <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5">
+                                                    <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="4" Padding="5,1">
+                                                        <TextBlock Text="{Binding KindBadge}" FontSize="9.5" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="4" Padding="5,1">
+                                                        <TextBlock Text="{Binding RoleBadge}" FontSize="9.5" FontWeight="SemiBold" Opacity="0.8"/>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <TextBlock Grid.Column="2" Text="{Binding Node.Year}" FontSize="10.5" Opacity="0.6" FontWeight="SemiBold"
+                                                           IsVisible="{Binding Node.Year, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            </Grid>
+
+                                            <!-- Middle: Titles -->
+                                            <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,2,0,2">
+                                                <TextBlock Text="{Binding DisplayTitle}" FontWeight="SemiBold" FontSize="12.5" 
+                                                           TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding SubTitle}" FontSize="10" Opacity="0.5" TextTrimming="CharacterEllipsis"
+                                                           IsVisible="{Binding SubTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+
+                                            <!-- Bottom: Status & "You are here" -->
+                                            <Grid Grid.Row="2" ColumnDefinitions="*, Auto">
+                                                <!-- In list -->
+                                                <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="4" Padding="5,2"
+                                                        Background="{Binding UserStatus, Converter={StaticResource StatusToColorConverter}}"
+                                                        IsVisible="{Binding UserStatus, Converter={StaticResource StatusNotNoneConverter}}">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <material:MaterialIcon Kind="{Binding UserStatus, Converter={StaticResource StatusToIconConverter}}" Width="10" Height="10" Foreground="White"/>
+                                                        <TextBlock Text="{Binding ProgressBadgeText}" FontSize="9" FontWeight="SemiBold" Foreground="White"/>
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Not in list -->
+                                                <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="4" Padding="5,2"
+                                                        Background="{DynamicResource SubtleFillColorSecondary}"
+                                                        IsVisible="{Binding UserStatus, Converter={StaticResource StatusNoneConverter}}">
+                                                    <TextBlock Text="{Binding ProgressBadgeText}" FontSize="9" Opacity="0.6"/>
+                                                </Border>
+
+                                                <!-- Current active anime badge -->
+                                                <Border Grid.Column="1" Background="{DynamicResource SystemAccentColor}" CornerRadius="4" Padding="5,2"
+                                                        IsVisible="{Binding IsCurrent}">
+                                                    <TextBlock Text="{DynamicResource l.anime.labels.franchise_you_are_here}" FontSize="8.5" FontWeight="Bold" Foreground="White"/>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- OPTION B: FALLBACK STANDARD RELATIONS (when no franchise data)  -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <Border Classes="ContentCard" IsVisible="{Binding !HasFranchiseTimeline}">
+            <Border IsVisible="{Binding Relations.Count, Converter={StaticResource IntToBoolConverter}}">
+                <StackPanel>
+                    <Grid ColumnDefinitions="*" Margin="0,0,0,10">
+                        <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.relations}" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Relations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vmAnimeDetails:RelationItemVm">
+                                <Button Classes="RelationCardButton" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                        Command="{Binding $parent[Window].((vmAnimeDetails:AnimeDetailsViewModel)DataContext).NavigateToRelationCommand}"
+                                        CommandParameter="{Binding Relation}">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <!-- Image -->
+                                        <Border Grid.Column="0" Width="42" Height="58" CornerRadius="6" Margin="0,0,12,0" ClipToBounds="True">
+                                            <Panel>
+                                                <Border Background="{DynamicResource CardBackgroundBrush}"/>
+                                                <Image asyncImageLoader:ImageLoader.Source="{Binding ImageUrl}" Stretch="UniformToFill"/>
+                                            </Panel>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Relation.TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
+                                            <TextBlock Text="{Binding Relation.RelationType}" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        
+                                        <Border Grid.Column="2" Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" IsVisible="{Binding DisplayTargetType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <TextBlock Text="{Binding DisplayTargetType}" FontSize="10" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Panel>
 </UserControl>

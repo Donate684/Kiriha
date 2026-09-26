@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Kiriha.ViewModels;
 using Kiriha.ViewModels.Dialogs;
 
 namespace Kiriha.Views;
@@ -13,25 +12,15 @@ public partial class FranchiseGraphWindow : KirihaWindowBase
     private bool _isPanning;
     private Point _lastPanPoint;
 
-    private ScaleTransform GraphScale 
-    {
-        get 
-        {
-            var grid = (Grid)GraphContainer.Child!;
-            var group = (TransformGroup)grid.RenderTransform!;
-            return (ScaleTransform)group.Children[0];
-        }
-    }
+    private ScaleTransform? GraphScale =>
+        (GraphContainer?.Child as Grid)?.RenderTransform is TransformGroup group && group.Children.Count > 0
+            ? group.Children[0] as ScaleTransform
+            : null;
 
-    private TranslateTransform GraphTranslate
-    {
-        get 
-        {
-            var grid = (Grid)GraphContainer.Child!;
-            var group = (TransformGroup)grid.RenderTransform!;
-            return (TranslateTransform)group.Children[1];
-        }
-    }
+    private TranslateTransform? GraphTranslate =>
+        (GraphContainer?.Child as Grid)?.RenderTransform is TransformGroup group && group.Children.Count > 1
+            ? group.Children[1] as TranslateTransform
+            : null;
 
     public FranchiseGraphWindow()
     {
@@ -54,6 +43,10 @@ public partial class FranchiseGraphWindow : KirihaWindowBase
         {
             if (DataContext is FranchiseGraphViewModel vm)
             {
+                vm.RequestCenterGraph += CenterGraph;
+                vm.RequestZoomDelta += OnRequestZoomDelta;
+                vm.RequestResetZoom += OnRequestResetZoom;
+
                 await vm.LoadGraphAsync();
                 CenterGraph();
             }
@@ -64,45 +57,106 @@ public partial class FranchiseGraphWindow : KirihaWindowBase
         }
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        if (DataContext is FranchiseGraphViewModel vm)
+        {
+            vm.RequestCenterGraph -= CenterGraph;
+            vm.RequestZoomDelta -= OnRequestZoomDelta;
+            vm.RequestResetZoom -= OnRequestResetZoom;
+        }
+
+        base.OnClosed(e);
+    }
+
     private void CenterGraph()
     {
-        if (DataContext is FranchiseGraphViewModel vm && vm.Layout != null && GraphTranslate != null)
+        if (DataContext is FranchiseGraphViewModel vm && vm.Layout != null && GraphTranslate != null && GraphScale != null)
         {
-            double windowWidth = this.Bounds.Width;
-            double windowHeight = this.Bounds.Height;
-            
+            double windowWidth = GraphContainer.Bounds.Width > 0 ? GraphContainer.Bounds.Width : this.Bounds.Width;
+            double windowHeight = GraphContainer.Bounds.Height > 0 ? GraphContainer.Bounds.Height : this.Bounds.Height - 44;
+
             double graphWidth = vm.Layout.Width;
             double graphHeight = vm.Layout.Height;
 
-            GraphTranslate.X = (windowWidth - graphWidth) / 2;
-            GraphTranslate.Y = (windowHeight - graphHeight) / 2;
-            
-            GraphScale.ScaleX = 1.0;
-            GraphScale.ScaleY = 1.0;
+            if (graphWidth <= 0 || graphHeight <= 0) return;
+
+            double padding = 80;
+            double scaleX = (windowWidth - padding) / graphWidth;
+            double scaleY = (windowHeight - padding) / graphHeight;
+            double fitScale = Math.Min(1.0, Math.Min(scaleX, scaleY));
+            if (fitScale < 0.25) fitScale = 0.25;
+            if (fitScale > 1.25) fitScale = 1.0;
+
+            GraphScale.ScaleX = fitScale;
+            GraphScale.ScaleY = fitScale;
+
+            GraphTranslate.X = (windowWidth - graphWidth * fitScale) / 2;
+            GraphTranslate.Y = Math.Max(24, (windowHeight - graphHeight * fitScale) / 2);
+
+            vm.UpdateZoomDisplay(fitScale);
         }
+    }
+
+    private void OnRequestZoomDelta(double delta)
+    {
+        if (GraphScale == null || GraphTranslate == null || DataContext is not FranchiseGraphViewModel vm) return;
+
+        double currentScale = GraphScale.ScaleX;
+        double newScale = Math.Clamp(currentScale * delta, 0.2, 3.0);
+        double actualDelta = newScale / currentScale;
+
+        double centerX = GraphContainer.Bounds.Width > 0 ? GraphContainer.Bounds.Width / 2 : this.Bounds.Width / 2;
+        double centerY = GraphContainer.Bounds.Height > 0 ? GraphContainer.Bounds.Height / 2 : this.Bounds.Height / 2;
+
+        GraphTranslate.X = (GraphTranslate.X - centerX) * actualDelta + centerX;
+        GraphTranslate.Y = (GraphTranslate.Y - centerY) * actualDelta + centerY;
+
+        GraphScale.ScaleX = newScale;
+        GraphScale.ScaleY = newScale;
+
+        vm.UpdateZoomDisplay(newScale);
+    }
+
+    private void OnRequestResetZoom()
+    {
+        if (GraphScale == null || GraphTranslate == null || DataContext is not FranchiseGraphViewModel vm) return;
+
+        double currentScale = GraphScale.ScaleX;
+        double newScale = 1.0;
+        double actualDelta = newScale / currentScale;
+
+        double centerX = GraphContainer.Bounds.Width > 0 ? GraphContainer.Bounds.Width / 2 : this.Bounds.Width / 2;
+        double centerY = GraphContainer.Bounds.Height > 0 ? GraphContainer.Bounds.Height / 2 : this.Bounds.Height / 2;
+
+        GraphTranslate.X = (GraphTranslate.X - centerX) * actualDelta + centerX;
+        GraphTranslate.Y = (GraphTranslate.Y - centerY) * actualDelta + centerY;
+
+        GraphScale.ScaleX = newScale;
+        GraphScale.ScaleY = newScale;
+
+        vm.UpdateZoomDisplay(newScale);
     }
 
     private void OnGraphPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        // Allow pan if left button is pressed, and we didn't click on a button (Node)
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _isPanning = true;
             _lastPanPoint = e.GetPosition(this);
-            // We don't mark as handled here to let buttons work if clicked
         }
     }
 
     private void OnGraphPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (_isPanning)
+        if (_isPanning && GraphTranslate != null)
         {
             var currentPoint = e.GetPosition(this);
             var delta = currentPoint - _lastPanPoint;
-            
+
             GraphTranslate.X += delta.X;
             GraphTranslate.Y += delta.Y;
-            
+
             _lastPanPoint = currentPoint;
             e.Handled = true;
         }
@@ -115,21 +169,24 @@ public partial class FranchiseGraphWindow : KirihaWindowBase
 
     private void OnGraphPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
-        var zoomDelta = e.Delta.Y > 0 ? 1.15 : 1 / 1.15;
-        var newScale = GraphScale.ScaleX * zoomDelta;
+        if (GraphScale == null || GraphTranslate == null) return;
 
-        if (newScale < 0.1) newScale = 0.1;
-        if (newScale > 4.0) newScale = 4.0;
-
-        zoomDelta = newScale / GraphScale.ScaleX;
+        var zoomFactor = e.Delta.Y > 0 ? 1.15 : 1 / 1.15;
+        var newScale = Math.Clamp(GraphScale.ScaleX * zoomFactor, 0.18, 3.5);
+        var actualDelta = newScale / GraphScale.ScaleX;
 
         var mousePos = e.GetPosition(GraphContainer);
 
-        GraphTranslate.X = (GraphTranslate.X - mousePos.X) * zoomDelta + mousePos.X;
-        GraphTranslate.Y = (GraphTranslate.Y - mousePos.Y) * zoomDelta + mousePos.Y;
+        GraphTranslate.X = (GraphTranslate.X - mousePos.X) * actualDelta + mousePos.X;
+        GraphTranslate.Y = (GraphTranslate.Y - mousePos.Y) * actualDelta + mousePos.Y;
 
         GraphScale.ScaleX = newScale;
         GraphScale.ScaleY = newScale;
+
+        if (DataContext is FranchiseGraphViewModel vm)
+        {
+            vm.UpdateZoomDisplay(newScale);
+        }
 
         e.Handled = true;
     }

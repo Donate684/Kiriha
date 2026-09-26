@@ -47,6 +47,29 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
     public System.Collections.ObjectModel.ObservableCollection<RelationItemVm> Relations { get; } = new();
 
+    [ObservableProperty]
+    private bool _hasFranchiseTimeline;
+
+    [ObservableProperty]
+    private int _franchiseCompletedCount;
+
+    [ObservableProperty]
+    private int _franchiseTotalCount;
+
+    [ObservableProperty]
+    private int _franchiseCompletionPercentage;
+
+    [ObservableProperty]
+    private string _franchiseProgressSummary = string.Empty;
+
+    [ObservableProperty]
+    private string _franchiseCompletionPercentText = string.Empty;
+
+    [ObservableProperty]
+    private string _franchiseProgressTooltip = string.Empty;
+
+    public System.Collections.ObjectModel.ObservableCollection<Kiriha.Utils.Graphs.FranchiseGraphVisualNode> FranchiseTimeline { get; } = new();
+
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
     private readonly ISettingsService _settingsService;
@@ -81,6 +104,20 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
         BuildCustomShareLinks();
 
+        _anime.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(AnimeEntity.Status) || e.PropertyName == nameof(AnimeEntity.Progress))
+            {
+                var current = FranchiseTimeline.FirstOrDefault(n => n.IsCurrent);
+                if (current != null)
+                {
+                    current.UserStatus = _anime.Status;
+                    current.UserProgress = _anime.Progress;
+                    UpdateFranchiseProgressStats();
+                }
+            }
+        };
+
         InitializationAsync().SafeFireAndForget("AnimeDetailsInitialization");
     }
 
@@ -113,24 +150,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase
             }
         }
 
-        try
-        {
-            var relations = await _jikanApiService.GetRelationsAsync(Anime.Id, Anime.MediaKind);
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                Relations.Clear();
-                foreach (var r in relations)
-                {
-                    var vm = new RelationItemVm(r);
-                    Relations.Add(vm);
-                    _ = FetchRelationImageAsync(vm);
-                }
-            });
-        }
-        catch (System.Exception ex)
-        {
-            Log.Warning(ex, "Failed to fetch relations for {Id}", Anime.Id);
-        }
+        _ = LoadFranchiseAndRelationsAsync();
     }
 
 
