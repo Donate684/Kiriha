@@ -24,7 +24,6 @@ public partial class HistoryViewModel : ViewModelBase
     private readonly IAnimeRepository _animeRepo;
     private readonly IMalApiService _malApi;
     private readonly IDialogService _dialogs;
-    private readonly ISettingsService _settings;
     private readonly ILocalizer _localizer;
     private List<HistoryItem> _rawItems = new();
 
@@ -54,7 +53,6 @@ public partial class HistoryViewModel : ViewModelBase
         IAnimeRepository animeRepo,
         IMalApiService malApi,
         IDialogService dialogs,
-        ISettingsService settings,
         ILocalizer localizer)
     {
         _historyService = historyService;
@@ -62,7 +60,6 @@ public partial class HistoryViewModel : ViewModelBase
         _animeRepo = animeRepo;
         _malApi = malApi;
         _dialogs = dialogs;
-        _settings = settings;
         _localizer = localizer;
         RefreshHistory().SafeFireAndForget("HistoryInit");
     }

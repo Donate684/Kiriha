@@ -36,9 +36,6 @@ public partial class SettingsViewModel : ViewModelBase
 
     public SettingsCustomLinksViewModel CustomLinks { get; }
 
-    private readonly ISettingsService _settingsService;
-    private readonly FaviconService _faviconService;
-
     public SettingsViewModel(
         ISettingsService settingsService,
         MalAuthService authService,
@@ -57,9 +54,6 @@ public partial class SettingsViewModel : ViewModelBase
         FaviconService faviconService,
         IStartupManager startupManager)
     {
-        _settingsService = settingsService;
-        _faviconService = faviconService;
-
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
         System = new SettingsSystemViewModel(settingsService, discordService, startupManager);

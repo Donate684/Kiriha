@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,16 +14,13 @@ public partial class AnimeMetadataViewModel : ObservableObject
 {
     private readonly AnimeEntity _anime;
     private readonly IMalApiService _malApiService;
-    private readonly IShikiApiService _shikiApiService;
 
     public AnimeMetadataViewModel(
         AnimeEntity anime,
-        IMalApiService malApiService,
-        IShikiApiService shikiApiService)
+        IMalApiService malApiService)
     {
         _anime = anime;
         _malApiService = malApiService;
-        _shikiApiService = shikiApiService;
     }
 
     public string JoinedGenres => string.Join(", ", _anime.Genres);

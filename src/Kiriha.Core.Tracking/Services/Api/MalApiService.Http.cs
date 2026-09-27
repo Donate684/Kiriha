@@ -137,7 +137,7 @@ public partial class MalApiService
 
     private async Task InteractiveThrottleAsync(CancellationToken ct)
     {
-        TimeSpan delay = TimeSpan.Zero;
+        TimeSpan delay;
         lock (_interactiveLock)
         {
             var now = DateTime.UtcNow;

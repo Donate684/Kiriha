@@ -13,16 +13,14 @@ namespace Kiriha.Infrastructure.Tracking.Integration;
 
 public class SmtcService : IDisposable
 {
-    private readonly ISettingsService _settingsService;
 #if WINDOWS
     private GlobalSystemMediaTransportControlsSessionManager? _manager;
 #endif
 
     public bool DiscoveryMode { get; set; }
 
-    public SmtcService(ISettingsService settingsService)
+    public SmtcService()
     {
-        _settingsService = settingsService;
     }
 
     public async Task StartAsync()

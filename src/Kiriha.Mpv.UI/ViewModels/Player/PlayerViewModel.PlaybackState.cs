@@ -19,7 +19,6 @@ public partial class PlayerViewModel
     [ObservableProperty] private double _volume = 100;
     [ObservableProperty] private bool _isMuted = false;
     [ObservableProperty] private bool _normalizeAudio = false;
-    private double _previousVolume = 100;
 
     [ObservableProperty] private double _playbackSpeed = 1.0;
 }

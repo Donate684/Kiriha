@@ -24,12 +24,6 @@ public static class SmartTrackAutoloader
             ".mka", ".flac", ".aac", ".mp3", ".ogg", ".opus", ".m4a", ".wav", ".ac3", ".dts"
         ], StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> VideoExtensions = FrozenSet.ToFrozenSet(
-        [
-            ".mkv", ".mp4", ".avi", ".mov", ".wmv", ".webm", ".m4v", ".flv",
-            ".ts", ".m2ts", ".mpg", ".mpeg", ".ogv", ".rmvb", ".y4m"
-        ], StringComparer.OrdinalIgnoreCase);
-
     /// <summary>
     /// Finds external subtitle and audio track paths that match the episode number of
     /// <paramref name="videoPath"/>. Returns empty lists if the feature should not load anything

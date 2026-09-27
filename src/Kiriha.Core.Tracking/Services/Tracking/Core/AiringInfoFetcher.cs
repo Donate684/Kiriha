@@ -28,7 +28,7 @@ public class AiringInfoFetcher
 
     public async Task<(EpisodeAiringInfo? Airing, int AiredCount, DateTime? NextSlot)> FetchAndResolveAsync(AnimeEntity anime, bool force, CancellationToken ct)
     {
-        EpisodeAiringInfo? airing = null;
+        EpisodeAiringInfo? airing;
         var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
 
         if (source == EpisodeAiringSource.Shikimori && _shikiApi != null)

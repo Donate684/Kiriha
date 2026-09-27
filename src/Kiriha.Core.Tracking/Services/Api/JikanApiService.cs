@@ -38,7 +38,6 @@ public partial class JikanApiService : IDisposable
 {
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(12);
 
-    private readonly HttpClient _httpClient;
     private readonly IEpisodeReleaseRepository _episodes;
     private readonly IAnimeRelationRepository _relations;
     private readonly HttpConditionalCache _httpCache;
@@ -63,7 +62,6 @@ public partial class JikanApiService : IDisposable
 
     public JikanApiService(HttpClient httpClient, IEpisodeReleaseRepository episodes, IAnimeRelationRepository relations, IHttpCacheRepository httpCacheRepo)
     {
-        _httpClient = httpClient;
         _episodes = episodes;
         _relations = relations;
         _httpCache = new HttpConditionalCache(httpClient, httpCacheRepo, "Jikan");

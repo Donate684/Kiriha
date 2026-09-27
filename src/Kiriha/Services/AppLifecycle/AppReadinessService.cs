@@ -26,7 +26,6 @@ public sealed class AppReadinessService
     private readonly DatabaseInitializer _databaseInitializer;
     private readonly AnimeRepository _animeRepo;
     private readonly AnimeSyncOrchestrator _orchestrator;
-    private readonly NotificationService _notificationService;
     private readonly DiscordService _discordService;
     private readonly SmtcService _smtcService;
     private readonly MaintenanceService _maintenanceService;
@@ -44,7 +43,6 @@ public sealed class AppReadinessService
         DatabaseInitializer databaseInitializer,
         AnimeRepository animeRepo,
         AnimeSyncOrchestrator orchestrator,
-        NotificationService notificationService,
         DiscordService discordService,
         SmtcService smtcService,
         MaintenanceService maintenanceService,
@@ -56,7 +54,6 @@ public sealed class AppReadinessService
         _databaseInitializer = databaseInitializer;
         _animeRepo = animeRepo;
         _orchestrator = orchestrator;
-        _notificationService = notificationService;
         _discordService = discordService;
         _smtcService = smtcService;
         _maintenanceService = maintenanceService;

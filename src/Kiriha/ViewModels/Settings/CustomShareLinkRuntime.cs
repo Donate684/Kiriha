@@ -62,22 +62,5 @@ public partial class CustomShareLinkRuntime : ObservableObject
             Log.Warning(ex, "Failed to open custom share link {Url}", Url);
         }
     }
-
-    [RelayCommand]
-    private async Task Copy()
-    {
-        if (string.IsNullOrWhiteSpace(Url)) return;
-        try
-        {
-            if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
-                desktop.MainWindow?.Clipboard != null)
-            {
-                await desktop.MainWindow.Clipboard.SetTextAsync(Url);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to copy custom share link {Url}", Url);
-        }
-    }
 }
+

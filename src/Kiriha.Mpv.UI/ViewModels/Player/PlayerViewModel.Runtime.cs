@@ -274,7 +274,6 @@ public partial class PlayerViewModel
 
         if (value)
         {
-            _previousVolume = Volume;
             _playback.SetVolume(0);
             ShowOsd(_localizer.GetLoc("player.osd.sound"), _localizer.GetLoc("player.osd.muted"));
         }

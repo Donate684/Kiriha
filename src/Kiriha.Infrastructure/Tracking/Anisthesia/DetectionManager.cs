@@ -17,7 +17,6 @@ namespace Kiriha.Infrastructure.Tracking.Anisthesia;
 
 public class DetectionManager
 {
-    private readonly List<AnisthesiaPlayer> _players;
     private readonly ISettingsService _settingsService;
     private readonly FrozenDictionary<string, List<AnisthesiaPlayer>> _exactExecutableMap;
     private readonly (Regex Regex, AnisthesiaPlayer Player, List<AnisthesiaPlayer> PlayerList)[] _regexExecutableRules;
@@ -29,7 +28,6 @@ public class DetectionManager
 
     public DetectionManager(List<AnisthesiaPlayer> players, ISettingsService settingsService)
     {
-        _players = players;
         _settingsService = settingsService;
 
         var exactDict = new Dictionary<string, List<AnisthesiaPlayer>>(StringComparer.OrdinalIgnoreCase);

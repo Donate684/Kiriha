@@ -67,16 +67,5 @@ public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl
 
 
 
-    private static string ToTransparent(string color)
-    {
-        if (color.Length == 9 && color[0] == '#')
-            return "#00" + color[3..];
-
-        if (color.Length == 7 && color[0] == '#')
-            return "#00" + color[1..];
-
-        return "#00000000";
-    }
-
     private static IBrush BrushFrom(string color) => new SolidColorBrush(Color.Parse(color));
 }

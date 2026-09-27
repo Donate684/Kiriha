@@ -7,7 +7,6 @@ internal sealed class MpvPropertyCache
 {
     private const double TimePositionMinimumChangeSeconds = 0.016;
     private static readonly TimeSpan RuntimeInfoRefreshInterval = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan TimePositionEventInterval = TimeSpan.FromMilliseconds(16);
 
     private readonly Lock _gate = new();
     private PlaybackState _playbackState = new(0, 0, false, false, false);

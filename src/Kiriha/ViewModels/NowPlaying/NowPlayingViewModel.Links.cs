@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Infrastructure.Platform;
@@ -8,22 +6,6 @@ namespace Kiriha.ViewModels.NowPlaying;
 
 public partial class NowPlayingViewModel
 {
-    [RelayCommand]
-    private async Task CopyMalLink()
-    {
-        if (MatchedAnime is null) return;
-        string url = $"{Kiriha.Core.Domain.Constants.AppConstants.Api.Mal.WebsiteUrl}{MatchedAnime.Id}";
-        await CopyToClipboard(url);
-    }
-
-    [RelayCommand]
-    private async Task CopyShikiLink()
-    {
-        if (MatchedAnime is null) return;
-        string url = $"{ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror)}{MatchedAnime.Id}";
-        await CopyToClipboard(url);
-    }
-
     [RelayCommand]
     private void OpenMalLink()
     {
@@ -36,13 +18,5 @@ public partial class NowPlayingViewModel
     {
         if (MatchedAnime is null) return;
         ShellLauncher.OpenUrl($"{ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror)}{MatchedAnime.Id}");
-    }
-
-    private static async Task CopyToClipboard(string text)
-    {
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.Clipboard != null)
-        {
-            await desktop.MainWindow.Clipboard.SetTextAsync(text);
-        }
     }
 }

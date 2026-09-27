@@ -31,7 +31,7 @@
         <ResourceDictionary>
             <conv:LocConverter x:Key="LocConverter"/>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Views/AnimeList/AnimeCardTemplates.axaml"/>
+                <ResourceInclude Source="/Views/AnimeList/AnimeCardTemplate.axaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -71,7 +71,7 @@
             <ItemsRepeater x:Name="AnimeGridRepeater"
                            ItemsSource="{Binding FilteredItems}"
                            Margin="20,0,20,16"
-                           ItemTemplate="{StaticResource CardTemplatePosterFirst}">
+                           ItemTemplate="{StaticResource AnimeCardTemplate}">
                     <ItemsRepeater.Layout>
                         <UniformGridLayout MinItemWidth="172"
                                           MinItemHeight="326"

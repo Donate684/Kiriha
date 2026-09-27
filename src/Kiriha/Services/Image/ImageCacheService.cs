@@ -25,7 +25,6 @@ public class ImageCacheService : IDisposable
     private readonly string CacheRoot = Kiriha.Infrastructure.Platform.PathHelper.GetImageCachePath();
 
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
-    private readonly IUiDispatcher _uiDispatcher;
     private readonly ImageDownloader _downloader;
     private readonly ImageDiskCache _diskCache;
     private readonly ImageCacheCleanup _cleanup;
@@ -40,7 +39,6 @@ public class ImageCacheService : IDisposable
     protected ImageCacheService()
     {
         _backgroundTasks = null!;
-        _uiDispatcher = null!;
         _downloader = null!;
         _diskCache = null!;
         _cleanup = null!;
@@ -48,11 +46,9 @@ public class ImageCacheService : IDisposable
 
     public ImageCacheService(
         IHttpClientFactory httpClientFactory,
-        IBackgroundTaskSupervisor backgroundTasks,
-        IUiDispatcher uiDispatcher)
+        IBackgroundTaskSupervisor backgroundTasks)
     {
         _backgroundTasks = backgroundTasks;
-        _uiDispatcher = uiDispatcher;
         _downloader = new ImageDownloader(httpClientFactory, CacheRoot);
         _diskCache = new ImageDiskCache(CacheRoot, _downloader);
         _cleanup = new ImageCacheCleanup(CacheRoot);

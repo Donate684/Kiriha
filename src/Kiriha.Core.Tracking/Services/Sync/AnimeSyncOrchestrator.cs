@@ -25,7 +25,6 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
     private readonly IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IEnumerable<ITrackerService> _trackers;
-    private readonly IUiDispatcher _uiDispatcher;
     private readonly IRecognitionCache _recognitionCache;
 
     private int _syncing;
@@ -35,13 +34,11 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         IAnimeRepository animeRepository,
         IUserAnimeRepository userAnimeRepo,
         IEnumerable<ITrackerService> trackers,
-        IUiDispatcher uiDispatcher,
         IRecognitionCache recognitionCache)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
         _trackers = trackers;
-        _uiDispatcher = uiDispatcher;
         _recognitionCache = recognitionCache;
     }
 

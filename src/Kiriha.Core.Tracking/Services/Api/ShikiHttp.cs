@@ -67,7 +67,6 @@ public static class ShikiHttp
         }
 
         var currentUri = resolver.Rewrite(request.RequestUri!);
-        var aliasTried = false;
         for (var hop = 0; hop <= maxHops; hop++)
         {
             var attemptRequest = await CloneRequestAsync(request, currentUri, ct).ConfigureAwait(false);
@@ -109,11 +108,10 @@ public static class ShikiHttp
             // ALL 404, it's a genuine "not found" and we surface the last
             // response. Heuristic guard: only act on /api/* and /oauth/* so a
             // genuine 404 on, say, /assets/* can't trigger unrelated retries.
-            if (code == 404 && !aliasTried &&
+            if (code == 404 &&
                 LooksLikeApiPath(currentUri.AbsolutePath) &&
                 resolver.IsKnownHost(currentUri.Host))
             {
-                aliasTried = true;
                 var originalHost = currentUri.Host;
 
                 HttpResponseMessage? lastResponse = null;

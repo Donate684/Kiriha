@@ -8,10 +8,4 @@ public partial class NowPlayingCompact : UserControl
     {
         InitializeComponent();
     }
-
-    private void ShareRow_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        var btn = this.FindControl<Button>("ShareMainButton");
-        btn?.Flyout?.Hide();
-    }
 }

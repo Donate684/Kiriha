@@ -54,8 +54,6 @@ public class HandleEnumerationStrategy
     private const uint PROCESS_DUP_HANDLE = 0x0040;
     private const uint DUPLICATE_SAME_ACCESS = 0x00000002;
     private const uint FILE_TYPE_DISK = 0x0001;
-    private const uint FILE_NAME_NORMALIZED = 0x0;
-    private const uint VOLUME_NAME_DOS = 0x0;
 
     public static unsafe List<string> GetOpenFiles(uint pid)
     {

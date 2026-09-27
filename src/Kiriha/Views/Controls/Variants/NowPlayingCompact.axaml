@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -96,41 +96,6 @@
             <Setter Property="Fill" Value="{DynamicResource SystemAccentColor}"/>
         </Style>
         
-        <!-- â•â•â• Share Flyout Presenter (Ghost host) â•â•â• -->
-        <Style Selector="FlyoutPresenter.ShareFlyout">
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="MinWidth" Value="240"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <!-- Disabling system shadow and chrome which might induce composition transparency -->
-        </Style>
-
-        <!-- â•â•â• Share Row Button (Cloned 1:1 from FilterToggle in SeasonalView) â•â•â• -->
-        <Style Selector="Button.ShareRow">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="10,7"/>
-            <Setter Property="MinHeight" Value="0"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button.ShareRow:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
-            <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-        </Style>
-        <Style Selector="Button.ShareRow:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
-            <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-        </Style>
     </UserControl.Styles>
 
     <Panel>

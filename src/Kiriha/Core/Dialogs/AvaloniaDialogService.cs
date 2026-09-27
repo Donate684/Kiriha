@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -67,8 +67,7 @@ public sealed class AvaloniaDialogService : IDialogService
             
         var metaVm = new AnimeMetadataViewModel(
             clone,
-            _malApiService,
-            _shikiApiService);
+            _malApiService);
 
         var vm = new AnimeDetailsViewModel(
             clone,

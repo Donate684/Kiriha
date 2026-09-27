@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -7,9 +7,9 @@ using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList
 {
-    public partial class AnimeCardPosterFirstTemplate : ResourceDictionary
+    public partial class AnimeCardTemplate : ResourceDictionary
     {
-        public AnimeCardPosterFirstTemplate()
+        public AnimeCardTemplate()
         {
             InitializeComponent();
         }

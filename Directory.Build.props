@@ -13,5 +13,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AvaloniaVersion>12.1.3</AvaloniaVersion>
     <AvaloniaSubpackagesVersion>12.0.0</AvaloniaSubpackagesVersion>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
   </PropertyGroup>
 </Project>

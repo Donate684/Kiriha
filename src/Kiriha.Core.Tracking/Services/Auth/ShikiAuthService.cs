@@ -23,7 +23,6 @@ public partial class ShikiAuthService
 
     private ShikiMirror ActiveMirror => _settingsService.Current.Api.ShikiMirror;
     private string ClientId => ShikiEndpoints.ClientId(ActiveMirror);
-    private string TokenUrl => ShikiEndpoints.TokenUrl(ActiveMirror);
     private string AuthBase => ShikiEndpoints.AuthUrl(ActiveMirror);
 
     public ShikiAuthService(HttpClient httpClient, ISettingsService settingsService, ShikiHostResolver hostResolver)
