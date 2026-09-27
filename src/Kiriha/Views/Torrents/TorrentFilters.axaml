@@ -57,7 +57,8 @@
                                        Foreground="{Binding $parent[Button].Foreground}"/>
                         </StackPanel>
                         <Button.Flyout>
-                        <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
+                        <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout"
+                                Opened="OnFilterFlyoutOpened">
                         <StackPanel Spacing="4" Margin="8,6" HorizontalAlignment="Stretch">
 
                                 <!-- Per-title notice -->

@@ -234,7 +234,7 @@
                     <details:AnimeDetailsInfoTab />
 
                     <!-- == RELATIONS == -->
-                    <details:AnimeDetailsRelations />
+                    <details:AnimeDetailsRelations IsVisible="{Binding HasAnyRelationsOrTimeline}" />
 
                 </StackPanel>
             </ScrollViewer>

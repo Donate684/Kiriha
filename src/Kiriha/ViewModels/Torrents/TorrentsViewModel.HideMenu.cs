@@ -32,7 +32,10 @@ public partial class TorrentsViewModel
         HideMenuItems.Clear();
         foreach (var a in watching)
         {
-            var item = new HideableAnimeItem(a, hidden.Contains(a.Id));
+            var item = new HideableAnimeItem(a, hidden.Contains(a.Id))
+            {
+                IsSelected = SelectedAnime != null && a.Id == SelectedAnime.Id
+            };
             item.HiddenChanged += OnHideMenuItemChanged;
             HideMenuItems.Add(item);
         }

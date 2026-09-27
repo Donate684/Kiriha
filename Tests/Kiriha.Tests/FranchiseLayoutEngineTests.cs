@@ -127,4 +127,51 @@ public class FranchiseLayoutEngineTests
         Assert.False(string.IsNullOrEmpty(mainLink.ConnectionPath));
         Assert.False(string.IsNullOrEmpty(mainLink.ArrowPath));
     }
+
+    [Fact]
+    public void ShikiFranchise_Deserializes_BothTimestampAndDateObject()
+    {
+        const string jsonTimestamp = """
+        {
+            "nodes": [
+                {
+                    "id": 1,
+                    "date": 1788555600,
+                    "name": "Timestamp Show",
+                    "year": 2026
+                }
+            ],
+            "links": []
+        }
+        """;
+
+        const string jsonObject = """
+        {
+            "nodes": [
+                {
+                    "id": 2,
+                    "date": { "day": 5, "month": 9, "year": 2026 },
+                    "name": "Fork Show",
+                    "year": null
+                }
+            ],
+            "links": []
+        }
+        """;
+
+        var resTimestamp = System.Text.Json.JsonSerializer.Deserialize<ShikiFranchiseResponse>(jsonTimestamp);
+        var resObject = System.Text.Json.JsonSerializer.Deserialize<ShikiFranchiseResponse>(jsonObject);
+
+        Assert.NotNull(resTimestamp);
+        Assert.Single(resTimestamp.Nodes);
+        Assert.Equal(1788555600, resTimestamp.Nodes[0].Date);
+        Assert.Equal(2026, resTimestamp.Nodes[0].Year);
+
+        Assert.NotNull(resObject);
+        Assert.Single(resObject.Nodes);
+        Assert.True(resObject.Nodes[0].Date > 0);
+        Assert.Equal(2026, resObject.Nodes[0].Year); // Auto-derived from Date
+    }
 }
+
+

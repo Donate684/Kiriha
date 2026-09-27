@@ -22,7 +22,7 @@ public partial class NowPlayingViewModel
 {
     public void Receive(TrackingStatusMessage message)
     {
-        TrackingStatus = message.Status;
+        TrackingStatus = string.IsNullOrEmpty(message.Status) ? string.Empty : _localizer.GetLoc(message.Status);
     }
 
     public void Receive(TrackingCountdownMessage message)

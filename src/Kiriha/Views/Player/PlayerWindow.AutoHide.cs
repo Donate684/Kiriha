@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
@@ -11,7 +11,7 @@ public partial class PlayerWindow
     // Auto-hide: hide panels after timeout of no mouse movement
     private static readonly TimeSpan ControlsKeepAliveInterval = TimeSpan.FromMilliseconds(180);
     private readonly DispatcherTimer _hideTimer = new();
-    private readonly DispatcherTimer _hitTestDisableTimer = new() { Interval = TimeSpan.FromMilliseconds(300) };
+    private readonly DispatcherTimer _hitTestDisableTimer = new() { Interval = TimeSpan.FromMilliseconds(320) };
     private bool _controlsVisible = true;
     private DateTime _lastControlsKeepAliveUtc = DateTime.MinValue;
 
@@ -42,16 +42,18 @@ public partial class PlayerWindow
 
         var now = DateTime.UtcNow;
         bool wasHidden = !_controlsVisible;
-        if (wasHidden)
+        if (wasHidden || (_topBar != null && !_topBar.IsVisible) || (_bottomBar != null && !_bottomBar.IsVisible))
         {
             _controlsVisible = true;
             if (_topBar != null)
             {
+                _topBar.IsVisible = true;
                 _topBar.Opacity = 1;
                 _topBar.IsHitTestVisible = true;
             }
             if (_bottomBar != null)
             {
+                _bottomBar.IsVisible = true;
                 _bottomBar.Opacity = 1;
                 _bottomBar.IsHitTestVisible = true;
             }
@@ -82,8 +84,16 @@ public partial class PlayerWindow
         _hitTestDisableTimer.Stop();
         if (!_controlsVisible)
         {
-            if (_topBar != null) _topBar.IsHitTestVisible = false;
-            if (_bottomBar != null) _bottomBar.IsHitTestVisible = false;
+            if (_topBar != null)
+            {
+                _topBar.IsHitTestVisible = false;
+                _topBar.IsVisible = false;
+            }
+            if (_bottomBar != null)
+            {
+                _bottomBar.IsHitTestVisible = false;
+                _bottomBar.IsVisible = false;
+            }
         }
     }
 

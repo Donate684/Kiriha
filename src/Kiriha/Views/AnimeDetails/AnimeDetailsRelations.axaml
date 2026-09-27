@@ -43,7 +43,7 @@
         </Style>
     </UserControl.Styles>
 
-    <Panel>
+    <Panel IsVisible="{Binding HasAnyRelationsOrTimeline}">
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <!-- OPTION A: RICH FRANCHISE CHRONOLOGY (when franchise exists)    -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -175,42 +175,40 @@
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <!-- OPTION B: FALLBACK STANDARD RELATIONS (when no franchise data)  -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
-        <Border Classes="ContentCard" IsVisible="{Binding !HasFranchiseTimeline}">
-            <Border IsVisible="{Binding Relations.Count, Converter={StaticResource IntToBoolConverter}}">
-                <StackPanel>
-                    <Grid ColumnDefinitions="*" Margin="0,0,0,10">
-                        <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.relations}" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
-                    </Grid>
-                    <ItemsControl ItemsSource="{Binding Relations}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vmAnimeDetails:RelationItemVm">
-                                <Button Classes="RelationCardButton" HorizontalAlignment="Stretch" Margin="0,0,0,6"
-                                        Command="{Binding $parent[Window].((vmAnimeDetails:AnimeDetailsViewModel)DataContext).NavigateToRelationCommand}"
-                                        CommandParameter="{Binding Relation}">
-                                    <Grid ColumnDefinitions="Auto, *, Auto">
-                                        <!-- Image -->
-                                        <Border Grid.Column="0" Width="42" Height="58" CornerRadius="6" Margin="0,0,12,0" ClipToBounds="True">
-                                            <Panel>
-                                                <Border Background="{DynamicResource CardBackgroundBrush}"/>
-                                                <Image asyncImageLoader:ImageLoader.Source="{Binding ImageUrl}" Stretch="UniformToFill"/>
-                                            </Panel>
-                                        </Border>
-                                        
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Relation.TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
-                                            <TextBlock Text="{Binding Relation.RelationType}" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
-                                        </StackPanel>
-                                        
-                                        <Border Grid.Column="2" Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" IsVisible="{Binding DisplayTargetType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                            <TextBlock Text="{Binding DisplayTargetType}" FontSize="10" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis"/>
-                                        </Border>
-                                    </Grid>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
+        <Border Classes="ContentCard" IsVisible="{Binding HasStandardRelations}">
+            <StackPanel>
+                <Grid ColumnDefinitions="*" Margin="0,0,0,10">
+                    <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.relations}" Classes="SectionTitle" Margin="0" VerticalAlignment="Center"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Relations}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmAnimeDetails:RelationItemVm">
+                            <Button Classes="RelationCardButton" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                    Command="{Binding $parent[Window].((vmAnimeDetails:AnimeDetailsViewModel)DataContext).NavigateToRelationCommand}"
+                                    CommandParameter="{Binding Relation}">
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <!-- Image -->
+                                    <Border Grid.Column="0" Width="42" Height="58" CornerRadius="6" Margin="0,0,12,0" ClipToBounds="True">
+                                        <Panel>
+                                            <Border Background="{DynamicResource CardBackgroundBrush}"/>
+                                            <Image asyncImageLoader:ImageLoader.Source="{Binding ImageUrl}" Stretch="UniformToFill"/>
+                                        </Panel>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Relation.TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
+                                        <TextBlock Text="{Binding Relation.RelationType}" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    
+                                    <Border Grid.Column="2" Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" IsVisible="{Binding DisplayTargetType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <TextBlock Text="{Binding DisplayTargetType}" FontSize="10" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis"/>
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </Border>
     </Panel>
 </UserControl>

@@ -314,7 +314,7 @@
                         </StackPanel>
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
-                                <StackPanel Spacing="8" Margin="10">
+                                <StackPanel Width="310" Spacing="8" Margin="10">
                                     <!-- NSFW toggle row -->
                                     <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterNsfw}">
                                         <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
@@ -376,7 +376,7 @@
                                     </Grid>
 
                                     <!-- Genres Quick-Pick Scrollable Chips -->
-                                    <ScrollViewer MaxHeight="160" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                         <ItemsControl ItemsSource="{Binding GenreFilterItems}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>

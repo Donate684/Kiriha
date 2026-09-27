@@ -79,12 +79,51 @@ public partial class ShikiApiService
 
         try
         {
-            return JsonSerializer.Deserialize<ShikiFranchiseResponse>(bytes);
+            var res = JsonSerializer.Deserialize<ShikiFranchiseResponse>(bytes);
+            if (res != null)
+            {
+                NormalizeFranchiseResponse(res);
+            }
+            return res;
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "ShikiApiService: failed to deserialize franchise for {AnimeId}", animeId);
             return null;
+        }
+    }
+
+    private void NormalizeFranchiseResponse(ShikiFranchiseResponse res)
+    {
+        var mirror = _settingsService.Current.Api.ShikiMirror;
+        string root;
+        if (mirror == ShikiMirror.Net && !string.IsNullOrEmpty(_hostResolver.ActiveForkHost))
+        {
+            root = $"{Uri.UriSchemeHttps}{Uri.SchemeDelimiter}{_hostResolver.ActiveForkHost}";
+        }
+        else if (mirror == ShikiMirror.One && !string.IsNullOrEmpty(_hostResolver.ActiveOriginalHost))
+        {
+            root = $"{Uri.UriSchemeHttps}{Uri.SchemeDelimiter}{_hostResolver.ActiveOriginalHost}";
+        }
+        else
+        {
+            var host = ShikiEndpoints.Host(mirror);
+            root = host.BaseUrl;
+            int apiIdx = root.IndexOf("/api", StringComparison.OrdinalIgnoreCase);
+            if (apiIdx >= 0) root = root.Substring(0, apiIdx);
+        }
+        root = root.TrimEnd('/');
+
+        foreach (var node in res.Nodes)
+        {
+            if (!string.IsNullOrEmpty(node.ImageUrl) && node.ImageUrl.StartsWith('/'))
+            {
+                node.ImageUrl = root + node.ImageUrl;
+            }
+            if (!string.IsNullOrEmpty(node.Url) && node.Url.StartsWith('/'))
+            {
+                node.Url = root + node.Url;
+            }
         }
     }
 }

@@ -35,6 +35,13 @@ public sealed class HideableAnimeItem : ObservableObject
         }
     }
 
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+
     public event System.Action<HideableAnimeItem>? HiddenChanged;
 }
 

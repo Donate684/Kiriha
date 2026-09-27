@@ -18,6 +18,7 @@ public sealed class ShikiProbeStrategy
         "shikimori.rip",
         "shikimori.net",
         "shikimori.fi",
+        "shikimori.live",
     ];
 
     public ShikiProbeStrategy(ShikiHostState state)

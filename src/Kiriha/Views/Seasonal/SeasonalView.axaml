@@ -220,7 +220,7 @@
                 ZIndex="100">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4" CornerRadius="2" Foreground="{DynamicResource SystemAccentColor}"/>
-                <TextBlock Text="{DynamicResource l.sync.from_mal}" Opacity="0.9" FontSize="16" FontWeight="Medium" HorizontalAlignment="Center" Foreground="White"/>
+                <TextBlock Text="{DynamicResource l.sync.loading.from_mal}" Opacity="0.9" FontSize="16" FontWeight="Medium" HorizontalAlignment="Center" Foreground="White"/>
             </StackPanel>
         </Border>
 

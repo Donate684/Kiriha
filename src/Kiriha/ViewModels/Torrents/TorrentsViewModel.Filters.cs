@@ -1,7 +1,9 @@
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
 using Kiriha.Services.Data;
 using Kiriha.Services.Data.Settings;
@@ -92,9 +94,9 @@ public partial class TorrentsViewModel
 
         if (value)
         {
-            if (string.IsNullOrWhiteSpace(CustomQuery) && SelectedAnime != null)
+            if (string.IsNullOrWhiteSpace(CustomQuery))
             {
-                CustomQuery = SelectedAnime.Title;
+                CustomQuery = GetCurrentTitleDefaultQuery();
             }
             if (!string.IsNullOrWhiteSpace(CustomQuery))
             {
@@ -103,9 +105,10 @@ public partial class TorrentsViewModel
         }
         else
         {
-            if (SelectedAnime != null)
+            var defaultQuery = GetCurrentTitleDefaultQuery();
+            if (!string.IsNullOrWhiteSpace(defaultQuery))
             {
-                SearchQuery = SelectedAnime.Title;
+                SearchQuery = defaultQuery;
             }
         }
 
@@ -147,6 +150,7 @@ public partial class TorrentsViewModel
 
     /// <summary>Set during bulk-load of filter values so partial change handlers don't persist back.</summary>
     private bool _suppressFilterPersist;
+    private int _currentFilterContextId;
 
     public bool HasActiveFilters =>
         FilterVaryg || FilterEraiRaws || FilterToonsHub || FilterJudas || Filter1080p || FilterHevc
@@ -160,63 +164,120 @@ public partial class TorrentsViewModel
 
     private void LoadFilterSettings()
     {
-        _onlyCrunchyroll = _settingsService.Current.Torrents.OnlyCrunchyroll;
-        _filterNetflix = _settingsService.Current.Torrents.FilterNetflix;
-        _filterAmazon = _settingsService.Current.Torrents.FilterAmazon;
-        _filterHidive = _settingsService.Current.Torrents.FilterHidive;
-        _filterVaryg = _settingsService.Current.Torrents.FilterVaryg;
-        _filterEraiRaws = _settingsService.Current.Torrents.FilterEraiRaws;
-        _filterToonsHub = _settingsService.Current.Torrents.FilterToonsHub;
-        _filterJudas = _settingsService.Current.Torrents.FilterJudas;
-        _filterHevc = _settingsService.Current.Torrents.FilterHevc;
-        _filter1080p = _settingsService.Current.Torrents.Filter1080p;
         _filtersPerTitle = _settingsService.Current.Torrents.FiltersPerTitle;
+
+        // Clean up legacy global filter flags in config so they don't linger
+        var cfg = _settingsService.Current.Torrents;
+        if (cfg.OnlyCrunchyroll || cfg.FilterNetflix || cfg.FilterAmazon || cfg.FilterHidive ||
+            cfg.FilterVaryg || cfg.FilterEraiRaws || cfg.FilterToonsHub || cfg.FilterJudas ||
+            cfg.FilterHevc || cfg.Filter1080p)
+        {
+            _settingsService.Update(settings =>
+            {
+                settings.Torrents.OnlyCrunchyroll = false;
+                settings.Torrents.FilterNetflix = false;
+                settings.Torrents.FilterAmazon = false;
+                settings.Torrents.FilterHidive = false;
+                settings.Torrents.FilterVaryg = false;
+                settings.Torrents.FilterEraiRaws = false;
+                settings.Torrents.FilterToonsHub = false;
+                settings.Torrents.FilterJudas = false;
+                settings.Torrents.FilterHevc = false;
+                settings.Torrents.Filter1080p = false;
+            }, SettingsSection.Torrents);
+        }
+    }
+
+    public void SyncFilterContext()
+    {
+        var titleId = ResolveCurrentTitleId();
+        if (titleId != _currentFilterContextId)
+        {
+            ReloadFiltersForCurrentContext();
+        }
+    }
+
+    public int ResolveCurrentTitleId()
+    {
+        if (SelectedAnime != null)
+        {
+            return SelectedAnime.Id;
+        }
+
+        var query = SearchQuery?.Trim();
+        if (string.IsNullOrEmpty(query))
+        {
+            return 0;
+        }
+
+        var matched = ResolveAnimeForQuery(query);
+        if (matched != null)
+        {
+            return matched.Id;
+        }
+
+        return GetCustomTitleFilterId(query);
+    }
+
+    public static int GetCustomTitleFilterId(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title)) return 0;
+        var normalized = title.Trim().ToLowerInvariant();
+        uint hash = 2166136261;
+        foreach (char c in normalized)
+        {
+            hash ^= c;
+            hash *= 16777619;
+        }
+        int id = (int)(hash & 0x7FFFFFFF);
+        if (id == 0) id = 1;
+        return -id;
+    }
+
+    private AnimeEntity? ResolveAnimeForQuery(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return null;
+        var trimmed = query.Trim();
+        return _animeRepo.Collection.FirstOrDefault(a =>
+            string.Equals(a.Title, trimmed, StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrEmpty(a.EnglishTitle) && string.Equals(a.EnglishTitle, trimmed, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(a.RussianTitle) && string.Equals(a.RussianTitle, trimmed, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private string GetCurrentTitleDefaultQuery()
+    {
+        if (SelectedAnime != null) return SelectedAnime.Title;
+        return SearchQuery?.Trim() ?? string.Empty;
     }
 
     private void PersistFilter(string name, bool value)
     {
         if (_suppressFilterPersist) return;
 
-        if (FiltersPerTitle && SelectedAnime != null)
+        var titleId = ResolveCurrentTitleId();
+        if (titleId != 0)
         {
-            var target = _torrentFilterRepo.TryGetCachedFilter(SelectedAnime.Id) ?? new AppSettings.TorrentFilterSet();
+            _currentFilterContextId = titleId;
+            var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? new AppSettings.TorrentFilterSet();
             ApplyFilterValue(target, name, value);
-            _ = _torrentFilterRepo.SaveFilterAsync(SelectedAnime.Id, target);
-        }
-        else
-        {
-            _settingsService.Update(settings =>
-            {
-                var cfg = settings.Torrents;
-                var target = CreateGlobalFilterSet(cfg);
-                ApplyFilterValue(target, name, value);
-
-                cfg.OnlyCrunchyroll = target.OnlyCrunchyroll;
-                cfg.FilterNetflix = target.FilterNetflix;
-                cfg.FilterAmazon = target.FilterAmazon;
-                cfg.FilterHidive = target.FilterHidive;
-                cfg.FilterVaryg = target.FilterVaryg;
-                cfg.FilterEraiRaws = target.FilterEraiRaws;
-                cfg.FilterToonsHub = target.FilterToonsHub;
-                cfg.FilterJudas = target.FilterJudas;
-                cfg.FilterHevc = target.FilterHevc;
-                cfg.Filter1080p = target.Filter1080p;
-            }, SettingsSection.Torrents);
+            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
         }
         PerformSearchCommand.Execute(null);
     }
 
-    private void ReloadFiltersForCurrentContext()
+    public void ReloadFiltersForCurrentContext()
     {
-        var cfg = _settingsService.Current.Torrents;
+        var titleId = ResolveCurrentTitleId();
+        _currentFilterContextId = titleId;
+
         AppSettings.TorrentFilterSet src;
-        if (FiltersPerTitle && SelectedAnime != null)
+        if (titleId != 0)
         {
-            src = _torrentFilterRepo.TryGetCachedFilter(SelectedAnime.Id) ?? new AppSettings.TorrentFilterSet();
+            src = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? new AppSettings.TorrentFilterSet();
         }
         else
         {
-            src = CreateGlobalFilterSet(cfg);
+            src = new AppSettings.TorrentFilterSet();
         }
 
         _suppressFilterPersist = true;
@@ -233,7 +294,9 @@ public partial class TorrentsViewModel
             FilterHevc = src.FilterHevc;
             Filter1080p = src.Filter1080p;
             UseCustomQuery = src.UseCustomQuery;
-            CustomQuery = src.CustomQuery ?? (SelectedAnime?.Title ?? string.Empty);
+            CustomQuery = !string.IsNullOrWhiteSpace(src.CustomQuery)
+                ? src.CustomQuery
+                : GetCurrentTitleDefaultQuery();
         }
         finally
         {
@@ -245,30 +308,16 @@ public partial class TorrentsViewModel
     {
         if (_suppressFilterPersist) return;
 
-        if (FiltersPerTitle && SelectedAnime != null)
+        var titleId = ResolveCurrentTitleId();
+        if (titleId != 0)
         {
-            var target = _torrentFilterRepo.TryGetCachedFilter(SelectedAnime.Id) ?? new AppSettings.TorrentFilterSet();
+            _currentFilterContextId = titleId;
+            var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? new AppSettings.TorrentFilterSet();
             target.UseCustomQuery = UseCustomQuery;
             target.CustomQuery = CustomQuery;
-            _ = _torrentFilterRepo.SaveFilterAsync(SelectedAnime.Id, target);
+            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
         }
     }
-
-    private static AppSettings.TorrentFilterSet CreateGlobalFilterSet(AppSettings.TorrentConfig cfg) => new()
-    {
-        OnlyCrunchyroll = cfg.OnlyCrunchyroll,
-        FilterNetflix = cfg.FilterNetflix,
-        FilterAmazon = cfg.FilterAmazon,
-        FilterHidive = cfg.FilterHidive,
-        FilterVaryg = cfg.FilterVaryg,
-        FilterEraiRaws = cfg.FilterEraiRaws,
-        FilterToonsHub = cfg.FilterToonsHub,
-        FilterJudas = cfg.FilterJudas,
-        FilterHevc = cfg.FilterHevc,
-        Filter1080p = cfg.Filter1080p,
-        UseCustomQuery = false,
-        CustomQuery = null,
-    };
 
     private static void ApplyFilterValue(AppSettings.TorrentFilterSet target, string name, bool value)
     {

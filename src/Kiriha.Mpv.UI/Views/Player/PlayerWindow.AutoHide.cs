@@ -42,17 +42,19 @@ public partial class PlayerWindow
 
         var now = DateTime.UtcNow;
         bool wasHidden = !_controlsVisible;
-        if (wasHidden)
+        if (wasHidden || (_topBar != null && !_topBar.IsVisible) || (_bottomBar != null && !_bottomBar.IsVisible))
         {
             _controlsVisible = true;
             if (_topBar != null)
             {
+                _topBar.IsVisible = true;
                 _topBar.Opacity = 1;
                 _topBar.RenderTransform = null;
                 _topBar.IsHitTestVisible = true;
             }
             if (_bottomBar != null)
             {
+                _bottomBar.IsVisible = true;
                 _bottomBar.Opacity = 1;
                 _bottomBar.RenderTransform = null;
                 _bottomBar.IsHitTestVisible = true;
@@ -92,8 +94,16 @@ public partial class PlayerWindow
         _hitTestDisableTimer.Stop();
         if (!_controlsVisible)
         {
-            if (_topBar != null) _topBar.IsHitTestVisible = false;
-            if (_bottomBar != null) _bottomBar.IsHitTestVisible = false;
+            if (_topBar != null)
+            {
+                _topBar.IsHitTestVisible = false;
+                _topBar.IsVisible = false;
+            }
+            if (_bottomBar != null)
+            {
+                _bottomBar.IsHitTestVisible = false;
+                _bottomBar.IsVisible = false;
+            }
         }
     }
 

@@ -4,13 +4,18 @@
         <!-- ═══ Filter flyout presenter (Luxury/Glass style) ═══ -->
         <Style Selector="FlyoutPresenter.FilterFlyout">
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="MinWidth" Value="250"/>
-            <Setter Property="MaxWidth" Value="320"/>
+            <Setter Property="MinWidth" Value="260"/>
+            <Setter Property="MaxWidth" Value="350"/>
             <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
             <!-- Semi-transparent background + shadow for depth -->
             <Setter Property="Background" Value="{DynamicResource LuxuryFlyoutBackground}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource LuxuryFlyoutBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="FlyoutPresenter.FilterFlyout ScrollViewer">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
         </Style>
 
         <!-- Filter toggle row (clickable card with accent switch) -->

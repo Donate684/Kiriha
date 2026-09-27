@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
@@ -48,8 +49,9 @@ public partial class ShikiAuthService
 
         var mirror = ActiveMirror;
         var authUrl = GetAuthUrl();
-        string successMessage = "Successfully authorized Shikimori!";
-        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage);
+        string successMessage = UIUtils.GetLoc("auth.success", "Shikimori");
+        string closeMessage = UIUtils.GetLoc("auth.close_window");
+        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage);
 
         if (string.IsNullOrEmpty(code)) return null;
 

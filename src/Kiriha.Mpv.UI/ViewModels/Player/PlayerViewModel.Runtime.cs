@@ -91,7 +91,7 @@ public partial class PlayerViewModel
         IsLoading = true;
         HasPlaybackError = false;
         PlaybackErrorMessage = string.Empty;
-        PlaybackStatusMessage = _localizer.GetLoc("player.status.loading_video");
+        PlaybackStatusMessage = _localizer.GetLoc("player.state.loading");
 
         if (!_playback.HasPlayer)
             return;

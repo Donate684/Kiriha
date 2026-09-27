@@ -25,6 +25,7 @@
 
                                         <!-- Card (selectable) -->
                                         <Button Classes="WatchItem"
+                                                Classes.selected="{Binding IsSelected}"
                                                 Command="{Binding $parent[ItemsControl].((vmTorrents:TorrentsViewModel)DataContext).SelectAnimeCommand}"
                                                 CommandParameter="{Binding Anime}">
                                             <Grid ColumnDefinitions="48, *" ColumnSpacing="10">

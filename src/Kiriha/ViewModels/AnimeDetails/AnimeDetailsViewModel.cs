@@ -51,6 +51,12 @@ public partial class AnimeDetailsViewModel : ViewModelBase
     private bool _hasFranchiseTimeline;
 
     [ObservableProperty]
+    private bool _hasStandardRelations;
+
+    [ObservableProperty]
+    private bool _hasAnyRelationsOrTimeline;
+
+    [ObservableProperty]
     private int _franchiseCompletedCount;
 
     [ObservableProperty]

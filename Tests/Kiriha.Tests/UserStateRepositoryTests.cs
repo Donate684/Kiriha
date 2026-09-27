@@ -189,4 +189,68 @@ public sealed class UserStateRepositoryTests
             CleanupTestDb(dbPath);
         }
     }
+
+    [Fact]
+    public async Task TorrentFilterRepository_CustomQueryFilterId_PersistsAndLoadsCorrectly()
+    {
+        var (context, factory, dbPath) = CreateTestDb();
+        try
+        {
+            var repo = new TorrentFilterRepository(factory);
+            await repo.InitializeAsync();
+
+            int clevatessId = Kiriha.ViewModels.Torrents.TorrentsViewModel.GetCustomTitleFilterId("Clevatess");
+            int frierenId = Kiriha.ViewModels.Torrents.TorrentsViewModel.GetCustomTitleFilterId("Sousou no Frieren");
+
+            Assert.True(clevatessId < 0);
+            Assert.True(frierenId < 0);
+            Assert.NotEqual(clevatessId, frierenId);
+
+            // Same query returns deterministic ID
+            Assert.Equal(clevatessId, Kiriha.ViewModels.Torrents.TorrentsViewModel.GetCustomTitleFilterId("  clevatess  "));
+
+            var clevatessFilter = new AppSettings.TorrentFilterSet
+            {
+                FilterEraiRaws = true,
+                Filter1080p = true,
+                FilterHevc = true,
+                OnlyCrunchyroll = true,
+                UseCustomQuery = true,
+                CustomQuery = "Clevatess"
+            };
+
+            await repo.SaveFilterAsync(clevatessId, clevatessFilter);
+
+            // Clevatess filter is saved
+            var cached = repo.TryGetCachedFilter(clevatessId);
+            Assert.NotNull(cached);
+            Assert.True(cached.FilterEraiRaws);
+            Assert.True(cached.Filter1080p);
+            Assert.True(cached.FilterHevc);
+            Assert.True(cached.OnlyCrunchyroll);
+            Assert.False(cached.FilterNetflix);
+
+            // Frieren has no filters
+            var frierenCached = repo.TryGetCachedFilter(frierenId);
+            Assert.Null(frierenCached);
+
+            // Reload from database
+            var repo2 = new TorrentFilterRepository(factory);
+            await repo2.InitializeAsync();
+
+            var loaded = await repo2.GetFilterAsync(clevatessId);
+            Assert.NotNull(loaded);
+            Assert.True(loaded.FilterEraiRaws);
+            Assert.True(loaded.Filter1080p);
+            Assert.True(loaded.FilterHevc);
+            Assert.True(loaded.OnlyCrunchyroll);
+            Assert.Equal("Clevatess", loaded.CustomQuery);
+        }
+        finally
+        {
+            await context.DisposeAsync();
+            CleanupTestDb(dbPath);
+        }
+    }
 }
+

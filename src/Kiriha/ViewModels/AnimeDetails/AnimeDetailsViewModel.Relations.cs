@@ -114,6 +114,17 @@ public partial class AnimeDetailsViewModel
         await _dialogs.ShowAnimeDetailsAsync(null, existing ?? targetAnime);
     }
 
+    partial void OnHasFranchiseTimelineChanged(bool value)
+    {
+        UpdateRelationsVisibility();
+    }
+
+    private void UpdateRelationsVisibility()
+    {
+        HasStandardRelations = !HasFranchiseTimeline && Relations.Count > 0;
+        HasAnyRelationsOrTimeline = HasFranchiseTimeline || HasStandardRelations;
+    }
+
     private async Task LoadFranchiseAndRelationsAsync()
     {
         // 1. Try to load rich Shikimori franchise timeline
@@ -148,13 +159,23 @@ public partial class AnimeDetailsViewModel
                         }
                         HasFranchiseTimeline = FranchiseTimeline.Count > 0;
                         UpdateFranchiseProgressStats();
+                        UpdateRelationsVisibility();
                     });
                 }
+                else
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
+                }
+            }
+            else
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
             }
         }
         catch (System.Exception ex)
         {
             Log.Warning(ex, "Failed to load franchise timeline for {Id}", Anime.Id);
+            Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
         }
 
         // 2. Also load standard relations (used as fallback or for manga relations)
@@ -170,11 +191,13 @@ public partial class AnimeDetailsViewModel
                     Relations.Add(vm);
                     _ = FetchRelationImageAsync(vm);
                 }
+                UpdateRelationsVisibility();
             });
         }
         catch (System.Exception ex)
         {
             Log.Warning(ex, "Failed to fetch relations for {Id}", Anime.Id);
+            Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
         }
     }
 

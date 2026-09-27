@@ -225,7 +225,7 @@
                                             Classes="player-settings-reset-btn"
                                             Command="{Binding ResetSettingCommand}"
                                             CommandParameter="SubtitleFontSize"
-                                            IsVisible="{Binding SubtitleFontSize, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=80}"
+                                            IsVisible="{Binding SubtitleFontSize, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=55}"
                                             ToolTip.Tip="{DynamicResource l.player.reset_default}">
                                         <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
                                     </Button>
@@ -290,7 +290,7 @@
                                             Classes="player-settings-reset-btn"
                                             Command="{Binding ResetSettingCommand}"
                                             CommandParameter="SubtitleBorderSize"
-                                            IsVisible="{Binding SubtitleBorderSize, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=4}"
+                                            IsVisible="{Binding SubtitleBorderSize, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=3}"
                                             ToolTip.Tip="{DynamicResource l.player.reset_default}">
                                         <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
                                     </Button>
@@ -310,7 +310,7 @@
                                             Classes="player-settings-reset-btn"
                                             Command="{Binding ResetSettingCommand}"
                                             CommandParameter="SubtitleShadowOffset"
-                                            IsVisible="{Binding SubtitleShadowOffset, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1.5}"
+                                            IsVisible="{Binding SubtitleShadowOffset, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1}"
                                             ToolTip.Tip="{DynamicResource l.player.reset_default}">
                                         <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
                                     </Button>
@@ -330,7 +330,7 @@
                                             Classes="player-settings-reset-btn"
                                             Command="{Binding ResetSettingCommand}"
                                             CommandParameter="SubtitleMarginY"
-                                            IsVisible="{Binding SubtitleMarginY, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=60}"
+                                            IsVisible="{Binding SubtitleMarginY, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=40}"
                                             ToolTip.Tip="{DynamicResource l.player.reset_default}">
                                         <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
                                     </Button>

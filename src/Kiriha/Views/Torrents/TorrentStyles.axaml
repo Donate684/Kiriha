@@ -64,6 +64,14 @@
             <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
+        <Style Selector="Button.WatchItem.selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.WatchItem.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
         <Style Selector="Border.WatchItem.hidden">
             <Setter Property="Opacity" Value="0.4"/>
         </Style>

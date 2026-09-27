@@ -24,7 +24,8 @@
     "hide": "Hide",
     "login": "Login",
     "logout": "Logout",
-    "connect": "Connect"
+    "connect": "Connect",
+    "clear": "Clear"
   },
   "errors": {
     "generic": "Error",

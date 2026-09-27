@@ -17,10 +17,12 @@ public partial class TorrentsViewModel
 {
     partial void OnSelectedAnimeChanged(AnimeEntity? value)
     {
-        if (FiltersPerTitle)
+        foreach (var item in HideMenuItems)
         {
-            ReloadFiltersForCurrentContext();
+            item.IsSelected = value != null && item.Anime.Id == value.Id;
         }
+
+        ReloadFiltersForCurrentContext();
 
         if (value != null)
         {
@@ -36,9 +38,45 @@ public partial class TorrentsViewModel
         }
     }
 
+    partial void OnSearchQueryChanged(string value)
+    {
+        if (SelectedAnime != null)
+        {
+            bool isSameAsAnime = string.Equals(value, SelectedAnime.Title, System.StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrEmpty(SelectedAnime.EnglishTitle) && string.Equals(value, SelectedAnime.EnglishTitle, System.StringComparison.OrdinalIgnoreCase))
+                || (!string.IsNullOrEmpty(SelectedAnime.RussianTitle) && string.Equals(value, SelectedAnime.RussianTitle, System.StringComparison.OrdinalIgnoreCase))
+                || (UseCustomQuery && !string.IsNullOrEmpty(CustomQuery) && string.Equals(value, CustomQuery, System.StringComparison.OrdinalIgnoreCase));
+
+            if (!isSameAsAnime)
+            {
+                _selectedAnime = null;
+                OnPropertyChanged(nameof(SelectedAnime));
+                foreach (var item in HideMenuItems)
+                {
+                    item.IsSelected = false;
+                }
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(value))
+        {
+            var matched = ResolveAnimeForQuery(value);
+            if (matched != null)
+            {
+                _selectedAnime = matched;
+                OnPropertyChanged(nameof(SelectedAnime));
+                foreach (var item in HideMenuItems)
+                {
+                    item.IsSelected = item.Anime.Id == matched.Id;
+                }
+            }
+        }
+    }
+
     [RelayCommand]
     public async Task PerformSearch()
     {
+        SyncFilterContext();
+
         string query = TorrentQueryBuilder.Build(SearchQuery, new TorrentQueryFilters(
             FilterVaryg,
             FilterEraiRaws,
@@ -89,6 +127,14 @@ public partial class TorrentsViewModel
     [RelayCommand]
     public void SelectAnime(AnimeEntity? anime)
     {
+        if (SelectedAnime == anime && anime != null)
+        {
+            SearchQuery = UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery)
+                ? CustomQuery
+                : anime.Title;
+            PerformSearchCommand.Execute(null);
+            return;
+        }
         SelectedAnime = anime;
     }
 
