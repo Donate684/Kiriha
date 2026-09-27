@@ -376,7 +376,11 @@
                                     </Grid>
 
                                     <!-- Genres Quick-Pick Scrollable Chips -->
-                                    <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <ScrollViewer MaxHeight="180"
+                                                  HorizontalScrollBarVisibility="Disabled"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Margin="0,0,-8,0"
+                                                  Padding="0,0,12,0">
                                         <ItemsControl ItemsSource="{Binding GenreFilterItems}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>

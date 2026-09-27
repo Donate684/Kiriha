@@ -112,13 +112,14 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
         _anime.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(AnimeEntity.Status) || e.PropertyName == nameof(AnimeEntity.Progress))
+            if (e.PropertyName == nameof(AnimeEntity.Status) || e.PropertyName == nameof(AnimeEntity.Progress) || e.PropertyName == nameof(AnimeEntity.Score))
             {
                 var current = FranchiseTimeline.FirstOrDefault(n => n.IsCurrent);
                 if (current != null)
                 {
                     current.UserStatus = _anime.Status;
                     current.UserProgress = _anime.Progress;
+                    current.Score = _anime.Score;
                     UpdateFranchiseProgressStats();
                 }
             }

@@ -129,6 +129,66 @@ public sealed class AnimeCollectionProjectionTests
         Assert.Equal(new[] { 2, 3, 4, 1 }, prioritySort.Select(x => x.Id));
     }
 
+    [Fact]
+    public void CountAllStatuses_ReturnsFilteredCountsAcrossStatuses()
+    {
+        using var projection = new AnimeCollectionProjection();
+
+        var item1 = Item(1, "Movie 1", UserAnimeStatus.Watching);
+        item1.Type = "movie";
+        item1.Genres = ["Action"];
+
+        var item2 = Item(2, "TV 1", UserAnimeStatus.Watching);
+        item2.Type = "tv";
+        item2.Genres = ["Action", "Comedy"];
+
+        var item3 = Item(3, "Movie 2", UserAnimeStatus.Completed);
+        item3.Type = "movie";
+        item3.Genres = ["Comedy"];
+
+        var item4 = Item(4, "Movie 3", UserAnimeStatus.Completed);
+        item4.Type = "movie";
+        item4.Genres = ["Action"];
+
+        var item5 = Item(5, "Adult Movie", UserAnimeStatus.Completed, rating: "rx");
+        item5.Type = "movie";
+        item5.Genres = ["Action"];
+
+        projection.Rebuild([item1, item2, item3, item4, item5]);
+
+        // Unfiltered (SFW)
+        var allCounts = projection.CountAllStatuses(null, null, null, filterNsfw: false, MediaKind.Anime);
+        Assert.Equal(2, allCounts.Watching);
+        Assert.Equal(2, allCounts.Completed); // item5 is NSFW, so 2 SFW completed
+
+        // Filter by format: movie
+        var movieCounts = projection.CountAllStatuses(null, null, ["movie"], filterNsfw: false, MediaKind.Anime);
+        Assert.Equal(1, movieCounts.Watching); // item1
+        Assert.Equal(2, movieCounts.Completed); // item3, item4
+        Assert.Equal(0, movieCounts.OnHold);
+
+        // Filter by genre: Action
+        var actionCounts = projection.CountAllStatuses(null, ["action"], null, filterNsfw: false, MediaKind.Anime);
+        Assert.Equal(2, actionCounts.Watching); // item1, item2
+        Assert.Equal(1, actionCounts.Completed); // item4
+
+        // Filter by both: movie + Action
+        var movieActionCounts = projection.CountAllStatuses(null, ["action"], ["movie"], filterNsfw: false, MediaKind.Anime);
+        Assert.Equal(1, movieActionCounts.Watching); // item1
+        Assert.Equal(1, movieActionCounts.Completed); // item4
+
+        // Filter NSFW
+        var nsfwCounts = projection.CountAllStatuses(null, null, ["movie"], filterNsfw: true, MediaKind.Anime);
+        Assert.Equal(0, nsfwCounts.Watching);
+        Assert.Equal(1, nsfwCounts.Completed); // item5
+
+        // CountQuery matches Query count exactly
+        var queryItems = projection.Query(UserAnimeStatus.Completed, null, ["action"], ["movie"], filterNsfw: false, null, MediaKind.Anime);
+        var queryCount = projection.CountQuery(UserAnimeStatus.Completed, null, ["action"], ["movie"], filterNsfw: false, MediaKind.Anime);
+        Assert.Equal(queryItems.Count, queryCount);
+        Assert.Equal(movieActionCounts.Completed, queryCount);
+    }
+
     private static AnimeEntity Item(
         int id,
         string title,

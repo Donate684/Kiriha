@@ -137,29 +137,43 @@
                                                            IsVisible="{Binding SubTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                             </StackPanel>
 
-                                            <!-- Bottom: Status & "You are here" -->
-                                            <Grid Grid.Row="2" ColumnDefinitions="*, Auto">
-                                                <!-- In list -->
-                                                <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="4" Padding="5,2"
-                                                        Background="{Binding UserStatus, Converter={StaticResource StatusToColorConverter}}"
-                                                        IsVisible="{Binding UserStatus, Converter={StaticResource StatusNotNoneConverter}}">
-                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <material:MaterialIcon Kind="{Binding UserStatus, Converter={StaticResource StatusToIconConverter}}" Width="10" Height="10" Foreground="White"/>
-                                                        <TextBlock Text="{Binding ProgressBadgeText}" FontSize="9" FontWeight="SemiBold" Foreground="White"/>
-                                                    </StackPanel>
-                                                </Border>
+                                            <!-- Bottom: Status, Score & "You are here" -->
+                                            <Grid Grid.Row="2" ColumnDefinitions="*, Auto" VerticalAlignment="Bottom">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                    <!-- In list -->
+                                                    <Border CornerRadius="3.5" Padding="5,0" Height="17" VerticalAlignment="Center"
+                                                            Background="{Binding UserStatus, Converter={StaticResource StatusToColorConverter}}"
+                                                            IsVisible="{Binding UserStatus, Converter={StaticResource StatusNotNoneConverter}}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="3.5" VerticalAlignment="Center">
+                                                            <material:MaterialIcon Kind="{Binding UserStatus, Converter={StaticResource StatusToIconConverter}}" Width="9.5" Height="9.5" Foreground="White" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding ProgressBadgeText}" FontSize="9" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
 
-                                                <!-- Not in list -->
-                                                <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="4" Padding="5,2"
-                                                        Background="{DynamicResource SubtleFillColorSecondary}"
-                                                        IsVisible="{Binding UserStatus, Converter={StaticResource StatusNoneConverter}}">
-                                                    <TextBlock Text="{Binding ProgressBadgeText}" FontSize="9" Opacity="0.6"/>
-                                                </Border>
+                                                    <!-- Not in list -->
+                                                    <Border CornerRadius="3.5" Padding="5,0" Height="17" VerticalAlignment="Center"
+                                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                                            IsVisible="{Binding UserStatus, Converter={StaticResource StatusNoneConverter}}">
+                                                        <TextBlock Text="{Binding ProgressBadgeText}" FontSize="9" FontWeight="SemiBold" Opacity="0.7" VerticalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- User Score -->
+                                                    <Border CornerRadius="3.5" Padding="5,0" Height="17" VerticalAlignment="Center"
+                                                            Background="{DynamicResource ScorePillBackground}"
+                                                            BorderBrush="{DynamicResource ScorePillBorder}"
+                                                            BorderThickness="1"
+                                                            IsVisible="{Binding HasUserScore}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                                            <material:MaterialIcon Kind="Star" Width="9" Height="9" Foreground="{DynamicResource ScorePillStar}" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Score}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource ScorePillForeground}" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
 
                                                 <!-- Current active anime badge -->
-                                                <Border Grid.Column="1" Background="{DynamicResource SystemAccentColor}" CornerRadius="4" Padding="5,2"
+                                                <Border Grid.Column="1" Background="{DynamicResource SystemAccentColor}" CornerRadius="3.5" Padding="5,0" Height="17" VerticalAlignment="Center"
                                                         IsVisible="{Binding IsCurrent}">
-                                                    <TextBlock Text="{DynamicResource l.anime.labels.franchise_you_are_here}" FontSize="8.5" FontWeight="Bold" Foreground="White"/>
+                                                    <TextBlock Text="{DynamicResource l.anime.labels.franchise_you_are_here}" FontSize="8.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                                 </Border>
                                             </Grid>
                                         </Grid>

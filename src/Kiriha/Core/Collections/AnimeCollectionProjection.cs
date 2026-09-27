@@ -10,6 +10,13 @@ using Kiriha.Models;
 
 namespace Kiriha.Core;
 
+public readonly record struct AnimeStatusCounts(
+    int Watching,
+    int Completed,
+    int OnHold,
+    int Dropped,
+    int PlanToWatch);
+
 public sealed partial class AnimeCollectionProjection : IDisposable
 {
     private readonly Lock _syncLock = new();
@@ -113,6 +120,54 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         }
     }
 
+    public int CountQuery(
+        UserAnimeStatus status,
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys,
+        IReadOnlyCollection<string>? activeFormatKeys,
+        bool filterNsfw,
+        MediaKind kind)
+    {
+        lock (_syncLock)
+        {
+            if (!_buckets.TryGetValue((status, kind), out var bucket) || bucket.Count == 0)
+            {
+                return 0;
+            }
+
+            var (requiredGenreKeys, requiredFormatKeys, normalizedSearch) = PrepareFilterCriteria(searchQuery, activeGenreKeys, activeFormatKeys);
+            return CountBucket(bucket, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw);
+        }
+    }
+
+    public AnimeStatusCounts CountAllStatuses(
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys,
+        IReadOnlyCollection<string>? activeFormatKeys,
+        bool filterNsfw,
+        MediaKind kind)
+    {
+        lock (_syncLock)
+        {
+            var (requiredGenreKeys, requiredFormatKeys, normalizedSearch) = PrepareFilterCriteria(searchQuery, activeGenreKeys, activeFormatKeys);
+
+            return new AnimeStatusCounts(
+                Watching: GetBucketCount(UserAnimeStatus.Watching),
+                Completed: GetBucketCount(UserAnimeStatus.Completed),
+                OnHold: GetBucketCount(UserAnimeStatus.OnHold),
+                Dropped: GetBucketCount(UserAnimeStatus.Dropped),
+                PlanToWatch: GetBucketCount(UserAnimeStatus.PlanToWatch)
+            );
+
+            int GetBucketCount(UserAnimeStatus status)
+            {
+                return _buckets.TryGetValue((status, kind), out var bucket) && bucket.Count > 0
+                    ? CountBucket(bucket, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw)
+                    : 0;
+            }
+        }
+    }
+
     public List<AnimeEntity> Query(UserAnimeStatus status, string? searchQuery, bool filterNsfw, string? sortBy, MediaKind kind, bool prioritizeNewEpisodes = false)
         => Query(status, searchQuery, null, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes);
 
@@ -143,37 +198,8 @@ public sealed partial class AnimeCollectionProjection : IDisposable
                 return [];
             }
 
-            var parsed = AnimeSearchQueryParser.Parse(searchQuery);
+            var (requiredGenreKeys, requiredFormatKeys, normalizedSearch) = PrepareFilterCriteria(searchQuery, activeGenreKeys, activeFormatKeys);
 
-            HashSet<string>? requiredGenreKeys = null;
-            if (activeGenreKeys != null && activeGenreKeys.Count > 0)
-            {
-                requiredGenreKeys = new HashSet<string>(activeGenreKeys, StringComparer.OrdinalIgnoreCase);
-            }
-            if (parsed.ExtractedGenreKeys.Count > 0)
-            {
-                requiredGenreKeys ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var k in parsed.ExtractedGenreKeys)
-                {
-                    requiredGenreKeys.Add(k);
-                }
-            }
-
-            HashSet<string>? requiredFormatKeys = null;
-            if (activeFormatKeys != null && activeFormatKeys.Count > 0)
-            {
-                requiredFormatKeys = new HashSet<string>(activeFormatKeys, StringComparer.OrdinalIgnoreCase);
-            }
-            if (parsed.ExtractedFormatKeys.Count > 0)
-            {
-                requiredFormatKeys ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var k in parsed.ExtractedFormatKeys)
-                {
-                    requiredFormatKeys.Add(k);
-                }
-            }
-
-            var normalizedSearch = parsed.HasTitleSearch ? Normalize(parsed.TitleSearchText) : string.Empty;
             int initialCapacity = (normalizedSearch.Length > 0 || requiredGenreKeys != null || requiredFormatKeys != null)
                 ? Math.Min(bucket.Count, 32)
                 : bucket.Count;
@@ -181,50 +207,117 @@ public sealed partial class AnimeCollectionProjection : IDisposable
 
             foreach (var entry in bucket.Values)
             {
-                if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw)
+                if (MatchesEntry(entry, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw))
                 {
-                    continue;
+                    result.Add(entry.Item);
                 }
-
-                if (requiredFormatKeys != null && requiredFormatKeys.Count > 0)
-                {
-                    bool matchesFormat = false;
-                    foreach (var req in requiredFormatKeys)
-                    {
-                        if (Kiriha.Core.Domain.Models.Formats.FormatCatalog.MatchesFormat(entry.Item.Type, req))
-                        {
-                            matchesFormat = true;
-                            break;
-                        }
-                    }
-                    if (!matchesFormat) continue;
-                }
-
-                if (requiredGenreKeys != null && requiredGenreKeys.Count > 0)
-                {
-                    bool matchesGenres = true;
-                    foreach (var req in requiredGenreKeys)
-                    {
-                        if (!entry.GenreKeys.Contains(req))
-                        {
-                            matchesGenres = false;
-                            break;
-                        }
-                    }
-                    if (!matchesGenres) continue;
-                }
-
-                if (normalizedSearch.Length > 0 && !entry.SearchableText.Contains(normalizedSearch, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                result.Add(entry.Item);
             }
 
             result.SortInPlace(sortBy, isSeasonal: false, prioritizeNewEpisodes: prioritizeNewEpisodes);
             return result;
         }
+    }
+
+    private static (HashSet<string>? RequiredGenreKeys, HashSet<string>? RequiredFormatKeys, string NormalizedSearch) PrepareFilterCriteria(
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys,
+        IReadOnlyCollection<string>? activeFormatKeys)
+    {
+        var parsed = AnimeSearchQueryParser.Parse(searchQuery);
+
+        HashSet<string>? requiredGenreKeys = null;
+        if (activeGenreKeys != null && activeGenreKeys.Count > 0)
+        {
+            requiredGenreKeys = new HashSet<string>(activeGenreKeys, StringComparer.OrdinalIgnoreCase);
+        }
+        if (parsed.ExtractedGenreKeys.Count > 0)
+        {
+            requiredGenreKeys ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var k in parsed.ExtractedGenreKeys)
+            {
+                requiredGenreKeys.Add(k);
+            }
+        }
+
+        HashSet<string>? requiredFormatKeys = null;
+        if (activeFormatKeys != null && activeFormatKeys.Count > 0)
+        {
+            requiredFormatKeys = new HashSet<string>(activeFormatKeys, StringComparer.OrdinalIgnoreCase);
+        }
+        if (parsed.ExtractedFormatKeys.Count > 0)
+        {
+            requiredFormatKeys ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var k in parsed.ExtractedFormatKeys)
+            {
+                requiredFormatKeys.Add(k);
+            }
+        }
+
+        var normalizedSearch = parsed.HasTitleSearch ? Normalize(parsed.TitleSearchText) : string.Empty;
+        return (requiredGenreKeys, requiredFormatKeys, normalizedSearch);
+    }
+
+    private static bool MatchesEntry(
+        Entry entry,
+        HashSet<string>? requiredGenreKeys,
+        HashSet<string>? requiredFormatKeys,
+        string normalizedSearch,
+        bool filterNsfw)
+    {
+        if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw)
+        {
+            return false;
+        }
+
+        if (requiredFormatKeys != null && requiredFormatKeys.Count > 0)
+        {
+            bool matchesFormat = false;
+            foreach (var req in requiredFormatKeys)
+            {
+                if (Kiriha.Core.Domain.Models.Formats.FormatCatalog.MatchesFormat(entry.Item.Type, req))
+                {
+                    matchesFormat = true;
+                    break;
+                }
+            }
+            if (!matchesFormat) return false;
+        }
+
+        if (requiredGenreKeys != null && requiredGenreKeys.Count > 0)
+        {
+            foreach (var req in requiredGenreKeys)
+            {
+                if (!entry.GenreKeys.Contains(req))
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (normalizedSearch.Length > 0 && !entry.SearchableText.Contains(normalizedSearch, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int CountBucket(
+        Dictionary<int, Entry> bucket,
+        HashSet<string>? requiredGenreKeys,
+        HashSet<string>? requiredFormatKeys,
+        string normalizedSearch,
+        bool filterNsfw)
+    {
+        int count = 0;
+        foreach (var entry in bucket.Values)
+        {
+            if (MatchesEntry(entry, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw))
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void Dispose()

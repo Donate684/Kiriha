@@ -46,6 +46,11 @@
             <SolidColorBrush x:Key="ScoreFlyoutItemHover" Color="#0C000000"/>
             <SolidColorBrush x:Key="ScoreFlyoutItemPressed" Color="#18000000"/>
             <SolidColorBrush x:Key="ScoreFlyoutItemForeground" Color="#E4000000"/>
+            <!-- Score Pill -->
+            <SolidColorBrush x:Key="ScorePillBackground" Color="#2A2D34"/>
+            <SolidColorBrush x:Key="ScorePillBorder" Color="#3A3E47"/>
+            <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700"/>
+            <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF"/>
 
             <!-- Cinematic overlay (light) -->
             <LinearGradientBrush x:Key="CinematicBottomGradient" StartPoint="0%,0%" EndPoint="0%,100%">
@@ -130,6 +135,11 @@
             <SolidColorBrush x:Key="ScoreFlyoutItemHover" Color="#15FFFFFF"/>
             <SolidColorBrush x:Key="ScoreFlyoutItemPressed" Color="#30FFFFFF"/>
             <SolidColorBrush x:Key="ScoreFlyoutItemForeground" Color="#FFFFFFFF"/>
+            <!-- Score Pill -->
+            <SolidColorBrush x:Key="ScorePillBackground" Color="#22252C"/>
+            <SolidColorBrush x:Key="ScorePillBorder" Color="#333740"/>
+            <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700"/>
+            <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF"/>
 
             <!-- Cinematic overlay (dark) -->
             <LinearGradientBrush x:Key="CinematicBottomGradient" StartPoint="0%,0%" EndPoint="0%,100%">

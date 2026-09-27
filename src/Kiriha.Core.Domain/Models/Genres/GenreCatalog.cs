@@ -22,7 +22,9 @@ public sealed record GenreDefinition(
 
 public static class GenreCatalog
 {
-    private static readonly IReadOnlyList<GenreDefinition> Definitions = AppConstants.Genres.Definitions;
+    private static readonly IReadOnlyList<GenreDefinition> Definitions = AppConstants.Genres.Definitions
+        .OrderBy(g => g.RussianName, StringComparer.CurrentCultureIgnoreCase)
+        .ToList();
 
     private static readonly FrozenDictionary<string, GenreDefinition> LookupMap;
     private static readonly FrozenDictionary<string, GenreDefinition> ByKeyMap;
@@ -111,7 +113,8 @@ public static class GenreCatalog
         if (normalized.Length == 0) return Definitions.Take(maxResults).ToList();
 
         var exact = new List<GenreDefinition>();
-        var startsWith = new List<GenreDefinition>();
+        var nameStartsWith = new List<GenreDefinition>();
+        var aliasStartsWith = new List<GenreDefinition>();
         var contains = new List<GenreDefinition>();
 
         foreach (var def in Definitions)
@@ -130,14 +133,14 @@ public static class GenreCatalog
                 normEn.StartsWith(normalized, StringComparison.OrdinalIgnoreCase) ||
                 normKey.StartsWith(normalized, StringComparison.OrdinalIgnoreCase))
             {
-                startsWith.Add(def);
+                nameStartsWith.Add(def);
                 continue;
             }
 
             bool aliasPrefix = def.Aliases != null && def.Aliases.Any(a => NormalizeLookup(a).StartsWith(normalized, StringComparison.OrdinalIgnoreCase));
             if (aliasPrefix)
             {
-                startsWith.Add(def);
+                aliasStartsWith.Add(def);
                 continue;
             }
 
@@ -148,6 +151,6 @@ public static class GenreCatalog
             }
         }
 
-        return exact.Concat(startsWith).Concat(contains).DistinctBy(x => x.Key).Take(maxResults).ToList();
+        return exact.Concat(nameStartsWith).Concat(aliasStartsWith).Concat(contains).DistinctBy(x => x.Key).Take(maxResults).ToList();
     }
 }

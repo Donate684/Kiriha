@@ -95,16 +95,18 @@ public static class AppConstants
         public const string Ona = "ona";
         public const string Special = "special";
         public const string TvSpecial = "tv_special";
+        public const string Music = "music";
 
         public static readonly string[] TagPrefixes = ["type:", "format:", "тип:", "формат:"];
 
         public static readonly Models.Formats.FormatDefinition[] Definitions =
         [
+            new(Tv, "TV Series", "ТВ", ["тв", "сериал", "тв сериал", "series", "tv"]),
             new(Movie, "Movie", "Фильм", ["фильм", "мувик", "полнометражка", "полнометражный", "film"]),
             new(Ova, "OVA", "OVA", ["ова", "овашка", "овашka"]),
             new(Ona, "ONA", "ONA", ["она", "веб"]),
             new(Special, "Special", "Спешл", ["спешл", "спецвыпуск", "тв_спешл", "tv_special"]),
-            new(Tv, "TV Series", "ТВ Сериал", ["тв", "сериал", "тв сериал", "series"]),
+            new(Music, "Music", "Клип", ["клип", "музыка", "музыкальное видео", "music", "pv", "клипы"]),
         ];
     }
 
@@ -187,7 +189,7 @@ public static class AppConstants
             new("harem", "Harem", "Гарем"),
             new("mecha", "Mecha", "Меха", ["роботы", "мех"]),
             new("military", "Military", "Военное", ["война", "армия"]),
-            new("music", "Music", "Музыка", ["музыкальное"]),
+            new("music", "Music", "Музыка", ["музыкальное", "клип", "клипы"]),
             new("parody", "Parody", "Пародия"),
             new("school", "School", "Школа", ["школьное", "школьная"]),
             new("space", "Space", "Космос", ["космическое"]),

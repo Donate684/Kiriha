@@ -150,6 +150,13 @@ public static class FormatCatalog
             return true;
         }
 
+        if (string.Equals(formatKey, AppConstants.AnimeTypes.Music, StringComparison.OrdinalIgnoreCase) &&
+            (string.Equals(norm, "pv", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(norm, "clip", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
         return false;
     }
 }

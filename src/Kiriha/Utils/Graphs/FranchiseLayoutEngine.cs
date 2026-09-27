@@ -41,7 +41,10 @@ public partial class FranchiseGraphVisualNode : ObservableObject
     private string? _russianTitle;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasUserScore))]
     private string? _score;
+
+    public bool HasUserScore => !string.IsNullOrWhiteSpace(Score) && Score != "-" && Score != "0";
 
     public bool IsMainLine { get; set; }
     public bool IsSpecial { get; set; }
@@ -52,7 +55,7 @@ public partial class FranchiseGraphVisualNode : ObservableObject
 
     public string SubTitle => !string.IsNullOrWhiteSpace(RussianTitle) && !string.Equals(RussianTitle, Node.Name, StringComparison.OrdinalIgnoreCase)
         ? Node.Name
-        : (Node.Year.HasValue ? Node.Year.Value.ToString(CultureInfo.InvariantCulture) : string.Empty);
+        : string.Empty;
 
     public string KindBadge => Node.Kind?.ToLowerInvariant() switch
     {
@@ -91,12 +94,7 @@ public partial class FranchiseGraphVisualNode : ObservableObject
                 return LocalizationStore.Translate("anime.status.on_hold");
             if (UserStatus == UserAnimeStatus.Dropped)
                 return LocalizationStore.Translate("anime.status.dropped");
-            if (TotalEpisodes.HasValue && TotalEpisodes.Value > 0)
-            {
-                var epAbbr = LocalizationStore.Translate("anime.labels.ep_abbr");
-                return $"{TotalEpisodes.Value} {epAbbr}";
-            }
-            return string.Empty;
+            return LocalizationStore.Translate("anime.labels.franchise_not_in_list");
         }
     }
 

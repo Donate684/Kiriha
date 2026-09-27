@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
@@ -181,7 +182,7 @@ public partial class AnimeListViewModel
     {
         if (GenreFilterItems.Count == 0)
         {
-            foreach (var g in GenreCatalog.All)
+            foreach (var g in GenreCatalog.All.OrderBy(g => g.RussianName, StringComparer.CurrentCultureIgnoreCase))
             {
                 GenreFilterItems.Add(new GenreFilterItemViewModel(g, OnGenreFilterItemToggled));
             }
@@ -737,8 +738,12 @@ public partial class AnimeListViewModel
         var kind = SelectedMediaKind;
         var prioritizeNewEpisodes = PrioritizeNewEpisodes;
 
-        var filtered = await Task.Run(() =>
-            _listProjection.Query(status, query, activeGenreKeys, activeFormatKeys, nsfw, sort, kind, prioritizeNewEpisodes), cancellationToken);
+        var (filtered, counts) = await Task.Run(() =>
+        {
+            var items = _listProjection.Query(status, query, activeGenreKeys, activeFormatKeys, nsfw, sort, kind, prioritizeNewEpisodes);
+            var statusCounts = _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kind);
+            return (items, statusCounts);
+        }, cancellationToken);
 
         if (cancellationToken.IsCancellationRequested || version != Volatile.Read(ref _filterRefreshVersion))
             return;
@@ -750,26 +755,34 @@ public partial class AnimeListViewModel
 
             FilteredItems.Clear();
             FilteredItems.AddRange(filtered);
+            ApplyStatusCounts(counts, kind);
         });
+    }
+
+    private void ApplyStatusCounts(AnimeStatusCounts counts, MediaKind kind)
+    {
+        var watchingLocKey = kind == MediaKind.Manga ? "anime.status.reading" : "anime.status.watching";
+        WatchingHeader = _localizer.GetLoc("filters.header_format", GetLoc(watchingLocKey), counts.Watching.ToString());
+        CompletedHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.completed"), counts.Completed.ToString());
+        OnHoldHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.on_hold"), counts.OnHold.ToString());
+        DroppedHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.dropped"), counts.Dropped.ToString());
+        PlanToWatchHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.plan_to_watch"), counts.PlanToWatch.ToString());
     }
 
     private async Task UpdateCountsAsync()
     {
         var kind = SelectedMediaKind;
+        var query = SearchQuery;
+        var activeGenreKeys = SelectedGenres.Select(g => g.Key).ToList();
+        var activeFormatKeys = SelectedFormats.Select(f => f.Key).ToList();
+        var nsfw = FilterNsfw;
+
+        var counts = await Task.Run(() =>
+            _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kind));
+
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            var watching = _listProjection.Count(UserAnimeStatus.Watching, kind);
-            var completed = _listProjection.Count(UserAnimeStatus.Completed, kind);
-            var onHold = _listProjection.Count(UserAnimeStatus.OnHold, kind);
-            var dropped = _listProjection.Count(UserAnimeStatus.Dropped, kind);
-            var ptw = _listProjection.Count(UserAnimeStatus.PlanToWatch, kind);
-
-            var watchingLocKey = kind == MediaKind.Manga ? "anime.status.reading" : "anime.status.watching";
-            WatchingHeader = _localizer.GetLoc("filters.header_format", GetLoc(watchingLocKey), watching.ToString());
-            CompletedHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.completed"), completed.ToString());
-            OnHoldHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.on_hold"), onHold.ToString());
-            DroppedHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.dropped"), dropped.ToString());
-            PlanToWatchHeader = _localizer.GetLoc("filters.header_format", GetLoc("anime.status.plan_to_watch"), ptw.ToString());
+            ApplyStatusCounts(counts, kind);
         });
     }
 }

@@ -68,6 +68,15 @@ public sealed class FormatSearchTests
             Type = AppConstants.AnimeTypes.TvSpecial,
             Status = UserAnimeStatus.Watching,
             Genres = ["Action", "Adventure"]
+        },
+        new AnimeEntity
+        {
+            Id = 7,
+            Title = "Shelter",
+            RussianTitle = "Убежище",
+            Type = AppConstants.AnimeTypes.Music,
+            Status = UserAnimeStatus.Watching,
+            Genres = ["Music", "Sci-Fi"]
         }
     ];
 
@@ -91,6 +100,10 @@ public sealed class FormatSearchTests
     [InlineData("tv", "tv")]
     [InlineData("тв", "tv")]
     [InlineData("сериал", "tv")]
+    [InlineData("music", "music")]
+    [InlineData("клип", "music")]
+    [InlineData("музыкальное видео", "music")]
+    [InlineData("pv", "music")]
     public void FormatCatalog_TryFindFormat_RecognizesFormatsAndAliases(string query, string expectedKey)
     {
         bool found = FormatCatalog.TryFindFormat(query, out var format);
@@ -111,6 +124,8 @@ public sealed class FormatSearchTests
     [InlineData("special", new[] { 5, 6 })]
     [InlineData("сериал", new[] { 2 })]
     [InlineData("тв", new[] { 2 })]
+    [InlineData("клип", new[] { 7 })]
+    [InlineData("music", new[] { 7 })]
     public void ApplySearch_FiltersByFormatTokens(string query, int[] expectedIds)
     {
         var items = CreateTestCollection();
