@@ -90,25 +90,5 @@ public sealed class NowPlayingIntegrationTests
         };
         return data;
     }
-
-    private sealed class TestDbContextFactory : IDbContextFactory<AppDbContext>
-    {
-        private readonly string _dbPath;
-
-        public TestDbContextFactory(string dbPath)
-        {
-            _dbPath = dbPath;
-        }
-
-        public AppDbContext CreateDbContext()
-        {
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseSqlite($"Data Source={_dbPath}")
-                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                .Options;
-
-            return new AppDbContext(options);
-        }
-    }
 }
 

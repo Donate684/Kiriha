@@ -27,7 +27,7 @@ jobs:
           cache-dependency-path: '**/Directory.Packages.props'
 
       - name: Cache libmpv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: subprojects/mpv
           key: libmpv-win-x64-${{ hashFiles('scripts/download-mpv.ps1') }}
