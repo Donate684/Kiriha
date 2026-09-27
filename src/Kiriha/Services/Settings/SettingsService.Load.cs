@@ -51,6 +51,11 @@ public partial class SettingsService
                 {
                     DecryptTokens(apiConfig.Mal, apiConfig);
                     DecryptTokens(apiConfig.Shiki, apiConfig);
+                    if (apiConfig.Shiki != null && apiConfig.Shiki.Mirror != apiConfig.ShikiMirror)
+                    {
+                        Log.Information("Synchronizing Shiki token mirror with active mirror ({Mirror})", apiConfig.ShikiMirror);
+                        apiConfig.Shiki.Mirror = apiConfig.ShikiMirror;
+                    }
                     loaded.Api = apiConfig;
                 }
 
@@ -111,6 +116,10 @@ public partial class SettingsService
 
             DecryptTokens(loaded.Api.Mal, loaded.Api);
             DecryptTokens(loaded.Api.Shiki, loaded.Api);
+            if (loaded.Api.Shiki != null && loaded.Api.Shiki.Mirror != loaded.Api.ShikiMirror)
+            {
+                loaded.Api.Shiki.Mirror = loaded.Api.ShikiMirror;
+            }
             return loaded;
         }
         catch (Exception ex)

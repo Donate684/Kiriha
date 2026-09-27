@@ -352,6 +352,95 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
+    public void SaveImmediate_PreservesShikiTokensAndMirrorOnReload()
+    {
+        var path = CreateTempSettingsPath();
+        try
+        {
+            using (var service = new SettingsService(path))
+            {
+                service.Update(settings =>
+                {
+                    settings.Api.ShikiMirror = ShikiMirror.Net;
+                    settings.Api.Shiki = new ShikiTokens
+                    {
+                        AccessToken = "shiki-access-token",
+                        RefreshToken = "shiki-refresh-token",
+                        ExpiresIn = 86400,
+                        TokenType = "Bearer",
+                        Scope = "user_rates",
+                        UserId = 4242,
+                        Mirror = ShikiMirror.Net
+                    };
+                }, SettingsSection.Api, save: false);
+                service.SaveImmediate();
+            }
+
+            var authPath = Path.Combine(Path.GetDirectoryName(path)!, "auth.json");
+            var rawJson = File.ReadAllText(authPath);
+            Assert.DoesNotContain("shiki-access-token", rawJson);
+            Assert.DoesNotContain("shiki-refresh-token", rawJson);
+
+            using var reloaded = new SettingsService(path);
+            Assert.Equal(ShikiMirror.Net, reloaded.Current.Api.ShikiMirror);
+            Assert.NotNull(reloaded.Current.Api.Shiki);
+            Assert.Equal(ShikiMirror.Net, reloaded.Current.Api.Shiki.Mirror);
+            Assert.Equal("shiki-access-token", reloaded.Current.Api.Shiki.AccessToken);
+            Assert.Equal("shiki-refresh-token", reloaded.Current.Api.Shiki.RefreshToken);
+            Assert.Equal("Bearer", reloaded.Current.Api.Shiki.TokenType);
+            Assert.Equal("user_rates", reloaded.Current.Api.Shiki.Scope);
+            Assert.Equal(4242, reloaded.Current.Api.Shiki.UserId);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public void Load_SelfHealsMismatchedShikiMirrorFromLegacyAuthFile()
+    {
+        var path = CreateTempSettingsPath();
+        try
+        {
+            var dir = Path.GetDirectoryName(path)!;
+            var authPath = Path.Combine(dir, "auth.json");
+
+            // First create a real DPAPI-encrypted token on this machine
+            using (var service = new SettingsService(path))
+            {
+                service.Update(settings =>
+                {
+                    settings.Api.ShikiMirror = ShikiMirror.Net;
+                    settings.Api.Shiki = new ShikiTokens
+                    {
+                        AccessToken = "test-token",
+                        RefreshToken = "test-refresh",
+                        ExpiresIn = 3600,
+                        Mirror = ShikiMirror.Net
+                    };
+                }, SettingsSection.Api, save: false);
+                service.SaveImmediate();
+            }
+
+            // Simulate the bug: edit auth.json on disk to set Shiki.Mirror = 0 while ShikiMirror = 1
+            var authJson = File.ReadAllText(authPath);
+            authJson = authJson.Replace("\"Mirror\": 1", "\"Mirror\": 0");
+            File.WriteAllText(authPath, authJson);
+
+            // Reload and verify self-healing
+            using var reloaded = new SettingsService(path);
+            Assert.Equal(ShikiMirror.Net, reloaded.Current.Api.ShikiMirror);
+            Assert.NotNull(reloaded.Current.Api.Shiki);
+            Assert.Equal(ShikiMirror.Net, reloaded.Current.Api.Shiki.Mirror);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
     public void Load_MigratesLegacyConfigJsonToSplitFiles()
     {
         var path = CreateTempSettingsPath();

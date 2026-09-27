@@ -158,20 +158,8 @@ public partial class SettingsService
         var clone = new AppSettings.ApiConfig
         {
             ShikiMirror = api.ShikiMirror,
-            Mal = api.Mal == null ? null : new MalTokens
-            {
-                AccessToken = api.Mal.AccessToken,
-                RefreshToken = api.Mal.RefreshToken,
-                ExpiresIn = api.Mal.ExpiresIn,
-                CreatedAt = api.Mal.CreatedAt
-            },
-            Shiki = api.Shiki == null ? null : new ShikiTokens
-            {
-                AccessToken = api.Shiki.AccessToken,
-                RefreshToken = api.Shiki.RefreshToken,
-                CreatedAt = api.Shiki.CreatedAt,
-                ExpiresIn = api.Shiki.ExpiresIn
-            }
+            Mal = api.Mal?.Clone(),
+            Shiki = api.Shiki?.Clone()
         };
         EncryptTokens(clone.Mal);
         EncryptTokens(clone.Shiki);

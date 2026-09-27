@@ -20,4 +20,13 @@ public class MalTokens
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public bool IsExpired => DateTime.UtcNow >= CreatedAt.AddSeconds(ExpiresIn - 60);
+
+    public MalTokens Clone() => new()
+    {
+        AccessToken = AccessToken,
+        RefreshToken = RefreshToken,
+        ExpiresIn = ExpiresIn,
+        TokenType = TokenType,
+        CreatedAt = CreatedAt
+    };
 }
