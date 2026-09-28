@@ -126,17 +126,18 @@
                            Placement="Bottom"
                            HorizontalOffset="0"
                            VerticalOffset="6"
+                           WindowManagerAddShadowHint="False"
                            IsLightDismissEnabled="True">
                         <Border Background="{DynamicResource LuxuryFlyoutBackground}"
                                 BorderBrush="{DynamicResource LuxuryFlyoutBorder}"
                                 BorderThickness="1"
-                                CornerRadius="12"
+                                CornerRadius="14"
                                 MinWidth="320"
                                 MaxWidth="420"
-                                BoxShadow="0 8 28 0 #45000000"
-                                Padding="6">
-                            <StackPanel Spacing="3">
-                                <Grid ColumnDefinitions="*, Auto" Margin="8,4,8,4">
+                                BoxShadow="{DynamicResource FlyoutBorderThemeBoxShadow}"
+                                Padding="8,8,8,8">
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*, Auto" Margin="6,2,6,4">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5">
                                         <material:MaterialIcon Kind="TagMultipleOutline" Width="13" Height="13"
                                                                Foreground="{DynamicResource SystemAccentColor}"
@@ -193,7 +194,7 @@
 
                                                     <Border Grid.Column="2" IsVisible="{Binding HasCount}"
                                                             Background="{DynamicResource SubtleFillColorSecondary}"
-                                                            CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                                            CornerRadius="10" Padding="8,2" Margin="4,0,4,0" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding DisplayCount}" FontSize="11" Opacity="0.7" FontWeight="SemiBold"/>
                                                     </Border>
                                                 </Grid>

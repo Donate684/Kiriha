@@ -35,7 +35,7 @@ public sealed class NowPlayingIntegrationTests
         string originalTitle = Path.GetFileNameWithoutExtension(mkvPath);
 
         // Mimic TrackingService's MatchMediaAsync logic
-        int? malId = await mappingService.GetIdFromTitleAsync(originalTitle, userList.Select(x => x.ToViewModel()));
+        int? malId = await mappingService.GetIdFromTitleAsync(originalTitle, userList);
 
         if (!malId.HasValue)
         {
