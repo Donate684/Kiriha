@@ -132,6 +132,8 @@ public partial class AnimeEntity : DomainObservableObject
     }
     public string? StartSeason { get; set; }
     public int? StartYear { get; set; }
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? CountryOfOrigin { get; set; }
     private string? _rating;
     public string? Rating
     {

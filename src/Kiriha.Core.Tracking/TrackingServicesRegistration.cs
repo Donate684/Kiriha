@@ -101,6 +101,7 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
                 sp.GetRequiredService<IHttpCacheRepository>()));
         services.AddForwardedSingleton<AniListApiService, IAniListApiService>();
+        services.AddSingleton<IAnimeCountryService, Kiriha.Core.Tracking.Services.AnimeCountryService>();
 
         // --- RSS ---
         services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));

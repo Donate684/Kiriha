@@ -137,7 +137,9 @@
       "continuing": "Продолжающиеся",
       "movies": "Фильмы",
       "specials": "Спешлы",
-      "other": "Прочее"
+      "other": "Прочее",
+      "donghua": "Дунхуа",
+      "aeni": "Эни"
     },
     "status": {
       "loading_details": "Загрузка деталей ({0}/{1})"

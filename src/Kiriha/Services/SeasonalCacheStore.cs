@@ -65,17 +65,19 @@ public sealed class SeasonalCacheStore
         {
             try
             {
+                var name = Path.GetFileNameWithoutExtension(file);
+                if (!TryParseKey(name, out int year, out string season)) continue;
+
                 var info = new FileInfo(file);
-                if (info.LastWriteTimeUtc < threshold)
+                // Past seasons never expire — historical releases are immutable.
+                // Only current and future seasons can expire after TTL.
+                if (IsCurrentOrFuture(year, season) && info.LastWriteTimeUtc < threshold)
                 {
                     // Expired — best-effort delete so the directory doesn't
-                    // accumulate decades of stale seasons.
+                    // accumulate stale ongoing/future seasons.
                     try { info.Delete(); } catch (Exception ex) { Log.Debug(ex, "Failed to delete expired seasonal cache file {File}", file); }
                     continue;
                 }
-
-                var name = Path.GetFileNameWithoutExtension(file);
-                if (!TryParseKey(name, out int year, out string season)) continue;
 
                 var fileBytes = File.ReadAllBytes(file);
                 SHA256.HashData(fileBytes, hashBytes);
@@ -170,4 +172,32 @@ public sealed class SeasonalCacheStore
         return true;
     }
 
+    private static bool IsCurrentOrFuture(int year, string season)
+    {
+        int month = DateTime.UtcNow.Month;
+        int clockYear = DateTime.UtcNow.Year;
+        if (month == 12) clockYear++;
+
+        string clockSeason = month switch
+        {
+            1 or 2 or 12 => "Winter",
+            3 or 4 or 5 => "Spring",
+            6 or 7 or 8 => "Summer",
+            _ => "Fall"
+        };
+
+        if (year > clockYear) return true;
+        if (year < clockYear) return false;
+
+        return SeasonOrder(season) >= SeasonOrder(clockSeason);
+    }
+
+    private static int SeasonOrder(string season) => season?.ToLowerInvariant() switch
+    {
+        "winter" => 0,
+        "spring" => 1,
+        "summer" => 2,
+        "fall" => 3,
+        _ => 0
+    };
 }

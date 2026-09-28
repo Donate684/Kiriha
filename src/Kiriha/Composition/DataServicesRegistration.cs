@@ -74,6 +74,7 @@ internal static class DataServicesRegistration
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
         services.AddSingleton<ISeasonalHiddenRepository, SeasonalHiddenRepository>();
         services.AddSingleton<ITorrentFilterRepository, TorrentFilterRepository>();
+        services.AddSingleton<IAnimeCountryRepository, AnimeCountryRepository>();
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<ShikiMetadataService>();

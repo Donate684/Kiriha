@@ -81,6 +81,8 @@ public partial class SeasonalViewModel
         OnaHeader = result.Headers["ONA"];
         SpecialsHeader = result.Headers["Specials"];
         OtherHeader = result.Headers["Other"];
+        DonghuaHeader = result.Headers["Donghua"];
+        AeniHeader = result.Headers["Aeni"];
 
         IsFilterActive = FilterNotInList || FilterWatching || FilterCompleted || FilterOnHold ||
                          FilterPlanToWatch || FilterDropped || FilterFranchise || FilterNsfw || ShowHidden ||

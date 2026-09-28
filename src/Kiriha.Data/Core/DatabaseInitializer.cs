@@ -61,6 +61,9 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
 
             await LegacyUserStateMigration.MigrateAsync(context);
 
+            await context.Database.ExecuteSqlRawAsync(
+                "CREATE TABLE IF NOT EXISTS anime_country_origin (mal_id INTEGER PRIMARY KEY, country_code TEXT NOT NULL, fetched_at TEXT NOT NULL);");
+
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
             _initTcs.TrySetResult();
         }

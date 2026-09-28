@@ -12,7 +12,7 @@
     <RootNamespace>Kiriha</RootNamespace>
     <Title>Kiriha</Title>
     <ApplicationIcon>Assets\kiriha.ico</ApplicationIcon>
-    <Version>1.4.1</Version>
+    <Version>1.4.2</Version>
 
 
     <!-- Optimization: Ahead-of-time compilation for faster startup -->
@@ -33,6 +33,10 @@
     <Content Include="Assets\Fonts\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Kiriha.Tests" />
   </ItemGroup>
 
 

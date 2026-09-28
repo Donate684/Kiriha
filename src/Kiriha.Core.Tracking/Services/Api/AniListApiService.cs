@@ -142,6 +142,74 @@ public class AniListApiService : IDisposable, IAniListApiService
 
 
 
+    public async Task<Dictionary<int, string>> GetCountriesBatchAsync(IReadOnlyList<int> malIds, CancellationToken ct = default)
+    {
+        var result = new Dictionary<int, string>();
+        if (malIds == null || malIds.Count == 0) return result;
+
+        const string query = """
+            query ($ids: [Int]) {
+              Page(page: 1, perPage: 50) {
+                media(idMal_in: $ids, type: ANIME) {
+                  idMal
+                  countryOfOrigin
+                }
+              }
+            }
+            """;
+
+        foreach (var chunk in malIds.Distinct().Chunk(50))
+        {
+            var payload = new AniListBatchRequest(
+                Query: query,
+                Variables: new AniListBatchVariables(chunk));
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
+                };
+                request.Headers.Add("User-Agent", AppInfo.UserAgent);
+
+                using var response = await _httpClient.SendAsync(request, ct);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Log.Warning("AniList: GetCountriesBatchAsync returned {Status}", response.StatusCode);
+                    continue;
+                }
+
+                using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+                if (doc.RootElement.TryGetProperty("data", out var data) &&
+                    data.TryGetProperty("Page", out var page) &&
+                    page.TryGetProperty("media", out var mediaArr) &&
+                    mediaArr.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var media in mediaArr.EnumerateArray())
+                    {
+                        if (media.TryGetProperty("idMal", out var idProp) && idProp.TryGetInt32(out var id) &&
+                            media.TryGetProperty("countryOfOrigin", out var countryProp) &&
+                            countryProp.ValueKind == JsonValueKind.String)
+                        {
+                            var country = countryProp.GetString();
+                            if (!string.IsNullOrEmpty(country))
+                            {
+                                result[id] = country;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "AniList: GetCountriesBatchAsync failed for chunk of {Count} items", chunk.Length);
+            }
+        }
+
+        return result;
+    }
+
     private static string CacheKey(int malId)
     {
         var raw = $"AniList:nextAiring:{malId}";
@@ -152,6 +220,8 @@ public class AniListApiService : IDisposable, IAniListApiService
 
     private sealed record AniListGraphQlRequest(string Query, AniListVariables Variables);
     private sealed record AniListVariables(int MalId);
+    private sealed record AniListBatchRequest(string Query, AniListBatchVariables Variables);
+    private sealed record AniListBatchVariables(int[] Ids);
     private sealed record AniListAiringCacheEntry(AniListAiringInfo? Value);
 
     public void Dispose()

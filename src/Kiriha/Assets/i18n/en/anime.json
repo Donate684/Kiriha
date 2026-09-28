@@ -137,7 +137,9 @@
       "continuing": "Continuing",
       "movies": "Movies",
       "specials": "Specials",
-      "other": "Other"
+      "other": "Other",
+      "donghua": "Donghua",
+      "aeni": "Aeni"
     },
     "status": {
       "loading_details": "Loading details ({0}/{1})"

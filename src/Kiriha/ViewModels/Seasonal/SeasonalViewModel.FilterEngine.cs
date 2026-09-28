@@ -115,11 +115,25 @@ internal sealed class SeasonalCategoryBuckets
             ["OVA"] = new(),
             ["ONA"] = new(),
             ["Specials"] = new(),
-            ["Other"] = new()
+            ["Other"] = new(),
+            ["Donghua"] = new(),
+            ["Aeni"] = new()
         };
 
         foreach (var item in source)
         {
+            var country = item.CountryOfOrigin?.ToUpperInvariant();
+            if (country == "CN")
+            {
+                buckets["Donghua"].Add(item);
+                continue;
+            }
+            if (country == "KR")
+            {
+                buckets["Aeni"].Add(item);
+                continue;
+            }
+
             string type = (item.Type ?? "").ToLowerInvariant();
             if (type == AppConstants.AnimeTypes.Tv || type == AppConstants.AnimeTypes.TvSpecial)
             {
@@ -149,7 +163,9 @@ internal sealed class SeasonalCategoryBuckets
             ("ONA", _items["ONA"].Count),
             ("OVA", _items["OVA"].Count),
             ("Specials", _items["Specials"].Count),
-            ("Other", _items["Other"].Count)
+            ("Other", _items["Other"].Count),
+            ("Donghua", _items["Donghua"].Count),
+            ("Aeni", _items["Aeni"].Count)
         };
 
         int selectedIdx = Array.FindIndex(categoryCounts, c => c.Key == selectedCategory);
@@ -181,7 +197,9 @@ internal sealed class SeasonalCategoryBuckets
         ["OVA"] = GetHeader("ova", _items["OVA"].Count, localizer),
         ["ONA"] = GetHeader("ona", _items["ONA"].Count, localizer),
         ["Specials"] = GetHeader("anime.seasonal.categories.specials", _items["Specials"].Count, localizer),
-        ["Other"] = GetHeader("anime.seasonal.categories.other", _items["Other"].Count, localizer)
+        ["Other"] = GetHeader("anime.seasonal.categories.other", _items["Other"].Count, localizer),
+        ["Donghua"] = GetHeader("anime.seasonal.categories.donghua", _items["Donghua"].Count, localizer),
+        ["Aeni"] = GetHeader("anime.seasonal.categories.aeni", _items["Aeni"].Count, localizer)
     };
 
     private static string GetHeader(string key, int count, ILocalizer _localizer)

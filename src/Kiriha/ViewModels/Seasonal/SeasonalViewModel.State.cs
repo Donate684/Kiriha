@@ -71,6 +71,8 @@ public partial class SeasonalViewModel
     [NotifyPropertyChangedFor(nameof(IsOvaSelected))]
     [NotifyPropertyChangedFor(nameof(IsSpecialsSelected))]
     [NotifyPropertyChangedFor(nameof(IsOtherSelected))]
+    [NotifyPropertyChangedFor(nameof(IsDonghuaSelected))]
+    [NotifyPropertyChangedFor(nameof(IsAeniSelected))]
     private string _selectedCategory = "New";
 
     public bool IsNewSelected => SelectedCategory == "New";
@@ -80,6 +82,8 @@ public partial class SeasonalViewModel
     public bool IsOvaSelected => SelectedCategory == "OVA";
     public bool IsSpecialsSelected => SelectedCategory == "Specials";
     public bool IsOtherSelected => SelectedCategory == "Other";
+    public bool IsDonghuaSelected => SelectedCategory == "Donghua";
+    public bool IsAeniSelected => SelectedCategory == "Aeni";
 
     [ObservableProperty] private bool _filterNotInList;
     [ObservableProperty] private bool _filterWatching;
@@ -100,6 +104,8 @@ public partial class SeasonalViewModel
     [ObservableProperty] private string _onaHeader = "";
     [ObservableProperty] private string _specialsHeader = "";
     [ObservableProperty] private string _otherHeader = "";
+    [ObservableProperty] private string _donghuaHeader = "";
+    [ObservableProperty] private string _aeniHeader = "";
 
     public List<string> Seasons { get; } = new()
     {

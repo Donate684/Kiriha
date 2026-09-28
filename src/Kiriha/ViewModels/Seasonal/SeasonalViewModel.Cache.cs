@@ -61,7 +61,12 @@ public partial class SeasonalViewModel
     }
 
     [RelayCommand]
-    public async Task LoadSeasonalAnimeAsync()
+    public Task LoadSeasonalAnimeAsync() => LoadSeasonalAnimeInternalAsync(force: false);
+
+    [RelayCommand]
+    public Task ForceRefreshAsync() => LoadSeasonalAnimeInternalAsync(force: true);
+
+    private async Task LoadSeasonalAnimeInternalAsync(bool force)
     {
         if (_isDisposed) return;
 
@@ -78,7 +83,8 @@ public partial class SeasonalViewModel
         var capturedYear = CurrentYear;
         var capturedSeason = CurrentSeason;
         var cacheKey = (capturedYear, capturedSeason);
-        bool hasCache = _seasonalCache.TryGetValue(cacheKey, out var cached);
+        bool foundInCache = _seasonalCache.TryGetValue(cacheKey, out var cached);
+        bool hasCache = !force && foundInCache && cached != null;
 
         if (!hasCache) IsLoading = true;
 
@@ -88,8 +94,14 @@ public partial class SeasonalViewModel
             {
                 SetAllSeasonalItems(cached!);
                 await HydrateMetadataAsync(_allSeasonalItems, ct);
+                await HydrateCountryOriginAsync(_allSeasonalItems, ct);
                 await ApplyFiltersAsync();
-                _ = RefreshSeasonalCacheInBackground(capturedYear, capturedSeason, ct);
+
+                // Only background-refresh current or upcoming seasons; past seasons are immutable history.
+                if (IsCurrentOrFutureSeason(capturedYear, capturedSeason))
+                {
+                    _ = RefreshSeasonalCacheInBackground(capturedYear, capturedSeason, ct);
+                }
             }
             else
             {
@@ -99,6 +111,7 @@ public partial class SeasonalViewModel
                 if (fresh != null && fresh.Any())
                 {
                     await HydrateMetadataAsync(fresh, ct);
+                    await HydrateCountryOriginAsync(fresh, ct);
                     SaveSeasonalCache(capturedYear, capturedSeason, fresh);
                     SetAllSeasonalItems(fresh);
                 }
@@ -116,6 +129,47 @@ public partial class SeasonalViewModel
             {
                 IsLoading = false;
             }
+        }
+    }
+
+    private bool IsCurrentOrFutureSeason(int year, string season)
+    {
+        int month = DateTime.UtcNow.Month;
+        int clockYear = DateTime.UtcNow.Year;
+        if (month == 12) clockYear++;
+
+        string clockSeason = month switch
+        {
+            1 or 2 or 12 => Seasons[0],
+            3 or 4 or 5 => Seasons[1],
+            6 or 7 or 8 => Seasons[2],
+            _ => Seasons[3]
+        };
+
+        if (year > clockYear) return true;
+        if (year < clockYear) return false;
+
+        int targetIdx = Seasons.IndexOf(season);
+        int currentIdx = Seasons.IndexOf(clockSeason);
+        return targetIdx >= currentIdx;
+    }
+
+    private async Task HydrateCountryOriginAsync(IReadOnlyList<AnimeEntity> items, CancellationToken ct)
+    {
+        if (items is null || items.Count == 0) return;
+
+        try
+        {
+            bool updated = await _countryService.HydrateCountriesAsync(items, ct);
+            if (updated)
+            {
+                var list = items as List<AnimeEntity> ?? items.ToList();
+                SaveSeasonalCache(CurrentYear, CurrentSeason, list);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "SeasonalViewModel: HydrateCountryOriginAsync failed");
         }
     }
 
@@ -174,6 +228,7 @@ public partial class SeasonalViewModel
                 if (fresh is null || !fresh.Any()) return;
 
                 await HydrateMetadataAsync(fresh, ct);
+                await HydrateCountryOriginAsync(fresh, ct);
 
                 SaveSeasonalCache(year, season, fresh);
                 if (year == CurrentYear && season == CurrentSeason)
