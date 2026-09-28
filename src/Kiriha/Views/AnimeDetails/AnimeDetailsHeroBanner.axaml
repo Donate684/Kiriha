@@ -12,7 +12,6 @@
     <UserControl.Resources>
         <conv:LocConverter x:Key="LocConverter"/>
         <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
-        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
     </UserControl.Resources>
         <Border Grid.Row="0" ClipToBounds="True" Padding="28,40,28,20">
             <Border.Background>

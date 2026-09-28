@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -19,11 +19,7 @@
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Settings.SettingsSystemPage"
              x:DataType="vmSettings:SettingsViewModel">
-    <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
-        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
-    </UserControl.Resources>
+
     <StackPanel>
 
                     <TextBlock Classes="PageTitle" Text="{DynamicResource l.common.status.system}"/>

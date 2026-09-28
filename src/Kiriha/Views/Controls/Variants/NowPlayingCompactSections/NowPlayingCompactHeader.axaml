@@ -10,7 +10,6 @@
 
     <UserControl.Resources>
         <conv:LocConverter x:Key="LocConverter"/>
-        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
         <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
     </UserControl.Resources>
 

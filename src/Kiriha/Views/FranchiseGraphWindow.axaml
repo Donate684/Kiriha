@@ -26,7 +26,6 @@
         <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
         <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
         <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
-        <conv:LocConverter x:Key="LocConverter"/>
 
         <!-- Dot Grid Canvas Pattern -->
         <DrawingBrush x:Key="DotGridBrush" TileMode="Tile" SourceRect="0,0,28,28" DestinationRect="0,0,28,28">

@@ -28,7 +28,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Kiriha/Views/Torrents/TorrentTemplates.axaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <conv:LocConverter x:Key="LocConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 

@@ -8,12 +8,10 @@
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsRelations"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
     <UserControl.Resources>
-        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
         <conv:StatusNoneConverter x:Key="StatusNoneConverter"/>
         <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter"/>
         <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
         <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
-        <conv:LocConverter x:Key="LocConverter"/>
     </UserControl.Resources>
 
     <UserControl.Styles>

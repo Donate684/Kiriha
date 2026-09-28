@@ -29,7 +29,6 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <conv:LocConverter x:Key="LocConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Views/AnimeList/AnimeCardTemplate.axaml"/>
             </ResourceDictionary.MergedDictionaries>

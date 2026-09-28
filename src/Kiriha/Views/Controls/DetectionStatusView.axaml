@@ -6,11 +6,7 @@
              x:Class="Kiriha.Views.Controls.DetectionStatusView"
              x:DataType="vmNowPlaying:NowPlayingViewModel">
 
-    <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
-        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
-    </UserControl.Resources>
+
 
     <Panel>
         <!-- ═══ Disabled State ═══ -->

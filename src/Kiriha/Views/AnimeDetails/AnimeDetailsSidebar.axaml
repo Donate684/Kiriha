@@ -10,10 +10,7 @@
              xmlns:details="using:Kiriha.Views.AnimeDetails"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebar"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
-    <UserControl.Resources>
-        <conv:RatingConverter x:Key="RatingConverter"/>
-        <conv:LocConverter x:Key="LocConverter"/>
-    </UserControl.Resources>
+
             <Border Grid.Column="0"
                     Background="{DynamicResource LayerFillColorDefault}"
                     BorderBrush="{DynamicResource DividerStrokeColorDefault}"

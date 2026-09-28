@@ -19,11 +19,7 @@
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Settings.SettingsAppearancePage"
              x:DataType="vmSettings:SettingsViewModel">
-    <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
-        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
-    </UserControl.Resources>
+
     <StackPanel>
 
                     <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.appearance}"/>

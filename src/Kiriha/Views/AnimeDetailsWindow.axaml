@@ -35,12 +35,7 @@
         ExtendClientAreaTitleBarHeightHint="34"
         WindowDecorations="BorderOnly">
 
-    <Window.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:RatingConverter x:Key="RatingConverter"/>
-        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
-        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
-    </Window.Resources>
+
 
     <Window.Styles>
         <!-- Modern Card Style -->

@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ════════════════════════════════════════════════════════════════════════════════
   SettingsSidebar.axaml — окно настроек (модалка с сайдбаром слева + контент)
 ════════════════════════════════════════════════════════════════════════════════
@@ -96,9 +96,7 @@
              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
 
     <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
         <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
-        <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
     </UserControl.Resources>
 
     <UserControl.Styles>

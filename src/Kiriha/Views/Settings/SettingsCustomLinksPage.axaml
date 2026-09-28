@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -20,8 +20,6 @@
              x:Class="Kiriha.Views.Settings.SettingsCustomLinksPage"
              x:DataType="vmSettings:SettingsCustomLinksViewModel">
     <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
         <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
     </UserControl.Resources>
     <StackPanel>
