@@ -11,6 +11,11 @@ public partial class AnimeEntityPresentation
             var ctx = _item.Franchise;
             if (ctx == null) return string.Empty;
 
+            if (ctx.IsMixed)
+            {
+                return GetLoc("anime.labels.franchise_mixed");
+            }
+
             if (ctx.UserStatus == UserAnimeStatus.Dropped)
             {
                 return GetLoc("anime.labels.franchise_dropped");
@@ -41,6 +46,13 @@ public partial class AnimeEntityPresentation
         {
             var ctx = _item.Franchise;
             if (ctx == null) return string.Empty;
+
+            if (ctx.IsMixed)
+            {
+                string completed = !string.IsNullOrWhiteSpace(ctx.CompletedTitle) ? ctx.CompletedTitle : "...";
+                string dropped = !string.IsNullOrWhiteSpace(ctx.DroppedTitle) ? ctx.DroppedTitle : "...";
+                return GetLoc("anime.labels.franchise_tooltip_mixed", completed, dropped);
+            }
 
             string title = !string.IsNullOrWhiteSpace(ctx.RelatedTitle) ? ctx.RelatedTitle : "...";
 

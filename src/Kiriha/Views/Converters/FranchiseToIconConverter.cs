@@ -11,6 +11,9 @@ public class FranchiseToIconConverter : IValueConverter
     {
         if (value is FranchiseContext ctx && ctx.HasRelation)
         {
+            if (ctx.IsMixed)
+                return MaterialIconKind.AlertCircleOutline;
+
             if (ctx.UserStatus == UserAnimeStatus.Dropped)
                 return MaterialIconKind.CloseCircleOutline;
 

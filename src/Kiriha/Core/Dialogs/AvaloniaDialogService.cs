@@ -20,11 +20,11 @@ namespace Kiriha.Core.Dialogs;
 /// </summary>
 public sealed class AvaloniaDialogService : IDialogService
 {
-    private readonly ISettingsService _settingsService; private readonly ISyncManager _syncManager; private readonly IAnimeRepository _animeRepo; private readonly IProgressUpdateService _progressService; private readonly IHistoryService _historyService; private readonly IMalApiService _malApiService; private readonly IShikiApiService _shikiApiService; private readonly JikanApiService _jikanApiService;
+    private readonly ISettingsService _settingsService; private readonly ISyncManager _syncManager; private readonly IAnimeRepository _animeRepo; private readonly IProgressUpdateService _progressService; private readonly IHistoryService _historyService; private readonly IMalApiService _malApiService; private readonly IShikiApiService _shikiApiService; private readonly JikanApiService _jikanApiService; private readonly IFranchiseService _franchiseService;
 
-    public AvaloniaDialogService(ISettingsService settingsService, ISyncManager syncManager, IAnimeRepository animeRepo, IProgressUpdateService progressService, IHistoryService historyService, IMalApiService malApiService, IShikiApiService shikiApiService, JikanApiService jikanApiService)
+    public AvaloniaDialogService(ISettingsService settingsService, ISyncManager syncManager, IAnimeRepository animeRepo, IProgressUpdateService progressService, IHistoryService historyService, IMalApiService malApiService, IShikiApiService shikiApiService, JikanApiService jikanApiService, IFranchiseService franchiseService)
     {
-        _settingsService = settingsService; _syncManager = syncManager; _animeRepo = animeRepo; _progressService = progressService; _historyService = historyService; _malApiService = malApiService; _shikiApiService = shikiApiService; _jikanApiService = jikanApiService;
+        _settingsService = settingsService; _syncManager = syncManager; _animeRepo = animeRepo; _progressService = progressService; _historyService = historyService; _malApiService = malApiService; _shikiApiService = shikiApiService; _jikanApiService = jikanApiService; _franchiseService = franchiseService;
     }
 
     public async Task<bool> ShowAnimeDetailsAsync(Control? sourceControl, AnimeEntity item, CancellationToken ct = default)
@@ -58,7 +58,8 @@ public sealed class AvaloniaDialogService : IDialogService
             this,
             _shikiApiService,
             _animeRepo,
-            _malApiService);
+            _malApiService,
+            _franchiseService);
 
         var window = new Views.AnimeDetailsWindow(_settingsService) { DataContext = vm };
 

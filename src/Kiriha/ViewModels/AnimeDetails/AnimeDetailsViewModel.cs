@@ -63,6 +63,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase
     private readonly IShikiApiService _shikiApiService;
     private readonly IAnimeRepository _animeRepo;
     private readonly IMalApiService _malApiService;
+    private readonly IFranchiseService _franchiseService;
 
     public ISettingsService Settings => _settingsService;
 
@@ -75,7 +76,8 @@ public partial class AnimeDetailsViewModel : ViewModelBase
         IDialogService dialogs,
         IShikiApiService shikiApiService,
         IAnimeRepository animeRepo,
-        IMalApiService malApiService)
+        IMalApiService malApiService,
+        IFranchiseService franchiseService)
     {
         _anime = cloneAnime;
         Editor = editor;
@@ -86,6 +88,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase
         _shikiApiService = shikiApiService;
         _animeRepo = animeRepo;
         _malApiService = malApiService;
+        _franchiseService = franchiseService;
 
         BuildCustomShareLinks();
 

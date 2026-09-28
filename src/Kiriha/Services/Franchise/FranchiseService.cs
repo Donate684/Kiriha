@@ -246,6 +246,11 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         await RebuildIndexAsync(ct).ConfigureAwait(false);
     }
 
+    public Task IngestFranchiseAsync(int sourceMalId, ShikiFranchiseResponse data, CancellationToken ct = default)
+    {
+        return IngestFranchiseResponseAsync(sourceMalId, data, ct);
+    }
+
     public async Task RebuildIndexAsync(CancellationToken ct = default)
     {
         try
@@ -272,22 +277,331 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
             var allRelations = await _relationRepo.GetAllAsync(ct).ConfigureAwait(false);
             var newIndex = new Dictionary<int, FranchiseContext>();
 
+            // Build adjacency list for franchise graph
+            var graph = new Dictionary<int, List<(int NeighborId, FranchiseRelationKind StepKind)>>();
+
+            void AddEdge(int from, int to, FranchiseRelationKind kind)
+            {
+                if (!graph.TryGetValue(from, out var list))
+                {
+                    list = new List<(int, FranchiseRelationKind)>();
+                    graph[from] = list;
+                }
+                list.Add((to, kind));
+            }
+
             foreach (var r in allRelations)
             {
-                // Case A: Source is in user's library
-                if (userDict.TryGetValue(r.SourceMalId, out var sourceAnime) && r.TargetMalId > 0)
+                if (r.SourceMalId <= 0 || r.TargetMalId <= 0) continue;
+                if (string.Equals(r.RelationType, "character", StringComparison.OrdinalIgnoreCase)) continue;
+
+                var directKind = MapDirectRelation(r.RelationType);
+                var invertedKind = MapInvertedRelation(r.RelationType);
+
+                AddEdge(r.SourceMalId, r.TargetMalId, directKind);
+                AddEdge(r.TargetMalId, r.SourceMalId, invertedKind);
+            }
+
+            // Find connected components in graph
+            var visitedNodes = new HashSet<int>();
+
+            foreach (var startNode in graph.Keys)
+            {
+                if (!visitedNodes.Add(startNode)) continue;
+
+                // Discover all nodes in this connected component
+                var component = new List<int> { startNode };
+                var compQueue = new Queue<int>();
+                compQueue.Enqueue(startNode);
+
+                while (compQueue.Count > 0)
                 {
-                    var kind = MapDirectRelation(r.RelationType);
-                    var candidate = CreateContext(kind, sourceAnime);
-                    MergeContext(newIndex, r.TargetMalId, candidate);
+                    var curr = compQueue.Dequeue();
+                    if (!graph.TryGetValue(curr, out var edges)) continue;
+                    foreach (var (nextId, _) in edges)
+                    {
+                        if (visitedNodes.Add(nextId))
+                        {
+                            component.Add(nextId);
+                            compQueue.Enqueue(nextId);
+                        }
+                    }
                 }
 
-                // Case B: Target is in user's library
-                if (userDict.TryGetValue(r.TargetMalId, out var targetAnime) && r.SourceMalId > 0)
+                // Check which user library anime belong to this component
+                var userAnimeInComp = component
+                    .Where(id => userDict.ContainsKey(id))
+                    .Select(id => userDict[id])
+                    .ToList();
+
+                if (userAnimeInComp.Count == 0) continue;
+
+                var droppedList = userAnimeInComp.Where(x => x.Status == UserAnimeStatus.Dropped).ToList();
+                var completedList = userAnimeInComp.Where(x => x.Status == UserAnimeStatus.Completed).ToList();
+                var watchingList = userAnimeInComp.Where(x => x.Status == UserAnimeStatus.Watching).ToList();
+                var planList = userAnimeInComp.Where(x => x.Status == UserAnimeStatus.PlanToWatch).ToList();
+                var onHoldList = userAnimeInComp.Where(x => x.Status == UserAnimeStatus.OnHold).ToList();
+
+                bool isMixed = droppedList.Count > 0 && completedList.Count > 0;
+
+                // Run BFS from each user anime in this component to compute shortest distance & relation path
+                // to all other nodes in the component
+                var distancesFromUserAnime = new Dictionary<int, Dictionary<int, (int Distance, FranchiseRelationKind PathKind)>>();
+
+                foreach (var userAnime in userAnimeInComp)
                 {
-                    var kind = MapInvertedRelation(r.RelationType);
-                    var candidate = CreateContext(kind, targetAnime);
-                    MergeContext(newIndex, r.SourceMalId, candidate);
+                    var bfsVisited = new Dictionary<int, (int Distance, FranchiseRelationKind PathKind)>
+                    {
+                        [userAnime.Id] = (0, FranchiseRelationKind.None)
+                    };
+                    var bfsQueue = new Queue<(int NodeId, int Dist, FranchiseRelationKind RelSoFar)>();
+                    bfsQueue.Enqueue((userAnime.Id, 0, FranchiseRelationKind.None));
+
+                    while (bfsQueue.Count > 0)
+                    {
+                        var (curr, dist, relSoFar) = bfsQueue.Dequeue();
+                        if (!graph.TryGetValue(curr, out var edges)) continue;
+
+                        foreach (var (nextId, stepKind) in edges)
+                        {
+                            if (bfsVisited.ContainsKey(nextId)) continue;
+
+                            var nextRel = dist == 0 ? stepKind : CombineRelations(relSoFar, stepKind);
+                            bfsVisited[nextId] = (dist + 1, nextRel);
+                            bfsQueue.Enqueue((nextId, dist + 1, nextRel));
+                        }
+                    }
+
+                    distancesFromUserAnime[userAnime.Id] = bfsVisited;
+                }
+
+                (AnimeEntity Anime, int Distance, FranchiseRelationKind Relation)? FindClosest(int targetNodeId, List<AnimeEntity> candidates)
+                {
+                    AnimeEntity? bestAnime = null;
+                    int bestDist = int.MaxValue;
+                    FranchiseRelationKind bestRel = FranchiseRelationKind.None;
+
+                    foreach (var c in candidates)
+                    {
+                        if (c.Id == targetNodeId) continue;
+
+                        if (distancesFromUserAnime.TryGetValue(c.Id, out var map) &&
+                            map.TryGetValue(targetNodeId, out var info))
+                        {
+                            if (info.Distance < bestDist)
+                            {
+                                bestDist = info.Distance;
+                                bestAnime = c;
+                                bestRel = info.PathKind;
+                            }
+                        }
+                    }
+
+                    if (bestAnime == null) return null;
+                    return (bestAnime, bestDist, bestRel);
+                }
+
+                // Compute FranchiseContext for each node in the component
+                foreach (var targetId in component)
+                {
+                    // If target anime is already in userDict and has direct active/finished status,
+                    // direct status takes precedence on UI cards
+                    if (userDict.TryGetValue(targetId, out var directUserAnime) &&
+                        (directUserAnime.Status == UserAnimeStatus.Completed ||
+                         directUserAnime.Status == UserAnimeStatus.Dropped ||
+                         directUserAnime.Status == UserAnimeStatus.Watching))
+                    {
+                        continue;
+                    }
+
+                    if (isMixed)
+                    {
+                        var closestDrop = FindClosest(targetId, droppedList);
+                        var closestComp = FindClosest(targetId, completedList);
+
+                        if (closestDrop != null && closestComp != null)
+                        {
+                            var primary = closestComp.Value.Distance <= closestDrop.Value.Distance
+                                ? closestComp.Value
+                                : closestDrop.Value;
+
+                            var rel = primary.Relation != FranchiseRelationKind.None && primary.Relation != FranchiseRelationKind.Other
+                                ? primary.Relation
+                                : (closestComp.Value.Relation != FranchiseRelationKind.None ? closestComp.Value.Relation : FranchiseRelationKind.Sequel);
+
+                            var dropTitle = !string.IsNullOrWhiteSpace(closestDrop.Value.Anime.RussianTitle)
+                                ? closestDrop.Value.Anime.RussianTitle
+                                : closestDrop.Value.Anime.Title;
+
+                            var compTitle = !string.IsNullOrWhiteSpace(closestComp.Value.Anime.RussianTitle)
+                                ? closestComp.Value.Anime.RussianTitle
+                                : closestComp.Value.Anime.Title;
+
+                            var primTitle = !string.IsNullOrWhiteSpace(primary.Anime.RussianTitle)
+                                ? primary.Anime.RussianTitle
+                                : primary.Anime.Title;
+
+                            newIndex[targetId] = new FranchiseContext
+                            {
+                                Relation = rel,
+                                UserStatus = primary.Anime.Status,
+                                RelatedAnimeId = primary.Anime.Id,
+                                RelatedTitle = primTitle,
+                                RelatedProgress = primary.Anime.Progress,
+                                RelatedTotalEpisodes = primary.Anime.TotalEpisodes,
+                                RelatedScore = primary.Anime.Score,
+                                IsMixed = true,
+                                DroppedAnimeId = closestDrop.Value.Anime.Id,
+                                DroppedTitle = dropTitle,
+                                CompletedAnimeId = closestComp.Value.Anime.Id,
+                                CompletedTitle = compTitle
+                            };
+                            continue;
+                        }
+                    }
+
+                    if (droppedList.Count > 0 && completedList.Count == 0)
+                    {
+                        var closestDrop = FindClosest(targetId, droppedList);
+                        if (closestDrop != null)
+                        {
+                            var rel = closestDrop.Value.Relation != FranchiseRelationKind.None && closestDrop.Value.Relation != FranchiseRelationKind.Other
+                                ? closestDrop.Value.Relation
+                                : FranchiseRelationKind.Sequel;
+
+                            var title = !string.IsNullOrWhiteSpace(closestDrop.Value.Anime.RussianTitle)
+                                ? closestDrop.Value.Anime.RussianTitle
+                                : closestDrop.Value.Anime.Title;
+
+                            newIndex[targetId] = new FranchiseContext
+                            {
+                                Relation = rel,
+                                UserStatus = UserAnimeStatus.Dropped,
+                                RelatedAnimeId = closestDrop.Value.Anime.Id,
+                                RelatedTitle = title,
+                                RelatedProgress = closestDrop.Value.Anime.Progress,
+                                RelatedTotalEpisodes = closestDrop.Value.Anime.TotalEpisodes,
+                                RelatedScore = closestDrop.Value.Anime.Score,
+                                IsMixed = false,
+                                DroppedAnimeId = closestDrop.Value.Anime.Id,
+                                DroppedTitle = title
+                            };
+                            continue;
+                        }
+                    }
+
+                    if (completedList.Count > 0 && droppedList.Count == 0)
+                    {
+                        var closestComp = FindClosest(targetId, completedList);
+                        if (closestComp != null)
+                        {
+                            var rel = closestComp.Value.Relation != FranchiseRelationKind.None && closestComp.Value.Relation != FranchiseRelationKind.Other
+                                ? closestComp.Value.Relation
+                                : FranchiseRelationKind.Sequel;
+
+                            var title = !string.IsNullOrWhiteSpace(closestComp.Value.Anime.RussianTitle)
+                                ? closestComp.Value.Anime.RussianTitle
+                                : closestComp.Value.Anime.Title;
+
+                            newIndex[targetId] = new FranchiseContext
+                            {
+                                Relation = rel,
+                                UserStatus = UserAnimeStatus.Completed,
+                                RelatedAnimeId = closestComp.Value.Anime.Id,
+                                RelatedTitle = title,
+                                RelatedProgress = closestComp.Value.Anime.Progress,
+                                RelatedTotalEpisodes = closestComp.Value.Anime.TotalEpisodes,
+                                RelatedScore = closestComp.Value.Anime.Score,
+                                IsMixed = false,
+                                CompletedAnimeId = closestComp.Value.Anime.Id,
+                                CompletedTitle = title
+                            };
+                            continue;
+                        }
+                    }
+
+                    if (watchingList.Count > 0)
+                    {
+                        var closestWatch = FindClosest(targetId, watchingList);
+                        if (closestWatch != null)
+                        {
+                            var rel = closestWatch.Value.Relation != FranchiseRelationKind.None && closestWatch.Value.Relation != FranchiseRelationKind.Other
+                                ? closestWatch.Value.Relation
+                                : FranchiseRelationKind.Sequel;
+
+                            var title = !string.IsNullOrWhiteSpace(closestWatch.Value.Anime.RussianTitle)
+                                ? closestWatch.Value.Anime.RussianTitle
+                                : closestWatch.Value.Anime.Title;
+
+                            newIndex[targetId] = new FranchiseContext
+                            {
+                                Relation = rel,
+                                UserStatus = UserAnimeStatus.Watching,
+                                RelatedAnimeId = closestWatch.Value.Anime.Id,
+                                RelatedTitle = title,
+                                RelatedProgress = closestWatch.Value.Anime.Progress,
+                                RelatedTotalEpisodes = closestWatch.Value.Anime.TotalEpisodes,
+                                RelatedScore = closestWatch.Value.Anime.Score,
+                                IsMixed = false
+                            };
+                            continue;
+                        }
+                    }
+
+                    if (planList.Count > 0)
+                    {
+                        var closestPlan = FindClosest(targetId, planList);
+                        if (closestPlan != null)
+                        {
+                            var rel = closestPlan.Value.Relation != FranchiseRelationKind.None && closestPlan.Value.Relation != FranchiseRelationKind.Other
+                                ? closestPlan.Value.Relation
+                                : FranchiseRelationKind.Sequel;
+
+                            var title = !string.IsNullOrWhiteSpace(closestPlan.Value.Anime.RussianTitle)
+                                ? closestPlan.Value.Anime.RussianTitle
+                                : closestPlan.Value.Anime.Title;
+
+                            newIndex[targetId] = new FranchiseContext
+                            {
+                                Relation = rel,
+                                UserStatus = UserAnimeStatus.PlanToWatch,
+                                RelatedAnimeId = closestPlan.Value.Anime.Id,
+                                RelatedTitle = title,
+                                RelatedProgress = closestPlan.Value.Anime.Progress,
+                                RelatedTotalEpisodes = closestPlan.Value.Anime.TotalEpisodes,
+                                RelatedScore = closestPlan.Value.Anime.Score,
+                                IsMixed = false
+                            };
+                            continue;
+                        }
+                    }
+
+                    if (onHoldList.Count > 0)
+                    {
+                        var closestHold = FindClosest(targetId, onHoldList);
+                        if (closestHold != null)
+                        {
+                            var rel = closestHold.Value.Relation != FranchiseRelationKind.None && closestHold.Value.Relation != FranchiseRelationKind.Other
+                                ? closestHold.Value.Relation
+                                : FranchiseRelationKind.Sequel;
+
+                            var title = !string.IsNullOrWhiteSpace(closestHold.Value.Anime.RussianTitle)
+                                ? closestHold.Value.Anime.RussianTitle
+                                : closestHold.Value.Anime.Title;
+
+                            newIndex[targetId] = new FranchiseContext
+                            {
+                                Relation = rel,
+                                UserStatus = UserAnimeStatus.OnHold,
+                                RelatedAnimeId = closestHold.Value.Anime.Id,
+                                RelatedTitle = title,
+                                RelatedProgress = closestHold.Value.Anime.Progress,
+                                RelatedTotalEpisodes = closestHold.Value.Anime.TotalEpisodes,
+                                RelatedScore = closestHold.Value.Anime.Score,
+                                IsMixed = false
+                            };
+                        }
+                    }
                 }
             }
 
@@ -322,11 +636,10 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
     {
         if (string.IsNullOrWhiteSpace(relationType)) return FranchiseRelationKind.Other;
 
-        // Inverted: Target is the user's anime, Source is the candidate
         return relationType.Trim().ToLowerInvariant() switch
         {
-            "prequel" => FranchiseRelationKind.Sequel, // Target is prequel to Source => Source is Sequel to Target
-            "sequel" => FranchiseRelationKind.Prequel,  // Target is sequel to Source => Source is Prequel to Target
+            "prequel" => FranchiseRelationKind.Sequel,
+            "sequel" => FranchiseRelationKind.Prequel,
             "parent" or "parent_story" or "parent story" => FranchiseRelationKind.SpinOff,
             "side_story" or "side story" or "spin_off" or "spin-off" => FranchiseRelationKind.Parent,
             "summary" => FranchiseRelationKind.Summary,
@@ -334,61 +647,25 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         };
     }
 
-    private static FranchiseContext CreateContext(FranchiseRelationKind kind, AnimeEntity relatedUserAnime)
+    private static FranchiseRelationKind CombineRelations(FranchiseRelationKind current, FranchiseRelationKind next)
     {
-        var title = !string.IsNullOrWhiteSpace(relatedUserAnime.RussianTitle)
-            ? relatedUserAnime.RussianTitle
-            : relatedUserAnime.Title;
-
-        return new FranchiseContext
-        {
-            Relation = kind,
-            UserStatus = relatedUserAnime.Status,
-            RelatedAnimeId = relatedUserAnime.Id,
-            RelatedTitle = title,
-            RelatedProgress = relatedUserAnime.Progress,
-            RelatedTotalEpisodes = relatedUserAnime.TotalEpisodes,
-            RelatedScore = relatedUserAnime.Score
-        };
-    }
-
-    private static void MergeContext(Dictionary<int, FranchiseContext> index, int targetId, FranchiseContext candidate)
-    {
-        if (!index.TryGetValue(targetId, out var existing))
-        {
-            index[targetId] = candidate;
-            return;
-        }
-
-        // Prioritization:
-        // 1. Dropped status has highest alert priority (warning the user)
-        // 2. Direct Sequel with Completed
-        // 3. Any Completed
-        // 4. Watching
-        // 5. PlanToWatch
-        int existingScore = GetScore(existing);
-        int candidateScore = GetScore(candidate);
-
-        if (candidateScore > existingScore)
-        {
-            index[targetId] = candidate;
-        }
-    }
-
-    private static int GetScore(FranchiseContext ctx)
-    {
-        int score = 0;
-        if (ctx.UserStatus == UserAnimeStatus.Dropped) score += 100;
-        else if (ctx.UserStatus == UserAnimeStatus.Completed) score += 80;
-        else if (ctx.UserStatus == UserAnimeStatus.Watching) score += 70;
-        else if (ctx.UserStatus == UserAnimeStatus.PlanToWatch) score += 60;
-        else if (ctx.UserStatus == UserAnimeStatus.OnHold) score += 50;
-
-        if (ctx.Relation == FranchiseRelationKind.Sequel) score += 15;
-        else if (ctx.Relation == FranchiseRelationKind.Prequel) score += 10;
-        else if (ctx.Relation == FranchiseRelationKind.SpinOff) score += 5;
-
-        return score;
+        if (current == FranchiseRelationKind.SpinOff || next == FranchiseRelationKind.SpinOff)
+            return FranchiseRelationKind.SpinOff;
+        if (current == FranchiseRelationKind.SideStory || next == FranchiseRelationKind.SideStory)
+            return FranchiseRelationKind.SideStory;
+        if (current == FranchiseRelationKind.Summary || next == FranchiseRelationKind.Summary)
+            return FranchiseRelationKind.Summary;
+        if (current == FranchiseRelationKind.Sequel && next == FranchiseRelationKind.Sequel)
+            return FranchiseRelationKind.Sequel;
+        if (current == FranchiseRelationKind.Prequel && next == FranchiseRelationKind.Prequel)
+            return FranchiseRelationKind.Prequel;
+        if (current == FranchiseRelationKind.Parent || next == FranchiseRelationKind.Parent)
+            return FranchiseRelationKind.Parent;
+        if (current == FranchiseRelationKind.Sequel && (next == FranchiseRelationKind.Other || next == FranchiseRelationKind.None))
+            return FranchiseRelationKind.Sequel;
+        if ((current == FranchiseRelationKind.Other || current == FranchiseRelationKind.None) && next == FranchiseRelationKind.Sequel)
+            return FranchiseRelationKind.Sequel;
+        return FranchiseRelationKind.Other;
     }
 
     public void Dispose()

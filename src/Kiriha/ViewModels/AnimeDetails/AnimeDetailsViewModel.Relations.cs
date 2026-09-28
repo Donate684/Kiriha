@@ -129,6 +129,7 @@ public partial class AnimeDetailsViewModel
             var data = await _shikiApiService.GetFranchiseAsync(Anime.Id);
             if (data != null && data.Nodes.Count > 1)
             {
+                _ = _franchiseService.IngestFranchiseAsync(Anime.Id, data);
                 if (data.CurrentId == 0) data.CurrentId = Anime.Id;
 
                 var options = new Kiriha.Utils.Graphs.FranchiseLayoutOptions

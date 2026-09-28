@@ -9,6 +9,7 @@ public class FranchiseToColorConverter : IValueConverter
 {
     private static readonly ISolidColorBrush SequelBrush = new SolidColorBrush(Color.Parse("#6A1B9A")); // Purple
     private static readonly ISolidColorBrush DroppedBrush = new SolidColorBrush(Color.Parse("#B71C1C")); // Deep Carmine Red
+    private static readonly ISolidColorBrush MixedBrush = new SolidColorBrush(Color.Parse("#D97706")); // Warm Amber / Yellow
     private static readonly ISolidColorBrush WatchingBrush = new SolidColorBrush(Color.Parse("#2E7D32")); // Green
     private static readonly ISolidColorBrush SpinOffBrush = new SolidColorBrush(Color.Parse("#00838F")); // Teal
     private static readonly ISolidColorBrush PlanBrush = new SolidColorBrush(Color.Parse("#455A64")); // Slate Grey
@@ -19,6 +20,9 @@ public class FranchiseToColorConverter : IValueConverter
     {
         if (value is FranchiseContext ctx && ctx.HasRelation)
         {
+            if (ctx.IsMixed)
+                return MixedBrush;
+
             if (ctx.UserStatus == UserAnimeStatus.Dropped)
                 return DroppedBrush;
 

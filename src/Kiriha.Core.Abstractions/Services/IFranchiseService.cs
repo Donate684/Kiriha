@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Abstractions.Services;
@@ -38,4 +39,9 @@ public interface IFranchiseService
     /// Ingests relations for a source anime and updates the in-memory franchise index.
     /// </summary>
     Task IngestRelationsAsync(int sourceMalId, IEnumerable<AnimeRelation> relations, CancellationToken ct = default);
+
+    /// <summary>
+    /// Ingests a full Shikimori franchise graph response and updates the in-memory franchise index.
+    /// </summary>
+    Task IngestFranchiseAsync(int sourceMalId, ShikiFranchiseResponse data, CancellationToken ct = default);
 }

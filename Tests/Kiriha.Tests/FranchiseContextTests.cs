@@ -128,4 +128,128 @@ public sealed class FranchiseContextTests
         Assert.Equal(UserAnimeStatus.Dropped, ctx21.UserStatus);
         Assert.Equal("Dropped Anime", ctx21.RelatedTitle);
     }
+
+    [Fact]
+    public async Task FranchiseService_PropagatesMultiHop_DroppedWarning_TanyaCase()
+    {
+        // Tanya case:
+        // User dropped Tanya Season 1 (32615)
+        // Movie (37055) is NOT in user list
+        // Season 2 (49144) is in Seasonal (not in user list)
+        var userLibrary = new List<AnimeEntity>
+        {
+            new AnimeEntity { Id = 32615, Title = "Youjo Senki", RussianTitle = "Военная хроника маленькой девочки", Status = UserAnimeStatus.Dropped }
+        };
+
+        var relations = new List<AnimeRelation>
+        {
+            new AnimeRelation { SourceMalId = 32615, TargetMalId = 37055, RelationType = "Sequel" },
+            new AnimeRelation { SourceMalId = 37055, TargetMalId = 49144, RelationType = "Sequel" }
+        };
+
+        var mockAnimeRepo = new Mock<IAnimeRepository>();
+        mockAnimeRepo.Setup(r => r.GetSnapshotAsync()).ReturnsAsync(userLibrary);
+        mockAnimeRepo.Setup(r => r.InitializationTask).Returns(Task.CompletedTask);
+
+        var mockRelationRepo = new Mock<IAnimeRelationRepository>();
+        mockRelationRepo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(relations);
+
+        var mockShikiApi = new Mock<Kiriha.Core.Abstractions.Services.IShikiApiService>();
+
+        using var franchiseService = new FranchiseService(mockAnimeRepo.Object, mockRelationRepo.Object, mockShikiApi.Object);
+        await franchiseService.RebuildIndexAsync();
+
+        // 49144 (Tanya 2) is 2 hops away from 32615 (Tanya 1) and must be detected as Dropped warning!
+        var ctxTanya2 = franchiseService.GetFranchiseContext(49144);
+        Assert.NotNull(ctxTanya2);
+        Assert.False(ctxTanya2.IsMixed);
+        Assert.Equal(UserAnimeStatus.Dropped, ctxTanya2.UserStatus);
+        Assert.Equal(FranchiseRelationKind.Sequel, ctxTanya2.Relation);
+        Assert.Equal("Военная хроника маленькой девочки", ctxTanya2.RelatedTitle);
+    }
+
+    [Fact]
+    public async Task FranchiseService_DetectsMixedStatus_WhenDroppedAndCompletedExist()
+    {
+        // Mixed franchise:
+        // User completed Season 1 (10)
+        // User dropped Movie (20)
+        // Season 2 (30) is coming out in Seasonal
+        var userLibrary = new List<AnimeEntity>
+        {
+            new AnimeEntity { Id = 10, Title = "Season 1", Status = UserAnimeStatus.Completed },
+            new AnimeEntity { Id = 20, Title = "Movie", Status = UserAnimeStatus.Dropped }
+        };
+
+        var relations = new List<AnimeRelation>
+        {
+            new AnimeRelation { SourceMalId = 10, TargetMalId = 20, RelationType = "Sequel" },
+            new AnimeRelation { SourceMalId = 20, TargetMalId = 30, RelationType = "Sequel" }
+        };
+
+        var mockAnimeRepo = new Mock<IAnimeRepository>();
+        mockAnimeRepo.Setup(r => r.GetSnapshotAsync()).ReturnsAsync(userLibrary);
+        mockAnimeRepo.Setup(r => r.InitializationTask).Returns(Task.CompletedTask);
+
+        var mockRelationRepo = new Mock<IAnimeRelationRepository>();
+        mockRelationRepo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(relations);
+
+        var mockShikiApi = new Mock<Kiriha.Core.Abstractions.Services.IShikiApiService>();
+
+        using var franchiseService = new FranchiseService(mockAnimeRepo.Object, mockRelationRepo.Object, mockShikiApi.Object);
+        await franchiseService.RebuildIndexAsync();
+
+        var ctxS2 = franchiseService.GetFranchiseContext(30);
+        Assert.NotNull(ctxS2);
+        Assert.True(ctxS2.IsMixed);
+        Assert.Equal("Season 1", ctxS2.CompletedTitle);
+        Assert.Equal("Movie", ctxS2.DroppedTitle);
+    }
+
+    [Fact]
+    public void Presentation_MixedStatus_BadgeAndTooltip()
+    {
+        var anime = new AnimeEntity
+        {
+            Id = 30,
+            Status = UserAnimeStatus.None,
+            Franchise = new FranchiseContext
+            {
+                Relation = FranchiseRelationKind.Sequel,
+                UserStatus = UserAnimeStatus.Completed,
+                IsMixed = true,
+                CompletedTitle = "Season 1",
+                DroppedTitle = "Movie"
+            }
+        };
+
+        AnimeEntityPresentation.SetDefaultGetLoc((k, args) => args != null && args.Length > 0 ? $"{k}: {string.Join(", ", args)}" : k);
+
+        Assert.True(anime.Presentation.HasFranchiseBadge);
+        Assert.Equal("anime.labels.franchise_mixed", anime.Presentation.FranchiseBadgeText);
+        Assert.Contains("Season 1", anime.Presentation.FranchiseTooltip);
+        Assert.Contains("Movie", anime.Presentation.FranchiseTooltip);
+    }
+
+    [Fact]
+    public void FranchiseConverters_HandleMixedStatus()
+    {
+        var ctx = new FranchiseContext
+        {
+            Relation = FranchiseRelationKind.Sequel,
+            UserStatus = UserAnimeStatus.Completed,
+            IsMixed = true,
+            CompletedTitle = "Season 1",
+            DroppedTitle = "Movie"
+        };
+
+        var colorConverter = new Kiriha.Views.Converters.FranchiseToColorConverter();
+        var brush = colorConverter.Convert(ctx, typeof(Avalonia.Media.IBrush), null, System.Globalization.CultureInfo.InvariantCulture) as Avalonia.Media.ISolidColorBrush;
+        Assert.NotNull(brush);
+        Assert.Equal(Avalonia.Media.Color.Parse("#D97706"), brush.Color);
+
+        var iconConverter = new Kiriha.Views.Converters.FranchiseToIconConverter();
+        var icon = iconConverter.Convert(ctx, typeof(Material.Icons.MaterialIconKind), null, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Equal(Material.Icons.MaterialIconKind.AlertCircleOutline, icon);
+    }
 }

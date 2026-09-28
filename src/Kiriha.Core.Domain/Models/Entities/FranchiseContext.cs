@@ -22,5 +22,11 @@ public sealed class FranchiseContext
     public int? RelatedTotalEpisodes { get; init; }
     public string? RelatedScore { get; init; }
 
-    public bool HasRelation => Relation != FranchiseRelationKind.None && UserStatus != UserAnimeStatus.None;
+    public bool IsMixed { get; init; }
+    public int DroppedAnimeId { get; init; }
+    public string? DroppedTitle { get; init; }
+    public int CompletedAnimeId { get; init; }
+    public string? CompletedTitle { get; init; }
+
+    public bool HasRelation => (Relation != FranchiseRelationKind.None || IsMixed) && UserStatus != UserAnimeStatus.None;
 }
