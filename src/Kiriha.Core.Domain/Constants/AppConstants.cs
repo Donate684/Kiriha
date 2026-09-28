@@ -16,9 +16,6 @@ public static class AppConstants
             public const string AuthUrl = "https://myanimelist.net/v1/oauth2/authorize";
             public const string WebsiteUrl = "https://myanimelist.net/anime/";
             public const string BaseWebsiteUrl = "https://myanimelist.net/";
-            public const string AnimeListUrl = "https://myanimelist.net/animelist";
-            public const string MangaListUrl = "https://myanimelist.net/mangalist";
-            public const string NotLoggedIn = "Not logged in";
         }
 
         // shikimori.one and shikimori.net are independent OAuth realms with identical
@@ -28,9 +25,6 @@ public static class AppConstants
         // user's machine (see ApiKeys.cs for the WAF-bypass rationale).
         public static class Shiki
         {
-            public const string OneHost = "https://shikimori.one";
-            public const string NetHost = "https://shikimori.net";
-
             public static readonly ShikiHost One = new(
                 BaseUrl: "https://shikimori.one/api/",
                 TokenUrl: "https://shikimori.one/oauth/token",

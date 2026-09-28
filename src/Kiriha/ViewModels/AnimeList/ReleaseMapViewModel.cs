@@ -262,22 +262,6 @@ public class ReleaseMapViewModel
         return item.Presentation.DisplayTitle;
     }
 
-    public static string FormatRelativeDate(DateTime releaseAt)
-    {
-        var today = DateTime.Today;
-        var date = releaseAt.ToLocalTime().Date;
-        if (date == today) return GetLoc("schedule.today").ToLower();
-        if (date == today.AddDays(1)) return GetLoc("schedule.tomorrow").ToLower();
-        if (date == today.AddDays(-1)) return GetLoc("schedule.yesterday").ToLower();
-        if (date == today.AddDays(-2)) return GetLoc("schedule.day_before_yesterday").ToLower();
-
-        var diff = (date - today).Days;
-        if (diff > 1) return string.Format(GetLoc("schedule.days_later"), diff);
-        if (diff < -2) return string.Format(GetLoc("schedule.days_ago"), Math.Abs(diff));
-
-        return releaseAt.ToLocalTime().ToString("dd MMM", GetReleaseCulture());
-    }
-
     public static string FormatBadgeDate(DateTime releaseAt)
     {
         var today = DateTime.Today;

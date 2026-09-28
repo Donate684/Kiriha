@@ -141,12 +141,6 @@ public partial class ShikiMetadataService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Backwards-compatible overload: caller doesn't need a TTL window.
-    /// </summary>
-    public Task<ShikiMetadata?> GetOrFetchMetadataAsync(int animeId, Func<ShikiMetadata, Task>? onFetched, MediaKind mediaKind = MediaKind.Anime)
-        => GetOrFetchMetadataAsync(animeId, maxAge: null, onFetched, mediaKind);
-
     private async Task<ShikiMetadata?> FetchMetadataFromApiAsync(int animeId, CancellationToken ct = default, MediaKind mediaKind = MediaKind.Anime)
     {
         // Conditional GET via http_response_cache: on a 304 we skip JSON parse

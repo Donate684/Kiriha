@@ -22,9 +22,6 @@ public partial class TorrentsViewModel : ViewModelBase
 
     public ObservableCollection<HideableAnimeItem> HideMenuItems { get; } = new();
 
-    public static TorrentSortMode[] AvailableSortModes { get; } =
-        [TorrentSortMode.Newest, TorrentSortMode.Matched, TorrentSortMode.ReleaseGroup];
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private string _searchQuery = string.Empty;

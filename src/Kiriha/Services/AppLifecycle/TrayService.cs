@@ -84,17 +84,4 @@ public sealed class TrayService
 
         desktop.Shutdown();
     }
-
-    [Obsolete("Use ExitAsync instead.")]
-    public async void Exit()
-    {
-        try
-        {
-            await ExitAsync();
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Error(ex, "TrayService.Exit failed");
-        }
-    }
 }

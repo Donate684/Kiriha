@@ -39,9 +39,6 @@ public sealed class BitmapMemoryCache
     public bool TryGetEncoded(string path, out byte[]? bytes)
         => _encoded.TryGet(path, out bytes);
 
-    public void StoreEncoded(string path, byte[] bytes)
-        => _encoded.Store(path, bytes);
-
     public void Clear()
     {
         _encoded.Clear();

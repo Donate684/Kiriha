@@ -96,12 +96,6 @@ public partial class AnimeRepository : IAnimeRepository
         }
     }
 
-    public Task<Dictionary<int, AnimeEntity>> GetExistingMapAsync(MediaKind[] kinds)
-    {
-        return _uiDispatcher.InvokeAsync(() =>
-            Collection.Where(x => kinds.Contains(x.MediaKind)).ToDictionary(x => x.Id));
-    }
-
     public Task<List<AnimeEntity>> GetSnapshotAsync(MediaKind[] kinds)
     {
         return _uiDispatcher.InvokeAsync(() =>
