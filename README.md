@@ -3,8 +3,6 @@
 
 Indispensable tool for those who care more about meticulously tracking “Chinese cartoons” on MyAnimeList than actually watching them. Maniacally parses schedules and auto-inflates the watch counter. Delegate your degeneracy to technology!
 
-![preview](preview.png?raw=true)
-
 ## Features
 
 *   **Modern Fluent UI and Offline Mode:** Fast interface powered by **Avalonia UI 12** and .NET 11.
@@ -45,32 +43,49 @@ Run the automated build script (downloads latest `libmpv`, compiles solution, an
 
 #### Windows:
 1. Clone the repository:
-```git clone https://github.com/Donate684/kiriha.git
-cd kiriha```
+```
+git clone https://github.com/Donate684/kiriha.git
+```
+```
+cd kiriha
+```
 
 2. Download libmpv binaries:
-```powershell -ExecutionPolicy Bypass -File scripts\download-mpv.ps1```
+```
+powershell -ExecutionPolicy Bypass -File scripts\download-mpv.ps1
+```
 
 3. Compile the solution:
-```dotnet build Kiriha.sln -c Release```
+```
+dotnet build Kiriha.sln -c Release
+```
 
 4. Run unit tests:
-```dotnet test Tests/Kiriha.Tests/Kiriha.Tests.csproj -c Release```
+```
+dotnet test Tests/Kiriha.Tests/Kiriha.Tests.csproj -c Release
+```
 
 5. Run Kiriha:
-```dotnet run --project src/Kiriha/Kiriha.csproj -c Release```
+```
+dotnet run --project src/Kiriha/Kiriha.csproj -c Release
+```
 
 ### Publishing & Packaging
 
 1. To create a self-contained, optimized standalone release (with ReadyToRun AOT):
-```dotnet publish src/Kiriha/Kiriha.csproj -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -o ./publish
+```
+dotnet publish src/Kiriha/Kiriha.csproj -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -o ./publish
 ```
 
 2. (Optional) Generate Installer with Velopack:
-```dotnet tool install -g vpk
-vpk pack --packId Kiriha --packVersion 1.0.0 --packDir ./publish --mainExe Kiriha.exe --icon ./src/Kiriha/Assets/kiriha.ico```
+
+```
+dotnet tool install -g vpk
+```
+```
+vpk pack --packId Kiriha --packVersion 1.0.0 --packDir ./publish --mainExe Kiriha.exe --icon ./src/Kiriha/Assets/kiriha.ico
+```
 
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
-
