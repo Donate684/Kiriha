@@ -1,12 +1,9 @@
-using System;
 using System.Globalization;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.ViewModels.AnimeList;
-using Moq;
-using Xunit;
 
 namespace Kiriha.Tests;
 

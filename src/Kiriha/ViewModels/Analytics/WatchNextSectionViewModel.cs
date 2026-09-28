@@ -1,15 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Constants;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
 
 namespace Kiriha.ViewModels.Analytics;
 

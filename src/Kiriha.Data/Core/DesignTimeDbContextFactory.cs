@@ -1,4 +1,3 @@
-using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 

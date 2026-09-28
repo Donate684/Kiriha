@@ -1,10 +1,8 @@
-using System;
 using System.Text.Json;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Core;
-using Xunit;
 
 namespace Kiriha.Tests.Services.Tracking.Core;
 

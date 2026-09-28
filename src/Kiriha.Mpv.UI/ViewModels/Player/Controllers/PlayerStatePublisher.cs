@@ -1,4 +1,3 @@
-using System;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Mpv.UI.Services;
 

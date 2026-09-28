@@ -1,27 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Kiriha.Core;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking;
-using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Infrastructure;
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Models;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using Moq;
-using Xunit;
 
 namespace Kiriha.Tests;
 

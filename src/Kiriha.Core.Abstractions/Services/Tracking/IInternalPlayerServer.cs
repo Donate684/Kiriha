@@ -1,4 +1,3 @@
-using System;
 using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.Core.Abstractions.Services;

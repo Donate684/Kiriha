@@ -1,10 +1,5 @@
-﻿
-using System;
-using System.IO;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
+﻿using Kiriha.Core.Abstractions.Services;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
-using Kiriha.Services.Data;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 

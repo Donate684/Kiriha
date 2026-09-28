@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Kiriha.Core.Domain.Constants;
-using Kiriha.Infrastructure;
-
 namespace Kiriha.ViewModels.History;
 
 public partial class HistoryViewModel

@@ -1,21 +1,13 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Sync;
-using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Models;
 using Kiriha.Services;
-using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
 using Moq;
 

@@ -1,9 +1,6 @@
-﻿using System;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Utils;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.Views;
 

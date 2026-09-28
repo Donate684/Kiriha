@@ -1,5 +1,4 @@
 using Kiriha.Services.Data.Image;
-using Xunit;
 
 namespace Kiriha.Tests.Services.Data.Image;
 

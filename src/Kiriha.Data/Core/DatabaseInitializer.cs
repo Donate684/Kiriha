@@ -1,9 +1,5 @@
-using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data.Core;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 

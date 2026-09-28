@@ -1,13 +1,8 @@
-using System;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Models;
 using Moq;
-using Xunit;
 
 namespace Kiriha.Tests.Services.Tracking.Core;
 

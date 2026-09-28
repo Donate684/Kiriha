@@ -1,6 +1,5 @@
 using System.Globalization;
 using Kiriha.Core;
-using Kiriha.Infrastructure;
 
 namespace Kiriha.Models;
 

@@ -1,15 +1,8 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.RateLimiting;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Shared;
-using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Http;
 using Serilog;
 

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
 using Kiriha.Mpv.UI.ViewModels.Player;
 
 namespace Kiriha.Views.Player.Controls;

@@ -1,16 +1,7 @@
-using System;
-using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Services;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.ViewModels.Settings;
 

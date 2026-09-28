@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using Kiriha.Composition;
 using Kiriha.Core.Abstractions.Services;
@@ -6,7 +5,6 @@ using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Infrastructure.Tracking;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Settings;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Kiriha.Infrastructure.Tracking.Anisthesia;
-using Xunit;
 
 namespace Kiriha.Tests.Services;
 

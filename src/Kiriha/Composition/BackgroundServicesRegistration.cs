@@ -1,11 +1,7 @@
 ﻿using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Services;
 using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 

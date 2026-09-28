@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Win32;
 using Serilog;
 using static Kiriha.Services.Windows.WindowsRegistryHelper;

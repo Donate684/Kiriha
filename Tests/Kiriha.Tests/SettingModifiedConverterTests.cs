@@ -1,7 +1,6 @@
 using System.Globalization;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 using Kiriha.Mpv.UI.Views.Converters;
-using Xunit;
 
 namespace Kiriha.Tests;
 

@@ -1,15 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Feed;

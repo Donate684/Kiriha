@@ -1,4 +1,3 @@
-using System;
 using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Core.Tracking.Core;

@@ -1,14 +1,8 @@
-using System;
 using System.IO.Pipes;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Settings;
 using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;

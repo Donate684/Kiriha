@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Models;
 using Kiriha.Utils.Async;
 
 namespace Kiriha.ViewModels.Seasonal;

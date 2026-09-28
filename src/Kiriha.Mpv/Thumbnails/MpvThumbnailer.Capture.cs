@@ -1,7 +1,5 @@
-using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Serilog;
 
 namespace Kiriha.Mpv;

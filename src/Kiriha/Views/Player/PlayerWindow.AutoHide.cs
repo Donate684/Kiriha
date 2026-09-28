@@ -1,5 +1,3 @@
-using System;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Kiriha.Mpv.UI.ViewModels.Player;

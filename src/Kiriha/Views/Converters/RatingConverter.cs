@@ -1,7 +1,5 @@
-using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Models;
 
 namespace Kiriha.Views.Converters;

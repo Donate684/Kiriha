@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
@@ -8,7 +5,6 @@ using Kiriha.Infrastructure.Tracking.Anisthesia;
 using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Moq;
-using Xunit;
 
 namespace Kiriha.Tests;
 

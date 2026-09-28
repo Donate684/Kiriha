@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Mpv;
 
 internal sealed class MpvThumbnailCacheEntry

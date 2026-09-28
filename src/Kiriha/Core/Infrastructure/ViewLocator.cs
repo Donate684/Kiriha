@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Frozen;
-using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Kiriha.Mpv.UI.ViewModels.Player;

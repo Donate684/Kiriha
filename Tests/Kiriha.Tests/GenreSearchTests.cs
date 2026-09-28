@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Kiriha.Core;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.Genres;
-using Xunit;
 
 namespace Kiriha.Tests;
 

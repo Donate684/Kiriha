@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 

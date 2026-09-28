@@ -1,17 +1,12 @@
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Navigation;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.ViewModels.Main;
 using Moq;
-using Xunit;
 
 namespace Kiriha.Tests;
 

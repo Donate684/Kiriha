@@ -1,4 +1,3 @@
-using Kiriha.Core.Shared;
 namespace Kiriha.Core.Shared;
 
 // =============================================================================

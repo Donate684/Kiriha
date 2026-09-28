@@ -1,18 +1,11 @@
-using System;
 using System.Collections.Frozen;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Mpv;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data;
 using Serilog;
 
 namespace Kiriha.Mpv.UI.Views.Player;

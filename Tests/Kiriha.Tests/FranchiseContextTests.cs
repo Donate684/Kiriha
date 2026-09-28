@@ -1,11 +1,7 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Franchise;
 using Moq;
-using Xunit;
 
 namespace Kiriha.Tests;
 

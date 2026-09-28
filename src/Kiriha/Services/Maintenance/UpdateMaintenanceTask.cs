@@ -1,12 +1,6 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Infrastructure;
+﻿using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
-using Kiriha.Infrastructure;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 using Kiriha.Utils.Async;
 using Serilog;
 

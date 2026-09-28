@@ -1,10 +1,8 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure;
 using Kiriha.ViewModels.AnimeList;
 
 namespace Kiriha.Views.AnimeList;

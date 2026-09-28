@@ -1,13 +1,8 @@
-using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
 using Kiriha.Infrastructure.Player;
 
 namespace Kiriha.Core.Tracking.Core;

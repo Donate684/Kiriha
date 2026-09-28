@@ -1,4 +1,3 @@
-using System;
 using Avalonia;
 using Kiriha.Core.Domain.Extensions;
 

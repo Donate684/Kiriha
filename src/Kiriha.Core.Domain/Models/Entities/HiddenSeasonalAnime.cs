@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Core.Domain.Models.Entities;
 
 public class HiddenSeasonalAnime

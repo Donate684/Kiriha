@@ -9,6 +9,7 @@
 
   <ItemGroup>
     
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="System.Threading.RateLimiting" />

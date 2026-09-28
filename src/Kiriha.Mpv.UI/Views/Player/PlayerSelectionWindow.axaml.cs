@@ -1,7 +1,6 @@
 
 using Avalonia.Controls;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data;
 
 namespace Kiriha.Mpv.UI.Views.Player;
 

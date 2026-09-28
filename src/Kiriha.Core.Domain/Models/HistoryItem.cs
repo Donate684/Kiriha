@@ -1,5 +1,3 @@
-
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kiriha.Core.Domain.Models;

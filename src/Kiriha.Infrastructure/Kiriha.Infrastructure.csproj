@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="DiscordRichPresence" />
     <PackageReference Include="Serilog" />
   </ItemGroup>

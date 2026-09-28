@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Sync.Models;
 
 namespace Kiriha.Core.Tracking.Sync.Models;
 

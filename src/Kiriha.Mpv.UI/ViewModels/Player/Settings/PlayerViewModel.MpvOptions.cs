@@ -1,5 +1,4 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kiriha.Mpv;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;

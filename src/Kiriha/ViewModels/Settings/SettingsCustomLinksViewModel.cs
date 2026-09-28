@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 using Serilog;
 
 namespace Kiriha.ViewModels.Settings;

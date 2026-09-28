@@ -1,6 +1,3 @@
-using System;
-using Kiriha.Mpv;
-
 namespace Kiriha.Mpv;
 
 public static class MpvPlayerBuilder

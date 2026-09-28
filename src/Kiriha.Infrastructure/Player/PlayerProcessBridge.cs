@@ -1,7 +1,4 @@
-using System;
-using System.IO;
 using System.IO.Pipes;
-using System.Threading.Tasks;
 using Serilog;
 
 namespace Kiriha.Infrastructure.Player;

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Kiriha.Core.Domain.Models;
 
 public enum StrategyType

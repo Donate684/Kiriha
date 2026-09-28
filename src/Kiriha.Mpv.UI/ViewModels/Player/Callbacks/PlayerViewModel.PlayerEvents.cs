@@ -1,8 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Threading;
-using Kiriha.Mpv;
 using Kiriha.Mpv.UI.Services.Player;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;

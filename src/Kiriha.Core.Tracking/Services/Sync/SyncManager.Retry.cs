@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
 

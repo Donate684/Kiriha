@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Core.Domain.Models;
 
 public record class SyncSuccess(int UpdatedCount, string? Message = null);

@@ -1,9 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Models;
 using Serilog;
 
 namespace Kiriha.ViewModels.AnimeList;

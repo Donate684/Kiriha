@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Kiriha.Models;
 
 public static class AboutCredits

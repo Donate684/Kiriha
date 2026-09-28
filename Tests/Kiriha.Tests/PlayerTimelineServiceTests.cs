@@ -1,5 +1,3 @@
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player;
 
 namespace Kiriha.Tests;

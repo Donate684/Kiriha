@@ -1,6 +1,3 @@
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Mapping;
 
 namespace Kiriha.Tests;

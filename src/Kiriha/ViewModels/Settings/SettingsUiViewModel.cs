@@ -1,18 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
-using Kiriha.Services;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
 

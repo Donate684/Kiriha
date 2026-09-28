@@ -1,6 +1,3 @@
-using System;
-using Kiriha.Core.Domain.Models;
-
 namespace Kiriha.Core.Domain.Models;
 
 public record class ParsedMedia

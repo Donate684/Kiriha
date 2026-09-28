@@ -1,8 +1,5 @@
-using System;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
 
 namespace Kiriha.ViewModels.History;
 

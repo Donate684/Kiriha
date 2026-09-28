@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Kiriha.ViewModels;
 using Kiriha.ViewModels.Dialogs;
 
 namespace Kiriha.Views;

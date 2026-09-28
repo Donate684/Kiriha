@@ -1,7 +1,3 @@
-using System.IO;
-using System.Linq;
-using Kiriha.Services.Data.Mapping;
-
 namespace Kiriha.Services.Data.Mapping;
 
 public partial class MappingService

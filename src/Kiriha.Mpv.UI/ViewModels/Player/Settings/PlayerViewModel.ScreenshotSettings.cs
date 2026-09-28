@@ -1,4 +1,3 @@
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 

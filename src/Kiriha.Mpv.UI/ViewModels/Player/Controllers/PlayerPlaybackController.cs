@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Kiriha.Mpv;
-
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public sealed class PlayerPlaybackController

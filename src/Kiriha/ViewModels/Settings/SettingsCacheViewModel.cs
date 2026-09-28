@@ -1,24 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Image;
 using Kiriha.Services.Data.Mapping;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Seasonal;
-using Kiriha.ViewModels.Settings;
-using Kiriha.ViewModels.Startup;
 using Serilog;
 
 namespace Kiriha.ViewModels.Settings;

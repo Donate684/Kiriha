@@ -2,8 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Kiriha.Core.Shared;
-using Kiriha.Infrastructure;
-using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.Views;
 

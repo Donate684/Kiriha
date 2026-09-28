@@ -1,12 +1,7 @@
-using System;
 using System.Collections.Frozen;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Localization;
-using Kiriha.Models;
 
 namespace Kiriha.ViewModels.AnimeList;
 

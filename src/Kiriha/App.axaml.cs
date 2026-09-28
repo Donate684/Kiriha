@@ -1,9 +1,6 @@
-using System;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.Themes.Fluent;
-using Kiriha.Core;
-using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.AppLifecycle;
 using Material.Icons.Avalonia;

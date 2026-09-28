@@ -1,9 +1,6 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.Views;
 

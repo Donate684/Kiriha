@@ -1,19 +1,10 @@
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Tracking;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Infrastructure.Tracking.Integration;
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.Services;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
-using Kiriha.Views;
 using Kiriha.Views.Player;
 
 namespace Kiriha.ViewModels.Settings;

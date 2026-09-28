@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Kiriha.Utils.Parsing;
 
 public static class EmberTitleResolver

@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace Kiriha.Mpv;
 
 internal sealed class MpvPropertyCache

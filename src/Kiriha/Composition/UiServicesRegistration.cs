@@ -1,9 +1,7 @@
 ﻿using Kiriha.Core.Dialogs;
 using Kiriha.Core.Navigation;
-using Kiriha.ViewModels;
 using Kiriha.ViewModels.Analytics;
 using Kiriha.ViewModels.AnimeList;
-using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.History;
 using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;

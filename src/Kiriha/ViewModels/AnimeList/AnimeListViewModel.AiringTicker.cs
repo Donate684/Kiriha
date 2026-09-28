@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Threading;
 using Kiriha.Utils.Async;
 

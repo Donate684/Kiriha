@@ -1,4 +1,3 @@
-using System;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 

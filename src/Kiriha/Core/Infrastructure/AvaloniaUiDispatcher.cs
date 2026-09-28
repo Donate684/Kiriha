@@ -1,8 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using Avalonia.Threading;
 using Kiriha.Core.Abstractions.Infrastructure;
-using Kiriha.Infrastructure;
 
 namespace Kiriha.Infrastructure;
 

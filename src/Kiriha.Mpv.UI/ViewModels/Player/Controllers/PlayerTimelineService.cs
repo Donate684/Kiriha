@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public sealed class PlayerTimelineService

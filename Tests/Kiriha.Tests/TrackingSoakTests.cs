@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Tracking.Anisthesia;
 using Moq;
-using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 

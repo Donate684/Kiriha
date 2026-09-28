@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Constants;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Mpv;
 using Kiriha.Services.Data.Core;
@@ -17,7 +9,6 @@ using Kiriha.Services.Data.Settings;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Xunit;
 
 namespace Kiriha.Tests;
 

@@ -1,16 +1,11 @@
-using System;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.RateLimiting;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Shared;
-using Kiriha.Infrastructure;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

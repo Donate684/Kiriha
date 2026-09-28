@@ -1,8 +1,4 @@
-using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Repository;
 
 namespace Kiriha.ViewModels.History;
 

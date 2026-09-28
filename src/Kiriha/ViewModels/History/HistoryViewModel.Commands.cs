@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Kiriha.ViewModels.History;

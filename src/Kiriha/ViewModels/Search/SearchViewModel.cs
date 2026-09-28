@@ -1,33 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Api;
-using Kiriha.Core.Tracking.Sync;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Services.Data.Settings;
 using Kiriha.Utils.Collections;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Settings;
-using Kiriha.ViewModels.Startup;
-using Serilog;
 
 namespace Kiriha.ViewModels.Search;
 

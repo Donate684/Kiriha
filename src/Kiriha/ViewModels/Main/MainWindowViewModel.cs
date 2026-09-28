@@ -1,12 +1,9 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Navigation;
 using Kiriha.Models;
-using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.Settings;
 
 namespace Kiriha.ViewModels.Main;

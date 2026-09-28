@@ -1,10 +1,4 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data.Image;
-using Xunit;
 
 namespace Kiriha.Tests.Services.Data.Image;
 

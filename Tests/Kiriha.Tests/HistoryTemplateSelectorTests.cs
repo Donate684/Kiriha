@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Kiriha.ViewModels.History;
 using Kiriha.Views.History;
-using Xunit;
 
 namespace Kiriha.Tests;
 

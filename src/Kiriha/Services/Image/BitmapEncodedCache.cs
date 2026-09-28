@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Services.Data.Image;
 
 public sealed class BitmapEncodedCache

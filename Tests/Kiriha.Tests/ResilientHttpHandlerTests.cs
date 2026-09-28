@@ -1,6 +1,4 @@
 using System.Net;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Api;
 
 namespace Kiriha.Tests;

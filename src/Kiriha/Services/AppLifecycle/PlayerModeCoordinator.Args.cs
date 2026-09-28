@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-
 namespace Kiriha.Services.AppLifecycle;
 
 public sealed partial class PlayerModeCoordinator

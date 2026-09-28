@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -8,16 +5,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking;
-using Kiriha.Core.Tracking.Api;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Core.Tracking.Sync;
 using Kiriha.Models;
-using Kiriha.Services;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 

@@ -1,6 +1,3 @@
-using System;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Models;
 namespace Kiriha.Views.AnimeList;
 
 public partial class AnimeReleaseMapView : Avalonia.Controls.UserControl

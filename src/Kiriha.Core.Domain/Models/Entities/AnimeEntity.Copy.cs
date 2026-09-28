@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Core.Domain.Models.Entities;

@@ -1,8 +1,5 @@
-using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Models;
 
 namespace Kiriha.Tests;
 

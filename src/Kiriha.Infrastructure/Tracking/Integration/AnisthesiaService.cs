@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Tracking.Anisthesia;
 using Microsoft.Extensions.Hosting;
 using Serilog;

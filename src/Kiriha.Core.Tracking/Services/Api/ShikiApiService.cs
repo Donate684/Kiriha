@@ -1,20 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Shared;
-using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Http;
 using Serilog;
 

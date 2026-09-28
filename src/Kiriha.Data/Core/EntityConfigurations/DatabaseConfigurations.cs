@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using System.Text.Json;
 
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

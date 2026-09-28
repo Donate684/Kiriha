@@ -1,15 +1,11 @@
-using System;
-using System.IO;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Mpv;
-using Kiriha.Mpv.UI.Services.Player;
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.Mpv.UI.Views.Converters;
 using Moq;
-using Xunit;
 
 namespace Kiriha.Tests;
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
@@ -9,7 +8,6 @@ using Avalonia.Styling;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure;
 
 namespace Kiriha.Views.Converters;
 

@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Mpv;
 
 public sealed class MpvPlaybackEndedEventArgs : EventArgs

@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Core.Abstractions.Services;
 
 [Flags]

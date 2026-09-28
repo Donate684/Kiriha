@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using Kiriha.Core.Tracking.Api;
-
 namespace Kiriha.Core.Tracking.Api;
 
 public sealed class ShikiHostState

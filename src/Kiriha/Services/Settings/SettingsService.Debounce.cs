@@ -1,4 +1,3 @@
-using System;
 using Kiriha.Utils.Async;
 using Serilog;
 

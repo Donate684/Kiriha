@@ -1,20 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Constants;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.Formats;
 using Kiriha.Core.Domain.Models.Genres;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
 
 namespace Kiriha.ViewModels.AnimeList;
 

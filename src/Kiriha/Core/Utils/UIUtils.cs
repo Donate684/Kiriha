@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using Avalonia;
-using Kiriha.Core;
 using Kiriha.Infrastructure.Platform;
 
 namespace Kiriha.Core;

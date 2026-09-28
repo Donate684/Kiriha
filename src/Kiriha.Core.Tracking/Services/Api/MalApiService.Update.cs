@@ -1,10 +1,4 @@
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Services;
-
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Api;

@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Mpv;
 
 public class MpvVideoPipelineConfigurator

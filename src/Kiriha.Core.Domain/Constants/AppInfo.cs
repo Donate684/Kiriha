@@ -1,6 +1,5 @@
 using System.Reflection;
 using Kiriha.Core.Domain.Constants;
-using Kiriha.Core.Shared;
 
 namespace Kiriha.Core.Shared;
 

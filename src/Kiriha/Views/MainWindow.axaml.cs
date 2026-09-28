@@ -1,15 +1,7 @@
-using System;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Styling;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Models;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 using Kiriha.Views.Player;
 using Serilog;
 

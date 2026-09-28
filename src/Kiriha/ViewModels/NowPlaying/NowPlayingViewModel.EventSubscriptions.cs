@@ -1,19 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure;
-using Kiriha.Models;
-using Kiriha.Services.Data.Mapping;
 using Kiriha.Utils.Async;
-using Kiriha.ViewModels.Dialogs;
-using Kiriha.ViewModels.Main;
-using Kiriha.ViewModels.NowPlaying;
-using Kiriha.ViewModels.Settings;
-using Kiriha.ViewModels.Startup;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;

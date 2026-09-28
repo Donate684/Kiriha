@@ -1,11 +1,8 @@
-using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Threading;
-using Kiriha.Mpv;
 using Serilog;
 
 namespace Kiriha.Mpv.UI.Views.Controls;

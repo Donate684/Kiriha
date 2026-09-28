@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
-using Kiriha.Infrastructure;
-using Kiriha.Services.Data;
-using Kiriha.Services.Data.Settings;
 
 namespace Kiriha.ViewModels.Seasonal;
 

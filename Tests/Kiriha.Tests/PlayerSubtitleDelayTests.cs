@@ -2,7 +2,6 @@ using System.Globalization;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Xunit;
 
 namespace Kiriha.Tests;
 

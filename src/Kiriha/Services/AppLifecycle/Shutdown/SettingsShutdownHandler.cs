@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data.Settings;
+﻿using Kiriha.Core.Abstractions.Services;
 using Serilog;
 
 namespace Kiriha.Services.AppLifecycle.Shutdown;

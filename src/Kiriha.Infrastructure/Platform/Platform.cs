@@ -1,5 +1,3 @@
-using System;
-
 namespace Kiriha.Infrastructure.Platform;
 
 /// <summary>

@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-
 namespace Kiriha.Mpv;
 
 public sealed partial class MpvThumbnailer

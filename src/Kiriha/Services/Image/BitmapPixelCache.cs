@@ -1,6 +1,4 @@
-using System;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 
 namespace Kiriha.Services.Data.Image;
 

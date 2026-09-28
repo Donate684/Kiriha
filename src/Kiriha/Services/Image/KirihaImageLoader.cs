@@ -1,11 +1,6 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using AsyncImageLoader;
 using AsyncImageLoader.Core.Leases;
 using AsyncImageLoader.Core.Pipeline;
-using Avalonia.Media.Imaging;
-using Kiriha.Services.Data.Image;
 using Serilog;
 
 namespace Kiriha.Services.Data.Image;

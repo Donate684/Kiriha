@@ -1,13 +1,9 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 using Avalonia;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data.Metadata;
 using Serilog;
 namespace Kiriha.Services.Data.Metadata;
 public class LocalizationService : ILocalizer

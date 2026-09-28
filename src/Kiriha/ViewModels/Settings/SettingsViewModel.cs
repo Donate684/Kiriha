@@ -1,24 +1,13 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Core.Tracking;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Core.Tracking.Core;
-using Kiriha.Core.Tracking.Feed;
-using Kiriha.Infrastructure;
 using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Models;
 using Kiriha.Services;
-using Kiriha.Services.Data;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Image;
 using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Settings;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
 
