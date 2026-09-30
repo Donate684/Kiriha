@@ -9,6 +9,7 @@ namespace Kiriha.Core.Tracking.Core;
 public partial class TrackingService : IDisposable
 {
     private readonly IExternalMediaDetector _anisthesiaService;
+    private readonly IInternalPlayerServer _internalPlayerServer;
     private readonly IMappingService _mappingService;
     private readonly IAnimeRepository _animeRepo;
     private readonly ISettingsService _settingsService;
@@ -40,7 +41,8 @@ public partial class TrackingService : IDisposable
         MediaMatchingPipeline pipeline)
     {
         _anisthesiaService = anisthesiaService;
-        internalPlayerServer.PlayerStateChanged += (s, e) => SetInternalMedia(e);
+        _internalPlayerServer = internalPlayerServer;
+        _internalPlayerServer.PlayerStateChanged += (s, e) => SetInternalMedia(e);
         _mappingService = mappingService;
         _animeRepo = animeRepo;
         _settingsService = settingsService;

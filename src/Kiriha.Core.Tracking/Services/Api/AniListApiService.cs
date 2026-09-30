@@ -158,8 +158,9 @@ public class AniListApiService : IDisposable, IAniListApiService
             }
             """;
 
-        foreach (var chunk in malIds.Distinct().Chunk(50))
+        foreach (var chunk in malIds.Distinct().Chunk(25))
         {
+            using var lease = await _rateLimiter.AcquireAsync(1, ct);
             var payload = new AniListBatchRequest(
                 Query: query,
                 Variables: new AniListBatchVariables(chunk));

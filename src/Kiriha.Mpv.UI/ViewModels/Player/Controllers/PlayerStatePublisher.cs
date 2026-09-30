@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Mpv.UI.Services;
 
@@ -8,14 +9,21 @@ public sealed class PlayerStatePublisher : IDisposable
     private readonly InternalPlayerStateClient _client = new();
     private readonly Func<InternalPlayerState> _createState;
 
+    public event Action<PlayerMediaMetadata>? MetadataReceived
+    {
+        add => _client.MetadataReceived += value;
+        remove => _client.MetadataReceived -= value;
+    }
+
     public PlayerStatePublisher(Func<InternalPlayerState> createState)
     {
         _createState = createState;
+        _client.StateProvider = _createState;
     }
 
     public void Connect()
     {
-        _ = _client.ConnectAsync();
+        _client.Start();
     }
 
     public void Publish()

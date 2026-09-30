@@ -8,12 +8,10 @@ namespace Kiriha.Core.Tracking.Services;
 
 public sealed class AnimeCountryService : IAnimeCountryService
 {
-    private readonly IAniListApiService _aniListApi;
     private readonly IAnimeCountryRepository _countryRepo;
 
-    public AnimeCountryService(IAniListApiService aniListApi, IAnimeCountryRepository countryRepo)
+    public AnimeCountryService(IAnimeCountryRepository countryRepo)
     {
-        _aniListApi = aniListApi;
         _countryRepo = countryRepo;
     }
 
@@ -21,61 +19,45 @@ public sealed class AnimeCountryService : IAnimeCountryService
     {
         if (items == null || items.Count == 0) return false;
 
-        var missing = items
-            .Where(x => string.IsNullOrEmpty(x.CountryOfOrigin))
-            .ToList();
-
-        if (missing.Count == 0) return false;
-
         bool updatedAny = false;
-        var missingIds = missing.Select(x => x.Id).Distinct().ToList();
+        var newlyResolved = new Dictionary<int, string>();
+        var itemIds = items.Select(x => x.Id).Distinct().ToList();
 
         // 1. Check local DB first
-        var cached = await _countryRepo.GetBatchAsync(missingIds, ct);
-        var stillMissing = new List<AnimeEntity>();
+        var cached = await _countryRepo.GetBatchAsync(itemIds, ct);
 
-        foreach (var item in missing)
+        foreach (var item in items)
         {
-            if (cached.TryGetValue(item.Id, out var country))
+            // Local detector (0ms, 100% offline)
+            var localDetected = DonghuaDetector.Detect(item);
+
+            if (cached.TryGetValue(item.Id, out var dbCountry))
             {
-                item.CountryOfOrigin = country;
-                updatedAny = true;
-            }
-            else
-            {
-                stillMissing.Add(item);
-            }
-        }
+                // Self-healing: if DB was previously saved as "JP", but local detector firmly identifies "CN" or "KR", heal!
+                if (localDetected != null && dbCountry == "JP")
+                {
+                    item.CountryOfOrigin = localDetected;
+                    newlyResolved[item.Id] = localDetected;
+                    updatedAny = true;
+                    continue;
+                }
 
-        if (stillMissing.Count == 0) return updatedAny;
-
-        // 2. Query AniList GraphQL in batches
-        var stillMissingIds = stillMissing.Select(x => x.Id).Distinct().ToList();
-        var aniListResults = await _aniListApi.GetCountriesBatchAsync(stillMissingIds, ct);
-
-        var newlyResolved = new Dictionary<int, string>();
-
-        foreach (var item in stillMissing)
-        {
-            string? country = null;
-
-            if (aniListResults.TryGetValue(item.Id, out var aniCountry))
-            {
-                country = aniCountry;
-            }
-            else
-            {
-                // 3. Fallback heuristic (Studios, Synopsis, Hanzi)
-                var detected = DonghuaDetector.Detect(item);
-                country = detected ?? "JP";
+                if (item.CountryOfOrigin != dbCountry)
+                {
+                    item.CountryOfOrigin = dbCountry;
+                    updatedAny = true;
+                }
+                continue;
             }
 
+            // 2. Not in DB -> evaluate via local detector
+            string country = localDetected ?? "JP";
             item.CountryOfOrigin = country;
             newlyResolved[item.Id] = country;
             updatedAny = true;
         }
 
-        // 4. Persist newly resolved to SQLite
+        // 3. Persist resolved items to SQLite
         if (newlyResolved.Count > 0)
         {
             await _countryRepo.UpsertBatchAsync(newlyResolved, ct);

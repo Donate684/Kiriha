@@ -50,6 +50,7 @@ public partial class PlayerViewModel
         try { _statePublisher.PublishClosed(); } catch (Exception ex) { Log.Debug(ex, "Error publishing closed state"); }
 
         try { _playback.Detach(); } catch (Exception ex) { Log.Debug(ex, "Error detaching playback"); }
+        try { _statePublisher.MetadataReceived -= OnExternalMetadataReceived; } catch { }
         try { _statePublisher.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing state publisher"); }
 
         Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();

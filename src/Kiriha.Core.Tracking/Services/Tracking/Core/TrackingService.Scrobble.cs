@@ -4,6 +4,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Player;
+using Kiriha.Utils.Async;
 
 namespace Kiriha.Core.Tracking.Core;
 
@@ -214,10 +215,20 @@ public partial class TrackingService
         }
     }
 
-    private static void NotifyPlayerMetadata(ParsedMedia media, AnimeEntity matched)
+    private void NotifyPlayerMetadata(ParsedMedia media, AnimeEntity matched)
     {
         if (!string.Equals(media.ProcessName, "KirihaInternal", StringComparison.Ordinal))
             return;
+
+        var metadata = new PlayerMediaMetadata(
+            media.OriginalTitle,
+            matched.RussianTitle ?? string.Empty,
+            matched.EnglishTitle ?? string.Empty,
+            media.Episode ?? string.Empty,
+            matched.Id,
+            matched.Title ?? string.Empty);
+
+        _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
 
         PlayerProcessBridge.ForwardMetadata(
             media.OriginalTitle,

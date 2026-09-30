@@ -22,10 +22,78 @@ public static class PlayerProcessBridge
             client.Connect(timeoutMs);
             using var writer = new StreamWriter(client) { AutoFlush = true };
             writer.WriteLine(PipeArgumentSerializer.Serialize(args));
+            writer.Flush();
+            try { client.WaitForPipeDrain(); } catch { }
             return true;
         }
         catch
         {
+            return false;
+        }
+    }
+
+    private static long s_lastWakeupAttemptTicks;
+    private static readonly TimeSpan WakeupCooldown = TimeSpan.FromSeconds(15);
+
+    public static bool IsMainAppRunning()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            try
+            {
+                if (System.Threading.Mutex.TryOpenExisting(Kiriha.Core.Domain.Constants.AppConstants.System.MutexName, out var mutex))
+                {
+                    mutex.Dispose();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public static bool TryWakeUpMainApp()
+    {
+        if (IsMainAppRunning())
+            return false;
+
+        var now = Environment.TickCount64;
+        var last = Interlocked.Read(ref s_lastWakeupAttemptTicks);
+        if (now - last < (long)WakeupCooldown.TotalMilliseconds)
+            return false;
+
+        Interlocked.Exchange(ref s_lastWakeupAttemptTicks, now);
+
+        var processPath = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(processPath)) return false;
+
+        var assemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+        var isDotnet = Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+
+        var startInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = processPath,
+            Arguments = isDotnet && !string.IsNullOrEmpty(assemblyPath)
+                ? $"\"{assemblyPath}\" {Kiriha.Core.Domain.Constants.AppConstants.System.MinimizedArg}"
+                : Kiriha.Core.Domain.Constants.AppConstants.System.MinimizedArg,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+        };
+
+        try
+        {
+            System.Diagnostics.Process.StartAndForget(startInfo);
+            Log.Information("PlayerProcessBridge: Woke up main application with minimized flag");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "PlayerProcessBridge: Failed to wake up main application");
             return false;
         }
     }
@@ -115,7 +183,7 @@ public static class PlayerProcessBridge
 
         Task.Run(async () =>
         {
-            for (int attempt = 0; attempt < 3; attempt++)
+            for (int attempt = 0; attempt < 5; attempt++)
             {
                 if (TryForward(args, timeoutMs: 1000))
                 {
@@ -126,7 +194,7 @@ public static class PlayerProcessBridge
                     return;
                 }
 
-                try { await Task.Delay(100).ConfigureAwait(false); } catch { }
+                try { await Task.Delay(200).ConfigureAwait(false); } catch { }
             }
         });
     }

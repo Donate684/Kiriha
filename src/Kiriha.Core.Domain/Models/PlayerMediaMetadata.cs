@@ -8,6 +8,8 @@ public sealed record PlayerMediaMetadata(
     int? AnimeId,
     string TitleRomaji = "")
 {
+    public PlayerMediaMetadata() : this(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty) { }
+
     public static PlayerMediaMetadata FromVideoPath(string videoPath)
     {
         var fallbackTitle = string.IsNullOrWhiteSpace(videoPath)

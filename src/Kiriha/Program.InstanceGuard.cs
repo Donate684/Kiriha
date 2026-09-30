@@ -28,8 +28,10 @@ partial class Program
             {
                 using var client = new System.IO.Pipes.NamedPipeClientStream(".", "Kiriha.InstanceServer", System.IO.Pipes.PipeDirection.Out);
                 client.Connect(1000);
-                using var writer = new System.IO.StreamWriter(client);
+                using var writer = new System.IO.StreamWriter(client) { AutoFlush = true };
                 writer.WriteLine(PipeArgumentSerializer.Serialize(args));
+                writer.Flush();
+                try { client.WaitForPipeDrain(); } catch { }
             }
             catch (Exception ex) { Console.WriteLine("Failed to forward arguments: " + ex.Message); }
 

@@ -133,6 +133,7 @@ public static class AppConstants
     {
         public const string AppName = "Kiriha";
         public const string MutexName = "Kiriha_SingleInstance_Mutex";
+        public const string MinimizedArg = "--minimized";
         public const string AppStartedLog = "--- Application Starting ---";
 
         public static class FileNames

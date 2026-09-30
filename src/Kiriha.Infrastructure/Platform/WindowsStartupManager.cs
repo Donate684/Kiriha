@@ -26,7 +26,7 @@ public sealed class WindowsStartupManager : IStartupManager
             var command = $"\"{exePath}\"";
             if (launchMinimized)
             {
-                command += " --minimized";
+                command += $" {Kiriha.Core.Domain.Constants.AppConstants.System.MinimizedArg}";
             }
             key.SetValue(AppName, command);
         }

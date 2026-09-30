@@ -60,6 +60,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _localizer = localizer;
         InitializeOptions();
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
+        _statePublisher.MetadataReceived += OnExternalMetadataReceived;
         _settingsApplier = new PlayerSettingsApplier(_playback);
         _timelinePreview = new PlayerTimelinePreviewController(Overlay);
         ApplyPlayerSettings();
@@ -68,6 +69,14 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _previousVideoUrlForMetadata = videoUrl;
         VideoUrl = videoUrl; // Sets VideoUrl and triggers OnVideoUrlChanged if needed, but since it's constructor, we already set the fields above.
         _isInitializing = false;
+    }
+
+    private void OnExternalMetadataReceived(PlayerMediaMetadata metadata)
+    {
+        if (MatchesOriginalTitle(metadata.OriginalTitle))
+        {
+            Dispatcher.UIThread.Post(() => ApplyExternalMetadata(metadata));
+        }
     }
 
 

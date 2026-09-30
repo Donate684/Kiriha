@@ -123,6 +123,16 @@ internal sealed class SeasonalCategoryBuckets
         foreach (var item in source)
         {
             var country = item.CountryOfOrigin?.ToUpperInvariant();
+            if (string.IsNullOrEmpty(country) || country == "JP")
+            {
+                var detected = Kiriha.Core.Tracking.Api.DonghuaDetector.Detect(item);
+                if (detected != null)
+                {
+                    item.CountryOfOrigin = detected;
+                    country = detected;
+                }
+            }
+
             if (country == "CN")
             {
                 buckets["Donghua"].Add(item);
