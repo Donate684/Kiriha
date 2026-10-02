@@ -139,4 +139,19 @@ public class NotificationService : INotificationService
         Log.Information("NotificationService: Update toast for version {Version}", newVersion);
         ToastRenderer.Show(new System.Collections.Generic.List<string> { title, body });
     }
+
+    public virtual void NotifySyncFailed(string animeTitle, string trackerName, string errorMessage, bool willRetry)
+    {
+        var title = UIUtils.GetLoc("notifications.sync_failed.title", trackerName);
+        var body = willRetry
+            ? UIUtils.GetLoc("notifications.sync_failed.retry_body", trackerName, animeTitle)
+            : UIUtils.GetLoc("notifications.sync_failed.permanent_body", trackerName, animeTitle);
+
+        var lines = new System.Collections.Generic.List<string> { title, body, animeTitle };
+
+        Log.Warning("NotificationService: Sync failed toast for {Anime} on {Tracker} (willRetry={WillRetry}): {Error}",
+            animeTitle, trackerName, willRetry, errorMessage);
+        ToastRenderer.Show(lines);
+    }
 }
+

@@ -55,7 +55,7 @@ public class SmartTransitionsTests
 
         mockUserRepo.Verify(x => x.UpdateProgressAsync(anime, 1, UserAnimeStatus.Watching), Times.Once);
         mockSyncManager.Verify(x => x.EnqueueFullUpdateAsync(anime), Times.Once);
-        mockHistoryService.Verify(x => x.AddEntry(anime.Id, anime.Title, anime.RussianTitle, 1, "Rewatching", null), Times.Once);
+        mockHistoryService.Verify(x => x.AddEntryAsync(anime.Id, anime.Title, anime.RussianTitle, 1, "Rewatching", null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

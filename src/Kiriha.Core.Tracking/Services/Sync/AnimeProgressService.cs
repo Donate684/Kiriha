@@ -46,43 +46,18 @@ public class AnimeProgressService : IProgressUpdateService
         }
     }
 
+    /// <summary>
+    /// Public full-flow overload used by external callers (ScrobbleService, NowPlayingViewModel, etc.).
+    /// Applies local DB changes and enqueues sync. Does NOT record a history entry — callers own that.
+    /// </summary>
     public virtual async Task<bool> UpdateProgressAsync(AnimeEntity item, int nextProgress, UserAnimeStatus? nextStatus = null)
     {
-        if ((nextStatus == UserAnimeStatus.Watching || nextStatus == UserAnimeStatus.Completed) && item.StatusDetailed == "Not yet aired")
-        {
-            Log.Warning("Cannot set {Title} to {Status} - it has not aired yet.", item.Title, nextStatus);
-            return false;
-        }
-
-        bool isStarting = nextStatus == UserAnimeStatus.Watching || (nextProgress > 0 && item.Progress == 0 && item.Status == UserAnimeStatus.None);
-        bool isCompleting = nextStatus == UserAnimeStatus.Completed;
-
-        await _uiDispatcher.InvokeAsync(() =>
-        {
-            if (isStarting && !item.DateStarted.HasValue)
-            {
-                item.DateStarted = DateTime.Today;
-            }
-            if (isCompleting)
-            {
-                item.DateCompleted ??= DateTime.Today;
-                item.DateStarted ??= DateTime.Today;
-            }
-            item.Progress = nextProgress;
-            if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
-                item.Status = nextStatus.Value;
-        });
-
-        await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
+        if (!await ApplyLocalProgressAsync(item, nextProgress, nextStatus)) return false;
 
         if (nextStatus.HasValue)
-        {
             await _syncManager.EnqueueFullUpdateAsync(item);
-        }
         else
-        {
             await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress, nextStatus);
-        }
 
         return true;
     }
@@ -124,26 +99,36 @@ public class AnimeProgressService : IProgressUpdateService
             });
 
             await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
-            await _syncManager.EnqueueFullUpdateAsync(item);
 
             if (nextStatus == UserAnimeStatus.Completed)
             {
                 WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(item));
             }
 
-            _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, nextProgress, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Read");
+            // Write history BEFORE sync so the DB row exists when SetPendingTrackers fires.
+            await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress,
+                nextStatus == UserAnimeStatus.Completed ? "Completed" : "Read");
+            await _syncManager.EnqueueFullUpdateAsync(item);
             return nextStatus;
         }
         else
         {
-            if (await UpdateProgressAsync(item, nextProgress, nextStatus))
+            if (await ApplyLocalProgressAsync(item, nextProgress, nextStatus))
             {
                 if (nextStatus == UserAnimeStatus.Completed)
                 {
                     WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(item));
                 }
 
-                _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, nextProgress, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Watched");
+                // Write history BEFORE sync so the DB row exists when SetPendingTrackers fires.
+                await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress,
+                    nextStatus == UserAnimeStatus.Completed ? "Completed" : "Watched");
+
+                if (nextStatus.HasValue)
+                    await _syncManager.EnqueueFullUpdateAsync(item);
+                else
+                    await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress);
+
                 return nextStatus;
             }
         }
@@ -166,9 +151,9 @@ public class AnimeProgressService : IProgressUpdateService
                 });
 
                 await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, null);
+                // Write history BEFORE sync.
+                await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted");
                 await _syncManager.EnqueueFullUpdateAsync(item);
-
-                _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted");
             }
         }
         else
@@ -176,9 +161,11 @@ public class AnimeProgressService : IProgressUpdateService
             if (item.Progress > 0)
             {
                 int nextProgress = item.Progress - 1;
-                if (await UpdateProgressAsync(item, nextProgress))
+                if (await ApplyLocalProgressAsync(item, nextProgress))
                 {
-                    _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted");
+                    // Write history BEFORE sync.
+                    await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted");
+                    await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress);
                 }
             }
         }
@@ -191,8 +178,9 @@ public class AnimeProgressService : IProgressUpdateService
             item.Score = score.ToString();
         });
         await _userAnimeRepo.UpdateScoreAsync(item, item.Score);
+        // Write history BEFORE sync.
+        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString());
         await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
-        _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString());
     }
 
     public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)
@@ -208,7 +196,42 @@ public class AnimeProgressService : IProgressUpdateService
         });
 
         await _userAnimeRepo.UpdateProgressAsync(item, episode, UserAnimeStatus.Watching);
+        // Write history BEFORE sync.
+        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, episode, "Rewatching");
         await _syncManager.EnqueueFullUpdateAsync(item);
-        _historyService.AddEntry(item.Id, item.Title, item.RussianTitle, episode, "Rewatching");
+    }
+
+    /// <summary>
+    /// Applies progress changes to the local DB and UI state only — does NOT enqueue any sync task.
+    /// Used internally so history can be written (via AddEntryAsync) before the sync enqueue fires
+    /// SetPendingTrackers, ensuring the DB row already exists when SetPendingTrackers tries to update it.
+    /// </summary>
+    private async Task<bool> ApplyLocalProgressAsync(AnimeEntity item, int nextProgress, UserAnimeStatus? nextStatus = null)
+    {
+        if ((nextStatus == UserAnimeStatus.Watching || nextStatus == UserAnimeStatus.Completed) && item.StatusDetailed == "Not yet aired")
+        {
+            Log.Warning("Cannot set {Title} to {Status} - it has not aired yet.", item.Title, nextStatus);
+            return false;
+        }
+
+        bool isStarting = nextStatus == UserAnimeStatus.Watching || (nextProgress > 0 && item.Progress == 0 && item.Status == UserAnimeStatus.None);
+        bool isCompleting = nextStatus == UserAnimeStatus.Completed;
+
+        await _uiDispatcher.InvokeAsync(() =>
+        {
+            if (isStarting && !item.DateStarted.HasValue)
+                item.DateStarted = DateTime.Today;
+            if (isCompleting)
+            {
+                item.DateCompleted ??= DateTime.Today;
+                item.DateStarted ??= DateTime.Today;
+            }
+            item.Progress = nextProgress;
+            if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
+                item.Status = nextStatus.Value;
+        });
+
+        await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);
+        return true;
     }
 }

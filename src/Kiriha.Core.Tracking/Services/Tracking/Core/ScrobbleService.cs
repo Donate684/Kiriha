@@ -181,8 +181,11 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 return;
             }
 
+            // Write history BEFORE UpdateProgressAsync (which enqueues sync / fires SetPendingTrackers)
+            // so the DB row exists when SetPendingTrackers tries to mark it as Pending.
+            await _historyService.AddEntryAsync(match.Id, match.Title, match.RussianTitle, targetEp,
+                nextStatus == UserAnimeStatus.Completed ? "Completed" : "Scrobbled");
             await _progressService.UpdateProgressAsync(match, targetEp, nextStatus);
-            _historyService.AddEntry(match.Id, match.Title, match.RussianTitle, targetEp, nextStatus == UserAnimeStatus.Completed ? "Completed" : "Scrobbled");
 
             // Auto-Complete & Quick Rating notification
             if (nextStatus == UserAnimeStatus.Completed)

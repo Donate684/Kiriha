@@ -133,7 +133,7 @@ public sealed class PlayerMediaMetadataTests
             "Sousou no Frieren"));
 
         Assert.Equal("Провожающая в последний путь Фрирен", vm.TopTitle);
-        Assert.Equal("Frieren: Beyond Journey's End", vm.BottomTitle);
+        Assert.Equal("Sousou no Frieren", vm.BottomTitle);
         Assert.True(vm.HasBottomTitle);
     }
 

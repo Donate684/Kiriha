@@ -205,11 +205,11 @@ public partial class PlayerViewModel
 
             if (UseRussianTitles && !string.IsNullOrWhiteSpace(AnimeTitleRu))
             {
-                if (!string.IsNullOrWhiteSpace(AnimeTitleEn) && !string.Equals(AnimeTitleEn, top, StringComparison.OrdinalIgnoreCase))
-                    return AnimeTitleEn;
-
                 if (!string.IsNullOrWhiteSpace(AnimeTitleRomaji) && !string.Equals(AnimeTitleRomaji, top, StringComparison.OrdinalIgnoreCase))
                     return AnimeTitleRomaji;
+
+                if (!string.IsNullOrWhiteSpace(AnimeTitleEn) && !string.Equals(AnimeTitleEn, top, StringComparison.OrdinalIgnoreCase))
+                    return AnimeTitleEn;
 
                 return string.Empty;
             }

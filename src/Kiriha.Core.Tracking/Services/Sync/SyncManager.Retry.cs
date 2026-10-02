@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
 
@@ -28,7 +29,17 @@ public partial class SyncManager
         {
             Log.Warning("Task {TaskId} permanently failed after {MaxRetries} retries", task.Id, MaxRetries);
             await _syncTaskRepo.RemoveAsync(task.Id);
+
+            var failedTrackers = _trackers.Where(t => t.IsEnabled && !task.SuccessfulTrackers.Contains(t.Name)).Select(t => t.Name).ToList();
+            foreach (var trackerName in failedTrackers)
+            {
+                _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, trackerName, TrackerSyncState.Failed, "Max retries exceeded");
+                _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", trackerName, "Max retries exceeded", willRetry: false);
+            }
+
+
             _historyService.AddEntry(task.AnimeId, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, "SyncFailed", string.Format("sync.syncing.failed"));
         }
     }
 }
+

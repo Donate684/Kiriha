@@ -58,4 +58,63 @@ public class HistoryTemplateSelectorTests
         var shim = shimProp.GetValue(repeater);
         Assert.Same(selector, shim);
     }
+
+    [Fact]
+    public async Task HistoryEntryVm_CreatesInteractiveTrackerBadges_EvenWhenStatusEmpty()
+    {
+        var localizer = new Moq.Mock<Kiriha.Core.Abstractions.Services.ILocalizer>();
+        localizer.Setup(l => l.GetLoc(Moq.It.IsAny<string>(), Moq.It.IsAny<object[]>()))
+            .Returns<string, object[]>((k, a) => $"{k}:{string.Join(',', a)}");
+
+        var entry = new HistoryEntryVm(localizer.Object)
+        {
+            AnimeId = 42,
+            ActionType = 1, // Watched
+            EpisodeFrom = 4,
+            EpisodeTo = 4
+        };
+
+        Assert.True(entry.CanTrack);
+
+        bool syncTriggered = false;
+        string? syncedTracker = null;
+
+        entry.LoadTrackerStatuses(
+            new Dictionary<string, Kiriha.Core.Domain.Models.TrackerSyncInfo>(),
+            tracker =>
+            {
+                syncTriggered = true;
+                syncedTracker = tracker;
+                return Task.CompletedTask;
+            },
+            tracker => true);
+
+        Assert.True(entry.HasTrackerBadges);
+        Assert.Equal(2, entry.TrackerBadges.Count);
+
+        var shikiBadge = entry.TrackerBadges.First(b => b.TrackerName == "Shikimori");
+        var malBadge = entry.TrackerBadges.First(b => b.TrackerName == "MyAnimeList");
+
+        Assert.Equal("Shiki", shikiBadge.DisplayName);
+        Assert.Equal(Kiriha.Core.Domain.Models.TrackerSyncState.NotSynced, shikiBadge.State);
+        Assert.True(shikiBadge.IsClickable);
+
+        Assert.Equal("MAL", malBadge.DisplayName);
+        Assert.Equal(Kiriha.Core.Domain.Models.TrackerSyncState.NotSynced, malBadge.State);
+
+        // Click Shiki button
+        await shikiBadge.SyncCommand.ExecuteAsync(null);
+
+        Assert.True(syncTriggered);
+        Assert.Equal("Shikimori", syncedTracker);
+        Assert.Equal(Kiriha.Core.Domain.Models.TrackerSyncState.Pending, shikiBadge.State);
+        Assert.False(shikiBadge.IsClickable);
+
+        // Update when server responds with Success
+        entry.UpdateTrackerStatus("Shikimori", Kiriha.Core.Domain.Models.TrackerSyncState.Success, null);
+        Assert.Equal(Kiriha.Core.Domain.Models.TrackerSyncState.Success, shikiBadge.State);
+        Assert.Equal("CheckCircle", shikiBadge.IconKind);
+        Assert.False(shikiBadge.IsClickable);
+        Assert.Equal("Arrow", shikiBadge.CursorKind);
+    }
 }

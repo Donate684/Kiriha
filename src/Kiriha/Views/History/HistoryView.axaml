@@ -135,8 +135,40 @@
                                 <TextBlock Text="{Binding EpisodeLabel}"
                                            FontSize="11" Opacity="0.85" FontWeight="Medium"
                                            Foreground="{DynamicResource SystemAccentColor}"/>
+
+                                <!-- Tracker sync status badges -->
+                                <ItemsControl ItemsSource="{Binding TrackerBadges}"
+                                              IsVisible="{Binding HasTrackerBadges}"
+                                              VerticalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="TrackerBadgeBtn"
+                                                    Command="{Binding SyncCommand}"
+                                                    Cursor="{Binding CursorKind}"
+                                                    ToolTip.Tip="{Binding Tooltip}">
+                                                <Border CornerRadius="4" Padding="5,1"
+                                                        Background="{Binding BackgroundBrush}"
+                                                        BorderBrush="{Binding BorderBrush}"
+                                                        BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="10" FontWeight="SemiBold"
+                                                                   Foreground="{Binding IconForeground}" VerticalAlignment="Center"/>
+                                                        <material:MaterialIcon Kind="{Binding IconKind}" Width="11" Height="11"
+                                                                               Foreground="{Binding IconForeground}" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
                         </StackPanel>
+
 
                         <!-- Range count badge -->
                         <Border Grid.Column="3" CornerRadius="10"
@@ -165,6 +197,25 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
+        <!-- Tracker badge button styling -->
+        <Style Selector="Button.TrackerBadgeBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="MinWidth" Value="0"/>
+        </Style>
+        <Style Selector="Button.TrackerBadgeBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Button.TrackerBadgeBtn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Button.TrackerBadgeBtn:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
         <!-- History row hover feedback -->
         <Style Selector="Border.HistoryRow">
             <Setter Property="Transitions">

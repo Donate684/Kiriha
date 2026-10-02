@@ -77,7 +77,13 @@ public partial class HistoryViewModel
                         EpisodeTo = item.Episode,
                         Primary = item
                     };
+                    var currentRun = run;
+                    run.LoadTrackerStatuses(
+                        item.TrackerStatuses,
+                        trackerName => HandleTrackerSyncAsync(currentRun, trackerName),
+                        trackerName => IsTrackerEnabled(trackerName));
                 }
+
             }
             if (run != null)
             {
@@ -115,5 +121,36 @@ public partial class HistoryViewModel
         if (date == now.AddDays(-1)) return _localizer.GetLoc("common.time.yesterday");
 
         return date.ToString("d MMMM", _localizer.CurrentCulture);
+    }
+
+    private async Task HandleTrackerSyncAsync(HistoryEntryVm entry, string trackerName)
+    {
+        if (_syncManager == null) return;
+
+        var tracker = _trackers.FirstOrDefault(t => string.Equals(t.Name, trackerName, StringComparison.OrdinalIgnoreCase));
+        if (tracker != null && !tracker.IsEnabled)
+        {
+            _notificationService?.NotifySyncFailed(
+                entry.AnimeTitle,
+                trackerName,
+                _localizer.GetLoc(HistoryEntryVm.NotLoggedInLocKey, trackerName),
+                false);
+            return;
+        }
+
+        int progress = entry.EpisodeTo > 0 ? entry.EpisodeTo : 1;
+        Kiriha.Core.Domain.Models.Entities.UserAnimeStatus? status = entry.ActionType switch
+        {
+            6 => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Completed,
+            7 => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Dropped,
+            _ => null
+        };
+        int? score = null;
+        if (entry.ActionType == 5 && int.TryParse(entry.Detail, out int parsedScore))
+        {
+            score = parsedScore;
+        }
+
+        await _syncManager.EnqueueUpdateAsync(entry.AnimeId, progress, status, score, trackerName);
     }
 }

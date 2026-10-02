@@ -6,5 +6,11 @@
   "app_update": {
     "title": "Kiriha update available",
     "body": "Version {0} is ready. Open Settings to install."
+  },
+  "sync_failed": {
+    "title": "Sync failed for {0}",
+    "retry_body": "Could not sync data to {0} for \"{1}\". Retrying automatically.",
+    "permanent_body": "Could not sync data to {0} for \"{1}\". Please verify your authorization."
   }
 }
+

@@ -1,14 +1,16 @@
 using Avalonia;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Kiriha.ViewModels.History;
 
 /// <summary>
 /// Base class for items displayed in the virtualized history timeline list.
 /// </summary>
-public abstract class HistoryTimelineItem
+public abstract class HistoryTimelineItem : ObservableObject
 {
     private protected HistoryTimelineItem() { }
 }
+
 
 /// <summary>
 /// Timeline date group header item (e.g. "Today", "Yesterday", "5 September").

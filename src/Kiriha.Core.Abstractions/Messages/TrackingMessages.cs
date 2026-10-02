@@ -17,3 +17,11 @@ public record AnimeMatchedMessage(AnimeEntity? Anime) : TrackingMessage;
 public record TrackingCountdownMessage(string Countdown) : TrackingMessage;
 
 public record TrackingStatusMessage(string Status) : TrackingMessage;
+
+public record HistoryTrackerStatusUpdatedMessage(
+    int AnimeId,
+    int? Episode,
+    string TrackerName,
+    TrackerSyncState State,
+    string? ErrorMessage = null) : TrackingMessage;
+

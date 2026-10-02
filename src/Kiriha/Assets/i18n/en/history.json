@@ -25,5 +25,15 @@
     "dropped": "Dropped"
   },
   "already_scrobbled": "Already scrobbled",
-  "count_format": "×{0}"
+  "count_format": "×{0}",
+  "tracker": {
+    "success": "{0}: Successfully synced",
+    "pending": "{0}: Queued for sync...",
+    "retrying": "{0}: Network error, retrying in a few minutes (click to retry now)",
+    "failed": "{0}: Sync failed: {1} (click to retry)",
+    "failed_generic": "{0}: Sync failed (click to retry)",
+    "not_synced": "{0}: Not synced (click to sync)",
+    "not_logged_in": "{0}: Not logged in (check Settings > Accounts)"
+  }
 }
+

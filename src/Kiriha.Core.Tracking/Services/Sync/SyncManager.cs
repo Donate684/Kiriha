@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
@@ -29,6 +29,7 @@ public partial class SyncManager : ISyncManager, IHostedService
     private readonly IDatabaseInitializer _dbInit;
     private readonly IHistoryService _historyService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
+    private readonly INotificationService? _notificationService;
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _highPriorityQueue = new();
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _lowPriorityQueue = new();
     private readonly SemaphoreSlim _queueSignal = new(0);
@@ -42,14 +43,17 @@ public partial class SyncManager : ISyncManager, IHostedService
         ISyncTaskRepository syncTaskRepo,
         IDatabaseInitializer dbInit,
         IHistoryService historyService,
-        IBackgroundTaskSupervisor backgroundTasks)
+        IBackgroundTaskSupervisor backgroundTasks,
+        INotificationService? notificationService = null)
     {
         _trackers = trackers.ToList();
         _syncTaskRepo = syncTaskRepo;
         _dbInit = dbInit;
         _historyService = historyService;
         _backgroundTasks = backgroundTasks;
+        _notificationService = notificationService;
     }
+
 
     public Task StartAsync(CancellationToken cancellationToken)
     {

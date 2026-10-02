@@ -36,7 +36,7 @@ public partial class SyncManager
             .ToList();
     }
 
-    public async Task EnqueueUpdateAsync(int animeId, int progress, UserAnimeStatus? status = null, int? score = null)
+    public async Task EnqueueUpdateAsync(int animeId, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
     {
         var task = new SyncTask
         {
@@ -46,15 +46,37 @@ public partial class SyncManager
             Status = status,
             Score = score
         };
+
+        var activeTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
+
+        // If a specific tracker is targeted, skip all other active trackers for this task
+        if (!string.IsNullOrEmpty(targetTracker))
+        {
+            foreach (var other in activeTrackers.Where(name => !string.Equals(name, targetTracker, StringComparison.OrdinalIgnoreCase)))
+            {
+                task.SuccessfulTrackers.Add(other);
+            }
+        }
+
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity);
 
         _latestTaskIds[animeId] = (task.Id, task.Type);
         try
         {
+            var pendingTrackers = !string.IsNullOrEmpty(targetTracker)
+                ? new List<string> { targetTracker }
+                : activeTrackers;
+
+            if (pendingTrackers.Count > 0)
+            {
+                _historyService.SetPendingTrackers(animeId, progress, pendingTrackers);
+            }
+
             _highPriorityQueue.Enqueue(task);
             _queueSignal.Release();
-            Log.Information("Sync task enqueued (DB ID: {Id}): UpdateProgress for {AnimeId} to {Progress}", task.Id, animeId, progress);
+            Log.Information("Sync task enqueued (DB ID: {Id}): UpdateProgress for {AnimeId} to {Progress} (Target: {Target})",
+                task.Id, animeId, progress, targetTracker ?? "All");
         }
         catch (Exception ex)
         {
@@ -91,7 +113,9 @@ public partial class SyncManager
         {
             AnimeId = item.Id,
             Type = SyncTaskType.FullUpdate,
-            FullItem = item
+            FullItem = item,
+            Progress = item.Progress,
+            Status = item.Status
         };
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity);
@@ -99,6 +123,12 @@ public partial class SyncManager
         _latestTaskIds[item.Id] = (task.Id, task.Type);
         try
         {
+            var activeTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
+            if (activeTrackers.Count > 0)
+            {
+                _historyService.SetPendingTrackers(item.Id, item.Progress, activeTrackers);
+            }
+
             _highPriorityQueue.Enqueue(task);
             _queueSignal.Release();
             Log.Information("Sync task enqueued (DB ID: {Id}): FullUpdate for {AnimeId}", task.Id, item.Id);
@@ -108,4 +138,5 @@ public partial class SyncManager
             Log.Error(ex, "Failed to enqueue task (DB ID: {Id})", task.Id);
         }
     }
+
 }

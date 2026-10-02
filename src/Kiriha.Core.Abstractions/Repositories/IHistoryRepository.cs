@@ -13,4 +13,9 @@ public interface IHistoryRepository
 
     /// <summary>Most recent <paramref name="limit"/> entries, newest first.</summary>
     Task<List<HistoryItem>> GetAsync(int limit = 1000, CancellationToken ct = default);
+
+    Task UpdateAsync(HistoryItem item, CancellationToken ct = default);
+    Task UpdateTrackerStatusAsync(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default);
+    Task SetPendingTrackersAsync(int animeId, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default);
 }
+

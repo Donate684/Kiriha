@@ -64,7 +64,15 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
             await context.Database.ExecuteSqlRawAsync(
                 "CREATE TABLE IF NOT EXISTS anime_country_origin (mal_id INTEGER PRIMARY KEY, country_code TEXT NOT NULL, fetched_at TEXT NOT NULL);");
 
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE history ADD COLUMN tracker_status_json TEXT;");
+            }
+            catch { /* column already exists */ }
+
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
+
             _initTcs.TrySetResult();
         }
         catch (Exception ex)

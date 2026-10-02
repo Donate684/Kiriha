@@ -31,7 +31,7 @@ public class HistoryService : IHistoryService
         }
     }
 
-    public async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
+    public virtual async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
     {
         try
         {
@@ -59,6 +59,7 @@ public class HistoryService : IHistoryService
             };
 
             await _repo.AddAsync(entry, ct);
+            EntryAdded?.Invoke(entry);
             Log.Debug("History entry added for {Id} {Title} (Ep {Ep})", animeId, title, episode);
         }
         catch (Exception ex)
@@ -80,6 +81,66 @@ public class HistoryService : IHistoryService
             TaskContinuationOptions.ExecuteSynchronously,
             TaskScheduler.Default);
     }
+
+    public virtual void UpdateTrackerStatus(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null)
+    {
+        var task = UpdateTrackerStatusAsync(animeId, episode, trackerName, state, error);
+        if (task.IsCompleted) return;
+
+        _pendingWrites.TryAdd(task, 0);
+        task.ContinueWith(t => _pendingWrites.TryRemove(t, out _),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    public event Action<HistoryItem>? EntryAdded;
+    public event Action<int, int?, string, TrackerSyncState, string?>? TrackerStatusUpdated;
+
+    public virtual async Task UpdateTrackerStatusAsync(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default)
+    {
+        try
+        {
+            await _repo.UpdateTrackerStatusAsync(animeId, episode, trackerName, state, error, ct);
+            TrackerStatusUpdated?.Invoke(animeId, episode, trackerName, state, error);
+            Log.Debug("HistoryService: Updated tracker status for {Id} (Ep {Ep}) {Tracker}: {State}", animeId, episode, trackerName, state);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "HistoryService: Failed to update tracker status for {AnimeId} on {Tracker}", animeId, trackerName);
+        }
+    }
+
+    public virtual void SetPendingTrackers(int animeId, int? episode, IEnumerable<string> trackerNames)
+    {
+        var task = SetPendingTrackersAsync(animeId, episode, trackerNames);
+        if (task.IsCompleted) return;
+
+        _pendingWrites.TryAdd(task, 0);
+        task.ContinueWith(t => _pendingWrites.TryRemove(t, out _),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    public virtual async Task SetPendingTrackersAsync(int animeId, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default)
+    {
+        try
+        {
+            var trackers = trackerNames.ToList();
+            await _repo.SetPendingTrackersAsync(animeId, episode, trackers, ct);
+            foreach (var tracker in trackers)
+            {
+                TrackerStatusUpdated?.Invoke(animeId, episode, tracker, TrackerSyncState.Pending, null);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "HistoryService: Failed to set pending trackers for {AnimeId}", animeId);
+        }
+    }
+
+
 
     /// <summary>
     /// Awaits every fire-and-forget AddEntry that hasn't yet committed to the DB.

@@ -96,8 +96,10 @@ public class DotNet11FeaturesTests
             MediaChangedMessage m => $"Media:{m.Media?.AnimeTitle}",
             AnimeMatchedMessage a => $"Anime:{a.Anime?.Title}",
             TrackingCountdownMessage c => $"Countdown:{c.Countdown}",
-            TrackingStatusMessage s => $"Status:{s.Status}"
+            TrackingStatusMessage s => $"Status:{s.Status}",
+            HistoryTrackerStatusUpdatedMessage h => $"History:{h.TrackerName}"
         };
+
 
         Assert.Equal("Status:Tracking", desc);
     }
