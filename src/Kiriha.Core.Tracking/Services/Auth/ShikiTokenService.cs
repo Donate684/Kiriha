@@ -1,4 +1,7 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.Core.Tracking.Auth;
 
@@ -14,23 +17,55 @@ public class ShikiTokenService
         _authService = authService;
     }
 
-    public async Task<string?> EnsureValidTokenAsync(CancellationToken ct)
+    public Task<string?> EnsureValidTokenAsync(CancellationToken ct) => EnsureValidTokenAsync(null, ct);
+
+    public async Task<string?> EnsureValidTokenAsync(ShikiMirror? mirror, CancellationToken ct = default)
     {
-        var tokens = _settingsService.Current.Api.Shiki;
+        var trackerId = mirror == ShikiMirror.Net 
+            ? TrackerConstants.Ids.ShikiFork 
+            : (mirror == ShikiMirror.One ? TrackerConstants.Ids.ShikiOrig : null);
+
+        ShikiTokens? GetTokens()
+        {
+            if (trackerId != null)
+            {
+                return _settingsService.Current.Api.GetAccount(trackerId)?.Tokens as ShikiTokens;
+            }
+            return _settingsService.Current.Api.Shiki;
+        }
+
+        var tokens = GetTokens();
         if (tokens is null) return null;
         if (!tokens.IsExpired) return tokens.AccessToken;
 
         await _tokenLock.WaitAsync(ct);
         try
         {
-            tokens = _settingsService.Current.Api.Shiki;
+            tokens = GetTokens();
             if (tokens is null || !tokens.IsExpired) return tokens?.AccessToken;
 
-            var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);
+            var targetMirror = mirror ?? tokens.Mirror;
+            var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, targetMirror, ct);
             if (newTokens != null)
             {
                 newTokens.UserId = tokens.UserId;
-                _settingsService.Update(settings => settings.Api.Shiki = newTokens, save: false);
+                newTokens.Mirror = targetMirror;
+
+                _settingsService.Update(settings =>
+                {
+                    if (trackerId != null)
+                    {
+                        var acc = settings.Api.GetAccount(trackerId);
+                        if (acc != null)
+                        {
+                            acc.Tokens = newTokens;
+                        }
+                    }
+                    else
+                    {
+                        settings.Api.Shiki = newTokens;
+                    }
+                }, SettingsSection.Api, save: false);
                 _settingsService.SaveImmediate();
                 return newTokens.AccessToken;
             }

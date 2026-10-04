@@ -66,4 +66,67 @@ public sealed class ShikiHostResolverTests
         Assert.DoesNotContain("shikimori.one", originalOrder);
         Assert.Contains("shikimori.io", originalOrder);
     }
+
+    // ── IImageUrlRewriter.Rewrite(string) ────────────────────────────────────
+
+    [Fact]
+    public void RewriteString_RewritesPosterUrlWhenOriginalHostIsPinned()
+    {
+        var resolver = new ShikiHostResolver();
+        resolver.Remember("shikimori.one", "shikimori.io");
+
+        const string posterUrl = "https://shikimori.one/system/animes/original/12345.jpg";
+        var result = resolver.Rewrite(posterUrl);
+
+        Assert.Equal("https://shikimori.io/system/animes/original/12345.jpg", result);
+    }
+
+    [Fact]
+    public void RewriteString_RewritesForkPosterUrlWhenForkHostIsPinned()
+    {
+        var resolver = new ShikiHostResolver();
+        resolver.Remember("shikimori.net", "shikimori.rip");
+
+        const string posterUrl = "https://shikimori.net/system/animes/original/99.jpg";
+        var result = resolver.Rewrite(posterUrl);
+
+        Assert.Equal("https://shikimori.rip/system/animes/original/99.jpg", result);
+    }
+
+    [Fact]
+    public void RewriteString_ReturnsSameUrlWhenNoSessionPinExists()
+    {
+        var resolver = new ShikiHostResolver();
+
+        const string posterUrl = "https://shikimori.one/system/animes/original/12345.jpg";
+        var result = resolver.Rewrite(posterUrl);
+
+        Assert.Equal(posterUrl, result);
+    }
+
+    [Fact]
+    public void RewriteString_PassesThroughNonShikiUrls()
+    {
+        var resolver = new ShikiHostResolver();
+        resolver.Remember("shikimori.one", "shikimori.io");
+
+        const string cdnUrl = "https://cdn.myanimelist.net/images/anime/1/12345.jpg";
+        var result = resolver.Rewrite(cdnUrl);
+
+        Assert.Equal(cdnUrl, result);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("not-a-url")]
+    public void RewriteString_HandlesEdgeCasesGracefully(string? url)
+    {
+        var resolver = new ShikiHostResolver();
+        resolver.Remember("shikimori.one", "shikimori.io");
+
+        var result = resolver.Rewrite(url!);
+
+        Assert.Equal(url, result);
+    }
 }

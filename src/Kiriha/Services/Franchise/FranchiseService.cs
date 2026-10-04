@@ -265,6 +265,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
 
             var userDict = userAnimeList
                 .Where(x => x.Status != UserAnimeStatus.None)
+                .DistinctBy(x => x.Id)
                 .ToDictionary(x => x.Id);
 
             if (userDict.Count == 0)

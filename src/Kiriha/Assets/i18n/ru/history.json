@@ -22,7 +22,8 @@
     "score_set_filter": "Изменение оценки",
     "sync_failed": "Ошибка синхронизации",
     "completed": "Завершено",
-    "dropped": "Брошено"
+    "dropped": "Брошено",
+    "deleted": "Удалено из списка"
   },
   "already_scrobbled": "Уже отмечено",
   "count_format": "×{0}",

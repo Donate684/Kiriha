@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using Kiriha.Core.Abstractions.Services;
 using Serilog;
 
 namespace Kiriha.Services.Data.Image;
@@ -9,18 +10,24 @@ public class ImageDownloader : IDisposable
 {
     private readonly string _cacheRoot;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IImageUrlRewriter? _urlRewriter;
     private readonly SemaphoreSlim _downloadSemaphore = new(6, 6);
     private readonly ConcurrentDictionary<string, Task<string>> _activeDownloads = new();
 
-    public ImageDownloader(IHttpClientFactory httpClientFactory, string cacheRoot)
+    public ImageDownloader(IHttpClientFactory httpClientFactory, string cacheRoot, IImageUrlRewriter? urlRewriter = null)
     {
         _httpClientFactory = httpClientFactory;
         _cacheRoot = cacheRoot;
+        _urlRewriter = urlRewriter;
     }
 
     public Task<string> GetLocalPathOrDownload(string url, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(url)) return Task.FromResult(string.Empty);
+
+        // Rewrite the URL before everything else so that the cache key, the
+        // dedup dictionary, and the actual HTTP request all use the same host.
+        url = _urlRewriter?.Rewrite(url) ?? url;
 
         var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         var addedTask = _activeDownloads.GetOrAdd(url, tcs.Task);

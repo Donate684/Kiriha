@@ -46,8 +46,46 @@ public partial class AnimeEntity : DomainObservableObject
     public int EpisodesAired { get => _episodesAired; set { if (SetProperty(ref _episodesAired, value)) OnPropertyChanged("Presentation"); } }
     public string? Synopsis { get; set; } = string.Empty;
     public string? RussianSynopsis { get; set; } = string.Empty;
-    public string? MainPictureUrl { get; set; }
-    public string? LocalPosterPath { get; set; }
+    private string? _mainPictureUrl;
+    public string? MainPictureUrl
+    {
+        get => _mainPictureUrl;
+        set
+        {
+            if (SetProperty(ref _mainPictureUrl, value))
+                OnPropertyChanged(nameof(PosterSource));
+        }
+    }
+
+    private string? _localPosterPath;
+    public string? LocalPosterPath
+    {
+        get => _localPosterPath;
+        set
+        {
+            if (SetProperty(ref _localPosterPath, value))
+                OnPropertyChanged(nameof(PosterSource));
+        }
+    }
+
+    /// <summary>
+    /// Returns the best available poster source: the local cached file path if it exists and is non-empty,
+    /// otherwise falls back to the remote URL. Used by UI bindings to avoid unnecessary network requests.
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? PosterSource
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(_localPosterPath) && File.Exists(_localPosterPath))
+            {
+                try { if (new FileInfo(_localPosterPath).Length > 0) return _localPosterPath; }
+                catch { /* fall through to URL */ }
+            }
+            return IsMissingPosterUrl(_mainPictureUrl) ? null : _mainPictureUrl;
+        }
+    }
     private string? _nsfw;
     public string? Nsfw
     {
@@ -181,4 +219,13 @@ public partial class AnimeEntity : DomainObservableObject
     public DateTime? LastEpisodeAt { get; set; }
     public DateTime? LastEpisodesSync { get; set; }
     public DateTime? NextEpisodeAt { get; set; }
+
+    public static bool IsMissingPosterUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        return url.Contains("missing_", StringComparison.OrdinalIgnoreCase)
+            || url.Contains("/missing", StringComparison.OrdinalIgnoreCase)
+            || url.Contains("missing.jpg", StringComparison.OrdinalIgnoreCase)
+            || url.Contains("missing.png", StringComparison.OrdinalIgnoreCase);
+    }
 }

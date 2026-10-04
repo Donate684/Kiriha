@@ -8,7 +8,7 @@ public sealed class ShikiEndpointsTests
 {
     [Theory]
     [InlineData(ShikiMirror.One, "https://shikimori.one/api/", "https://shikimori.one/oauth/token", "https://shikimori.one/animes/", "https://shikimori.one/mangas/")]
-    [InlineData(ShikiMirror.Net, "https://shikimori.net/api/", "https://shikimori.net/oauth/token", "https://shikimori.net/animes/", "https://shikimori.net/mangas/")]
+    [InlineData(ShikiMirror.Net, "https://shikimori.rip/api/", "https://shikimori.rip/oauth/token", "https://shikimori.rip/animes/", "https://shikimori.rip/mangas/")]
     public void Urls_AreResolvedPerMirror(
         ShikiMirror mirror,
         string baseUrl,

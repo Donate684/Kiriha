@@ -1,8 +1,9 @@
 using System.Text.RegularExpressions;
+using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Core.Tracking.Api;
 
-public sealed class ShikiHostResolver
+public sealed class ShikiHostResolver : IImageUrlRewriter
 {
     private static readonly Regex ShikiHostPattern =
         new(@"^shikimori\.[a-z]{2,6}$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -17,6 +18,21 @@ public sealed class ShikiHostResolver
     }
 
     public static bool IsShikiHost(string host) => ShikiHostPattern.IsMatch(host);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only rewrites URLs whose host is a known Shikimori host and for which a
+    /// session-pinned replacement exists. All other URLs are returned unchanged.
+    /// </remarks>
+    public string Rewrite(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return url;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return url;
+        if (!_state.IsKnownHost(uri.Host)) return url;
+
+        var rewritten = _state.Rewrite(uri);
+        return ReferenceEquals(rewritten, uri) ? url : rewritten.ToString();
+    }
 
     public Uri Rewrite(Uri original) => _state.Rewrite(original);
     

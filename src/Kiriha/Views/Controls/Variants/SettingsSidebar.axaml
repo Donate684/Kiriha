@@ -286,7 +286,7 @@
             </StackPanel>
 
             <!-- ── Accounts ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+            <StackPanel MaxWidth="960" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=3}">
                     <pages:SettingsAccountsPage />
                     <Border Height="110" IsHitTestVisible="False"/>
@@ -330,6 +330,9 @@
             </StackPanel>
           </Panel>
         </ScrollViewer>
+
+        <!-- ═══ Primary Tracker Switch / Auth / Sync Modal Overlay ═══ -->
+        <pages:SettingsPrimarySwitchOverlay Grid.Column="0" Grid.ColumnSpan="2"/>
     </Grid>
 </UserControl>
 

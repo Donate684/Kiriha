@@ -38,6 +38,7 @@ public partial class MalApiService : IMalApiService, IDisposable
     });
 
     public string Name => "MyAnimeList";
+    public string TrackerId => TrackerConstants.Ids.Mal;
     public bool IsEnabled => _settingsService.Current.Api.Mal != null;
 
     public MalApiService(HttpClient httpClient, ISettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)

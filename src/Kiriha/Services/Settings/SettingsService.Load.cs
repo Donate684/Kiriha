@@ -47,8 +47,7 @@ public partial class SettingsService
                 var apiConfig = TryLoadWithBackup(_authSettingsPath, AppSettingsJsonContext.Default.ApiConfig);
                 if (apiConfig != null)
                 {
-                    DecryptTokens(apiConfig.Mal, apiConfig);
-                    DecryptTokens(apiConfig.Shiki, apiConfig);
+                    DecryptApiConfig(apiConfig);
                     if (apiConfig.Shiki != null && apiConfig.Shiki.Mirror != apiConfig.ShikiMirror)
                     {
                         Log.Information("Synchronizing Shiki token mirror with active mirror ({Mirror})", apiConfig.ShikiMirror);
@@ -112,8 +111,7 @@ public partial class SettingsService
             if (loaded is null)
                 return null;
 
-            DecryptTokens(loaded.Api.Mal, loaded.Api);
-            DecryptTokens(loaded.Api.Shiki, loaded.Api);
+            DecryptApiConfig(loaded.Api);
             if (loaded.Api.Shiki != null && loaded.Api.Shiki.Mirror != loaded.Api.ShikiMirror)
             {
                 loaded.Api.Shiki.Mirror = loaded.Api.ShikiMirror;

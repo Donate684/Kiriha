@@ -26,6 +26,10 @@ public class ShikiMetadata
     [JsonPropertyName("next_episode_at")]
     public DateTime? NextEpisodeAt { get; set; }
 
+    [NotMapped]
+    [JsonIgnore]
+    public string? PosterUrl { get; set; }
+
     /// <summary>
     /// UTC timestamp of the last successful upsert. EF-only column —
     /// not part of the Shikimori response, so <see cref="JsonIgnoreAttribute"/>

@@ -30,6 +30,7 @@ public partial class SyncManager : ISyncManager, IHostedService
     private readonly IHistoryService _historyService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly INotificationService? _notificationService;
+    private readonly ISettingsService? _settingsService;
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _highPriorityQueue = new();
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _lowPriorityQueue = new();
     private readonly SemaphoreSlim _queueSignal = new(0);
@@ -44,7 +45,8 @@ public partial class SyncManager : ISyncManager, IHostedService
         IDatabaseInitializer dbInit,
         IHistoryService historyService,
         IBackgroundTaskSupervisor backgroundTasks,
-        INotificationService? notificationService = null)
+        INotificationService? notificationService = null,
+        ISettingsService? settingsService = null)
     {
         _trackers = trackers.ToList();
         _syncTaskRepo = syncTaskRepo;
@@ -52,6 +54,7 @@ public partial class SyncManager : ISyncManager, IHostedService
         _historyService = historyService;
         _backgroundTasks = backgroundTasks;
         _notificationService = notificationService;
+        _settingsService = settingsService;
     }
 
 

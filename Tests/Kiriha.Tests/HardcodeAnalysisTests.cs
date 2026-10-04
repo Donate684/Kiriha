@@ -150,10 +150,19 @@ public class HardcodeAnalysisTests
         // Service brand names shown in the Settings Accounts page
         // (proper nouns that are NOT localised by convention)
         "Shikimori",
+        "MyAnimeList",
+        "AniList",
         "shikimori.one",
+        "shikimori.rip",
         "shikimori.rip / .net / …",  // actual ellipsis character in the source file
+        "myanimelist.net",
+        "anilist.co",
         "ORIGINAL",
         "FORK",
+        "MAL",
+        "ML",
+        "AL",
+        "SH",
 
         // Keyboard shortcut hint placeholders in player settings
         "Shift+S",
@@ -177,13 +186,21 @@ public class HardcodeAnalysisTests
         // Shadow overlay on anime cards — purely decorative, no theme token needed
         "#AA000000",
 
-        // Shikimori connection-status signal colours (green = connected, orange = fork, red = logout)
+        // Shikimori and multi-account connection-status signal colours (green = connected, orange = fork, red = logout, blue = primary)
         "#152ecc71",  // 8% green tint background
         "#2ecc71",    // green text / icon
         "#15ff9500",  // 8% orange tint background
         "#cc8400",    // orange text
         "#ff5555",    // red logout icon
         "#2a9c5b",    // darker connected green
+        "#203498db",  // 12% blue tint background
+        "#3498db",    // blue text for primary
+        "#2e51a2",    // MyAnimeList brand blue
+        "#02a9ff",    // AniList brand blue
+        "#e85656",    // Shikimori brand coral/red
+        "#2002a9ff",  // 12% AniList blue tint
+        "#202e51a2",  // 12% MAL blue tint
+        "#20e85656",  // 12% Shikimori coral tint
 
         // Transparent / semi-transparent overlays on posters and images (must remain static for contrast)
         "#55000000", "#66000000", "#BB000000", "#EE000000", "#88000000", "#CC000000",

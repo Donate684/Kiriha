@@ -80,7 +80,7 @@ public partial class SyncManager
         }
 
         bool overallSuccess = true;
-        var activeTrackers = _trackers.Where(t => t.IsEnabled).ToList();
+        var activeTrackers = GetDestinationTrackers();
 
         if (activeTrackers.Count == 0)
         {
@@ -168,5 +168,23 @@ public partial class SyncManager
 
 
         return (overallSuccess, executedAny);
+    }
+
+    private List<ITrackerService> GetDestinationTrackers()
+    {
+        var active = _trackers.Where(t => t.IsEnabled).ToList();
+        if (_settingsService == null) return active;
+
+        var api = _settingsService.Current.Api;
+        var primary = api.GetPrimaryAccount();
+        var mirrors = api.GetMirrorAccounts().ToList();
+
+        return active.Where(tracker =>
+        {
+            if (primary != null && string.Equals(tracker.TrackerId, primary.TrackerId, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return mirrors.Any(m => string.Equals(tracker.TrackerId, m.TrackerId, StringComparison.OrdinalIgnoreCase));
+        }).ToList();
     }
 }

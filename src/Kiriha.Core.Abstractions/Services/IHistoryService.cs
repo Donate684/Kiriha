@@ -10,7 +10,9 @@ public interface IHistoryService
 
     /// <summary>Awaitable overload – guarantees the DB row exists before returning.</summary>
     Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default);
+    Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl, CancellationToken ct = default);
     void AddEntry(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null);
+    void AddEntry(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl);
 
     void UpdateTrackerStatus(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null);
     void SetPendingTrackers(int animeId, int? episode, IEnumerable<string> trackerNames);

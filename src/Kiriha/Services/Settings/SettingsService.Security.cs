@@ -8,34 +8,43 @@ namespace Kiriha.Services.Data.Settings;
 
 public partial class SettingsService
 {
-    private void EncryptTokens(object? tokens)
+    private void EncryptApiConfig(AppSettings.ApiConfig api)
     {
-        if (tokens is MalTokens mal)
+        foreach (var account in api.Accounts)
         {
-            mal.AccessToken = Protect(mal.AccessToken);
-            mal.RefreshToken = Protect(mal.RefreshToken);
+            account.Tokens?.Encrypt(Protect);
         }
-        else if (tokens is ShikiTokens shiki)
-        {
-            shiki.AccessToken = Protect(shiki.AccessToken);
-            shiki.RefreshToken = Protect(shiki.RefreshToken);
-        }
+        api.LegacyMal?.Encrypt(Protect);
+        api.LegacyShiki?.Encrypt(Protect);
     }
 
-    private void DecryptTokens(object? tokens, AppSettings.ApiConfig api)
+    private void DecryptApiConfig(AppSettings.ApiConfig api)
     {
-        if (tokens is MalTokens mal)
+        if (api.LegacyMal != null)
         {
-            mal.AccessToken = Unprotect(mal.AccessToken);
-            mal.RefreshToken = Unprotect(mal.RefreshToken);
-            if (string.IsNullOrEmpty(mal.AccessToken)) api.Mal = null;
+            api.LegacyMal.Decrypt(Unprotect);
+            if (string.IsNullOrEmpty(api.LegacyMal.AccessToken)) api.LegacyMal = null;
         }
-        else if (tokens is ShikiTokens shiki)
+        if (api.LegacyShiki != null)
         {
-            shiki.AccessToken = Unprotect(shiki.AccessToken);
-            shiki.RefreshToken = Unprotect(shiki.RefreshToken);
-            if (string.IsNullOrEmpty(shiki.AccessToken)) api.Shiki = null;
+            api.LegacyShiki.Decrypt(Unprotect);
+            if (string.IsNullOrEmpty(api.LegacyShiki.AccessToken)) api.LegacyShiki = null;
         }
+
+        for (int i = api.Accounts.Count - 1; i >= 0; i--)
+        {
+            var acc = api.Accounts[i];
+            if (acc.Tokens != null)
+            {
+                acc.Tokens.Decrypt(Unprotect);
+                if (string.IsNullOrEmpty(acc.Tokens.AccessToken))
+                {
+                    acc.Tokens = null;
+                }
+            }
+        }
+
+        api.EnsureMigrated();
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Avalonia.Media.Imaging;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Serilog;
 
@@ -10,6 +11,7 @@ public class ImageCacheService : IDisposable
     private readonly string CacheRoot = Kiriha.Infrastructure.Platform.PathHelper.GetImageCachePath();
 
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
+    private readonly IImageUrlRewriter? _urlRewriter;
     private readonly ImageDownloader _downloader;
     private readonly ImageDiskCache _diskCache;
     private readonly ImageCacheCleanup _cleanup;
@@ -31,10 +33,12 @@ public class ImageCacheService : IDisposable
 
     public ImageCacheService(
         IHttpClientFactory httpClientFactory,
-        IBackgroundTaskSupervisor backgroundTasks)
+        IBackgroundTaskSupervisor backgroundTasks,
+        IImageUrlRewriter? urlRewriter = null)
     {
         _backgroundTasks = backgroundTasks;
-        _downloader = new ImageDownloader(httpClientFactory, CacheRoot);
+        _urlRewriter = urlRewriter;
+        _downloader = new ImageDownloader(httpClientFactory, CacheRoot, urlRewriter);
         _diskCache = new ImageDiskCache(CacheRoot, _downloader);
         _cleanup = new ImageCacheCleanup(CacheRoot);
 
@@ -44,6 +48,10 @@ public class ImageCacheService : IDisposable
     public async Task<Bitmap?> LoadBitmapAsync(string url, int decodeWidth = 300, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(url)) return null;
+
+        // Normalise the URL so that in-memory cache keys are consistent
+        // regardless of which Shikimori host was stored in the database.
+        url = _urlRewriter?.Rewrite(url) ?? url;
 
         // In-memory fast path: if URL was already mapped to a local file and is present in L1 memory cache,
         // return instantly without any disk checks or hashing.

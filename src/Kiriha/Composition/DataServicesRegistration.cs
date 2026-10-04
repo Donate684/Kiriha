@@ -1,6 +1,7 @@
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Shared;
 using Kiriha.Infrastructure;
 using Kiriha.Services.AppLifecycle;
@@ -83,7 +84,10 @@ internal static class DataServicesRegistration
             c.Timeout = TimeSpan.FromSeconds(30);
             c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent);
         });
-        services.AddSingleton<ImageCacheService>();
+        services.AddSingleton<ImageCacheService>(sp => new ImageCacheService(
+            sp.GetRequiredService<IHttpClientFactory>(),
+            sp.GetRequiredService<IBackgroundTaskSupervisor>(),
+            sp.GetService<IImageUrlRewriter>()));
         services.AddSingleton<PosterBatchDownloader>();
         services.AddSingleton<SeasonalCacheStore>();
         services.AddSingleton<HistoryService>();

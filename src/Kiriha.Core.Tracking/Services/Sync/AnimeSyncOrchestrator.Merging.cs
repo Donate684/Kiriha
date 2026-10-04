@@ -6,8 +6,10 @@ public partial class AnimeSyncOrchestrator
 {
     private async Task ProcessSyncResults(List<AnimeEntity> apiList, List<AnimeEntity> currentItems, IProgress<string>? status, CancellationToken ct)
     {
-        var apiMap = new Dictionary<int, AnimeEntity>(apiList.Count);
-        for (int i = 0; i < apiList.Count; i++) apiMap[apiList[i].Id] = apiList[i];
+        var distinctApiList = apiList.DistinctBy(x => x.Id).ToList();
+
+        var apiMap = new Dictionary<int, AnimeEntity>(distinctApiList.Count);
+        for (int i = 0; i < distinctApiList.Count; i++) apiMap[distinctApiList[i].Id] = distinctApiList[i];
 
         var existingMap = new Dictionary<int, AnimeEntity>(currentItems.Count);
         for (int i = 0; i < currentItems.Count; i++) existingMap[currentItems[i].Id] = currentItems[i];
@@ -22,13 +24,13 @@ public partial class AnimeSyncOrchestrator
         }
 
         var uiBatch = new List<Action>(50);
-        int total = apiList.Count;
+        int total = distinctApiList.Count;
 
         for (int i = 0; i < total; i++)
         {
             if (ct.IsCancellationRequested) break;
 
-            var newItem = apiList[i];
+            var newItem = distinctApiList[i];
 
             if (_animeRepository.IsRecentlyDeleted(newItem.Id)) continue;
 
@@ -40,6 +42,7 @@ public partial class AnimeSyncOrchestrator
             }
             else
             {
+                existingMap[newItem.Id] = newItem;
                 uiBatch.Add(() =>
                 {
                     _animeRepository.AddToCollection(newItem);

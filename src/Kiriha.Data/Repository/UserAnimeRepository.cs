@@ -66,6 +66,14 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         Log.Information("Successfully saved {Title} to database", item.Title);
     }
 
+    public async Task<AnimeEntity?> GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        return await context.UserAnime
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+    }
+
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
@@ -78,10 +86,19 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     public async Task<List<string>> GetActiveLocalImagePathsAsync(CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
-        return await context.UserAnime
+        var userPaths = await context.UserAnime
             .AsNoTracking()
             .Where(x => !string.IsNullOrEmpty(x.LocalPosterPath))
             .Select(x => x.LocalPosterPath!)
             .ToListAsync(ct);
+
+        var historyPosters = await context.History
+            .AsNoTracking()
+            .Where(x => !string.IsNullOrEmpty(x.PosterUrl))
+            .Select(x => x.PosterUrl!)
+            .Distinct()
+            .ToListAsync(ct);
+
+        return userPaths.Concat(historyPosters).ToList();
     }
 }

@@ -14,8 +14,6 @@ public partial class ShikiAuthService
     private readonly ShikiHostResolver _hostResolver;
 
     private ShikiMirror ActiveMirror => _settingsService.Current.Api.ShikiMirror;
-    private string ClientId => ShikiEndpoints.ClientId(ActiveMirror);
-    private string AuthBase => ShikiEndpoints.AuthUrl(ActiveMirror);
 
     public ShikiAuthService(HttpClient httpClient, ISettingsService settingsService, ShikiHostResolver hostResolver)
     {
@@ -24,30 +22,31 @@ public partial class ShikiAuthService
         _hostResolver = hostResolver;
     }
 
-    public string GetAuthUrl()
+    public string GetAuthUrl(ShikiMirror? mirror = null)
     {
+        var targetMirror = mirror ?? ActiveMirror;
         // Shikimori redirect URI must match exactly what's in the application settings on Shikimori website
-        return $"{AuthBase}?client_id={ClientId}&redirect_uri={AppConstants.Api.RedirectUri}&response_type=code&scope=user_rates";
+        return $"{ShikiEndpoints.AuthUrl(targetMirror)}?client_id={ShikiEndpoints.ClientId(targetMirror)}&redirect_uri={AppConstants.Api.RedirectUri}&response_type=code&scope=user_rates";
     }
 
-    public async Task<ShikiTokens?> LoginAsync()
+    public async Task<ShikiTokens?> LoginAsync(ShikiMirror? mirror = null)
     {
-        if (!ShikiEndpoints.IsConfigured(ActiveMirror))
+        var targetMirror = mirror ?? ActiveMirror;
+        if (!ShikiEndpoints.IsConfigured(targetMirror))
         {
-            Log.Error("Shikimori OAuth is not configured for mirror {Mirror}. Set ClientId/TokenUrl first.", ActiveMirror);
+            Log.Error("Shikimori OAuth is not configured for mirror {Mirror}. Set ClientId/TokenUrl first.", targetMirror);
             return null;
         }
 
-        var mirror = ActiveMirror;
-        var authUrl = GetAuthUrl();
+        var authUrl = GetAuthUrl(targetMirror);
         string successMessage = UIUtils.GetLoc("auth.success", "Shikimori");
         string closeMessage = UIUtils.GetLoc("auth.close_window");
         var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage);
 
         if (string.IsNullOrEmpty(code)) return null;
 
-        var tokens = await ExchangeCodeForTokenAsync(code, mirror);
-        if (tokens != null) tokens.Mirror = mirror;
+        var tokens = await ExchangeCodeForTokenAsync(code, targetMirror);
+        if (tokens != null) tokens.Mirror = targetMirror;
         return tokens;
     }
 

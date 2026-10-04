@@ -50,7 +50,7 @@ public sealed class DatabaseMaintenance
     private async Task CleanOrphanedMetadataAsync(AppDbContext context)
     {
         var orphanedMetadataCount = await context.Database.ExecuteSqlRawAsync(
-            "DELETE FROM metadata WHERE id NOT IN (SELECT id FROM user_anime)");
+            "DELETE FROM metadata WHERE id NOT IN (SELECT id FROM user_anime) AND id NOT IN (SELECT anime_id FROM history)");
         if (orphanedMetadataCount > 0)
             Log.Information("DatabaseMaintenance: Removed {Count} orphaned metadata entries", orphanedMetadataCount);
     }

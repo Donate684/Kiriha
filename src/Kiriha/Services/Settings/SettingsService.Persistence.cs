@@ -151,14 +151,8 @@ public partial class SettingsService
 
     private string SerializeAuth(AppSettings.ApiConfig api)
     {
-        var clone = new AppSettings.ApiConfig
-        {
-            ShikiMirror = api.ShikiMirror,
-            Mal = api.Mal?.Clone(),
-            Shiki = api.Shiki?.Clone()
-        };
-        EncryptTokens(clone.Mal);
-        EncryptTokens(clone.Shiki);
+        var clone = api.Clone();
+        EncryptApiConfig(clone);
         return JsonSerializer.Serialize(clone, AppSettingsJsonContext.Default.ApiConfig);
     }
 

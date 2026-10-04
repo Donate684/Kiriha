@@ -1,128 +1,600 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
              xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
              xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Settings.SettingsAccountsPage"
              x:DataType="vmSettings:SettingsViewModel">
 
-    <StackPanel>
+    <UserControl.Styles>
+        <Style Selector="Button.DangerAction">
+            <Setter Property="Background" Value="#20e85656"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Styles>
 
-                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.accounts}"/>
+    <StackPanel Spacing="16">
+        <!-- ═══ Page Header ═══ -->
+        <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.accounts}" Margin="0"/>
 
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.anime.links.mal}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mal.subtitle}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border IsVisible="{Binding Auth.IsLoggedIn}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
-                                    <TextBlock Text="{DynamicResource l.settings.mal.connected}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
+        <!-- ═══ Main 2-Column Dashboard ═══ -->
+        <Grid ColumnDefinitions="280,18,*" HorizontalAlignment="Stretch">
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- ── Left Column: Sync Settings Hub ──                            -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <StackPanel Grid.Column="0" Spacing="14">
+                <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="16">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.sync_hub_title}"
+                                   FontWeight="SemiBold" FontSize="14"/>
+
+                        <!-- Primary Source Interactive Selector Box -->
+                        <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,10">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="LayersOutline" Width="14" Height="14" Opacity="0.7"/>
+                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.primary_source_header}"
+                                               FontSize="11" Opacity="0.75" FontWeight="Medium"/>
                                 </StackPanel>
-                            </Border>
-                            <Button Content="{DynamicResource l.common.actions.login}" Command="{Binding Auth.MalLoginCommand}" IsVisible="{Binding !Auth.IsLoggedIn}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
-                            <Button Command="{Binding Auth.MalLogoutCommand}" IsVisible="{Binding Auth.IsLoggedIn}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0">
-                                <material:MaterialIcon Kind="Logout" Width="14" Height="14" Foreground="#ff5555"/>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <!-- Mutual-exclusion notice: even though both Shikimori rows
-                         are visible, only one can be connected at a time (the
-                         buttons enforce this via CanExecute). The banner makes
-                         that constraint explicit so the user doesn't wonder why
-                         the other login button is greyed out. -->
-                    <Border Margin="0,8,0,4" Padding="12,10"
-                            Background="{DynamicResource SubtleFillColorTertiary}"
-                            CornerRadius="6">
-                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <material:MaterialIcon Kind="InformationOutline" Width="16" Height="16" Opacity="0.7"/>
-                            <TextBlock Text="{DynamicResource l.settings.shikimori.exclusive_notice}"
-                                       FontSize="12" Opacity="0.75" TextWrapping="Wrap"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Shikimori (shikimori.one) — the original/canonical site.
-                         The row below connects to the independent fan fork served
-                         from .rip / .net. Mutual exclusion handled by CanExecute. -->
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Classes="Title" Text="Shikimori"/>
-                                <Border Padding="6,1" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="3" VerticalAlignment="Center">
-                                    <TextBlock Text="shikimori.one" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
-                                </Border>
-                                <Border Padding="6,1" Background="#152ecc71" CornerRadius="3" VerticalAlignment="Center"
-                                        ToolTip.Tip="{DynamicResource l.settings.shikimori.one_sub}">
-                                    <TextBlock Text="ORIGINAL" FontSize="10" FontWeight="SemiBold" Foreground="#2a9c5b"/>
+
+                                <!-- Dropdown selector to choose or change primary tracker -->
+                                <ComboBox ItemsSource="{Binding Auth.AvailablePrimaryTrackers}"
+                                          SelectedItem="{Binding Auth.SelectedPrimaryTracker}"
+                                          HorizontalAlignment="Stretch"
+                                          CornerRadius="6"
+                                          Padding="8,5">
+                                    <ComboBox.Styles>
+                                        <Style Selector="ComboBoxItem" x:DataType="vmSettings:PrimaryTrackerOption">
+                                            <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+                                            <Setter Property="ToolTip.Tip" Value="{Binding DisabledReason}"/>
+                                            <Setter Property="ToolTip.ShowOnDisabled" Value="True"/>
+                                        </Style>
+                                        <Style Selector="ComboBoxItem:disabled">
+                                            <Setter Property="Opacity" Value="0.45"/>
+                                        </Style>
+                                    </ComboBox.Styles>
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vmSettings:PrimaryTrackerOption">
+                                            <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                                <Border Grid.Column="0" Background="{DynamicResource SystemAccentColor}"
+                                                        CornerRadius="4" Padding="5,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Badge}" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- How Tracker Synchronization Works -->
+                        <Border BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                BorderThickness="0,1,0,0"
+                                Padding="0,12,0,0">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="{DynamicResource l.settings.accounts_hub.how_it_works_title}"
+                                           FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="{DynamicResource l.settings.accounts_hub.how_it_works_desc}"
+                                           FontSize="11" Opacity="0.75" TextWrapping="Wrap"/>
+
+                                <!-- Dynamic Visual Flow Pipeline -->
+                                <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="10">
+                                    <StackPanel Spacing="8">
+                                        <!-- Node 1: Kiriha App -->
+                                        <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                BorderThickness="1"
+                                                CornerRadius="8" Padding="10,7">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <Image Grid.Column="0" Source="avares://Kiriha/Assets/kiriha.png" Width="26" Height="26"
+                                                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="Kiriha" FontWeight="SemiBold" FontSize="12"/>
+                                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.diagram_source_app}"
+                                                               FontSize="10" Opacity="0.6"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Arrow Down 1: Kiriha -> Primary -->
+                                        <material:MaterialIcon Kind="ArrowDown" Width="16" Height="16"
+                                                              Foreground="{DynamicResource SystemAccentColor}"
+                                                              HorizontalAlignment="Center"/>
+
+                                        <!-- Node 2: Primary Tracker (Dynamic!) -->
+                                        <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                BorderThickness="1"
+                                                CornerRadius="8" Padding="10,7">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <!-- Primary Badges -->
+                                                <Border Grid.Column="0" IsVisible="{Binding Auth.IsMalPrimary}"
+                                                        Background="#2e51a2" CornerRadius="6" Width="30" Height="26" Margin="0,0,8,0">
+                                                    <TextBlock Text="MAL" Foreground="White" FontSize="9" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <Border Grid.Column="0" IsVisible="{Binding Auth.IsAniListPrimary}"
+                                                        Background="#02a9ff" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0">
+                                                    <TextBlock Text="AL" Foreground="White" FontSize="10" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <Border Grid.Column="0" IsVisible="{Binding Auth.IsShikiOrigPrimary}"
+                                                        Background="#2a9c5b" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0">
+                                                    <TextBlock Text="ORIGINAL" Foreground="White" FontSize="7" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <Border Grid.Column="0" IsVisible="{Binding Auth.IsShikiForkPrimary}"
+                                                        Background="#cc8400" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0">
+                                                    <TextBlock Text="FORK" Foreground="White" FontSize="7" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+
+                                                <!-- Name & Badge -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Auth.PrimaryTrackerName}" FontWeight="SemiBold" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.primary_badge}"
+                                                               FontSize="9" FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                                </StackPanel>
+
+                                                <!-- Checkmark when primary is connected -->
+                                                <material:MaterialIcon Grid.Column="2" Kind="CheckCircleOutline" Width="14" Height="14"
+                                                                      Foreground="#2ecc71"
+                                                                      IsVisible="{Binding Auth.IsPrimaryConnected}"
+                                                                      VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Arrow Down 2: Primary -> Mirrors -->
+                                        <material:MaterialIcon Kind="ArrowDown" Width="16" Height="16"
+                                                              Opacity="0.5"
+                                                              HorizontalAlignment="Center"/>
+
+                                        <!-- Node 3: Connected Mirrors (Dynamic branches!) -->
+                                        <!-- If HAS active mirrors -->
+                                        <StackPanel Spacing="6" IsVisible="{Binding Auth.HasActiveMirrors}">
+                                            <!-- Mirror: MAL -->
+                                            <Border IsVisible="{Binding Auth.IsMalActiveMirror}"
+                                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6" Padding="8,6">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <material:MaterialIcon Grid.Column="0" Kind="SubdirectoryArrowRight" Width="14" Height="14"
+                                                                          Opacity="0.6" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <Border Background="#2e51a2" CornerRadius="4" Padding="5,2">
+                                                            <TextBlock Text="MAL" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                                        </Border>
+                                                        <TextBlock Text="MyAnimeList" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{DynamicResource l.settings.accounts_hub.mirror}"
+                                                               FontSize="9" Opacity="0.6" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Mirror: AniList -->
+                                            <Border IsVisible="{Binding Auth.IsAniListActiveMirror}"
+                                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6" Padding="8,6">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <material:MaterialIcon Grid.Column="0" Kind="SubdirectoryArrowRight" Width="14" Height="14"
+                                                                          Opacity="0.6" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <Border Background="#02a9ff" CornerRadius="4" Padding="5,2">
+                                                            <TextBlock Text="AL" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                                        </Border>
+                                                        <TextBlock Text="AniList" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{DynamicResource l.settings.accounts_hub.mirror}"
+                                                               FontSize="9" Opacity="0.6" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Mirror: Shikimori Original -->
+                                            <Border IsVisible="{Binding Auth.IsShikiOrigActiveMirror}"
+                                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6" Padding="8,6">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <material:MaterialIcon Grid.Column="0" Kind="SubdirectoryArrowRight" Width="14" Height="14"
+                                                                          Opacity="0.6" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <Border Background="#2a9c5b" CornerRadius="4" Padding="5,2">
+                                                            <TextBlock Text="ORIGINAL" Foreground="White" FontSize="8" FontWeight="Bold"/>
+                                                        </Border>
+                                                        <TextBlock Text="shikimori.one" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{DynamicResource l.settings.accounts_hub.mirror}"
+                                                               FontSize="9" Opacity="0.6" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Mirror: Shikimori Fork -->
+                                            <Border IsVisible="{Binding Auth.IsShikiForkActiveMirror}"
+                                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6" Padding="8,6">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <material:MaterialIcon Grid.Column="0" Kind="SubdirectoryArrowRight" Width="14" Height="14"
+                                                                          Opacity="0.6" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,4,0">
+                                                        <Border Background="#cc8400" CornerRadius="4" Padding="5,2">
+                                                            <TextBlock Text="FORK" Foreground="White" FontSize="8" FontWeight="Bold"/>
+                                                        </Border>
+                                                        <TextBlock Text="shikimori.rip" FontSize="10" FontFamily="Consolas,monospace"
+                                                                   FontWeight="Medium" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{DynamicResource l.settings.accounts_hub.mirror}"
+                                                               FontSize="9" Opacity="0.6" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- If NO active mirrors: Placeholder card -->
+                                        <Border IsVisible="{Binding Auth.HasNoActiveMirrors}"
+                                                Background="{DynamicResource SubtleFillColorSecondary}"
+                                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                                BorderThickness="1"
+                                                CornerRadius="6" Padding="10,8">
+                                            <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                                <material:MaterialIcon Kind="CallSplit" Width="16" Height="16" Opacity="0.4" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource l.settings.accounts_hub.no_mirrors_badge}"
+                                                           FontSize="11" Opacity="0.7" FontWeight="Medium" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource l.settings.accounts_hub.no_mirrors_sub}"
+                                                           FontSize="10" Opacity="0.5" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
                                 </Border>
                             </StackPanel>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.one_sub}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border IsVisible="{Binding Auth.IsShikiOneConnected}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
-                                    <TextBlock Text="{DynamicResource l.settings.mal.connected}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
-                                </StackPanel>
-                            </Border>
-                            <Button Content="{DynamicResource l.common.actions.login}" Command="{Binding Auth.ShikiLoginOneCommand}" IsVisible="{Binding !Auth.IsShikiOneConnected}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"
-                                    ToolTip.Tip="{DynamicResource l.settings.shikimori.other_mirror_active}"/>
-                            <Button Command="{Binding Auth.ShikiLogoutCommand}" IsVisible="{Binding Auth.IsShikiOneConnected}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0">
-                                <material:MaterialIcon Kind="Logout" Width="14" Height="14" Foreground="#ff5555"/>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <!-- Shikimori fan fork (shikimori.rip / shikimori.net). Same fork
-                         is served from two domains for regional-blocking circumvention;
-                         the badge shows both. Independent OAuth realm from .one — its
-                         own tokens, its own client_id. -->
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Classes="Title" Text="Shikimori"/>
-                                <Border Padding="6,1" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="3" VerticalAlignment="Center"
-                                        ToolTip.Tip="{DynamicResource l.settings.shikimori.fork_domains_tooltip}">
-                                    <TextBlock Text="shikimori.rip / .net / …" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- ── Right Column: Service Cards ──                               -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <StackPanel Grid.Column="2" Spacing="12">
+
+                <!-- ── Card 1: MyAnimeList ── -->
+                <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,14">
+                    <StackPanel Spacing="12">
+                        <!-- Top Header -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Background="#2e51a2" CornerRadius="6" Width="32" Height="28">
+                                    <TextBlock Text="MAL" Foreground="White" FontSize="10" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <Border Padding="6,1" Background="#15ff9500" CornerRadius="3" VerticalAlignment="Center"
-                                        ToolTip.Tip="{DynamicResource l.settings.shikimori.net_sub}">
-                                    <TextBlock Text="FORK" FontSize="10" FontWeight="SemiBold" Foreground="#cc8400"/>
+                                <TextBlock Text="MyAnimeList" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+                                <Border Padding="6,2" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="4" VerticalAlignment="Center">
+                                    <TextBlock Text="myanimelist.net" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
+                                </Border>
+
+                                <!-- Connected Status Badge -->
+                                <Border IsVisible="{Binding Auth.IsMalConnected}"
+                                        Padding="6,2" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.connected_badge}"
+                                                   FontSize="10" FontWeight="SemiBold" Foreground="#2ecc71"/>
+                                    </StackPanel>
                                 </Border>
                             </StackPanel>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.net_sub}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Border IsVisible="{Binding Auth.IsShikiNetConnected}" Padding="10,6" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
-                                    <TextBlock Text="{DynamicResource l.settings.mal.connected}" Foreground="#2ecc71" FontSize="11" FontWeight="Medium"/>
+
+                            <!-- Right: Role Badge (Primary or Mirror) -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border IsVisible="{Binding Auth.IsMalPrimary}"
+                                        Padding="8,3" Background="#203498db" CornerRadius="4" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.accounts_hub.primary_tooltip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Star" Width="12" Height="12" Foreground="#3498db"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.primary_badge}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#3498db"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border IsVisible="{Binding Auth.IsMalActiveMirror}"
+                                        Padding="8,3" Background="#2002a9ff" CornerRadius="4" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.accounts_hub.mirror_tooltip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Sync" Width="12" Height="12" Foreground="#02a9ff"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.mirror_badge}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#02a9ff"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Body: Connected vs Disconnected -->
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Auth.IsMalConnected}">
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mal.subtitle}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Auth.MalUsername, StringFormat='({0})'}"
+                                           IsVisible="{Binding Auth.MalUsername, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                           FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Classes="DangerAction" Command="{Binding Auth.MalLogoutCommand}"
+                                    ToolTip.Tip="{DynamicResource l.settings.accounts_hub.disconnect_action}">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="Logout" Width="13" Height="13" Foreground="#e85656" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.disconnect_action}"
+                                               Foreground="#e85656" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Border>
-                            <Button Content="{DynamicResource l.common.actions.login}" Command="{Binding Auth.ShikiLoginNetCommand}" IsVisible="{Binding !Auth.IsShikiNetConnected}" Padding="14,6" CornerRadius="6" FontSize="12" FontWeight="SemiBold" Background="{DynamicResource SystemAccentColor}" Foreground="White"
-                                    ToolTip.Tip="{DynamicResource l.settings.shikimori.other_mirror_active}"/>
-                            <Button Command="{Binding Auth.ShikiLogoutCommand}" IsVisible="{Binding Auth.IsShikiNetConnected}" Padding="8" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}" BorderThickness="0">
-                                <material:MaterialIcon Kind="Logout" Width="14" Height="14" Foreground="#ff5555"/>
                             </Button>
-                        </StackPanel>
-                    </Grid>
-</StackPanel>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !Auth.IsMalConnected}">
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mal.subtitle}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="{DynamicResource l.settings.accounts_hub.login_action}"
+                                    Command="{Binding Auth.MalLoginCommand}"
+                                    Padding="18,7" CornerRadius="6" FontSize="12" FontWeight="SemiBold"
+                                    Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Card 2: AniList ── -->
+                <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,14">
+                    <StackPanel Spacing="12">
+                        <!-- Top Header -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Background="#02a9ff" CornerRadius="6" Width="28" Height="28">
+                                    <TextBlock Text="AL" Foreground="White" FontSize="11" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="AniList" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+                                <Border Padding="6,2" Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="4" VerticalAlignment="Center">
+                                    <TextBlock Text="anilist.co" FontSize="10" FontFamily="Consolas,monospace" Opacity="0.75"/>
+                                </Border>
+
+                                <!-- Connected Status Badge -->
+                                <Border IsVisible="{Binding Auth.IsAniListConnected}"
+                                        Padding="6,2" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.connected_badge}"
+                                                   FontSize="10" FontWeight="SemiBold" Foreground="#2ecc71"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Right: Role Badge (Primary or Mirror) -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border IsVisible="{Binding Auth.IsAniListPrimary}"
+                                        Padding="8,3" Background="#203498db" CornerRadius="4" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.accounts_hub.primary_tooltip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Star" Width="12" Height="12" Foreground="#3498db"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.primary_badge}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#3498db"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border IsVisible="{Binding Auth.IsAniListActiveMirror}"
+                                        Padding="8,3" Background="#2002a9ff" CornerRadius="4" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.accounts_hub.mirror_tooltip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Sync" Width="12" Height="12" Foreground="#02a9ff"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.mirror_badge}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#02a9ff"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Body: Connected vs Disconnected -->
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Auth.IsAniListConnected}">
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.anilist.subtitle}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Auth.AniListUsername, StringFormat='({0})'}"
+                                           IsVisible="{Binding Auth.AniListUsername, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                           FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Classes="DangerAction" Command="{Binding Auth.AniListLogoutCommand}"
+                                    ToolTip.Tip="{DynamicResource l.settings.accounts_hub.disconnect_action}">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="Logout" Width="13" Height="13" Foreground="#e85656" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.disconnect_action}"
+                                               Foreground="#e85656" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !Auth.IsAniListConnected}">
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.anilist.subtitle}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="{DynamicResource l.settings.accounts_hub.login_action}"
+                                    Command="{Binding Auth.AniListLoginCommand}"
+                                    Padding="18,7" CornerRadius="6" FontSize="12" FontWeight="SemiBold"
+                                    Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Card 3: Shikimori (Unified: Original or Fork) ── -->
+                <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,14">
+                    <StackPanel Spacing="12">
+                        <!-- Top Header -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Background="#e85656" CornerRadius="6" Width="28" Height="28">
+                                    <TextBlock Text="SH" Foreground="White" FontSize="11" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{DynamicResource l.settings.accounts_hub.shikimori_group_title}"
+                                           FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+
+                                <!-- Connected Status Badge -->
+                                <Border IsVisible="{Binding Auth.IsShikiActiveConnected}"
+                                        Padding="6,2" Background="#152ecc71" CornerRadius="4" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="CheckCircle" Width="12" Height="12" Foreground="#2ecc71"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.connected_badge}"
+                                                   FontSize="10" FontWeight="SemiBold" Foreground="#2ecc71"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Right: Role Badge (Primary or Mirror) -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border IsVisible="{Binding Auth.IsShikiActivePrimary}"
+                                        Padding="8,3" Background="#203498db" CornerRadius="4" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.accounts_hub.primary_tooltip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Star" Width="12" Height="12" Foreground="#3498db"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.primary_badge}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#3498db"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border IsVisible="{Binding Auth.IsShikiActiveMirror}"
+                                        Padding="8,3" Background="#2002a9ff" CornerRadius="4" VerticalAlignment="Center"
+                                        ToolTip.Tip="{DynamicResource l.settings.accounts_hub.mirror_tooltip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Sync" Width="12" Height="12" Foreground="#02a9ff"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.mirror_badge}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#02a9ff"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Choice: ИЛИ ОРИГИНАЛ ИЛИ ФОРК (Prominent Row) -->
+                        <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="3"
+                                IsEnabled="{Binding Auth.IsShikiCanSwitch}">
+                            <Grid ColumnDefinitions="*,*">
+                                <RadioButton Grid.Column="0"
+                                             Classes="Pill"
+                                             GroupName="ShikiServerSelect"
+                                             IsChecked="{Binding Auth.IsShikiOrigSelected}"
+                                             IsEnabled="{Binding Auth.IsShikiCanSwitch}"
+                                             HorizontalAlignment="Stretch"
+                                             HorizontalContentAlignment="Center"
+                                             Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                        <material:MaterialIcon Kind="Web" Width="15" Height="15" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.shikimori_orig_title}"
+                                                   FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="shikimori.one" FontSize="10" Opacity="0.65" FontFamily="Consolas,monospace" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton Grid.Column="1"
+                                             Classes="Pill"
+                                             GroupName="ShikiServerSelect"
+                                             IsChecked="{Binding Auth.IsShikiForkSelected}"
+                                             IsEnabled="{Binding Auth.IsShikiCanSwitch}"
+                                             HorizontalAlignment="Stretch"
+                                             HorizontalContentAlignment="Center"
+                                             Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                        <material:MaterialIcon Kind="SourceFork" Width="15" Height="15" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{DynamicResource l.settings.accounts_hub.shikimori_fork_title}"
+                                                   FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="shikimori.rip" FontSize="10" Opacity="0.65" FontFamily="Consolas,monospace" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </RadioButton>
+                            </Grid>
+                        </Border>
+
+                        <!-- Lock Warning Banner (when connected) -->
+                        <Border IsVisible="{Binding Auth.IsShikiAnyConnected}"
+                                Background="{DynamicResource SubtleFillColorSecondary}"
+                                CornerRadius="6" Padding="8,4" Margin="0,-4,0,-2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <material:MaterialIcon Kind="LockOutline" Width="12" Height="12" Opacity="0.5" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource l.settings.accounts_hub.shiki_switch_locked_hint}"
+                                           FontSize="10" Opacity="0.6" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Body: Connected vs Disconnected for active Shikimori server -->
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Auth.IsShikiActiveConnected}">
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Classes="Sub" Text="{Binding Auth.ShikiActiveDescription}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Auth.ShikiActiveUsername, StringFormat='({0})'}"
+                                           IsVisible="{Binding Auth.ShikiActiveUsername, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                           FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Classes="DangerAction"
+                                    Command="{Binding Auth.ShikiActiveLogoutCommand}"
+                                    ToolTip.Tip="{DynamicResource l.settings.accounts_hub.disconnect_action}">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="Logout" Width="13" Height="13" Foreground="#e85656" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.disconnect_action}"
+                                               Foreground="#e85656" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !Auth.IsShikiActiveConnected}">
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Classes="Sub" Text="{Binding Auth.ShikiActiveDescription}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Content="{DynamicResource l.settings.accounts_hub.login_action}"
+                                    Command="{Binding Auth.ShikiActiveLoginCommand}"
+                                    Padding="18,7" CornerRadius="6" FontSize="12" FontWeight="SemiBold"
+                                    Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
 </UserControl>
-

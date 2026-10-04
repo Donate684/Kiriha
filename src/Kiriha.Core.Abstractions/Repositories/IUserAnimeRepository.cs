@@ -23,6 +23,7 @@ public interface IUserAnimeRepository
     Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null, CancellationToken ct = default);
     Task UpdateScoreAsync(AnimeEntity item, string score, CancellationToken ct = default);
     Task UpdateMetadataAsync(AnimeEntity item, CancellationToken ct = default);
+    Task<AnimeEntity?> GetByIdAsync(int id, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
 
     /// <summary>

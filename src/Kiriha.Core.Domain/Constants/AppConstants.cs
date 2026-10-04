@@ -33,16 +33,19 @@ public static class AppConstants
                 MangaWebsiteUrl: "https://shikimori.one/mangas/");
 
             public static readonly ShikiHost Net = new(
-                BaseUrl: "https://shikimori.net/api/",
-                TokenUrl: "https://shikimori.net/oauth/token",
-                AuthUrl: "https://shikimori.net/oauth/authorize",
-                WebsiteUrl: "https://shikimori.net/animes/",
-                MangaWebsiteUrl: "https://shikimori.net/mangas/");
+                BaseUrl: "https://shikimori.rip/api/",
+                TokenUrl: "https://shikimori.rip/oauth/token",
+                AuthUrl: "https://shikimori.rip/oauth/authorize",
+                WebsiteUrl: "https://shikimori.rip/animes/",
+                MangaWebsiteUrl: "https://shikimori.rip/mangas/");
         }
 
         public static class AniList
         {
             public const string BaseUrl = "https://graphql.anilist.co";
+            public const string AuthUrl = "https://anilist.co/api/v2/oauth/authorize";
+            public const string TokenUrl = "https://anilist.co/api/v2/oauth/token";
+            public const string WebsiteUrl = "https://anilist.co/anime/";
         }
 
         public static class Jikan

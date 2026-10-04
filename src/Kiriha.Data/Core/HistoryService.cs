@@ -31,7 +31,10 @@ public class HistoryService : IHistoryService
         }
     }
 
-    public virtual async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
+    public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
+        => AddEntryAsync(animeId, title, russianTitle, episode, actionType, detail, posterUrl: null, ct);
+
+    public virtual async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl, CancellationToken ct = default)
     {
         try
         {
@@ -44,6 +47,7 @@ public class HistoryService : IHistoryService
                 "ScoreSet" => 5,
                 "Completed" => 6,
                 "Dropped" => 7,
+                "Deleted" or "Removed" => 8,
                 _ => 0
             };
 
@@ -55,7 +59,8 @@ public class HistoryService : IHistoryService
                 Episode = episode,
                 Timestamp = DateTime.UtcNow,
                 ActionType = typeId,
-                Detail = detail?.ToString() ?? ""
+                Detail = detail?.ToString() ?? "",
+                PosterUrl = posterUrl
             };
 
             await _repo.AddAsync(entry, ct);
@@ -69,8 +74,11 @@ public class HistoryService : IHistoryService
     }
 
     public virtual void AddEntry(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null)
+        => AddEntry(animeId, title, russianTitle, episode, actionType, detail, posterUrl: null);
+
+    public virtual void AddEntry(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl)
     {
-        var task = AddEntryAsync(animeId, title, russianTitle, episode, actionType, detail);
+        var task = AddEntryAsync(animeId, title, russianTitle, episode, actionType, detail, posterUrl);
         if (task.IsCompleted) return; // Synchronous fast-path: nothing to track.
 
         _pendingWrites.TryAdd(task, 0);

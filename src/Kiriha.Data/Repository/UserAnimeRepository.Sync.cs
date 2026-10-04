@@ -9,7 +9,7 @@ public sealed partial class UserAnimeRepository
 {
     public async Task SyncFromRemoteAsync(IEnumerable<AnimeEntity> items, MediaKind[]? syncKinds = null, CancellationToken ct = default)
     {
-        var incomingItems = items.ToList(); // materialize to avoid multiple evaluations
+        var incomingItems = items.DistinctBy(x => x.Id).ToList(); // materialize and deduplicate to avoid multiple evaluations and UNIQUE violations
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
 
@@ -64,7 +64,30 @@ public sealed partial class UserAnimeRepository
 
             if (reconciliation.RemoteOnly.Count > 0)
             {
-                context.UserAnime.AddRange(reconciliation.RemoteOnly);
+                var distinctRemote = reconciliation.RemoteOnly.DistinctBy(x => x.Id).ToList();
+                var remoteIds = distinctRemote.Select(x => x.Id).ToList();
+                var existingAnyKind = await context.UserAnime
+                    .AsTracking()
+                    .Where(x => remoteIds.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, ct);
+
+                var toAdd = new List<AnimeEntity>();
+                foreach (var item in distinctRemote)
+                {
+                    if (existingAnyKind.TryGetValue(item.Id, out var existingRow))
+                    {
+                        context.Entry(existingRow).CurrentValues.SetValues(item);
+                    }
+                    else
+                    {
+                        toAdd.Add(item);
+                    }
+                }
+
+                if (toAdd.Count > 0)
+                {
+                    context.UserAnime.AddRange(toAdd);
+                }
             }
 
             await context.SaveChangesAsync(ct);

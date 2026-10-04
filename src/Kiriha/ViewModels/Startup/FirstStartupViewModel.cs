@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
@@ -34,24 +34,6 @@ public partial class FirstStartupViewModel : ViewModelBase
         _localizer = localizer;
         _settingsViewModel = settingsViewModel;
 
-        _settingsViewModel.System.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SettingsSystemViewModel.EnableScrobbler))
-            {
-                NextStepCommand.NotifyCanExecuteChanged();
-                OnPropertyChanged(nameof(CanGoNext));
-            }
-        };
-
-        _settingsViewModel.Playback.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SettingsPlaybackViewModel.EnabledPlayersCount))
-            {
-                NextStepCommand.NotifyCanExecuteChanged();
-                OnPropertyChanged(nameof(CanGoNext));
-            }
-        };
-
         InitializeSteps();
         UpdateCurrentStep();
     }
@@ -60,12 +42,7 @@ public partial class FirstStartupViewModel : ViewModelBase
     {
         var allSteps = new List<SetupStep>
         {
-            new SetupStep { Key = "language", TitleKey = "wizard.language.title", SubtitleKey = "wizard.language.subtitle", IconKind = "Translate" },
-            new SetupStep { Key = "theme", TitleKey = "wizard.theme.title", SubtitleKey = "wizard.theme.subtitle", IconKind = "Palette" },
-            new SetupStep { Key = "mal_login", TitleKey = "wizard.mal.title", SubtitleKey = "wizard.mal.subtitle", IconKind = "AccountSync" },
-            new SetupStep { Key = "scrobbler", TitleKey = "wizard.tracking.title", SubtitleKey = "wizard.tracking.instructions", IconKind = "AutoFix" },
-            new SetupStep { Key = "system_settings", TitleKey = "wizard.system.title", SubtitleKey = "wizard.system.subtitle", IconKind = "CogOutline" },
-            new SetupStep { Key = "advanced_localization", TitleKey = "wizard.advanced.title", SubtitleKey = "wizard.advanced.subtitle", IconKind = "TranslateVariant" }
+            new SetupStep { Key = "language", TitleKey = "wizard.language.title", SubtitleKey = "wizard.language.subtitle", IconKind = "Translate" }
         };
 
         foreach (var step in allSteps)
@@ -82,21 +59,13 @@ public partial class FirstStartupViewModel : ViewModelBase
 
     public bool CanGoNext => CanNext();
     public bool IsLanguageStep => CurrentStep?.Key == "language";
-    public bool IsThemeStep => CurrentStep?.Key == "theme";
-    public bool IsMalStep => CurrentStep?.Key == "mal_login";
-    public bool IsScrobblerStep => CurrentStep?.Key == "scrobbler";
-    public bool IsSystemStep => CurrentStep?.Key == "system_settings";
-    public bool IsAdvancedStep => CurrentStep?.Key == "advanced_localization";
+    public bool IsThemeStep => false;
+    public bool IsMalStep => false;
+    public bool IsScrobblerStep => false;
+    public bool IsSystemStep => false;
+    public bool IsAdvancedStep => false;
 
-    private bool CanNext()
-    {
-        if (CurrentStep?.Key == "scrobbler")
-        {
-            if (_settingsViewModel.System.EnableScrobbler && _settingsViewModel.Playback.EnabledPlayersCount == 0)
-                return false;
-        }
-        return true;
-    }
+    private bool CanNext() => true;
 
     private void UpdateCurrentStep()
     {
@@ -146,7 +115,7 @@ public partial class FirstStartupViewModel : ViewModelBase
         }
     }
 
-    public string ProgressText => _localizer.GetLoc("wizard.step_of", CurrentStepIndex + 1, Steps.Count);
+    public string ProgressText => Steps.Count > 1 ? _localizer.GetLoc("wizard.step_of", CurrentStepIndex + 1, Steps.Count) : string.Empty;
 
     private void NotifyCurrentStepFlagsChanged()
     {

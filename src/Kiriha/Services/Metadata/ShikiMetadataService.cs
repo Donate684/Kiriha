@@ -1,7 +1,11 @@
 using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Shared;
@@ -100,6 +104,16 @@ public partial class ShikiMetadataService : IDisposable
 
         if (cached != null && !stale)
         {
+            if (string.IsNullOrEmpty(cached.PosterUrl) && _settingsService.Current.Api.ShikiMirror == ShikiMirror.One)
+            {
+                var poster = await FetchPosterFromGraphQlAsync(animeId, mediaKind, CancellationToken.None);
+                if (!string.IsNullOrEmpty(poster))
+                {
+                    cached.PosterUrl = poster;
+                    await _metadataRepo.UpsertAsync(cached);
+                }
+            }
+
             if (onFetched != null) await onFetched(cached);
             return cached;
         }
@@ -172,7 +186,37 @@ public partial class ShikiMetadataService : IDisposable
 
             var metadata = System.Text.Json.JsonSerializer.Deserialize<ShikiMetadata>(result.Body);
             if (metadata != null)
+            {
                 metadata.Id = GetCacheId(animeId, mediaKind);
+
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(result.Body);
+                    if (doc.RootElement.TryGetProperty("image", out var imgNode) && imgNode.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        var orig = imgNode.TryGetProperty("original", out var oProp) && oProp.ValueKind == System.Text.Json.JsonValueKind.String ? oProp.GetString() : null;
+                        var prev = imgNode.TryGetProperty("preview", out var pProp) && pProp.ValueKind == System.Text.Json.JsonValueKind.String ? pProp.GetString() : null;
+                        var candidate = orig ?? prev;
+                        if (!string.IsNullOrEmpty(candidate) && !AnimeEntity.IsMissingPosterUrl(candidate))
+                        {
+                            var baseUri = new Uri(ShikiBaseUrl);
+                            var websiteRoot = $"{baseUri.Scheme}://{baseUri.Authority}";
+                            metadata.PosterUrl = candidate.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                                ? candidate
+                                : $"{websiteRoot}{(candidate.StartsWith('/') ? candidate : "/" + candidate)}";
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug(ex, "Failed to parse image from Shikimori metadata for {Id}", animeId);
+                }
+
+                if (string.IsNullOrEmpty(metadata.PosterUrl) && _settingsService.Current.Api.ShikiMirror == ShikiMirror.One)
+                {
+                    metadata.PosterUrl = await FetchPosterFromGraphQlAsync(animeId, mediaKind, ct);
+                }
+            }
             return metadata;
         }
         catch (OperationCanceledException) { throw; }
@@ -181,6 +225,59 @@ public partial class ShikiMetadataService : IDisposable
             Log.Error(ex, "Exception fetching Shikimori metadata for {Id}", animeId);
             return null;
         }
+    }
+
+    public virtual async Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct)
+    {
+        try
+        {
+            await _rateLimiter.ThrottleAsync(ct);
+
+            string entityType = mediaKind == MediaKind.Manga ? "mangas" : "animes";
+            var query = $"{{\"query\":\"{{ {entityType}(ids: \\\"{animeId}\\\", limit: 1) {{ id poster {{ originalUrl }} }} }}\"}}";
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{ShikiBaseUrl}graphql")
+            {
+                Content = new StringContent(query, Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("User-Agent", AppInfo.UserAgent);
+
+            using var response = await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var body = await response.Content.ReadAsStringAsync(ct);
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("data", out var data) &&
+                data.TryGetProperty(entityType, out var list) &&
+                list.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in list.EnumerateArray())
+                {
+                    if (item.TryGetProperty("poster", out var poster) &&
+                        poster.ValueKind == JsonValueKind.Object &&
+                        poster.TryGetProperty("originalUrl", out var origProp) &&
+                        origProp.ValueKind == JsonValueKind.String)
+                    {
+                        var url = origProp.GetString();
+                        if (!string.IsNullOrEmpty(url) && !AnimeEntity.IsMissingPosterUrl(url))
+                        {
+                            if (!Uri.TryCreate(url, UriKind.Absolute, out var absUri) ||
+                                (absUri.Scheme != Uri.UriSchemeHttp && absUri.Scheme != Uri.UriSchemeHttps))
+                            {
+                                var baseUri = new Uri(ShikiEndpoints.BaseUrl(ShikiMirror.One));
+                                url = $"{baseUri.Scheme}{Uri.SchemeDelimiter}{baseUri.Authority}" + (url.StartsWith('/') ? url : "/" + url);
+                            }
+                            return url;
+                        }
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Failed to fetch poster from Shikimori GraphQL for {Id}", animeId);
+        }
+        return null;
     }
 
     public void Dispose()

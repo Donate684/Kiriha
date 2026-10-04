@@ -111,11 +111,4 @@ public partial class AppSettings
         /// </summary>
         public bool NotifyOnSkippedEpisode { get; set; } = true;
     }
-
-    public class ApiConfig
-    {
-        public MalTokens? Mal { get; set; }
-        public ShikiTokens? Shiki { get; set; }
-        public ShikiMirror ShikiMirror { get; set; } = ShikiMirror.One;
-    }
 }

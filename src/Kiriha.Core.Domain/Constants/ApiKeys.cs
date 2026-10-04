@@ -61,4 +61,8 @@ public static class ApiKeys
     // OAuth app registered on https://shikimori.net (a.k.a. shiki.rip).
     public const string ShikiNetClientId = "Aeok6wpR3Ke2dkn34fG4uQRG2yI1aa-kNQcqjIqHq2E";
     public const string ShikiNetClientSecret = "uFRb9I81-PD8YzQAEuCQrl7SojcXLQUh3TnzZ4fYf8I";
+
+    // OAuth app for AniList (https://anilist.co/settings/developer)
+    public const string AniListClientId = "52645";
+    public const string AniListClientSecret = "Mk7pOzXfCq0KgQH3mdYiAxBmA9Dum490MxyUidSt";
 }

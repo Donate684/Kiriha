@@ -191,11 +191,11 @@ public partial class AnimeEditViewModel : ObservableObject
             await _animeRepo.AddOrUpdateAnimeAsync(_originalAnime);
 
             if (markedAsDropped)
-                await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "Dropped");
+                await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "Dropped", null, _originalAnime.MainPictureUrl);
             if (markedAsCompleted)
-                await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "Completed");
+                await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "Completed", null, _originalAnime.MainPictureUrl);
             if (scoreChanged)
-                await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "ScoreSet", _originalAnime.Score);
+                await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "ScoreSet", _originalAnime.Score, _originalAnime.MainPictureUrl);
 
             if (hasChanges)
                 await _syncManager.EnqueueFullUpdateAsync(_originalAnime);

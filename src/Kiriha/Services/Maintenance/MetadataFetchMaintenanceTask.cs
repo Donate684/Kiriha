@@ -37,7 +37,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         _uiDispatcher = uiDispatcher;
     }
 
-    public TimeSpan InitialDelay => TimeSpan.FromSeconds(30);
+    public TimeSpan InitialDelay => TimeSpan.FromSeconds(2);
     public TimeSpan Interval => _settingsService.Current.System.EnableBackgroundMetadataFetch ? TimeSpan.FromMinutes(20) : TimeSpan.FromMinutes(1);
 
     private const int NetworkThrottleDelayMs = 1500;
@@ -57,6 +57,12 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         var itemsToProcess = new List<AnimeEntity>();
         foreach (var item in snapshot)
         {
+            if (AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl))
+            {
+                item.MainPictureUrl = null;
+                item.LocalPosterPath = null;
+            }
+
             if (NeedsWork(item))
             {
                 itemsToProcess.Add(item);
@@ -66,8 +72,10 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         if (itemsToProcess.Count == 0)
             return;
 
-        Log.Information("MetadataFetchMaintenanceTask: Found {Count} items needing metadata or poster download.", itemsToProcess.Count);
+        Log.Information("MetadataFetchMaintenanceTask: Found {Count} items needing metadata or poster download. This may take ~{EstMinutes} minutes.",
+            itemsToProcess.Count, (int)Math.Ceiling(itemsToProcess.Count * NetworkThrottleDelayMs / 60000.0));
 
+        int processed = 0;
         foreach (var item in itemsToProcess)
         {
             ct.ThrowIfCancellationRequested();
@@ -75,44 +83,71 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
             if (!_settingsService.Current.System.EnableBackgroundMetadataFetch)
                 break;
 
+            processed++;
+            if (processed % 100 == 0)
+                Log.Information("MetadataFetchMaintenanceTask: progress {Done}/{Total}", processed, itemsToProcess.Count);
+
             bool performedNetworkCall = false;
 
             try
             {
                 int cacheId = GetCacheId(item.Id, item.MediaKind);
 
-                // 1. Fetch or apply metadata (Russian title and synopsis)
+                // 1. Fetch or apply metadata (Russian title, synopsis, and poster if missing)
                 bool needsMeta = string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis);
-                if (needsMeta)
+                bool needsPoster = string.IsNullOrEmpty(item.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl);
+
+                if (needsMeta || needsPoster)
                 {
                     var meta = await _metadataRepo.GetAsync(cacheId);
 
-                    // If not in database metadata cache, fetch from Shikimori API
-                    if (meta is null)
+                    // If not in database metadata cache or needs poster, fetch from Shikimori API
+                    if (meta is null || (needsPoster && string.IsNullOrEmpty(meta.PosterUrl)))
                     {
                         performedNetworkCall = true;
-                        meta = await _shikiMetadata.GetOrFetchMetadataAsync(item.Id, null, null, item.MediaKind);
+                        var fetched = await _shikiMetadata.GetOrFetchMetadataAsync(item.Id, null, null, item.MediaKind);
+                        if (fetched != null)
+                        {
+                            meta = fetched;
+                        }
                     }
 
-                    if (meta != null)
+                    string? posterUrl = meta?.PosterUrl;
+
+                    if (meta != null || !string.IsNullOrEmpty(posterUrl))
                     {
                         bool changed = false;
                         await _uiDispatcher.InvokeAsync(() =>
                         {
-                            if (!string.IsNullOrEmpty(meta.Russian) && item.RussianTitle != meta.Russian)
+                            if (meta != null)
                             {
-                                item.RussianTitle = meta.Russian;
-                                changed = true;
-                            }
-
-                            if (!string.IsNullOrEmpty(meta.Description))
-                            {
-                                var cleaned = AnimeStringHelper.CleanShikiDescription(meta.Description);
-                                if (item.RussianSynopsis != cleaned)
+                                if (item.Title.StartsWith("ID ") && !string.IsNullOrEmpty(meta.Name))
                                 {
-                                    item.RussianSynopsis = cleaned;
+                                    item.Title = meta.Name;
                                     changed = true;
                                 }
+
+                                if (!string.IsNullOrEmpty(meta.Russian) && item.RussianTitle != meta.Russian)
+                                {
+                                    item.RussianTitle = meta.Russian;
+                                    changed = true;
+                                }
+
+                                if (!string.IsNullOrEmpty(meta.Description))
+                                {
+                                    var cleaned = AnimeStringHelper.CleanShikiDescription(meta.Description);
+                                    if (item.RussianSynopsis != cleaned)
+                                    {
+                                        item.RussianSynopsis = cleaned;
+                                        changed = true;
+                                    }
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(posterUrl) && (string.IsNullOrEmpty(item.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl)))
+                            {
+                                item.MainPictureUrl = posterUrl;
+                                changed = true;
                             }
 
                             if (changed)
@@ -143,6 +178,14 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                     if (!string.IsNullOrEmpty(localPath) && File.Exists(localPath))
                     {
                         await _uiDispatcher.InvokeAsync(() => item.LocalPosterPath = localPath);
+                        try
+                        {
+                            await _userAnimeRepo.UpdateMetadataAsync(item);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Debug(ex, "MetadataFetchMaintenanceTask: failed to persist poster for item {Id}", item.Id);
+                        }
                     }
                 }
             }
@@ -168,13 +211,16 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
     private static bool NeedsWork(AnimeEntity item)
     {
-        return (string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis))
+        return item.Title.StartsWith("ID ")
+            || (string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis))
+            || string.IsNullOrEmpty(item.MainPictureUrl)
+            || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl)
             || NeedsPosterDownload(item);
     }
 
     private static bool NeedsPosterDownload(AnimeEntity item)
     {
-        if (string.IsNullOrEmpty(item.MainPictureUrl))
+        if (string.IsNullOrEmpty(item.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl))
             return false;
 
         if (string.IsNullOrEmpty(item.LocalPosterPath) || !File.Exists(item.LocalPosterPath))

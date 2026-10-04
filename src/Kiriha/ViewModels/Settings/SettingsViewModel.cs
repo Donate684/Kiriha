@@ -30,6 +30,7 @@ public partial class SettingsViewModel : ViewModelBase
         MalAuthService authService,
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver,
+        AniListAuthService aniListAuthService,
         AnimeListViewModel animeListViewModel,
         LocalizationService localizationService,
         UpdateService updateService,
@@ -41,13 +42,14 @@ public partial class SettingsViewModel : ViewModelBase
         SeasonalViewModel seasonalViewModel,
         SystemIntegrationService systemIntegrationService,
         FaviconService faviconService,
-        IStartupManager startupManager)
+        IStartupManager startupManager,
+        IAnimeSyncOrchestrator? syncOrchestrator = null)
     {
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
         System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
 
-        Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver);
+        Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver, aniListAuthService, syncOrchestrator);
         Update = new SettingsUpdateViewModel(updateService);
         Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel, localizationService);
 

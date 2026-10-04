@@ -9,7 +9,7 @@ namespace Kiriha.Core.Tracking.Api;
 /// </summary>
 public class ResilientHttpHandler : DelegatingHandler
 {
-    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(20);
     private const int MaxRetries = 3;
     private static readonly TimeSpan[] Delays = {
         TimeSpan.FromSeconds(1),

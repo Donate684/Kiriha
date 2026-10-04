@@ -23,6 +23,7 @@ public class HistoryActionConverter : IValueConverter
                 5 => "StarOutline",          // ScoreSet
                 6 => "TrophyOutline",         // Completed
                 7 => "CloseCircleOutline",    // Dropped
+                8 => "DeleteOutline",         // Deleted
                 _ => "InformationOutline"
             };
         }
@@ -37,6 +38,7 @@ public class HistoryActionConverter : IValueConverter
             5 => "history.actions.score_set",
             6 => "history.actions.completed",
             7 => "history.actions.dropped",
+            8 => "history.actions.deleted",
             _ => "common.status.unknown"
         };
 

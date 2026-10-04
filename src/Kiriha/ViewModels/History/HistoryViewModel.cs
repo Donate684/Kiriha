@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Services.Data.Core;
 using Kiriha.Utils.Async;
@@ -22,6 +23,8 @@ public partial class HistoryViewModel : ViewModelBase
     private readonly IReadOnlyList<ITrackerService> _trackers;
     private readonly INotificationService? _notificationService;
     private readonly IUiDispatcher? _uiDispatcher;
+    private readonly ISettingsService? _settingsService;
+    private readonly IMetadataRepository? _metadataRepo;
     private List<HistoryItem> _rawItems = new();
 
     [ObservableProperty]
@@ -54,7 +57,9 @@ public partial class HistoryViewModel : ViewModelBase
         ISyncManager? syncManager = null,
         IEnumerable<ITrackerService>? trackers = null,
         INotificationService? notificationService = null,
-        IUiDispatcher? uiDispatcher = null)
+        IUiDispatcher? uiDispatcher = null,
+        ISettingsService? settingsService = null,
+        IMetadataRepository? metadataRepo = null)
     {
         _historyService = historyService;
         _dbInit = dbInit;
@@ -66,6 +71,8 @@ public partial class HistoryViewModel : ViewModelBase
         _trackers = (trackers ?? []).ToList();
         _notificationService = notificationService;
         _uiDispatcher = uiDispatcher;
+        _settingsService = settingsService;
+        _metadataRepo = metadataRepo;
 
         _historyService.TrackerStatusUpdated += (animeId, episode, trackerName, state, error) =>
         {
@@ -129,14 +136,18 @@ public partial class HistoryViewModel : ViewModelBase
     {
         RunOnUi(() =>
         {
-            // Resolve poster from the user's local anime collection (cheap, no I/O).
-            try
+            if (string.IsNullOrEmpty(item.PosterUrl))
             {
-                var collection = _animeRepo.Collection;
-                var anime = collection.FirstOrDefault(x => x.Id == item.AnimeId);
-                if (anime != null) item.PosterUrl = anime.MainPictureUrl;
+                // Resolve poster from the user's local anime collection (cheap, no I/O).
+                try
+                {
+                    var collection = _animeRepo.Collection;
+                    var anime = collection.FirstOrDefault(x => x.Id == item.AnimeId);
+                    if (anime != null && !string.IsNullOrEmpty(anime.MainPictureUrl))
+                        item.PosterUrl = anime.MainPictureUrl;
+                }
+                catch { }
             }
-            catch { }
 
             // Avoid duplicates: if the entry is already in _rawItems (e.g. from a previous RefreshHistory), skip.
             if (_rawItems.Any(r => r.Id == item.Id && item.Id != 0))
@@ -147,11 +158,169 @@ public partial class HistoryViewModel : ViewModelBase
         });
     }
 
+    public IReadOnlyList<string> GetOrderedActiveTrackers()
+    {
+        // 1. Check enabled status for candidates
+        bool isMalEnabled = IsTrackerEnabled(TrackerConstants.Names.Mal);
+        bool isAniListEnabled = IsTrackerEnabled(TrackerConstants.Names.AniList);
+
+        // For Shikimori: determine active mirror and its enabled status
+        string activeShikiName = TrackerConstants.Names.ShikiOrig;
+        string activeShikiId = TrackerConstants.Ids.ShikiOrig;
+
+        if (_settingsService != null)
+        {
+            bool isFork = _settingsService.Current.Api.ShikiMirror == ShikiMirror.Net;
+            activeShikiName = isFork ? TrackerConstants.Names.ShikiFork : TrackerConstants.Names.ShikiOrig;
+            activeShikiId = isFork ? TrackerConstants.Ids.ShikiFork : TrackerConstants.Ids.ShikiOrig;
+        }
+        else
+        {
+            // Fallback for tests without settings service
+            if (_trackers.Any(t => (string.Equals(t.TrackerId, TrackerConstants.Ids.ShikiFork, StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(t.Name, TrackerConstants.Names.ShikiFork, StringComparison.OrdinalIgnoreCase)) && t.IsEnabled))
+            {
+                activeShikiName = TrackerConstants.Names.ShikiFork;
+                activeShikiId = TrackerConstants.Ids.ShikiFork;
+            }
+            else if (_trackers.Any(t => string.Equals(t.Name, TrackerConstants.Names.ShikiGeneral, StringComparison.OrdinalIgnoreCase) && t.IsEnabled))
+            {
+                activeShikiName = TrackerConstants.Names.ShikiGeneral;
+                activeShikiId = TrackerConstants.Ids.ShikiOrig;
+            }
+        }
+
+        bool isShikiEnabled = IsTrackerEnabled(activeShikiName) || IsTrackerEnabled(activeShikiId);
+
+        // 2. Identify Primary Tracker
+        string primaryId = _settingsService?.Current.Api.PrimaryTrackerId ?? TrackerConstants.Ids.Mal;
+        string primaryName = TrackerConstants.Names.Mal;
+        bool isPrimaryEnabled = false;
+
+        if (string.Equals(primaryId, TrackerConstants.Ids.AniList, StringComparison.OrdinalIgnoreCase))
+        {
+            primaryName = TrackerConstants.Names.AniList;
+            isPrimaryEnabled = isAniListEnabled;
+        }
+        else if (string.Equals(primaryId, TrackerConstants.Ids.ShikiFork, StringComparison.OrdinalIgnoreCase))
+        {
+            primaryName = TrackerConstants.Names.ShikiFork;
+            isPrimaryEnabled = isShikiEnabled && string.Equals(activeShikiId, TrackerConstants.Ids.ShikiFork, StringComparison.OrdinalIgnoreCase);
+        }
+        else if (string.Equals(primaryId, TrackerConstants.Ids.ShikiOrig, StringComparison.OrdinalIgnoreCase))
+        {
+            primaryName = TrackerConstants.Names.ShikiOrig;
+            isPrimaryEnabled = isShikiEnabled && string.Equals(activeShikiId, TrackerConstants.Ids.ShikiOrig, StringComparison.OrdinalIgnoreCase);
+        }
+        else // MAL or fallback
+        {
+            primaryName = TrackerConstants.Names.Mal;
+            isPrimaryEnabled = isMalEnabled;
+        }
+
+        // 3. Secondary candidates in requested priority order:
+        // AniList, Shikimori (single active mirror), MyAnimeList
+        var secondaryCandidates = new List<string>();
+        if (isAniListEnabled)
+        {
+            secondaryCandidates.Add(TrackerConstants.Names.AniList);
+        }
+        if (isShikiEnabled)
+        {
+            secondaryCandidates.Add(activeShikiName);
+        }
+        if (isMalEnabled)
+        {
+            secondaryCandidates.Add(TrackerConstants.Names.Mal);
+        }
+
+        // 4. Assemble: Primary is ALWAYS FIRST (if enabled/logged-in), followed by remaining secondary
+        var ordered = new List<string>();
+        if (isPrimaryEnabled)
+        {
+            ordered.Add(primaryName);
+        }
+
+        foreach (var candidate in secondaryCandidates)
+        {
+            if (!string.Equals(candidate, primaryName, StringComparison.OrdinalIgnoreCase))
+            {
+                ordered.Add(candidate);
+            }
+        }
+
+        return ordered;
+    }
+
     public bool IsTrackerEnabled(string trackerName)
     {
-        if (_trackers.Count == 0) return true;
-        var tracker = _trackers.FirstOrDefault(t => string.Equals(t.Name, trackerName, StringComparison.OrdinalIgnoreCase));
-        return tracker == null || tracker.IsEnabled;
+        if (_trackers.Count == 0 && _settingsService == null) return true;
+
+        // Try matching tracker by Name or TrackerId in registered services
+        var tracker = _trackers.FirstOrDefault(t =>
+            string.Equals(t.Name, trackerName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(t.TrackerId, trackerName, StringComparison.OrdinalIgnoreCase));
+
+        if (tracker != null)
+        {
+            return tracker.IsEnabled;
+        }
+
+        // If checking generic "Shikimori", resolve to the active mirror tracker
+        if (string.Equals(trackerName, TrackerConstants.Names.ShikiGeneral, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_settingsService != null)
+            {
+                var targetId = _settingsService.Current.Api.ShikiMirror == ShikiMirror.Net
+                    ? TrackerConstants.Ids.ShikiFork
+                    : TrackerConstants.Ids.ShikiOrig;
+                var shiki = _trackers.FirstOrDefault(t => string.Equals(t.TrackerId, targetId, StringComparison.OrdinalIgnoreCase));
+                if (shiki != null) return shiki.IsEnabled;
+            }
+            else
+            {
+                var shiki = _trackers.FirstOrDefault(t => t.Name.StartsWith("Shiki", StringComparison.OrdinalIgnoreCase));
+                if (shiki != null) return shiki.IsEnabled;
+            }
+        }
+
+        // Fallback to checking settings accounts if tracker service not registered in _trackers
+        if (_settingsService != null)
+        {
+            var api = _settingsService.Current.Api;
+            if (string.Equals(trackerName, TrackerConstants.Names.Mal, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(trackerName, TrackerConstants.Ids.Mal, StringComparison.OrdinalIgnoreCase))
+            {
+                var acc = api.GetAccount(TrackerConstants.Ids.Mal);
+                return (acc != null && acc.IsEnabled && acc.Tokens != null) || api.Mal != null;
+            }
+            if (string.Equals(trackerName, TrackerConstants.Names.AniList, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(trackerName, TrackerConstants.Ids.AniList, StringComparison.OrdinalIgnoreCase))
+            {
+                var acc = api.GetAccount(TrackerConstants.Ids.AniList);
+                return acc != null && acc.IsEnabled && acc.Tokens != null;
+            }
+            if (string.Equals(trackerName, TrackerConstants.Names.ShikiFork, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(trackerName, TrackerConstants.Ids.ShikiFork, StringComparison.OrdinalIgnoreCase))
+            {
+                var acc = api.GetAccount(TrackerConstants.Ids.ShikiFork);
+                return (acc != null && acc.IsEnabled && acc.Tokens != null) ||
+                       (api.Shiki != null && api.Shiki.Mirror == ShikiMirror.Net);
+            }
+            if (string.Equals(trackerName, TrackerConstants.Names.ShikiOrig, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(trackerName, TrackerConstants.Ids.ShikiOrig, StringComparison.OrdinalIgnoreCase))
+            {
+                var acc = api.GetAccount(TrackerConstants.Ids.ShikiOrig);
+                return (acc != null && acc.IsEnabled && acc.Tokens != null) ||
+                       (api.Shiki != null && api.Shiki.Mirror == ShikiMirror.One);
+            }
+            if (string.Equals(trackerName, TrackerConstants.Names.ShikiGeneral, StringComparison.OrdinalIgnoreCase))
+            {
+                return api.Shiki != null;
+            }
+        }
+
+        return false;
     }
 
 
@@ -179,6 +348,7 @@ public partial class HistoryViewModel : ViewModelBase
     public bool IsActionCompleted { get => SelectedAction == 6; set { if (value) SelectedAction = 6; } }
     public bool IsActionDropped { get => SelectedAction == 7; set { if (value) SelectedAction = 7; } }
     public bool IsActionScoreSet { get => SelectedAction == 5; set { if (value) SelectedAction = 5; } }
+    public bool IsActionDeleted { get => SelectedAction == 8; set { if (value) SelectedAction = 8; } }
 
     private void NotifyPeriodFlags()
     {
@@ -195,5 +365,6 @@ public partial class HistoryViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsActionCompleted));
         OnPropertyChanged(nameof(IsActionDropped));
         OnPropertyChanged(nameof(IsActionScoreSet));
+        OnPropertyChanged(nameof(IsActionDeleted));
     }
 }

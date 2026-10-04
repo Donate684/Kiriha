@@ -18,6 +18,13 @@
         <GradientStop Color="#00000000" Offset="1"/>
     </LinearGradientBrush>
 
+    <ControlTemplate x:Key="PosterLoadingTemplate">
+        <Panel Background="{DynamicResource SubtleFillColorSecondary}">
+            <material:MaterialIcon Kind="ImageOutline" Width="36" Height="36" Opacity="0.15" 
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Panel>
+    </ControlTemplate>
+
     <DataTemplate x:Key="AnimeCardTemplate" x:DataType="entities:AnimeEntity">
         <Border Classes="AnimeCard revealItem PosterFirstCard" Margin="4" Width="164" Height="318"
                 CornerRadius="14" ClipToBounds="True"

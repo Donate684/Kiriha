@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.ViewModels.History;
@@ -43,7 +44,7 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
                 : (EpisodeFrom > 0 ? _localizer.GetLoc("history.episode_single", EpisodeFrom) : string.Empty))
             : string.Empty;
 
-    public bool CanTrack => AnimeId > 0 && (ActionType == 1 || ActionType == 4 || ActionType == 5 || ActionType == 6 || ActionType == 7);
+    public bool CanTrack => AnimeId > 0 && (ActionType == 1 || ActionType == 4 || ActionType == 5 || ActionType == 6 || ActionType == 7 || ActionType == 8);
 
     public ObservableCollection<TrackerStatusBadgeVm> TrackerBadges { get; } = new();
     public bool HasTrackerBadges => CanTrack && TrackerBadges.Count > 0;
@@ -54,7 +55,8 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
     public void LoadTrackerStatuses(
         Dictionary<string, TrackerSyncInfo> statuses,
         Func<string, Task>? onSync = null,
-        Func<string, bool>? isTrackerEnabled = null)
+        Func<string, bool>? isTrackerEnabled = null,
+        IEnumerable<string>? orderedTrackers = null)
     {
         _onSync = onSync;
         _isTrackerEnabled = isTrackerEnabled;
@@ -66,63 +68,75 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
             return;
         }
 
-        var trackerNames = new List<string> { "Shikimori", "MyAnimeList" };
-        foreach (var key in statuses.Keys)
+        List<string> trackersToDisplay;
+        if (orderedTrackers != null)
         {
-            if (!trackerNames.Contains(key, StringComparer.OrdinalIgnoreCase))
+            trackersToDisplay = orderedTrackers.ToList();
+        }
+        else
+        {
+            // Legacy / direct fallback: only include enabled trackers
+            var trackerNames = new List<string>();
+            if (_isTrackerEnabled == null || _isTrackerEnabled(TrackerConstants.Names.ShikiGeneral))
+                trackerNames.Add(TrackerConstants.Names.ShikiGeneral);
+            if (_isTrackerEnabled == null || _isTrackerEnabled(TrackerConstants.Names.Mal))
+                trackerNames.Add(TrackerConstants.Names.Mal);
+
+            foreach (var key in statuses.Keys)
             {
-                trackerNames.Add(key);
+                if (!trackerNames.Any(t => IsMatchingTracker(t, key)) && (_isTrackerEnabled == null || _isTrackerEnabled(key)))
+                {
+                    trackerNames.Add(key);
+                }
             }
+            trackersToDisplay = trackerNames;
         }
 
-        foreach (var trackerName in trackerNames)
+        foreach (var trackerName in trackersToDisplay)
         {
-            var shortName = trackerName switch
-            {
-                "Shikimori" => "Shiki",
-                "MyAnimeList" => "MAL",
-                _ => trackerName
-            };
+            bool isEnabled = _isTrackerEnabled == null || _isTrackerEnabled(trackerName);
+            // Strict rule: if the tracker is not logged in / not enabled, no badge is displayed at all.
+            if (!isEnabled) continue;
 
+            var shortName = GetDisplayName(trackerName);
             var state = TrackerSyncState.NotSynced;
             string? error = null;
-            if (statuses.TryGetValue(trackerName, out var info))
+
+            var syncInfo = FindSyncInfo(statuses, trackerName);
+            if (syncInfo != null)
             {
-                state = info.State;
-                error = info.ErrorMessage;
+                state = syncInfo.State;
+                error = syncInfo.ErrorMessage;
             }
 
-            bool isEnabled = _isTrackerEnabled == null || _isTrackerEnabled(trackerName);
-            string tooltip = FormatTooltip(trackerName, state, error, isEnabled);
+            string tooltip = FormatTooltip(trackerName, state, error, true);
 
             TrackerBadges.Add(new TrackerStatusBadgeVm(
                 trackerName,
                 shortName,
                 state,
                 tooltip,
-                isEnabled,
+                true,
                 _onSync != null ? () => _onSync(trackerName) : null));
         }
+
         OnPropertyChanged(nameof(HasTrackerBadges));
     }
 
     public void UpdateTrackerStatus(string trackerName, TrackerSyncState state, string? error, bool isEnabled = true)
     {
         Primary?.SetTrackerStatus(trackerName, state, error);
-        string tooltip = FormatTooltip(trackerName, state, error, isEnabled);
-        var existing = TrackerBadges.FirstOrDefault(b => string.Equals(b.TrackerName, trackerName, StringComparison.OrdinalIgnoreCase));
+
+        var existing = TrackerBadges.FirstOrDefault(b => IsMatchingTracker(b.TrackerName, trackerName));
         if (existing != null)
         {
+            string tooltip = FormatTooltip(existing.TrackerName, state, error, isEnabled);
             existing.Update(state, tooltip, isEnabled);
         }
-        else if (CanTrack)
+        else if (CanTrack && isEnabled)
         {
-            var shortName = trackerName switch
-            {
-                "Shikimori" => "Shiki",
-                "MyAnimeList" => "MAL",
-                _ => trackerName
-            };
+            var shortName = GetDisplayName(trackerName);
+            string tooltip = FormatTooltip(trackerName, state, error, isEnabled);
             TrackerBadges.Add(new TrackerStatusBadgeVm(
                 trackerName,
                 shortName,
@@ -132,6 +146,68 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
                 _onSync != null ? () => _onSync(trackerName) : null));
             OnPropertyChanged(nameof(HasTrackerBadges));
         }
+    }
+
+    public static bool IsMatchingTracker(string t1, string t2)
+    {
+        if (string.Equals(t1, t2, StringComparison.OrdinalIgnoreCase)) return true;
+
+        if (IsShiki(t1) && IsShiki(t2)) return true;
+        if (IsMal(t1) && IsMal(t2)) return true;
+        if (IsAniList(t1) && IsAniList(t2)) return true;
+
+        return false;
+    }
+
+    private static bool IsShiki(string name) =>
+        name.StartsWith("Shiki", StringComparison.OrdinalIgnoreCase) ||
+        name.StartsWith("shiki-", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsMal(string name) =>
+        string.Equals(name, TrackerConstants.Names.Mal, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(name, TrackerConstants.Ids.Mal, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(name, "MAL", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsAniList(string name) =>
+        string.Equals(name, TrackerConstants.Names.AniList, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(name, TrackerConstants.Ids.AniList, StringComparison.OrdinalIgnoreCase);
+
+    private static TrackerSyncInfo? FindSyncInfo(Dictionary<string, TrackerSyncInfo> statuses, string trackerName)
+    {
+        if (statuses.TryGetValue(trackerName, out var directInfo))
+        {
+            return directInfo;
+        }
+
+        var match = statuses.FirstOrDefault(k => IsMatchingTracker(k.Key, trackerName));
+        return match.Value;
+    }
+
+    private static string GetDisplayName(string trackerName)
+    {
+        if (IsMal(trackerName))
+        {
+            return "MAL";
+        }
+        if (string.Equals(trackerName, TrackerConstants.Names.ShikiGeneral, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Shiki";
+        }
+        if (string.Equals(trackerName, TrackerConstants.Names.ShikiOrig, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trackerName, TrackerConstants.Ids.ShikiOrig, StringComparison.OrdinalIgnoreCase))
+        {
+            return TrackerConstants.Names.ShikiOrig;
+        }
+        if (string.Equals(trackerName, TrackerConstants.Names.ShikiFork, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trackerName, TrackerConstants.Ids.ShikiFork, StringComparison.OrdinalIgnoreCase))
+        {
+            return TrackerConstants.Names.ShikiFork;
+        }
+        if (IsAniList(trackerName))
+        {
+            return TrackerConstants.Names.AniList;
+        }
+        return trackerName;
     }
 
     private string FormatTooltip(string trackerName, TrackerSyncState state, string? error, bool isEnabled)

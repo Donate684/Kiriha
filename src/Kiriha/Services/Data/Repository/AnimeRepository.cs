@@ -104,6 +104,12 @@ public partial class AnimeRepository : IAnimeRepository
 
     public void AddToCollection(AnimeEntity item)
     {
+        if (_idIndex.TryGetValue(item.Id, out var existing))
+        {
+            item.CopyTo(existing);
+            return;
+        }
+
         Collection.Add(item);
         _idIndex[item.Id] = item;
     }

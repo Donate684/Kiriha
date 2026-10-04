@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Shared;
@@ -54,11 +54,11 @@ public partial class ShikiAuthService
         }
     }
 
-    public async Task<ShikiTokens?> RefreshTokenAsync(string refreshToken, CancellationToken ct = default)
+    public async Task<ShikiTokens?> RefreshTokenAsync(string refreshToken, ShikiMirror? mirror = null, CancellationToken ct = default)
     {
-        // Always refresh against the mirror that issued the existing token. If the saved
-        // token has no mirror stamp (legacy data), fall back to the active mirror.
-        var savedMirror = _settingsService.Current.Api.Shiki?.Mirror ?? ActiveMirror;
+        // Always refresh against the mirror that issued the existing token. If not specified,
+        // fall back to the saved token mirror or the active mirror.
+        var savedMirror = mirror ?? _settingsService.Current.Api.Shiki?.Mirror ?? ActiveMirror;
 
         var values = new Dictionary<string, string>
         {

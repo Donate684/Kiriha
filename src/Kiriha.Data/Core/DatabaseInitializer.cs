@@ -71,6 +71,13 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
             }
             catch { /* column already exists */ }
 
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE history ADD COLUMN poster_url TEXT;");
+            }
+            catch { /* column already exists */ }
+
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
 
             _initTcs.TrySetResult();

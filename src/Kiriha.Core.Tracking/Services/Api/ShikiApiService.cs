@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Shared;
 using Kiriha.Core.Tracking.Auth;
@@ -20,21 +22,65 @@ public partial class ShikiApiService : IShikiApiService
     private readonly ShikiHostResolver _hostResolver;
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiRateLimiter _rateLimiter;
+    private readonly ShikiMirror? _fixedMirror;
 
-    public string Name => "Shikimori";
+    public string Name => _fixedMirror switch
+    {
+        ShikiMirror.Net => TrackerConstants.Names.ShikiFork,
+        ShikiMirror.One => TrackerConstants.Names.ShikiOrig,
+        _ => TrackerConstants.Names.ShikiGeneral
+    };
 
-    // Token must belong to the currently active mirror; otherwise it's effectively
-    // useless because shikimori.one and shikimori.net are independent OAuth realms.
+    public string TrackerId => (_fixedMirror ?? _settingsService.Current.Api.ShikiMirror) == ShikiMirror.Net
+        ? TrackerConstants.Ids.ShikiFork
+        : TrackerConstants.Ids.ShikiOrig;
+
+    // Token must belong to the currently active mirror or this fixed mirror
     public bool IsEnabled
     {
         get
         {
+            var acc = _settingsService.Current.Api.GetAccount(TrackerId);
+            if (acc != null)
+                return acc.IsEnabled && acc.Tokens != null;
+
             var t = _settingsService.Current.Api.Shiki;
-            return t != null && t.Mirror == _settingsService.Current.Api.ShikiMirror;
+            return t != null && t.Mirror == (_fixedMirror ?? _settingsService.Current.Api.ShikiMirror);
         }
     }
 
-    private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
+    private ShikiMirror EffectiveMirror => _fixedMirror ?? _settingsService.Current.Api.ShikiMirror;
+    private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(EffectiveMirror);
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<int, int> _malToShikiMap = new();
+
+    private string ShikiWebsiteRoot
+    {
+        get
+        {
+            var raw = ShikiEndpoints.Host(EffectiveMirror).WebsiteUrl;
+            if (Uri.TryCreate(raw, UriKind.Absolute, out var uri))
+            {
+                var host = EffectiveMirror == ShikiMirror.Net && !string.IsNullOrEmpty(_hostResolver.ActiveForkHost)
+                    ? _hostResolver.ActiveForkHost
+                    : (EffectiveMirror == ShikiMirror.One && !string.IsNullOrEmpty(_hostResolver.ActiveOriginalHost)
+                        ? _hostResolver.ActiveOriginalHost
+                        : uri.Host);
+
+                return new UriBuilder(uri) { Host = host, Path = string.Empty, Query = string.Empty }.Uri.GetLeftPart(UriPartial.Authority);
+            }
+            var fallback = ShikiEndpoints.Host(ShikiMirror.One).WebsiteUrl;
+            return Uri.TryCreate(fallback, UriKind.Absolute, out var fallbackUri)
+                ? fallbackUri.GetLeftPart(UriPartial.Authority)
+                : string.Empty;
+        }
+    }
+
+    private int ResolveShikiTargetId(int animeId)
+    {
+        return _malToShikiMap.TryGetValue(animeId, out var mapped) ? mapped : animeId;
+    }
+
 
     public ShikiApiService(
         HttpClient httpClient,
@@ -42,17 +88,19 @@ public partial class ShikiApiService : IShikiApiService
         ShikiTokenService tokenService,
         ShikiHostResolver hostResolver,
         IHttpCacheRepository httpCacheRepo,
-        ShikiRateLimiter? rateLimiter = null)
+        ShikiRateLimiter? rateLimiter = null,
+        ShikiMirror? fixedMirror = null)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
         _tokenService = tokenService;
         _hostResolver = hostResolver;
         _rateLimiter = rateLimiter ?? new ShikiRateLimiter();
+        _fixedMirror = fixedMirror;
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,
-            "ShikiApi",
+            $"ShikiApi_{(_fixedMirror?.ToString() ?? "Dynamic")}",
             (client, request, innerCt) => SendRequestAsync(request, innerCt));
     }
 
@@ -94,7 +142,7 @@ public partial class ShikiApiService : IShikiApiService
     private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, CancellationToken ct)
     {
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
-        var token = await _tokenService.EnsureValidTokenAsync(ct);
+        var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

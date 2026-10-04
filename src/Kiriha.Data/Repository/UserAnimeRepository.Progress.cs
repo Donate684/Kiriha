@@ -94,10 +94,13 @@ public sealed partial class UserAnimeRepository
         var affected = await context.UserAnime
             .Where(x => x.Id == item.Id)
             .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.Title, item.Title)
                 .SetProperty(x => x.RussianTitle, item.RussianTitle)
                 .SetProperty(x => x.RussianSynopsis, item.RussianSynopsis)
                 .SetProperty(x => x.EnglishTitle, item.EnglishTitle)
                 .SetProperty(x => x.JapaneseTitle, item.JapaneseTitle)
+                .SetProperty(x => x.MainPictureUrl, item.MainPictureUrl)
+                .SetProperty(x => x.LocalPosterPath, item.LocalPosterPath)
                 .SetProperty(x => x.AlternativeTitles, alternativeTitles), ct);
 
         if (affected == 0)

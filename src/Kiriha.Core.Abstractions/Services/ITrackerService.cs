@@ -5,6 +5,7 @@ namespace Kiriha.Core.Abstractions.Services;
 public interface ITrackerService
 {
     string Name { get; }
+    string TrackerId { get; }
     bool IsEnabled { get; }
 
     Task<List<AnimeEntity>?> GetUserAnimeListAsync(CancellationToken ct = default);

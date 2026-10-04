@@ -32,6 +32,21 @@ public class AnimeProgressService : IProgressUpdateService
 
     public async Task RemoveAnimeAsync(int animeId)
     {
+        var item = _animeRepository.Collection.FirstOrDefault(x => x.Id == animeId)
+                ?? await _userAnimeRepo.GetByIdAsync(animeId);
+
+        if (item != null)
+        {
+            await _historyService.AddEntryAsync(
+                item.Id,
+                item.Title,
+                item.RussianTitle,
+                item.Progress,
+                "Deleted",
+                detail: null,
+                posterUrl: item.MainPictureUrl);
+        }
+
         // Remove locally first so the UI is responsive even when offline.
         await _animeRepository.RemoveAnimeLocalAsync(animeId);
 
@@ -107,7 +122,7 @@ public class AnimeProgressService : IProgressUpdateService
 
             // Write history BEFORE sync so the DB row exists when SetPendingTrackers fires.
             await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress,
-                nextStatus == UserAnimeStatus.Completed ? "Completed" : "Read");
+                nextStatus == UserAnimeStatus.Completed ? "Completed" : "Read", null, item.MainPictureUrl);
             await _syncManager.EnqueueFullUpdateAsync(item);
             return nextStatus;
         }
@@ -122,7 +137,7 @@ public class AnimeProgressService : IProgressUpdateService
 
                 // Write history BEFORE sync so the DB row exists when SetPendingTrackers fires.
                 await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress,
-                    nextStatus == UserAnimeStatus.Completed ? "Completed" : "Watched");
+                    nextStatus == UserAnimeStatus.Completed ? "Completed" : "Watched", null, item.MainPictureUrl);
 
                 if (nextStatus.HasValue)
                     await _syncManager.EnqueueFullUpdateAsync(item);
@@ -152,7 +167,7 @@ public class AnimeProgressService : IProgressUpdateService
 
                 await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, null);
                 // Write history BEFORE sync.
-                await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted");
+                await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted", null, item.MainPictureUrl);
                 await _syncManager.EnqueueFullUpdateAsync(item);
             }
         }
@@ -164,7 +179,7 @@ public class AnimeProgressService : IProgressUpdateService
                 if (await ApplyLocalProgressAsync(item, nextProgress))
                 {
                     // Write history BEFORE sync.
-                    await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted");
+                    await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted", null, item.MainPictureUrl);
                     await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress);
                 }
             }
@@ -179,7 +194,7 @@ public class AnimeProgressService : IProgressUpdateService
         });
         await _userAnimeRepo.UpdateScoreAsync(item, item.Score);
         // Write history BEFORE sync.
-        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString());
+        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString(), item.MainPictureUrl);
         await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
     }
 
@@ -197,7 +212,7 @@ public class AnimeProgressService : IProgressUpdateService
 
         await _userAnimeRepo.UpdateProgressAsync(item, episode, UserAnimeStatus.Watching);
         // Write history BEFORE sync.
-        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, episode, "Rewatching");
+        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, episode, "Rewatching", null, item.MainPictureUrl);
         await _syncManager.EnqueueFullUpdateAsync(item);
     }
 

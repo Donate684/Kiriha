@@ -82,4 +82,53 @@ public static class StatusMapper
             _ => ""
         };
     }
+
+    // Shikimori API string -> Enum
+    public static UserAnimeStatus FromShiki(string? shikiStatus)
+    {
+        if (string.IsNullOrEmpty(shikiStatus)) return UserAnimeStatus.None;
+        return shikiStatus.ToLowerInvariant() switch
+        {
+            "watching" => UserAnimeStatus.Watching,
+            "completed" => UserAnimeStatus.Completed,
+            "on_hold" => UserAnimeStatus.OnHold,
+            "dropped" => UserAnimeStatus.Dropped,
+            "planned" => UserAnimeStatus.PlanToWatch,
+            "rewatching" => UserAnimeStatus.Watching,
+            _ => UserAnimeStatus.None
+        };
+    }
+
+
+    // AniList API string (e.g. "CURRENT", "COMPLETED", "PAUSED", "DROPPED", "PLANNING", "REPEATING") -> Enum
+    public static UserAnimeStatus FromAniList(string? aniListStatus)
+    {
+        if (string.IsNullOrEmpty(aniListStatus)) return UserAnimeStatus.None;
+        return aniListStatus.ToUpperInvariant() switch
+        {
+            "CURRENT" => UserAnimeStatus.Watching,
+            "COMPLETED" => UserAnimeStatus.Completed,
+            "PAUSED" => UserAnimeStatus.OnHold,
+            "DROPPED" => UserAnimeStatus.Dropped,
+            "PLANNING" => UserAnimeStatus.PlanToWatch,
+            "REPEATING" => UserAnimeStatus.Watching,
+            _ => UserAnimeStatus.None
+        };
+    }
+
+    // Enum -> AniList API string
+    public static string? ToAniList(UserAnimeStatus? status, bool isRewatching = false)
+    {
+        if (status is null || status == UserAnimeStatus.None) return null;
+        if (isRewatching) return "REPEATING";
+        return status switch
+        {
+            UserAnimeStatus.Watching => "CURRENT",
+            UserAnimeStatus.Completed => "COMPLETED",
+            UserAnimeStatus.OnHold => "PAUSED",
+            UserAnimeStatus.Dropped => "DROPPED",
+            UserAnimeStatus.PlanToWatch => "PLANNING",
+            _ => null
+        };
+    }
 }

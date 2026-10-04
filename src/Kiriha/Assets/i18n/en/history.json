@@ -22,7 +22,8 @@
     "score_set_filter": "Score Changed",
     "sync_failed": "Sync Failed",
     "completed": "Completed",
-    "dropped": "Dropped"
+    "dropped": "Dropped",
+    "deleted": "Removed from list"
   },
   "already_scrobbled": "Already scrobbled",
   "count_format": "×{0}",

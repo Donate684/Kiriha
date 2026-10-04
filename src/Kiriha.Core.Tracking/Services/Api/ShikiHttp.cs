@@ -64,7 +64,38 @@ public static class ShikiHttp
         for (var hop = 0; hop <= maxHops; hop++)
         {
             var attemptRequest = await CloneRequestAsync(request, currentUri, ct).ConfigureAwait(false);
-            var response = await client.SendAsync(attemptRequest, ct).ConfigureAwait(false);
+            HttpResponseMessage response;
+            try
+            {
+                response = await client.SendAsync(attemptRequest, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || (ex is TaskCanceledException && !ct.IsCancellationRequested))
+            {
+                attemptRequest.Dispose();
+                if (resolver.IsKnownHost(currentUri.Host) && LooksLikeApiPath(currentUri.AbsolutePath))
+                {
+                    var originalHost = currentUri.Host;
+                    foreach (var alias in resolver.ProbeOrder(originalHost))
+                    {
+                        var target = new UriBuilder(currentUri) { Host = alias }.Uri;
+                        Log.Information("Shiki network failure on {Host}, probing alias {Alias}", originalHost, alias);
+                        try
+                        {
+                            using var probeRequest = await CloneRequestAsync(request, target, ct).ConfigureAwait(false);
+                            var probeResponse = await client.SendAsync(probeRequest, ct).ConfigureAwait(false);
+                            if (probeResponse.IsSuccessStatusCode || (int)probeResponse.StatusCode < 500)
+                            {
+                                resolver.Remember(originalHost, alias);
+                                return probeResponse;
+                            }
+                            probeResponse.Dispose();
+                        }
+                        catch { /* try next alias */ }
+                    }
+                }
+                throw;
+            }
+
             var code = (int)response.StatusCode;
 
             // ── Scenario A: explicit redirect ────────────────────────────────

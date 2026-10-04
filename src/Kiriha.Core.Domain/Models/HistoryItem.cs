@@ -18,8 +18,7 @@ public class HistoryItem
 
     public string? TrackerStatusJson { get; set; }
 
-    /// <summary>Runtime-resolved poster URL (from user's AnimeRepository.Collection). Not persisted.</summary>
-    [NotMapped]
+    /// <summary>Poster URL saved when history entry was recorded or resolved.</summary>
     public string? PosterUrl { get; set; }
 
     [NotMapped]

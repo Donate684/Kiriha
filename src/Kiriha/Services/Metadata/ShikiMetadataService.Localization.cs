@@ -120,6 +120,12 @@ public partial class ShikiMetadataService
             if (item.RussianSynopsis != cleaned) { item.RussianSynopsis = cleaned; changed = true; }
         }
 
+        if (!string.IsNullOrEmpty(meta.PosterUrl) && (string.IsNullOrEmpty(item.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl)))
+        {
+            item.MainPictureUrl = meta.PosterUrl;
+            changed = true;
+        }
+
         // EpisodesAired and NextEpisodeAt are intentionally NOT applied from Shikimori.
         // Shiki's `episodes_aired` is known to lead `next_episode_at` by one (e.g. claims
         // 5 aired while next_episode_at still points at episode 5 in the future), which

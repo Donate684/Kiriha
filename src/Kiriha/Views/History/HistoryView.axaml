@@ -321,6 +321,9 @@
                 <RadioButton Classes="Pill" GroupName="HistAction"
                              Content="{DynamicResource l.history.actions.score_set_filter}"
                              IsChecked="{Binding IsActionScoreSet, Mode=TwoWay}"/>
+                <RadioButton Classes="Pill" GroupName="HistAction"
+                             Content="{DynamicResource l.history.actions.deleted}"
+                             IsChecked="{Binding IsActionDeleted, Mode=TwoWay}"/>
             </StackPanel>
         </Border>
 

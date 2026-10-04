@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Image;
 using Serilog;
 
@@ -37,7 +38,7 @@ public static class CachedImage
     {
         var url = args.NewValue as string;
 
-        if (string.IsNullOrEmpty(url))
+        if (string.IsNullOrEmpty(url) || AnimeEntity.IsMissingPosterUrl(url))
         {
             img.Source = null;
             return;

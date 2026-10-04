@@ -26,8 +26,16 @@ public partial class AnimeEntity
         target.MediaKind = MediaKind;
         target.Synopsis = Synopsis;
         target.RussianSynopsis = RussianSynopsis;
-        target.MainPictureUrl = MainPictureUrl;
-        target.LocalPosterPath = LocalPosterPath;
+        if (!string.IsNullOrEmpty(MainPictureUrl) && !IsMissingPosterUrl(MainPictureUrl))
+        {
+            target.MainPictureUrl = MainPictureUrl;
+            target.LocalPosterPath = LocalPosterPath;
+        }
+        else if (IsMissingPosterUrl(target.MainPictureUrl))
+        {
+            target.MainPictureUrl = null;
+            target.LocalPosterPath = null;
+        }
         target.Nsfw = Nsfw;
         target.EnglishTitle = EnglishTitle;
         target.JapaneseTitle = JapaneseTitle;
@@ -108,7 +116,7 @@ public partial class AnimeEntity
         if (!string.IsNullOrEmpty(source.JapaneseTitle) && string.IsNullOrEmpty(JapaneseTitle))
             JapaneseTitle = source.JapaneseTitle;
 
-        if (!string.IsNullOrEmpty(source.MainPictureUrl) && string.IsNullOrEmpty(MainPictureUrl))
+        if (!string.IsNullOrEmpty(source.MainPictureUrl) && !IsMissingPosterUrl(source.MainPictureUrl) && (string.IsNullOrEmpty(MainPictureUrl) || IsMissingPosterUrl(MainPictureUrl)))
             MainPictureUrl = source.MainPictureUrl;
 
         if (source.Genres.Count > 0)

@@ -207,4 +207,56 @@ public sealed class MetadataFetchMaintenanceTaskTests
             }
         }
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenItemMissingPoster_FetchesFromMetadataService()
+    {
+        var item = new AnimeEntity
+        {
+            Id = 62485,
+            Title = "Kanojo, Okarishimasu 5th Season",
+            RussianTitle = "Девушка на час 5",
+            RussianSynopsis = "Описание",
+            MainPictureUrl = null,
+            MediaKind = MediaKind.Anime
+        };
+
+        _animeRepoMock.Setup(r => r.GetSnapshotAsync(It.IsAny<MediaKind[]>()))
+            .ReturnsAsync(new List<AnimeEntity> { item });
+
+        _metadataRepoMock.Setup(m => m.GetAsync(62485))
+            .ReturnsAsync(new ShikiMetadata
+            {
+                Id = 62485,
+                Russian = "Девушка на час 5",
+                Description = "Описание",
+                PosterUrl = null
+            });
+
+        _shikiMetadataMock.Setup(s => s.GetOrFetchMetadataAsync(62485, null, null, MediaKind.Anime))
+            .ReturnsAsync(new ShikiMetadata
+            {
+                Id = 62485,
+                Russian = "Девушка на час 5",
+                Description = "Описание",
+                PosterUrl = "https://shikimori.io/uploads/poster/animes/62485/731f400945ffd21b4ae5d72b0bfcb1dd.jpeg"
+            });
+
+        _imageCacheMock.Setup(c => c.GetLocalPathOrDownload("https://shikimori.io/uploads/poster/animes/62485/731f400945ffd21b4ae5d72b0bfcb1dd.jpeg", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("C:\\cache\\62485.jpeg");
+
+        var task = new MetadataFetchMaintenanceTask(
+            _settingsMock.Object,
+            _animeRepoMock.Object,
+            _userAnimeRepoMock.Object,
+            _metadataRepoMock.Object,
+            _shikiMetadataMock.Object,
+            _imageCacheMock.Object,
+            _uiDispatcherMock.Object);
+
+        await task.ExecuteAsync(CancellationToken.None);
+
+        Assert.Equal("https://shikimori.io/uploads/poster/animes/62485/731f400945ffd21b4ae5d72b0bfcb1dd.jpeg", item.MainPictureUrl);
+        _userAnimeRepoMock.Verify(u => u.UpdateMetadataAsync(item), Times.AtLeastOnce);
+    }
 }

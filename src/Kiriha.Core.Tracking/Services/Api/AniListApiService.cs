@@ -1,18 +1,19 @@
+using System.Collections.Concurrent;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Shared;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
-// Moved to Kiriha.Core.Domain.Models.AniListAiringInfo
-
-public class AniListApiService : IDisposable, IAniListApiService
+public partial class AniListApiService : IDisposable, IAniListApiService, ITrackerService
 {
     private const string Endpoint = Kiriha.Core.Domain.Constants.AppConstants.Api.AniList.BaseUrl;
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(6);
@@ -21,6 +22,9 @@ public class AniListApiService : IDisposable, IAniListApiService
 
     private readonly HttpClient _httpClient;
     private readonly IHttpCacheRepository _cache;
+    private readonly ISettingsService? _settingsService;
+    private readonly ConcurrentDictionary<int, int> _malToAniListMap = new();
+
     private readonly RateLimiter _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
     {
         TokenLimit = 1,
@@ -31,10 +35,97 @@ public class AniListApiService : IDisposable, IAniListApiService
         AutoReplenishment = true,
     });
 
-    public AniListApiService(HttpClient httpClient, IHttpCacheRepository cache)
+    public string Name => "AniList";
+    public string TrackerId => TrackerConstants.Ids.AniList;
+    public bool IsEnabled
+    {
+        get
+        {
+            var acc = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
+            return acc != null && acc.IsEnabled && acc.Tokens != null;
+        }
+    }
+
+    public AniListApiService(HttpClient httpClient, IHttpCacheRepository cache, ISettingsService? settingsService = null)
     {
         _httpClient = httpClient;
         _cache = cache;
+        _settingsService = settingsService;
+    }
+
+    private async Task<JsonDocument?> ExecuteGraphQlAsync(string query, object? variables = null, CancellationToken ct = default)
+    {
+        using var lease = await _rateLimiter.AcquireAsync(1, ct);
+
+        var payload = new
+        {
+            query,
+            variables
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Add("User-Agent", AppInfo.UserAgent);
+
+        var token = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound && query.Contains("MediaListCollection"))
+            {
+                // AniList GraphQL returns HTTP 404 Not Found when a user has no lists/entries in their MediaListCollection.
+                // Synthesize an empty collection payload so the caller receives an empty list rather than a sync failure.
+                return JsonDocument.Parse("""{"data":{"MediaListCollection":{"lists":[]}}}""");
+            }
+
+            Log.Warning("AniList: GraphQL request returned {StatusCode}", response.StatusCode);
+            return null;
+        }
+
+        var stream = await response.Content.ReadAsStreamAsync(ct);
+        return await JsonDocument.ParseAsync(stream, default, ct);
+    }
+
+    private async Task<int?> ResolveAniListMediaIdAsync(int malId, string mediaType = "ANIME", CancellationToken ct = default)
+    {
+        if (_malToAniListMap.TryGetValue(malId, out var cachedId)) return cachedId;
+
+        const string query = """
+        query ($malId: Int, $type: MediaType) {
+          Media(idMal: $malId, type: $type) {
+            id
+            idMal
+          }
+        }
+        """;
+
+        try
+        {
+            using var doc = await ExecuteGraphQlAsync(query, new { malId, type = mediaType }, ct);
+            if (doc != null &&
+                doc.RootElement.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("Media", out var media) &&
+                media.ValueKind == JsonValueKind.Object &&
+                media.TryGetProperty("id", out var idProp) &&
+                idProp.TryGetInt32(out var aniListId))
+            {
+                _malToAniListMap[malId] = aniListId;
+                return aniListId;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "AniList: failed to resolve mediaId for MAL {MalId}", malId);
+        }
+
+        return malId;
     }
 
     public async Task<AniListAiringInfo?> GetNextAiringAsync(int malId, bool force = false, CancellationToken ct = default)

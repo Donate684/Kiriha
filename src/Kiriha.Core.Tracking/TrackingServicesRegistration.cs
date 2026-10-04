@@ -2,6 +2,7 @@ using System.Net;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Shared;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
@@ -63,6 +64,9 @@ public static class TrackingServicesRegistration
         // re-implements the follow with method/body/auth preserved and pins
         // the resolved host in ShikiHostResolver for the rest of the session.
         services.AddSingleton<ShikiHostResolver>();
+        // Expose the same singleton as IImageUrlRewriter so the image pipeline
+        // can rewrite poster URLs without a direct dependency on the tracking layer.
+        services.AddSingleton<IImageUrlRewriter>(sp => sp.GetRequiredService<ShikiHostResolver>());
         services.AddHttpClient("ShikiClient")
                 .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
                 {
@@ -90,17 +94,41 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<IHttpCacheRepository>(),
                 sp.GetRequiredService<ShikiRateLimiter>()));
 
-        services.AddForwardedSingleton<IShikiApiService, ITrackerService>();
+        services.AddSingleton<ITrackerService>(sp =>
+            new ShikiApiService(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
+                sp.GetRequiredService<ISettingsService>(),
+                sp.GetRequiredService<ShikiTokenService>(),
+                sp.GetRequiredService<ShikiHostResolver>(),
+                sp.GetRequiredService<IHttpCacheRepository>(),
+                sp.GetRequiredService<ShikiRateLimiter>(),
+                fixedMirror: ShikiMirror.One));
+
+        services.AddSingleton<ITrackerService>(sp =>
+            new ShikiApiService(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
+                sp.GetRequiredService<ISettingsService>(),
+                sp.GetRequiredService<ShikiTokenService>(),
+                sp.GetRequiredService<ShikiHostResolver>(),
+                sp.GetRequiredService<IHttpCacheRepository>(),
+                sp.GetRequiredService<ShikiRateLimiter>(),
+                fixedMirror: ShikiMirror.Net));
 
         // --- Jikan / AniList ---
         services.AddSingleton<JikanApiService>();
         services.AddHttpClient("AniListClient")
                 .AddHttpMessageHandler<ResilientHttpHandler>();
+
+        services.AddSingleton<AniListAuthService>(sp =>
+            new AniListAuthService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient")));
+
         services.AddSingleton<AniListApiService>(sp =>
             new AniListApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
-                sp.GetRequiredService<IHttpCacheRepository>()));
+                sp.GetRequiredService<IHttpCacheRepository>(),
+                sp.GetRequiredService<ISettingsService>()));
         services.AddForwardedSingleton<AniListApiService, IAniListApiService>();
+        services.AddForwardedSingleton<AniListApiService, ITrackerService>();
         services.AddSingleton<IAnimeCountryService, Kiriha.Core.Tracking.Services.AnimeCountryService>();
 
         // --- RSS ---

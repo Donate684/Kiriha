@@ -36,6 +36,7 @@ public partial class HistoryViewModel
         // Build groups by date, merging consecutive same-anime watch episodes.
         var timeline = new List<HistoryTimelineItem>();
         bool isFirstGroup = true;
+        var orderedTrackers = GetOrderedActiveTrackers();
 
         foreach (var dateGroup in list.GroupBy(x => x.Timestamp.ToLocalTime().Date).OrderByDescending(g => g.Key))
         {
@@ -81,7 +82,8 @@ public partial class HistoryViewModel
                     run.LoadTrackerStatuses(
                         item.TrackerStatuses,
                         trackerName => HandleTrackerSyncAsync(currentRun, trackerName),
-                        trackerName => IsTrackerEnabled(trackerName));
+                        trackerName => IsTrackerEnabled(trackerName),
+                        orderedTrackers);
                 }
 
             }
@@ -127,7 +129,13 @@ public partial class HistoryViewModel
     {
         if (_syncManager == null) return;
 
-        var tracker = _trackers.FirstOrDefault(t => string.Equals(t.Name, trackerName, StringComparison.OrdinalIgnoreCase));
+        var tracker = _trackers.FirstOrDefault(t =>
+            string.Equals(t.Name, trackerName, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(t.TrackerId, trackerName, StringComparison.OrdinalIgnoreCase))
+            ?? (_settingsService != null && trackerName.StartsWith("Shiki", StringComparison.OrdinalIgnoreCase)
+                ? _trackers.FirstOrDefault(t => t.TrackerId == (_settingsService.Current.Api.ShikiMirror == Kiriha.Core.Domain.Models.ShikiMirror.Net ? Kiriha.Core.Domain.Constants.TrackerConstants.Ids.ShikiFork : Kiriha.Core.Domain.Constants.TrackerConstants.Ids.ShikiOrig))
+                : null);
+
         if (tracker != null && !tracker.IsEnabled)
         {
             _notificationService?.NotifySyncFailed(
@@ -151,6 +159,6 @@ public partial class HistoryViewModel
             score = parsedScore;
         }
 
-        await _syncManager.EnqueueUpdateAsync(entry.AnimeId, progress, status, score, trackerName);
+        await _syncManager.EnqueueUpdateAsync(entry.AnimeId, progress, status, score, tracker?.Name ?? trackerName);
     }
 }
