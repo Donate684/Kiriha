@@ -40,10 +40,10 @@
         <!-- Row 0: Filters -->
         <local:TorrentFilters Grid.Row="0" />
 
-        <!-- â•â•â• Row 2: Sidebar + Results â•â•â• -->
+        <!-- Row 2: Sidebar + Results -->
         <Grid Grid.Row="2" ColumnDefinitions="260, *" Margin="20,0,0,16">
 
-            <!-- â”€â”€â”€ Sidebar â”€â”€â”€ -->
+            <!-- Sidebar -->
             <Border Grid.Column="0" Margin="0,0,14,0" Padding="8"
                     Background="{DynamicResource SubtleFillColorSecondary}"
                     BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
@@ -92,7 +92,7 @@
                         </Button>
                     </Grid>
 
-                    <!-- Watching list (Ã— overlays in hide mode without shifting layout) -->
+                    <!-- Watching list (close overlay in hide mode without shifting layout) -->
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
                         <ItemsControl ItemsSource="{Binding HideMenuItems}" ItemTemplate="{StaticResource HideableAnimeItemTemplate}">
                         </ItemsControl>
@@ -108,7 +108,7 @@
                 </Grid>
             </Border>
 
-            <!-- â”€â”€â”€ Results area â”€â”€â”€ -->
+            <!-- Results area -->
             <Grid Grid.Column="1">
 
                 <!-- Loading overlay -->
@@ -160,3 +160,4 @@
         </Grid>
     </Grid>
 </UserControl>
+

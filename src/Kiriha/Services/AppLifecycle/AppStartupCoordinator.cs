@@ -56,7 +56,7 @@ public sealed partial class AppStartupCoordinator
         Log.Information("StartupTiming: localization loaded elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
 
         sw.Restart();
-        var imageCache = _serviceProvider.GetRequiredService<ImageCacheService>();
+        var imageCache = _serviceProvider.GetRequiredService<IImageCacheService>();
         ImageLoader.AsyncImageLoader = new KirihaImageLoader(imageCache);
         CachedImage.Initialize(imageCache);
         Log.Information("StartupTiming: image services initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);

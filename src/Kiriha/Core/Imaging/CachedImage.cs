@@ -16,7 +16,7 @@ namespace Kiriha.Core;
 /// </summary>
 public static class CachedImage
 {
-    private static ImageCacheService? _imageCache;
+    private static IImageCacheService? _imageCache;
 
     public static readonly AttachedProperty<string?> SourceProperty =
         AvaloniaProperty.RegisterAttached<Image, string?>("Source", typeof(CachedImage));
@@ -26,7 +26,7 @@ public static class CachedImage
         SourceProperty.Changed.AddClassHandler<Image>((img, args) => OnSourceChanged(img, args));
     }
 
-    public static void Initialize(ImageCacheService imageCache)
+    public static void Initialize(IImageCacheService imageCache)
     {
         _imageCache = imageCache;
     }

@@ -1,5 +1,6 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;
+using Kiriha.Infrastructure.Extensions;
 using Kiriha.Services;
 using Kiriha.Services.Data.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,28 +22,27 @@ internal static class BackgroundServicesRegistration
     public static IServiceCollection AddKirihaBackgroundServices(this IServiceCollection services)
     {
         // IPC / player HTTP server
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Kiriha.Infrastructure.Tracking.Integration.InternalPlayerServer>());
+        services.AddForwardedSingleton<Kiriha.Infrastructure.Tracking.Integration.InternalPlayerServer, IHostedService>();
 
         services.AddSingleton<InstanceServer>();
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<InstanceServer>());
+        services.AddForwardedSingleton<InstanceServer, IHostedService>();
 
         // SyncManager needs to start with the app lifecycle
         services.AddSingleton<IHostedService>(sp => (IHostedService)sp.GetRequiredService<ISyncManager>());
 
         // Background utilities
         services.AddSingleton<LoadQueueService>();
-        services.AddSingleton<ILoadQueueService>(sp => sp.GetRequiredService<LoadQueueService>());
+        services.AddForwardedSingleton<LoadQueueService, ILoadQueueService>();
         services.AddSingleton<UpdateService>();
         services.AddSingleton<NotificationService>();
-        services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<NotificationService>());
+        services.AddForwardedSingleton<NotificationService, INotificationService>();
         services.AddSingleton<AiringInfoService>();
-        services.AddSingleton<IAiringInfoService>(sp => sp.GetRequiredService<AiringInfoService>());
+        services.AddForwardedSingleton<AiringInfoService, IAiringInfoService>();
 
         // AnisthesiaService (Discord presence) also runs as IHostedService
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Kiriha.Infrastructure.Tracking.Integration.AnisthesiaService>());
+        services.AddForwardedSingleton<Kiriha.Infrastructure.Tracking.Integration.AnisthesiaService, IHostedService>();
 
         // Maintenance tasks
-        services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.RssMaintenanceTask>();
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.AiringSyncMaintenanceTask>();
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.UpdateMaintenanceTask>();
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.DatabaseMaintenanceTask>();

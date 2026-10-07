@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Kiriha.Core.Tracking.Utils;
+using Kiriha.Infrastructure.Platform;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -19,7 +20,7 @@ public static class OAuthHelper
         listener.Start();
 
         Log.Information("Opening browser for authorization...");
-        Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true })?.Dispose();
+        ShellLauncher.OpenUrl(authUrl);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
@@ -62,8 +63,8 @@ public static class OAuthHelper
                 var responseString = $"<html><head><meta charset='utf-8'></head><body><h1 style='font-family:sans-serif;'>{successMessage}</h1><p style='font-family:sans-serif;'>{localizedCloseMsg}</p></body></html>";
                 var buffer = Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;
-                await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-                await response.OutputStream.FlushAsync();
+                await response.OutputStream.WriteAsync(buffer, cts.Token);
+                await response.OutputStream.FlushAsync(cts.Token);
 
                 // Brief delay to ensure browser receives response
                 await Task.Delay(500);

@@ -47,6 +47,14 @@ public partial class AnimeListView : UserControl
     {
         base.OnLoaded(e);
 
+        if (_gridRepeater != null)
+        {
+            _gridRepeater.ElementPrepared -= OnGridElementPrepared;
+            _gridRepeater.ElementPrepared += OnGridElementPrepared;
+            _gridRepeater.ElementClearing -= OnGridElementClearing;
+            _gridRepeater.ElementClearing += OnGridElementClearing;
+        }
+
         if (DataContext is not AnimeListViewModel) return;
 
         BeginInitialRevealWindow();

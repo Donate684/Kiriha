@@ -9,12 +9,12 @@ public class DatabaseMaintenanceTask : IMaintenanceTask
 {
     private readonly DatabaseMaintenance _dbMaintenance;
     private readonly IUserAnimeRepository _userAnimeRepo;
-    private readonly ImageCacheService _imageCacheService;
+    private readonly IImageCacheService _imageCacheService;
 
     public DatabaseMaintenanceTask(
         DatabaseMaintenance dbMaintenance,
         IUserAnimeRepository userAnimeRepo,
-        ImageCacheService imageCacheService)
+        IImageCacheService imageCacheService)
     {
         _dbMaintenance = dbMaintenance;
         _userAnimeRepo = userAnimeRepo;

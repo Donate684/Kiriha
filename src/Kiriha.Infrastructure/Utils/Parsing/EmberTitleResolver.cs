@@ -1,6 +1,8 @@
+using System.Text.RegularExpressions;
+
 namespace Kiriha.Utils.Parsing;
 
-public static class EmberTitleResolver
+public static partial class EmberTitleResolver
 {
     public static bool ScanFileForEmber(string filePath)
     {
@@ -10,19 +12,16 @@ public static class EmberTitleResolver
             var buffer = new byte[65536]; // Read first 64KB
             int bytesRead = fs.Read(buffer, 0, buffer.Length);
 
-            // Search for "EMBER" (69, 77, 66, 69, 82)
-            for (int i = 0; i < bytesRead - 4; i++)
-            {
-                if (buffer[i] == 'E' && buffer[i + 1] == 'M' && buffer[i + 2] == 'B' && buffer[i + 3] == 'E' && buffer[i + 4] == 'R')
-                    return true;
-            }
-            return false;
+            return buffer.AsSpan(0, bytesRead).IndexOf("EMBER"u8) >= 0;
         }
         catch
         {
             return false;
         }
     }
+
+    [GeneratedRegex(@"\bEMBER\b", RegexOptions.IgnoreCase)]
+    private static partial Regex EmberWordRegex();
 
     public static string GetMeaningfulDirectoryName(string filePath)
     {
@@ -40,12 +39,12 @@ public static class EmberTitleResolver
             else
             {
                 // Strip EMBER from the directory name so it doesn't get parsed as part of the anime title
-                if (dirName.EndsWith("-EMBER", System.StringComparison.OrdinalIgnoreCase))
+                if (dirName.EndsWith("-EMBER", StringComparison.OrdinalIgnoreCase))
                     dirName = dirName[..^6].Trim();
-                else if (dirName.EndsWith(" EMBER", System.StringComparison.OrdinalIgnoreCase))
+                else if (dirName.EndsWith(" EMBER", StringComparison.OrdinalIgnoreCase))
                     dirName = dirName[..^6].Trim();
-                else if (dirName.IndexOf("EMBER", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                    dirName = System.Text.RegularExpressions.Regex.Replace(dirName, @"\bEMBER\b", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+                else if (dirName.IndexOf("EMBER", StringComparison.OrdinalIgnoreCase) >= 0)
+                    dirName = EmberWordRegex().Replace(dirName, "").Trim();
 
                 return dirName;
             }

@@ -37,7 +37,7 @@ public partial class SettingsViewModel : ViewModelBase
         IExternalMediaDetector anisthesiaService,
         DiscordService discordService,
         CacheCleanupService cacheCleanupService,
-        ImageCacheService imageCacheService,
+        IImageCacheService imageCacheService,
         MappingService mappingService,
         SeasonalViewModel seasonalViewModel,
         SystemIntegrationService systemIntegrationService,

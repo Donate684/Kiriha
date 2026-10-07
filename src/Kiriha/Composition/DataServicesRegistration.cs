@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Shared;
 using Kiriha.Infrastructure;
+using Kiriha.Infrastructure.Extensions;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Image;
@@ -50,10 +51,10 @@ internal static class DataServicesRegistration
 
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         services.AddSingleton<SettingsService>();
-        services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
+        services.AddForwardedSingleton<SettingsService, ISettingsService>();
         services.AddSingleton<AppReadinessService>();
         services.AddSingleton<DatabaseInitializer>();
-        services.AddSingleton<IDatabaseInitializer>(sp => sp.GetRequiredService<DatabaseInitializer>());
+        services.AddForwardedSingleton<DatabaseInitializer, IDatabaseInitializer>();
         services.AddSingleton<DatabaseMaintenance>();
         services.AddSingleton<CacheCleanupService>();
 
@@ -62,7 +63,7 @@ internal static class DataServicesRegistration
         // queries, so a future swap of the storage layer can happen one
         // aggregate at a time.
         services.AddSingleton<AnimeRepository>();
-        services.AddSingleton<IAnimeRepository>(sp => sp.GetRequiredService<AnimeRepository>());
+        services.AddForwardedSingleton<AnimeRepository, IAnimeRepository>();
         services.AddSingleton<IUserAnimeRepository, UserAnimeRepository>();
         services.AddSingleton<IMetadataRepository, MetadataRepository>();
         services.AddSingleton<IMalSearchCacheRepository, MalSearchCacheRepository>();
@@ -70,15 +71,16 @@ internal static class DataServicesRegistration
         services.AddSingleton<IEpisodeReleaseRepository, EpisodeReleaseRepository>();
         services.AddSingleton<IAnimeRelationRepository, AnimeRelationRepository>();
         services.AddSingleton<FranchiseService>();
-        services.AddSingleton<IFranchiseService>(sp => sp.GetRequiredService<FranchiseService>());
+        services.AddForwardedSingleton<FranchiseService, IFranchiseService>();
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
         services.AddSingleton<ISeasonalHiddenRepository, SeasonalHiddenRepository>();
         services.AddSingleton<ITorrentFilterRepository, TorrentFilterRepository>();
         services.AddSingleton<IAnimeCountryRepository, AnimeCountryRepository>();
         services.AddSingleton<LocalizationService>();
-        services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
+        services.AddForwardedSingleton<LocalizationService, ILocalizer>();
         services.AddSingleton<ShikiMetadataService>();
+        services.AddForwardedSingleton<ShikiMetadataService, IShikiMetadataService>();
         services.AddHttpClient("ImageClient", c =>
         {
             c.Timeout = TimeSpan.FromSeconds(30);
@@ -88,15 +90,16 @@ internal static class DataServicesRegistration
             sp.GetRequiredService<IHttpClientFactory>(),
             sp.GetRequiredService<IBackgroundTaskSupervisor>(),
             sp.GetService<IImageUrlRewriter>()));
+        services.AddForwardedSingleton<ImageCacheService, IImageCacheService>();
         services.AddSingleton<PosterBatchDownloader>();
         services.AddSingleton<SeasonalCacheStore>();
         services.AddSingleton<HistoryService>();
-        services.AddSingleton<IHistoryService>(sp => sp.GetRequiredService<HistoryService>());
+        services.AddForwardedSingleton<HistoryService, IHistoryService>();
         services.AddSingleton<ManualMappingService>();
         services.AddSingleton<RecognitionCache>();
-        services.AddSingleton<IRecognitionCache>(sp => sp.GetRequiredService<RecognitionCache>());
+        services.AddForwardedSingleton<RecognitionCache, IRecognitionCache>();
         services.AddSingleton<MappingService>();
-        services.AddSingleton<IMappingService>(sp => sp.GetRequiredService<MappingService>());
+        services.AddForwardedSingleton<MappingService, IMappingService>();
 
         return services;
     }

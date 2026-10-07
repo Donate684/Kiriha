@@ -1,13 +1,13 @@
-using Kiriha.Core.Tracking.Core;
+using Kiriha.Core.Abstractions.Services;
 using Serilog;
 
 namespace Kiriha.Services.Maintenance;
 
 public class AiringSyncMaintenanceTask : IMaintenanceTask
 {
-    private readonly AiringInfoService _airingService;
+    private readonly IAiringInfoService _airingService;
 
-    public AiringSyncMaintenanceTask(AiringInfoService airingService)
+    public AiringSyncMaintenanceTask(IAiringInfoService airingService)
     {
         _airingService = airingService;
     }

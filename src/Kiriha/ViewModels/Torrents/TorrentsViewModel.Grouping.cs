@@ -16,12 +16,7 @@ public partial class TorrentsViewModel
 
     private void RebuildGroupedTorrents()
     {
-        GroupedTorrents.Clear();
-
-        foreach (var group in TorrentGrouping.Build(Torrents, SortMode))
-        {
-            GroupedTorrents.Add(group);
-        }
+        GroupedTorrents.Reset(TorrentGrouping.Build(Torrents, SortMode));
     }
 }
 

@@ -11,9 +11,12 @@ public interface IPlayerMediaMetadataResolver
     PlayerMediaMetadata Resolve(string videoPath);
 }
 
-public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
+public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"([sS]?\d*[eE]\d+)\s*-(.*)")]
+    private static partial System.Text.RegularExpressions.Regex HyphenatedEpisodeRegex();
 
     public PlayerMediaMetadataResolver(IDbContextFactory<AppDbContext> dbFactory)
     {
@@ -28,7 +31,7 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
         try
         {
             var filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
-            var filenameToParse = System.Text.RegularExpressions.Regex.Replace(filename, @"([sS]?\d*[eE]\d+)\s*-(.*)", "$1 - $2");
+            var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);
 
             var extractedTitle = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
@@ -60,7 +63,7 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
             using var db = _dbFactory.CreateDbContext();
 
             var searchTitleLower = searchTitle.ToLower();
-            var match = db.UserAnime.FirstOrDefault(a =>
+            var match = db.UserAnime.AsNoTracking().FirstOrDefault(a =>
                 (a.RussianTitle != null && a.RussianTitle.ToLower() == searchTitleLower) ||
                 (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchTitleLower) ||
                 (a.Title != null && a.Title.ToLower() == searchTitleLower));
@@ -68,7 +71,7 @@ public sealed class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
             if (match is null && parsedSeason <= 1)
             {
                 var extractedTitleLower = extractedTitle.ToLower();
-                match = db.UserAnime.FirstOrDefault(a =>
+                match = db.UserAnime.AsNoTracking().FirstOrDefault(a =>
                     (a.RussianTitle != null && a.RussianTitle.ToLower() == extractedTitleLower) ||
                     (a.EnglishTitle != null && a.EnglishTitle.ToLower() == extractedTitleLower) ||
                     (a.Title != null && a.Title.ToLower() == extractedTitleLower));

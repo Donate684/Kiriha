@@ -13,9 +13,5 @@ public enum NavigationPage
     Welcome
 }
 
-public class NavigationMessage
-{
-    public NavigationPage Page { get; }
-    public NavigationMessage(NavigationPage page) => Page = page;
-}
+public sealed record NavigationMessage(NavigationPage Page);
 

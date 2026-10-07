@@ -18,5 +18,8 @@ public interface IHistoryService
     void SetPendingTrackers(int animeId, int? episode, IEnumerable<string> trackerNames);
     Task UpdateTrackerStatusAsync(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default);
     Task SetPendingTrackersAsync(int animeId, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default);
+
+    Task<List<HistoryItem>> GetHistoryAsync(int limit = 1000, CancellationToken ct = default);
+    Task FlushAsync(TimeSpan? timeout = null);
 }
 

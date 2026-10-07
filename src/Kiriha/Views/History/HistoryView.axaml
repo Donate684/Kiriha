@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -246,7 +246,7 @@
             <Setter Property="RenderTransform" Value="translate(0,0)"/>
         </Style>
 
-        <!-- â•â•â• Torrents-style Filter Toggle (period) â•â•â• -->
+        <!-- Torrents-style Filter Toggle (period) -->
         <Style Selector="ToggleButton.FilterToggle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -266,7 +266,7 @@
 
     <Grid RowDefinitions="Auto, Auto, *" Margin="0">
 
-        <!-- â•â•â• Search + Period bar (Torrents-style) â•â•â• -->
+        <!-- Search + Period bar (Torrents-style) -->
         <Border Grid.Row="0" Margin="20,4,20,12" Padding="8,6"
                 Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
                 BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
@@ -300,7 +300,7 @@
             </Grid>
         </Border>
 
-        <!-- â•â•â• Action-type tabs (AnimeList-style) â•â•â• -->
+        <!-- Action-type tabs (AnimeList-style) -->
         <Border Grid.Row="1" Margin="20,0,20,12" Padding="4"
                 Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8"
                 HorizontalAlignment="Center"
@@ -327,7 +327,7 @@
             </StackPanel>
         </Border>
 
-        <!-- â•â•â• Content Area â•â•â• -->
+        <!-- Content Area -->
         <Panel Grid.Row="2">
             <!-- Empty DB -->
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16"
@@ -367,4 +367,5 @@
         </Panel>
     </Grid>
 </UserControl>
+
 

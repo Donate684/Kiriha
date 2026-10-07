@@ -96,9 +96,7 @@ public class LocalizationService : ILocalizer
         {
             var uri = new Uri($"avares://Kiriha/Assets/i18n/{langCode}/{ns}.json");
             using var stream = Avalonia.Platform.AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            var json = reader.ReadToEnd();
-            using var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(stream);
             FlattenJson(doc.RootElement, ns, result);
         }
         catch (FileNotFoundException)

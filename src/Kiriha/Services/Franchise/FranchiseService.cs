@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Avalonia.Threading;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Utils.Async;
@@ -36,7 +37,8 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
     public FranchiseService(
         IAnimeRepository animeRepo,
         IAnimeRelationRepository relationRepo,
-        IShikiApiService shikiApi)
+        IShikiApiService shikiApi,
+        IBackgroundTaskSupervisor? backgroundTasks = null)
     {
         _animeRepo = animeRepo;
         _relationRepo = relationRepo;
@@ -52,25 +54,51 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
             _animeRepo.Collection.CollectionChanged += OnCollectionChanged;
         }
 
-        // Start resolution worker loop in background
-        _ = Task.Run(() => ResolutionWorkerLoopAsync(_cts.Token));
-
-        // Initial background index build once repository initialization completes
-        _ = Task.Run(async () =>
+        if (backgroundTasks != null)
         {
-            try
+            _ = backgroundTasks.Run("FranchiseService.ResolutionWorker", ct => ResolutionWorkerLoopAsync(ct), _cts.Token);
+            _ = backgroundTasks.Run("FranchiseService.InitialBuild", async ct =>
             {
-                if (_animeRepo.InitializationTask != null)
+                try
                 {
-                    await _animeRepo.InitializationTask.ConfigureAwait(false);
+                    if (_animeRepo.InitializationTask != null)
+                    {
+                        await _animeRepo.InitializationTask.WaitAsync(ct).ConfigureAwait(false);
+                    }
+                    await RebuildIndexAsync(ct).ConfigureAwait(false);
                 }
-                await RebuildIndexAsync().ConfigureAwait(false);
-            }
-            catch (Exception ex)
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // Graceful exit on shutdown
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "FranchiseService: initial index build failed");
+                }
+            }, _cts.Token);
+        }
+        else
+        {
+            // Start resolution worker loop in background
+            _ = Task.Run(() => ResolutionWorkerLoopAsync(_cts.Token));
+
+            // Initial background index build once repository initialization completes
+            _ = Task.Run(async () =>
             {
-                Log.Warning(ex, "FranchiseService: initial index build failed");
-            }
-        });
+                try
+                {
+                    if (_animeRepo.InitializationTask != null)
+                    {
+                        await _animeRepo.InitializationTask.ConfigureAwait(false);
+                    }
+                    await RebuildIndexAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "FranchiseService: initial index build failed");
+                }
+            });
+        }
     }
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

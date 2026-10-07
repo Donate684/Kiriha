@@ -5,10 +5,10 @@ namespace Kiriha.Services.Data.Image;
 
 public class PosterBatchDownloader
 {
-    private readonly ImageCacheService _imageCache;
+    private readonly IImageCacheService _imageCache;
     private readonly IUiDispatcher _uiDispatcher;
 
-    public PosterBatchDownloader(ImageCacheService imageCache, IUiDispatcher uiDispatcher)
+    public PosterBatchDownloader(IImageCacheService imageCache, IUiDispatcher uiDispatcher)
     {
         _imageCache = imageCache;
         _uiDispatcher = uiDispatcher;

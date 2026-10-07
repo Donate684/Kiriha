@@ -19,8 +19,8 @@ public sealed class MetadataFetchMaintenanceTaskTests
     private readonly Mock<IAnimeRepository> _animeRepoMock;
     private readonly Mock<IUserAnimeRepository> _userAnimeRepoMock;
     private readonly Mock<IMetadataRepository> _metadataRepoMock;
-    private readonly Mock<ShikiMetadataService> _shikiMetadataMock;
-    private readonly Mock<ImageCacheService> _imageCacheMock;
+    private readonly Mock<IShikiMetadataService> _shikiMetadataMock;
+    private readonly Mock<IImageCacheService> _imageCacheMock;
     private readonly Mock<IUiDispatcher> _uiDispatcherMock;
     private readonly AppSettings _appSettings;
 
@@ -42,8 +42,8 @@ public sealed class MetadataFetchMaintenanceTaskTests
         _uiDispatcherMock.Setup(d => d.InvokeAsync(It.IsAny<Action>())).Callback<Action>(a => a()).Returns(Task.CompletedTask);
         _uiDispatcherMock.Setup(d => d.Post(It.IsAny<Action>())).Callback<Action>(a => a());
 
-        _shikiMetadataMock = new Mock<ShikiMetadataService>();
-        _imageCacheMock = new Mock<ImageCacheService>();
+        _shikiMetadataMock = new Mock<IShikiMetadataService>();
+        _imageCacheMock = new Mock<IImageCacheService>();
     }
 
     [Fact]

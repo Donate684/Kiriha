@@ -13,7 +13,7 @@ namespace Kiriha.ViewModels.History;
 
 public partial class HistoryViewModel : ViewModelBase
 {
-    private readonly HistoryService _historyService;
+    private readonly IHistoryService _historyService;
     private readonly DatabaseInitializer _dbInit;
     private readonly IAnimeRepository _animeRepo;
     private readonly IMalApiService _malApi;
@@ -48,7 +48,7 @@ public partial class HistoryViewModel : ViewModelBase
     private int _selectedAction;
 
     public HistoryViewModel(
-        HistoryService historyService,
+        IHistoryService historyService,
         DatabaseInitializer dbInit,
         IAnimeRepository animeRepo,
         IMalApiService malApi,
@@ -74,50 +74,50 @@ public partial class HistoryViewModel : ViewModelBase
         _settingsService = settingsService;
         _metadataRepo = metadataRepo;
 
-        _historyService.TrackerStatusUpdated += (animeId, episode, trackerName, state, error) =>
-        {
-            RunOnUi(() =>
-            {
-                try
-                {
-                    var rawMatches = _rawItems.Where(h => h.AnimeId == animeId);
-                    if (episode.HasValue && episode.Value > 0)
-                        rawMatches = rawMatches.Where(h => h.Episode == episode.Value);
-                    foreach (var raw in rawMatches)
-                    {
-                        raw.SetTrackerStatus(trackerName, state, error);
-                    }
-
-                    bool updatedAny = false;
-                    foreach (var timelineItem in TimelineItems)
-                    {
-                        if (timelineItem is HistoryEntryVm entry && entry.AnimeId == animeId)
-                        {
-                            bool matchesEpisode = (episode.HasValue && episode.Value > 0)
-                                ? (entry.EpisodeFrom <= episode.Value && episode.Value <= entry.EpisodeTo)
-                                : !updatedAny;
-
-                            if (matchesEpisode)
-                            {
-                                entry.UpdateTrackerStatus(trackerName, state, error, IsTrackerEnabled(trackerName));
-                                updatedAny = true;
-                                if (!episode.HasValue || episode.Value == 0)
-                                    break;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Serilog.Log.Error(ex, "HistoryViewModel: Error handling TrackerStatusUpdated");
-                }
-            });
-        };
-
-        // Live update: add new entries to the timeline as they are committed to DB.
+        _historyService.TrackerStatusUpdated += OnTrackerStatusUpdated;
         _historyService.EntryAdded += OnHistoryEntryAdded;
 
         RefreshHistory().SafeFireAndForget("HistoryInit");
+    }
+
+    private void OnTrackerStatusUpdated(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error)
+    {
+        RunOnUi(() =>
+        {
+            try
+            {
+                var rawMatches = _rawItems.Where(h => h.AnimeId == animeId);
+                if (episode.HasValue && episode.Value > 0)
+                    rawMatches = rawMatches.Where(h => h.Episode == episode.Value);
+                foreach (var raw in rawMatches)
+                {
+                    raw.SetTrackerStatus(trackerName, state, error);
+                }
+
+                bool updatedAny = false;
+                foreach (var timelineItem in TimelineItems)
+                {
+                    if (timelineItem is HistoryEntryVm entry && entry.AnimeId == animeId)
+                    {
+                        bool matchesEpisode = (episode.HasValue && episode.Value > 0)
+                            ? (entry.EpisodeFrom <= episode.Value && episode.Value <= entry.EpisodeTo)
+                            : !updatedAny;
+
+                        if (matchesEpisode)
+                        {
+                            entry.UpdateTrackerStatus(trackerName, state, error, IsTrackerEnabled(trackerName));
+                            updatedAny = true;
+                            if (!episode.HasValue || episode.Value == 0)
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "HistoryViewModel: Error handling TrackerStatusUpdated");
+            }
+        });
     }
 
     private void RunOnUi(Action action)
@@ -337,7 +337,7 @@ public partial class HistoryViewModel : ViewModelBase
         NotifyActionFlags();
     }
 
-    // â”€â”€â”€ Radio-button friendly flags (also safe for ToggleButton: can't uncheck) â”€â”€â”€
+    // Radio-button friendly flags (also safe for ToggleButton: can't uncheck)
     public bool IsPeriodAll { get => SelectedPeriod == 0; set { if (value) SelectedPeriod = 0; else OnPropertyChanged(nameof(IsPeriodAll)); } }
     public bool IsPeriodToday { get => SelectedPeriod == 1; set { if (value) SelectedPeriod = 1; else OnPropertyChanged(nameof(IsPeriodToday)); } }
     public bool IsPeriodWeek { get => SelectedPeriod == 2; set { if (value) SelectedPeriod = 2; else OnPropertyChanged(nameof(IsPeriodWeek)); } }

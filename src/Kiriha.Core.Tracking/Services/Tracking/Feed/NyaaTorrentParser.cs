@@ -80,15 +80,18 @@ internal static partial class NyaaTorrentParser
         if (parsed.Any(x => x.Category == AnitomySharp.Element.ElementCategory.ElementVolumeNumber))
             return null;
 
-        var epEls = parsed.Where(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)
-                          .Select(x => x.Value)
-                          .Where(v => int.TryParse(v, out _))
-                          .Select(int.Parse)
-                          .Distinct()
-                          .ToList();
+        HashSet<int>? epEls = null;
+        foreach (var el in parsed)
+        {
+            if (el.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber && int.TryParse(el.Value, out var ep))
+            {
+                epEls ??= new HashSet<int>();
+                epEls.Add(ep);
+            }
+        }
 
         // Exactly one distinct episode number = trustworthy single release.
-        if (epEls.Count != 1) return null;
-        return epEls[0];
+        if (epEls is null || epEls.Count != 1) return null;
+        return epEls.First();
     }
 }

@@ -29,22 +29,6 @@ public partial class AboutWindow : KirihaWindowBase
         Opened += OnOpened;
     }
 
-    public new void ApplyMica()
-    {
-        var settings = SettingsService?.Current;
-        if (settings is null) return;
-        if (settings.UI.EnableMica)
-        {
-            TransparencyLevelHint = [Avalonia.Controls.WindowTransparencyLevel.Mica, Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur];
-            Background = null;
-        }
-        else
-        {
-            TransparencyLevelHint = [Avalonia.Controls.WindowTransparencyLevel.None];
-            ClearValue(BackgroundProperty);
-        }
-    }
-
     private void OnOpened(object? sender, System.EventArgs e)
     {
         WindowPositioningHelper.CenterOnOwnerOrScreen(this);

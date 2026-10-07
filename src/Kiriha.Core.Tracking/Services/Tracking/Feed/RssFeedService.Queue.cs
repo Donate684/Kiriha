@@ -35,7 +35,7 @@ public partial class RssFeedService
                     .Where(x => x.Status == UserAnimeStatus.Watching || x.Status == UserAnimeStatus.PlanToWatch)
                     .ToList());
 
-            if (!activeAnime.Any()) return;
+            if (activeAnime.Count == 0) return;
 
             var newTorrents = new List<TorrentEntity>();
 
@@ -48,41 +48,12 @@ public partial class RssFeedService
                 var existing = TorrentItems.FirstOrDefault(x => x.Title == title);
                 if (existing != null && existing.IsMatched) continue;
 
-                // Parse title with Anitomy
-                var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
-                var animeTitle = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-                var episodeStr = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
-                var resolution = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementVideoResolution)?.Value;
-                var group = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementReleaseGroup)?.Value;
-
-                // Single-episode releases only — batches / ranges return null and
-                // are surfaced as torrent rows but not used to bump EpisodesAired.
-                var nyaaNs = XNamespace.Get(Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.XmlNamespace);
-                var infoHash = item.Element(nyaaNs + "infoHash")?.Value;
-
-                TorrentEntity torrent;
-                if (existing != null)
-                {
-                    torrent = existing;
-                }
-                else
-                {
-                    torrent = new TorrentEntity
-                    {
-                        Title = title,
-                        AnimeTitle = animeTitle ?? string.Empty,
-                        Episode = episodeStr ?? string.Empty,
-                        Resolution = resolution ?? string.Empty,
-                        ReleaseGroup = group ?? string.Empty,
-                        DownloadLink = item.Element("link")?.Value ?? string.Empty,
-                        MagnetLink = !string.IsNullOrEmpty(infoHash) ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}" : string.Empty,
-                        PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.UtcNow,
-                        IsNew = true
-                    };
-                }
+                var torrent = existing ?? NyaaTorrentParser.ParseItem(item);
+                if (torrent is null) continue;
+                if (existing is null) torrent.IsNew = true;
 
                 // Match with user list
-                string matchTitle = !string.IsNullOrEmpty(animeTitle) ? animeTitle : title;
+                string matchTitle = !string.IsNullOrEmpty(torrent.AnimeTitle) ? torrent.AnimeTitle : torrent.Title;
                 int? malId = await _mappingService.GetIdFromTitleAsync(matchTitle, activeAnime);
 
                 if (malId != null)
@@ -96,7 +67,7 @@ public partial class RssFeedService
                 }
             }
 
-            if (newTorrents.Any())
+            if (newTorrents.Count > 0)
             {
                 _uiDispatcher.Post(() =>
                 {

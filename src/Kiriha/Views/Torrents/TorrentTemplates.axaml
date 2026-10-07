@@ -32,7 +32,7 @@
                                                 <Panel Grid.Column="0" Width="48" Height="68" VerticalAlignment="Top">
                                                     <Border CornerRadius="4" ClipToBounds="True"
                                                             Background="{DynamicResource SubtleFillColorTertiary}">
-                                                        <Image asyncImageLoader:ImageLoader.Source="{Binding Anime.MainPictureUrl}"
+                                                        <Image core:CachedImage.Source="{Binding Anime.MainPictureUrl}"
                                                                Stretch="UniformToFill"/>
                                                     </Border>
 

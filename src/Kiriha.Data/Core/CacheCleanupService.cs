@@ -1,3 +1,4 @@
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Infrastructure.Platform;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -18,9 +19,9 @@ public sealed record CacheCleanupStats(CacheCleanupTarget Target, int ItemCount,
 public sealed class CacheCleanupService
 {
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
-    private readonly HistoryService _historyService;
+    private readonly IHistoryService _historyService;
 
-    public CacheCleanupService(IDbContextFactory<AppDbContext> contextFactory, HistoryService historyService)
+    public CacheCleanupService(IDbContextFactory<AppDbContext> contextFactory, IHistoryService historyService)
     {
         _contextFactory = contextFactory;
         _historyService = historyService;

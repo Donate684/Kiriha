@@ -20,9 +20,12 @@ public partial class TorrentsViewModel
         var hidden = new HashSet<int>(_torrentFilterRepo.GetHiddenAnimeIds());
         var watching = _animeRepo.Collection.Where(x => x.Status == UserAnimeStatus.Watching && x.MediaKind == MediaKind.Anime).ToList();
 
-        WatchingAnime.Clear();
-        foreach (var a in watching)
-            if (!hidden.Contains(a.Id)) WatchingAnime.Add(a);
+        WatchingAnime.Reset(watching.Where(a => !hidden.Contains(a.Id)));
+
+        foreach (var oldItem in HideMenuItems)
+        {
+            oldItem.HiddenChanged -= OnHideMenuItemChanged;
+        }
 
         HideMenuItems.Clear();
         foreach (var a in watching)

@@ -70,8 +70,14 @@ public partial class PlayerViewModel
 
     private static string NormalizeTitle(string s)
     {
-        var chars = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(s, char.IsLetterOrDigit));
-        return new string(chars);
+        Span<char> span = s.Length <= 256 ? stackalloc char[s.Length] : new char[s.Length];
+        int pos = 0;
+        foreach (char c in s)
+        {
+            if (char.IsLetterOrDigit(c))
+                span[pos++] = c;
+        }
+        return new string(span[..pos]);
     }
 
     private void ApplyMetadata(PlayerMediaMetadata metadata, bool overwriteAll = false)

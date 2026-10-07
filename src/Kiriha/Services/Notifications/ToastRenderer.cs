@@ -20,21 +20,16 @@ internal static class ToastRenderer
 #if WINDOWS
             var clamped = lines.Count > 3 ? 3 : lines.Count;
 
-            var xmlString = "<toast><visual><binding template=\"ToastGeneric\">";
+            var sb = new System.Text.StringBuilder("<toast><visual><binding template=\"ToastGeneric\">");
             for (int i = 0; i < clamped; i++)
             {
-                var text = (lines[i] ?? string.Empty)
-                    .Replace("&", "&amp;")
-                    .Replace("<", "&lt;")
-                    .Replace(">", "&gt;")
-                    .Replace("\"", "&quot;")
-                    .Replace("'", "&apos;");
-                xmlString += $"<text>{text}</text>";
+                var text = System.Security.SecurityElement.Escape(lines[i] ?? string.Empty);
+                sb.Append("<text>").Append(text).Append("</text>");
             }
-            xmlString += "</binding></visual></toast>";
+            sb.Append("</binding></visual></toast>");
 
             var xmlDoc = new global::Windows.Data.Xml.Dom.XmlDocument();
-            xmlDoc.LoadXml(xmlString);
+            xmlDoc.LoadXml(sb.ToString());
 
             var toast = new global::Windows.UI.Notifications.ToastNotification(xmlDoc);
             global::Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier(AumId).Show(toast);

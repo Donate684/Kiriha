@@ -4,8 +4,11 @@ using Serilog;
 
 namespace Kiriha.Mpv.UI.Services.Player;
 
-public sealed class FilenamePlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
+public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
 {
+    [System.Text.RegularExpressions.GeneratedRegex(@"([sS]?\d*[eE]\d+)\s*-(.*)")]
+    private static partial System.Text.RegularExpressions.Regex HyphenatedEpisodeRegex();
+
     public PlayerMediaMetadata Resolve(string videoPath)
     {
         if (string.IsNullOrWhiteSpace(videoPath))
@@ -14,7 +17,7 @@ public sealed class FilenamePlayerMediaMetadataResolver : IPlayerMediaMetadataRe
         try
         {
             var filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
-            var filenameToParse = System.Text.RegularExpressions.Regex.Replace(filename, @"([sS]?\d*[eE]\d+)\s*-(.*)", "$1 - $2");
+            var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);
 
             string? title = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;

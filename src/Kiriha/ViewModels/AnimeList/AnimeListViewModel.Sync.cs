@@ -23,7 +23,6 @@ public partial class AnimeListViewModel
                 await ApplyCurrentFiltersAsync();
 
                 await _airingInfoService.SyncOngoingEpisodesAsync(force: true);
-                await _rssService.CheckFeedsAsync();
             }
         }
         catch (Exception ex)

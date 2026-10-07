@@ -73,7 +73,7 @@ public class AiringInfoService : IAiringInfoService
             return;
         }
 
-        var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
+        var source = _settingsService.Current.System.AiringSource;
         Log.Information("AiringInfoService: Checking {Source} airing info (Force: {Force})...", source, force);
 
         var threshold = DateTime.UtcNow.AddHours(-6);
@@ -94,7 +94,7 @@ public class AiringInfoService : IAiringInfoService
                 })
                 .ToList());
 
-        if (!toSync.Any())
+        if (toSync.Count == 0)
         {
             Log.Information("AiringInfoService: No anime needs syncing at this time.");
             return;

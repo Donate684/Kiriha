@@ -6,7 +6,7 @@ using Serilog;
 
 namespace Kiriha.Services.Data.Image;
 
-public class ImageCacheService : IDisposable
+public class ImageCacheService : IImageCacheService, IDisposable
 {
     private readonly string CacheRoot = Kiriha.Infrastructure.Platform.PathHelper.GetImageCachePath();
 
@@ -22,14 +22,6 @@ public class ImageCacheService : IDisposable
     private readonly BitmapMemoryCache _memCache = new(
         encodedBudgetBytes: 32L * 1024 * 1024,
         pixelBudgetBytes: 64L * 1024 * 1024);
-
-    protected ImageCacheService()
-    {
-        _backgroundTasks = null!;
-        _downloader = null!;
-        _diskCache = null!;
-        _cleanup = null!;
-    }
 
     public ImageCacheService(
         IHttpClientFactory httpClientFactory,
@@ -119,7 +111,7 @@ public class ImageCacheService : IDisposable
         _memCache.Clear();
     }
 
-    public virtual Task<string> GetLocalPathOrDownload(string url, CancellationToken ct = default)
+    public Task<string> GetLocalPathOrDownload(string url, CancellationToken ct = default)
     {
         return _downloader.GetLocalPathOrDownload(url, ct);
     }

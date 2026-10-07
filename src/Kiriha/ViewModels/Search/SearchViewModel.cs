@@ -14,7 +14,7 @@ namespace Kiriha.ViewModels.Search;
 public partial class SearchViewModel : ViewModelBase, IDisposable
 {
     private readonly IMalApiService _apiService;
-    private readonly ShikiMetadataService _shikiMetadataService;
+    private readonly IShikiMetadataService _shikiMetadataService;
     private readonly LoadQueueService _queueService;
     private readonly IAnimeListActionService _listActionService;
     private readonly IDialogService _dialogService;
@@ -55,7 +55,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     private bool _isDisposed;
     private readonly Kiriha.Utils.Async.Debouncer _searchDebouncer;
 
-    public SearchViewModel(IMalApiService apiService, ShikiMetadataService shikiMetadataService,
+    public SearchViewModel(IMalApiService apiService, IShikiMetadataService shikiMetadataService,
         LoadQueueService queueService,
         IAnimeListActionService listActionService, IDialogService dialogService,
         ILocalizer localizer)

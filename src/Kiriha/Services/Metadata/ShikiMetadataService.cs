@@ -15,7 +15,7 @@ using Serilog;
 
 namespace Kiriha.Services.Data.Metadata;
 
-public partial class ShikiMetadataService : IDisposable
+public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly IMetadataRepository _metadataRepo;
@@ -28,18 +28,6 @@ public partial class ShikiMetadataService : IDisposable
     private readonly ShikiRateLimiter _rateLimiter;
     private readonly SemaphoreSlim _concurrentFetches = new(2, 2);
     private readonly ConcurrentDictionary<int, byte> _activeFetches = new();
-
-    protected ShikiMetadataService()
-    {
-        _httpClient = null!;
-        _settingsService = null!;
-        _metadataRepo = null!;
-        _userAnimeRepo = null!;
-        _hostResolver = null!;
-        _uiDispatcher = null!;
-        _rateLimiter = null!;
-        _httpCache = null!;
-    }
 
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
@@ -88,7 +76,7 @@ public partial class ShikiMetadataService : IDisposable
     /// cache hit or fresh fetch — so periodic syncs (e.g. AiringInfoService's
     /// Shiki fallback) keep applying current values to the UI.
     /// </summary>
-    public virtual async Task<ShikiMetadata?> GetOrFetchMetadataAsync(int animeId, TimeSpan? maxAge = null, Func<ShikiMetadata, Task>? onFetched = null, MediaKind mediaKind = MediaKind.Anime)
+    public async Task<ShikiMetadata?> GetOrFetchMetadataAsync(int animeId, TimeSpan? maxAge = null, Func<ShikiMetadata, Task>? onFetched = null, MediaKind mediaKind = MediaKind.Anime)
     {
         int cacheId = GetCacheId(animeId, mediaKind);
         var cached = await _metadataRepo.GetAsync(cacheId);
@@ -227,7 +215,7 @@ public partial class ShikiMetadataService : IDisposable
         }
     }
 
-    public virtual async Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct)
+    public async Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct)
     {
         string entityType = mediaKind == MediaKind.Manga ? "mangas" : "animes";
         var dbKey = $"shiki_poster_{entityType}_{animeId}";

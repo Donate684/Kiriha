@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -101,9 +101,9 @@
         <!-- Detected -->
         <Grid IsVisible="{Binding IsMediaDetected}" RowDefinitions="Auto,*" Margin="0,12,0,0">
 
-                <!-- â•â•â•â•â•â•â• PLAYER BAR (sticky, styled like AnimeDetails hero) â•â•â•â•â•â•â• -->
+                <!-- PLAYER BAR (sticky, styled like AnimeDetails hero) -->
                 <sections:NowPlayingCompactHeader Grid.Row="0"/>
-                <!-- â•â•â•â•â•â•â• SCROLLABLE CONTENT â•â•â•â•â•â•â• -->
+                <!-- SCROLLABLE CONTENT -->
                 <ScrollViewer Grid.Row="1" Margin="0,18,0,0"
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto"
@@ -130,7 +130,7 @@
                     </Grid>
                 </Border>
 
-                <!-- â•â•â•â•â•â•â• Manual match: collapsed CTA â•â•â•â•â•â•â• -->
+                <!-- Manual match: collapsed CTA -->
                 <sections:NowPlayingCompactManualMatch />
                 <!-- Info card with tab switcher: Details / Synopsis / Alt titles -->
                 <sections:NowPlayingCompactInfo />
@@ -174,3 +174,4 @@
         </Grid>
     </Panel>
 </UserControl>
+

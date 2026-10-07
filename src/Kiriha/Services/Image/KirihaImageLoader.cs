@@ -7,9 +7,9 @@ namespace Kiriha.Services.Data.Image;
 
 public class KirihaImageLoader : IAsyncImageLoader
 {
-    private readonly ImageCacheService _imageCache;
+    private readonly IImageCacheService _imageCache;
 
-    public KirihaImageLoader(ImageCacheService imageCache)
+    public KirihaImageLoader(IImageCacheService imageCache)
     {
         _imageCache = imageCache;
     }

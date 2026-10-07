@@ -96,11 +96,9 @@ public partial class TorrentsViewModel
             var results = await _rssService.SearchTorrentsAsync(query);
             Log.Information("Torrents: Search returned {Count} items", results.Count);
 
-            Torrents.Clear();
-            foreach (var r in results) Torrents.Add(r);
-            RebuildGroupedTorrents();
+            Torrents.Reset(results);
 
-            if (!results.Any())
+            if (results.Count == 0)
             {
                 Log.Warning("Torrents: No results found for: {Query}", query);
             }

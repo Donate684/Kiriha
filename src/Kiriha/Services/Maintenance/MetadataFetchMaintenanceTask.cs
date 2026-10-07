@@ -15,8 +15,8 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
     private readonly IAnimeRepository _animeRepo;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IMetadataRepository _metadataRepo;
-    private readonly ShikiMetadataService _shikiMetadata;
-    private readonly ImageCacheService _imageCacheService;
+    private readonly IShikiMetadataService _shikiMetadata;
+    private readonly IImageCacheService _imageCacheService;
     private readonly IUiDispatcher _uiDispatcher;
 
     public MetadataFetchMaintenanceTask(
@@ -24,8 +24,8 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         IAnimeRepository animeRepo,
         IUserAnimeRepository userAnimeRepo,
         IMetadataRepository metadataRepo,
-        ShikiMetadataService shikiMetadata,
-        ImageCacheService imageCacheService,
+        IShikiMetadataService shikiMetadata,
+        IImageCacheService imageCacheService,
         IUiDispatcher uiDispatcher)
     {
         _settingsService = settingsService;

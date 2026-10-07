@@ -28,7 +28,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     private readonly ILocalizer _localizer;
     private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeListActionService _listActionService;
-    private readonly ShikiMetadataService _shikiMetadataService;
+    private readonly IShikiMetadataService _shikiMetadataService;
     private readonly IMalApiService _malApi;
 
     [ObservableProperty]
@@ -100,7 +100,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
         ISettingsService settingsService,
         IAnimeRepository animeRepo,
         IAnimeListActionService listActionService,
-        ShikiMetadataService shikiMetadataService,
+        IShikiMetadataService shikiMetadataService,
         IMalApiService malApi,
         ILocalizer localizer)
     {

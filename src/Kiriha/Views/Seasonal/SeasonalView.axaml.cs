@@ -27,6 +27,19 @@ public partial class SeasonalView : UserControl
     {
         base.OnLoaded(e);
 
+        if (_gridRepeater != null)
+        {
+            _gridRepeater.ElementPrepared -= OnGridElementPrepared;
+            _gridRepeater.ElementPrepared += OnGridElementPrepared;
+            _revealController ??= new SeasonalRevealController(_gridRepeater);
+        }
+
+        if (DataContext is SeasonalViewModel vm)
+        {
+            vm.PropertyChanged -= OnViewModelPropertyChanged;
+            vm.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
         _revealController?.BeginInitialRevealWindow();
         Avalonia.Threading.Dispatcher.UIThread.Post(QueueVisibleItems, Avalonia.Threading.DispatcherPriority.Loaded);
     }
@@ -38,6 +51,7 @@ public partial class SeasonalView : UserControl
             _gridRepeater.ElementPrepared -= OnGridElementPrepared;
         }
         _revealController?.Dispose();
+        _revealController = null;
         _hideConfirmController.ResetHideConfirm();
         if (DataContext is SeasonalViewModel vm)
         {

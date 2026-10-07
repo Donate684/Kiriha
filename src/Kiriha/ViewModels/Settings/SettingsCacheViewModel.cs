@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
@@ -13,14 +13,14 @@ namespace Kiriha.ViewModels.Settings;
 public partial class SettingsCacheViewModel : ObservableObject
 {
     private readonly CacheCleanupService _cacheCleanupService;
-    private readonly ImageCacheService _imageCacheService;
+    private readonly IImageCacheService _imageCacheService;
     private readonly MappingService _mappingService;
     private readonly SeasonalViewModel _seasonalViewModel;
     private readonly ILocalizer _localizer;
 
     public SettingsCacheViewModel(
         CacheCleanupService cacheCleanupService,
-        ImageCacheService imageCacheService,
+        IImageCacheService imageCacheService,
         MappingService mappingService,
         SeasonalViewModel seasonalViewModel,
         ILocalizer localizer)

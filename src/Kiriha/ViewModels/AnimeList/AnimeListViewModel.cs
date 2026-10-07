@@ -7,7 +7,6 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Feed;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Utils.Async;
@@ -22,16 +21,15 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     private readonly IProgressUpdateService _progressService;
     private readonly ILoadQueueService _queueService;
     private readonly IAiringInfoService _airingInfoService;
-    private readonly RssFeedService _rssService;
     private readonly AppReadinessService _readinessService;
     private readonly IDialogService _dialogService;
-    private readonly ShikiMetadataService _shikiMetadataService;
+    private readonly IShikiMetadataService _shikiMetadataService;
     private readonly AnimeCollectionProjection _listProjection = new();
     private readonly ILocalizer _localizer;
 
     public ISettingsService SettingsService => _settingsService;
     public IDialogService DialogService => _dialogService;
-    public ShikiMetadataService ShikiMetadataService => _shikiMetadataService;
+    public IShikiMetadataService ShikiMetadataService => _shikiMetadataService;
 
     public ObservableCollection<AnimeEntity> AnimeItems => _animeRepo.Collection;
 
@@ -42,10 +40,9 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         IProgressUpdateService progressService,
         ILoadQueueService queueService,
         IAiringInfoService airingInfoService,
-        RssFeedService rssService,
         AppReadinessService readinessService,
         IDialogService dialogService,
-        ShikiMetadataService shikiMetadataService,
+        IShikiMetadataService shikiMetadataService,
         ILocalizer localizer)
     {
         _settingsService = settingsService;
@@ -54,7 +51,6 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         _progressService = progressService;
         _queueService = queueService;
         _airingInfoService = airingInfoService;
-        _rssService = rssService;
         _readinessService = readinessService;
         _dialogService = dialogService;
         _shikiMetadataService = shikiMetadataService;

@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using Serilog;
 
 namespace Kiriha.Infrastructure.Player;
 
@@ -33,12 +34,11 @@ public static class SonokoIntegration
         }
         catch (TimeoutException)
         {
-            // Sonoko не запущен или не отвечает. Можно игнорировать или логировать.
+            // Sonoko не запущен или не отвечает.
         }
         catch (Exception ex)
         {
-            // Обработка других возможных ошибок (например, IOException)
-            System.Diagnostics.Debug.WriteLine($"Sonoko send error: {ex.Message}");
+            Log.Debug(ex, "Sonoko send error");
         }
     }
 }

@@ -24,25 +24,6 @@ public partial class MainWindow : KirihaWindowBase
         PositionChanged += OnWindowPositionChanged;
     }
 
-
-
-    public new void ApplyMica()
-    {
-        // Force transparency hints for testing, ignoring the check for a moment if needed
-        var settings = SettingsService?.Current;
-        if (settings is null) return;
-        if (settings.UI.EnableMica)
-        {
-            TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];
-            Background = null;
-        }
-        else
-        {
-            TransparencyLevelHint = [WindowTransparencyLevel.None];
-            ClearValue(BackgroundProperty);
-        }
-    }
-
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);

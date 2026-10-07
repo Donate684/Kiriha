@@ -11,7 +11,7 @@ namespace Kiriha.Services.Data.Core;
 public class LoadQueueService : ILoadQueueService, IDisposable
 {
     private readonly PosterBatchDownloader _posterBatchDownloader;
-    private readonly ShikiMetadataService _shikiMetadata;
+    private readonly IShikiMetadataService _shikiMetadata;
     private readonly ISettingsService _settings;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
 
@@ -28,7 +28,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
 
     public LoadQueueService(
         PosterBatchDownloader posterBatchDownloader,
-        ShikiMetadataService shikiMetadata,
+        IShikiMetadataService shikiMetadata,
         ISettingsService settings,
         IBackgroundTaskSupervisor backgroundTasks)
     {

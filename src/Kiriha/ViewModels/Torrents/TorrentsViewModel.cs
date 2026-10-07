@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Feed;
+using Kiriha.Utils.Collections;
 
 namespace Kiriha.ViewModels.Torrents;
 
@@ -14,11 +15,11 @@ public partial class TorrentsViewModel : ViewModelBase
     private readonly ISettingsService _settingsService;
     private readonly ITorrentFilterRepository _torrentFilterRepo;
 
-    public ObservableCollection<TorrentEntity> Torrents { get; } = new();
+    public BulkObservableCollection<TorrentEntity> Torrents { get; } = new();
 
-    public ObservableCollection<TorrentGroup> GroupedTorrents { get; } = new();
+    public BulkObservableCollection<TorrentGroup> GroupedTorrents { get; } = new();
 
-    public ObservableCollection<AnimeEntity> WatchingAnime { get; } = new();
+    public BulkObservableCollection<AnimeEntity> WatchingAnime { get; } = new();
 
     public ObservableCollection<HideableAnimeItem> HideMenuItems { get; } = new();
 
