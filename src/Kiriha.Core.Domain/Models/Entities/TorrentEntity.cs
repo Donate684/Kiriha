@@ -9,12 +9,8 @@ public class TorrentEntity
     public string ReleaseGroup { get; set; } = string.Empty;
     public string Quality { get; set; } = string.Empty;
     public string Subber { get; set; } = string.Empty;
-    public string TorrentUrl { get; set; } = string.Empty;
     public string DownloadLink { get; set; } = string.Empty;
-    public string PageUrl { get; set; } = string.Empty;
-    public string MagnetUri { get; set; } = string.Empty;
     public string MagnetLink { get; set; } = string.Empty;
-    public DateTime PubDate { get; set; }
     public DateTime PublishDate { get; set; }
     public string Category { get; set; } = string.Empty;
     public long Size { get; set; }

@@ -3,10 +3,10 @@ using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Core.Tracking.Api;
 
-public sealed class ShikiHostResolver : IImageUrlRewriter
+public sealed partial class ShikiHostResolver : IImageUrlRewriter
 {
-    private static readonly Regex ShikiHostPattern =
-        new(@"^shikimori\.[a-z]{2,6}$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    [GeneratedRegex(@"^shikimori\.[a-z]{2,6}$", RegexOptions.IgnoreCase)]
+    private static partial Regex ShikiHostPattern();
 
     private readonly ShikiHostState _state;
     private readonly ShikiProbeStrategy _probeStrategy;
@@ -17,7 +17,7 @@ public sealed class ShikiHostResolver : IImageUrlRewriter
         _probeStrategy = new ShikiProbeStrategy(_state);
     }
 
-    public static bool IsShikiHost(string host) => ShikiHostPattern.IsMatch(host);
+    public static bool IsShikiHost(string host) => ShikiHostPattern().IsMatch(host);
 
     /// <inheritdoc />
     /// <remarks>

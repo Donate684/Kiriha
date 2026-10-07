@@ -12,7 +12,7 @@ public partial class AniListApiService
     public async Task<List<AnimeEntity>?> GetUserAnimeListAsync(CancellationToken ct = default)
     {
         Log.Information("Syncing user list from AniList...");
-        var account = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
+        var account = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
         var tokens = account?.Tokens as AniListTokens;
         if (tokens == null || string.IsNullOrEmpty(tokens.AccessToken))
         {
@@ -126,7 +126,7 @@ public partial class AniListApiService
         int? rewatchCount = null,
         CancellationToken ct = default)
     {
-        var account = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
+        var account = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
         if (account?.Tokens == null) return SyncOutcome.PermanentFailure;
 
         var mediaId = await ResolveAniListMediaIdAsync(animeId, "ANIME", ct);
@@ -246,7 +246,7 @@ public partial class AniListApiService
 
     public async Task<List<AnimeEntity>?> GetUserMangaListAsync(CancellationToken ct = default)
     {
-        var account = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
+        var account = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
         var tokens = account?.Tokens as AniListTokens;
         if (tokens == null || string.IsNullOrEmpty(tokens.AccessToken)) return null;
 

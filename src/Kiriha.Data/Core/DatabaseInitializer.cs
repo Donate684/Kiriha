@@ -61,6 +61,10 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
 
             await LegacyUserStateMigration.MigrateAsync(context);
 
+            // Cleanup legacy ghost tables from early prototypes (scheduled for full migration squash in v1.6)
+            await context.Database.ExecuteSqlRawAsync(
+                "DROP TABLE IF EXISTS anime_staff; DROP TABLE IF EXISTS anime_staff_meta;");
+
             await context.Database.ExecuteSqlRawAsync(
                 "CREATE TABLE IF NOT EXISTS anime_country_origin (mal_id INTEGER PRIMARY KEY, country_code TEXT NOT NULL, fetched_at TEXT NOT NULL);");
 

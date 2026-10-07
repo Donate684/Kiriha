@@ -21,8 +21,6 @@ public partial class AppDbContext : DbContext
     public DbSet<EpisodeListMeta> EpisodeListMeta { get; set; } = null!;
     public DbSet<AnimeRelation> AnimeRelations { get; set; } = null!;
     public DbSet<AnimeRelationMeta> AnimeRelationMeta { get; set; } = null!;
-    public DbSet<AnimeStaff> AnimeStaff { get; set; } = null!;
-    public DbSet<AnimeStaffMeta> AnimeStaffMeta { get; set; } = null!;
     public DbSet<HiddenSeasonalAnime> HiddenSeasonalAnime { get; set; } = null!;
     public DbSet<HiddenTorrentAnime> HiddenTorrentAnime { get; set; } = null!;
     public DbSet<TorrentTitleFilter> TorrentTitleFilters { get; set; } = null!;

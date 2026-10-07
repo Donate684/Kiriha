@@ -1,4 +1,4 @@
-
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Core.Domain.Models;
 
@@ -38,7 +38,7 @@ public partial class AppSettings
         public string PreferredSubtitleLanguages { get; set; } = "Russian,rus,ru";
         public bool SubtitleStyleOverrideEnabled { get; set; } = false;
         public string SubtitleStyleHotkey { get; set; } = "U";
-        public string SubtitleFont { get; set; } = "Lato ExtraBold";
+        public string SubtitleFont { get; set; } = AppConstants.Player.DefaultSubtitleFont;
         public double SubtitleFontSize { get; set; } = 55;
         public string SubtitleColor { get; set; } = "#FFFFFF";
         public string SubtitleBorderColor { get; set; } = "#000000";

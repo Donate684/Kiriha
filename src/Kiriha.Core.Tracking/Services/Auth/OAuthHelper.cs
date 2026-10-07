@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -57,7 +58,7 @@ public static class OAuthHelper
                 // We got the code!
                 using var response = context.Response;
                 response.ContentType = "text/html; charset=utf-8";
-                string localizedCloseMsg = !string.IsNullOrWhiteSpace(closeMessage) ? closeMessage : UIUtils.GetLoc("auth.close_window");
+                string localizedCloseMsg = !string.IsNullOrWhiteSpace(closeMessage) ? closeMessage : TrackingLoc.GetLoc("auth.close_window");
                 var responseString = $"<html><head><meta charset='utf-8'></head><body><h1 style='font-family:sans-serif;'>{successMessage}</h1><p style='font-family:sans-serif;'>{localizedCloseMsg}</p></body></html>";
                 var buffer = Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;

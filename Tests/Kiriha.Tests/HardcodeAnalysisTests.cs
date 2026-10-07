@@ -168,7 +168,7 @@ public class HardcodeAnalysisTests
         "Shift+S",
 
         // Unicode bullet / separator characters used as visual decorators
-        "•",   // U+2022 bullet (AmbiguousMatchView separator)
+        "•",   // U+2022 bullet (visual decorator)
         "·",   // U+00B7 middle dot (HistoryView separator, also &#183;)
     };
 
@@ -224,16 +224,12 @@ public class HardcodeAnalysisTests
     }
 
     /// <summary>
-    /// All AXAML files under /src, excluding generated obj/bin output and the
-    /// Kiriha.Mpv.UI mirror project (intentional duplicate of Kiriha views).
+    /// All AXAML files under /src, excluding generated obj/bin output.
     /// </summary>
     private static IEnumerable<string> AllXamlFiles()
     {
         return Directory.EnumerateFiles(SrcRoot, "*.axaml", SearchOption.AllDirectories)
-            .Where(f =>
-                !f.Contains(@"\obj\") &&
-                !f.Contains(@"\bin\") &&
-                !RelativePath(f).StartsWith("Kiriha.Mpv.UI/", StringComparison.OrdinalIgnoreCase));
+            .Where(f => !f.Contains(@"\obj\") && !f.Contains(@"\bin\"));
     }
 
     private static bool IsXamlCommentLine(string line)
@@ -244,17 +240,14 @@ public class HardcodeAnalysisTests
 
     /// <summary>
     /// Source files to exclude from the cross-file duplicate literal check.
-    /// EF Core migration snapshots and the Kiriha.Mpv.UI mirror project are
-    /// intentionally repetitive by design — flagging them creates noise.
+    /// EF Core migration snapshots are intentionally repetitive by design — flagging them creates noise.
     /// </summary>
     private static IEnumerable<string> SourceFilesForDuplicateCheck()
     {
         return AllSourceFiles()
             .Where(f =>
                 // EF migrations are auto-generated — duplicates are by design
-                !RelativePath(f).Contains("Migrations/", StringComparison.OrdinalIgnoreCase) &&
-                // Kiriha.Mpv.UI is a deliberate mirror of Kiriha views
-                !RelativePath(f).StartsWith("Kiriha.Mpv.UI/", StringComparison.OrdinalIgnoreCase));
+                !RelativePath(f).Contains("Migrations/", StringComparison.OrdinalIgnoreCase));
     }
 
     private static string RelativePath(string absolute) =>

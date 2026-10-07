@@ -2,35 +2,6 @@ namespace Kiriha.Core.Domain.Models.Entities;
 
 public partial class AnimeEntity
 {
-    private void NotifyTitleChanged()
-    {
-        OnPropertyChanged(nameof(Presentation));
-    }
-
-    private void NotifySynopsisChanged()
-    {
-        OnPropertyChanged(nameof(Presentation));
-    }
-
-    private void NotifySeasonChanged()
-    {
-        OnPropertyChanged(nameof(Season));
-    }
-
-    private void NotifyEpisodesAiredChanged()
-    {
-        OnPropertyChanged(nameof(Presentation));
-    }
-
-    private void NotifyNextEpisodeChanged()
-    {
-        OnPropertyChanged(nameof(Presentation));
-    }
-
-    private void NotifyProgressChanges()
-    {
-        OnPropertyChanged(nameof(Presentation));
-    }
 
     public void RefreshMetadata() => OnPropertyChanged(string.Empty);
 

@@ -8,7 +8,6 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Utils.Collections;
-using Kiriha.ViewModels.Settings;
 
 namespace Kiriha.ViewModels.Search;
 

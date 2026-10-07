@@ -1,14 +1,11 @@
 using System.Collections.Frozen;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.ViewModels;
 using Kiriha.ViewModels.Analytics;
-using Kiriha.ViewModels.AnimeDetails;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Dialogs;
 using Kiriha.ViewModels.History;
-using Kiriha.ViewModels.Main;
 using Kiriha.ViewModels.NowPlaying;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Seasonal;
@@ -46,7 +43,6 @@ public class ViewLocator : IDataTemplate
 {
     private static readonly FrozenDictionary<Type, Func<Control>> Map = new KeyValuePair<Type, Func<Control>>[]
     {
-        new(typeof(AmbiguousMatchViewModel), () => new AmbiguousMatchView()),
         new(typeof(AnimeListViewModel), () => new AnimeListView()),
         new(typeof(AnalyticsViewModel), () => new AnalyticsView()),
         new(typeof(FirstStartupViewModel), () => new FirstStartupView()),

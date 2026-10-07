@@ -4,7 +4,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Mpv;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Mpv.UI.Views.Converters;
+using Kiriha.Views.Converters;
 using Moq;
 
 namespace Kiriha.Tests;

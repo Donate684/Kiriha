@@ -135,26 +135,6 @@ public class AnimeRelationMetaConfiguration : IEntityTypeConfiguration<AnimeRela
     }
 }
 
-public class AnimeStaffConfiguration : IEntityTypeConfiguration<AnimeStaff>
-{
-    public void Configure(EntityTypeBuilder<AnimeStaff> builder)
-    {
-        builder.ToTable("anime_staff");
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
-        builder.HasIndex(e => e.SourceMalId).HasDatabaseName("idx_anime_staff_source_mal_id");
-    }
-}
-
-public class AnimeStaffMetaConfiguration : IEntityTypeConfiguration<AnimeStaffMeta>
-{
-    public void Configure(EntityTypeBuilder<AnimeStaffMeta> builder)
-    {
-        builder.ToTable("anime_staff_meta");
-        builder.HasKey(e => e.MalId);
-        builder.Property(e => e.MalId).ValueGeneratedNever();
-    }
-}
 
 public class HiddenSeasonalAnimeConfiguration : IEntityTypeConfiguration<HiddenSeasonalAnime>
 {

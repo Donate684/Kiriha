@@ -1,7 +1,7 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using Kiriha.ViewModels.Settings;
+using Kiriha.ViewModels.Search;
 
 namespace Kiriha.Views.Converters;
 

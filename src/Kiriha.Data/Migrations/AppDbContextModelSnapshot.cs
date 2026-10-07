@@ -320,63 +320,6 @@ namespace Kiriha.Services.Data.Migrations
                     b.ToTable("anime_relation_meta", (string)null);
                 });
 
-            modelBuilder.Entity("AnimeStaff", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<string>("PersonImageUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("person_image_url");
-
-                    b.Property<int>("PersonMalId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("person_mal_id");
-
-                    b.Property<string>("PersonName")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("person_name");
-
-                    b.Property<string>("PersonUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("person_url");
-
-                    b.Property<string>("Positions")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("positions");
-
-                    b.Property<int>("SourceMalId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("source_mal_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SourceMalId")
-                        .HasDatabaseName("idx_anime_staff_source_mal_id");
-
-                    b.ToTable("anime_staff", (string)null);
-                });
-
-            modelBuilder.Entity("AnimeStaffMeta", b =>
-                {
-                    b.Property<int>("MalId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("mal_id");
-
-                    b.Property<DateTime>("FetchedAt")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("fetched_at");
-
-                    b.HasKey("MalId");
-
-                    b.ToTable("anime_staff_meta", (string)null);
-                });
 
             modelBuilder.Entity("EpisodeListMeta", b =>
                 {

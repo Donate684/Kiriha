@@ -3,6 +3,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
@@ -64,7 +65,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
         try
         {
-            status?.Report(UIUtils.GetLoc("sync.syncing.with", primaryTracker.Name));
+            status?.Report(TrackingLoc.GetLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserAnimeListAsync(ct);
             if (apiList is null) return false;
 
@@ -127,7 +128,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
         try
         {
-            status?.Report(UIUtils.GetLoc("sync.syncing.with", primaryTracker.Name));
+            status?.Report(TrackingLoc.GetLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserMangaListAsync(ct);
             if (apiList is null) return false;
 

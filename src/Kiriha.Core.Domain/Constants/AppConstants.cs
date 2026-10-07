@@ -268,4 +268,9 @@ public static class AppConstants
             new("mythology", "Mythology", "Мифология", ["мифы"])
         ];
     }
+
+    public static class Player
+    {
+        public const string DefaultSubtitleFont = "Lato ExtraBold";
+    }
 }

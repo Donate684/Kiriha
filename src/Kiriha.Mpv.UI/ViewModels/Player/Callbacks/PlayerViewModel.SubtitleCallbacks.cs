@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -27,7 +28,7 @@ public partial class PlayerViewModel
         if (_isApplyingSettings || _settingsService is null) return;
         _settingsService.Update(settings => settings.Player.SubtitleStyleHotkey = NormalizeHotkey(value, "U"), SettingsSection.Player);
     }
-    partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, "Lato ExtraBold"));
+    partial void OnSubtitleFontChanged(string value) => SaveSubtitleStyle(x => x.SubtitleFont = NormalizeMpvOption(value, AppConstants.Player.DefaultSubtitleFont));
     partial void OnSubtitleFontSizeChanged(double value) => SaveSubtitleStyle(x => x.SubtitleFontSize = Math.Clamp(value, 1, 300));
     partial void OnSubtitleColorChanged(string value) => SaveSubtitleStyle(x => x.SubtitleColor = NormalizeSubtitleColor(value, "#FFFFFF"));
     partial void OnSubtitleBorderColorChanged(string value) => SaveSubtitleStyle(x => x.SubtitleBorderColor = NormalizeSubtitleColor(value, "#000000"));

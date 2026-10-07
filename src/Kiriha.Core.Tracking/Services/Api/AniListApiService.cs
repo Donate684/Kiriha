@@ -22,7 +22,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
 
     private readonly HttpClient _httpClient;
     private readonly IHttpCacheRepository _cache;
-    private readonly ISettingsService? _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly ConcurrentDictionary<int, int> _malToAniListMap = new();
 
     private readonly RateLimiter _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
@@ -41,12 +41,12 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
     {
         get
         {
-            var acc = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
+            var acc = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
             return acc != null && acc.IsEnabled && acc.Tokens != null;
         }
     }
 
-    public AniListApiService(HttpClient httpClient, IHttpCacheRepository cache, ISettingsService? settingsService = null)
+    public AniListApiService(HttpClient httpClient, IHttpCacheRepository cache, ISettingsService settingsService)
     {
         _httpClient = httpClient;
         _cache = cache;
@@ -69,7 +69,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         };
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
 
-        var token = _settingsService?.Current.Api.GetAccount(TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
+        var token = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
         if (!string.IsNullOrEmpty(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

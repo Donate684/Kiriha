@@ -21,8 +21,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLoading;
 
-    [ObservableProperty]
-    public System.Collections.ObjectModel.ObservableCollection<AnimeOfflineItem> _relatedAnime = new();
 
     public System.Collections.ObjectModel.ObservableCollection<RelationItemVm> Relations { get; } = new();
 

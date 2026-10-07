@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -13,19 +14,10 @@ public class AiringInfoService : IAiringInfoService
     private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeSyncOrchestrator _syncOrchestrator;
     private readonly IUiDispatcher _uiDispatcher;
-    private readonly ISettingsService? _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly AiringInfoFetcher _fetcher;
     private readonly AiringInfoCache _cache;
 
-    public AiringInfoService(
-        IAniListApiService aniListApi,
-        IAnimeRepository animeRepo,
-        IAnimeSyncOrchestrator syncOrchestrator,
-        INotificationService notificationService,
-        IUiDispatcher uiDispatcher)
-        : this(aniListApi, null!, null!, animeRepo, syncOrchestrator, notificationService, uiDispatcher)
-    {
-    }
 
     public AiringInfoService(
         IAniListApiService aniListApi,
@@ -58,7 +50,7 @@ public class AiringInfoService : IAiringInfoService
 
         if (!isTrackableStatus && !anime.NextEpisodeAt.HasValue) return;
 
-        var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
+        var source = _settingsService.Current.System.AiringSource;
         Log.Information("AiringInfoService: Immediate {Source} sync requested for {Title} (ID: {Id})", source, anime.Title, anime.Id);
 
         var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force: true, ct);
@@ -123,7 +115,7 @@ public class AiringInfoService : IAiringInfoService
             try
             {
                 int currentCompleted = Interlocked.Increment(ref completed);
-                var progressMsg = UIUtils.GetLoc("sync.syncing.episodes_progress", currentCompleted.ToString(), total.ToString(), anime.Title);
+                var progressMsg = TrackingLoc.GetLoc("sync.syncing.episodes_progress", currentCompleted.ToString(), total.ToString(), anime.Title);
                 progress?.Report(progressMsg);
 
                 Log.Information("AiringInfoService: Syncing {Source} airing info for {Title} (ID: {Id})...", source, anime.Title, anime.Id);

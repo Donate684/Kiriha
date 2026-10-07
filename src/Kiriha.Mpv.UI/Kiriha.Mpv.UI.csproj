@@ -8,7 +8,6 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="Material.Icons.Avalonia" />
   </ItemGroup>
 
   <ItemGroup>

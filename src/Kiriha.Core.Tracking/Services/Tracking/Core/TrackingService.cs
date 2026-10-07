@@ -2,6 +2,7 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -42,7 +43,7 @@ public partial class TrackingService : IDisposable
     {
         _anisthesiaService = anisthesiaService;
         _internalPlayerServer = internalPlayerServer;
-        _internalPlayerServer.PlayerStateChanged += (s, e) => SetInternalMedia(e);
+        _internalPlayerServer.PlayerStateChanged += OnPlayerStateChanged;
         _mappingService = mappingService;
         _animeRepo = animeRepo;
         _settingsService = settingsService;
@@ -57,8 +58,11 @@ public partial class TrackingService : IDisposable
         _scrobbleService.CountdownUpdated += OnScrobbleCountdownUpdated;
     }
 
+    private void OnPlayerStateChanged(object? sender, InternalPlayerState e) => SetInternalMedia(e);
+
     public void Dispose()
     {
+        _internalPlayerServer.PlayerStateChanged -= OnPlayerStateChanged;
         _anisthesiaService.MediaDetected -= OnMediaDetected;
         _anisthesiaService.MediaCleared -= OnMediaCleared;
         _scrobbleService.CountdownUpdated -= OnScrobbleCountdownUpdated;

@@ -1,4 +1,4 @@
-namespace Kiriha.ViewModels.Settings;
+namespace Kiriha.ViewModels.Search;
 
 public enum AdultFilterMode
 {

@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 
@@ -45,7 +46,7 @@ public partial class PlayerViewModel
             PreferredSubtitleLanguages = NormalizeLanguageList(settings.PreferredSubtitleLanguages, "Russian,rus,ru");
             SubtitleStyleOverrideEnabled = settings.SubtitleStyleOverrideEnabled;
             SubtitleStyleHotkey = NormalizeHotkey(settings.SubtitleStyleHotkey, "U");
-            SubtitleFont = NormalizeMpvOption(settings.SubtitleFont, "Lato ExtraBold");
+            SubtitleFont = NormalizeMpvOption(settings.SubtitleFont, AppConstants.Player.DefaultSubtitleFont);
             SubtitleFontSize = Math.Clamp(settings.SubtitleFontSize, 1, 300);
             SubtitleColor = NormalizeSubtitleColor(settings.SubtitleColor, "#FFFFFF");
             SubtitleBorderColor = NormalizeSubtitleColor(settings.SubtitleBorderColor, "#000000");

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -6,7 +7,7 @@ public partial class PlayerViewModel
 {
     [ObservableProperty] private string _preferredSubtitleLanguages = "Russian,rus,ru";
     [ObservableProperty] private bool _subtitleStyleOverrideEnabled = false;
-    [ObservableProperty] private string _subtitleFont = "Lato ExtraBold";
+    [ObservableProperty] private string _subtitleFont = AppConstants.Player.DefaultSubtitleFont;
     [ObservableProperty] private double _subtitleFontSize = 55;
     [ObservableProperty] private string _subtitleColor = "#FFFFFF";
     [ObservableProperty] private string _subtitleBorderColor = "#000000";
