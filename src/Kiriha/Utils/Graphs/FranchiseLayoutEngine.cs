@@ -160,7 +160,7 @@ public static class FranchiseLayoutEngine
                 IsCurrent = n.Id == data.CurrentId,
                 IsSpecial = IsSpecialOrShortNode(n),
                 IsMangaOrNovel = IsMangaOrNovelKind(n.Kind),
-                DisplayImageUrl = n.ImageUrl ?? string.Empty
+                DisplayImageUrl = AnimeEntity.IsMissingPosterUrl(n.ImageUrl) ? string.Empty : (n.ImageUrl ?? string.Empty)
             });
 
         // Filter valid links where both source and target are kept

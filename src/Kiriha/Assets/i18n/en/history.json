@@ -23,7 +23,11 @@
     "sync_failed": "Sync Failed",
     "completed": "Completed",
     "dropped": "Dropped",
-    "deleted": "Removed from list"
+    "deleted": "Removed from list",
+    "plan_to_watch": "Plan to Watch",
+    "on_hold": "On Hold",
+    "rewatching": "Rewatching",
+    "added_to_list": "Added to list"
   },
   "already_scrobbled": "Already scrobbled",
   "count_format": "×{0}",

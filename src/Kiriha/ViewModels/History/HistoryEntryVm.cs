@@ -38,13 +38,13 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
 
     public bool IsRange => EpisodeFrom != EpisodeTo;
     public string EpisodeLabel =>
-        (ActionType == 1 || ActionType == 4 || ActionType == 6)
+        (ActionType == 1 || ActionType == 4 || ActionType == 6 || ActionType == 12 || ActionType == 0 || ActionType == 2)
             ? (IsRange
                 ? _localizer.GetLoc("history.episode_range", EpisodeFrom, EpisodeTo)
-                : (EpisodeFrom > 0 ? _localizer.GetLoc("history.episode_single", EpisodeFrom) : string.Empty))
+                : _localizer.GetLoc("history.episode_single", EpisodeFrom))
             : string.Empty;
 
-    public bool CanTrack => AnimeId > 0 && (ActionType == 1 || ActionType == 4 || ActionType == 5 || ActionType == 6 || ActionType == 7 || ActionType == 8);
+    public bool CanTrack => AnimeId > 0 && ActionType != 3;
 
     public ObservableCollection<TrackerStatusBadgeVm> TrackerBadges { get; } = new();
     public bool HasTrackerBadges => CanTrack && TrackerBadges.Count > 0;

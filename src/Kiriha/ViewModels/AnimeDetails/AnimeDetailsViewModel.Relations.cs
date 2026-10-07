@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Extensions;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
@@ -9,11 +10,13 @@ public partial class AnimeDetailsViewModel
 {
     private async Task FetchRelationImageAsync(RelationItemVm vm)
     {
+        if (!string.IsNullOrEmpty(vm.ImageUrl) && !AnimeEntity.IsMissingPosterUrl(vm.ImageUrl)) return;
+
         var type = vm.Relation.TargetType?.ToLowerInvariant() ?? "";
         bool isAnime = type == "anime" || type == "tv" || type == "movie" || type == "ova" || type == "ona" || type == "special";
 
         var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == vm.Relation.TargetMalId && (isAnime ? x.MediaKind == MediaKind.Anime : x.MediaKind != MediaKind.Anime));
-        if (existing != null && !string.IsNullOrEmpty(existing.MainPictureUrl))
+        if (existing != null && !string.IsNullOrEmpty(existing.MainPictureUrl) && !AnimeEntity.IsMissingPosterUrl(existing.MainPictureUrl))
         {
             vm.ImageUrl = existing.MainPictureUrl;
             if (!string.IsNullOrEmpty(existing.Type))
@@ -25,6 +28,16 @@ public partial class AnimeDetailsViewModel
 
         try
         {
+            if (_shikiApiService != null)
+            {
+                var posters = await _shikiApiService.FetchPostersFromGraphQlAsync([vm.Relation.TargetMalId], !isAnime);
+                if (posters.TryGetValue(vm.Relation.TargetMalId, out var posterUrl) && !string.IsNullOrEmpty(posterUrl) && !AnimeEntity.IsMissingPosterUrl(posterUrl))
+                {
+                    vm.ImageUrl = posterUrl;
+                    return;
+                }
+            }
+
             AnimeEntity? details = null;
             if (isAnime)
             {
@@ -123,7 +136,7 @@ public partial class AnimeDetailsViewModel
 
     private async Task LoadFranchiseAndRelationsAsync()
     {
-        // 1. Try to load rich Shikimori franchise timeline
+        // 1. Load Shikimori franchise data
         try
         {
             var data = await _shikiApiService.GetFranchiseAsync(Anime.Id);
@@ -161,8 +174,12 @@ public partial class AnimeDetailsViewModel
                 }
                 else
                 {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
+                    PopulateStandardRelationsFromShikimori(data);
                 }
+            }
+            else if (data != null && data.Links.Count > 0)
+            {
+                PopulateStandardRelationsFromShikimori(data);
             }
             else
             {
@@ -171,31 +188,61 @@ public partial class AnimeDetailsViewModel
         }
         catch (System.Exception ex)
         {
-            Log.Warning(ex, "Failed to load franchise timeline for {Id}", Anime.Id);
+            Log.Warning(ex, "Failed to load franchise for {Id}", Anime.Id);
             Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
+        }
+    }
+
+    private void PopulateStandardRelationsFromShikimori(ShikiFranchiseResponse data)
+    {
+        var relations = ExtractRelationsFromShikimori(data);
+        var nodeMap = data.Nodes.ToDictionary(n => n.Id);
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            Relations.Clear();
+            foreach (var r in relations)
+            {
+                var vm = new RelationItemVm(r);
+                if (nodeMap.TryGetValue(r.TargetMalId, out var node) && !string.IsNullOrEmpty(node.ImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.ImageUrl))
+                {
+                    vm.ImageUrl = node.ImageUrl;
+                }
+                Relations.Add(vm);
+                _ = FetchRelationImageAsync(vm);
+            }
+            UpdateRelationsVisibility();
+        });
+    }
+
+    private List<AnimeRelation> ExtractRelationsFromShikimori(ShikiFranchiseResponse data)
+    {
+        var result = new List<AnimeRelation>();
+        var nodeMap = data.Nodes.ToDictionary(n => n.Id);
+
+        foreach (var link in data.Links)
+        {
+            int targetId = 0;
+            if (link.SourceId == Anime.Id)
+                targetId = link.TargetId;
+            else if (link.TargetId == Anime.Id)
+                targetId = link.SourceId;
+
+            if (targetId != 0 && nodeMap.TryGetValue(targetId, out var targetNode))
+            {
+                result.Add(new AnimeRelation
+                {
+                    SourceMalId = Anime.Id,
+                    RelationType = !string.IsNullOrEmpty(link.Relation) ? link.Relation : "other",
+                    TargetMalId = targetNode.Id,
+                    TargetType = !string.IsNullOrEmpty(targetNode.Kind) ? targetNode.Kind : "anime",
+                    TargetName = targetNode.Name,
+                    TargetUrl = targetNode.Url
+                });
+            }
         }
 
-        // 2. Also load standard relations (used as fallback or for manga relations)
-        try
-        {
-            var relations = await _jikanApiService.GetRelationsAsync(Anime.Id, Anime.MediaKind);
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                Relations.Clear();
-                foreach (var r in relations)
-                {
-                    var vm = new RelationItemVm(r);
-                    Relations.Add(vm);
-                    _ = FetchRelationImageAsync(vm);
-                }
-                UpdateRelationsVisibility();
-            });
-        }
-        catch (System.Exception ex)
-        {
-            Log.Warning(ex, "Failed to fetch relations for {Id}", Anime.Id);
-            Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
-        }
+        return result;
     }
 
     private void EnrichFranchiseNode(Kiriha.Utils.Graphs.FranchiseGraphVisualNode node)
@@ -213,7 +260,7 @@ public partial class AnimeDetailsViewModel
             node.Score = existing.Score;
             node.RussianTitle = existing.RussianTitle;
 
-            if (!string.IsNullOrEmpty(existing.MainPictureUrl))
+            if (!string.IsNullOrEmpty(existing.MainPictureUrl) && !AnimeEntity.IsMissingPosterUrl(existing.MainPictureUrl))
             {
                 node.DisplayImageUrl = existing.MainPictureUrl;
             }
@@ -222,16 +269,27 @@ public partial class AnimeDetailsViewModel
 
     private async Task FetchFranchiseNodeImageAsync(Kiriha.Utils.Graphs.FranchiseGraphVisualNode node)
     {
-        if (!string.IsNullOrEmpty(node.DisplayImageUrl)) return;
+        if (!string.IsNullOrEmpty(node.DisplayImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.DisplayImageUrl)) return;
 
         bool isManga = node.IsMangaOrNovel;
         try
         {
+            if (_shikiApiService != null)
+            {
+                var posters = await _shikiApiService.FetchPostersFromGraphQlAsync([node.Node.Id], isManga);
+                if (posters.TryGetValue(node.Node.Id, out var posterUrl) && !string.IsNullOrEmpty(posterUrl) && !AnimeEntity.IsMissingPosterUrl(posterUrl))
+                {
+                    node.DisplayImageUrl = posterUrl;
+                    node.Node.ImageUrl = posterUrl;
+                    return;
+                }
+            }
+
             AnimeEntity? details = isManga
                 ? await _malApiService.GetMangaDetailsAsync(node.Node.Id)
                 : await _malApiService.GetAnimeDetailsAsync(node.Node.Id);
 
-            if (details != null && !string.IsNullOrEmpty(details.MainPictureUrl))
+            if (details != null && !string.IsNullOrEmpty(details.MainPictureUrl) && !AnimeEntity.IsMissingPosterUrl(details.MainPictureUrl))
             {
                 node.DisplayImageUrl = details.MainPictureUrl;
             }
@@ -268,7 +326,9 @@ public partial class AnimeDetailsViewModel
             Title = node.Node.Name,
             RussianTitle = node.RussianTitle,
             MediaKind = kind,
-            MainPictureUrl = !string.IsNullOrEmpty(node.DisplayImageUrl) ? node.DisplayImageUrl : node.Node.ImageUrl,
+            MainPictureUrl = (!string.IsNullOrEmpty(node.DisplayImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.DisplayImageUrl))
+                ? node.DisplayImageUrl
+                : ((!string.IsNullOrEmpty(node.Node.ImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.Node.ImageUrl)) ? node.Node.ImageUrl : null),
             Status = node.UserStatus,
             Progress = node.UserProgress ?? 0,
             TotalEpisodes = node.TotalEpisodes ?? 0

@@ -9,7 +9,6 @@ public static class AboutCredits
         new CreditEntry("Shikimori",   "Russian titles & descriptions · shikimori.one", "https://shikimori.one"),
         new CreditEntry("ShikimoriRIP", "Community fork Shikimori · shikimori.rip", "https://shikimori.rip"),
         new CreditEntry("Nyaa.si",     "Torrent feed · nyaa.si",                    "https://nyaa.si"),
-        new CreditEntry("Jikan API",   "MAL API wrapper · jikan.moe",               "https://jikan.moe"),
     ];
 
     public static IReadOnlyList<CreditEntry> Inspirations { get; } =

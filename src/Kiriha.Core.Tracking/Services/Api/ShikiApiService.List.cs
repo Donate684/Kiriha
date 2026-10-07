@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -146,6 +147,16 @@ public partial class ShikiApiService
                             (primaryId, shikiId) => _malToShikiMap[primaryId] = shikiId);
 
                         list.Add(anime);
+
+                        if (element.TryGetProperty("id", out var rateIdProp) && rateIdProp.TryGetInt32(out var rateId))
+                        {
+                            var typeKey = targetType.Equals("Manga", StringComparison.OrdinalIgnoreCase) ? "Manga" : "Anime";
+                            _userRateMap[$"{typeKey}_{anime.Id}"] = rateId;
+                            if (element.TryGetProperty("target_id", out var tidProp) && tidProp.TryGetInt32(out var tid))
+                            {
+                                _userRateMap[$"{typeKey}_{tid}"] = rateId;
+                            }
+                        }
                     }
 
                     Log.Information("ShikiApiService ({Tracker}): page {Page} yielded {Count} items (running total: {Total})", Name, page, countInPage, list.Count);
@@ -267,47 +278,161 @@ public partial class ShikiApiService
         return await PostAsync("v2/user_rates", payload, ct);
     }
 
-    public Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
+    public async Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
     {
-        // Shikimori deletes by user_rate_id, not anime_id. Until the service tracks
-        // user_rate_id locally, treat remove as a no-op so SyncManager doesn't
-        // endlessly retry and clutter history with SyncFailed entries.
-        Log.Warning("ShikiApiService: remove is a no-op until user_rate_id is tracked locally ({AnimeId}).", animeId);
-        return Task.FromResult(SyncOutcome.Success);
+        var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
+        if (string.IsNullOrEmpty(token)) return SyncOutcome.PermanentFailure;
+
+        var userId = await GetEffectiveUserIdAsync(ct);
+        if (userId is null) return SyncOutcome.TransientFailure;
+
+        var targetId = ResolveShikiTargetId(animeId);
+
+        // 1. Check in-memory user_rate map
+        int? userRateId = null;
+        if (_userRateMap.TryGetValue($"Anime_{targetId}", out var cachedRateId) ||
+            _userRateMap.TryGetValue($"Anime_{animeId}", out cachedRateId) ||
+            _userRateMap.TryGetValue($"Manga_{targetId}", out cachedRateId) ||
+            _userRateMap.TryGetValue($"Manga_{animeId}", out cachedRateId))
+        {
+            userRateId = cachedRateId;
+        }
+
+        // 2. Query Shikimori API if not found in memory
+        if (userRateId == null)
+        {
+            userRateId = await FindUserRateIdAsync(userId.Value, targetId, "Anime", ct);
+            if (userRateId == null && targetId != animeId)
+            {
+                userRateId = await FindUserRateIdAsync(userId.Value, animeId, "Anime", ct);
+            }
+            if (userRateId == null)
+            {
+                userRateId = await FindUserRateIdAsync(userId.Value, targetId, "Manga", ct);
+                if (userRateId == null && targetId != animeId)
+                {
+                    userRateId = await FindUserRateIdAsync(userId.Value, animeId, "Manga", ct);
+                }
+            }
+        }
+
+        if (userRateId == null)
+        {
+            Log.Information("ShikiApiService ({Tracker}): entry for anime {AnimeId} not found on Shikimori; treated as already removed.", Name, animeId);
+            return SyncOutcome.Success;
+        }
+
+        Log.Information("ShikiApiService ({Tracker}): deleting user rate {RateId} for anime {AnimeId}...", Name, userRateId.Value, animeId);
+        var outcome = await DeleteAsync($"v2/user_rates/{userRateId.Value}", ct);
+        if (outcome == SyncOutcome.Success)
+        {
+            _userRateMap.TryRemove($"Anime_{targetId}", out _);
+            _userRateMap.TryRemove($"Anime_{animeId}", out _);
+            _userRateMap.TryRemove($"Manga_{targetId}", out _);
+            _userRateMap.TryRemove($"Manga_{animeId}", out _);
+        }
+
+        return outcome;
     }
 
-    public async Task EnrichMissingPostersFromGraphQlAsync(List<AnimeEntity> list, bool isManga, CancellationToken ct)
+    private async Task<int?> FindUserRateIdAsync(int userId, int targetId, string targetType, CancellationToken ct)
     {
-        var missing = list
-            .Where(x => string.IsNullOrEmpty(x.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(x.MainPictureUrl))
-            .ToList();
+        try
+        {
+            var url = $"v2/user_rates?user_id={userId}&target_id={targetId}&target_type={targetType}";
+            using var response = await GetAsync(url, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
 
-        if (missing.Count == 0) return;
+            using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var doc = await JsonDocument.ParseAsync(stream, default, ct);
+            if (doc.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (el.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var rateId))
+                    {
+                        return rateId;
+                    }
+                }
+            }
+            return null;
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "ShikiApiService ({Tracker}): FindUserRateIdAsync failed for target {TargetId} ({TargetType})", Name, targetId, targetType);
+            return null;
+        }
+    }
 
-        Log.Information("ShikiApiService ({Tracker}): Found {Count} items missing poster. Enriching via Shikimori GraphQL...", Name, missing.Count);
+    public async Task<Dictionary<int, string>> FetchPostersFromGraphQlAsync(IEnumerable<int> ids, bool isManga, CancellationToken ct = default)
+    {
+        var posterMap = new Dictionary<int, string>();
+        var idList = ids.Where(id => id > 0).Distinct().ToList();
+        if (idList.Count == 0) return posterMap;
 
         string entityType = isManga ? "mangas" : "animes";
-        int enrichedCount = 0;
+        var neededIds = new List<int>();
 
-        foreach (var chunk in missing.Chunk(50))
+        // 1. Check in-memory fast cache
+        foreach (var id in idList)
+        {
+            var memKey = $"{entityType}_{id}";
+            if (_posterMemoryCache.TryGetValue(memKey, out var memUrl) && !string.IsNullOrEmpty(memUrl))
+            {
+                posterMap[id] = memUrl;
+            }
+            else
+            {
+                neededIds.Add(id);
+            }
+        }
+
+        if (neededIds.Count == 0) return posterMap;
+
+        // 2. Check SQLite persistent cache (http_response_cache table)
+        var toQueryFromNetwork = new List<int>();
+        foreach (var id in neededIds)
+        {
+            if (ct.IsCancellationRequested) break;
+            var dbKey = $"shiki_poster_{entityType}_{id}";
+            var cachedBytes = await _httpCache.GetCachedBodyAsync(dbKey, ct);
+            if (cachedBytes != null && cachedBytes.Length > 0)
+            {
+                var cachedUrl = Encoding.UTF8.GetString(cachedBytes);
+                if (!string.IsNullOrEmpty(cachedUrl) && !AnimeEntity.IsMissingPosterUrl(cachedUrl))
+                {
+                    _posterMemoryCache[$"{entityType}_{id}"] = cachedUrl;
+                    posterMap[id] = cachedUrl;
+                    continue;
+                }
+            }
+            toQueryFromNetwork.Add(id);
+        }
+
+        if (toQueryFromNetwork.Count == 0) return posterMap;
+
+        // 3. Query network via GraphQL only for truly missing posters
+        foreach (var chunk in toQueryFromNetwork.Chunk(50))
         {
             if (ct.IsCancellationRequested) break;
 
             try
             {
-                var idList = string.Join(",", chunk.Select(x => ResolveShikiTargetId(x.Id)).Where(id => id > 0).Distinct());
-                if (string.IsNullOrEmpty(idList)) continue;
-
-                var query = $"{{\"query\":\"{{ {entityType}(ids: \\\"{idList}\\\", limit: 50) {{ id poster {{ originalUrl }} }} }}\"}}";
+                var idsStr = string.Join(",", chunk);
+                var query = $"{{\"query\":\"{{ {entityType}(ids: \\\"{idsStr}\\\", limit: 50) {{ id poster {{ originalUrl }} }} }}\"}}";
                 using var request = new HttpRequestMessage(HttpMethod.Post, ShikiBaseUrl + "graphql")
                 {
-                    Content = new StringContent(query, System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent(query, Encoding.UTF8, "application/json")
                 };
 
                 using var response = await SendRequestAsync(request, ct);
                 if (!response.IsSuccessStatusCode)
                 {
-                    Log.Warning("ShikiApiService ({Tracker}): GraphQL poster enrichment failed with HTTP {Status}", Name, response.StatusCode);
+                    Log.Warning("ShikiApiService ({Tracker}): GraphQL poster fetch failed with HTTP {Status}", Name, response.StatusCode);
                     continue;
                 }
 
@@ -317,7 +442,6 @@ public partial class ShikiApiService
                     data.TryGetProperty(entityType, out var itemsArray) &&
                     itemsArray.ValueKind == JsonValueKind.Array)
                 {
-                    var posterMap = new Dictionary<int, string>();
                     foreach (var entry in itemsArray.EnumerateArray())
                     {
                         if (!entry.TryGetProperty("id", out var idProp)) continue;
@@ -339,17 +463,9 @@ public partial class ShikiApiService
                                     url = $"{baseUri.Scheme}{Uri.SchemeDelimiter}{baseUri.Authority}" + (url.StartsWith('/') ? url : "/" + url);
                                 }
                                 posterMap[id] = url;
+                                _posterMemoryCache[$"{entityType}_{id}"] = url;
+                                _ = _httpCache.SetCachedBodyAsync($"shiki_poster_{entityType}_{id}", Encoding.UTF8.GetBytes(url), CancellationToken.None);
                             }
-                        }
-                    }
-
-                    foreach (var item in chunk)
-                    {
-                        var shikiId = ResolveShikiTargetId(item.Id);
-                        if (posterMap.TryGetValue(shikiId, out var posterUrl))
-                        {
-                            item.MainPictureUrl = posterUrl;
-                            enrichedCount++;
                         }
                     }
                 }
@@ -357,7 +473,48 @@ public partial class ShikiApiService
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                Log.Warning(ex, "ShikiApiService ({Tracker}): Exception during GraphQL poster enrichment chunk", Name);
+                Log.Warning(ex, "ShikiApiService ({Tracker}): Exception during GraphQL poster fetch chunk", Name);
+            }
+        }
+
+        return posterMap;
+    }
+
+    public async Task EnrichMissingPostersFromGraphQlAsync(List<AnimeEntity> list, bool isManga, CancellationToken ct)
+    {
+        var missing = list
+            .Where(x => string.IsNullOrEmpty(x.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(x.MainPictureUrl))
+            .ToList();
+
+        if (missing.Count == 0) return;
+
+        Log.Information("ShikiApiService ({Tracker}): Found {Count} items missing poster. Enriching via Shikimori GraphQL...", Name, missing.Count);
+
+        var shikiIdMap = new Dictionary<int, List<AnimeEntity>>();
+        foreach (var item in missing)
+        {
+            var shikiId = ResolveShikiTargetId(item.Id);
+            if (shikiId <= 0) continue;
+            if (!shikiIdMap.TryGetValue(shikiId, out var group))
+            {
+                group = new List<AnimeEntity>();
+                shikiIdMap[shikiId] = group;
+            }
+            group.Add(item);
+        }
+
+        var posterMap = await FetchPostersFromGraphQlAsync(shikiIdMap.Keys, isManga, ct);
+        int enrichedCount = 0;
+
+        foreach (var (shikiId, url) in posterMap)
+        {
+            if (shikiIdMap.TryGetValue(shikiId, out var items))
+            {
+                foreach (var item in items)
+                {
+                    item.MainPictureUrl = url;
+                    enrichedCount++;
+                }
             }
         }
 

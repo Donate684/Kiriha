@@ -1,4 +1,5 @@
 using Kiriha.Core.Domain.Models.Entities;
+using Serilog;
 
 namespace Kiriha.Services.Data.Repository;
 
@@ -13,6 +14,19 @@ public partial class AnimeRepository
 
     public async Task AddOrUpdateAnimeAsync(AnimeEntity item)
     {
+        if (item.Id <= 0 || string.IsNullOrWhiteSpace(item.Title))
+        {
+            Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Rejected invalid entity (Id: {Id}, Title: {Title})", item.Id, item.Title);
+            return;
+        }
+
+        if (item.Status == UserAnimeStatus.None)
+        {
+            Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Item has Status None (Id: {Id}). Ensuring it is removed from list.", item.Id);
+            await RemoveAnimeLocalAsync(item.Id);
+            return;
+        }
+
         lock (_recentlyDeletedLock)
         {
             if (_recentlyDeletedIds.TryGetValue(item.Id, out var cts))
@@ -27,7 +41,11 @@ public partial class AnimeRepository
             _idIndex.TryGetValue(item.Id, out var found);
             if (found != null)
             {
-                item.CopyTo(found);
+                if (!ReferenceEquals(item, found))
+                {
+                    item.PreserveUserFieldsFrom(found);
+                    item.CopyTo(found);
+                }
             }
             else
             {
@@ -37,7 +55,16 @@ public partial class AnimeRepository
             return found;
         });
 
-        await _userAnimeRepo.UpdateAsync(item);
+        if (existing == null)
+        {
+            var dbExisting = await _userAnimeRepo.GetByIdAsync(item.Id);
+            if (dbExisting != null)
+            {
+                item.PreserveUserFieldsFrom(dbExisting);
+            }
+        }
+
+        await _userAnimeRepo.UpdateAsync(existing ?? item);
     }
 
     public async Task RemoveAnimeLocalAsync(int animeId)

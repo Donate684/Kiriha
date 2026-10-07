@@ -16,7 +16,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
     private readonly LoadQueueService _queueService;
     private readonly IAnimeRepository _animeRepo;
     private readonly SeasonalCacheStore _cacheStore;
-    private readonly ISyncManager _syncManager;
+    private readonly IAnimeListActionService _listActionService;
     private readonly IDialogService _dialogService;
     private readonly ILocalizer _localizer;
     private readonly IFranchiseService _franchiseService;
@@ -32,7 +32,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         LoadQueueService queueService,
         IAnimeRepository animeRepo,
         SeasonalCacheStore cacheStore,
-        ISyncManager syncManager,
+        IAnimeListActionService listActionService,
         IDialogService dialogService,
         ILocalizer localizer,
         IFranchiseService franchiseService,
@@ -45,7 +45,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         _queueService = queueService;
         _animeRepo = animeRepo;
         _cacheStore = cacheStore;
-        _syncManager = syncManager;
+        _listActionService = listActionService;
         _dialogService = dialogService;
         _localizer = localizer;
         _franchiseService = franchiseService;

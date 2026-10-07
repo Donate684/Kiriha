@@ -75,10 +75,4 @@ public partial class MalApiService
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) { Log.Warning(ex, "MalApiService: GetMangaDetailsAsync failed for {Id}", mangaId); return null; }
     }
-
-    public Task<List<EpisodeRelease>> GetEpisodeListAsync(int malId, CancellationToken ct = default) =>
-        _jikanApi.GetEpisodeListAsync(malId, ct);
-
-    public Task<int?> GetLatestEpisodeFromForumAsync(int malId, CancellationToken ct = default) =>
-        _jikanApi.GetLatestEpisodeFromForumAsync(malId, ct);
 }

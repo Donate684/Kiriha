@@ -40,7 +40,7 @@ public class HistoryService : IHistoryService
         {
             int typeId = actionType switch
             {
-                "Watched" => 1,
+                "Watched" or "Watching" or "Read" or "Reading" => 1,
                 "Reverted" => 2,
                 "SyncFailed" => 3,
                 "Scrobbled" => 4,
@@ -48,7 +48,11 @@ public class HistoryService : IHistoryService
                 "Completed" => 6,
                 "Dropped" => 7,
                 "Deleted" or "Removed" => 8,
-                _ => 0
+                "PlanToWatch" or "Plan_To_Watch" => 9,
+                "OnHold" or "On_Hold" => 10,
+                "Rewatching" => 11,
+                "AddedToList" or "Added" => 12,
+                _ => 1
             };
 
             var entry = new HistoryItem

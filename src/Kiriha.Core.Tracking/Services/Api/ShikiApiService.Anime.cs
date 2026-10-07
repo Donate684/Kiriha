@@ -65,8 +65,9 @@ public partial class ShikiApiService
 
     public async Task<ShikiFranchiseResponse?> GetFranchiseAsync(int animeId, CancellationToken ct = default)
     {
+        var franchiseUrl = ShikiBaseUrl + $"animes/{animeId}/franchise";
         var bytes = await _httpCache.SendAsync(
-            requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, ShikiBaseUrl + $"animes/{animeId}/franchise")),
+            requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, franchiseUrl)),
             ct: ct,
             localTtl: TimeSpan.FromDays(30));
 
@@ -78,6 +79,15 @@ public partial class ShikiApiService
             if (res != null)
             {
                 NormalizeFranchiseResponse(res);
+                if (EffectiveMirror == ShikiMirror.One)
+                {
+                    bool enriched = await EnrichMissingFranchisePostersAsync(res, ct);
+                    if (enriched)
+                    {
+                        var updatedBytes = JsonSerializer.SerializeToUtf8Bytes(res);
+                        _ = _httpCache.UpdateCachedBodyAsync(franchiseUrl, updatedBytes, CancellationToken.None);
+                    }
+                }
             }
             return res;
         }
@@ -111,14 +121,69 @@ public partial class ShikiApiService
 
         foreach (var node in res.Nodes)
         {
-            if (!string.IsNullOrEmpty(node.ImageUrl) && node.ImageUrl.StartsWith('/'))
+            if (AnimeEntity.IsMissingPosterUrl(node.ImageUrl))
+            {
+                node.ImageUrl = string.Empty;
+            }
+            else if (!string.IsNullOrEmpty(node.ImageUrl) && node.ImageUrl.StartsWith('/'))
             {
                 node.ImageUrl = root + node.ImageUrl;
             }
+
             if (!string.IsNullOrEmpty(node.Url) && node.Url.StartsWith('/'))
             {
                 node.Url = root + node.Url;
             }
         }
+    }
+
+    private async Task<bool> EnrichMissingFranchisePostersAsync(ShikiFranchiseResponse res, CancellationToken ct)
+    {
+        if (res.Nodes.Count == 0) return false;
+
+        var missing = res.Nodes
+            .Where(n => string.IsNullOrEmpty(n.ImageUrl) || AnimeEntity.IsMissingPosterUrl(n.ImageUrl))
+            .ToList();
+
+        if (missing.Count == 0) return false;
+
+        bool anyEnriched = false;
+        var animeNodes = missing.Where(n => !IsMangaOrNovelKind(n.Kind)).ToList();
+        var mangaNodes = missing.Where(n => IsMangaOrNovelKind(n.Kind)).ToList();
+
+        if (animeNodes.Count > 0)
+        {
+            var posters = await FetchPostersFromGraphQlAsync(animeNodes.Select(n => n.Id), isManga: false, ct);
+            foreach (var node in animeNodes)
+            {
+                if (posters.TryGetValue(node.Id, out var url) && !string.IsNullOrEmpty(url))
+                {
+                    node.ImageUrl = url;
+                    anyEnriched = true;
+                }
+            }
+        }
+
+        if (mangaNodes.Count > 0)
+        {
+            var posters = await FetchPostersFromGraphQlAsync(mangaNodes.Select(n => n.Id), isManga: true, ct);
+            foreach (var node in mangaNodes)
+            {
+                if (posters.TryGetValue(node.Id, out var url) && !string.IsNullOrEmpty(url))
+                {
+                    node.ImageUrl = url;
+                    anyEnriched = true;
+                }
+            }
+        }
+
+        return anyEnriched;
+    }
+
+    private static bool IsMangaOrNovelKind(string? kind)
+    {
+        if (string.IsNullOrEmpty(kind)) return false;
+        var k = kind.ToLowerInvariant();
+        return k is "manga" or "manhwa" or "manhua" or "novel" or "light_novel" or "one_shot" or "doujin";
     }
 }

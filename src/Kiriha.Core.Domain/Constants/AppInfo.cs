@@ -6,7 +6,7 @@ namespace Kiriha.Core.Shared;
 /// <summary>
 /// Single source of truth for the runtime application identity (assembly version,
 /// User-Agent string). Keeps every outbound HTTP client honest about which build
-/// is talking to MAL/Shiki/Jikan, instead of three hard-coded "Kiriha/1.x" values
+/// is talking to MAL/Shiki/AniList, instead of three hard-coded "Kiriha/1.x" values
 /// drifting independently across the codebase.
 ///
 /// Resolution order for <see cref="Version"/>:

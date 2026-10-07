@@ -16,10 +16,10 @@ public partial class NowPlayingViewModel
 
         try
         {
-            if (await _progressService.UpdateProgressAsync(MatchedAnime, MatchedAnime.Progress, UserAnimeStatus.Watching))
+            var result = await _listActionService.AddToListAsync(MatchedAnime, UserAnimeStatus.Watching, MatchedAnime.Progress);
+            if (!result.Success && !string.IsNullOrEmpty(result.Message))
             {
-                await _animeRepo.AddOrUpdateAnimeAsync(MatchedAnime);
-                WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+                Log.Warning("NowPlayingViewModel: Failed to add anime to watching: {Message}", result.Message);
             }
 
             OnPropertyChanged(nameof(IsNotInList));

@@ -72,6 +72,25 @@ public class HistoryDeletionTests
     }
 
     [Fact]
+    public void HistoryActionConverter_ZeroProgressEntry_ReturnsPlaylistPlusAndAddedToList()
+    {
+        var converter = new HistoryActionConverter();
+        var mockLocalizer = new Mock<Kiriha.Core.Abstractions.Services.ILocalizer>();
+        mockLocalizer.Setup(l => l.GetLoc("history.episode_single", 0)).Returns("эп. 0");
+
+        var entry = new Kiriha.ViewModels.History.HistoryEntryVm(mockLocalizer.Object)
+        {
+            ActionType = 1,
+            EpisodeFrom = 0,
+            EpisodeTo = 0
+        };
+
+        var icon = converter.Convert(entry, typeof(string), "icon", System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Equal("PlaylistPlus", icon);
+        Assert.Equal("эп. 0", entry.EpisodeLabel);
+    }
+
+    [Fact]
     public async Task HistoryViewModel_RefreshHistory_RestoresPosterForDeletedAnime_FromMetadataRepo()
     {
         // Arrange

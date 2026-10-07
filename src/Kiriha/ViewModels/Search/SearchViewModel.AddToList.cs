@@ -1,6 +1,4 @@
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
@@ -19,12 +17,11 @@ public partial class SearchViewModel
         IsLoading = true;
         try
         {
-            item.Status = status;
-            await _animeRepo.AddOrUpdateAnimeAsync(item);
-            await _syncManager.EnqueueUpdateAsync(item.Id, 0, status);
-
-            // Notify UI
-            WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+            var result = await _listActionService.AddToListAsync(item, status);
+            if (!result.Success && !string.IsNullOrEmpty(result.Message))
+            {
+                Log.Warning("SearchViewModel: Failed to add {Title}: {Message}", item.Title, result.Message);
+            }
         }
         catch (Exception ex)
         {

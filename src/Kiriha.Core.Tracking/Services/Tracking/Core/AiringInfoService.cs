@@ -1,6 +1,7 @@
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
@@ -47,10 +48,13 @@ public class AiringInfoService : IAiringInfoService
     public async Task SyncEpisodesForAnimeAsync(AnimeEntity anime, CancellationToken ct = default)
     {
         if (_syncOrchestrator.IsSyncing) return;
+        if (anime.MediaKind != MediaKind.Anime) return;
         if (anime.Status != UserAnimeStatus.Watching) return;
 
         var status = anime.StatusDetailed?.ToLowerInvariant();
-        bool isTrackableStatus = status == "currently_airing" || status == "currently airing";
+        bool isTrackableStatus = status is "currently_airing" or "currently airing" or "ongoing" or "releasing"
+            || AppConstants.AiringStatus.IsCurrentlyAiring(status)
+            || (!AppConstants.AiringStatus.IsFinishedAiring(status) && (anime.TotalEpisodes == 0 || anime.EpisodesAired < anime.TotalEpisodes));
 
         if (!isTrackableStatus && !anime.NextEpisodeAt.HasValue) return;
 
@@ -66,7 +70,7 @@ public class AiringInfoService : IAiringInfoService
             return;
         }
 
-        await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, DateTime.UtcNow);
+        await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, DateTime.UtcNow, airing.TotalEpisodes, airing.Status);
     }
 
     public async Task SyncOngoingEpisodesAsync(bool force = false, IProgress<string>? progress = null, CancellationToken ct = default)
@@ -86,8 +90,13 @@ public class AiringInfoService : IAiringInfoService
             _animeRepo.GetCollection()
                 .Where(x =>
                 {
+                    if (x.MediaKind != MediaKind.Anime) return false;
                     var s = x.StatusDetailed?.ToLowerInvariant();
-                    return (s == "currently_airing" || s == "currently airing" || x.NextEpisodeAt.HasValue) &&
+                    bool isAiring = s is "currently_airing" or "currently airing" or "ongoing" or "releasing"
+                        || AppConstants.AiringStatus.IsCurrentlyAiring(s)
+                        || x.NextEpisodeAt.HasValue;
+
+                    return isAiring &&
                            x.Status == UserAnimeStatus.Watching &&
                            (force || x.LastEpisodesSync is null || x.LastEpisodesSync < threshold);
                 })
@@ -127,7 +136,7 @@ public class AiringInfoService : IAiringInfoService
                     return;
                 }
 
-                await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, now);
+                await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, now, airing.TotalEpisodes, airing.Status);
             }
             finally
             {

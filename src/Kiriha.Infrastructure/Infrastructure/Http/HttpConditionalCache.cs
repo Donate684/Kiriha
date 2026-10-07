@@ -48,7 +48,7 @@ public sealed class HttpConditionalCache
     /// retry / resilience policy; that's orthogonal to this cache.</param>
     /// <param name="cache">Repository fronting the http_response_cache table.</param>
     /// <param name="logTag">Short tag used in log messages to identify the caller
-    /// (e.g. <c>"MalApi"</c>, <c>"Jikan"</c>). Saves grepping logs later.</param>
+    /// (e.g. <c>"MalApi"</c>, <c>"AniList"</c>). Saves grepping logs later.</param>
     public HttpConditionalCache(HttpClient http, IHttpCacheRepository cache, string logTag)
         : this(http, cache, logTag, static (client, request, ct) => client.SendAsync(request, ct))
     {
@@ -150,7 +150,15 @@ public sealed class HttpConditionalCache
                 Log.Debug(ex, "{Tag}: network error, serving stale cache for {Url}", _logTag, fullUrl);
                 return new HttpCacheResult(cached.Body, null, FromCache: true);
             }
-            Log.Warning(ex, "{Tag}: HttpConditionalCache send failed for {Url}", _logTag, fullUrl);
+            if (ex is HttpRequestException or TimeoutException || ex.InnerException is System.Net.Sockets.SocketException)
+            {
+                Log.Warning("{Tag}: Network request failed for {Url} ({Reason})", _logTag, fullUrl, ex.Message);
+                Log.Debug(ex, "{Tag}: Detailed network failure for {Url}", _logTag, fullUrl);
+            }
+            else
+            {
+                Log.Warning(ex, "{Tag}: HttpConditionalCache send failed for {Url}", _logTag, fullUrl);
+            }
             return new HttpCacheResult(null, null, FromCache: false);
         }
 
@@ -214,5 +222,60 @@ public sealed class HttpConditionalCache
         }
 
         return Convert.ToHexString(hash);
+    }
+
+    /// <summary>
+    /// Updates the cached body for a URL in SQLite without clobbering its ETag/LastModified.
+    /// Useful for persisting enriched responses (e.g. adding GraphQL posters to cached REST payloads).
+    /// </summary>
+    public async Task UpdateCachedBodyAsync(string fullUrl, byte[] newBody, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(fullUrl) || newBody is null) return;
+        var urlHash = HashUrl(fullUrl);
+        try
+        {
+            var existing = await _cache.GetAsync(urlHash, ct);
+            await _cache.UpsertAsync(urlHash, existing?.ETag, existing?.LastModified, newBody, ct);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "{Tag}: Failed to update cached body for {Url}", _logTag, fullUrl);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a cached payload directly by key.
+    /// </summary>
+    public async Task<byte[]?> GetCachedBodyAsync(string key, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(key)) return null;
+        var urlHash = HashUrl(key);
+        try
+        {
+            var entry = await _cache.GetAsync(urlHash, ct);
+            return entry?.Body;
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "{Tag}: Cache lookup failed for key {Key}", _logTag, key);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Persists an arbitrary payload directly by key into SQLite http_response_cache.
+    /// </summary>
+    public async Task SetCachedBodyAsync(string key, byte[] body, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(key) || body is null) return;
+        var urlHash = HashUrl(key);
+        try
+        {
+            await _cache.UpsertAsync(urlHash, null, null, body, ct);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "{Tag}: Failed to set cached body for key {Key}", _logTag, key);
+        }
     }
 }

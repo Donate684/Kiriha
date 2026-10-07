@@ -223,7 +223,7 @@ public class AnimeProgressService : IProgressUpdateService
     /// </summary>
     private async Task<bool> ApplyLocalProgressAsync(AnimeEntity item, int nextProgress, UserAnimeStatus? nextStatus = null)
     {
-        if ((nextStatus == UserAnimeStatus.Watching || nextStatus == UserAnimeStatus.Completed) && item.StatusDetailed == "Not yet aired")
+        if ((nextStatus == UserAnimeStatus.Watching || nextStatus == UserAnimeStatus.Completed) && Kiriha.Core.Domain.Constants.AppConstants.AiringStatus.IsNotYetAired(item.StatusDetailed))
         {
             Log.Warning("Cannot set {Title} to {Status} - it has not aired yet.", item.Title, nextStatus);
             return false;

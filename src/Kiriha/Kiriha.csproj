@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net11.0</TargetFramework>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
          and we want it to stay clean: silent regressions in null-safety are a top

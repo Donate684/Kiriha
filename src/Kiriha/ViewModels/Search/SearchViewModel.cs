@@ -17,8 +17,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
     private readonly IMalApiService _apiService;
     private readonly ShikiMetadataService _shikiMetadataService;
     private readonly LoadQueueService _queueService;
-    private readonly IAnimeRepository _animeRepo;
-    private readonly ISyncManager _syncManager;
+    private readonly IAnimeListActionService _listActionService;
     private readonly IDialogService _dialogService;
     private readonly ILocalizer _localizer;
 
@@ -59,14 +58,13 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
 
     public SearchViewModel(IMalApiService apiService, ShikiMetadataService shikiMetadataService,
         LoadQueueService queueService,
-        IAnimeRepository animeRepo, ISyncManager syncManager, IDialogService dialogService,
+        IAnimeListActionService listActionService, IDialogService dialogService,
         ILocalizer localizer)
     {
         _apiService = apiService;
         _shikiMetadataService = shikiMetadataService;
         _queueService = queueService;
-        _animeRepo = animeRepo;
-        _syncManager = syncManager;
+        _listActionService = listActionService;
         _dialogService = dialogService;
         _localizer = localizer;
 

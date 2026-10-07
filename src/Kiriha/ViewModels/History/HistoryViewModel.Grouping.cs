@@ -146,7 +146,7 @@ public partial class HistoryViewModel
             return;
         }
 
-        int progress = entry.EpisodeTo > 0 ? entry.EpisodeTo : 1;
+        int progress = Math.Max(0, entry.EpisodeTo);
         Kiriha.Core.Domain.Models.Entities.UserAnimeStatus? status = entry.ActionType switch
         {
             6 => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Completed,

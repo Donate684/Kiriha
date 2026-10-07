@@ -21,7 +21,6 @@ public partial class MalApiService : IMalApiService, IDisposable
     private readonly HttpClient _httpClient;
     private readonly ISettingsService _settingsService;
     private readonly MalTokenManager _tokenManager;
-    private readonly JikanApiService _jikanApi;
     private readonly HttpConditionalCache _httpCache;
     // Outbound throttle: ~3.3 req/s (one token every 300 ms). MAL doesn't publish a
     // hard rate-limit but Cloudflare in front of api.myanimelist.net bites at ~5 req/s
@@ -41,12 +40,11 @@ public partial class MalApiService : IMalApiService, IDisposable
     public string TrackerId => TrackerConstants.Ids.Mal;
     public bool IsEnabled => _settingsService.Current.Api.Mal != null;
 
-    public MalApiService(HttpClient httpClient, ISettingsService settingsService, MalTokenManager tokenManager, JikanApiService jikanApi, IHttpCacheRepository httpCacheRepo)
+    public MalApiService(HttpClient httpClient, ISettingsService settingsService, MalTokenManager tokenManager, IHttpCacheRepository httpCacheRepo)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
         _tokenManager = tokenManager;
-        _jikanApi = jikanApi;
         _httpCache = new HttpConditionalCache(httpClient, httpCacheRepo, "MalApi");
     }
 

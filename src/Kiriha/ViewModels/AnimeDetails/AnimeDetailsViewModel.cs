@@ -58,7 +58,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
     private readonly ISettingsService _settingsService;
-    private readonly JikanApiService _jikanApiService;
     private readonly IDialogService _dialogs;
     private readonly IShikiApiService _shikiApiService;
     private readonly IAnimeRepository _animeRepo;
@@ -71,7 +70,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
         AnimeEntity cloneAnime,
         AnimeEditViewModel editor,
         AnimeMetadataViewModel metadata,
-        JikanApiService jikanApiService,
         ISettingsService settingsService,
         IDialogService dialogs,
         IShikiApiService shikiApiService,
@@ -82,7 +80,6 @@ public partial class AnimeDetailsViewModel : ViewModelBase
         _anime = cloneAnime;
         Editor = editor;
         Metadata = metadata;
-        _jikanApiService = jikanApiService;
         _settingsService = settingsService;
         _dialogs = dialogs;
         _shikiApiService = shikiApiService;

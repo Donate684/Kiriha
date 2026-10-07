@@ -33,6 +33,19 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
 
     public async Task UpsertAsync(AnimeEntity item, CancellationToken ct = default)
     {
+        if (item.Id <= 0 || string.IsNullOrWhiteSpace(item.Title))
+        {
+            Log.Warning("UserAnimeRepository.UpsertAsync: Rejected invalid entity (Id: {Id}, Title: {Title})", item.Id, item.Title);
+            return;
+        }
+
+        if (item.Status == UserAnimeStatus.None)
+        {
+            Log.Warning("UserAnimeRepository.UpsertAsync: Rejected entity with Status None (Id: {Id}). Removing from user_anime if present.", item.Id);
+            await DeleteAsync(item.Id, ct);
+            return;
+        }
+
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id, ct);
         if (existing is null)
@@ -42,6 +55,10 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         }
         else
         {
+            if (item.IsMissingDetails)
+            {
+                item.PreserveUserFieldsFrom(existing);
+            }
             context.Entry(existing).CurrentValues.SetValues(item);
         }
         await context.SaveChangesAsync(ct);
@@ -49,6 +66,19 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
 
     public async Task UpdateAsync(AnimeEntity item, CancellationToken ct = default)
     {
+        if (item.Id <= 0 || string.IsNullOrWhiteSpace(item.Title))
+        {
+            Log.Warning("UserAnimeRepository.UpdateAsync: Rejected invalid entity (Id: {Id}, Title: {Title})", item.Id, item.Title);
+            return;
+        }
+
+        if (item.Status == UserAnimeStatus.None)
+        {
+            Log.Warning("UserAnimeRepository.UpdateAsync: Rejected entity with Status None (Id: {Id}). Removing from user_anime if present.", item.Id);
+            await DeleteAsync(item.Id, ct);
+            return;
+        }
+
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id, ct);
         if (existing is null)
@@ -60,6 +90,10 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         }
 
         Log.Information("Updating Anime {Title} (ID: {Id}). Rewatching: {Rewatch}", item.Title, item.Id, item.IsRewatching);
+        if (item.IsMissingDetails)
+        {
+            item.PreserveUserFieldsFrom(existing);
+        }
         context.Entry(existing).CurrentValues.SetValues(item);
         await context.SaveChangesAsync(ct);
 

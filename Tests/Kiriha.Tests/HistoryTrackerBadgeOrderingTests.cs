@@ -249,4 +249,31 @@ public class HistoryTrackerBadgeOrderingTests
         Assert.Equal("Shikimori (Fork)", badge.DisplayName);
         Assert.Equal(TrackerSyncState.Success, badge.State);
     }
+
+    [Fact]
+    public void HistoryEntryVm_RevertedAction_CanTrackIsTrue_AndShowsEpisodeLabelAndBadges()
+    {
+        var entry = new HistoryEntryVm(_mockLocalizer.Object)
+        {
+            AnimeId = 42,
+            ActionType = 2, // Reverted
+            EpisodeFrom = 0,
+            EpisodeTo = 0
+        };
+
+        Assert.True(entry.CanTrack);
+        Assert.Equal("history.episode_single:0", entry.EpisodeLabel);
+
+        var statuses = new Dictionary<string, TrackerSyncInfo>
+        {
+            [TrackerConstants.Names.Mal] = new() { State = TrackerSyncState.Success }
+        };
+
+        entry.LoadTrackerStatuses(statuses, orderedTrackers: new[] { TrackerConstants.Names.Mal });
+
+        Assert.True(entry.HasTrackerBadges);
+        Assert.Single(entry.TrackerBadges);
+        Assert.Equal(TrackerConstants.Names.Mal, entry.TrackerBadges[0].TrackerName);
+        Assert.Equal(TrackerSyncState.Success, entry.TrackerBadges[0].State);
+    }
 }

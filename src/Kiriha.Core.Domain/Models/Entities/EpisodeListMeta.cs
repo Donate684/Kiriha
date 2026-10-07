@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Kiriha.Core.Domain.Models.Entities;
 
 /// <summary>
-/// Sidecar for <see cref="EpisodeRelease"/>: tracks when the Jikan episode
+/// Sidecar for <see cref="EpisodeRelease"/>: tracks when the episode
 /// list for a given MAL id was last successfully fetched.
-///
-/// Used by <see cref="Kiriha.Core.Tracking.Api.JikanApiService.GetEpisodeListAsync"/>
-/// to gate live API calls behind a freshness window:
 ///   * Currently-airing: 12 h sliding TTL — episode lists barely change
 ///     between weekly broadcasts, so re-fetching every poll is pure waste.
 ///   * Finished airing: effectively infinite — the episode list is immutable

@@ -169,6 +169,36 @@ public class FranchiseLayoutEngineTests
         Assert.True(resObject.Nodes[0].Date > 0);
         Assert.Equal(2026, resObject.Nodes[0].Year); // Auto-derived from Date
     }
+
+    [Fact]
+    public void CalculateLayout_FiltersOut_MissingPosterUrls()
+    {
+        var data = new ShikiFranchiseResponse
+        {
+            CurrentId = 1,
+            Nodes = new List<ShikiFranchiseNode>
+            {
+                new() { Id = 1, Name = "Show A", Kind = "tv", ImageUrl = "https://shikimori.io/assets/globals/missing_x96.jpg" },
+                new() { Id = 2, Name = "Show B", Kind = "tv", ImageUrl = "/assets/globals/missing_original.jpg" },
+                new() { Id = 3, Name = "Show C", Kind = "tv", ImageUrl = "https://shikimori.io/system/animes/x96/58514.jpg" }
+            },
+            Links = new List<ShikiFranchiseLink>
+            {
+                new() { SourceId = 1, TargetId = 2, Relation = "sequel" },
+                new() { SourceId = 2, TargetId = 3, Relation = "sequel" }
+            }
+        };
+
+        var layout = FranchiseLayoutEngine.CalculateLayout(data, new FranchiseLayoutOptions());
+
+        var node1 = layout.Nodes.First(n => n.Node.Id == 1);
+        var node2 = layout.Nodes.First(n => n.Node.Id == 2);
+        var node3 = layout.Nodes.First(n => n.Node.Id == 3);
+
+        Assert.Equal(string.Empty, node1.DisplayImageUrl);
+        Assert.Equal(string.Empty, node2.DisplayImageUrl);
+        Assert.Equal("https://shikimori.io/system/animes/x96/58514.jpg", node3.DisplayImageUrl);
+    }
 }
 
 

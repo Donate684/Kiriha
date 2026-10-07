@@ -50,7 +50,8 @@
     "off": "Off",
     "active": "Active",
     "system": "System",
-    "no_results": "No results"
+    "no_results": "No results",
+    "unknown": "Unknown"
   },
   "symbols": {
     "bullet": "\u2022",

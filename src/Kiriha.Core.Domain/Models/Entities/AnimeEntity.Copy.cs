@@ -24,12 +24,19 @@ public partial class AnimeEntity
         target.Score = Score;
         target.Type = Type;
         target.MediaKind = MediaKind;
+        target.Chapters = Chapters;
+        target.Volumes = Volumes;
+        target.ChaptersRead = ChaptersRead;
+        target.VolumesRead = VolumesRead;
         target.Synopsis = Synopsis;
         target.RussianSynopsis = RussianSynopsis;
         if (!string.IsNullOrEmpty(MainPictureUrl) && !IsMissingPosterUrl(MainPictureUrl))
         {
             target.MainPictureUrl = MainPictureUrl;
-            target.LocalPosterPath = LocalPosterPath;
+            if (!string.IsNullOrEmpty(LocalPosterPath))
+            {
+                target.LocalPosterPath = LocalPosterPath;
+            }
         }
         else if (IsMissingPosterUrl(target.MainPictureUrl))
         {
@@ -144,5 +151,67 @@ public partial class AnimeEntity
             Status = source.Status;
 
         RefreshMetadata();
+    }
+
+    /// <summary>
+    /// Preserves user-specific tracking data (progress, score, notes, rewatch, start/finish dates)
+    /// from an existing tracked entity if this instance has empty/default values for them.
+    /// Guards against wiping out user state when performing quick-add or shallow card actions.
+    /// </summary>
+    public void PreserveUserFieldsFrom(AnimeEntity existing)
+    {
+        if (existing is null || ReferenceEquals(this, existing)) return;
+
+        // Score: keep existing if current is empty or '-'
+        if ((string.IsNullOrWhiteSpace(Score) || Score == "-") && !string.IsNullOrWhiteSpace(existing.Score) && existing.Score != "-")
+        {
+            Score = existing.Score;
+        }
+
+        // Notes: keep existing if current is null or empty
+        if (string.IsNullOrWhiteSpace(Notes) && !string.IsNullOrWhiteSpace(existing.Notes))
+        {
+            Notes = existing.Notes;
+        }
+
+        // Rewatching state
+        if (!IsRewatching && existing.IsRewatching)
+        {
+            IsRewatching = existing.IsRewatching;
+        }
+        if (RewatchCount == 0 && existing.RewatchCount > 0)
+        {
+            RewatchCount = existing.RewatchCount;
+        }
+
+        // Dates
+        if (!DateStarted.HasValue && existing.DateStarted.HasValue)
+        {
+            DateStarted = existing.DateStarted;
+        }
+        if (!DateCompleted.HasValue && existing.DateCompleted.HasValue)
+        {
+            DateCompleted = existing.DateCompleted;
+        }
+
+        // Progress: only keep existing if current is 0
+        if (Progress == 0 && existing.Progress > 0)
+        {
+            Progress = existing.Progress;
+        }
+        if (ChaptersRead == 0 && existing.ChaptersRead > 0)
+        {
+            ChaptersRead = existing.ChaptersRead;
+        }
+        if (VolumesRead == 0 && existing.VolumesRead > 0)
+        {
+            VolumesRead = existing.VolumesRead;
+        }
+
+        // Local poster path
+        if (string.IsNullOrEmpty(LocalPosterPath) && !string.IsNullOrEmpty(existing.LocalPosterPath))
+        {
+            LocalPosterPath = existing.LocalPosterPath;
+        }
     }
 }

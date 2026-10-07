@@ -200,7 +200,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             node.Score = existing.Score;
             node.RussianTitle = existing.RussianTitle;
 
-            if (!string.IsNullOrEmpty(existing.MainPictureUrl))
+            if (!string.IsNullOrEmpty(existing.MainPictureUrl) && !AnimeEntity.IsMissingPosterUrl(existing.MainPictureUrl))
             {
                 node.DisplayImageUrl = existing.MainPictureUrl;
             }
@@ -209,23 +209,34 @@ public partial class FranchiseGraphViewModel : ViewModelBase
 
     private async Task FetchNodeImageAsync(FranchiseGraphVisualNode node)
     {
-        if (!string.IsNullOrEmpty(node.DisplayImageUrl)) return;
+        if (!string.IsNullOrEmpty(node.DisplayImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.DisplayImageUrl)) return;
 
         bool isManga = node.IsMangaOrNovel;
         try
         {
+            if (_shikiApi != null)
+            {
+                var posters = await _shikiApi.FetchPostersFromGraphQlAsync([node.Node.Id], isManga);
+                if (posters.TryGetValue(node.Node.Id, out var posterUrl) && !string.IsNullOrEmpty(posterUrl) && !AnimeEntity.IsMissingPosterUrl(posterUrl))
+                {
+                    node.DisplayImageUrl = posterUrl;
+                    node.Node.ImageUrl = posterUrl;
+                    return;
+                }
+            }
+
             AnimeEntity? details = isManga
                 ? await _malApi.GetMangaDetailsAsync(node.Node.Id)
                 : await _malApi.GetAnimeDetailsAsync(node.Node.Id);
 
-            if (details != null && !string.IsNullOrEmpty(details.MainPictureUrl))
+            if (details != null && !string.IsNullOrEmpty(details.MainPictureUrl) && !AnimeEntity.IsMissingPosterUrl(details.MainPictureUrl))
             {
                 node.DisplayImageUrl = details.MainPictureUrl;
             }
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "FranchiseGraph: failed to fetch MAL image for node {Id}", node.Node.Id);
+            Log.Warning(ex, "FranchiseGraph: failed to fetch image for node {Id}", node.Node.Id);
         }
     }
 
@@ -247,7 +258,9 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             Title = node.Node.Name,
             RussianTitle = node.RussianTitle,
             MediaKind = kind,
-            MainPictureUrl = !string.IsNullOrEmpty(node.DisplayImageUrl) ? node.DisplayImageUrl : node.Node.ImageUrl,
+            MainPictureUrl = (!string.IsNullOrEmpty(node.DisplayImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.DisplayImageUrl))
+                ? node.DisplayImageUrl
+                : ((!string.IsNullOrEmpty(node.Node.ImageUrl) && !AnimeEntity.IsMissingPosterUrl(node.Node.ImageUrl)) ? node.Node.ImageUrl : null),
             Status = node.UserStatus,
             Progress = node.UserProgress ?? 0,
             TotalEpisodes = node.TotalEpisodes ?? 0

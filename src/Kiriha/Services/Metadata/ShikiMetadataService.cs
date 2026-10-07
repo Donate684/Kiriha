@@ -229,11 +229,23 @@ public partial class ShikiMetadataService : IDisposable
 
     public virtual async Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct)
     {
+        string entityType = mediaKind == MediaKind.Manga ? "mangas" : "animes";
+        var dbKey = $"shiki_poster_{entityType}_{animeId}";
+
+        var cachedBytes = await _httpCache.GetCachedBodyAsync(dbKey, ct);
+        if (cachedBytes != null && cachedBytes.Length > 0)
+        {
+            var cachedUrl = Encoding.UTF8.GetString(cachedBytes);
+            if (!string.IsNullOrEmpty(cachedUrl) && !AnimeEntity.IsMissingPosterUrl(cachedUrl))
+            {
+                return cachedUrl;
+            }
+        }
+
         try
         {
             await _rateLimiter.ThrottleAsync(ct);
 
-            string entityType = mediaKind == MediaKind.Manga ? "mangas" : "animes";
             var query = $"{{\"query\":\"{{ {entityType}(ids: \\\"{animeId}\\\", limit: 1) {{ id poster {{ originalUrl }} }} }}\"}}";
             var request = new HttpRequestMessage(HttpMethod.Post, $"{ShikiBaseUrl}graphql")
             {
@@ -266,6 +278,7 @@ public partial class ShikiMetadataService : IDisposable
                                 var baseUri = new Uri(ShikiEndpoints.BaseUrl(ShikiMirror.One));
                                 url = $"{baseUri.Scheme}{Uri.SchemeDelimiter}{baseUri.Authority}" + (url.StartsWith('/') ? url : "/" + url);
                             }
+                            _ = _httpCache.SetCachedBodyAsync(dbKey, Encoding.UTF8.GetBytes(url), CancellationToken.None);
                             return url;
                         }
                     }

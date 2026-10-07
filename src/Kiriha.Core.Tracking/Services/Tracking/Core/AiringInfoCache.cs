@@ -1,6 +1,7 @@
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
@@ -22,7 +23,13 @@ public class AiringInfoCache
         _uiDispatcher = uiDispatcher;
     }
 
-    public async Task ApplyAndSaveAiringAsync(AnimeEntity anime, int finalAiredCount, DateTime? nextSlot, DateTime now)
+    public async Task ApplyAndSaveAiringAsync(
+        AnimeEntity anime,
+        int finalAiredCount,
+        DateTime? nextSlot,
+        DateTime now,
+        int? totalEpisodes = null,
+        string? airingStatus = null)
     {
         int? notifyEp = null;
 
@@ -42,9 +49,25 @@ public class AiringInfoCache
                 anime.AiredSourcePriority = 2;
             }
 
+            if (totalEpisodes.HasValue && totalEpisodes.Value > 0 && (anime.TotalEpisodes == 0 || anime.TotalEpisodes < totalEpisodes.Value))
+            {
+                anime.TotalEpisodes = totalEpisodes.Value;
+            }
+
+            if (!string.IsNullOrEmpty(airingStatus) && string.IsNullOrEmpty(anime.StatusDetailed))
+            {
+                anime.StatusDetailed = airingStatus.ToUpperInvariant() switch
+                {
+                    "RELEASING" => AppConstants.AiringStatus.CurrentlyAiring,
+                    "NOT_YET_RELEASED" => AppConstants.AiringStatus.NotYetAired,
+                    "FINISHED" => AppConstants.AiringStatus.FinishedAiring,
+                    _ => airingStatus
+                };
+            }
+
             anime.NextEpisodeAt = nextSlot;
             anime.LastEpisodesSync = now;
-            // anime.RefreshMetadata();
+            anime.RefreshAiringBadge();
         });
 
         if (notifyEp.HasValue)
@@ -61,7 +84,7 @@ public class AiringInfoCache
         await _uiDispatcher.InvokeAsync(() =>
         {
             anime.LastEpisodesSync = now;
-            // anime.RefreshMetadata();
+            anime.RefreshAiringBadge();
         });
         await _animeRepo.AddOrUpdateAnimeAsync(anime);
     }

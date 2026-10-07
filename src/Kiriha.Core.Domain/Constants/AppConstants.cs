@@ -48,11 +48,6 @@ public static class AppConstants
             public const string WebsiteUrl = "https://anilist.co/anime/";
         }
 
-        public static class Jikan
-        {
-            public const string BaseUrl = "https://api.jikan.moe/v4/";
-        }
-
         public static class Nyaa
         {
             public const string BaseUrl = "https://nyaa.si/";
@@ -79,8 +74,29 @@ public static class AppConstants
         public static bool IsFinishedAiring(string? statusDetailed)
         {
             if (string.IsNullOrWhiteSpace(statusDetailed)) return false;
-            return statusDetailed.Equals(FinishedAiring, StringComparison.OrdinalIgnoreCase)
-                || statusDetailed.Equals(FinishedAiringSpaced, StringComparison.OrdinalIgnoreCase);
+            var s = statusDetailed.Trim();
+            return s.Equals(FinishedAiring, StringComparison.OrdinalIgnoreCase)
+                || s.Equals(FinishedAiringSpaced, StringComparison.OrdinalIgnoreCase)
+                || s.Equals("released", StringComparison.OrdinalIgnoreCase)
+                || s.Equals("finished", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsCurrentlyAiring(string? statusDetailed)
+        {
+            if (string.IsNullOrWhiteSpace(statusDetailed)) return false;
+            var s = statusDetailed.Trim();
+            return s.Equals(CurrentlyAiring, StringComparison.OrdinalIgnoreCase)
+                || s.Equals(CurrentlyAiringSpaced, StringComparison.OrdinalIgnoreCase)
+                || s.Equals("ongoing", StringComparison.OrdinalIgnoreCase)
+                || s.Equals("releasing", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsNotYetAired(string? statusDetailed)
+        {
+            if (string.IsNullOrWhiteSpace(statusDetailed)) return false;
+            return statusDetailed.Equals(NotYetAired, StringComparison.OrdinalIgnoreCase)
+                || statusDetailed.Equals(NotYetAiredSpaced, StringComparison.OrdinalIgnoreCase)
+                || statusDetailed.Equals(Anons, StringComparison.OrdinalIgnoreCase);
         }
     }
 

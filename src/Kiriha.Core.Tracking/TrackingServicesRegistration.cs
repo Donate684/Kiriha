@@ -16,7 +16,7 @@ namespace Kiriha.Core.Tracking;
 
 /// <summary>
 /// DI registrations for the tracking layer: every service that talks to a
-/// remote anime tracker (MyAnimeList, Shikimori, Jikan), the cross-tracker
+/// remote anime tracker (MyAnimeList, Shikimori, AniList), the cross-tracker
 /// orchestration around them (sync manager, scrobble pipeline, queues), and
 /// background helpers that consume their state.
 ///
@@ -47,7 +47,6 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient"),
                 sp.GetRequiredService<ISettingsService>(),
                 sp.GetRequiredService<MalTokenManager>(),
-                sp.GetRequiredService<JikanApiService>(),
                 sp.GetRequiredService<IHttpCacheRepository>()));
 
         services.AddForwardedSingleton<IMalApiService, ITrackerService>();
@@ -114,8 +113,7 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ShikiRateLimiter>(),
                 fixedMirror: ShikiMirror.Net));
 
-        // --- Jikan / AniList ---
-        services.AddSingleton<JikanApiService>();
+        // --- AniList ---
         services.AddHttpClient("AniListClient")
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
@@ -145,6 +143,8 @@ public static class TrackingServicesRegistration
         services.AddForwardedSingleton<AnimeSyncOrchestrator, IAnimeSyncOrchestrator>();
         services.AddSingleton<AnimeProgressService>();
         services.AddForwardedSingleton<AnimeProgressService, IProgressUpdateService>();
+        services.AddSingleton<AnimeListActionService>();
+        services.AddForwardedSingleton<AnimeListActionService, IAnimeListActionService>();
         services.AddSingleton<ISyncManager, SyncManager>();
 
         return services;

@@ -53,6 +53,8 @@ public partial class ShikiApiService : IShikiApiService
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(EffectiveMirror);
 
     private readonly System.Collections.Concurrent.ConcurrentDictionary<int, int> _malToShikiMap = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _posterMemoryCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _userRateMap = new(StringComparer.OrdinalIgnoreCase);
 
     private string ShikiWebsiteRoot
     {
@@ -122,7 +124,25 @@ public partial class ShikiApiService : IShikiApiService
         {
             using var response = await SendRequestAsync(request, ct);
             var status = (int)response.StatusCode;
-            if (status >= 200 && status < 300) return SyncOutcome.Success;
+            if (status >= 200 && status < 300)
+            {
+                try
+                {
+                    using var stream = await response.Content.ReadAsStreamAsync(ct);
+                    using var doc = await JsonDocument.ParseAsync(stream, default, ct);
+                    if (doc.RootElement.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var rateId))
+                    {
+                        var targetId = doc.RootElement.TryGetProperty("target_id", out var tProp) && tProp.TryGetInt32(out var tid) ? tid : (int?)null;
+                        var targetType = doc.RootElement.TryGetProperty("target_type", out var typeProp) ? typeProp.GetString() : "Anime";
+                        if (targetId.HasValue && !string.IsNullOrEmpty(targetType))
+                        {
+                            _userRateMap[$"{targetType}_{targetId.Value}"] = rateId;
+                        }
+                    }
+                }
+                catch { /* Ignore extraction failures */ }
+                return SyncOutcome.Success;
+            }
             if (status >= 500 || response.StatusCode == System.Net.HttpStatusCode.RequestTimeout || response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
                 Log.Warning("ShikiApiService: transient {Status} for POST {Uri}", status, request.RequestUri);
@@ -135,6 +155,34 @@ public partial class ShikiApiService : IShikiApiService
         catch (Exception ex)
         {
             Log.Warning(ex, "ShikiApiService: PostAsync failed ({Uri})", request.RequestUri);
+            return SyncOutcome.TransientFailure;
+        }
+    }
+
+    private async Task<SyncOutcome> DeleteAsync(string url, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete, ShikiBaseUrl + url.TrimStart('/'));
+        try
+        {
+            using var response = await SendRequestAsync(request, ct);
+            var status = (int)response.StatusCode;
+            if (status >= 200 && status < 300) return SyncOutcome.Success;
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return SyncOutcome.Success;
+            }
+            if (status >= 500 || response.StatusCode == System.Net.HttpStatusCode.RequestTimeout || response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                Log.Warning("ShikiApiService: transient {Status} for DELETE {Uri}", status, request.RequestUri);
+                return SyncOutcome.TransientFailure;
+            }
+            Log.Warning("ShikiApiService: permanent {Status} for DELETE {Uri}", status, request.RequestUri);
+            return SyncOutcome.PermanentFailure;
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "ShikiApiService: DeleteAsync failed ({Uri})", request.RequestUri);
             return SyncOutcome.TransientFailure;
         }
     }

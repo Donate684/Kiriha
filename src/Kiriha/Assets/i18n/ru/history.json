@@ -16,14 +16,18 @@
   "actions": {
     "all": "Все",
     "watched": "Просмотрено",
-    "reverted": "Откачено",
+    "reverted": "Откат эпизода",
     "scrobbled": "Отмечено (скробблер)",
     "score_set": "Изменена оценка на",
     "score_set_filter": "Изменение оценки",
     "sync_failed": "Ошибка синхронизации",
     "completed": "Завершено",
     "dropped": "Брошено",
-    "deleted": "Удалено из списка"
+    "deleted": "Удалено из списка",
+    "plan_to_watch": "В планах",
+    "on_hold": "Отложено",
+    "rewatching": "Пересмотр",
+    "added_to_list": "Добавлено в список"
   },
   "already_scrobbled": "Уже отмечено",
   "count_format": "×{0}",
