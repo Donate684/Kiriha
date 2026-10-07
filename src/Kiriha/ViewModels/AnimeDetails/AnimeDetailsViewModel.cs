@@ -10,8 +10,10 @@ using Kiriha.ViewModels.Settings;
 namespace Kiriha.ViewModels.AnimeDetails;
 
 
-public partial class AnimeDetailsViewModel : ViewModelBase
+public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 {
+    private readonly System.ComponentModel.PropertyChangedEventHandler _animePropertyChanged;
+
     [ObservableProperty]
     private AnimeEntity _anime;
 
@@ -87,7 +89,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase
 
         BuildCustomShareLinks();
 
-        _anime.PropertyChanged += (s, e) =>
+        _animePropertyChanged = (s, e) =>
         {
             if (e.PropertyName == nameof(AnimeEntity.Status) || e.PropertyName == nameof(AnimeEntity.Progress) || e.PropertyName == nameof(AnimeEntity.Score))
             {
@@ -101,6 +103,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase
                 }
             }
         };
+        _anime.PropertyChanged += _animePropertyChanged;
 
         InitializationAsync().SafeFireAndForget("AnimeDetailsInitialization");
     }
@@ -137,13 +140,14 @@ public partial class AnimeDetailsViewModel : ViewModelBase
         _ = LoadFranchiseAndRelationsAsync();
     }
 
-
-
-
-
-
-
-
+    public void Dispose()
+    {
+        Anime.PropertyChanged -= _animePropertyChanged;
+        Editor.Dispose();
+        Relations.Clear();
+        FranchiseTimeline.Clear();
+        CustomShareLinks.Clear();
+    }
 }
 
 

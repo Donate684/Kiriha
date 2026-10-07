@@ -3,6 +3,7 @@
              xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:controls="using:Kiriha.Views.Controls"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
              x:Class="Kiriha.Views.FirstStartupView"
              x:DataType="vmStartup:FirstStartupViewModel">
 
@@ -45,7 +46,7 @@
                                 </Style>
                             </ListBox.Styles>
                             <ListBox.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="vmSettings:LanguageOption">
                                     <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium"/>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

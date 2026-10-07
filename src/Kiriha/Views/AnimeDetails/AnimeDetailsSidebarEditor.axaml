@@ -1,7 +1,7 @@
 <UserControl IsVisible="{Binding Editor.IsInList}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Models.Entities"
+             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarEditor"
@@ -73,7 +73,7 @@
                       SelectedItem="{Binding Anime.Status}"
                       HorizontalAlignment="Stretch" FontSize="12">
                 <ComboBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="entities:UserAnimeStatus">
                         <TextBlock Text="{Binding, Converter={StaticResource LocConverter}}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -105,7 +105,7 @@
                                VerticalAlignment="Center"/>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8,0,0,0">
-                    <TextBlock Text="из" FontSize="12" Opacity="0.4"/>
+                    <TextBlock Text="{DynamicResource l.anime.labels.of_short}" FontSize="12" Opacity="0.4"/>
                     <TextBlock Text="{Binding Anime.TotalEpisodes}" FontSize="13" Opacity="0.7" FontWeight="SemiBold"/>
                 </StackPanel>
                 
@@ -138,7 +138,7 @@
                                    VerticalAlignment="Center"/>
                     
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8,0,0,0">
-                        <TextBlock Text="из" FontSize="12" Opacity="0.4"/>
+                        <TextBlock Text="{DynamicResource l.anime.labels.of_short}" FontSize="12" Opacity="0.4"/>
                         <TextBlock Text="{Binding Anime.Chapters}" FontSize="13" Opacity="0.7" FontWeight="SemiBold"/>
                     </StackPanel>
                     
@@ -169,7 +169,7 @@
                                    VerticalAlignment="Center"/>
                     
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8,0,0,0">
-                        <TextBlock Text="из" FontSize="12" Opacity="0.4"/>
+                        <TextBlock Text="{DynamicResource l.anime.labels.of_short}" FontSize="12" Opacity="0.4"/>
                         <TextBlock Text="{Binding Anime.Volumes}" FontSize="13" Opacity="0.7" FontWeight="SemiBold"/>
                     </StackPanel>
                     

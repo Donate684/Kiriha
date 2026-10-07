@@ -138,5 +138,9 @@ public partial class MainWindow : KirihaWindowBase
         }
     }
 
-
+    protected override void OnClosed(EventArgs e)
+    {
+        PositionChanged -= OnWindowPositionChanged;
+        base.OnClosed(e);
+    }
 }

@@ -27,12 +27,16 @@ public class PosterBatchDownloader
             return;
         }
 
-        var tasks = toDownload.Select(async item =>
+        var options = new ParallelOptions
         {
-            await CachePosterAsync(item, toDownload.Count, onProgress, () => Interlocked.Increment(ref count), ct);
-        });
+            MaxDegreeOfParallelism = 8,
+            CancellationToken = ct
+        };
 
-        await Task.WhenAll(tasks);
+        await Parallel.ForEachAsync(toDownload, options, async (item, token) =>
+        {
+            await CachePosterAsync(item, toDownload.Count, onProgress, () => Interlocked.Increment(ref count), token);
+        });
     }
 
     private static bool NeedsPosterDownload(AnimeEntity item)

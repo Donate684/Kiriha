@@ -212,6 +212,175 @@ public class AnimeListActionServiceTests
     }
 
     [Fact]
+    public async Task SaveAnimeAsync_DroppedAnime_ProgressIncremented_WritesWatchedHistory()
+    {
+        var service = CreateService(enableTracker: true);
+        var original = new AnimeEntity
+        {
+            Id = 401,
+            Title = "Aoki Denshou",
+            RussianTitle = "Лазурные сказания",
+            Status = UserAnimeStatus.Dropped,
+            Progress = 0,
+            MainPictureUrl = "https://example.com/poster.jpg"
+        };
+        var updated = original.Clone();
+        updated.Progress = 1;
+
+        var result = await service.SaveAnimeAsync(original, updated);
+
+        Assert.True(result.Success);
+        Assert.Equal(1, original.Progress);
+        Assert.Equal(UserAnimeStatus.Dropped, original.Status);
+
+        _historyServiceMock.Verify(h => h.AddEntryAsync(
+            original.Id,
+            original.Title,
+            original.RussianTitle,
+            1,
+            "Watched",
+            null,
+            original.MainPictureUrl,
+            It.IsAny<CancellationToken>()), Times.Once);
+        _syncManagerMock.Verify(s => s.EnqueueFullUpdateAsync(original), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAnimeAsync_DroppedAnime_ProgressDecremented_WritesRevertedHistory()
+    {
+        var service = CreateService(enableTracker: true);
+        var original = new AnimeEntity
+        {
+            Id = 402,
+            Title = "Dropped Anime Revert",
+            Status = UserAnimeStatus.Dropped,
+            Progress = 3
+        };
+        var updated = original.Clone();
+        updated.Progress = 2;
+
+        var result = await service.SaveAnimeAsync(original, updated);
+
+        Assert.True(result.Success);
+        Assert.Equal(2, original.Progress);
+
+        _historyServiceMock.Verify(h => h.AddEntryAsync(
+            original.Id,
+            original.Title,
+            original.RussianTitle,
+            2,
+            "Reverted",
+            null,
+            original.MainPictureUrl,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAnimeAsync_Manga_ChaptersReadIncremented_WritesReadHistory()
+    {
+        var service = CreateService(enableTracker: true);
+        var original = new AnimeEntity
+        {
+            Id = 403,
+            Title = "Dropped Manga",
+            MediaKind = MediaKind.Manga,
+            Status = UserAnimeStatus.Dropped,
+            ChaptersRead = 5
+        };
+        var updated = original.Clone();
+        updated.ChaptersRead = 6;
+
+        var result = await service.SaveAnimeAsync(original, updated);
+
+        Assert.True(result.Success);
+        Assert.Equal(6, original.ChaptersRead);
+
+        _historyServiceMock.Verify(h => h.AddEntryAsync(
+            original.Id,
+            original.Title,
+            original.RussianTitle,
+            6,
+            "Read",
+            null,
+            original.MainPictureUrl,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAnimeAsync_StatusChangedToDroppedAndProgressIncremented_WritesBothWatchedAndDroppedHistory()
+    {
+        var service = CreateService(enableTracker: true);
+        var original = new AnimeEntity
+        {
+            Id = 404,
+            Title = "Dropped with Progress Increment",
+            Status = UserAnimeStatus.Watching,
+            Progress = 1
+        };
+        var updated = original.Clone();
+        updated.Status = UserAnimeStatus.Dropped;
+        updated.Progress = 2;
+
+        var result = await service.SaveAnimeAsync(original, updated);
+
+        Assert.True(result.Success);
+        Assert.Equal(UserAnimeStatus.Dropped, original.Status);
+        Assert.Equal(2, original.Progress);
+
+        _historyServiceMock.Verify(h => h.AddEntryAsync(
+            original.Id,
+            original.Title,
+            original.RussianTitle,
+            2,
+            "Watched",
+            null,
+            original.MainPictureUrl,
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        _historyServiceMock.Verify(h => h.AddEntryAsync(
+            original.Id,
+            original.Title,
+            original.RussianTitle,
+            2,
+            "Dropped",
+            null,
+            original.MainPictureUrl,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAnimeAsync_StatusChangedToWatchingWithProgress_DoesNotDuplicateWatchedHistory()
+    {
+        var service = CreateService(enableTracker: true);
+        var original = new AnimeEntity
+        {
+            Id = 405,
+            Title = "Start Watching Anime",
+            Status = UserAnimeStatus.PlanToWatch,
+            Progress = 0
+        };
+        var updated = original.Clone();
+        updated.Status = UserAnimeStatus.Watching;
+        updated.Progress = 1;
+
+        var result = await service.SaveAnimeAsync(original, updated);
+
+        Assert.True(result.Success);
+        Assert.Equal(UserAnimeStatus.Watching, original.Status);
+        Assert.Equal(1, original.Progress);
+
+        _historyServiceMock.Verify(h => h.AddEntryAsync(
+            original.Id,
+            original.Title,
+            original.RussianTitle,
+            1,
+            "Watched",
+            null,
+            original.MainPictureUrl,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task RemoveFromListAsync_DelegatesToProgressService()
     {
         var service = CreateService();

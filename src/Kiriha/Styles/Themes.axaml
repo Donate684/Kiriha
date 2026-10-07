@@ -5,12 +5,14 @@
             <!-- ═══ Windows 11 Layered Surface System ═══ -->
             <SolidColorBrush x:Key="LayerFillColorDefault" Color="#66F9F9F9"/>
             <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#E4000000"/>
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#9E000000"/>
             <SolidColorBrush x:Key="CardBackgroundFillDefault" Color="#B3FFFFFF"/>
             <SolidColorBrush x:Key="CardBackgroundFillSecondary" Color="#80F6F6F6"/>
             <SolidColorBrush x:Key="SubtleFillColorSecondary" Color="#09000000"/>
             <SolidColorBrush x:Key="SubtleFillColorTertiary" Color="#04000000"/>
             <SolidColorBrush x:Key="DividerStrokeColorDefault" Color="#0C000000"/>
             <SolidColorBrush x:Key="CardStrokeColorDefault" Color="#0F000000"/>
+            <SolidColorBrush x:Key="CardStrokeColorSecondary" Color="#18000000"/>
             <SolidColorBrush x:Key="CardHoverFillColor" Color="#12000000"/>
             <SolidColorBrush x:Key="NavItemHoverColor" Color="#0A000000"/>
             <SolidColorBrush x:Key="ContentSurfaceFill" Color="#4CFFFFFF"/>
@@ -33,13 +35,9 @@
             <!-- ═══ Anime Card (theme-aware) ═══ -->
             <BoxShadows x:Key="CardBoxShadow">0 0 0 0 #00000000</BoxShadows>
             <BoxShadows x:Key="CardBoxShadowHover">0 0 0 0 #00000000</BoxShadows>
-            <SolidColorBrush x:Key="CardBorderBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="ProgressStepHoverBrush" Color="#12000000"/>
             <SolidColorBrush x:Key="SegmentedTrackBrush" Color="#26000000"/>
             <SolidColorBrush x:Key="PillBgBrush" Color="#F3F4F6"/>
-            <SolidColorBrush x:Key="PillFgPurpleBrush" Color="#6D28D9"/>
-            <SolidColorBrush x:Key="PillFgGoldBrush" Color="#B45309"/>
-            <SolidColorBrush x:Key="PillFgGrayBrush" Color="#4B5563"/>
             <!-- Score flyout (light) -->
             <SolidColorBrush x:Key="ScoreFlyoutBackground" Color="#F5FFFFFF"/>
             <SolidColorBrush x:Key="ScoreFlyoutBorder" Color="#18000000"/>
@@ -52,17 +50,6 @@
             <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700"/>
             <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF"/>
 
-            <!-- Cinematic overlay (light) -->
-            <LinearGradientBrush x:Key="CinematicBottomGradient" StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#00000000" Offset="0"/>
-                <GradientStop Color="#50000000" Offset="0.4"/>
-                <GradientStop Color="#95000000" Offset="0.7"/>
-                <GradientStop Color="#B5000000" Offset="1"/>
-            </LinearGradientBrush>
-            <LinearGradientBrush x:Key="CinematicTopGradient" StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#50000000" Offset="0"/>
-                <GradientStop Color="#00000000" Offset="1"/>
-            </LinearGradientBrush>
             <!-- Analytics Section Colors -->
             <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935"/>
             <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2"/>
@@ -71,8 +58,6 @@
             <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22"/>
             <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83"/>
             <!-- Semantic UI Colors -->
-            <SolidColorBrush x:Key="SuccessTextForegroundBrush" Color="#4CAF50"/>
-            <SolidColorBrush x:Key="ErrorBackgroundTintBrush" Color="#15ff5555"/>
             <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365"/>
             <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0"/>
             <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000"/>
@@ -83,23 +68,19 @@
             <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
             <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
             <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
-            <SolidColorBrush x:Key="CinematicTitleForeground" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="CinematicSubtitleForeground" Color="#F2FFFFFF"/>
-            <SolidColorBrush x:Key="CinematicProgressForeground" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="CinematicProgressDimForeground" Color="#CCFFFFFF"/>
-            <SolidColorBrush x:Key="CinematicMinusForeground" Color="#90FFFFFF"/>
-            <SolidColorBrush x:Key="CinematicProgressBarBg" Color="#25FFFFFF"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <!-- ═══ Windows 11 Layered Surface System ═══ -->
             <SolidColorBrush x:Key="LayerFillColorDefault" Color="#333A3A3A"/>
             <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#A6FFFFFF"/>
             <SolidColorBrush x:Key="CardBackgroundFillDefault" Color="#0DFFFFFF"/>
             <SolidColorBrush x:Key="CardBackgroundFillSecondary" Color="#08FFFFFF"/>
             <SolidColorBrush x:Key="SubtleFillColorSecondary" Color="#0FFFFFFF"/>
             <SolidColorBrush x:Key="SubtleFillColorTertiary" Color="#06FFFFFF"/>
             <SolidColorBrush x:Key="DividerStrokeColorDefault" Color="#15FFFFFF"/>
             <SolidColorBrush x:Key="CardStrokeColorDefault" Color="#19FFFFFF"/>
+            <SolidColorBrush x:Key="CardStrokeColorSecondary" Color="#25FFFFFF"/>
             <SolidColorBrush x:Key="CardHoverFillColor" Color="#15FFFFFF"/>
             <SolidColorBrush x:Key="NavItemHoverColor" Color="#15FFFFFF"/>
             <SolidColorBrush x:Key="ContentSurfaceFill" Color="#26202020"/>
@@ -122,13 +103,9 @@
             <!-- ═══ Anime Card (theme-aware) ═══ -->
             <BoxShadows x:Key="CardBoxShadow">0 2 8 0 #18000000</BoxShadows>
             <BoxShadows x:Key="CardBoxShadowHover">0 6 18 0 #2A000000</BoxShadows>
-            <SolidColorBrush x:Key="CardBorderBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="ProgressStepHoverBrush" Color="#15FFFFFF"/>
             <SolidColorBrush x:Key="SegmentedTrackBrush" Color="#2AFFFFFF"/>
             <SolidColorBrush x:Key="PillBgBrush" Color="#22FFFFFF"/>
-            <SolidColorBrush x:Key="PillFgPurpleBrush" Color="#B388FF"/>
-            <SolidColorBrush x:Key="PillFgGoldBrush" Color="#F6D365"/>
-            <SolidColorBrush x:Key="PillFgGrayBrush" Color="#B0BAC8"/>
             <!-- Score flyout (dark) -->
             <SolidColorBrush x:Key="ScoreFlyoutBackground" Color="#F5101010"/>
             <SolidColorBrush x:Key="ScoreFlyoutBorder" Color="#20FFFFFF"/>
@@ -141,17 +118,6 @@
             <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700"/>
             <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF"/>
 
-            <!-- Cinematic overlay (dark) -->
-            <LinearGradientBrush x:Key="CinematicBottomGradient" StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#00000000" Offset="0"/>
-                <GradientStop Color="#90000000" Offset="0.35"/>
-                <GradientStop Color="#E8000000" Offset="0.7"/>
-                <GradientStop Color="#F5000000" Offset="1"/>
-            </LinearGradientBrush>
-            <LinearGradientBrush x:Key="CinematicTopGradient" StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#70000000" Offset="0"/>
-                <GradientStop Color="#00000000" Offset="1"/>
-            </LinearGradientBrush>
             <!-- Analytics Section Colors -->
             <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935"/>
             <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2"/>
@@ -160,8 +126,6 @@
             <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22"/>
             <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83"/>
             <!-- Semantic UI Colors -->
-            <SolidColorBrush x:Key="SuccessTextForegroundBrush" Color="#4CAF50"/>
-            <SolidColorBrush x:Key="ErrorBackgroundTintBrush" Color="#15ff5555"/>
             <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365"/>
             <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0"/>
             <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000"/>
@@ -172,12 +136,6 @@
             <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
             <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
             <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
-            <SolidColorBrush x:Key="CinematicTitleForeground" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="CinematicSubtitleForeground" Color="#B8FFFFFF"/>
-            <SolidColorBrush x:Key="CinematicProgressForeground" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="CinematicProgressDimForeground" Color="#70FFFFFF"/>
-            <SolidColorBrush x:Key="CinematicMinusForeground" Color="#90FFFFFF"/>
-            <SolidColorBrush x:Key="CinematicProgressBarBg" Color="#25FFFFFF"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

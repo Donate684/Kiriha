@@ -10,6 +10,9 @@
   "tracks": "Tracks",
   "advanced": "Advanced",
   "controls": {
+    "prev_file": "Previous file",
+    "play_pause": "Play / Pause",
+    "next_file": "Next file",
     "back_10s": "Back 10 seconds",
     "forward_10s": "Forward 10 seconds",
     "speed": "Speed",
@@ -106,6 +109,7 @@
     "hide_controls_sub": "Hide the buttons from the screen if you don't touch the mouse",
     "hide_timeout": "Hide timeout",
     "hide_timeout_sub": "How many seconds before the buttons disappear",
+    "sec_format": "0.0 s",
     "on": "On",
     "off": "Off",
     "chapter_markers": "Chapter markers",

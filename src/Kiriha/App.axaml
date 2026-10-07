@@ -30,6 +30,8 @@
             <conv:LocConverter x:Key="LocConverter"/>
             <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
             <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
+            <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+            <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 

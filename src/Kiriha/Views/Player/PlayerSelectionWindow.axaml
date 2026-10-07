@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -79,7 +79,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="vmPlayer:PlayerSelectionItem">
                                     <Border Background="#152ecc71" BorderBrush="#302ecc71" BorderThickness="1" CornerRadius="8" Margin="0,0,8,8" Padding="12,8" Width="190">
                                         <Grid ColumnDefinitions="*, Auto">
                                             <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
@@ -106,7 +106,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="vmPlayer:PlayerSelectionItem">
                                     <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8" Margin="0,0,8,8" Padding="12,8" Width="190">
                                         <Grid ColumnDefinitions="*, Auto">
                                             <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
@@ -133,7 +133,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="vmPlayer:PlayerSelectionItem">
                                     <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8" Margin="0,0,8,8" Padding="12,8" Width="190">
                                         <Grid ColumnDefinitions="*, Auto">
                                             <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>

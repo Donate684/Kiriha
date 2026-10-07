@@ -7,7 +7,7 @@ using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public partial class TrackingService : IDisposable
+public partial class TrackingService : ITrackingService
 {
     private readonly IExternalMediaDetector _anisthesiaService;
     private readonly IInternalPlayerServer _internalPlayerServer;

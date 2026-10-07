@@ -17,9 +17,6 @@ public partial class SettingsUiViewModel : ObservableObject
     private readonly LocalizationService _localizationService;
     private readonly SeasonalViewModel? _seasonalViewModel;
 
-    public record ThemeOption(string Name, ThemeType Value);
-    public record LanguageOption(string Name, string Code);
-
     public List<ThemeOption> AvailableThemes => new()
     {
         new ThemeOption(_localizationService.GetLoc("settings.theme.default"), ThemeType.System),
@@ -177,3 +174,6 @@ public partial class SettingsUiViewModel : ObservableObject
         }
     }
 }
+
+public record ThemeOption(string Name, ThemeType Value);
+public record LanguageOption(string Name, string Code);

@@ -57,14 +57,6 @@ public partial class FirstStartupViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLastStep;
 
-    public bool CanGoNext => CanNext();
-    public bool IsLanguageStep => CurrentStep?.Key == "language";
-    public bool IsThemeStep => false;
-    public bool IsMalStep => false;
-    public bool IsScrobblerStep => false;
-    public bool IsSystemStep => false;
-    public bool IsAdvancedStep => false;
-
     private bool CanNext() => true;
 
     private void UpdateCurrentStep()
@@ -74,15 +66,12 @@ public partial class FirstStartupViewModel : ViewModelBase
             CurrentStep = Steps[CurrentStepIndex];
             IsLastStep = CurrentStepIndex == Steps.Count - 1;
             NextStepCommand.NotifyCanExecuteChanged();
-            OnPropertyChanged(nameof(CanGoNext));
-            NotifyCurrentStepFlagsChanged();
             OnPropertyChanged(nameof(ProgressText));
         }
         else
         {
             CurrentStep = null;
             IsLastStep = false;
-            NotifyCurrentStepFlagsChanged();
             OnPropertyChanged(nameof(ProgressText));
             // If we ran out of steps due to skipping, trigger completion
             SetupCompleted?.Invoke();
@@ -116,14 +105,4 @@ public partial class FirstStartupViewModel : ViewModelBase
     }
 
     public string ProgressText => Steps.Count > 1 ? _localizer.GetLoc("wizard.step_of", CurrentStepIndex + 1, Steps.Count) : string.Empty;
-
-    private void NotifyCurrentStepFlagsChanged()
-    {
-        OnPropertyChanged(nameof(IsLanguageStep));
-        OnPropertyChanged(nameof(IsThemeStep));
-        OnPropertyChanged(nameof(IsMalStep));
-        OnPropertyChanged(nameof(IsScrobblerStep));
-        OnPropertyChanged(nameof(IsSystemStep));
-        OnPropertyChanged(nameof(IsAdvancedStep));
-    }
 }

@@ -28,7 +28,7 @@ public class SeasonalHideConfirmController
             item.IsHideConfirming = true;
             _hideConfirmItem = item;
             _hideConfirmTimer = new Avalonia.Threading.DispatcherTimer { Interval = HideConfirmTimeout };
-            _hideConfirmTimer.Tick += (_, _) => ResetHideConfirm();
+            _hideConfirmTimer.Tick += OnTimerTick;
             _hideConfirmTimer.Start();
         }
         catch (Exception ex)
@@ -37,11 +37,14 @@ public class SeasonalHideConfirmController
         }
     }
 
+    private void OnTimerTick(object? sender, EventArgs e) => ResetHideConfirm();
+
     public void ResetHideConfirm()
     {
         if (_hideConfirmTimer != null)
         {
             _hideConfirmTimer.Stop();
+            _hideConfirmTimer.Tick -= OnTimerTick;
             _hideConfirmTimer = null;
         }
         if (_hideConfirmItem != null)

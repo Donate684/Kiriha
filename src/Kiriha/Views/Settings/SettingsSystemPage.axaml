@@ -30,7 +30,7 @@
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.language.subtitle}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Ui.AvailableLanguages}" SelectedItem="{Binding Ui.SelectedLanguage}" Width="160" CornerRadius="6">
-                            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
+                            <ComboBox.ItemTemplate><DataTemplate x:DataType="vmSettings:LanguageOption"><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
                         </ComboBox>
                     </Grid>
                     <Border Classes="Divider"/>
@@ -40,7 +40,7 @@
                             <TextBlock Classes="Sub" Text="{DynamicResource l.settings.theme.subtitle}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Ui.AvailableThemes}" SelectedItem="{Binding Ui.SelectedTheme}" Width="160" CornerRadius="6">
-                            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
+                            <ComboBox.ItemTemplate><DataTemplate x:DataType="vmSettings:ThemeOption"><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
                         </ComboBox>
                     </Grid>
 

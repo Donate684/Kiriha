@@ -1,23 +1,6 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-        xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-        xmlns:material="using:Material.Icons.Avalonia"
-        xmlns:core="using:Kiriha.Core"
-        xmlns:u="using:Kiriha.Utils.UI">
-<!-- ═══ Базовая панель-карточка ═══ -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <!-- ═══ Базовая панель-карточка ═══ -->
         <Style Selector="Border.AnalyticsPanel">
             <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
@@ -31,16 +14,6 @@
         <Style Selector="Border.MetricPanel">
             <Setter Property="MinHeight" Value="108"/>
             <Setter Property="Padding" Value="18,16"/>
-        </Style>
-
-        <!-- ═══ Hero-баннер ═══ -->
-        <Style Selector="Border.HeroBanner">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="20,18"/>
-            <Setter Property="ClipToBounds" Value="True"/>
         </Style>
 
         <!-- ═══ Прогресс-бар аналитики ═══ -->
@@ -104,6 +77,8 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Opacity" Value="0.55"/>
             <Setter Property="Template">
                 <ControlTemplate>
                     <Border Background="{TemplateBinding Background}"
@@ -115,10 +90,6 @@
                     </Border>
                 </ControlTemplate>
             </Setter>
-        </Style>
-        <Style Selector="RadioButton.SectionTab">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Opacity" Value="0.55"/>
         </Style>
         <Style Selector="RadioButton.SectionTab:pointerover">
             <Setter Property="Opacity" Value="0.78"/>

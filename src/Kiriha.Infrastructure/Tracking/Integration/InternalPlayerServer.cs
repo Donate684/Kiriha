@@ -27,6 +27,13 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
     private readonly HashSet<NamedPipeServerStream> _currentPipes = new();
 
     private readonly Lock _metadataGate = new();
+    private readonly string _pipeName;
+
+    public InternalPlayerServer(string pipeName = InternalPlayerBridge.PipeName)
+    {
+        _pipeName = pipeName;
+    }
+
     private PlayerMediaMetadata? _latestMetadata;
 
     public async Task SendMetadataAsync(PlayerMediaMetadata metadata, CancellationToken cancellationToken = default)
@@ -64,7 +71,7 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
             try
             {
                 pipeServer = new NamedPipeServerStream(
-                    InternalPlayerBridge.PipeName,
+                    _pipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte,

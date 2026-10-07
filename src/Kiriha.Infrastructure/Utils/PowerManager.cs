@@ -18,7 +18,7 @@ public static class PowerManager
 
     public static void KeepDisplayActive()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (OperatingSystem.IsWindows())
         {
             SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
         }
@@ -26,7 +26,7 @@ public static class PowerManager
 
     public static void AllowDisplaySleep()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (OperatingSystem.IsWindows())
         {
             SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
         }

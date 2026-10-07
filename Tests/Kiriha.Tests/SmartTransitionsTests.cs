@@ -260,18 +260,12 @@ public class SmartTransitionsTests
             DateCompleted = null
         };
 
-        var mockProgressService = new Mock<IProgressUpdateService>();
-        var mockSyncManager = new Mock<ISyncManager>();
-        var mockAnimeRepo = new Mock<IAnimeRepository>();
-        var mockHistoryService = new Mock<IHistoryService>();
+        var mockListActionService = new Mock<IAnimeListActionService>();
 
         var vm = new Kiriha.ViewModels.AnimeDetails.AnimeEditViewModel(
             anime,
             anime,
-            mockSyncManager.Object,
-            mockAnimeRepo.Object,
-            mockProgressService.Object,
-            mockHistoryService.Object);
+            mockListActionService.Object);
 
         // Act & Assert Set Start Date
         vm.SetStartDateToTodayCommand.Execute(null);
@@ -288,5 +282,80 @@ public class SmartTransitionsTests
         // Act & Assert Clear End Date
         vm.ClearEndDateCommand.Execute(null);
         Assert.Null(anime.DateCompleted);
+    }
+
+    [Theory]
+    [InlineData(UserAnimeStatus.PlanToWatch)]
+    [InlineData(UserAnimeStatus.OnHold)]
+    [InlineData(UserAnimeStatus.Dropped)]
+    public async Task AnimeProgressService_SmartIncrementProgressAsync_TransitionsToWatching(UserAnimeStatus initialStatus)
+    {
+        // Arrange
+        var mockAnimeRepo = new Mock<IAnimeRepository>();
+        var mockUserRepo = new Mock<IUserAnimeRepository>();
+        var mockSyncManager = new Mock<ISyncManager>();
+        var mockHistoryService = new Mock<IHistoryService>();
+        var mockUiDispatcher = new Mock<IUiDispatcher>();
+
+        mockUiDispatcher
+            .Setup(x => x.InvokeAsync(It.IsAny<System.Action>()))
+            .Returns<System.Action>(a => { a(); return Task.CompletedTask; });
+
+        var progressService = new AnimeProgressService(
+            mockAnimeRepo.Object,
+            mockUserRepo.Object,
+            mockSyncManager.Object,
+            mockHistoryService.Object,
+            mockUiDispatcher.Object);
+
+        var anime = new AnimeEntity
+        {
+            Id = 60,
+            Title = "Transition Anime",
+            Status = initialStatus,
+            Progress = 0,
+            TotalEpisodes = 12
+        };
+
+        // Act
+        var nextStatus = await progressService.SmartIncrementProgressAsync(anime, 1);
+
+        // Assert
+        Assert.Equal(UserAnimeStatus.Watching, nextStatus);
+        Assert.Equal(UserAnimeStatus.Watching, anime.Status);
+        Assert.Equal(1, anime.Progress);
+
+        mockUserRepo.Verify(x => x.UpdateProgressAsync(anime, 1, UserAnimeStatus.Watching, It.IsAny<CancellationToken>()), Times.Once);
+        mockSyncManager.Verify(x => x.EnqueueFullUpdateAsync(anime), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(UserAnimeStatus.PlanToWatch)]
+    [InlineData(UserAnimeStatus.OnHold)]
+    [InlineData(UserAnimeStatus.Dropped)]
+    public void AnimeEditViewModel_IncrementProgress_TransitionsToWatching(UserAnimeStatus initialStatus)
+    {
+        // Arrange
+        var anime = new AnimeEntity
+        {
+            Id = 70,
+            Title = "Edit Transition Anime",
+            Status = initialStatus,
+            Progress = 0,
+            TotalEpisodes = 12
+        };
+
+        var mockListActionService = new Mock<IAnimeListActionService>();
+        var vm = new Kiriha.ViewModels.AnimeDetails.AnimeEditViewModel(
+            anime,
+            anime,
+            mockListActionService.Object);
+
+        // Act
+        vm.IncrementProgressCommand.Execute(null);
+
+        // Assert
+        Assert.Equal(UserAnimeStatus.Watching, anime.Status);
+        Assert.Equal(1, anime.Progress);
     }
 }

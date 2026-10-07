@@ -143,12 +143,6 @@ public partial class TorrentsViewModel
     }
 
     [RelayCommand]
-    public void Refresh()
-    {
-        // RssFeedService checks automatically, but we could trigger a manual check here if needed.
-    }
-
-    [RelayCommand]
     public void ClearSelectedAnime()
     {
         SelectedAnime = null;

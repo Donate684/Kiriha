@@ -157,6 +157,44 @@ public class ScrobbleServiceTests : IDisposable
     }
 
     [Fact]
+    public void StartScrobble_DroppedAnime_AutoStartsWatching()
+    {
+        // Arrange
+        var media = new ParsedMedia { Episode = "2", IsPlaying = true };
+        var match = new AnimeEntity { Status = UserAnimeStatus.Dropped, Progress = 1, Id = 11, Title = "Dropped Anime" };
+
+        _mockProgressService
+            .Setup(x => x.UpdateProgressAsync(match, 2, UserAnimeStatus.Watching))
+            .ReturnsAsync(true);
+
+        // Act
+        _scrobbleService.StartScrobble(media, match);
+
+        // Assert - automatically transitions from Dropped to Watching with Progress = 2
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 2, UserAnimeStatus.Watching), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 2, "Scrobbled", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void StartScrobble_OnHoldAnime_AutoStartsWatching()
+    {
+        // Arrange
+        var media = new ParsedMedia { Episode = "3", IsPlaying = true };
+        var match = new AnimeEntity { Status = UserAnimeStatus.OnHold, Progress = 2, Id = 12, Title = "OnHold Anime" };
+
+        _mockProgressService
+            .Setup(x => x.UpdateProgressAsync(match, 3, UserAnimeStatus.Watching))
+            .ReturnsAsync(true);
+
+        // Act
+        _scrobbleService.StartScrobble(media, match);
+
+        // Assert - automatically transitions from OnHold to Watching with Progress = 3
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 3, UserAnimeStatus.Watching), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 3, "Scrobbled", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public void StartScrobble_CompletedAnime_Episode1_PromptsRewatchWithoutAutoScrobble()
     {
         // Arrange

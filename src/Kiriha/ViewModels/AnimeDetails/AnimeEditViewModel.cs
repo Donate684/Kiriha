@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
@@ -9,15 +7,12 @@ using Kiriha.Models;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
-public partial class AnimeEditViewModel : ObservableObject
+public partial class AnimeEditViewModel : ObservableObject, IDisposable
 {
     private readonly AnimeEntity _originalAnime;
     private readonly AnimeEntity _anime;
-    private readonly IAnimeListActionService? _listActionService;
-    private readonly ISyncManager? _syncManager;
-    private readonly IAnimeRepository? _animeRepo;
-    private readonly IProgressUpdateService? _animeProgressService;
-    private readonly IHistoryService? _historyService;
+    private readonly IAnimeListActionService _listActionService;
+    private readonly System.ComponentModel.PropertyChangedEventHandler _animePropertyChanged;
     private bool _isRemoving;
 
     [ObservableProperty]
@@ -58,7 +53,7 @@ public partial class AnimeEditViewModel : ObservableObject
         _anime = cloneAnime;
         _listActionService = listActionService;
 
-        _anime.PropertyChanged += (s, e) =>
+        _animePropertyChanged = (s, e) =>
         {
             if (e.PropertyName == nameof(AnimeEntity.Status))
                 OnPropertyChanged(nameof(IsInList));
@@ -66,31 +61,7 @@ public partial class AnimeEditViewModel : ObservableObject
             OnPropertyChanged(nameof(HasChanges));
             SaveCommand.NotifyCanExecuteChanged();
         };
-    }
-
-    public AnimeEditViewModel(
-        AnimeEntity originalAnime,
-        AnimeEntity cloneAnime,
-        ISyncManager syncManager,
-        IAnimeRepository animeRepo,
-        IProgressUpdateService animeProgressService,
-        IHistoryService historyService)
-    {
-        _originalAnime = originalAnime;
-        _anime = cloneAnime;
-        _syncManager = syncManager;
-        _animeRepo = animeRepo;
-        _animeProgressService = animeProgressService;
-        _historyService = historyService;
-
-        _anime.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(AnimeEntity.Status))
-                OnPropertyChanged(nameof(IsInList));
-
-            OnPropertyChanged(nameof(HasChanges));
-            SaveCommand.NotifyCanExecuteChanged();
-        };
+        _anime.PropertyChanged += _animePropertyChanged;
     }
 
     [RelayCommand]
@@ -106,6 +77,13 @@ public partial class AnimeEditViewModel : ObservableObject
             if (_anime.Progress < _anime.TotalEpisodes || _anime.TotalEpisodes == 0)
                 _anime.Progress++;
         }
+
+        if (_anime.Status == UserAnimeStatus.PlanToWatch ||
+            _anime.Status == UserAnimeStatus.OnHold ||
+            _anime.Status == UserAnimeStatus.Dropped)
+        {
+            _anime.Status = UserAnimeStatus.Watching;
+        }
     }
 
     [RelayCommand]
@@ -113,6 +91,13 @@ public partial class AnimeEditViewModel : ObservableObject
     {
         if (_anime.VolumesRead < _anime.Volumes || _anime.Volumes == 0)
             _anime.VolumesRead++;
+
+        if (_anime.Status == UserAnimeStatus.PlanToWatch ||
+            _anime.Status == UserAnimeStatus.OnHold ||
+            _anime.Status == UserAnimeStatus.Dropped)
+        {
+            _anime.Status = UserAnimeStatus.Watching;
+        }
     }
 
     [RelayCommand]
@@ -192,45 +177,9 @@ public partial class AnimeEditViewModel : ObservableObject
     {
         if (_isRemoving) return;
 
-        if (_listActionService != null)
+        if (HasChanges)
         {
-            if (HasChanges)
-            {
-                await _listActionService.SaveAnimeAsync(_originalAnime, _anime);
-            }
-        }
-        else
-        {
-            bool markedAsDropped = _originalAnime.Status != UserAnimeStatus.Dropped && _anime.Status == UserAnimeStatus.Dropped;
-            bool markedAsCompleted = _originalAnime.Status != UserAnimeStatus.Completed && _anime.Status == UserAnimeStatus.Completed;
-
-            string rawScore = _anime.Score;
-            if (rawScore != "-" && rawScore.Contains(' '))
-            {
-                _anime.Score = rawScore[..rawScore.IndexOf(' ')];
-            }
-
-            bool scoreChanged = _originalAnime.Score != _anime.Score && _anime.Score != "-" && !string.IsNullOrEmpty(_anime.Score);
-            bool hasChanges = HasChanges;
-
-            _anime.CopyTo(_originalAnime);
-
-            if (_originalAnime.Status != UserAnimeStatus.None)
-            {
-                if (_animeRepo != null) await _animeRepo.AddOrUpdateAnimeAsync(_originalAnime);
-
-                if (markedAsDropped && _historyService != null)
-                    await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "Dropped", null, _originalAnime.MainPictureUrl);
-                if (markedAsCompleted && _historyService != null)
-                    await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "Completed", null, _originalAnime.MainPictureUrl);
-                if (scoreChanged && _historyService != null)
-                    await _historyService.AddEntryAsync(_originalAnime.Id, _originalAnime.Title, _originalAnime.RussianTitle, _originalAnime.Progress, "ScoreSet", _originalAnime.Score, _originalAnime.MainPictureUrl);
-
-                if (hasChanges && _syncManager != null)
-                    await _syncManager.EnqueueFullUpdateAsync(_originalAnime);
-
-                WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
-            }
+            await _listActionService.SaveAnimeAsync(_originalAnime, _anime);
         }
 
         if (window is Avalonia.Controls.Window w) w.Close(true);
@@ -246,18 +195,14 @@ public partial class AnimeEditViewModel : ObservableObject
         }
 
         _isRemoving = true;
-
-        if (_listActionService != null)
-        {
-            await _listActionService.RemoveFromListAsync(_originalAnime.Id);
-        }
-        else if (_animeProgressService != null)
-        {
-            await _animeProgressService.RemoveAnimeAsync(_originalAnime.Id);
-            WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
-        }
+        await _listActionService.RemoveFromListAsync(_originalAnime.Id);
 
         if (window is Avalonia.Controls.Window w) w.Close(true);
+    }
+
+    public void Dispose()
+    {
+        _anime.PropertyChanged -= _animePropertyChanged;
     }
 }
 

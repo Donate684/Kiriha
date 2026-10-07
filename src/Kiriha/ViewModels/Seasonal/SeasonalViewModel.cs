@@ -13,7 +13,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
 {
     private readonly IMalApiService _apiService;
     private readonly ISettingsService _settingsService;
-    private readonly LoadQueueService _queueService;
+    private readonly ILoadQueueService _queueService;
     private readonly IAnimeRepository _animeRepo;
     private readonly SeasonalCacheStore _cacheStore;
     private readonly IAnimeListActionService _listActionService;
@@ -29,7 +29,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
     public SeasonalViewModel(
         IMalApiService apiService,
         ISettingsService settingsService,
-        LoadQueueService queueService,
+        ILoadQueueService queueService,
         IAnimeRepository animeRepo,
         SeasonalCacheStore cacheStore,
         IAnimeListActionService listActionService,

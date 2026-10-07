@@ -24,6 +24,7 @@ public partial class AppDbContext : DbContext
     public DbSet<HiddenSeasonalAnime> HiddenSeasonalAnime { get; set; } = null!;
     public DbSet<HiddenTorrentAnime> HiddenTorrentAnime { get; set; } = null!;
     public DbSet<TorrentTitleFilter> TorrentTitleFilters { get; set; } = null!;
+    public DbSet<AnimeCountryOrigin> AnimeCountryOrigin { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

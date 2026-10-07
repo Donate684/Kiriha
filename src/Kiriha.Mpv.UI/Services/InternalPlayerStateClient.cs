@@ -12,10 +12,16 @@ public sealed class InternalPlayerStateClient : IDisposable
     public event Action<PlayerMediaMetadata>? MetadataReceived;
     public Func<InternalPlayerState>? StateProvider { get; set; }
 
+    private readonly string _pipeName;
     private readonly Lock _connectionGate = new();
     private readonly Lock _stateGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly CancellationTokenSource _cts = new();
+
+    public InternalPlayerStateClient(string pipeName = InternalPlayerBridge.PipeName)
+    {
+        _pipeName = pipeName;
+    }
 
     private NamedPipeClientStream? _client;
     private StreamWriter? _writer;
@@ -144,8 +150,8 @@ public sealed class InternalPlayerStateClient : IDisposable
             {
                 failureCount++;
 
-                // If not running, wake up the main application
-                if (!PlayerProcessBridge.IsMainAppRunning())
+                // If not running and using default production pipe, wake up the main application
+                if (_pipeName == InternalPlayerBridge.PipeName && !PlayerProcessBridge.IsMainAppRunning())
                 {
                     PlayerProcessBridge.TryWakeUpMainApp();
                 }
@@ -170,7 +176,7 @@ public sealed class InternalPlayerStateClient : IDisposable
         {
             client = new NamedPipeClientStream(
                 ".",
-                InternalPlayerBridge.PipeName,
+                _pipeName,
                 PipeDirection.InOut,
                 PipeOptions.Asynchronous);
 

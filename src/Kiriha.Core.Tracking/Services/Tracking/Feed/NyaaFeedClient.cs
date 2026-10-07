@@ -16,11 +16,6 @@ public class NyaaFeedClient
         _httpCache = new HttpConditionalCache(_httpClient, httpCacheRepo, "Nyaa");
     }
 
-    public Task<XDocument?> FetchGlobalFeedAsync(CancellationToken ct)
-    {
-        return FetchRssDocumentAsync(Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.BaseUrl + "?page=rss&c=1_2", ct);
-    }
-
     public Task<XDocument?> FetchSearchAsync(string query, CancellationToken ct)
     {
         return FetchRssDocumentAsync($"{Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.BaseUrl}?page=rss&q={Uri.EscapeDataString(query)}&c=1_2", ct);

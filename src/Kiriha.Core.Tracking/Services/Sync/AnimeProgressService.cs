@@ -3,6 +3,7 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
@@ -86,10 +87,10 @@ public class AnimeProgressService : IProgressUpdateService
         bool isManga = item.MediaKind != MediaKind.Anime;
 
         // Manga completion
-        if (isManga && item.Chapters > 0 && nextProgress >= item.Chapters && item.Status == UserAnimeStatus.Watching)
+        if (isManga && item.Chapters > 0 && nextProgress >= item.Chapters && (item.Status == UserAnimeStatus.Watching || nextStatus == UserAnimeStatus.Watching))
             nextStatus = UserAnimeStatus.Completed;
         // Anime completion
-        else if (!isManga && item.TotalEpisodes > 0 && nextProgress >= item.TotalEpisodes && item.Status == UserAnimeStatus.Watching)
+        else if (!isManga && item.TotalEpisodes > 0 && nextProgress >= item.TotalEpisodes && (item.Status == UserAnimeStatus.Watching || nextStatus == UserAnimeStatus.Watching))
             nextStatus = UserAnimeStatus.Completed;
 
         if (isManga)
@@ -124,6 +125,12 @@ public class AnimeProgressService : IProgressUpdateService
             await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress,
                 nextStatus == UserAnimeStatus.Completed ? "Completed" : "Read", null, item.MainPictureUrl);
             await _syncManager.EnqueueFullUpdateAsync(item);
+
+            if (nextStatus.HasValue)
+            {
+                WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+            }
+
             return nextStatus;
         }
         else
@@ -143,6 +150,11 @@ public class AnimeProgressService : IProgressUpdateService
                     await _syncManager.EnqueueFullUpdateAsync(item);
                 else
                     await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress);
+
+                if (nextStatus.HasValue)
+                {
+                    WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+                }
 
                 return nextStatus;
             }

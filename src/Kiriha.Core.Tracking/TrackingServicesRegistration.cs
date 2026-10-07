@@ -133,14 +133,17 @@ public static class TrackingServicesRegistration
         services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));
         services.AddSingleton<NyaaFeedClient>();
         services.AddSingleton<RssFeedService>();
+        services.AddForwardedSingleton<RssFeedService, IRssFeedService>();
 
         // --- Cross-tracker orchestration ---
-                                
-                services.AddSingleton<IScrobbleService, ScrobbleService>();
+        services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();
+        services.AddForwardedSingleton<TrackingService, ITrackingService>();
         services.AddSingleton<AnimeSyncOrchestrator>();
         services.AddForwardedSingleton<AnimeSyncOrchestrator, IAnimeSyncOrchestrator>();
+        services.AddSingleton<AnimeRefreshService>();
+        services.AddForwardedSingleton<AnimeRefreshService, IAnimeRefreshService>();
         services.AddSingleton<AnimeProgressService>();
         services.AddForwardedSingleton<AnimeProgressService, IProgressUpdateService>();
         services.AddSingleton<AnimeListActionService>();

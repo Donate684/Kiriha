@@ -43,13 +43,13 @@ public partial class SettingsViewModel : ViewModelBase
         SystemIntegrationService systemIntegrationService,
         FaviconService faviconService,
         IStartupManager startupManager,
-        IAnimeSyncOrchestrator? syncOrchestrator = null)
+        IAnimeRefreshService? refreshService = null)
     {
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
         System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
 
-        Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver, aniListAuthService, syncOrchestrator);
+        Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver, aniListAuthService, refreshService);
         Update = new SettingsUpdateViewModel(updateService);
         Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel, localizationService);
 

@@ -54,6 +54,8 @@ public class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
     {
         builder.ToTable("history");
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.TrackerStatusJson).HasColumnName("tracker_status_json");
+        builder.Property(e => e.PosterUrl).HasColumnName("poster_url");
         builder.HasIndex(e => e.Timestamp).HasDatabaseName("idx_history_timestamp");
         builder.HasIndex(e => e.AnimeId).HasDatabaseName("idx_history_anime_id");
     }
@@ -163,5 +165,17 @@ public class TorrentTitleFilterConfiguration : IEntityTypeConfiguration<TorrentT
         builder.ToTable("torrent_title_filters");
         builder.HasKey(e => e.AnimeId);
         builder.Property(e => e.AnimeId).ValueGeneratedNever();
+    }
+}
+
+public class AnimeCountryOriginConfiguration : IEntityTypeConfiguration<AnimeCountryOrigin>
+{
+    public void Configure(EntityTypeBuilder<AnimeCountryOrigin> builder)
+    {
+        builder.ToTable("anime_country_origin");
+        builder.HasKey(e => e.MalId);
+        builder.Property(e => e.MalId).ValueGeneratedNever();
+        builder.Property(e => e.CountryCode).IsRequired();
+        builder.Property(e => e.FetchedAt).IsRequired();
     }
 }

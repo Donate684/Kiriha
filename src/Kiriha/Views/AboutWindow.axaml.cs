@@ -31,7 +31,15 @@ public partial class AboutWindow : KirihaWindowBase
 
     private void OnOpened(object? sender, System.EventArgs e)
     {
+        Opened -= OnOpened;
         WindowPositioningHelper.CenterOnOwnerOrScreen(this);
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Opened -= OnOpened;
+        DataContext = null;
+        base.OnClosed(e);
     }
 
     private void OnTitleBarPressed(object? sender, PointerPressedEventArgs e)

@@ -36,6 +36,29 @@ public partial class PlayerChapterMarkers : UserControl
         InitializeComponent();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_subscribedViewModel == null && DataContext is PlayerViewModel vm)
+        {
+            _subscribedViewModel = vm;
+            _subscribedViewModel.Chapters.CollectionChanged += OnChaptersChanged;
+            _subscribedViewModel.PropertyChanged += OnViewModelPropertyChanged;
+            DrawChapterMarkers();
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (_subscribedViewModel != null)
+        {
+            _subscribedViewModel.Chapters.CollectionChanged -= OnChaptersChanged;
+            _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            _subscribedViewModel = null;
+        }
+    }
+
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);

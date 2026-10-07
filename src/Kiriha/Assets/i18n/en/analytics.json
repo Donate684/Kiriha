@@ -27,7 +27,8 @@
     "by_weighted_score": "By weighted score",
     "hours_format": "{0:0.0} h",
     "summary_format": "{0} title(s) \u2022 score {1} \u2022 {2}",
-    "score_format": "Score {0}"
+    "score_format": "Score {0}",
+    "show_titles": "Show titles"
   },
   "watch_next": {
     "catch_up_ongoings": "Catch up ongoings",

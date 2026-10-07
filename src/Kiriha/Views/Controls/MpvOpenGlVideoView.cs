@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
@@ -121,6 +122,26 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
                 Volatile.Write(ref _renderRequestPending, 0);
                 RequestNextFrameRendering();
             });
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_player != null)
+        {
+            _player.RenderUpdateRequested -= OnRenderUpdateRequested;
+            _player.RenderUpdateRequested += OnRenderUpdateRequested;
+            RequestNextFrameRendering();
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (_player != null)
+        {
+            _player.RenderUpdateRequested -= OnRenderUpdateRequested;
         }
     }
 }

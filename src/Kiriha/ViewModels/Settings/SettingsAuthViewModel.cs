@@ -17,7 +17,7 @@ public partial class SettingsAuthViewModel : ObservableObject
     private readonly ShikiAuthService _shikiAuthService;
     private readonly ShikiHostResolver _shikiHostResolver;
     private readonly AniListAuthService _aniListAuthService;
-    private readonly IAnimeSyncOrchestrator? _syncOrchestrator;
+    private readonly IAnimeRefreshService? _refreshService;
 
     public SettingsAuthViewModel(
         ISettingsService settingsService,
@@ -25,14 +25,14 @@ public partial class SettingsAuthViewModel : ObservableObject
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver,
         AniListAuthService aniListAuthService,
-        IAnimeSyncOrchestrator? syncOrchestrator = null)
+        IAnimeRefreshService? refreshService = null)
     {
         _settingsService = settingsService;
         _authService = authService;
         _shikiAuthService = shikiAuthService;
         _shikiHostResolver = shikiHostResolver;
         _aniListAuthService = aniListAuthService;
-        _syncOrchestrator = syncOrchestrator;
+        _refreshService = refreshService;
 
         var isFork = _settingsService.Current.Api.ShikiMirror == ShikiMirror.Net
                      || _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.ShikiFork) != null;
@@ -118,7 +118,7 @@ public partial class SettingsAuthViewModel : ObservableObject
 
     public async Task RunDatabaseSyncAsync()
     {
-        if (_syncOrchestrator == null)
+        if (_refreshService == null)
         {
             await Task.Delay(400);
             SwitchStep = PrimarySwitchStep.Success;
@@ -133,7 +133,7 @@ public partial class SettingsAuthViewModel : ObservableObject
                 SyncStatusText = status;
             });
 
-            var success = await _syncOrchestrator.SyncWithTrackersAsync(progress, cts.Token, isMigration: true);
+            var success = await _refreshService.RefreshAnimeListAsync(progress, cts.Token, isMigration: true);
             SwitchStep = success ? PrimarySwitchStep.Success : PrimarySwitchStep.Failed;
         }
         catch (Exception ex)

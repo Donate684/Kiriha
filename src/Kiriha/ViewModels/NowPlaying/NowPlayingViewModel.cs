@@ -18,7 +18,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     IRecipient<TrackingCountdownMessage>,
     IRecipient<TrackingStatusMessage>
 {
-    private readonly TrackingService _trackingService;
+    private readonly ITrackingService _trackingService;
     // Tracks the anime id of an in-flight manual selection. Until the background
     // TrackingService fires AnimeMatched with this id (or null on a media change),
     // we ignore intermediate null/other matches so they don't clobber the UI choice.
@@ -96,7 +96,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     private readonly CancellationTokenSource _disposeCts = new();
 
     public NowPlayingViewModel(
-        TrackingService trackingService,
+        ITrackingService trackingService,
         ISettingsService settingsService,
         IAnimeRepository animeRepo,
         IAnimeListActionService listActionService,

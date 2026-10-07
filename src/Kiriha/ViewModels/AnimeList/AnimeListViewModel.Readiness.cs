@@ -13,6 +13,10 @@ public partial class AnimeListViewModel
 
     private async Task ObserveReadinessAsync()
     {
+        if (_animeRepo.Collection.Count == 0)
+        {
+            IsSyncing = true;
+        }
         IsBusy = _readinessService.State is AppReadinessState.NotStarted or AppReadinessState.Starting;
         try
         {
@@ -27,6 +31,7 @@ public partial class AnimeListViewModel
         }
         finally
         {
+            IsSyncing = false;
             IsBusy = false;
         }
     }

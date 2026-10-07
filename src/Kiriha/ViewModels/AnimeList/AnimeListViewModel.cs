@@ -17,7 +17,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
 {
     private readonly ISettingsService _settingsService;
     private readonly IAnimeRepository _animeRepo;
-    private readonly IAnimeSyncOrchestrator _syncOrchestrator;
+    private readonly IAnimeRefreshService _refreshService;
     private readonly IProgressUpdateService _progressService;
     private readonly ILoadQueueService _queueService;
     private readonly IAiringInfoService _airingInfoService;
@@ -36,7 +36,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     public AnimeListViewModel(
         ISettingsService settingsService,
         IAnimeRepository animeRepo,
-        IAnimeSyncOrchestrator syncOrchestrator,
+        IAnimeRefreshService refreshService,
         IProgressUpdateService progressService,
         ILoadQueueService queueService,
         IAiringInfoService airingInfoService,
@@ -47,7 +47,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     {
         _settingsService = settingsService;
         _animeRepo = animeRepo;
-        _syncOrchestrator = syncOrchestrator;
+        _refreshService = refreshService;
         _progressService = progressService;
         _queueService = queueService;
         _airingInfoService = airingInfoService;

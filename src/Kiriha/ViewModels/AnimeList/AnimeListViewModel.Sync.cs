@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
@@ -6,23 +7,29 @@ namespace Kiriha.ViewModels.AnimeList;
 
 public partial class AnimeListViewModel
 {
-    [RelayCommand]
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SyncMalCommand))]
+    private bool _isSyncing;
+
+    private bool CanSync() => !IsSyncing && !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanSync))]
     public async Task SyncMal()
     {
+        if (IsSyncing) return;
+        IsSyncing = true;
         IsBusy = true;
         try
         {
             bool success = SelectedMediaKind == MediaKind.Manga || SelectedMediaKind == MediaKind.LightNovel
-                ? await _syncOrchestrator.SyncMangaWithTrackersAsync()
-                : await _syncOrchestrator.SyncWithTrackersAsync();
+                ? await _refreshService.RefreshMangaListAsync()
+                : await _refreshService.RefreshAnimeListAsync();
 
             if (success)
             {
                 RebuildListProjection();
                 await UpdateCountsAsync();
                 await ApplyCurrentFiltersAsync();
-
-                await _airingInfoService.SyncOngoingEpisodesAsync(force: true);
             }
         }
         catch (Exception ex)
@@ -31,6 +38,7 @@ public partial class AnimeListViewModel
         }
         finally
         {
+            IsSyncing = false;
             IsBusy = false;
         }
     }

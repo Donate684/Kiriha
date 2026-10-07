@@ -27,7 +27,8 @@
     "by_weighted_score": "По взвешенной оценке",
     "hours_format": "{0:0.0} ч",
     "summary_format": "{0} тайтл. \u2022 оценка {1} \u2022 {2}",
-    "score_format": "Оценка {0}"
+    "score_format": "Оценка {0}",
+    "show_titles": "Показать тайтлы"
   },
   "watch_next": {
     "catch_up_ongoings": "Догнать онгоинги",

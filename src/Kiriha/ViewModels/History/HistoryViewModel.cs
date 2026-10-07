@@ -11,7 +11,7 @@ using Kiriha.Utils.Async;
 
 namespace Kiriha.ViewModels.History;
 
-public partial class HistoryViewModel : ViewModelBase
+public partial class HistoryViewModel : ViewModelBase, IDisposable
 {
     private readonly IHistoryService _historyService;
     private readonly DatabaseInitializer _dbInit;
@@ -366,5 +366,11 @@ public partial class HistoryViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsActionDropped));
         OnPropertyChanged(nameof(IsActionScoreSet));
         OnPropertyChanged(nameof(IsActionDeleted));
+    }
+
+    public void Dispose()
+    {
+        _historyService.TrackerStatusUpdated -= OnTrackerStatusUpdated;
+        _historyService.EntryAdded -= OnHistoryEntryAdded;
     }
 }

@@ -112,7 +112,7 @@
             <Setter Property="Opacity" Value="1"/>
         </Style>
         <Style Selector="Button.FilterReset:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource AccentFillColorSelectedTextBackground}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
         </Style>
 
         <!-- ═══ Genre suggestion list inside Discord-style search popup ═══ -->

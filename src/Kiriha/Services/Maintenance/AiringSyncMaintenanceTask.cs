@@ -12,7 +12,7 @@ public class AiringSyncMaintenanceTask : IMaintenanceTask
         _airingService = airingService;
     }
 
-    public TimeSpan InitialDelay => TimeSpan.FromMinutes(5);
+    public TimeSpan InitialDelay => TimeSpan.FromSeconds(10);
     public TimeSpan Interval => TimeSpan.FromHours(6);
 
     public async Task ExecuteAsync(CancellationToken ct)

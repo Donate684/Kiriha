@@ -168,9 +168,12 @@ public class ScrobbleService : IScrobbleService, IDisposable
             {
                 nextStatus = UserAnimeStatus.Completed;
             }
-            else if (match.Status == UserAnimeStatus.PlanToWatch || match.Status == UserAnimeStatus.OnHold)
+            else if (match.Status == UserAnimeStatus.PlanToWatch ||
+                     match.Status == UserAnimeStatus.OnHold ||
+                     match.Status == UserAnimeStatus.Dropped ||
+                     match.Status == UserAnimeStatus.None)
             {
-                // Auto-Start: user started watching an anime that was in PlanToWatch or OnHold
+                // Auto-Start: user started watching an anime that was in PlanToWatch, OnHold, Dropped or not in list
                 nextStatus = UserAnimeStatus.Watching;
             }
 
@@ -192,6 +195,11 @@ public class ScrobbleService : IScrobbleService, IDisposable
             {
                 WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(match));
                 _notificationService.NotifyAnimeCompleted(match);
+            }
+
+            if (nextStatus.HasValue)
+            {
+                WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
             }
 
             CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.updated"));

@@ -16,9 +16,13 @@ public partial class HistoryView : UserControl
     private const int RevealStaggerIdleResetMs = 140;
     private static readonly TimeSpan InitialRevealWindow = TimeSpan.FromMilliseconds(1100);
 
+    private HistoryViewModel? _subscribedVm;
+    private readonly System.Collections.Specialized.NotifyCollectionChangedEventHandler _timelineCollectionChanged;
+
     public HistoryView()
     {
         InitializeComponent();
+        _timelineCollectionChanged = (_, _) => BeginInitialRevealWindow();
 
         _historyRepeater = this.FindControl<ItemsRepeater>("HistoryRepeater");
         if (_historyRepeater != null)
@@ -31,6 +35,11 @@ public partial class HistoryView : UserControl
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (_subscribedVm == null && DataContext is HistoryViewModel vm)
+        {
+            _subscribedVm = vm;
+            _subscribedVm.TimelineItems.CollectionChanged += _timelineCollectionChanged;
+        }
         BeginInitialRevealWindow();
     }
 
@@ -41,19 +50,27 @@ public partial class HistoryView : UserControl
             _historyRepeater.ElementPrepared -= OnElementPrepared;
             _historyRepeater.ElementClearing -= OnElementClearing;
         }
-
+        UnsubscribeViewModel();
         base.OnUnloaded(e);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+        UnsubscribeViewModel();
         if (DataContext is HistoryViewModel vm)
         {
-            vm.TimelineItems.CollectionChanged += (s, args) =>
-            {
-                BeginInitialRevealWindow();
-            };
+            _subscribedVm = vm;
+            _subscribedVm.TimelineItems.CollectionChanged += _timelineCollectionChanged;
+        }
+    }
+
+    private void UnsubscribeViewModel()
+    {
+        if (_subscribedVm != null)
+        {
+            _subscribedVm.TimelineItems.CollectionChanged -= _timelineCollectionChanged;
+            _subscribedVm = null;
         }
     }
 

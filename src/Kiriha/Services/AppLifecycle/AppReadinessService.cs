@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Infrastructure.Tracking.Integration;
@@ -15,7 +16,7 @@ public sealed class AppReadinessService
 {
     private readonly DatabaseInitializer _databaseInitializer;
     private readonly AnimeRepository _animeRepo;
-    private readonly AnimeSyncOrchestrator _orchestrator;
+    private readonly IAnimeRefreshService _refreshService;
     private readonly DiscordService _discordService;
     private readonly SmtcService _smtcService;
     private readonly MaintenanceService _maintenanceService;
@@ -32,7 +33,7 @@ public sealed class AppReadinessService
     public AppReadinessService(
         DatabaseInitializer databaseInitializer,
         AnimeRepository animeRepo,
-        AnimeSyncOrchestrator orchestrator,
+        IAnimeRefreshService refreshService,
         DiscordService discordService,
         SmtcService smtcService,
         MaintenanceService maintenanceService,
@@ -43,7 +44,7 @@ public sealed class AppReadinessService
     {
         _databaseInitializer = databaseInitializer;
         _animeRepo = animeRepo;
-        _orchestrator = orchestrator;
+        _refreshService = refreshService;
         _discordService = discordService;
         _smtcService = smtcService;
         _maintenanceService = maintenanceService;
@@ -94,7 +95,7 @@ public sealed class AppReadinessService
 
             if (_animeRepo.Collection.Count == 0)
             {
-                await _orchestrator.SyncWithTrackersAsync();
+                await _refreshService.RefreshAnimeListAsync();
             }
             Log.Information("StartupTiming: readiness anime stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 

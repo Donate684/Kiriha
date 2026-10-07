@@ -1,4 +1,4 @@
-﻿using Avalonia.Input;
+using Avalonia.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Utils;
 
@@ -19,7 +19,19 @@ public partial class AnimeDetailsWindow : KirihaWindowBase
 
     private void OnOpened(object? sender, EventArgs e)
     {
+        Opened -= OnOpened;
         this.CenterOnOwnerOrScreenSafe();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Opened -= OnOpened;
+        if (DataContext is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+        DataContext = null;
+        base.OnClosed(e);
     }
 
     private void InitializeComponent()

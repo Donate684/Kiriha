@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Kiriha.Core.Abstractions.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -7,23 +8,15 @@ namespace Kiriha.Services.Data.Core;
 
 /// <summary>
 /// Owns the schema lifecycle of the SQLite database. Strategy:
-///   * <see cref="RelationalDatabaseFacadeExtensions.MigrateAsync"/> applies
-///     EF migrations from <c>Services/Data/Migrations</c>. The model is the
-///     single source of truth (<see cref="AppDbContext.OnModelCreating"/>);
-///     migrations are auto-generated via <c>dotnet ef migrations add</c>.
-///   * One-shot adoption for legacy DBs created by <c>EnsureCreated</c>
-///     before migrations existed: we detect the missing
-///     <c>__EFMigrationsHistory</c> table and stamp it with the initial
-///     migration row, so <see cref="RelationalDatabaseFacadeExtensions.MigrateAsync"/>
-///     treats the existing schema as already-applied instead of trying to
-///     re-create tables and failing.
-///   * WAL pragmas applied in a single batched statement (one round-trip on
-///     cold start). <c>synchronous=NORMAL</c> is the safe-default for WAL —
-///     durable across process kill — and <c>wal_autocheckpoint=1000</c> caps
-///     how much the WAL can outgrow the main file before being folded back.
+///   * Native SQLite PRAGMA user_version schema marking (v1.6 = 1600).
+///   * Automatic legacy pre-1.6 schema detection and safe backup to *.pre16.bak.
+///   * Unified EF Core baseline migration (v1.6) with zero runtime DDL workarounds.
+///   * Single round-trip WAL and performance pragmas.
 /// </summary>
 public sealed class DatabaseInitializer : IDatabaseInitializer
 {
+    public const int CurrentSchemaVersion = 1600;
+
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted; // 0 = not started, 1 = started (Interlocked guard)
@@ -47,40 +40,23 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         try
         {
             var total = Stopwatch.StartNew();
+
+            // Detect and safely backup pre-v1.6 legacy database files
+            await HandlePreV16DatabaseAsync();
+
             using var context = await _contextFactory.CreateDbContextAsync();
 
             var stage = Stopwatch.StartNew();
             await context.Database.MigrateAsync();
             Log.Information("StartupTiming: database migrations elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
-            // WAL + sane defaults in a single batch (one round-trip on cold start).
+            // WAL + sane defaults + user_version in a single batch (one round-trip on cold start).
             stage.Restart();
             await context.Database.ExecuteSqlRawAsync(
-                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000;");
+                $"PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000; PRAGMA user_version = {CurrentSchemaVersion};");
             Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
             await LegacyUserStateMigration.MigrateAsync(context);
-
-            // Cleanup legacy ghost tables from early prototypes (scheduled for full migration squash in v1.6)
-            await context.Database.ExecuteSqlRawAsync(
-                "DROP TABLE IF EXISTS anime_staff; DROP TABLE IF EXISTS anime_staff_meta;");
-
-            await context.Database.ExecuteSqlRawAsync(
-                "CREATE TABLE IF NOT EXISTS anime_country_origin (mal_id INTEGER PRIMARY KEY, country_code TEXT NOT NULL, fetched_at TEXT NOT NULL);");
-
-            try
-            {
-                await context.Database.ExecuteSqlRawAsync(
-                    "ALTER TABLE history ADD COLUMN tracker_status_json TEXT;");
-            }
-            catch { /* column already exists */ }
-
-            try
-            {
-                await context.Database.ExecuteSqlRawAsync(
-                    "ALTER TABLE history ADD COLUMN poster_url TEXT;");
-            }
-            catch { /* column already exists */ }
 
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
 
@@ -93,6 +69,65 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         }
     }
 
+    private async Task HandlePreV16DatabaseAsync()
+    {
+        string? dbPath = null;
+        try
+        {
+            using var probeContext = await _contextFactory.CreateDbContextAsync();
+            var connection = probeContext.Database.GetDbConnection();
+            dbPath = connection.DataSource;
+
+            if (string.IsNullOrWhiteSpace(dbPath) ||
+                dbPath.Equals(":memory:", StringComparison.OrdinalIgnoreCase) ||
+                dbPath.Contains("mode=memory", StringComparison.OrdinalIgnoreCase) ||
+                !File.Exists(dbPath))
+            {
+                // New database or in-memory DB; no pre-existing legacy file on disk
+                return;
+            }
+
+            // Database file exists. Check its user_version.
+            int userVersion = 0;
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA user_version;";
+                var result = await cmd.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    userVersion = Convert.ToInt32(result);
+                }
+            }
+
+            await connection.CloseAsync();
+            SqliteConnection.ClearAllPools();
+
+            if (userVersion < CurrentSchemaVersion)
+            {
+                Log.Warning("Detected legacy pre-1.6 database schema (version {Version}). Forcing recreate with backup.", userVersion);
+
+                string bakPath = dbPath + ".pre16.bak";
+                File.Move(dbPath, bakPath, overwrite: true);
+
+                var walPath = dbPath + "-wal";
+                if (File.Exists(walPath)) try { File.Delete(walPath); } catch { }
+
+                var shmPath = dbPath + "-shm";
+                if (File.Exists(shmPath)) try { File.Delete(shmPath); } catch { }
+
+                Log.Information("Legacy database safely backed up to {BakPath} and ready for pristine v1.6 recreation", bakPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to probe or backup database at {Path}; proceeding with standard initialization", dbPath);
+        }
+    }
 
     /// <summary>
     /// Forces all pending WAL frames into the main database file. Call before

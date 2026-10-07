@@ -101,22 +101,22 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
     {
         _anisthesia.RunningPlayersChanged -= OnRunningPlayersChanged;
     }
+}
 
-    public partial class PlayerSelectionItem : ObservableObject
+public partial class PlayerSelectionItem : ObservableObject
+{
+    public string Name { get; }
+    public PlayerType Type { get; }
+
+    [ObservableProperty] private bool _isEnabled;
+    [ObservableProperty] private bool _isRunning;
+
+    public PlayerSelectionItem(string name, PlayerType type, bool isEnabled, bool isRunning = false)
     {
-        public string Name { get; }
-        public PlayerType Type { get; }
-
-        [ObservableProperty] private bool _isEnabled;
-        [ObservableProperty] private bool _isRunning;
-
-        public PlayerSelectionItem(string name, PlayerType type, bool isEnabled, bool isRunning = false)
-        {
-            Name = name;
-            Type = type;
-            _isEnabled = isEnabled;
-            _isRunning = isRunning;
-        }
+        Name = name;
+        Type = type;
+        _isEnabled = isEnabled;
+        _isRunning = isRunning;
     }
 }
 

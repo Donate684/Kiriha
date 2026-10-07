@@ -28,8 +28,6 @@ public partial class SettingsSystemViewModel : ObservableObject
     [ObservableProperty] private decimal? _newEpisodeNotificationDelayMinutes;
     [ObservableProperty] private EpisodeAiringSource _airingSource;
 
-    public record AiringSourceOption(string Name, EpisodeAiringSource Value);
-
     public List<AiringSourceOption> AvailableAiringSources { get; } = new()
     {
         new AiringSourceOption("AniList (anilist.co)", EpisodeAiringSource.AniList),
@@ -115,3 +113,5 @@ public partial class SettingsSystemViewModel : ObservableObject
         }
     }
 }
+
+public record AiringSourceOption(string Name, EpisodeAiringSource Value);

@@ -17,7 +17,9 @@ public partial class AnimeListViewModel
     [ObservableProperty] private string _planToWatchHeader = string.Empty;
 
     [ObservableProperty] private AnimeEntity? _selectedItem;
-    [ObservableProperty] private bool _isBusy;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SyncMalCommand))]
+    private bool _isBusy;
     [ObservableProperty] private AnimeEntity? _activeItem;
 
     public void EnqueueItemForViewport(AnimeEntity item)
@@ -41,9 +43,13 @@ public partial class AnimeListViewModel
     [RelayCommand]
     public async Task IncrementProgress(AnimeEntity item)
     {
-        if (item.TotalEpisodes == 0 || item.Progress < item.TotalEpisodes)
+        bool isManga = item.MediaKind != MediaKind.Anime;
+        int current = isManga ? item.ChaptersRead : item.Progress;
+        int total = isManga ? item.Chapters : item.TotalEpisodes;
+
+        if (total == 0 || current < total)
         {
-            await SetProgressTo(item, item.Progress + 1);
+            await SetProgressTo(item, current + 1);
         }
     }
 

@@ -209,6 +209,11 @@ public class AnimeListActionService : IAnimeListActionService
             return await RemoveFromListAsync(originalItem.Id, ct);
         }
 
+        bool isManga = originalItem.MediaKind != MediaKind.Anime;
+        int oldProgress = isManga ? originalItem.ChaptersRead : originalItem.Progress;
+        int newProgress = isManga ? updatedItem.ChaptersRead : updatedItem.Progress;
+        bool progressChanged = oldProgress != newProgress;
+
         bool markedAsDropped = originalItem.Status != UserAnimeStatus.Dropped && updatedItem.Status == UserAnimeStatus.Dropped;
         bool markedAsCompleted = originalItem.Status != UserAnimeStatus.Completed && updatedItem.Status == UserAnimeStatus.Completed;
         bool statusChanged = originalItem.Status != updatedItem.Status;
@@ -238,30 +243,55 @@ public class AnimeListActionService : IAnimeListActionService
 
         await _animeRepository.AddOrUpdateAnimeAsync(originalItem);
 
-        int displayProgress = originalItem.MediaKind == MediaKind.Anime ? originalItem.Progress : originalItem.ChaptersRead;
+        int displayProgress = newProgress;
 
         try
         {
-            bool isManga = originalItem.MediaKind != MediaKind.Anime;
-            string statusAction = originalItem.Status switch
+            if (markedAsCompleted)
             {
-                UserAnimeStatus.Dropped => "Dropped",
-                UserAnimeStatus.Completed => "Completed",
-                UserAnimeStatus.Watching => displayProgress == 0 ? "AddedToList" : (isManga ? "Read" : "Watched"),
-                UserAnimeStatus.PlanToWatch => "PlanToWatch",
-                UserAnimeStatus.OnHold => "OnHold",
-                _ => "AddedToList"
-            };
-
-            if (markedAsDropped)
-                await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Dropped", null, originalItem.MainPictureUrl, ct);
-            else if (markedAsCompleted)
                 await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Completed", null, originalItem.MainPictureUrl, ct);
-            else if (statusChanged)
-                await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, statusAction, null, originalItem.MainPictureUrl, ct);
+            }
+            else
+            {
+                if (progressChanged)
+                {
+                    if (newProgress > oldProgress)
+                    {
+                        string progressAction = isManga ? "Read" : "Watched";
+                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, progressAction, null, originalItem.MainPictureUrl, ct);
+                    }
+                    else
+                    {
+                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Reverted", null, originalItem.MainPictureUrl, ct);
+                    }
+                }
+
+                if (markedAsDropped)
+                {
+                    await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Dropped", null, originalItem.MainPictureUrl, ct);
+                }
+                else if (statusChanged)
+                {
+                    bool alreadyRecordedProgress = progressChanged && newProgress > oldProgress && updatedItem.Status == UserAnimeStatus.Watching;
+                    if (!alreadyRecordedProgress)
+                    {
+                        string statusAction = updatedItem.Status switch
+                        {
+                            UserAnimeStatus.Watching => displayProgress == 0 ? "AddedToList" : (isManga ? "Read" : "Watched"),
+                            UserAnimeStatus.PlanToWatch => "PlanToWatch",
+                            UserAnimeStatus.OnHold => "OnHold",
+                            _ => "AddedToList"
+                        };
+
+                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, statusAction, null, originalItem.MainPictureUrl, ct);
+                    }
+                }
+            }
 
             if (scoreChanged)
+            {
                 await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "ScoreSet", originalItem.Score, originalItem.MainPictureUrl, ct);
+            }
         }
         catch (Exception ex)
         {

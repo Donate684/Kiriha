@@ -10,7 +10,7 @@ public partial class AnimeListViewModel
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_syncOrchestrator.IsSyncing || _animeRepo.IsInitializing)
+        if (_refreshService.IsRefreshing || _animeRepo.IsInitializing)
         {
             // During mass sync/init, we'll trigger one big update at the end 
             // instead of hundreds of individual UI refreshes.

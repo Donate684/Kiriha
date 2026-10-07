@@ -176,7 +176,7 @@
             <Button Classes="FavoriteRowButton"
                     Command="{Binding $parent[UserControl].((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenFavoriteCommand}"
                     CommandParameter="{Binding}"
-                    ToolTip.Tip="Показать тайтлы">
+                    ToolTip.Tip="{DynamicResource l.analytics.tastes.show_titles}">
                 <Border Background="{DynamicResource SubtleFillColorTertiary}"
                         CornerRadius="10"
                         Padding="0"

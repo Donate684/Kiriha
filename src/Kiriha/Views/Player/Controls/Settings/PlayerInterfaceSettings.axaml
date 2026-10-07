@@ -45,7 +45,7 @@
                                                    Minimum="0.5"
                                                    Maximum="10.0"
                                                    Increment="0.5"
-                                                   FormatString="0.0 сек"
+                                                   FormatString="{DynamicResource l.player.settings_interface.sec_format}"
                                                    Value="{Binding AutoHideTimeout}"/>
                                     <Button Grid.Column="2"
                                             Classes="player-settings-reset-btn"

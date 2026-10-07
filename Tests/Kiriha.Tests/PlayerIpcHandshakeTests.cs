@@ -62,8 +62,9 @@ public sealed class PlayerIpcHandshakeTests
     [Fact]
     public async Task PlayerIpc_FullHandshakeAndStateExchange_Succeeds()
     {
+        var pipeName = $"Kiriha.TestPipe.{Guid.NewGuid():N}";
         using var serverCts = new CancellationTokenSource();
-        var server = new InternalPlayerServer();
+        var server = new InternalPlayerServer(pipeName);
         var stateReceivedTcs = new TaskCompletionSource<InternalPlayerState>();
 
         server.PlayerStateChanged += (s, e) =>
@@ -76,7 +77,7 @@ public sealed class PlayerIpcHandshakeTests
 
         _ = server.StartAsync(serverCts.Token);
 
-        using var client = new InternalPlayerStateClient();
+        using var client = new InternalPlayerStateClient(pipeName);
         client.Start();
 
         var stateToSend = new InternalPlayerState
@@ -108,11 +109,12 @@ public sealed class PlayerIpcHandshakeTests
     [Fact]
     public async Task PlayerIpc_ServerMetadataPush_ArrivesAtClient()
     {
+        var pipeName = $"Kiriha.TestPipe.{Guid.NewGuid():N}";
         using var serverCts = new CancellationTokenSource();
-        var server = new InternalPlayerServer();
+        var server = new InternalPlayerServer(pipeName);
         _ = server.StartAsync(serverCts.Token);
 
-        using var client = new InternalPlayerStateClient();
+        using var client = new InternalPlayerStateClient(pipeName);
         var metadataReceivedTcs = new TaskCompletionSource<PlayerMediaMetadata>();
 
         client.MetadataReceived += meta =>
@@ -155,7 +157,8 @@ public sealed class PlayerIpcHandshakeTests
     [Fact]
     public async Task PlayerIpc_PendingState_DeliveredAfterServerStarts()
     {
-        using var client = new InternalPlayerStateClient();
+        var pipeName = $"Kiriha.TestPipe.{Guid.NewGuid():N}";
+        using var client = new InternalPlayerStateClient(pipeName);
 
         var stateToSend = new InternalPlayerState
         {
@@ -177,7 +180,7 @@ public sealed class PlayerIpcHandshakeTests
 
         // Now start server
         using var serverCts = new CancellationTokenSource();
-        var server = new InternalPlayerServer();
+        var server = new InternalPlayerServer(pipeName);
         var stateReceivedTcs = new TaskCompletionSource<InternalPlayerState>();
 
         server.PlayerStateChanged += (s, e) =>
