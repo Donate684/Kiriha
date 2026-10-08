@@ -52,8 +52,18 @@
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.subtitle}"/>
                         </StackPanel>
-                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding System.ScrobbleDelaySeconds}" Minimum="10" Maximum="3600" Increment="10" Width="80" ShowButtonSpinner="False"/>
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center"
+                                  ItemsSource="{Binding System.AvailableScrobbleDelays}"
+                                  SelectedItem="{Binding System.SelectedScrobbleDelay}"
+                                  Width="200" CornerRadius="6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vmSettings:ScrobbleDelayOption">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </Grid>
+                    <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.skip_notify.title}"/>

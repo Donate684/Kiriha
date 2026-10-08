@@ -5,8 +5,12 @@
     "subtitle": "Automatically detect anime titles and episodes when a player is running"
   },
   "delay": {
-    "title": "Update delay (seconds)",
-    "subtitle": "Time to watch an episode before marking it as watched on MyAnimeList"
+    "title": "Update delay",
+    "subtitle": "Time to watch an episode before automatically updating progress",
+    "1_min": "1 minute",
+    "3_min": "3 minutes",
+    "5_min": "5 minutes (default)",
+    "10_min": "10 minutes"
   },
   "processes": {
     "title": "App Tracking",

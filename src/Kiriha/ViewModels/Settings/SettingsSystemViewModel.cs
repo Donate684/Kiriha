@@ -35,6 +35,16 @@ public partial class SettingsSystemViewModel : ObservableObject
 
     [ObservableProperty] private AiringSourceOption _selectedAiringSource;
 
+    public List<ScrobbleDelayOption> AvailableScrobbleDelays { get; } = new()
+    {
+        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.1_min"), 60),
+        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.3_min"), 180),
+        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.5_min"), 300),
+        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.10_min"), 600),
+    };
+
+    [ObservableProperty] private ScrobbleDelayOption _selectedScrobbleDelay;
+
     public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService, IStartupManager startupManager)
     {
         _settingsService = settingsService;
@@ -48,6 +58,9 @@ public partial class SettingsSystemViewModel : ObservableObject
         EnableScrobbler = _settingsService.Current.System.Scrobbler.Enabled;
         ScrobbleDelaySeconds = _settingsService.Current.System.Scrobbler.DelaySeconds;
         ScrobbleNotifyOnSkip = _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode;
+        var delaySec = _settingsService.Current.System.Scrobbler.DelaySeconds;
+        _selectedScrobbleDelay = AvailableScrobbleDelays.Find(x => x.Seconds == delaySec)
+            ?? AvailableScrobbleDelays.OrderBy(x => Math.Abs(x.Seconds - delaySec)).First();
         EnableDiscordRPC = _settingsService.Current.System.EnableDiscordRPC;
         EnableBackgroundMetadataFetch = _settingsService.Current.System.EnableBackgroundMetadataFetch;
         EnableLogging = _settingsService.Current.System.EnableLogging;
@@ -102,6 +115,16 @@ public partial class SettingsSystemViewModel : ObservableObject
             _settingsService.Update(settings => settings.System.AiringSource = value.Value, SettingsSection.System);
         }
     }
+
+    partial void OnSelectedScrobbleDelayChanged(ScrobbleDelayOption value)
+    {
+        if (value != null)
+        {
+            ScrobbleDelaySeconds = value.Seconds;
+            _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = value.Seconds, SettingsSection.System);
+        }
+    }
 }
 
 public record AiringSourceOption(string Name, EpisodeAiringSource Value);
+public record ScrobbleDelayOption(string Name, int Seconds);
