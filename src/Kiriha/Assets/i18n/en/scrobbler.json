@@ -15,7 +15,7 @@
   "processes": {
     "title": "App Tracking",
     "tracked_apps": "Tracked Applications",
-    "tracked_apps_sub": "Choose which players and browsers should be automatically detected",
+    "tracked_apps_sub": "Choose which video players should be automatically detected",
     "video_players": "Video Players",
     "web_browsers": "Web Browsers",
     "search_placeholder": "Search applications..."

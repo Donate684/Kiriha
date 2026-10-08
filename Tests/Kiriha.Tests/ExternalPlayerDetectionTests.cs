@@ -147,9 +147,8 @@ public class ExternalPlayerDetectionTests
         Assert.NotNull(mpvItem);
         Assert.True(mpvItem!.IsEnabled);
 
-        var chromeItem = vm.WebBrowsers.FirstOrDefault(p => p.Name == "Google Chrome");
-        Assert.NotNull(chromeItem);
-        Assert.False(chromeItem!.IsEnabled);
+        var chromeItem = vm.VideoPlayers.FirstOrDefault(p => p.Name == "Google Chrome");
+        Assert.Null(chromeItem);
     }
 
     private static ParsedMedia? ParseSimulatedTitle(AnisthesiaPlayer player, string windowTitle)

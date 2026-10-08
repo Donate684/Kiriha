@@ -1,12 +1,10 @@
-using Avalonia.Controls;
+using Avalonia.Input;
 using Kiriha.Core.Abstractions.Services;
 
 namespace Kiriha.Views.Player;
 
-public partial class PlayerSelectionWindow : Window
+public partial class PlayerSelectionWindow : KirihaWindowBase
 {
-    private readonly ISettingsService? _settingsService;
-
     public PlayerSelectionWindow()
     {
         InitializeComponent();
@@ -14,27 +12,10 @@ public partial class PlayerSelectionWindow : Window
 
     public PlayerSelectionWindow(ISettingsService settingsService) : this()
     {
-        _settingsService = settingsService;
-        ApplyMica();
+        SettingsService = settingsService;
     }
 
-    public void ApplyMica()
-    {
-        var settings = _settingsService?.Current;
-        if (settings is null) return;
-        if (settings.UI.EnableMica)
-        {
-            TransparencyLevelHint = [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur];
-            Background = null;
-        }
-        else
-        {
-            TransparencyLevelHint = [WindowTransparencyLevel.None];
-            ClearValue(BackgroundProperty);
-        }
-    }
-
-    private void OnPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    private void OnTitleBarPressed(object? sender, PointerPressedEventArgs e)
     {
         BeginMoveDrag(e);
     }
