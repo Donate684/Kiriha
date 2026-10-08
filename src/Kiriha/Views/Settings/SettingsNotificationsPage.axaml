@@ -32,14 +32,6 @@
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.NotifyNewEpisodes}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
                     <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.NotifyNewEpisodes}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.delay.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.delay.subtitle}"/>
-                        </StackPanel>
-                        <NumericUpDown Grid.Column="1" VerticalAlignment="Center" Value="{Binding System.NewEpisodeNotificationDelayMinutes}" Minimum="0" Maximum="1440" Increment="1" Width="80" ShowButtonSpinner="False"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.app_update.title}"/>

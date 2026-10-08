@@ -25,7 +25,6 @@ public partial class SettingsSystemViewModel : ObservableObject
     [ObservableProperty] private bool _autoDownloadUpdates;
     [ObservableProperty] private bool _notifyNewEpisodes;
     [ObservableProperty] private bool _notifyAppUpdate;
-    [ObservableProperty] private decimal? _newEpisodeNotificationDelayMinutes;
     [ObservableProperty] private EpisodeAiringSource _airingSource;
 
     public List<AiringSourceOption> AvailableAiringSources { get; } = new()
@@ -56,7 +55,6 @@ public partial class SettingsSystemViewModel : ObservableObject
         AutoDownloadUpdates = _settingsService.Current.System.AutoDownloadUpdates;
         NotifyNewEpisodes = _settingsService.Current.System.NotifyNewEpisodes;
         NotifyAppUpdate = _settingsService.Current.System.NotifyAppUpdate;
-        NewEpisodeNotificationDelayMinutes = _settingsService.Current.System.NewEpisodeNotificationDelayMinutes;
         AiringSource = _settingsService.Current.System.AiringSource;
         _selectedAiringSource = AvailableAiringSources.Find(x => x.Value == AiringSource) ?? AvailableAiringSources[0];
     }
@@ -95,14 +93,6 @@ public partial class SettingsSystemViewModel : ObservableObject
     partial void OnAutoDownloadUpdatesChanged(bool value) => _settingsService.Update(settings => settings.System.AutoDownloadUpdates = value, SettingsSection.System);
     partial void OnNotifyNewEpisodesChanged(bool value) => _settingsService.Update(settings => settings.System.NotifyNewEpisodes = value, SettingsSection.System);
     partial void OnNotifyAppUpdateChanged(bool value) => _settingsService.Update(settings => settings.System.NotifyAppUpdate = value, SettingsSection.System);
-    partial void OnNewEpisodeNotificationDelayMinutesChanged(decimal? value)
-    {
-        if (value.HasValue)
-        {
-            var minutes = (int)Math.Max(0, value.Value);
-            _settingsService.Update(settings => settings.System.NewEpisodeNotificationDelayMinutes = minutes, SettingsSection.System);
-        }
-    }
 
     partial void OnSelectedAiringSourceChanged(AiringSourceOption value)
     {

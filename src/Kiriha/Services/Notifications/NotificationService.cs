@@ -16,7 +16,6 @@ namespace Kiriha.Services;
 public class NotificationService : INotificationService
 {
     private readonly ISettingsService _settingsService;
-    private readonly IBackgroundTaskSupervisor _backgroundTasks;
 
     // De-dup: don't fire the same "new episode N for anime X" toast twice in a row.
     // Keyed by anime id, value = the last EpisodesAired count we notified for.
@@ -25,10 +24,10 @@ public class NotificationService : INotificationService
     // De-dup: don't fire the same "new app version" toast twice in a row.
     private string? _lastNotifiedVersion;
 
-    public NotificationService(ISettingsService settingsService, IBackgroundTaskSupervisor backgroundTasks)
+    public NotificationService(ISettingsService settingsService, IBackgroundTaskSupervisor? backgroundTasks = null)
     {
         _settingsService = settingsService;
-        _backgroundTasks = backgroundTasks;
+        _ = backgroundTasks;
         AppUserModelIdRegistrar.Register();
     }
 
@@ -55,33 +54,8 @@ public class NotificationService : INotificationService
         if (!string.IsNullOrEmpty(ru) && !string.Equals(ru, orig, StringComparison.Ordinal))
             lines.Add(ru!);
 
-        // Snapshot the delay at the moment of detection. If the user changes it later
-        // mid-wait we keep the original behaviour for already-queued notifications.
-        var delayMinutes = Math.Max(0, _settingsService.Current.System.NewEpisodeNotificationDelayMinutes);
-
-        if (delayMinutes == 0)
-        {
-            Log.Information("NotificationService: New episode toast for {Title} ep {Ep}", orig, episodeNumber);
-            ToastRenderer.Show(lines);
-            return;
-        }
-
-        Log.Information("NotificationService: Scheduling new episode toast for {Title} ep {Ep} in {Min} min",
-            orig, episodeNumber, delayMinutes);
-
-        _backgroundTasks.Run("NotificationService.DelayedToast", async ct =>
-        {
-            try
-            {
-                await Task.Delay(TimeSpan.FromMinutes(delayMinutes), ct);
-                ToastRenderer.Show(lines);
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "NotificationService: delayed toast failed");
-            }
-        });
+        Log.Information("NotificationService: New episode toast for {Title} ep {Ep}", orig, episodeNumber);
+        ToastRenderer.Show(lines);
     }
 
     /// <summary>

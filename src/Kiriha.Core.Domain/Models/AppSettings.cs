@@ -85,9 +85,6 @@ public partial class AppSettings
         public bool NotifyNewEpisodes { get; set; } = true;
         public EpisodeAiringSource AiringSource { get; set; } = EpisodeAiringSource.AniList;
         public bool NotifyAppUpdate { get; set; } = true;
-        /// <summary>Delay (in minutes) between detecting a new episode and firing the toast.
-        /// 0 = fire immediately. Useful to batch notifications or wait for subs to land.</summary>
-        public int NewEpisodeNotificationDelayMinutes { get; set; } = 0;
         public List<string> CompletedSetupSteps { get; set; } = new();
         public ScrobblerConfig Scrobbler { get; set; } = new();
         public bool EnableDiscordRPC { get; set; } = true;

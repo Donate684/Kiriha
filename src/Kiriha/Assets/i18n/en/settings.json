@@ -18,10 +18,6 @@
     "app_update": {
       "title": "Notify about updates",
       "subtitle": "Show a notification when a new Kiriha version is available"
-    },
-    "delay": {
-      "title": "Notification delay",
-      "subtitle": "How many minutes after detection to show the toast (0 — immediately)"
     }
   },
   "theme": {
