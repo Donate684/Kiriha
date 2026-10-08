@@ -333,6 +333,9 @@
 
         <!-- ═══ Primary Tracker Switch / Auth / Sync Modal Overlay ═══ -->
         <pages:SettingsPrimarySwitchOverlay Grid.Column="0" Grid.ColumnSpan="2"/>
+
+        <!-- ═══ Standalone Account Authorization Modal Overlay ═══ -->
+        <pages:SettingsAuthOverlay Grid.Column="0" Grid.ColumnSpan="2"/>
     </Grid>
 </UserControl>
 

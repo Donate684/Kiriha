@@ -439,6 +439,109 @@ public class SettingsAuthViewModelTests
         Assert.True(_vm.IsSwitchDialogOpen);
         Assert.Equal(shikiForkOption, _vm.PendingPrimaryTracker);
     }
+
+    [Fact]
+    public void AuthDialog_InitialState_IsClosed()
+    {
+        Assert.False(_vm.IsAuthDialogOpen);
+        Assert.Null(_vm.ActiveAuthTrackerId);
+        Assert.Null(_vm.ActiveAuthTrackerName);
+        Assert.False(_vm.IsAuthFailed);
+    }
+
+    [Fact]
+    public async Task ExecuteAuthFlowAsync_SetsActiveStateAndClosesOnSuccess()
+    {
+        var executed = false;
+        var result = await _vm.ExecuteAuthFlowAsync(
+            TrackerConstants.Ids.Mal,
+            "MyAnimeList",
+            "MAL",
+            TrackerConstants.Domains.Mal,
+            "#2e51a2",
+            async ct =>
+            {
+                executed = true;
+                Assert.True(_vm.IsAuthDialogOpen);
+                Assert.Equal(TrackerConstants.Ids.Mal, _vm.ActiveAuthTrackerId);
+                Assert.Equal("MyAnimeList", _vm.ActiveAuthTrackerName);
+                Assert.Equal("MAL", _vm.ActiveAuthTrackerBadge);
+                Assert.Equal("#2e51a2", _vm.ActiveAuthBadgeBackground);
+                await Task.Yield();
+                return true;
+            });
+
+        Assert.True(executed);
+        Assert.True(result);
+        Assert.False(_vm.IsAuthDialogOpen);
+        Assert.False(_vm.IsAuthFailed);
+    }
+
+    [Fact]
+    public async Task ExecuteAuthFlowAsync_WhenCancelled_ClosesDialogAndResets()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        var flowTask = _vm.ExecuteAuthFlowAsync(
+            TrackerConstants.Ids.AniList,
+            "AniList",
+            "AL",
+            TrackerConstants.Domains.AniList,
+            "#02a9ff",
+            async ct =>
+            {
+                using var reg = ct.Register(() => tcs.TrySetCanceled());
+                await tcs.Task;
+                return true;
+            });
+
+        Assert.True(_vm.IsAuthDialogOpen);
+        _vm.CancelAuth();
+
+        var result = await flowTask;
+        Assert.False(result);
+        Assert.False(_vm.IsAuthDialogOpen);
+    }
+
+    [Fact]
+    public async Task ExecuteAuthFlowAsync_WhenAlreadyOpen_BlocksSecondInvocation()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        var firstFlow = _vm.ExecuteAuthFlowAsync(
+            TrackerConstants.Ids.Mal,
+            "MyAnimeList",
+            "MAL",
+            TrackerConstants.Domains.Mal,
+            "#2e51a2",
+            async ct =>
+            {
+                await tcs.Task;
+                return true;
+            });
+
+        Assert.True(_vm.IsAuthDialogOpen);
+
+        // Attempting a second concurrent auth should immediately return false without doing anything
+        var secondResult = await _vm.ExecuteAuthFlowAsync(
+            TrackerConstants.Ids.AniList,
+            "AniList",
+            "AL",
+            TrackerConstants.Domains.AniList,
+            "#02a9ff",
+            async ct =>
+            {
+                await Task.Yield();
+                return true;
+            });
+
+        Assert.False(secondResult);
+        Assert.Equal(TrackerConstants.Ids.Mal, _vm.ActiveAuthTrackerId);
+
+        // Finish first
+        tcs.SetResult(true);
+        var firstResult = await firstFlow;
+        Assert.True(firstResult);
+        Assert.False(_vm.IsAuthDialogOpen);
+    }
 }
 
 

@@ -27,6 +27,21 @@ public partial class MainWindowViewModel
     [RelayCommand]
     public void CloseSettings()
     {
+        if (_settingsViewModel?.Auth.IsSwitchSyncing == true)
+        {
+            return;
+        }
+
+        if (_settingsViewModel?.Auth.IsAuthDialogOpen == true)
+        {
+            _settingsViewModel.Auth.CancelAuth();
+        }
+
+        if (_settingsViewModel?.Auth.IsSwitchDialogOpen == true)
+        {
+            _settingsViewModel.Auth.CancelPrimarySwitch();
+        }
+
         IsSettingsOpen = false;
         IsSettingsSelected = false;
     }

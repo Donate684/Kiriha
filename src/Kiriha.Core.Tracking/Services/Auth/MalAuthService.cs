@@ -29,15 +29,15 @@ public class MalAuthService
         return await ExchangeCodeForTokenAsync(code, codeVerifier);
     }
 
-    public async Task<MalTokens?> LoginAsync()
+    public async Task<MalTokens?> LoginAsync(CancellationToken cancellationToken = default)
     {
         var codeVerifier = GenerateCodeVerifier();
         var authUrl = GetAuthUrl(codeVerifier);
         string successMessage = TrackingLoc.GetLoc("auth.success", "MyAnimeList");
         string closeMessage = TrackingLoc.GetLoc("auth.close_window");
-        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage);
+        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage, cancellationToken);
 
-        if (string.IsNullOrEmpty(code)) return null;
+        if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;
 
         return await ExchangeCodeForTokenAsync(code, codeVerifier);
     }

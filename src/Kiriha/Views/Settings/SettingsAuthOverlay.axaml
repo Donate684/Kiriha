@@ -1,0 +1,153 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+             xmlns:material="using:Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="Kiriha.Views.Settings.SettingsAuthOverlay"
+             x:DataType="vmSettings:SettingsViewModel"
+             IsVisible="{Binding Auth.IsAuthDialogOpen}">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.Title">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.Sub">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Opacity" Value="0.65"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="90"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.DimOverlay">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="Transparent"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Background="{DynamicResource ModalOverlayBackgroundBrush}">
+        <!-- Click dim overlay to cancel -->
+        <Button Classes="DimOverlay"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                Focusable="False"
+                Command="{Binding Auth.CancelAuthCommand}"/>
+
+        <!-- Modal Dialog Card (Same aesthetic as PrimarySwitchOverlay / UpdateDialogView) -->
+        <Border Background="{DynamicResource ModalBackgroundFill}"
+                CornerRadius="12"
+                Width="460"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="1"
+                BoxShadow="0 10 40 0 #60000000"
+                ClipToBounds="True">
+            <Grid RowDefinitions="*,Auto">
+
+                <!-- Content Area -->
+                <Grid Grid.Row="0" Margin="28,24,28,20" MinHeight="140">
+
+                    <!-- State: In progress / waiting in browser -->
+                    <StackPanel Spacing="16" VerticalAlignment="Center"
+                                IsVisible="{Binding !Auth.IsAuthFailed}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.auth_dialog_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.auth_dialog_desc}"/>
+                        </StackPanel>
+
+                        <!-- Selected Target Service Card -->
+                        <Border Background="{DynamicResource SubtleFillColorSecondary}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,10">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Background="{Binding Auth.ActiveAuthBadgeBackground}"
+                                        CornerRadius="6" MinWidth="30" Height="30" Margin="0,0,10,0" Padding="6,0">
+                                    <TextBlock Text="{Binding Auth.ActiveAuthTrackerBadge}"
+                                               Foreground="White" FontSize="10" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Auth.ActiveAuthTrackerName}"
+                                               FontWeight="SemiBold" FontSize="13"/>
+                                    <TextBlock Text="{Binding Auth.ActiveAuthTrackerDomain}"
+                                               FontSize="10" FontFamily="Consolas,monospace" Opacity="0.6"/>
+                                </StackPanel>
+                                <material:MaterialIcon Grid.Column="2" Kind="OpenInBrowser" Width="20" Height="20"
+                                                       Opacity="0.6" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Progress Bar & Status text -->
+                        <StackPanel Spacing="8">
+                            <ProgressBar IsIndeterminate="True"
+                                         Height="4" CornerRadius="2"
+                                         Foreground="{DynamicResource SystemAccentColor}"
+                                         Background="{DynamicResource SubtleFillColorSecondary}"
+                                         BorderThickness="0"/>
+                            <TextBlock Classes="Sub"
+                                       Text="{Binding Auth.ActiveAuthStatusText}"
+                                       FontSize="11" Opacity="0.75" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- State: Failed -->
+                    <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsVisible="{Binding Auth.IsAuthFailed}">
+                        <Border Width="52" Height="52" CornerRadius="26"
+                                Background="#15ff9500" HorizontalAlignment="Center">
+                            <material:MaterialIcon Kind="AlertCircle" Width="30" Height="30"
+                                                   Foreground="#cc8400"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.auth_dialog_failed}"
+                                       HorizontalAlignment="Center" TextAlignment="Center"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.auth_dialog_failed_desc}"
+                                       HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="380"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                </Grid>
+
+                <!-- Actions Bar -->
+                <Border Grid.Row="1" Padding="20,14"
+                        Background="{DynamicResource ModalSidebarFill}"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefault}"
+                        BorderThickness="0,1,0,0">
+                    <Grid>
+                        <!-- Actions when in progress -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
+                                    IsVisible="{Binding !Auth.IsAuthFailed}">
+                            <Button Classes="Secondary"
+                                    Content="{DynamicResource l.common.actions.cancel}"
+                                    Command="{Binding Auth.CancelAuthCommand}"/>
+                        </StackPanel>
+
+                        <!-- Actions when failed -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
+                                    IsVisible="{Binding Auth.IsAuthFailed}">
+                            <Button Classes="Secondary"
+                                    Content="{DynamicResource l.common.actions.close}"
+                                    Command="{Binding Auth.CancelAuthCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -30,7 +30,7 @@ public partial class ShikiAuthService
         return $"{ShikiEndpoints.AuthUrl(targetMirror)}?client_id={ShikiEndpoints.ClientId(targetMirror)}&redirect_uri={AppConstants.Api.RedirectUri}&response_type=code&scope=user_rates";
     }
 
-    public async Task<ShikiTokens?> LoginAsync(ShikiMirror? mirror = null)
+    public async Task<ShikiTokens?> LoginAsync(ShikiMirror? mirror = null, CancellationToken cancellationToken = default)
     {
         var targetMirror = mirror ?? ActiveMirror;
         if (!ShikiEndpoints.IsConfigured(targetMirror))
@@ -42,9 +42,9 @@ public partial class ShikiAuthService
         var authUrl = GetAuthUrl(targetMirror);
         string successMessage = TrackingLoc.GetLoc("auth.success", "Shikimori");
         string closeMessage = TrackingLoc.GetLoc("auth.close_window");
-        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage);
+        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage, cancellationToken);
 
-        if (string.IsNullOrEmpty(code)) return null;
+        if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;
 
         var tokens = await ExchangeCodeForTokenAsync(code, targetMirror);
         if (tokens != null) tokens.Mirror = targetMirror;

@@ -117,7 +117,12 @@
     "switch_success_desc": "Library successfully synchronized with the new source.",
     "switch_failed_title": "Synchronization Error",
     "switch_failed_desc": "Failed to update database. Please check your connection and try again.",
-    "switch_done_action": "Done"
+    "switch_done_action": "Done",
+    "auth_dialog_title": "Account Authorization",
+    "auth_dialog_desc": "Sign in to your account and approve access in the opened browser tab.",
+    "auth_dialog_waiting": "Waiting for authorization in browser...",
+    "auth_dialog_failed": "Authorization Failed",
+    "auth_dialog_failed_desc": "Failed to authenticate with the service. Check your connection and try again."
   },
   "ui": {
     "scale": "UI Scale",

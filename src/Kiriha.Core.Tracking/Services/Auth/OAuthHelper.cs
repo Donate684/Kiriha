@@ -8,26 +8,60 @@ namespace Kiriha.Core.Tracking.Auth;
 
 public static class OAuthHelper
 {
+    private static readonly TimeSpan AuthTimeout = TimeSpan.FromMinutes(5);
+
     public static async Task<string?> AuthorizeViaLoopbackAsync(
         string authUrl,
         string redirectUri,
         string successMessage,
-        string? closeMessage = null)
+        string? closeMessage = null,
+        CancellationToken cancellationToken = default)
     {
         using var listener = new HttpListener();
-        listener.Prefixes.Add(redirectUri);
-        listener.Start();
+        try
+        {
+            listener.Prefixes.Add(redirectUri);
+            listener.Start();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to start HttpListener for OAuth loopback on {RedirectUri}", redirectUri);
+            return null;
+        }
 
         Log.Information("Opening browser for authorization...");
         ShellLauncher.OpenUrl(authUrl);
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        linkedCts.CancelAfter(AuthTimeout);
+
+        using var reg = linkedCts.Token.Register(() =>
+        {
+            try { listener.Stop(); } catch (Exception ex) { Log.Debug(ex, "Failed to stop listener on cancellation"); }
+        });
 
         try
         {
-            while (!cts.Token.IsCancellationRequested)
+            while (!linkedCts.Token.IsCancellationRequested)
             {
-                var context = await listener.GetContextAsync().WaitAsync(cts.Token);
+                HttpListenerContext context;
+                try
+                {
+                    context = await listener.GetContextAsync().WaitAsync(linkedCts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (HttpListenerException) when (linkedCts.Token.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (ObjectDisposedException) when (linkedCts.Token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 var request = context.Request;
 
                 // Ignore favicon and other irrelevant requests
@@ -62,19 +96,26 @@ public static class OAuthHelper
                 var responseString = $"<html><head><meta charset='utf-8'></head><body><h1 style='font-family:sans-serif;'>{successMessage}</h1><p style='font-family:sans-serif;'>{localizedCloseMsg}</p></body></html>";
                 var buffer = Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;
-                await response.OutputStream.WriteAsync(buffer, cts.Token);
-                await response.OutputStream.FlushAsync(cts.Token);
+                await response.OutputStream.WriteAsync(buffer, linkedCts.Token);
+                await response.OutputStream.FlushAsync(linkedCts.Token);
 
                 // Brief delay to ensure browser receives response
-                await Task.Delay(500);
+                try
+                {
+                    await Task.Delay(500, linkedCts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore cancellation during final delay
+                }
 
-                listener.Stop();
+                try { listener.Stop(); } catch { }
                 return code;
             }
         }
         catch (OperationCanceledException)
         {
-            Log.Warning("Authorization timed out.");
+            Log.Information("Authorization timed out or was cancelled.");
         }
         catch (Exception ex)
         {

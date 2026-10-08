@@ -23,16 +23,16 @@ public class AniListAuthService
         return $"{AppConstants.Api.AniList.AuthUrl}?client_id={ApiKeys.AniListClientId}&redirect_uri={Uri.EscapeDataString(AppConstants.Api.RedirectUri)}&response_type=code";
     }
 
-    public async Task<AniListTokens?> LoginAsync()
+    public async Task<AniListTokens?> LoginAsync(CancellationToken cancellationToken = default)
     {
         var authUrl = GetAuthUrl();
         string successMessage = TrackingLoc.GetLoc("auth.success", "AniList");
         string closeMessage = TrackingLoc.GetLoc("auth.close_window");
 
-        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage);
-        if (string.IsNullOrEmpty(code)) return null;
+        var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage, cancellationToken);
+        if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;
 
-        return await ExchangeCodeForTokenAsync(code);
+        return await ExchangeCodeForTokenAsync(code, cancellationToken);
     }
 
     public async Task<AniListTokens?> LoginWithTokenAsync(string accessToken, CancellationToken ct = default)
