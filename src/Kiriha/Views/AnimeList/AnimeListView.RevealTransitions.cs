@@ -20,6 +20,55 @@ public partial class AnimeListView
     private const int RevealStaggerIdleResetMs = 140;
     private static readonly TimeSpan InitialRevealWindow = TimeSpan.FromMilliseconds(1100);
 
+    private readonly HashSet<AnimeEntity> _pendingViewportItems = new();
+    private DispatcherTimer? _viewportDebounceTimer;
+
+    private void EnqueueViewportItemDebounced(AnimeEntity item)
+    {
+        lock (_pendingViewportItems)
+        {
+            _pendingViewportItems.Add(item);
+        }
+
+        if (_viewportDebounceTimer is null)
+        {
+            _viewportDebounceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(180)
+            };
+            _viewportDebounceTimer.Tick += (_, _) => FlushViewportQueue();
+        }
+
+        _viewportDebounceTimer.Stop();
+        _viewportDebounceTimer.Start();
+    }
+
+    private void FlushViewportQueue()
+    {
+        _viewportDebounceTimer?.Stop();
+        List<AnimeEntity> batch;
+        lock (_pendingViewportItems)
+        {
+            if (_pendingViewportItems.Count == 0) return;
+            batch = new List<AnimeEntity>(_pendingViewportItems);
+            _pendingViewportItems.Clear();
+        }
+
+        if (DataContext is AnimeListViewModel vm)
+        {
+            vm.EnqueueItemsForViewport(batch);
+        }
+    }
+
+    private void CleanupViewportDebouncer()
+    {
+        _viewportDebounceTimer?.Stop();
+        lock (_pendingViewportItems)
+        {
+            _pendingViewportItems.Clear();
+        }
+    }
+
     /// <summary>
     /// Opens a short window where prepared cards play the reveal cascade.
     /// After it closes, cards entering the viewport during scroll show instantly.
@@ -37,9 +86,9 @@ public partial class AnimeListView
     /// </summary>
     private void OnGridElementPrepared(object? sender, ItemsRepeaterElementPreparedEventArgs e)
     {
-        if (e.Element.DataContext is AnimeEntity item && DataContext is AnimeListViewModel vm)
+        if (e.Element.DataContext is AnimeEntity item)
         {
-            vm.EnqueueItemForViewport(item);
+            EnqueueViewportItemDebounced(item);
         }
 
         if (e.Element is not Border card || !card.Classes.Contains("revealItem"))

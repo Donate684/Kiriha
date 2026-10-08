@@ -21,6 +21,9 @@ public static class CachedImage
     public static readonly AttachedProperty<string?> SourceProperty =
         AvaloniaProperty.RegisterAttached<Image, string?>("Source", typeof(CachedImage));
 
+    public static readonly AttachedProperty<int> DecodeWidthProperty =
+        AvaloniaProperty.RegisterAttached<Image, int>("DecodeWidth", typeof(CachedImage), 300);
+
     static CachedImage()
     {
         SourceProperty.Changed.AddClassHandler<Image>((img, args) => OnSourceChanged(img, args));
@@ -33,6 +36,9 @@ public static class CachedImage
 
     public static string? GetSource(Image element) => element.GetValue(SourceProperty);
     public static void SetSource(Image element, string? value) => element.SetValue(SourceProperty, value);
+
+    public static int GetDecodeWidth(Image element) => element.GetValue(DecodeWidthProperty);
+    public static void SetDecodeWidth(Image element, int value) => element.SetValue(DecodeWidthProperty, value);
 
     private static async void OnSourceChanged(Image img, AvaloniaPropertyChangedEventArgs args)
     {
@@ -48,19 +54,30 @@ public static class CachedImage
 
         try
         {
-            var bmp = await _imageCache.LoadBitmapAsync(url);
+            int decodeWidth = GetDecodeWidth(img);
+            var bmp = await _imageCache.LoadBitmapAsync(url, decodeWidth);
 
             // Ensure we're still bound to the same URL by the time the load completes.
             // Avoids setting a stale bitmap if the control was recycled mid-load.
             if (GetSource(img) != url) return;
 
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            if (Dispatcher.UIThread.CheckAccess())
             {
                 if (GetSource(img) == url)
                 {
                     img.Source = bmp;
                 }
-            });
+            }
+            else
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (GetSource(img) == url)
+                    {
+                        img.Source = bmp;
+                    }
+                });
+            }
         }
         catch (Exception ex)
         {

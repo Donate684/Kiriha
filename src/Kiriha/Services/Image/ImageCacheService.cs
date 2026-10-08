@@ -20,8 +20,8 @@ public class ImageCacheService : IImageCacheService, IDisposable
     private readonly ConcurrentDictionary<string, string> _urlToPathMap = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly BitmapMemoryCache _memCache = new(
-        encodedBudgetBytes: 32L * 1024 * 1024,
-        pixelBudgetBytes: 64L * 1024 * 1024);
+        encodedBudgetBytes: 48L * 1024 * 1024,
+        pixelBudgetBytes: 128L * 1024 * 1024);
 
     public ImageCacheService(
         IHttpClientFactory httpClientFactory,
@@ -47,17 +47,19 @@ public class ImageCacheService : IImageCacheService, IDisposable
 
         // In-memory fast path: if URL was already mapped to a local file and is present in L1 memory cache,
         // return instantly without any disk checks or hashing.
+        string localPath;
         if (_urlToPathMap.TryGetValue(url, out var knownPath))
         {
             if (_memCache.TryRentBitmap(knownPath, decodeWidth, out var memRented) && memRented != null)
                 return memRented;
+            localPath = knownPath;
         }
-
-        string localPath = await _diskCache.ResolveLocalPathAsync(url, ct);
-
-        if (string.IsNullOrEmpty(localPath)) return null;
-
-        _urlToPathMap[url] = localPath;
+        else
+        {
+            localPath = await _diskCache.ResolveLocalPathAsync(url, ct);
+            if (string.IsNullOrEmpty(localPath)) return null;
+            _urlToPathMap[url] = localPath;
+        }
 
         if (_memCache.TryRentBitmap(localPath, decodeWidth, out var rented) && rented != null)
             return rented;

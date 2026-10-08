@@ -188,7 +188,9 @@
             <ScrollViewer x:Name="ContentScrollViewer"
                           HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto"
-                          u:SmoothScroll.IsEnabled="True">
+                          u:SmoothScroll.IsEnabled="True"
+                          u:SmoothScroll.WheelMultiplier="120"
+                          u:SmoothScroll.SmoothingTimeMs="120">
                 <ItemsRepeater x:Name="SeasonalItemsRepeater" 
                                ItemsSource="{Binding DisplayItems}"
                                Margin="20,0,20,16">

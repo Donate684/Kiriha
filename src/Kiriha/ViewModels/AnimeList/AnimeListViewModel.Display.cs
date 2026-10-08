@@ -28,6 +28,11 @@ public partial class AnimeListViewModel
         _queueService.EnqueueForViewport([item]);
     }
 
+    public void EnqueueItemsForViewport(IEnumerable<AnimeEntity> items)
+    {
+        _queueService.EnqueueForViewport(items);
+    }
+
     public void RefreshAfterDetailsEdit()
     {
         RebuildListProjection();

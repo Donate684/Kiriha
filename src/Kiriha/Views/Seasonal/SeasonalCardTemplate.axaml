@@ -29,14 +29,14 @@
             <Border Classes="AnimeCard revealItem FloatingMagCard" Margin="4" ClipToBounds="False"
                     CornerRadius="10" Background="{DynamicResource CardBackgroundFillSecondary}"
                     BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1">
-                <Border CornerRadius="10" ClipToBounds="True">
                 <Grid ColumnDefinitions="110, *" DoubleTapped="Poster_DoubleTapped">
 
                     <!-- ΓöÇΓöÇΓöÇ Left: Poster ΓöÇΓöÇΓöÇ -->
-                    <Panel Grid.Column="0" Width="110" Height="165">
-                        <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
-                        <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"
-                               Height="165" Width="110"/>
+                    <Border Grid.Column="0" Width="110" Height="165" CornerRadius="9,0,0,9" ClipToBounds="True">
+                        <Panel Width="110" Height="165">
+                            <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
+                            <Image core:CachedImage.Source="{Binding MainPictureUrl}" core:CachedImage.DecodeWidth="200" Stretch="UniformToFill"
+                                   Height="165" Width="110"/>
 
                         <!-- Top-left badges: Status / Franchise + Airing date -->
                         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5" Spacing="3">
@@ -200,6 +200,7 @@
                             </StackPanel>
                         </Border>
                     </Panel>
+                    </Border>
 
                     <!-- ΓöÇΓöÇΓöÇ Right: Info ΓöÇΓöÇΓöÇ -->
                     <Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="11,10,10,10">
@@ -240,7 +241,6 @@
                     </Grid>
 
                 </Grid>
-                </Border>
             </Border>
         </DataTemplate>
 </ResourceDictionary>

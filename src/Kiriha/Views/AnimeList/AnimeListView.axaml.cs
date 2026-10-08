@@ -70,6 +70,8 @@ public partial class AnimeListView : UserControl
             _gridRepeater.ElementClearing -= OnGridElementClearing;
         }
 
+        CleanupViewportDebouncer();
+
         if (DataContext is AnimeListViewModel vm && vm.FilteredItems != null)
         {
             // Unloading logic handled by AsyncImageLoader automatically or no longer needed

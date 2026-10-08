@@ -27,14 +27,15 @@
 
     <DataTemplate x:Key="AnimeCardTemplate" x:DataType="entities:AnimeEntity">
         <Border Classes="AnimeCard revealItem PosterFirstCard" Margin="4" Width="164" Height="318"
-                CornerRadius="14" ClipToBounds="True"
+                CornerRadius="14"
                 BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1">
             <Grid RowDefinitions="195,*">
 
                 <!-- ══ Poster panel ══ -->
-                <Panel Grid.Row="0" DoubleTapped="Poster_DoubleTapped">
+                <Border Grid.Row="0" CornerRadius="13,13,0,0" ClipToBounds="True">
+                    <Panel DoubleTapped="Poster_DoubleTapped">
                     <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
-                    <Image core:CachedImage.Source="{Binding MainPictureUrl}" Stretch="UniformToFill"/>
+                    <Image core:CachedImage.Source="{Binding MainPictureUrl}" core:CachedImage.DecodeWidth="240" Stretch="UniformToFill"/>
 
                     <!-- Top-Left: date + airing + rewatching pills -->
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -99,25 +100,25 @@
                     </StackPanel>
 
                     <!-- Score badge (top-right) -->
-                    <Button Classes="ScoreBadgeButton" VerticalAlignment="Top" HorizontalAlignment="Right"
-                            Margin="9" BorderThickness="0"
-                            Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).OpenScoreMenuCommand}"
-                            CommandParameter="{Binding}"
+                    <Border VerticalAlignment="Top" HorizontalAlignment="Right"
+                            Margin="9" CornerRadius="8" BoxShadow="0 2 6 0 #55000000"
                             IsVisible="{Binding Score, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="4" Color="{DynamicResource AnimeCardShadowColor}" OffsetX="0" OffsetY="1"/>
-                        </Button.Effect>
-                        <Button.Flyout>
-                            <MenuFlyout ItemsSource="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).AvailableScores}"
-                                        FlyoutPresenterClasses="ScoreFlyout"
-                                        Opened="ScoreMenu_Opened"/>
-                        </Button.Flyout>
-                        <StackPanel Orientation="Horizontal" Spacing="3">
-                            <material:MaterialIcon Kind="Star" Width="11" Height="11" Foreground="{DynamicResource AnimeCardStarForeground}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Score}" FontSize="10" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
+                        <Button Classes="ScoreBadgeButton" BorderThickness="0"
+                                Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).OpenScoreMenuCommand}"
+                                CommandParameter="{Binding}">
+                            <Button.Flyout>
+                                <MenuFlyout ItemsSource="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).AvailableScores}"
+                                            FlyoutPresenterClasses="ScoreFlyout"
+                                            Opened="ScoreMenu_Opened"/>
+                            </Button.Flyout>
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <material:MaterialIcon Kind="Star" Width="11" Height="11" Foreground="{DynamicResource AnimeCardStarForeground}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Score}" FontSize="10" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
                 </Panel>
+                </Border>
 
                 <!-- ══ Info panel ══ -->
                 <Grid Grid.Row="1" RowDefinitions="*,Auto,Auto" Margin="12,10,12,4">

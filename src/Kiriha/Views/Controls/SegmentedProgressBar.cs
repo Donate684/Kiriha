@@ -66,21 +66,7 @@ public class SegmentedProgressBar : Control
         AffectsMeasure<SegmentedProgressBar>(TotalProperty);
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
 
-        if (change.Property == CurrentProperty ||
-            change.Property == TotalProperty ||
-            change.Property == AiredProperty ||
-            change.Property == AccentBrushProperty ||
-            change.Property == AiredBrushProperty ||
-            change.Property == TrackBrushProperty)
-        {
-            InvalidateMeasure();
-            InvalidateVisual();
-        }
-    }
 
 
     protected override Size MeasureOverride(Size availableSize)

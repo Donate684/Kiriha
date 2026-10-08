@@ -20,6 +20,18 @@ public partial class SeasonalViewModel
         _franchiseService.EnqueueForResolution(item);
     }
 
+    public void EnqueueItemsForViewport(IEnumerable<AnimeEntity> items)
+    {
+        _queueService.EnqueueForViewport(items);
+        foreach (var item in items)
+        {
+            if (item != null)
+            {
+                _franchiseService.EnqueueForResolution(item);
+            }
+        }
+    }
+
     [RelayCommand]
     public void NextSeason()
     {

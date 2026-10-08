@@ -94,6 +94,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"/>
                                 <Image core:CachedImage.Source="{Binding PosterUrl}"
+                                       core:CachedImage.DecodeWidth="100"
                                        Stretch="UniformToFill"/>
                             </Panel>
                         </Border>

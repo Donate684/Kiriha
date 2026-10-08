@@ -120,9 +120,9 @@ public sealed class SmoothScrollBehavior
         var dt = (now - _lastFrameTime).TotalMilliseconds;
         _lastFrameTime = now;
 
-        // Cap long pauses such as window minimize or GC pause; otherwise alpha
-        // jumps to 1 and the scroll visibly snaps to the target.
-        if (dt > 100) dt = 100;
+        // Cap frame delta during delays or GC pauses so alpha doesn't spike
+        // into a jarring visual jolt; eases smoothly over subsequent frames instead.
+        if (dt > 35) dt = 35;
         if (dt <= 0) { RequestFrame(); return; }
 
         var tau = Math.Max(1, SmoothingTime.TotalMilliseconds);

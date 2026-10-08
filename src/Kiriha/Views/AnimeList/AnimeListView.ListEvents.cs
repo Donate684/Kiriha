@@ -28,16 +28,19 @@ public partial class AnimeListView
 
         // Iterate through currently realized elements to ensure they are queued
         // This handles the case where items were prepared before OnLoaded or events were attached.
+        var items = new List<AnimeEntity>();
         for (int i = 0; i < _gridRepeater.ItemsSourceView.Count; i++)
         {
             var element = _gridRepeater.TryGetElement(i);
             if (element != null && element.DataContext is AnimeEntity item)
             {
-                if (DataContext is AnimeListViewModel vm)
-                {
-                    vm.EnqueueItemForViewport(item);
-                }
+                items.Add(item);
             }
+        }
+
+        if (items.Count > 0 && DataContext is AnimeListViewModel vm)
+        {
+            vm.EnqueueItemsForViewport(items);
         }
     }
 }
