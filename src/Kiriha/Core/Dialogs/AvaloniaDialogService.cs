@@ -64,6 +64,7 @@ public sealed class AvaloniaDialogService : IDialogService
 
         var vm = new AnimeDetailsViewModel(
             clone,
+            item,
             editVm,
             metaVm,
             _settingsService,
@@ -71,7 +72,8 @@ public sealed class AvaloniaDialogService : IDialogService
             _shikiApiService,
             _animeRepo,
             _malApiService,
-            _franchiseService);
+            _franchiseService,
+            _listActionService);
 
         var window = new Views.AnimeDetailsWindow(_settingsService) { DataContext = vm };
 
@@ -79,7 +81,7 @@ public sealed class AvaloniaDialogService : IDialogService
         {
             await WaitForVisibleAsync(owner, ct);
             var result = await window.ShowDialog<bool?>(owner);
-            return result == true;
+            return result == true || vm.HasAnySavedChanges;
         }
         catch (OperationCanceledException)
         {

@@ -55,17 +55,17 @@
                                     <TextBlock Grid.Row="4" Grid.Column="0" Text="{DynamicResource l.anime.labels.next_episode}" Classes="Label" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                     <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Anime.Presentation.NextEpisodeAtDisplay}" IsVisible="{Binding Anime.NextEpisodeAt, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.genres}" Classes="Label"/>
-                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Anime.Genres, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
+                                    <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Anime.Genres, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
-                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Anime.Studios, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
+                                    <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Anime.Studios, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
                                     <TextBlock Grid.Row="7" Grid.Column="0" Text="{DynamicResource l.anime.labels.score}" Classes="Label"/>
                                     <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Anime.MeanScore}"/>
                                 </Grid>
 
                                 <!-- Synopsis -->
                                 <StackPanel IsVisible="{Binding #TabSynopsis.IsChecked}">
-                                    <TextBlock Text="{Binding Anime.Presentation.DisplaySynopsis}" TextWrapping="Wrap" Opacity="0.85" LineHeight="22" FontSize="13"/>
+                                    <SelectableTextBlock Text="{Binding Anime.Presentation.DisplaySynopsis}" TextWrapping="Wrap" Opacity="0.85" LineHeight="22" FontSize="13"/>
                                     <TextBlock Text="{DynamicResource l.anime.labels.no_synopsis}" FontSize="13" Opacity="0.5" IsVisible="{Binding Anime.Presentation.DisplaySynopsis, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                                 </StackPanel>
 
@@ -76,7 +76,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="x:String">
                                                 <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8" Padding="10,6" Margin="0,0,8,8">
-                                                    <TextBlock Text="{Binding}" FontSize="12" Opacity="0.8"/>
+                                                    <SelectableTextBlock Text="{Binding}" FontSize="12" Opacity="0.8"/>
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>

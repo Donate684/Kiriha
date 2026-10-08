@@ -25,7 +25,8 @@
     "login": "Login",
     "logout": "Logout",
     "connect": "Connect",
-    "clear": "Clear"
+    "clear": "Clear",
+    "back": "Back"
   },
   "errors": {
     "generic": "Error",

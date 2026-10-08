@@ -39,4 +39,19 @@ public partial class AnimeDetailsViewModel
         // Show as a non-modal window or modal, depending on preference. Non-modal is better so user can keep it open.
         window.Show();
     }
+
+    [RelayCommand]
+    private void OpenPosterPreview()
+    {
+        if (!string.IsNullOrEmpty(Anime?.MainPictureUrl))
+        {
+            IsPosterPreviewOpen = true;
+        }
+    }
+
+    [RelayCommand]
+    private void ClosePosterPreview()
+    {
+        IsPosterPreviewOpen = false;
+    }
 }

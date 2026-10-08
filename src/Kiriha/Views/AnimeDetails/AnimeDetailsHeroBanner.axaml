@@ -22,13 +22,40 @@
                 </LinearGradientBrush>
             </Border.Background>
             <Grid ColumnDefinitions="Auto, *" VerticalAlignment="Center">
-                <Border Grid.Column="0" Width="105" Height="152" CornerRadius="10" ClipToBounds="True" BoxShadow="0 8 24 0 #40000000">
-                    <Image asyncImageLoader:ImageLoader.Source="{Binding Anime.MainPictureUrl}" Stretch="UniformToFill"/>
+                <Border Grid.Column="0" Width="105" Height="152" CornerRadius="10" ClipToBounds="True" 
+                        BoxShadow="0 8 24 0 #40000000" Cursor="Hand"
+                        ToolTip.Tip="{DynamicResource l.anime.labels.view_poster}">
+                    <Panel>
+                        <Image asyncImageLoader:ImageLoader.Source="{Binding Anime.MainPictureUrl}" Stretch="UniformToFill"/>
+
+                        <Button Command="{Binding OpenPosterPreviewCommand}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                Background="Transparent" BorderThickness="0" CornerRadius="10"
+                                Padding="0" Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Opacity" Value="0"/>
+                                    <Setter Property="Transitions">
+                                        <Transitions>
+                                            <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                                        </Transitions>
+                                    </Setter>
+                                </Style>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </Style>
+                            </Button.Styles>
+                            <Border Background="#55000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <material:MaterialIcon Kind="MagnifyPlusOutline" Width="28" Height="28" Foreground="White"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Button>
+                    </Panel>
                 </Border>
                 <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center" Spacing="4">
-                    <TextBlock Text="{Binding Anime.Title}" FontSize="28" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34"/>
-                    <TextBlock Text="{Binding Anime.Presentation.SecondaryTitle}" FontSize="15" Foreground="#BFFFFFFF" TextWrapping="Wrap"
-                               IsVisible="{Binding Anime.Presentation.HasSecondaryTitle}"/>
+                    <SelectableTextBlock Text="{Binding Anime.Title}" FontSize="28" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34"/>
+                    <SelectableTextBlock Text="{Binding Anime.Presentation.SecondaryTitle}" FontSize="15" Foreground="#BFFFFFFF" TextWrapping="Wrap"
+                                         IsVisible="{Binding Anime.Presentation.HasSecondaryTitle}"/>
                     <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <material:MaterialIcon Kind="Star" Width="14" Height="14" Foreground="Gold" VerticalAlignment="Center"/>

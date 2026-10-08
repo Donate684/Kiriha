@@ -21,6 +21,7 @@
         xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
         xmlns:material="using:Material.Icons.Avalonia"
         xmlns:conv="using:Kiriha.Views.Converters"
+        xmlns:core="using:Kiriha.Core"
         xmlns:u="using:Kiriha.Utils.UI"
         x:Class="Kiriha.Views.AnimeDetailsWindow"
         x:DataType="vmAnimeDetails:AnimeDetailsViewModel"
@@ -35,7 +36,10 @@
         ExtendClientAreaTitleBarHeightHint="34"
         WindowDecorations="BorderOnly">
 
-
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding ClosePosterPreviewCommand}"/>
+        <KeyBinding Gesture="Alt+Left" Command="{Binding GoBackCommand}"/>
+    </Window.KeyBindings>
 
     <Window.Styles>
         <!-- Modern Card Style -->
@@ -177,7 +181,42 @@
     <Grid RowDefinitions="Auto, *">
         <Border Grid.Row="0" Height="34" VerticalAlignment="Top" Background="Transparent" IsHitTestVisible="True" PointerPressed="OnTitleBarPressed" ZIndex="10"/>
         
-        <controls:TitleBarButtons Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Top" ZIndex="999" Foreground="White"/>
+        <!-- Window Caption Controls: [Back] [Minimize] [Maximize] [Close] -->
+        <StackPanel Grid.Row="0" Grid.RowSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    ZIndex="999">
+            <Button Command="{Binding GoBackCommand}"
+                    IsVisible="{Binding CanGoBack}"
+                    Width="46" Height="34"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    CornerRadius="0"
+                    VerticalAlignment="Top"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    ToolTip.Tip="{DynamicResource l.common.actions.back}">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}"/>
+                    </Style>
+                </Button.Styles>
+                <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, sans-serif"
+                           FontSize="10"
+                           Foreground="White"
+                           Opacity="0.9"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Text="&#xE72B;"/>
+            </Button>
+
+            <controls:TitleBarButtons Foreground="White"/>
+        </StackPanel>
         
         <!-- =================================================================== -->
         <!-- HERO BANNER                                                        -->
@@ -193,7 +232,7 @@
                 <details:AnimeDetailsSidebar Grid.Column="0" />
 
             <!-- ======================= MAIN CONTENT ======================= -->
-            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
+            <ScrollViewer Name="MainContentScrollViewer" Grid.Column="1" HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
                 <StackPanel Spacing="16" Margin="24,18,28,24">
 
                     <details:AnimeDetailsInfoTab />
@@ -205,6 +244,59 @@
             </ScrollViewer>
 
         </Grid>
+
+        <!-- =================================================================== -->
+        <!-- POSTER LIGHTBOX MODAL                                              -->
+        <!-- =================================================================== -->
+        <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding IsPosterPreviewOpen}" ZIndex="2000">
+            <!-- Fullscreen Dark Overlay (Click to Dismiss) -->
+            <Button Command="{Binding ClosePosterPreviewCommand}"
+                    Background="#CC000000"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    Padding="0" BorderThickness="0" CornerRadius="0"
+                    Cursor="Hand">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="#CC000000"/>
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="#CC000000"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+
+            <!-- Centered Modal Content Card -->
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32" IsHitTestVisible="True">
+                <Border CornerRadius="12" ClipToBounds="True"
+                        BoxShadow="0 24 64 0 #80000000"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
+                        Background="{DynamicResource CardBackgroundFillDefault}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image core:CachedImage.Source="{Binding Anime.MainPictureUrl}"
+                           core:CachedImage.DecodeWidth="0"
+                           Stretch="Uniform"
+                           StretchDirection="DownOnly"
+                           RenderOptions.BitmapInterpolationMode="HighQuality"
+                           MaxWidth="640" MaxHeight="520"/>
+                </Border>
+
+                <!-- Floating Close Button -->
+                <Button Command="{Binding ClosePosterPreviewCommand}"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,-14,-14,0"
+                        Width="34" Height="34" CornerRadius="17"
+                        Background="#CC000000" BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
+                        Cursor="Hand" ToolTip.Tip="{DynamicResource l.common.actions.close}">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="#EE000000"/>
+                        </Style>
+                    </Button.Styles>
+                    <material:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+            </Grid>
+        </Panel>
     </Grid>
     </LayoutTransformControl>
 </Window>

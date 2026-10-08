@@ -120,7 +120,7 @@ public partial class AnimeDetailsViewModel
 
         // If the item exists in the collection, use the full one to ensure all offline fields are loaded.
         var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == targetAnime.Id && x.MediaKind == targetAnime.MediaKind);
-        await _dialogs.ShowAnimeDetailsAsync(null, existing ?? targetAnime);
+        await NavigateToAnimeAsync(existing ?? targetAnime, addToHistory: true);
     }
 
     partial void OnHasFranchiseTimelineChanged(bool value)
@@ -316,7 +316,7 @@ public partial class AnimeDetailsViewModel
         var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == node.Node.Id && x.MediaKind == kind);
         if (existing != null)
         {
-            await _dialogs.ShowAnimeDetailsAsync(null, existing);
+            await NavigateToAnimeAsync(existing, addToHistory: true);
             return;
         }
 
@@ -334,7 +334,7 @@ public partial class AnimeDetailsViewModel
             TotalEpisodes = node.TotalEpisodes ?? 0
         };
 
-        await _dialogs.ShowAnimeDetailsAsync(null, targetAnime);
+        await NavigateToAnimeAsync(targetAnime, addToHistory: true);
     }
 
     public void UpdateFranchiseProgressStats()

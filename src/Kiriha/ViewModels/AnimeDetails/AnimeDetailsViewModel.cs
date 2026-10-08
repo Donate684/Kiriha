@@ -17,11 +17,22 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private AnimeEntity _anime;
 
-    public AnimeEditViewModel Editor { get; }
-    public AnimeMetadataViewModel Metadata { get; }
+    [ObservableProperty]
+    private AnimeEditViewModel _editor;
+
+    [ObservableProperty]
+    private AnimeMetadataViewModel _metadata;
+
+    [ObservableProperty]
+    private bool _canGoBack;
+
+    public bool HasAnySavedChanges { get; private set; }
 
     [ObservableProperty]
     private bool _isLoading;
+
+    [ObservableProperty]
+    private bool _isPosterPreviewOpen;
 
 
     public System.Collections.ObjectModel.ObservableCollection<RelationItemVm> Relations { get; } = new();
@@ -57,6 +68,10 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
     public System.Collections.ObjectModel.ObservableCollection<CustomShareLinkRuntime> CustomShareLinks { get; } = new();
 
+    private AnimeEntity _originalAnime;
+    private readonly IAnimeListActionService _listActionService;
+    private readonly Stack<(AnimeEntity Original, AnimeEntity Clone)> _navigationHistory = new();
+
     private readonly ISettingsService _settingsService;
     private readonly IDialogService _dialogs;
     private readonly IShikiApiService _shikiApiService;
@@ -68,6 +83,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
     public AnimeDetailsViewModel(
         AnimeEntity cloneAnime,
+        AnimeEntity originalAnime,
         AnimeEditViewModel editor,
         AnimeMetadataViewModel metadata,
         ISettingsService settingsService,
@@ -75,17 +91,20 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         IShikiApiService shikiApiService,
         IAnimeRepository animeRepo,
         IMalApiService malApiService,
-        IFranchiseService franchiseService)
+        IFranchiseService franchiseService,
+        IAnimeListActionService listActionService)
     {
         _anime = cloneAnime;
-        Editor = editor;
-        Metadata = metadata;
+        _originalAnime = originalAnime;
+        _editor = editor;
+        _metadata = metadata;
         _settingsService = settingsService;
         _dialogs = dialogs;
         _shikiApiService = shikiApiService;
         _animeRepo = animeRepo;
         _malApiService = malApiService;
         _franchiseService = franchiseService;
+        _listActionService = listActionService;
 
         BuildCustomShareLinks();
 
@@ -106,6 +125,106 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         _anime.PropertyChanged += _animePropertyChanged;
 
         InitializationAsync().SafeFireAndForget("AnimeDetailsInitialization");
+    }
+
+    public async Task NavigateToAnimeAsync(AnimeEntity target, bool addToHistory = true)
+    {
+        if (target == null) return;
+        if (target.Id == Anime.Id && target.MediaKind == Anime.MediaKind) return;
+
+        IsPosterPreviewOpen = false;
+
+        if (Editor.HasChanges)
+        {
+            try
+            {
+                await _listActionService.SaveAnimeAsync(_originalAnime, Anime);
+                HasAnySavedChanges = true;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Failed to auto-save anime {Id} before navigating", Anime.Id);
+            }
+        }
+
+        if (addToHistory)
+        {
+            _navigationHistory.Push((_originalAnime, Anime));
+            CanGoBack = _navigationHistory.Count > 0;
+        }
+
+        Anime.PropertyChanged -= _animePropertyChanged;
+        Editor.Dispose();
+
+        var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == target.Id && x.MediaKind == target.MediaKind);
+        _originalAnime = existing ?? target;
+        Anime = _originalAnime.Clone();
+
+        Editor = new AnimeEditViewModel(_originalAnime, Anime, _listActionService);
+        Metadata = new AnimeMetadataViewModel(Anime, _malApiService);
+
+        Anime.PropertyChanged += _animePropertyChanged;
+
+        BuildCustomShareLinks();
+
+        Relations.Clear();
+        FranchiseTimeline.Clear();
+        HasFranchiseTimeline = false;
+        HasStandardRelations = false;
+        HasAnyRelationsOrTimeline = false;
+
+        await InitializationAsync();
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand(CanExecute = nameof(CanGoBack))]
+    private async Task GoBack()
+    {
+        if (_navigationHistory.Count == 0) return;
+
+        IsPosterPreviewOpen = false;
+
+        if (Editor.HasChanges)
+        {
+            try
+            {
+                await _listActionService.SaveAnimeAsync(_originalAnime, Anime);
+                HasAnySavedChanges = true;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Failed to auto-save anime {Id} before going back", Anime.Id);
+            }
+        }
+
+        var prev = _navigationHistory.Pop();
+        CanGoBack = _navigationHistory.Count > 0;
+
+        Anime.PropertyChanged -= _animePropertyChanged;
+        Editor.Dispose();
+
+        var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == prev.Original.Id && x.MediaKind == prev.Original.MediaKind);
+        _originalAnime = existing ?? prev.Original;
+        Anime = _originalAnime.Clone();
+
+        Editor = new AnimeEditViewModel(_originalAnime, Anime, _listActionService);
+        Metadata = new AnimeMetadataViewModel(Anime, _malApiService);
+
+        Anime.PropertyChanged += _animePropertyChanged;
+
+        BuildCustomShareLinks();
+
+        Relations.Clear();
+        FranchiseTimeline.Clear();
+        HasFranchiseTimeline = false;
+        HasStandardRelations = false;
+        HasAnyRelationsOrTimeline = false;
+
+        await InitializationAsync();
+    }
+
+    partial void OnCanGoBackChanged(bool value)
+    {
+        GoBackCommand.NotifyCanExecuteChanged();
     }
 
     private void BuildCustomShareLinks()
@@ -147,6 +266,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         Relations.Clear();
         FranchiseTimeline.Clear();
         CustomShareLinks.Clear();
+        _navigationHistory.Clear();
     }
 }
 

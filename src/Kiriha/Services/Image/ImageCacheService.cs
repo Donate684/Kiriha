@@ -78,12 +78,12 @@ public class ImageCacheService : IImageCacheService, IDisposable
                     if (_memCache.TryGetEncoded(localPath, out var bytes) && bytes != null)
                     {
                         using var ms = new ReadOnlyMemoryStream(bytes);
-                        bmp = Bitmap.DecodeToWidth(ms, decodeWidth);
+                        bmp = decodeWidth > 0 ? Bitmap.DecodeToWidth(ms, decodeWidth) : new Bitmap(ms);
                     }
                     else
                     {
                         using var fs = File.OpenRead(localPath);
-                        bmp = Bitmap.DecodeToWidth(fs, decodeWidth);
+                        bmp = decodeWidth > 0 ? Bitmap.DecodeToWidth(fs, decodeWidth) : new Bitmap(fs);
                     }
 
                     _memCache.StorePixelsFrom(localPath, decodeWidth, bmp);
