@@ -684,6 +684,7 @@ public partial class AnimeListViewModel
     {
         if (Enum.TryParse<MediaKind>(kindString, true, out var kind))
         {
+            if (SelectedMediaKind == kind) return;
             SelectedMediaKind = kind;
             await UpdateCountsAsync();
             await ApplyCurrentFiltersAsync();

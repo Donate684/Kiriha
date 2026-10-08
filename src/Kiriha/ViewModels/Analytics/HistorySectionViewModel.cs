@@ -16,11 +16,8 @@ public partial class HistorySectionViewModel : ViewModelBase
     public ObservableCollection<AnalyticsBar> YearDistribution { get; } = new();
     public ObservableCollection<AnalyticsBar> ReleaseYearCompletions { get; } = new();
     
-    public IReadOnlyList<string> MonthHeaders { get; } =
-    [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
+    [ObservableProperty]
+    private IReadOnlyList<string> _monthHeaders = GetLocalizedMonthHeaders();
 
     [ObservableProperty] private int _recentHistoryEpisodes;
     [ObservableProperty] private int _recentHistoryTitles;
@@ -32,8 +29,24 @@ public partial class HistorySectionViewModel : ViewModelBase
 
     public ObservableCollection<AnalyticsHistoryEntry> HistoryPopupEntries { get; } = new();
 
+    public static IReadOnlyList<string> GetLocalizedMonthHeaders()
+    {
+        var raw = LocalizationStore.Translate("analytics.history.months_short");
+        if (!string.IsNullOrEmpty(raw) && raw.Contains(','))
+        {
+            var parts = raw.Split(',');
+            if (parts.Length == 12)
+            {
+                return parts;
+            }
+        }
+
+        return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    }
+
     public void Refresh(IReadOnlyCollection<HistoryItem> history, IReadOnlyCollection<AnimeEntity> items, IReadOnlyCollection<AnimeEntity> completed)
     {
+        MonthHeaders = GetLocalizedMonthHeaders();
         RecentHistory.Clear();
         MonthlyHistory.Clear();
         YearDistribution.Clear();

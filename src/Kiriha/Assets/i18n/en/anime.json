@@ -108,6 +108,8 @@
     "added_item": "Added to list: {0}"
   },
   "types": {
+    "anime": "Anime",
+    "manga": "Manga",
     "tv": "TV",
     "movie": "Movie",
     "ova": "OVA",

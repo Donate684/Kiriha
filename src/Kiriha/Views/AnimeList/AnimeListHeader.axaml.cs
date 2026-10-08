@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Kiriha.Core.Domain.Models.Genres;
 using Kiriha.ViewModels.AnimeList;
@@ -12,6 +13,24 @@ namespace Kiriha.Views.AnimeList
         public AnimeListHeader()
         {
             InitializeComponent();
+            var mediaKindToggle = this.FindControl<ToggleButton>("MediaKindToggle");
+            if (mediaKindToggle != null)
+            {
+                mediaKindToggle.AddHandler(InputElement.PointerPressedEvent, MediaKindToggle_PointerPressed, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+            }
+        }
+
+        private void MediaKindToggle_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (DataContext is not AnimeListViewModel vm) return;
+            if (sender is not ToggleButton toggle) return;
+
+            var pos = e.GetPosition(toggle);
+            bool clickRight = pos.X > toggle.Bounds.Width / 2;
+            if ((clickRight && vm.IsMangaSelected) || (!clickRight && !vm.IsMangaSelected))
+            {
+                e.Handled = true;
+            }
         }
 
         private void ReleaseMapButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

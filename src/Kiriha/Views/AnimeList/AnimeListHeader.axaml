@@ -260,40 +260,28 @@
                     </Popup>
                 </Grid>
 
-                <!-- MediaKind Slider Toggle -->
-                <ToggleButton Grid.Column="1" Margin="12,0" VerticalAlignment="Center"
-                              Classes="MediaKindIconToggle"
+                <!-- MediaKind Unified Capsule Slider Toggle -->
+                <ToggleButton x:Name="MediaKindToggle"
+                              Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center"
+                              Classes="MediaKindTextToggle"
                               IsChecked="{Binding IsMangaSelected, Mode=OneWay}"
                               Command="{Binding ToggleMediaKindCommand}"/>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" Margin="12,0">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" Margin="8,0,12,0">
+                    <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+
                     <Button x:Name="ReleaseMapButton"
-                            Background="Transparent" BorderThickness="0" Padding="8,6" CornerRadius="6"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            VerticalAlignment="Center" Click="ReleaseMapButton_Click"
+                            Classes="ScheduleToggle"
+                            Click="ReleaseMapButton_Click"
                             ToolTip.Tip="{DynamicResource l.schedule.tooltip}">
-                        <Button.Styles>
-                            <Style Selector="Button.active /template/ ContentPresenter#PART_ContentPresenter">
-                                <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
-                                <Setter Property="TextBlock.Foreground" Value="White"/>
-                            </Style>
-                            <Style Selector="Button.active TextBlock">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Opacity" Value="1"/>
-                            </Style>
-                            <Style Selector="Button.active material|MaterialIcon">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Opacity" Value="1"/>
-                            </Style>
-                        </Button.Styles>
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <material:MaterialIcon Kind="CalendarClock" Width="16" Height="16" Opacity="0.62"
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <material:MaterialIcon Kind="CalendarClock" Width="14" Height="14"
                                                    VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.schedule.title}" FontSize="12" Opacity="0.6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource l.schedule.title}" FontSize="12" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
-                    <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0"/>
+                    <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0" VerticalAlignment="Center"/>
 
                     <!-- Sort -->
                     <Button Background="Transparent" BorderThickness="0" Padding="8,6" CornerRadius="6" VerticalAlignment="Center">

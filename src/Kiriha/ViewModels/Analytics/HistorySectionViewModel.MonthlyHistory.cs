@@ -20,13 +20,17 @@ public partial class HistorySectionViewModel
         var now = DateTime.UtcNow;
         var minYear = Math.Min(monthGroups.Keys.Min(x => x.Year), now.Year);
         var maxYear = Math.Max(monthGroups.Keys.Max(x => x.Year), now.Year);
-        var monthNames = CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedMonthNames;
+        var monthHeaders = MonthHeaders;
 
         for (var year = maxYear; year >= minYear; year--)
         {
             var row = new AnalyticsMonthlyHistoryRow { Year = year };
             for (var month = 1; month <= 12; month++)
             {
+                var monthLabel = month >= 1 && month <= 12 && monthHeaders.Count >= month
+                    ? monthHeaders[month - 1]
+                    : month.ToString();
+
                 monthGroups.TryGetValue((year, month), out var entries);
                 var count = entries?.Count ?? 0;
                 var mean = entries?
@@ -42,15 +46,15 @@ public partial class HistorySectionViewModel
                 var cell = new AnalyticsMonthlyHistoryCell
                 {
                     Month = month,
-                    MonthName = monthNames[month - 1],
+                    MonthName = $"{monthLabel} {year}",
                     Count = count,
                     Alpha = count == 0 ? 0.06 : 0.22 + count / (double)max * 0.78,
                     Fill = $"#{alpha:X2}2D7DD2",
                     TextColor = intensity >= 0.48 ? "#FFFFFFFF" : "#FF1F2937",
                     IsCurrentMonth = year == now.Year && month == now.Month,
                     Tooltip = mean > 0
-                        ? string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), $"{monthNames[month - 1]} {year}", mean.ToString("0.00"))
-                        : string.Format(LocalizationStore.Translate("analytics.history.completed_count"), $"{monthNames[month - 1]} {year}")
+                        ? string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), $"{monthLabel} {year}", mean.ToString("0.00"))
+                        : string.Format(LocalizationStore.Translate("analytics.history.completed_count"), $"{monthLabel} {year}")
                 };
 
                 if (entries != null)

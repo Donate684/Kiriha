@@ -66,6 +66,7 @@
     "release_year_tooltip": "Saturation shows how many completed titles were released this year",
     "by_month": "Completions by month",
     "by_month_sub": "Heatmap of completed titles",
+    "months_short": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
     "empty_monthly": "Completed titles do not have completion dates yet, so the monthly map is empty.",
     "popup_favorite_subtitle": "{0} title(s) \u2022 avg {1} \u2022 weight {2}",
     "yesterday": "Yesterday",

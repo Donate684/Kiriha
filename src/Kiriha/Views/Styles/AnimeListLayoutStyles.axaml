@@ -115,25 +115,47 @@
             <Setter Property="BoxShadow" Value="0 1 4 0 #18000000, 0 0 0 0.5 #14000000"/>
         </Style>
 
+        <Style Selector="RadioButton.MediaKindToggle:checked:pointerover /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+        </Style>
+
         <Style Selector="RadioButton.MediaKindToggle:checked">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
-        <Style Selector="RadioButton.MediaKindToggle TextBlock">
+        <Style Selector="RadioButton.MediaKindToggle:checked /template/ ContentPresenter">
+            <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="RadioButton.MediaKindToggle material|MaterialIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
         </Style>
 
-        <Style Selector="RadioButton.MediaKindToggle material|MaterialIcon">
+        <Style Selector="RadioButton.MediaKindToggle:checked material|MaterialIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
+
+        <Style Selector="RadioButton.MediaKindToggle TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
+        </Style>
+
+        <Style Selector="RadioButton.MediaKindToggle:checked TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
         <Style Selector="ToggleButton.MediaKindIconToggle">
             <Setter Property="Width" Value="60"/>
@@ -190,6 +212,194 @@
 
         <Style Selector="ToggleButton.MediaKindIconToggle:checked /template/ material|MaterialIcon#IconRight">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
+
+        <!-- ═══ MediaKind Unified Capsule Slider Toggle (Anime | Manga) with text & icons ═══ -->
+        <Style Selector="ToggleButton.MediaKindTextToggle">
+            <Setter Property="Width" Value="156"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            CornerRadius="15">
+                        <Panel>
+                            <Border x:Name="Thumb"
+                                    Background="{DynamicResource CardBackgroundFillDefault}"
+                                    CornerRadius="12"
+                                    Width="74" Height="24"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Margin="2,0,0,0"
+                                    BoxShadow="0 1 4 0 #18000000, 0 0 0 0.5 #14000000">
+                                <Border.Transitions>
+                                    <Transitions>
+                                        <ThicknessTransition Property="Margin" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                                    </Transitions>
+                                </Border.Transitions>
+                            </Border>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="PlayBoxOutline" Width="14" Height="14" x:Name="IconLeft"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           VerticalAlignment="Center">
+                                        <material:MaterialIcon.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </material:MaterialIcon.Transitions>
+                                    </material:MaterialIcon>
+                                    <TextBlock Text="{DynamicResource l.anime.types.anime}" FontSize="12" FontWeight="SemiBold"
+                                               x:Name="TextLeft" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                        <TextBlock.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </TextBlock.Transitions>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="BookOpenPageVariantOutline" Width="14" Height="14" x:Name="IconRight"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                           VerticalAlignment="Center">
+                                        <material:MaterialIcon.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </material:MaterialIcon.Transitions>
+                                    </material:MaterialIcon>
+                                    <TextBlock Text="{DynamicResource l.anime.types.manga}" FontSize="12"
+                                               x:Name="TextRight" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                        <TextBlock.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </TextBlock.Transitions>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Panel>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="ToggleButton.MediaKindTextToggle:checked /template/ Border#Thumb">
+            <Setter Property="Margin" Value="78,0,0,0"/>
+        </Style>
+
+        <Style Selector="ToggleButton.MediaKindTextToggle:checked /template/ material|MaterialIcon#IconLeft">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        </Style>
+
+        <Style Selector="ToggleButton.MediaKindTextToggle:checked /template/ TextBlock#TextLeft">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+
+        <Style Selector="ToggleButton.MediaKindTextToggle:checked /template/ material|MaterialIcon#IconRight">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
+
+        <Style Selector="ToggleButton.MediaKindTextToggle:checked /template/ TextBlock#TextRight">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="ToggleButton.MediaKindTextToggle:pointerover /template/ Border#Thumb">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+        </Style>
+
+        <!-- ═══ Schedule (Release Map) Capsule Toggle Button ═══ -->
+        <Style Selector="Button.ScheduleToggle">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border x:Name="PART_Root"
+                            Height="30"
+                            Padding="10,0"
+                            CornerRadius="15"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="1">
+                        <Border.Transitions>
+                            <Transitions>
+                                <BrushTransition Property="Background" Duration="0:0:0.18" Easing="CubicEaseOut"/>
+                                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" Easing="CubicEaseOut"/>
+                            </Transitions>
+                        </Border.Transitions>
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle material|MaterialIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.18"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.18"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.18"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.18"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle:not(.active):pointerover /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle:not(.active):pointerover material|MaterialIcon">
+            <Setter Property="Opacity" Value="0.85"/>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle:not(.active):pointerover TextBlock">
+            <Setter Property="Opacity" Value="0.85"/>
+        </Style>
+
+        <!-- Active state: elevated card with accent outline and glowing text/icon -->
+        <Style Selector="Button.ScheduleToggle.active /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BoxShadow" Value="0 1 4 0 #18000000, 0 0 0 0.5 #14000000"/>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle.active material|MaterialIcon">
+            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle.active TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+
+        <Style Selector="Button.ScheduleToggle.active:pointerover /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
         </Style>
 
 </Styles>
