@@ -10,6 +10,8 @@ public enum TorrentSortMode
     ReleaseGroup,
 }
 
+public sealed record TorrentSortOption(TorrentSortMode Mode, string LocalizationKey);
+
 public sealed class HideableAnimeItem : ObservableObject
 {
     public HideableAnimeItem(AnimeEntity anime, bool isHidden)

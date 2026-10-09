@@ -100,6 +100,8 @@ public class LocConverter : IValueConverter
         {
             // Handle prefix if parameter is provided
             string keyToUse = (param != null && param != "Adult") ? s : (param == "Adult" ? $"Adult{s}" : s);
+            if (keyToUse.StartsWith("l.", StringComparison.OrdinalIgnoreCase))
+                keyToUse = keyToUse[2..];
 
             return Kiriha.Localization.LocalizationStore.Translate(keyToUse);
         }

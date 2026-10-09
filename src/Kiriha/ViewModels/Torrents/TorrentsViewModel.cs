@@ -49,6 +49,7 @@ public partial class TorrentsViewModel : ViewModelBase
         LoadFilterSettings();
 
         Torrents.CollectionChanged += (_, _) => RebuildGroupedTorrents();
+        _animeRepo.Collection.CollectionChanged += (_, _) => RefreshWatchingList();
         RefreshWatchingList();
     }
 }

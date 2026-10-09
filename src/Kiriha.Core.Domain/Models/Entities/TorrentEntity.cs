@@ -19,4 +19,10 @@ public class TorrentEntity
     public int Downloads { get; set; }
     public bool IsNew { get; set; }
     public bool IsMatched { get; set; }
+    public string FormattedSize { get; set; } = string.Empty;
+    public bool IsBatch { get; set; }
+    public bool Is1080p => Resolution.Contains("1080", StringComparison.OrdinalIgnoreCase);
+    public bool IsOtherResolution => !string.IsNullOrEmpty(Resolution) && !Is1080p;
+    public bool ShowEpisodeBadge => !IsBatch && !string.IsNullOrEmpty(Episode);
+    public bool HasSeeders => Seeders > 0;
 }

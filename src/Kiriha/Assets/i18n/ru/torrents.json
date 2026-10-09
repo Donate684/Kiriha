@@ -24,6 +24,10 @@
     "custom_formula_toggle": "Изменить формулу поиска",
     "custom_formula_placeholder": "Поисковый запрос для этого тайтла...",
     "preview_label": "ПРЕВЬЮ ЗАПРОСА",
+    "quick_1080p": "1080p",
+    "quick_hevc": "HEVC",
+    "quick_only_new": "Новые серии",
+    "quick_batches": "Паки",
     "filter_sections": {
       "release_groups": "Релизёры",
       "quality": "Качество",
@@ -48,6 +52,7 @@
     "title": "Найденные раздачи",
     "in_list": "НОВЫЙ ЭПИЗОД",
     "new_badge": "НОВОЕ",
+    "batch_badge": "ПАК",
     "episode_prefix": "Эп. {0}",
     "group_count": "{0} релизов",
     "untitled_group": "Без названия",
@@ -57,7 +62,9 @@
     },
     "actions": {
       "download_file": "Скачать .torrent",
-      "download_magnet": "Магнит-ссылка"
+      "download_magnet": "Магнит-ссылка",
+      "magnet_btn": "Magnet",
+      "torrent_btn": ".torrent"
     }
   }
 }

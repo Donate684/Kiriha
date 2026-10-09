@@ -150,7 +150,8 @@ public partial class TorrentsViewModel
 
     public bool HasActiveFilters =>
         FilterVaryg || FilterEraiRaws || FilterToonsHub || FilterJudas || Filter1080p || FilterHevc
-        || OnlyCrunchyroll || FilterNetflix || FilterAmazon || FilterHidive;
+        || OnlyCrunchyroll || FilterNetflix || FilterAmazon || FilterHidive
+        || FilterOnlyNew || FilterOnlyBatches;
 
     partial void OnFiltersPerTitleChanged(bool value)
     {
@@ -345,6 +346,8 @@ public partial class TorrentsViewModel
         FilterNetflix = false;
         FilterAmazon = false;
         FilterHidive = false;
+        FilterOnlyNew = false;
+        FilterOnlyBatches = false;
     }
 }
 

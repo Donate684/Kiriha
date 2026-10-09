@@ -48,47 +48,60 @@
         <!-- ═══ Sidebar item (Button) ═══ -->
         <Style Selector="Button.WatchItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="6"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.WatchItem:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="CornerRadius" Value="10"/>
         </Style>
         <Style Selector="Button.WatchItem.selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="CornerRadius" Value="10"/>
         </Style>
         <Style Selector="Button.WatchItem.selected">
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
         </Style>
         <Style Selector="Border.WatchItem.hidden">
             <Setter Property="Opacity" Value="0.4"/>
         </Style>
 
-        <!-- ═══ Torrent row (compact list style) ═══ -->
-        <Style Selector="Border.TorrentRow">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="10,8"/>
+        <!-- ═══ Torrent Card ═══ -->
+        <Style Selector="Border.TorrentCard">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12,10"/>
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.1"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Border.TorrentRow:pointerover">
+        <Style Selector="Border.TorrentCard:pointerover">
             <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+        </Style>
+        <Style Selector="Border.TorrentCard.matched">
+            <Setter Property="BorderBrush" Value="{DynamicResource OrangeredAccentBrush}"/>
+        </Style>
+        <Style Selector="Border.TorrentCard.matched:pointerover">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource OrangeredAccentBrush}"/>
         </Style>
 
         <!-- ═══ Quality / group chip inline ═══ -->
@@ -96,17 +109,68 @@
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="6,1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="6,2"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.GroupChip">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.P1080Chip">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.BatchChip">
+            <Setter Property="Background" Value="{DynamicResource AnalyticsSectionPurpleBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="7,2"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- ═══ Action Pill Button (Magnet & .torrent) ═══ -->
+        <Style Selector="Button.ActionPill">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.ActionPill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+        </Style>
+        <Style Selector="Button.ActionPill.MagnetPill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
         </Style>
 
         <!-- ═══ Download icon button ═══ -->
         <Style Selector="Button.IconAction">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="32"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -116,16 +180,17 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Button.IconAction:pointerover">
+        <Style Selector="Button.IconAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
         </Style>
 
         <!-- ═══ Sort Pill (reuse global Pill visuals but smaller) ═══ -->
         <Style Selector="ComboBox.SortCombo">
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="MinHeight" Value="32"/>
-            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Padding" Value="8,4"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="FontSize" Value="12"/>
         </Style>

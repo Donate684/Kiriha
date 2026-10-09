@@ -2,14 +2,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
              xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Kiriha.Views.Converters"
              xmlns:u="using:Kiriha.Utils.UI"
              x:Class="Kiriha.Views.Torrents.TorrentFilters"
              x:DataType="vmTorrents:TorrentsViewModel">
-        <!-- ═══ Row 0: Search + Sort + Filters button ═══ -->
-        <Border Grid.Row="0" Margin="20,4,20,12" Padding="8,6"
-                Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
-                BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
-            <Grid ColumnDefinitions="*, Auto">
+
+    <UserControl.Resources>
+        <conv:LocConverter x:Key="LocConverter"/>
+    </UserControl.Resources>
+
+    <!-- ═══ Search + Sort + Filters container ═══ -->
+    <Border Margin="20,4,20,12" Padding="8,6"
+            Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
+            BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
+        <Grid ColumnDefinitions="*, Auto, Auto, Auto">
 
                 <!-- Search textbox -->
                 <TextBox Grid.Column="0" Text="{Binding SearchQuery, Mode=TwoWay}"
@@ -27,9 +33,32 @@
                     </TextBox.KeyBindings>
                 </TextBox>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="12,0,0,0">
-                    <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0"/>
+                <!-- Divider -->
+                <Border Grid.Column="1" Width="1" Height="20"
+                        Background="{DynamicResource DividerStrokeColorDefault}" Margin="8,0,4,0"/>
 
+                <!-- Sort ComboBox -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                    <material:MaterialIcon Kind="SortVariant" Width="15" Height="15"
+                                           Opacity="0.55" Margin="4,0,2,0" VerticalAlignment="Center"/>
+                    <ComboBox Classes="SortCombo"
+                              ItemsSource="{Binding SortModes}"
+                              SelectedItem="{Binding SelectedSortOption}"
+                              VerticalAlignment="Center">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vmTorrents:TorrentSortOption">
+                                <TextBlock Text="{Binding LocalizationKey, Converter={StaticResource LocConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Divider -->
+                <Border Grid.Column="3" Width="1" Height="20"
+                        Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0,8,0"/>
+
+                <!-- Filters Button with Flyout -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
                     <!-- Filters -->
                     <Button Classes.active="{Binding HasActiveFilters}"
                             Background="Transparent" VerticalAlignment="Center"
@@ -109,6 +138,12 @@
                                         <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
                                                       IsChecked="{Binding FilterHevc, Mode=TwoWay}"
                                                       Content="{DynamicResource l.torrents.search.filters.hevc}"/>
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
+                                                      IsChecked="{Binding FilterOnlyNew, Mode=TwoWay}"
+                                                      Content="{DynamicResource l.torrents.search.quick_only_new}"/>
+                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
+                                                      IsChecked="{Binding FilterOnlyBatches, Mode=TwoWay}"
+                                                      Content="{DynamicResource l.torrents.search.quick_batches}"/>
                                     </WrapPanel>
                                 </StackPanel>
 
@@ -192,7 +227,7 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
-                </StackPanel>
-            </Grid>
-        </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
 </UserControl>

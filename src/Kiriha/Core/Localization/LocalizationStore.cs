@@ -9,6 +9,9 @@ public static class LocalizationStore
 
     public static string Translate(string keyToUse)
     {
+        if (keyToUse.StartsWith("l.", StringComparison.OrdinalIgnoreCase))
+            keyToUse = keyToUse[2..];
+
         if (Application.Current is null) return keyToUse;
 
         string lowerKey = keyToUse.ToLowerInvariant().Replace(" ", "");

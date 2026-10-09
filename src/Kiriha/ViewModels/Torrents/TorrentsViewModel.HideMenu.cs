@@ -18,7 +18,12 @@ public partial class TorrentsViewModel
     public void RefreshWatchingList()
     {
         var hidden = new HashSet<int>(_torrentFilterRepo.GetHiddenAnimeIds());
-        var watching = _animeRepo.Collection.Where(x => x.Status == UserAnimeStatus.Watching && x.MediaKind == MediaKind.Anime).ToList();
+        var watching = _animeRepo.Collection
+            .Where(x => x.Status == UserAnimeStatus.Watching && x.MediaKind == MediaKind.Anime)
+            .OrderByDescending(x => x.Presentation.ShowAiredProgressBar && x.Presentation.UnseenEpisodesCount > 0)
+            .ThenByDescending(x => x.Presentation.UnseenEpisodesCount)
+            .ThenBy(x => x.Title, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         WatchingAnime.Reset(watching.Where(a => !hidden.Contains(a.Id)));
 
@@ -50,7 +55,7 @@ public partial class TorrentsViewModel
         }
         else if (!WatchingAnime.Any(a => a.Id == item.Anime.Id))
         {
-            WatchingAnime.Add(item.Anime);
+            WatchingAnime.Reset(HideMenuItems.Where(h => !h.IsHidden).Select(h => h.Anime));
         }
     }
 }
