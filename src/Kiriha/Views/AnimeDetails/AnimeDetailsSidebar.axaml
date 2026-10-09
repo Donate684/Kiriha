@@ -17,16 +17,13 @@
                     BorderThickness="0,0,1,0">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="24,18,24,20" Spacing="16">
+                    <StackPanel Margin="16,18,14,20" Spacing="16">
 
                         <!-- ══ IN LIST: User editing controls ══ -->
                         <details:AnimeDetailsSidebarEditor />
 
                         <!-- ══ NOT IN LIST: Add to List button ══ -->
                         <details:AnimeDetailsSidebarAddButton />
-
-                        <!-- Save changes button inside Sidebar -->
-                        <details:AnimeDetailsSidebarSaveButton ZIndex="1" />
 
                     </StackPanel>
                 </ScrollViewer>

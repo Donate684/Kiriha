@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
@@ -58,10 +59,51 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
             if (e.PropertyName == nameof(AnimeEntity.Status))
                 OnPropertyChanged(nameof(IsInList));
 
+            if (e.PropertyName == nameof(AnimeEntity.TotalEpisodes))
+                OnPropertyChanged(nameof(MaxEpisodes));
+
+            if (e.PropertyName == nameof(AnimeEntity.Chapters))
+                OnPropertyChanged(nameof(MaxChapters));
+
+            if (e.PropertyName == nameof(AnimeEntity.Volumes))
+                OnPropertyChanged(nameof(MaxVolumes));
+
             OnPropertyChanged(nameof(HasChanges));
             SaveCommand.NotifyCanExecuteChanged();
         };
         _anime.PropertyChanged += _animePropertyChanged;
+    }
+
+    public int MaxEpisodes => _anime.TotalEpisodes > 0 ? _anime.TotalEpisodes : 9999;
+    public int MaxChapters => _anime.Chapters > 0 ? _anime.Chapters : 9999;
+    public int MaxVolumes => _anime.Volumes > 0 ? _anime.Volumes : 9999;
+
+    [RelayCommand]
+    private void DecrementProgress()
+    {
+        if (_anime.MediaKind != MediaKind.Anime)
+        {
+            if (_anime.ChaptersRead > 0)
+                _anime.ChaptersRead--;
+        }
+        else
+        {
+            if (_anime.Progress > 0)
+                _anime.Progress--;
+        }
+    }
+
+    [RelayCommand]
+    private void DecrementVolumes()
+    {
+        if (_anime.VolumesRead > 0)
+            _anime.VolumesRead--;
+    }
+
+    [RelayCommand]
+    private void CancelDelete()
+    {
+        IsDeleteConfirmationVisible = false;
     }
 
     [RelayCommand]
@@ -137,9 +179,24 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void AddToList()
+    private async Task AddToList()
     {
-        _anime.Status = UserAnimeStatus.Watching;
+        var targetStatus = AppConstants.AiringStatus.IsNotYetAired(_anime.StatusDetailed)
+            ? UserAnimeStatus.PlanToWatch
+            : UserAnimeStatus.Watching;
+
+        _anime.Status = targetStatus;
+        if (_anime.MediaKind == MediaKind.Anime)
+            _anime.Progress = 0;
+        else
+            _anime.ChaptersRead = 0;
+
+        await _listActionService.AddToListAsync(_anime, targetStatus, 0);
+
+        _anime.CopyTo(_originalAnime);
+        OnPropertyChanged(nameof(IsInList));
+        OnPropertyChanged(nameof(HasChanges));
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     public bool HasChanges

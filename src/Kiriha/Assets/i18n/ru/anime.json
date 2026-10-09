@@ -1,6 +1,7 @@
 {
   "labels": {
     "status": "Статус:",
+    "status_field": "Статус",
     "type": "Тип:",
     "season": "Сезон:",
     "genres": "Жанры:",

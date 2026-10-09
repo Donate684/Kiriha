@@ -1,6 +1,7 @@
 {
   "labels": {
     "status": "Status:",
+    "status_field": "Status",
     "type": "Type:",
     "season": "Season:",
     "genres": "Genres:",
