@@ -9,7 +9,7 @@ For the complete architectural breakdown, dependency graph, and legacy/tech-debt
 ## 1. Project Tech Stack & Rules
 
 * **Target Framework:** `.NET 11.0` (C# 15)
-* **UI Framework:** `Avalonia UI 12.1.3` with Fluent theme and compiled bindings enabled (`x:DataType` is required on views).
+* **UI Framework:** `Avalonia UI 12.1.4` with Fluent theme and compiled bindings enabled (`x:DataType` is required on views).
 * **Database:** `SQLite` with EF Core 11 (DbContextFactory pattern, `NoTracking` by default, WAL mode via custom interceptor).
 * **Video Player:** Native `libmpv-2.dll` (located in `subprojects/mpv/`), OpenGL rendering integration.
 * **Compiler Rules:**

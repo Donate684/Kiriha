@@ -18,7 +18,7 @@
                             <!-- Tabs header -->
                             <Border BorderBrush="{DynamicResource CardStrokeColorDefault}"
                                     BorderThickness="0,0,0,1"
-                                    Padding="20,14,20,0">
+                                    Padding="8,0,20,0">
                                 <StackPanel Orientation="Horizontal">
                                     <RadioButton x:Name="TabDetails" Classes="Tab" GroupName="DetailsTab"
                                                  IsChecked="True"

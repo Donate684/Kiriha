@@ -15,7 +15,22 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
     private readonly System.ComponentModel.PropertyChangedEventHandler _animePropertyChanged;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(WindowTitle))]
     private AnimeEntity _anime;
+
+    public string WindowTitle
+    {
+        get
+        {
+            if (Anime == null) return "Kiriha";
+            var useRussian = Anime.Presentation.EffectiveUseRussianTitles;
+            var preferred = useRussian
+                ? (!string.IsNullOrWhiteSpace(Anime.RussianTitle) ? Anime.RussianTitle : Anime.Title)
+                : (!string.IsNullOrWhiteSpace(Anime.Title) ? Anime.Title : Anime.RussianTitle);
+
+            return !string.IsNullOrWhiteSpace(preferred) ? preferred : "Kiriha";
+        }
+    }
 
     [ObservableProperty]
     private AnimeEditViewModel _editor;
@@ -110,6 +125,10 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
         _animePropertyChanged = (s, e) =>
         {
+            if (e.PropertyName == nameof(AnimeEntity.Title) || e.PropertyName == nameof(AnimeEntity.RussianTitle))
+            {
+                OnPropertyChanged(nameof(WindowTitle));
+            }
             if (e.PropertyName == nameof(AnimeEntity.Status) || e.PropertyName == nameof(AnimeEntity.Progress) || e.PropertyName == nameof(AnimeEntity.Score))
             {
                 var current = FranchiseTimeline.FirstOrDefault(n => n.IsCurrent);

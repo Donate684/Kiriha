@@ -26,7 +26,8 @@
         x:Class="Kiriha.Views.AnimeDetailsWindow"
         x:DataType="vmAnimeDetails:AnimeDetailsViewModel"
         x:Name="Root"
-        Title=""
+        Title="{Binding WindowTitle}"
+        Icon="avares://Kiriha/Assets/kiriha.ico"
         Width="920" Height="680"
         WindowStartupLocation="CenterOwner"
         Background="{x:Null}"
@@ -101,17 +102,22 @@
         <Style Selector="RadioButton.Tab">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Grid RowDefinitions="*,3">
-                        <ContentPresenter Grid.Row="0"
-                                          Name="PART_Content"
-                                          Content="{TemplateBinding Content}"
-                                          Margin="0,0,0,12"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                        <Rectangle Grid.Row="1" Name="PART_Indicator"
-                                   Height="3" Fill="Transparent"
-                                   RadiusX="1.5" RadiusY="1.5"/>
-                    </Grid>
+                    <Border Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            Cursor="Hand">
+                        <Grid RowDefinitions="*,3" HorizontalAlignment="Center" Background="Transparent">
+                            <ContentPresenter Grid.Row="0"
+                                              Name="PART_Content"
+                                              Content="{TemplateBinding Content}"
+                                              Margin="0,14,0,12"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                            <Rectangle Grid.Row="1" Name="PART_Indicator"
+                                       Height="3" Fill="Transparent"
+                                       RadiusX="1.5" RadiusY="1.5"
+                                       HorizontalAlignment="Stretch"/>
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter>
             <Setter Property="Background" Value="Transparent"/>
@@ -119,8 +125,8 @@
             <Setter Property="Opacity" Value="0.6"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,24,0"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Margin" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Transitions">
                 <Transitions>

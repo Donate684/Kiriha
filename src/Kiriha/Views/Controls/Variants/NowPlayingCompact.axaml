@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -54,17 +54,22 @@
         <Style Selector="RadioButton.Tab">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Grid RowDefinitions="*,2">
-                        <ContentPresenter Grid.Row="0"
-                                          Name="PART_Content"
-                                          Content="{TemplateBinding Content}"
-                                          Margin="0,0,0,10"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                        <Rectangle Grid.Row="1" Name="PART_Indicator"
-                                   Height="2" Fill="Transparent"
-                                   RadiusX="1" RadiusY="1"/>
-                    </Grid>
+                    <Border Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            Cursor="Hand">
+                        <Grid RowDefinitions="*,2" HorizontalAlignment="Center" Background="Transparent">
+                            <ContentPresenter Grid.Row="0"
+                                              Name="PART_Content"
+                                              Content="{TemplateBinding Content}"
+                                              Margin="0,12,0,10"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                            <Rectangle Grid.Row="1" Name="PART_Indicator"
+                                       Height="2" Fill="Transparent"
+                                       RadiusX="1" RadiusY="1"
+                                       HorizontalAlignment="Stretch"/>
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter>
             <Setter Property="Background" Value="Transparent"/>
@@ -72,8 +77,8 @@
             <Setter Property="Opacity" Value="0.55"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,24,0"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Margin" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Transitions">
                 <Transitions>

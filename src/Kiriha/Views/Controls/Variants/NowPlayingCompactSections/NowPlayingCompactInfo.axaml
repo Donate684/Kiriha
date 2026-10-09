@@ -16,7 +16,7 @@
                         <!-- Tabs header (flush with card top) -->
                         <Border BorderBrush="{DynamicResource CardStrokeColorDefault}"
                                 BorderThickness="0,0,0,1"
-                                Padding="18,12,18,0">
+                                Padding="6,0,18,0">
                             <StackPanel Orientation="Horizontal">
                                 <RadioButton x:Name="TabDetails" Classes="Tab" GroupName="NpInfoTab"
                                              IsChecked="True"

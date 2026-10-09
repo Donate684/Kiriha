@@ -9,7 +9,7 @@
                     xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
                     x:Class="Kiriha.Views.Torrents.TorrentTemplates">
     <DataTemplate x:Key="HideableAnimeItemTemplate" DataType="vmTorrents:HideableAnimeItem">
-        <Grid Margin="0,0,10,2" Classes.row-hidden="{Binding IsHidden}">
+        <Grid Margin="0,0,14,2" Classes.row-hidden="{Binding IsHidden}">
             <Grid.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.Or}">
                     <Binding Path="$parent[ItemsControl].((vmTorrents:TorrentsViewModel)DataContext).IsHideMode"/>

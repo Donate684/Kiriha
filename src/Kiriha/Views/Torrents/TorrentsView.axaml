@@ -44,13 +44,13 @@
         <Grid Grid.Row="2" ColumnDefinitions="280, *" Margin="20,0,0,16">
 
             <!-- Sidebar -->
-            <Border Grid.Column="0" Margin="0,0,14,0" Padding="8"
+            <Border Grid.Column="0" Margin="0,0,14,0" Padding="8,8,2,8"
                     Background="{DynamicResource SubtleFillColorSecondary}"
                     BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
                     CornerRadius="12">
                 <Grid RowDefinitions="Auto, *">
                     <!-- Header: title + count + Hide button -->
-                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="8,6,4,8">
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="8,6,10,8">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <TextBlock Text="{DynamicResource l.torrents.sidebar.watching_now}"
                                        FontSize="11" FontWeight="SemiBold" Opacity="0.55"

@@ -272,8 +272,7 @@
 
                     <Button x:Name="ReleaseMapButton"
                             Classes="ScheduleToggle"
-                            Click="ReleaseMapButton_Click"
-                            ToolTip.Tip="{DynamicResource l.schedule.tooltip}">
+                            Click="ReleaseMapButton_Click">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                             <material:MaterialIcon Kind="CalendarClock" Width="14" Height="14"
                                                    VerticalAlignment="Center"/>

@@ -12,11 +12,42 @@ public class KirihaWindowBase : Window
     {
         base.OnOpened(e);
 
+        InstallWin32IconCrashWorkaround(this);
+
         if (SettingsService != null)
         {
             ApplyUiScale(SettingsService.Current.UI.UiScale);
             ApplyMica();
         }
+    }
+
+    /// <summary>
+    /// Workaround for an Avalonia UI 12.x bug: <c>Avalonia.Win32.WindowImpl.LoadIcon</c> throws
+    /// <see cref="System.NotImplementedException"/> when <c>WM_GETICON</c> receives a <c>wParam</c>
+    /// other than ICON_SMALL (0), ICON_BIG (1), or ICON_SMALL2 (2). Some Windows shell
+    /// components (e.g. taskbar preview thumbnail close button, display managers, or third-party
+    /// shell tweakers like StartAllBack/Windhawk) send <c>WM_GETICON</c> with custom or extended flags.
+    /// According to the Win32 specification, unhandled/unsupported icon requests must safely return NULL.
+    /// </summary>
+    public static void InstallWin32IconCrashWorkaround(Window window)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        Win32Properties.AddWndProcHookCallback(window, (IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled) =>
+        {
+            const uint WM_GETICON = 0x007F;
+            if (msg == WM_GETICON)
+            {
+                int iconType = (int)wParam;
+                if (iconType is not (0 or 1 or 2))
+                {
+                    handled = true;
+                    return IntPtr.Zero;
+                }
+            }
+
+            return IntPtr.Zero;
+        });
     }
 
     public void ApplyMica()

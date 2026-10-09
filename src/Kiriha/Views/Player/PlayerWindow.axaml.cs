@@ -73,6 +73,7 @@ public partial class PlayerWindow : Window
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        KirihaWindowBase.InstallWin32IconCrashWorkaround(this);
         Focus();
 
         if (DataContext is PlayerViewModel vm)
