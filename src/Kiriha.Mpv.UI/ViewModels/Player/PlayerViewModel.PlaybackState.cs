@@ -21,4 +21,6 @@ public partial class PlayerViewModel
     [ObservableProperty] private bool _normalizeAudio = false;
 
     [ObservableProperty] private double _playbackSpeed = 1.0;
+
+    partial void OnIsLoadingChanged(bool value) => UpdateRebufferingState();
 }

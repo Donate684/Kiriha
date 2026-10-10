@@ -19,6 +19,7 @@
              xmlns:conv="using:Kiriha.Views.Converters"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              xmlns:u="using:Kiriha.Utils.UI"
+             xmlns:modelsTorrServer="using:Kiriha.Core.Domain.Models.TorrServer"
              x:Class="Kiriha.Views.Torrents.TorrentsView"
              x:DataType="vmTorrents:TorrentsViewModel"
              xmlns:local="using:Kiriha.Views.Torrents">
@@ -167,6 +168,151 @@
                 </ScrollViewer>
             </Grid>
         </Grid>
+
+        <!-- Episode Selector Dialog (Batch torrents) -->
+        <Border Grid.Row="0" Grid.RowSpan="3"
+                Background="{DynamicResource ModalOverlayBackgroundBrush}"
+                IsVisible="{Binding IsEpisodeSelectorVisible}"
+                ZIndex="60">
+            <Border.Styles>
+                <Style Selector="Button.DimOverlay">
+                    <Setter Property="Template">
+                        <ControlTemplate>
+                            <Border Background="Transparent"/>
+                        </ControlTemplate>
+                    </Setter>
+                </Style>
+            </Border.Styles>
+
+            <Grid>
+                <!-- Click dim overlay to close -->
+                <Button Classes="DimOverlay"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Focusable="False"
+                        Command="{Binding CloseEpisodeSelectorCommand}"/>
+
+                <!-- Modal card -->
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="{DynamicResource ModalBackgroundFill}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1" CornerRadius="16"
+                        MinWidth="480" MaxWidth="640" MaxHeight="520"
+                        BoxShadow="0 12 40 0 #66000000"
+                        Margin="20">
+                    <Grid RowDefinitions="Auto, *, Auto" Margin="22">
+                        <!-- Dialog Header -->
+                        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,16">
+                            <material:MaterialIcon Grid.Column="0" Kind="FolderPlayOutline" Width="24" Height="24"
+                                                   Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{DynamicResource l.torrents.results.actions.select_episode}"
+                                           FontSize="15" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding ActiveStreamingTorrent.Title}"
+                                           FontSize="11.5" Opacity="0.6"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <Button Grid.Column="2" Classes="IconAction"
+                                    Width="30" Height="30"
+                                    Command="{Binding CloseEpisodeSelectorCommand}"
+                                    VerticalAlignment="Center">
+                                <material:MaterialIcon Kind="Close" Width="16" Height="16" Opacity="0.7"/>
+                            </Button>
+                        </Grid>
+
+                        <!-- Content Area -->
+                        <Grid Grid.Row="1" MinHeight="160">
+                            <!-- Loading State -->
+                            <StackPanel IsVisible="{Binding IsEpisodeSelectorLoading}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Spacing="12">
+                                <material:MaterialIcon Kind="Loading" Width="36" Height="36"
+                                                       Foreground="{DynamicResource SystemAccentColor}"
+                                                       HorizontalAlignment="Center">
+                                    <material:MaterialIcon.Styles>
+                                        <Style Selector="material|MaterialIcon">
+                                            <Style.Animations>
+                                                <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                                                    <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                                                    <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                                                </Animation>
+                                            </Style.Animations>
+                                        </Style>
+                                    </material:MaterialIcon.Styles>
+                                </material:MaterialIcon>
+                                <TextBlock Text="{DynamicResource l.torrents.streaming.searching_files}"
+                                           FontSize="13" FontWeight="Medium"
+                                           TextAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Error State -->
+                            <StackPanel IsVisible="{Binding EpisodeSelectorError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Spacing="10">
+                                <material:MaterialIcon Kind="AlertCircleOutline" Width="30" Height="30"
+                                                       Foreground="{DynamicResource SystemErrorTextColor}"
+                                                       HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding EpisodeSelectorError}"
+                                           FontSize="12" Foreground="{DynamicResource SystemErrorTextColor}"
+                                           TextAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <!-- Episode Files List -->
+                            <ScrollViewer IsVisible="{Binding !IsEpisodeSelectorLoading}"
+                                          u:SmoothScroll.IsEnabled="True" Margin="0,0,0,10">
+                                <ItemsControl ItemsSource="{Binding EpisodeFiles}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="modelsTorrServer:TorrServerFileItem">
+                                            <Border Classes="TorrentCard" Margin="0,3" Padding="12,10" CornerRadius="8"
+                                                    Background="{DynamicResource SubtleFillColorSecondary}">
+                                                <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12">
+                                                    <material:MaterialIcon Grid.Column="0" Kind="VideoOutline" Width="18" Height="18"
+                                                                           Foreground="{DynamicResource SystemAccentColor}"
+                                                                           VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                        <TextBlock Text="{Binding FileName}"
+                                                                   FontSize="12.5" FontWeight="SemiBold"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding FormattedSize}"
+                                                                   FontSize="11" Opacity="0.55"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="2" Classes="ActionPill PlayPill"
+                                                            Command="{Binding $parent[UserControl].((vmTorrents:TorrentsViewModel)DataContext).SelectEpisodeFileCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <material:MaterialIcon Kind="Play" Width="13" Height="13"
+                                                                                   Foreground="{DynamicResource AnalyticsSectionGreenBrush}"/>
+                                                            <TextBlock Text="{DynamicResource l.torrents.results.actions.play_btn}"
+                                                                       FontSize="11" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <!-- Footer -->
+                        <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,8,0,0">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding EpisodeSelectorCountText}"
+                                       FontSize="11.5" Opacity="0.5" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Classes="ActionPill"
+                                    Command="{Binding CloseEpisodeSelectorCommand}"
+                                    Padding="16,6">
+                                <TextBlock Text="{DynamicResource l.torrents.results.actions.cancel}"
+                                           FontSize="11.5" FontWeight="Medium"/>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
 

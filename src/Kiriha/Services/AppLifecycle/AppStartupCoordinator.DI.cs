@@ -61,6 +61,7 @@ public sealed partial class AppStartupCoordinator
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.FilenamePlayerMediaMetadataResolver>();
+        services.AddSingleton<ITorrServerService, Kiriha.Infrastructure.TorrServer.TorrServerService>();
     }
 }
 

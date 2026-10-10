@@ -78,6 +78,8 @@ public partial class PlayerViewModel
         else
             ResolveAndApplyMetadata(videoUrl);
 
+        InitializeTorrentStream(videoUrl, null);
+
         ApplyTimelineSnapshot(_timeline.Reset());
         _subtitleDelay = 0;
         IsPlaying = PlayerAutoPlay;

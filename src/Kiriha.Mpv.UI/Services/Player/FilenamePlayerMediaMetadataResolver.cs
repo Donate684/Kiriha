@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Utils.Parsing;
 using Serilog;
@@ -16,7 +17,31 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
 
         try
         {
-            var filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+            string filename;
+            string torrentHash = string.Empty;
+
+            if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            {
+                var seg = uri.Segments.LastOrDefault() ?? string.Empty;
+                var rawName = System.IO.Path.GetFileNameWithoutExtension(seg);
+                filename = Uri.UnescapeDataString(rawName);
+
+                var query = uri.Query;
+                if (!string.IsNullOrEmpty(query))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(query, AppConstants.Torrents.TorrentHashLinkRegex);
+                    if (match.Success)
+                    {
+                        torrentHash = match.Groups[1].Value;
+                    }
+                }
+            }
+            else
+            {
+                filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+            }
+
             var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);
 
@@ -44,7 +69,8 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
                 string.Empty,
                 episode ?? string.Empty,
                 null,
-                resolvedTitle);
+                resolvedTitle,
+                torrentHash);
         }
         catch (Exception ex)
         {

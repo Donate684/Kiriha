@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.ApplicationLifetimes;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Kiriha.Services.Data.Settings;
@@ -15,7 +15,18 @@ public sealed partial class PlayerModeCoordinator
 
         var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
-        var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>());
+        var localizer = _serviceProvider.GetRequiredService<ILocalizer>();
+        var torrServer = _serviceProvider.GetService<ITorrServerService>();
+
+        var cliMetadata = ExtractMetadataFromArgs(args);
+        var initialMetadata = cliMetadata ?? metadataResolver.Resolve(videoUrl);
+
+        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer);
+        if (cliMetadata != null)
+        {
+            playerVm.ApplyExternalMetadata(cliMetadata);
+        }
+
         return new PlayerWindow(settingsService) { DataContext = playerVm };
     }
 
@@ -33,6 +44,12 @@ public sealed partial class PlayerModeCoordinator
             return false;
 
         vm.LoadVideo(videoUrl);
+        var cliMetadata = ExtractMetadataFromArgs(args);
+        if (cliMetadata != null)
+        {
+            vm.ApplyExternalMetadata(cliMetadata);
+        }
+
         window.Show();
         window.Activate();
         return true;

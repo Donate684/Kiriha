@@ -64,7 +64,22 @@
       "download_file": "Скачать .torrent",
       "download_magnet": "Магнит-ссылка",
       "magnet_btn": "Magnet",
-      "torrent_btn": ".torrent"
+      "torrent_btn": ".torrent",
+      "play_btn": "Смотреть",
+      "play_tooltip": "Смотреть онлайн (потоковое воспроизведение в ОЗУ)",
+      "select_episode": "Выберите серию для просмотра",
+      "episodes_count": "Эпизодов: {0}",
+      "loading_metadata": "Подключение к пирам и загрузка метаданных...",
+      "cancel": "Отмена"
     }
+  },
+  "streaming": {
+    "starting": "Запуск TorrServer...",
+    "start_failed": "Не удалось запустить TorrServer.",
+    "connecting": "Подключение к пирам и получение метаданных...",
+    "add_failed": "Не удалось добавить раздачу в TorrServer.",
+    "searching_files": "Поиск видеофайлов в раздаче...",
+    "no_video": "В раздаче не найдено видеофайлов.",
+    "playback_error": "Ошибка воспроизведения: {0}"
   }
 }

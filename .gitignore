@@ -23,6 +23,7 @@ logs/
 
 apikeys.json
 /subprojects/mpv/
+/subprojects/torrserver/
 
 # IDE & OS
 .idea/

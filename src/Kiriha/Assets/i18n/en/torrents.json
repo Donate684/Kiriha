@@ -64,7 +64,22 @@
       "download_file": "Download .torrent",
       "download_magnet": "Magnet link",
       "magnet_btn": "Magnet",
-      "torrent_btn": ".torrent"
+      "torrent_btn": ".torrent",
+      "play_btn": "Play",
+      "play_tooltip": "Stream online in RAM",
+      "select_episode": "Select episode to play",
+      "episodes_count": "Episodes: {0}",
+      "loading_metadata": "Connecting to peers and retrieving metadata...",
+      "cancel": "Cancel"
     }
+  },
+  "streaming": {
+    "starting": "Starting TorrServer...",
+    "start_failed": "Failed to start TorrServer.",
+    "connecting": "Connecting to peers and retrieving metadata...",
+    "add_failed": "Failed to add torrent to TorrServer.",
+    "searching_files": "Searching for video files in torrent...",
+    "no_video": "No video files found in torrent.",
+    "playback_error": "Playback error: {0}"
   }
 }

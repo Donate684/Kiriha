@@ -69,6 +69,9 @@
     <Content Include="..\..\subprojects\mpv\**\*" Link="mpv\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\subprojects\torrserver\**\*" Link="torrserver\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -87,6 +90,16 @@
     <ItemGroup>
       <_MpvFiles Include="..\..\subprojects\mpv\**\*" />
       <Content Include="@(_MpvFiles)" Link="mpv\%(RecursiveDir)%(Filename)%(Extension)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="DownloadTorrServer" BeforeTargets="BeforeBuild;AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)..\..\scripts\download-torrserver.ps1&quot;" Condition="!Exists('$(ProjectDir)..\..\subprojects\torrserver\torrserver.exe')" />
+    <ItemGroup>
+      <_TorrServerFiles Include="..\..\subprojects\torrserver\**\*" />
+      <Content Include="@(_TorrServerFiles)" Link="torrserver\%(RecursiveDir)%(Filename)%(Extension)">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

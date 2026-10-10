@@ -215,6 +215,17 @@
     "error_playback": "Playback error",
     "error_open": "Could not open or play the file."
   },
+  "streaming": {
+    "connecting_peers": "Connecting to peers...",
+    "preloading_buffer": "Buffering into RAM...",
+    "buffering": "Buffering...",
+    "active_stream": "Streaming torrent",
+    "peers_format": "Peers: {0} / Seeds: {1}",
+    "cache_format": "Cache: {0} / {1} ({2}%)",
+    "speed_format": "Speed: {0}",
+    "pill_tooltip": "Torrent streaming (RAM)\n⚡ Speed: {0} (up: {1})\n👥 Peers: {2} (seeds: {3})\n📦 Cache: {4} / {5}",
+    "cancel_stream": "Cancel"
+  },
   "osd": {
     "off": "Off",
     "subtitles": "Subtitles",

@@ -53,6 +53,14 @@ public static class AppConstants
             public const string BaseUrl = "https://nyaa.si/";
             public const string XmlNamespace = "https://nyaa.si/xmlns/nyaa";
         }
+
+        public static class TorrServer
+        {
+            public const string DefaultHost = "127.0.0.1";
+            public const int DefaultPort = 8090;
+            public const string DefaultBaseUrl = "http://127.0.0.1:8090";
+            public const string LoopbackScheme = "http://";
+        }
     }
 
     public static class Links
@@ -272,5 +280,10 @@ public static class AppConstants
     public static class Player
     {
         public const string DefaultSubtitleFont = "Lato ExtraBold";
+    }
+
+    public static class Torrents
+    {
+        public const string TorrentHashLinkRegex = @"[?&]link=([0-9a-zA-Z]+)";
     }
 }

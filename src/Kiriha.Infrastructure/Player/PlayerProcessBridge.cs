@@ -143,7 +143,7 @@ public static class PlayerProcessBridge
         string? titleEn,
         string? episodeText)
     {
-        ForwardMetadata(originalTitle, animeId, titleRu, titleEn, titleRomaji: null, episodeText);
+        ForwardMetadata(originalTitle, animeId, titleRu, titleEn, titleRomaji: null, episodeText, torrentHash: null);
     }
 
     private static string? s_lastForwardedKey;
@@ -155,16 +155,18 @@ public static class PlayerProcessBridge
         string? titleRu,
         string? titleEn,
         string? titleRomaji,
-        string? episodeText)
+        string? episodeText,
+        string? torrentHash = null)
     {
-        var key = $"{originalTitle}|{animeId}|{titleRu}|{titleEn}|{titleRomaji}|{episodeText}";
+        var key = $"{originalTitle}|{animeId}|{titleRu}|{titleEn}|{titleRomaji}|{episodeText}|{torrentHash}";
         lock (s_forwardGate)
         {
             if (string.Equals(s_lastForwardedKey, key, StringComparison.Ordinal))
                 return;
         }
 
-        string[] args = [
+        var argsList = new List<string>
+        {
             "--player",
             UpdateMetadataArg,
             "--original-title",
@@ -179,7 +181,15 @@ public static class PlayerProcessBridge
             titleRomaji ?? string.Empty,
             "--episode",
             episodeText ?? string.Empty
-        ];
+        };
+
+        if (!string.IsNullOrEmpty(torrentHash))
+        {
+            argsList.Add("--torrent-hash");
+            argsList.Add(torrentHash);
+        }
+
+        string[] args = [.. argsList];
 
         Task.Run(async () =>
         {

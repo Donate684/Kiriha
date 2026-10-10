@@ -164,6 +164,9 @@
         <Style Selector="Button.ActionPill.MagnetPill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
         </Style>
+        <Style Selector="Button.ActionPill.PlayPill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource AnalyticsSectionGreenBrush}"/>
+        </Style>
 
         <!-- ═══ Download icon button ═══ -->
         <Style Selector="Button.IconAction">

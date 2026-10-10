@@ -75,8 +75,10 @@ public class TorrentsWatchingSortTests
         var rssMock = new Mock<Kiriha.Core.Abstractions.Services.IRssFeedService>();
         var settingsMock = new Mock<Kiriha.Core.Abstractions.Services.ISettingsService>();
         settingsMock.SetupGet(s => s.Current).Returns(new AppSettings());
+        var torrServerMock = new Mock<Kiriha.Core.Abstractions.Services.ITorrServerService>();
+        var localizerMock = new Mock<Kiriha.Core.Abstractions.Services.ILocalizer>();
 
-        var vm = new TorrentsViewModel(rssMock.Object, animeRepoMock.Object, settingsMock.Object, filterRepoMock.Object);
+        var vm = new TorrentsViewModel(rssMock.Object, animeRepoMock.Object, settingsMock.Object, filterRepoMock.Object, torrServerMock.Object, localizerMock.Object);
 
         var sortedIds = vm.HideMenuItems.Select(x => x.Anime.Id).ToList();
 

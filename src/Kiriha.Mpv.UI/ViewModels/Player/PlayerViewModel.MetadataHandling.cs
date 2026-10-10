@@ -95,13 +95,27 @@ public partial class PlayerViewModel
 
         if (!string.IsNullOrWhiteSpace(metadata.TitleRomaji))
             AnimeTitleRomaji = metadata.TitleRomaji;
-        else if (overwriteAll || string.IsNullOrWhiteSpace(AnimeTitleRomaji))
-            AnimeTitleRomaji = !string.IsNullOrWhiteSpace(metadata.TitleEn) ? metadata.TitleEn : metadata.TitleRu;
+        else if (!string.IsNullOrWhiteSpace(metadata.TitleEn))
+            AnimeTitleRomaji = metadata.TitleEn;
+        else if (!string.IsNullOrWhiteSpace(metadata.TitleRu))
+            AnimeTitleRomaji = metadata.TitleRu;
+        else if (overwriteAll)
+            AnimeTitleRomaji = string.Empty;
 
-        RawEpisodeText = metadata.EpisodeText;
-        EpisodeTitle = string.IsNullOrEmpty(metadata.EpisodeText)
-            ? string.Empty
-            : $"\u0421\u0435\u0440\u0438\u044F {metadata.EpisodeText}";
+        if (!string.IsNullOrWhiteSpace(metadata.EpisodeText) || overwriteAll)
+        {
+            RawEpisodeText = metadata.EpisodeText;
+            EpisodeTitle = string.IsNullOrEmpty(metadata.EpisodeText)
+                ? string.Empty
+                : $"\u0421\u0435\u0440\u0438\u044F {metadata.EpisodeText}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(metadata.TorrentHash) && string.IsNullOrEmpty(TorrentHash))
+        {
+            TorrentHash = metadata.TorrentHash;
+            IsTorrentStream = true;
+        }
+
         AnimeTitle = !string.IsNullOrWhiteSpace(AnimeTitleRu) ? AnimeTitleRu : AnimeTitleRomaji;
 
         OnPropertyChanged(nameof(TopTitle));

@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
@@ -73,24 +73,125 @@
             </StackPanel>
         </Border>
 
+        <!-- Loading Overlay -->
         <Border Classes="player-state-panel"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsHitTestVisible="False"
                 IsVisible="{Binding IsLoading}">
+            <StackPanel Spacing="10" Width="320">
+                <!-- Title & Episode -->
+                <StackPanel Spacing="3" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding TopTitle}"
+                               Classes="overlay-text"
+                               Foreground="White"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               TextAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding EpisodeTitle}"
+                               Foreground="#B3FFFFFF"
+                               FontSize="12"
+                               TextAlignment="Center"
+                               IsVisible="{Binding EpisodeTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                </StackPanel>
+
+                <!-- Standard Local File Loading -->
+                <StackPanel Spacing="8" IsVisible="{Binding !IsTorrentStream}">
+                    <ProgressBar Height="3" IsIndeterminate="True"/>
+                    <TextBlock Text="{Binding PlaybackStatusMessage}"
+                               Classes="overlay-text"
+                               Foreground="#CCFFFFFF"
+                               FontSize="12"
+                               TextAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Torrent Streaming Buffer Loading -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsTorrentStream}">
+                    <ProgressBar Height="4"
+                                 Value="{Binding TorrentBufferPercent}"
+                                 IsIndeterminate="{Binding IsTorrentBufferIndeterminate}"/>
+
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding TorrentStatusText}"
+                                   Foreground="White"
+                                   FontSize="12.5"
+                                   FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding TorrentDownloadSpeedText}"
+                                   Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                   FontSize="12.5"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding TorrentDownloadSpeedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,0">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding TorrentBufferText}"
+                                   Foreground="#CCFFFFFF"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis"
+                                   IsVisible="{Binding TorrentBufferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                                    IsVisible="{Binding TorrentPeersBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <material:MaterialIcon Kind="AccountMultipleOutline" Width="13" Height="13"
+                                                   Foreground="#B3FFFFFF" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TorrentPeersBadgeText}"
+                                       Foreground="#B3FFFFFF"
+                                       FontSize="11"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Rebuffering Overlay -->
+        <Border Classes="player-state-panel"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                IsVisible="{Binding IsRebuffering}">
             <StackPanel Spacing="10" Width="280">
-                <ProgressBar Height="3" Value="100"/>
-                <TextBlock Text="{Binding PlaybackStatusMessage}"
-                           Classes="overlay-text"
-                           Foreground="White"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           TextAlignment="Center"/>
-                <TextBlock Text="{Binding TopTitle}"
-                           Foreground="#AFFFFFFF"
-                           FontSize="12"
-                           TextAlignment="Center"
-                           TextTrimming="CharacterEllipsis"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <material:MaterialIcon Kind="Loading" Width="18" Height="18"
+                                           Foreground="{DynamicResource SystemAccentColor}">
+                        <material:MaterialIcon.Styles>
+                            <Style Selector="material|MaterialIcon">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                                        <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </material:MaterialIcon.Styles>
+                    </material:MaterialIcon>
+                    <TextBlock Text="{DynamicResource l.player.streaming.buffering}"
+                               Classes="overlay-text"
+                               Foreground="White"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <ProgressBar Height="3"
+                             Value="{Binding TorrentBufferPercent}"
+                             IsIndeterminate="{Binding IsTorrentBufferIndeterminate}"
+                             IsVisible="{Binding IsTorrentStream}"/>
+                <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding IsTorrentStream}">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding TorrentDownloadSpeedText}"
+                               Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding TorrentPeersBadgeText}"
+                               Foreground="#B3FFFFFF"
+                               FontSize="11.5"
+                               FontWeight="Medium"/>
+                </Grid>
             </StackPanel>
         </Border>
 

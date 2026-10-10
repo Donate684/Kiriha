@@ -51,12 +51,13 @@ public sealed partial class PlayerModeCoordinator
         var titleEn = GetArgValue(args, "--title-en") ?? string.Empty;
         var titleRomaji = GetArgValue(args, "--title-romaji") ?? string.Empty;
         var episodeText = GetArgValue(args, "--episode") ?? string.Empty;
+        var torrentHash = GetArgValue(args, "--torrent-hash") ?? string.Empty;
         int? animeId = int.TryParse(GetArgValue(args, "--anime-id"), out var parsedAnimeId) ? parsedAnimeId : null;
 
         if (_app.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
-        var metadata = new PlayerMediaMetadata(originalTitle, titleRu, titleEn, episodeText, animeId, titleRomaji);
+        var metadata = new PlayerMediaMetadata(originalTitle, titleRu, titleEn, episodeText, animeId, titleRomaji, torrentHash);
         var playerWindows = desktop.Windows.OfType<PlayerWindow>().ToArray();
         var updated = false;
 
@@ -64,6 +65,13 @@ public sealed partial class PlayerModeCoordinator
         {
             if (playerWindow.DataContext is not PlayerViewModel vm)
                 continue;
+
+            if (!string.IsNullOrEmpty(torrentHash) && vm.MatchesTorrentHash(torrentHash))
+            {
+                vm.ApplyExternalMetadata(metadata);
+                updated = true;
+                continue;
+            }
 
             if (!vm.MatchesOriginalTitle(originalTitle))
                 continue;
@@ -74,10 +82,7 @@ public sealed partial class PlayerModeCoordinator
 
         if (!updated && playerWindows.LastOrDefault()?.DataContext is PlayerViewModel fallbackVm)
         {
-            if (fallbackVm.MatchesOriginalTitle(originalTitle))
-            {
-                fallbackVm.ApplyExternalMetadata(metadata);
-            }
+            fallbackVm.ApplyExternalMetadata(metadata);
         }
     }
 }

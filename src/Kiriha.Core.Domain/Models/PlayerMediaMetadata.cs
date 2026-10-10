@@ -6,16 +6,41 @@ public sealed record PlayerMediaMetadata(
     string TitleEn,
     string EpisodeText,
     int? AnimeId,
-    string TitleRomaji = "")
+    string TitleRomaji = "",
+    string TorrentHash = "")
 {
-    public PlayerMediaMetadata() : this(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty) { }
+    public PlayerMediaMetadata() : this(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
 
     public static PlayerMediaMetadata FromVideoPath(string videoPath)
     {
-        var fallbackTitle = string.IsNullOrWhiteSpace(videoPath)
-            ? string.Empty
-            : System.IO.Path.GetFileNameWithoutExtension(videoPath);
+        if (string.IsNullOrWhiteSpace(videoPath))
+            return new PlayerMediaMetadata();
 
-        return new PlayerMediaMetadata(fallbackTitle, fallbackTitle, string.Empty, string.Empty, null, fallbackTitle);
+        string fallbackTitle;
+        string torrentHash = string.Empty;
+
+        if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            var seg = uri.Segments.LastOrDefault() ?? string.Empty;
+            var rawName = System.IO.Path.GetFileNameWithoutExtension(seg);
+            fallbackTitle = Uri.UnescapeDataString(rawName);
+
+            var query = uri.Query;
+            if (!string.IsNullOrEmpty(query))
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(query, Constants.AppConstants.Torrents.TorrentHashLinkRegex);
+                if (match.Success)
+                {
+                    torrentHash = match.Groups[1].Value;
+                }
+            }
+        }
+        else
+        {
+            fallbackTitle = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+        }
+
+        return new PlayerMediaMetadata(fallbackTitle, fallbackTitle, string.Empty, string.Empty, null, fallbackTitle, torrentHash);
     }
 }

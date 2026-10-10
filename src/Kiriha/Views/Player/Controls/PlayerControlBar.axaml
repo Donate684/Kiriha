@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              xmlns:mpv="using:Kiriha.Mpv"
@@ -16,7 +16,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
                 <Grid Margin="14,0,14,8">
-                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*">
 
                     <!-- Play/Pause -->
                     <Border Grid.Column="0" Classes="control-pill" Padding="2,0">
@@ -61,8 +61,30 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Torrent Streaming Live Pill -->
+                    <Border Grid.Column="4" Classes="control-pill" Margin="8,0,0,0" VerticalAlignment="Center"
+                            IsVisible="{Binding IsTorrentStream}"
+                            ToolTip.Tip="{Binding TorrentDetailsTooltip}">
+                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="8,0" VerticalAlignment="Center">
+                            <material:MaterialIcon Kind="CloudDownloadOutline" Width="14" Height="14"
+                                                   Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                                   VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TorrentDownloadSpeedText}"
+                                       Foreground="White" FontSize="12" FontWeight="SemiBold"
+                                       FontFamily="Consolas,Courier New,monospace"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="•" Foreground="#55FFFFFF" FontSize="10" VerticalAlignment="Center"/>
+                            <material:MaterialIcon Kind="AccountMultipleOutline" Width="13" Height="13"
+                                                   Foreground="#B3FFFFFF" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TorrentPeersBadgeText}"
+                                       Foreground="#B3FFFFFF" FontSize="11.5"
+                                       FontFamily="Consolas,Courier New,monospace"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- RIGHT: speed + subtitles + audio + settings -->
-                    <Border Grid.Column="4" Classes="control-pill" HorizontalAlignment="Right">
+                    <Border Grid.Column="5" Classes="control-pill" HorizontalAlignment="Right">
                     <StackPanel Orientation="Horizontal" Spacing="0"
                                 VerticalAlignment="Center">
 

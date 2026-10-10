@@ -48,32 +48,40 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private bool _isInitializing;
     private string? _previousVideoUrlForMetadata;
 
+    private readonly ITorrServerService? _torrServer;
+
     public PlayerViewModel(
         string videoUrl,
         PlayerMediaMetadata? metadata,
         IPlayerMediaMetadataResolver? metadataResolver,
-        ISettingsService? settingsService, ILocalizer localizer)
+        ISettingsService? settingsService,
+        ILocalizer localizer,
+        ITorrServerService? torrServer = null)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;
         _settingsService = settingsService;
         _localizer = localizer;
+        _torrServer = torrServer;
         InitializeOptions();
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
         _statePublisher.MetadataReceived += OnExternalMetadataReceived;
         _settingsApplier = new PlayerSettingsApplier(_playback);
         _timelinePreview = new PlayerTimelinePreviewController(Overlay);
+        _playback.BufferingChanged += OnPlayerBufferingChanged;
         ApplyPlayerSettings();
-        ApplyMetadata(metadata ?? metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl));
+        var initialMetadata = metadata ?? metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl);
+        ApplyMetadata(initialMetadata);
 
         _previousVideoUrlForMetadata = videoUrl;
         VideoUrl = videoUrl; // Sets VideoUrl and triggers OnVideoUrlChanged if needed, but since it's constructor, we already set the fields above.
+        InitializeTorrentStream(videoUrl, initialMetadata);
         _isInitializing = false;
     }
 
     private void OnExternalMetadataReceived(PlayerMediaMetadata metadata)
     {
-        if (MatchesOriginalTitle(metadata.OriginalTitle))
+        if (MatchesTorrentHash(metadata.TorrentHash) || MatchesOriginalTitle(metadata.OriginalTitle))
         {
             Dispatcher.UIThread.Post(() => ApplyExternalMetadata(metadata));
         }

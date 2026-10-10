@@ -49,7 +49,12 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.MetadataFetchMaintenanceTask>();
         services.AddSingleton<MaintenanceService>();
 
+        // TorrServer streaming engine
+        services.AddSingleton<Kiriha.Infrastructure.TorrServer.TorrServerService>();
+        services.AddForwardedSingleton<Kiriha.Infrastructure.TorrServer.TorrServerService, ITorrServerService>();
+
         // Shutdown Handlers
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.TorrServerShutdownHandler>();
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.PlayerResidentShutdownHandler>();
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.BackgroundTasksShutdownHandler>();
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.HostedServicesShutdownHandler>();

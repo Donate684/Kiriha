@@ -10,6 +10,9 @@ public partial class MpvPlayer : IDisposable
     private const ulong TrackListPropertyId = 6;
     private const ulong SubDelayPropertyId = 7;
     private const ulong EofReachedPropertyId = 8;
+    private const ulong PausedForCachePropertyId = 9;
+
+    public event Action<bool>? BufferingChanged;
 
 
     private readonly Lock _gate = new();

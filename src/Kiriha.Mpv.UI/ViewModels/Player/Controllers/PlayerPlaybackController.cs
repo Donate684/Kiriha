@@ -10,6 +10,7 @@ public sealed class PlayerPlaybackController
     public event Action? TracksChanged;
     public event Action<double>? SubtitleDelayChanged;
     public event Action<bool>? EofReachedChanged;
+    public event Action<bool>? BufferingChanged;
 
     public bool HasPlayer => _player != null;
 
@@ -24,6 +25,7 @@ public sealed class PlayerPlaybackController
         _player.TracksChanged += OnTracksChanged;
         _player.SubtitleDelayChanged += OnSubtitleDelayChanged;
         _player.EofReachedChanged += OnEofReachedChanged;
+        _player.BufferingChanged += OnBufferingChanged;
     }
 
     public void Detach()
@@ -37,8 +39,11 @@ public sealed class PlayerPlaybackController
         _player.TracksChanged -= OnTracksChanged;
         _player.SubtitleDelayChanged -= OnSubtitleDelayChanged;
         _player.EofReachedChanged -= OnEofReachedChanged;
+        _player.BufferingChanged -= OnBufferingChanged;
         _player = null;
     }
+
+    private void OnBufferingChanged(bool isBuffering) => BufferingChanged?.Invoke(isBuffering);
 
     public void Load(string videoUrl) => _player?.Load(videoUrl);
     public void WriteWatchLaterConfig() => _player?.WriteWatchLaterConfig();

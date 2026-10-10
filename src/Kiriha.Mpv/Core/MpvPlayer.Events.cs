@@ -53,6 +53,7 @@ public partial class MpvPlayer
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, TrackListPropertyId, "track-list", LibMpvNative.MPV_FORMAT_NONE), "observe track list");
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, SubDelayPropertyId, "sub-delay", LibMpvNative.MPV_FORMAT_DOUBLE), "observe sub delay");
         Check(LibMpvNative.mpv_observe_property(_mpvHandle, EofReachedPropertyId, "eof-reached", LibMpvNative.MPV_FORMAT_FLAG), "observe eof reached");
+        Check(LibMpvNative.mpv_observe_property(_mpvHandle, PausedForCachePropertyId, "paused-for-cache", LibMpvNative.MPV_FORMAT_FLAG), "observe paused for cache");
     }
 
     private static void UnobservePlaybackProperties(IntPtr handle)
@@ -65,6 +66,7 @@ public partial class MpvPlayer
         LibMpvNative.mpv_unobserve_property(handle, TrackListPropertyId);
         LibMpvNative.mpv_unobserve_property(handle, SubDelayPropertyId);
         LibMpvNative.mpv_unobserve_property(handle, EofReachedPropertyId);
+        LibMpvNative.mpv_unobserve_property(handle, PausedForCachePropertyId);
     }
 
     private void HandlePropertyChange(MpvEvent mpvEvent)
@@ -127,6 +129,11 @@ public partial class MpvPlayer
             case EofReachedPropertyId when property.Format == LibMpvNative.MPV_FORMAT_FLAG:
                 var isEof = Marshal.ReadInt32(property.Data) != 0;
                 EofReachedChanged?.Invoke(isEof);
+                break;
+
+            case PausedForCachePropertyId when property.Format == LibMpvNative.MPV_FORMAT_FLAG:
+                var isPausedForCache = Marshal.ReadInt32(property.Data) != 0;
+                BufferingChanged?.Invoke(isPausedForCache);
                 break;
         }
     }

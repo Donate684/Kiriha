@@ -23,4 +23,26 @@ public sealed partial class PlayerModeCoordinator
 
         return string.Empty;
     }
+
+    private static Kiriha.Core.Domain.Models.PlayerMediaMetadata? ExtractMetadataFromArgs(string[] args)
+    {
+        var titleRu = GetArgValue(args, "--title-ru") ?? string.Empty;
+        var titleEn = GetArgValue(args, "--title-en") ?? string.Empty;
+        var originalTitle = GetArgValue(args, "--original-title") ?? (string.IsNullOrEmpty(titleEn) ? titleRu : titleEn);
+        var episode = GetArgValue(args, "--episode") ?? string.Empty;
+        var torrentHash = GetArgValue(args, "--torrent-hash") ?? string.Empty;
+        int? animeId = int.TryParse(GetArgValue(args, "--anime-id"), out var id) ? id : null;
+
+        if (string.IsNullOrWhiteSpace(titleRu) && string.IsNullOrWhiteSpace(titleEn) && !animeId.HasValue && string.IsNullOrWhiteSpace(torrentHash))
+            return null;
+
+        return new Kiriha.Core.Domain.Models.PlayerMediaMetadata(
+            OriginalTitle: originalTitle,
+            TitleRu: titleRu,
+            TitleEn: titleEn,
+            EpisodeText: episode,
+            AnimeId: animeId,
+            TitleRomaji: string.IsNullOrEmpty(titleEn) ? titleRu : titleEn,
+            TorrentHash: torrentHash);
+    }
 }

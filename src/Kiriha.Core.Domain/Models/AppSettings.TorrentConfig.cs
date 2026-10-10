@@ -22,6 +22,17 @@ public partial class AppSettings
 
         [System.Text.Json.Serialization.JsonIgnore]
         public System.Collections.Generic.Dictionary<int, TorrentFilterSet> PerTitleFilters { get; set; } = new();
+
+        public TorrentStreamingConfig Streaming { get; set; } = new();
+    }
+
+    public class TorrentStreamingConfig
+    {
+        public bool Enabled { get; set; } = true;
+        public string ServerUrl { get; set; } = Constants.AppConstants.Api.TorrServer.DefaultBaseUrl;
+        public int RamCacheMb { get; set; } = 200;
+        public bool AutoStartServer { get; set; } = true;
+        public int ServerPort { get; set; } = Constants.AppConstants.Api.TorrServer.DefaultPort;
     }
 
     public class TorrentFilterSet

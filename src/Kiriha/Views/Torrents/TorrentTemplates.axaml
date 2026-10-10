@@ -256,6 +256,21 @@
                                     <!-- Right Action Buttons -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal"
                                                 Spacing="6" VerticalAlignment="Center">
+                                        <!-- Play Online Button -->
+                                        <Button Classes="ActionPill PlayPill"
+                                                ToolTip.Tip="{DynamicResource l.torrents.results.actions.play_tooltip}"
+                                                Command="{Binding $parent[UserControl].((vmTorrents:TorrentsViewModel)DataContext).PlayTorrentCommand}"
+                                                CommandParameter="{Binding}">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <material:MaterialIcon Kind="Play" Width="14" Height="14"
+                                                                       Foreground="{DynamicResource AnalyticsSectionGreenBrush}"/>
+                                                <TextBlock Text="{DynamicResource l.torrents.results.actions.play_btn}"
+                                                           FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+
                                         <!-- Magnet Button -->
                                         <Button Classes="ActionPill MagnetPill"
                                                 ToolTip.Tip="{DynamicResource l.torrents.results.actions.download_magnet}"

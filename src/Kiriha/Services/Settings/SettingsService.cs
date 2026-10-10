@@ -205,6 +205,17 @@ public partial class SettingsService : IDisposable, ISettingsService
             clone.Torrents.HiddenAnimeIds = new List<int>(settings.Torrents.HiddenAnimeIds);
         if (settings.Torrents?.PerTitleFilters != null)
             clone.Torrents.PerTitleFilters = new Dictionary<int, AppSettings.TorrentFilterSet>(settings.Torrents.PerTitleFilters);
+        if (settings.Torrents?.Streaming != null)
+        {
+            clone.Torrents.Streaming = new AppSettings.TorrentStreamingConfig
+            {
+                Enabled = settings.Torrents.Streaming.Enabled,
+                ServerUrl = settings.Torrents.Streaming.ServerUrl,
+                RamCacheMb = settings.Torrents.Streaming.RamCacheMb,
+                AutoStartServer = settings.Torrents.Streaming.AutoStartServer,
+                ServerPort = settings.Torrents.Streaming.ServerPort
+            };
+        }
         return clone;
     }
 }

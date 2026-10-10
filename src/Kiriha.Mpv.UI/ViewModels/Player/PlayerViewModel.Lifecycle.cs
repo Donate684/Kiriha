@@ -46,6 +46,8 @@ public partial class PlayerViewModel
         _playback.TracksChanged -= OnPlayerTracksChanged;
         _playback.SubtitleDelayChanged -= OnPlayerSubtitleDelayChanged;
         _playback.EofReachedChanged -= OnPlayerEofReachedChanged;
+        _playback.BufferingChanged -= OnPlayerBufferingChanged;
+        DisposeTorrentMonitor();
 
         try { _statePublisher.PublishClosed(); } catch (Exception ex) { Log.Debug(ex, "Error publishing closed state"); }
 
