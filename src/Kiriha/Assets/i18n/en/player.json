@@ -168,7 +168,7 @@
     "default_x": "Shift subtitles 100ms later",
     "panel_buttons": "Panel buttons",
     "btn_play_pause": "Play / Pause",
-    "btn_seek_10s": "Seek 10s",
+    "btn_seek_10s": "Previous / next file",
     "btn_mute": "Mute",
     "btn_vol_slider": "Volume slider",
     "btn_time": "Time",

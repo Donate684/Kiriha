@@ -23,6 +23,7 @@ public static class AboutCredits
         new CreditEntry(".NET",                           "MIT · Application runtime",                 "https://dotnet.microsoft.com/"),
         new CreditEntry("Avalonia UI",                    "MIT · Cross-platform XAML framework",       "https://avaloniaui.net"),
         new CreditEntry("mpv / libmpv",                   "GPLv2+ · Video player engine",              "https://mpv.io"),
+        new CreditEntry("TorrServer",                     "GPLv3 · Torrent streaming engine · YouROK", "https://github.com/YouROK/TorrServer"),
         new CreditEntry("CommunityToolkit.Mvvm",          "MIT · MVVM source generators",              "https://github.com/CommunityToolkit/dotnet"),
         new CreditEntry("Material.Icons.Avalonia",        "MIT · SKProCH",                             "https://github.com/SKProCH/Material.Icons"),
         new CreditEntry("AsyncImageLoader.Avalonia",      "MIT · Async image source",                  "https://github.com/AvaloniaUtils/AsyncImageLoader.Avalonia"),
@@ -33,5 +34,6 @@ public static class AboutCredits
         new CreditEntry("DiscordRichPresence",            "MIT · Lachee",                              "https://github.com/Lachee/discord-rpc-csharp"),
         new CreditEntry("AnitomySharp",                   "MPL 2.0 · Filename parsing",                "https://github.com/erengy/anitomy"),
         new CreditEntry("Anisthesia",                     "MPL 2.0 · Local media tracking",            "https://github.com/erengy/anisthesia"),
+        new CreditEntry("Lato Font",                      "OFL 1.1 · Subtitle typography · Lukasz Dziedzic", "https://www.latofonts.com/"),
     ];
 }

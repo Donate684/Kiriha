@@ -9,48 +9,30 @@
         <Button Classes="icon-btn"
                 Command="{Binding OpenPreviousMediaCommand}"
                 IsEnabled="{Binding CanOpenPreviousMedia}"
-                IsVisible="{Binding CanOpenPreviousMedia}"
+                IsVisible="{Binding ShowSkipButtons}"
                 ToolTip.Tip="{DynamicResource l.player.controls.prev_file}">
             <material:MaterialIcon Kind="SkipPrevious" Width="22" Height="22" Foreground="White"/>
         </Button>
 
-        <!-- Jump backward 10s -->
+        <!-- Play / Pause (Clean Icon Button, No Circular Background) -->
         <Button Classes="icon-btn"
-                Command="{Binding SkipCommand}"
-                CommandParameter="-10"
-                IsVisible="{Binding ShowSkipButtons}"
-                ToolTip.Tip="{DynamicResource l.player.controls.back_10s}">
-            <material:MaterialIcon Kind="Rewind10" Width="22" Height="22" Foreground="White"/>
-        </Button>
-
-        <!-- Play / Pause (Primary Action) -->
-        <Button Classes="primary-play-btn"
                 Command="{Binding TogglePlayPauseCommand}"
                 IsVisible="{Binding ShowPlayPauseButton}"
                 ToolTip.Tip="{DynamicResource l.player.controls.play_pause}">
             <Panel>
-                <material:MaterialIcon Kind="Pause" Width="26" Height="26" Foreground="White"
+                <material:MaterialIcon Kind="Pause" Width="24" Height="24" Foreground="White"
                                        IsVisible="{Binding IsPlaying}"/>
-                <material:MaterialIcon Kind="Play" Width="26" Height="26" Foreground="White"
+                <material:MaterialIcon Kind="Play" Width="24" Height="24" Foreground="White"
                                        Margin="2,0,0,0"
                                        IsVisible="{Binding !IsPlaying}"/>
             </Panel>
-        </Button>
-
-        <!-- Jump forward 10s -->
-        <Button Classes="icon-btn"
-                Command="{Binding SkipCommand}"
-                CommandParameter="10"
-                IsVisible="{Binding ShowSkipButtons}"
-                ToolTip.Tip="{DynamicResource l.player.controls.forward_10s}">
-            <material:MaterialIcon Kind="FastForward10" Width="22" Height="22" Foreground="White"/>
         </Button>
 
         <!-- Next File -->
         <Button Classes="icon-btn"
                 Command="{Binding OpenNextMediaCommand}"
                 IsEnabled="{Binding CanOpenNextMedia}"
-                IsVisible="{Binding CanOpenNextMedia}"
+                IsVisible="{Binding ShowSkipButtons}"
                 ToolTip.Tip="{DynamicResource l.player.controls.next_file}">
             <material:MaterialIcon Kind="SkipNext" Width="22" Height="22" Foreground="White"/>
         </Button>

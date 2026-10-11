@@ -168,7 +168,7 @@
     "default_x": "Сдвинуть субтитры на 100 мс позже",
     "panel_buttons": "Кнопки панели",
     "btn_play_pause": "Play / Pause",
-    "btn_seek_10s": "Перемотка 10 сек.",
+    "btn_seek_10s": "Файл назад / вперёд",
     "btn_mute": "Mute",
     "btn_vol_slider": "Слайдер громкости",
     "btn_time": "Время",
