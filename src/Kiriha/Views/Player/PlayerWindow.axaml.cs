@@ -34,6 +34,7 @@ public partial class PlayerWindow : Window
     
     private PlayerViewModel? _subscribedViewModel;
     private PropertyChangedEventHandler? _viewModelPropertyChanged;
+    private PropertyChangedEventHandler? _overlayPropertyChanged;
     private DateTime _lastTimelinePreviewAt = DateTime.MinValue;
     private double _lastTimelinePreviewTime = -1;
 
@@ -81,6 +82,9 @@ public partial class PlayerWindow : Window
             _subscribedViewModel = vm;
             _viewModelPropertyChanged = OnViewModelPropertyChanged;
             vm.PropertyChanged += _viewModelPropertyChanged;
+
+            _overlayPropertyChanged = OnOverlayPropertyChanged;
+            vm.Overlay.PropertyChanged += _overlayPropertyChanged;
         }
 
         StartAutoHide();
@@ -168,12 +172,16 @@ public partial class PlayerWindow : Window
             if (_screenshotButton != null)
                 _screenshotButton.RemoveHandler(PointerReleasedEvent, OnScreenshotButtonPointerReleased);
 
-            if (_subscribedViewModel != null && _viewModelPropertyChanged != null)
+            if (_subscribedViewModel != null)
             {
-                _subscribedViewModel.PropertyChanged -= _viewModelPropertyChanged;
+                if (_viewModelPropertyChanged != null)
+                    _subscribedViewModel.PropertyChanged -= _viewModelPropertyChanged;
+                if (_overlayPropertyChanged != null)
+                    _subscribedViewModel.Overlay.PropertyChanged -= _overlayPropertyChanged;
             }
             _subscribedViewModel = null;
             _viewModelPropertyChanged = null;
+            _overlayPropertyChanged = null;
         }
         catch (Exception ex)
         {

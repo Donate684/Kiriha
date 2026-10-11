@@ -1,7 +1,11 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Utils;
+using Kiriha.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.Torrents;
@@ -157,22 +161,6 @@ public partial class TorrentsViewModel
 
         try
         {
-            var isReady = await _torrServer.EnsureRunningAsync(ct);
-            if (!isReady)
-            {
-                Log.Warning("TorrentsViewModel: TorrServer is not ready");
-                return;
-            }
-
-            var status = await _torrServer.AddTorrentAsync(link, torrent.Title, ct);
-            if (status is null)
-            {
-                Log.Warning("TorrentsViewModel: Failed to add torrent to TorrServer");
-                return;
-            }
-
-            _currentStreamingHash = status.Hash;
-
             if (torrent.IsBatch)
             {
                 ActiveStreamingTorrent = torrent;
@@ -181,6 +169,24 @@ public partial class TorrentsViewModel
                 IsEpisodeSelectorLoading = true;
                 EpisodeSelectorError = null;
                 EpisodeSelectorCountText = string.Empty;
+
+                var isReady = await _torrServer.EnsureRunningAsync(ct);
+                if (!isReady)
+                {
+                    EpisodeSelectorError = _localizer.GetLoc("torrents.streaming.start_failed");
+                    IsEpisodeSelectorLoading = false;
+                    return;
+                }
+
+                var status = await _torrServer.AddTorrentAsync(link, torrent.Title, ct);
+                if (status is null)
+                {
+                    EpisodeSelectorError = _localizer.GetLoc("torrents.streaming.add_failed");
+                    IsEpisodeSelectorLoading = false;
+                    return;
+                }
+
+                _currentStreamingHash = status.Hash;
 
                 var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(25), ct);
                 var videoFiles = files.Where(f => f.IsVideo).ToList();
@@ -201,8 +207,39 @@ public partial class TorrentsViewModel
             }
             else
             {
-                var streamUrl = _torrServer.GetStreamUrl(status.Hash, -1, torrent.Title + ".mkv");
-                LaunchStream(streamUrl, torrent, torrent.Title + ".mkv");
+                IsPlayerLaunching = true;
+                PlayerLaunchingTitle = torrent.Title;
+
+                var isReady = await _torrServer.EnsureRunningAsync(ct);
+                if (!isReady)
+                {
+                    Log.Warning("TorrentsViewModel: TorrServer is not ready");
+                    IsPlayerLaunching = false;
+                    return;
+                }
+
+                var status = await _torrServer.AddTorrentAsync(link, torrent.Title, ct);
+                if (status is null)
+                {
+                    Log.Warning("TorrentsViewModel: Failed to add torrent to TorrServer");
+                    IsPlayerLaunching = false;
+                    return;
+                }
+
+                _currentStreamingHash = status.Hash;
+
+                // Wait up to 15 seconds for TorrServer to connect to peers and resolve torrent metadata
+                var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(15), ct);
+                var videoFiles = files.Where(f => f.IsVideo).ToList();
+                var targetFile = videoFiles.OrderByDescending(f => f.Length).FirstOrDefault();
+
+                var fileId = targetFile?.Id ?? -1;
+                var fileName = targetFile?.FileName ?? (torrent.Title + ".mkv");
+
+                var streamUrl = _torrServer.GetStreamUrl(status.Hash, fileId, fileName);
+                LaunchStream(streamUrl, torrent, fileName);
+
+                await WaitForPlayerWakeupAsync(status.Hash, torrent.Title, ct).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
@@ -218,17 +255,46 @@ public partial class TorrentsViewModel
                 IsEpisodeSelectorLoading = false;
             }
         }
+        finally
+        {
+            if (!torrent.IsBatch)
+            {
+                Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
+            }
+        }
     }
 
     [RelayCommand]
-    public void SelectEpisodeFile(Kiriha.Core.Domain.Models.TorrServer.TorrServerFileItem file)
+    public async Task SelectEpisodeFile(Kiriha.Core.Domain.Models.TorrServer.TorrServerFileItem file)
     {
         if (file is null || string.IsNullOrEmpty(_currentStreamingHash) || ActiveStreamingTorrent is null)
             return;
 
+        var torrent = ActiveStreamingTorrent;
         var streamUrl = _torrServer.GetStreamUrl(_currentStreamingHash, file.Id, file.FileName);
-        LaunchStream(streamUrl, ActiveStreamingTorrent, file.FileName);
         CloseEpisodeSelector();
+
+        _streamingCts?.Cancel();
+        _streamingCts?.Dispose();
+        _streamingCts = new CancellationTokenSource();
+        var ct = _streamingCts.Token;
+
+        IsPlayerLaunching = true;
+        PlayerLaunchingTitle = $"{torrent.Title} - {file.FileName}";
+
+        try
+        {
+            LaunchStream(streamUrl, torrent, file.FileName);
+            await WaitForPlayerWakeupAsync(_currentStreamingHash, torrent.Title, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled
+        }
+        finally
+        {
+            Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
+        }
     }
 
     [RelayCommand]
@@ -249,17 +315,100 @@ public partial class TorrentsViewModel
         CloseEpisodeSelector();
     }
 
+    [RelayCommand]
+    public void CancelPlayerLaunching()
+    {
+        _streamingCts?.Cancel();
+        IsPlayerLaunching = false;
+    }
+
+    private async Task WaitForPlayerWakeupAsync(string torrentHash, string torrentTitle, CancellationToken ct)
+    {
+        if (_internalPlayerServer == null)
+        {
+            await Task.Delay(2500, ct).ConfigureAwait(false);
+            return;
+        }
+
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void OnPlayerStateChanged(object? sender, InternalPlayerState state)
+        {
+            if (state.IsClosed) return;
+
+            bool matches = false;
+            if (!string.IsNullOrEmpty(torrentHash) && string.Equals(state.TorrentHash, torrentHash, StringComparison.OrdinalIgnoreCase))
+            {
+                matches = true;
+            }
+            else if (!string.IsNullOrEmpty(state.OriginalTitle) &&
+                     (torrentTitle.Contains(state.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
+                      state.OriginalTitle.Contains(torrentTitle, StringComparison.OrdinalIgnoreCase)))
+            {
+                matches = true;
+            }
+            else if (state.IsLoading || state.IsBuffering || state.IsPlaying)
+            {
+                matches = true;
+            }
+
+            if (matches)
+            {
+                tcs.TrySetResult(true);
+            }
+        }
+
+        _internalPlayerServer.PlayerStateChanged += OnPlayerStateChanged;
+        using var reg = ct.Register(() => tcs.TrySetCanceled());
+
+        try
+        {
+            // Keep "Запуск плеера..." dialog active until player process responds over IPC (up to 25s timeout)
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(25), ct)).ConfigureAwait(false);
+            if (completed == tcs.Task)
+            {
+                await tcs.Task.ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled
+        }
+        finally
+        {
+            _internalPlayerServer.PlayerStateChanged -= OnPlayerStateChanged;
+        }
+    }
+
     private void LaunchStream(string streamUrl, TorrentEntity torrent, string fileName)
     {
-        var animeTitle = !string.IsNullOrWhiteSpace(torrent.AnimeTitle) ? torrent.AnimeTitle : (SelectedAnime?.Title ?? torrent.Title);
+        var originalTitle = !string.IsNullOrWhiteSpace(fileName) ? fileName : torrent.Title;
+        var episode = !string.IsNullOrWhiteSpace(torrent.Episode) ? torrent.Episode : null;
+        var titleRu = SelectedAnime?.RussianTitle ?? (!string.IsNullOrWhiteSpace(torrent.AnimeTitle) ? torrent.AnimeTitle : string.Empty);
+        var titleEn = SelectedAnime?.Title ?? torrent.Title;
+
+        if (_internalPlayerServer != null)
+        {
+            var initialMeta = new PlayerMediaMetadata(
+                originalTitle,
+                titleRu,
+                titleEn,
+                episode ?? string.Empty,
+                SelectedAnime?.Id,
+                titleEn,
+                _currentStreamingHash ?? string.Empty);
+
+            _internalPlayerServer.SendMetadataAsync(initialMeta).SafeFireAndForget("Torrents.SendMetadata");
+        }
+
         PlayerProcessHelper.LaunchPlayer(
             videoUrl: streamUrl,
-            titleRu: SelectedAnime?.RussianTitle ?? animeTitle,
-            titleEn: SelectedAnime?.Title ?? torrent.Title,
-            episode: !string.IsNullOrWhiteSpace(torrent.Episode) ? torrent.Episode : null,
+            titleRu: titleRu,
+            titleEn: titleEn,
+            episode: episode,
             animeId: SelectedAnime?.Id,
             torrentHash: _currentStreamingHash,
-            originalTitle: torrent.Title);
+            originalTitle: originalTitle);
     }
 
     [RelayCommand]

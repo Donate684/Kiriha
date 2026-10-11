@@ -72,7 +72,7 @@ public partial class PlayerWindow
         OnFullscreenClick(sender, e);
     }
 
-    private void OnFullscreenClick(object? sender, RoutedEventArgs e)
+    private void OnFullscreenClick(object? sender, EventArgs e)
     {
         this.WindowState = this.WindowState == WindowState.FullScreen
             ? WindowState.Normal

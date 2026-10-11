@@ -74,7 +74,10 @@ public partial class PlayerViewModel
             Episode = RawEpisodeText,
             Position = CurrentTime,
             Duration = Duration,
-            IsPlaying = IsPlaying
+            IsPlaying = IsPlaying,
+            IsBuffering = IsBuffering,
+            IsLoading = IsLoading,
+            TorrentHash = TorrentHash
         };
     }
 }

@@ -10,4 +10,7 @@ public class InternalPlayerState
     public double Duration { get; set; }
     public bool IsPlaying { get; set; }
     public bool IsClosed { get; set; }
+    public bool IsBuffering { get; set; }
+    public bool IsLoading { get; set; }
+    public string TorrentHash { get; set; } = string.Empty;
 }

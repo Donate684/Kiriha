@@ -21,7 +21,8 @@
     "subtitles_position_tip": "LMB: subtitles up. RMB: down",
     "subtitles_style": "Subtitle style (U)",
     "screenshot": "Screenshot",
-    "mute_toggle": "Mute (M)"
+    "mute_toggle": "Mute (M)",
+    "fullscreen": "Fullscreen (F)"
   },
   "settings_adv": {
     "title": "Advanced",

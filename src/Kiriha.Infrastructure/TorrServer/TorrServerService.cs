@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.TorrServer;
 using Serilog;
 
@@ -150,23 +151,81 @@ public sealed class TorrServerService : ITorrServerService
             var cacheMb = Math.Clamp(_settingsService.Current.Torrents.Streaming.RamCacheMb, 50, 2048);
             long cacheBytes = (long)cacheMb * 1024L * 1024L;
 
+            JsonObject? setsObj = null;
+            try
+            {
+                var getResp = await _httpClient.PostAsJsonAsync($"{ServerUrl}/settings", new { action = "get" }, ct).ConfigureAwait(false);
+                if (getResp.IsSuccessStatusCode)
+                {
+                    setsObj = await getResp.Content.ReadFromJsonAsync<JsonObject>(cancellationToken: ct).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex, "TorrServerService: Could not query current settings before applying memory limits");
+            }
+
+            if (setsObj != null)
+            {
+                var currentCache = setsObj["CacheSize"]?.GetValue<long>() ?? 0L;
+                var currentUseDisk = setsObj["UseDisk"]?.GetValue<bool>() ?? true;
+                var currentRemoveOnDrop = setsObj["RemoveCacheOnDrop"]?.GetValue<bool>() ?? false;
+                var currentTrackers = setsObj["DefaultTrackers"]?.GetValue<string>() ?? string.Empty;
+
+                bool hasTrackers = !string.IsNullOrWhiteSpace(currentTrackers) && currentTrackers.Contains("nyaa.tracker.wf", StringComparison.OrdinalIgnoreCase);
+
+                // If already configured as requested and trackers are present, DO NOT call action: "set".
+                // Calling "set" causes TorrServer to drop all torrents, disconnect all peers, and restart its BitTorrent client.
+                if (currentCache == cacheBytes && !currentUseDisk && currentRemoveOnDrop && hasTrackers)
+                {
+                    Logger.Debug("TorrServerService: Settings already match RAM streaming requirements. Preserving active client session.");
+                    return;
+                }
+
+                setsObj["CacheSize"] = cacheBytes;
+                setsObj["ReaderReadAHead"] = 95;
+                setsObj["PreloadCache"] = 50;
+                setsObj["UseDisk"] = false;
+                setsObj["RemoveCacheOnDrop"] = true;
+                setsObj["RetrackersMode"] = 1;
+                setsObj["ResponsiveMode"] = true;
+
+                if (string.IsNullOrWhiteSpace(currentTrackers))
+                {
+                    setsObj["DefaultTrackers"] = AppConstants.Torrents.DefaultPublicTrackers;
+                }
+                else if (!currentTrackers.Contains("nyaa.tracker.wf", StringComparison.OrdinalIgnoreCase))
+                {
+                    setsObj["DefaultTrackers"] = $"{AppConstants.Torrents.DefaultPublicTrackers}\n{currentTrackers}";
+                }
+            }
+            else
+            {
+                setsObj = new JsonObject
+                {
+                    ["CacheSize"] = cacheBytes,
+                    ["ReaderReadAHead"] = 95,
+                    ["PreloadCache"] = 50,
+                    ["UseDisk"] = false,
+                    ["RemoveCacheOnDrop"] = true,
+                    ["RetrackersMode"] = 1,
+                    ["ResponsiveMode"] = true,
+                    ["DefaultTrackers"] = AppConstants.Torrents.DefaultPublicTrackers
+                };
+            }
+
             var payload = new
             {
                 action = "set",
-                sets = new
-                {
-                    CacheSize = cacheBytes,
-                    ReaderReadAHead = 95,
-                    PreloadCache = 50,
-                    UseDisk = false,
-                    RemoveCacheOnDrop = true
-                }
+                sets = setsObj
             };
 
             var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/settings", payload, ct).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                Logger.Information("TorrServerService: RAM streaming cache configured to {Mb} MB (0 bytes on disk)", cacheMb);
+                Logger.Information("TorrServerService: RAM streaming cache configured to {Mb} MB (0 disk bytes, public trackers restored)", cacheMb);
+                // Allow TorrServer BitTorrent client a moment to finish its internal reload ("end set settings")
+                await Task.Delay(800, ct).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
@@ -182,10 +241,17 @@ public sealed class TorrServerService : ITorrServerService
 
         try
         {
+            var finalLink = link;
+            if (finalLink.StartsWith("magnet:?", StringComparison.OrdinalIgnoreCase) &&
+                !finalLink.Contains("&tr=", StringComparison.OrdinalIgnoreCase))
+            {
+                finalLink = $"{finalLink}{AppConstants.Torrents.NyaaDefaultTrackersQuery}";
+            }
+
             var payload = new
             {
                 action = "add",
-                link,
+                link = finalLink,
                 title,
                 save_to_db = false
             };

@@ -124,6 +124,7 @@ public partial class TrackingService
             {
                 case MediaNegativelyMapped:
                     Log.Information("TrackingService: '{Title}' is negatively mapped, skipping auto-match", media.AnimeTitle);
+                    ClearPlayerMetadata(media);
                     return;
 
                 case MediaMatchSuccess success:

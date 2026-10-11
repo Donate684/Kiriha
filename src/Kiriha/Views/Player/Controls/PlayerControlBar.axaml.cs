@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Kiriha.Mpv;
@@ -14,6 +14,7 @@ public partial class PlayerControlBar : UserControl
 
     public event EventHandler? SettingsClicked;
     public event EventHandler? ActionExecuted;
+    public event EventHandler? FullscreenClicked;
 
     public PlayerControlBar()
     {
@@ -39,6 +40,11 @@ public partial class PlayerControlBar : UserControl
         if (_subtitleButton?.Flyout?.IsOpen == true) return true;
         if (_audioButton?.Flyout?.IsOpen == true) return true;
         return false;
+    }
+
+    private void OnFullscreenButtonClick(object? sender, RoutedEventArgs e)
+    {
+        FullscreenClicked?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnScreenshotButtonPointerReleased(object? sender, PointerReleasedEventArgs e)

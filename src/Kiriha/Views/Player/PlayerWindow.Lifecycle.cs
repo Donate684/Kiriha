@@ -15,9 +15,59 @@ public partial class PlayerWindow
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PlayerViewModel.AutoHideControls)
-                 && sender is PlayerViewModel { AutoHideControls: false })
+        if (sender is not PlayerViewModel vm) return;
+
+        if (e.PropertyName == nameof(PlayerViewModel.AutoHideControls) && !vm.AutoHideControls)
+        {
             ShowControls();
+        }
+        else if (e.PropertyName == nameof(PlayerViewModel.IsBufferingOrLoading))
+        {
+            if (vm.IsBufferingOrLoading)
+            {
+                if (_topBar != null)
+                {
+                    _topBar.IsVisible = true;
+                    _topBar.Opacity = 1;
+                    _topBar.IsHitTestVisible = true;
+                }
+            }
+            else if (!_controlsVisible && !vm.Overlay.IsOsdVisible)
+            {
+                if (_topBar != null)
+                {
+                    _topBar.Opacity = 0;
+                    _hitTestDisableTimer.Stop();
+                    _hitTestDisableTimer.Start();
+                }
+            }
+        }
+    }
+
+    private void OnOverlayPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PlayerOverlayViewModel.IsOsdVisible)
+            && sender is PlayerOverlayViewModel overlay)
+        {
+            if (overlay.IsOsdVisible)
+            {
+                if (_topBar != null)
+                {
+                    _topBar.IsVisible = true;
+                    _topBar.Opacity = 1;
+                    _topBar.IsHitTestVisible = true;
+                }
+            }
+            else if (!_controlsVisible && DataContext is PlayerViewModel vm && !vm.IsBufferingOrLoading)
+            {
+                if (_topBar != null)
+                {
+                    _topBar.Opacity = 0;
+                    _hitTestDisableTimer.Stop();
+                    _hitTestDisableTimer.Start();
+                }
+            }
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

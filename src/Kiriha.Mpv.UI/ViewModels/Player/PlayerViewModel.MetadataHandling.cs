@@ -105,12 +105,13 @@ public partial class PlayerViewModel
         if (!string.IsNullOrWhiteSpace(metadata.EpisodeText) || overwriteAll)
         {
             RawEpisodeText = metadata.EpisodeText;
+            var epPrefix = _localizer?.GetLoc("anime.labels.episode") ?? "\u0421\u0435\u0440\u0438\u044F";
             EpisodeTitle = string.IsNullOrEmpty(metadata.EpisodeText)
                 ? string.Empty
-                : $"\u0421\u0435\u0440\u0438\u044F {metadata.EpisodeText}";
+                : $"{epPrefix} {metadata.EpisodeText}";
         }
 
-        if (!string.IsNullOrWhiteSpace(metadata.TorrentHash) && string.IsNullOrEmpty(TorrentHash))
+        if (!string.IsNullOrWhiteSpace(metadata.TorrentHash))
         {
             TorrentHash = metadata.TorrentHash;
             IsTorrentStream = true;

@@ -6,8 +6,7 @@
              xmlns:conv="using:Kiriha.Views.Converters"
              x:Class="Kiriha.Views.Player.Controls.PlayerControlBar"
              x:DataType="vmPlayer:PlayerViewModel"
-             xmlns:controls="using:Kiriha.Views.Player.Controls"
-             xmlns:settings="using:Kiriha.Views.Player.Controls.Settings">
+             xmlns:controls="using:Kiriha.Views.Player.Controls">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -15,241 +14,216 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-                <Grid Margin="14,0,14,8">
-                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*">
 
-                    <!-- Play/Pause -->
-                    <Border Grid.Column="0" Classes="control-pill" Padding="2,0">
-                        <controls:PlayerPlaybackButtons />
-                    </Border>
+    <Grid Margin="24,2,24,14" ColumnDefinitions="Auto, *, Auto">
 
-                    <!-- Skip controls -->
-                    <Border Grid.Column="1" Classes="control-pill" Margin="2,0,0,0">
-                    <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
-                        <Button Classes="icon-btn"
-                                Command="{Binding SkipCommand}"
-                                CommandParameter="-10"
-                                IsVisible="{Binding ShowSkipButtons}"
-                                ToolTip.Tip="{DynamicResource l.player.controls.back_10s}">
-                            <material:MaterialIcon Kind="Rewind10" Width="21" Height="21" Foreground="White"/>
-                        </Button>
-                        <Button Classes="icon-btn"
-                                Command="{Binding SkipCommand}"
-                                CommandParameter="10"
-                                IsVisible="{Binding ShowSkipButtons}"
-                                ToolTip.Tip="{DynamicResource l.player.controls.forward_10s}">
-                            <material:MaterialIcon Kind="FastForward10" Width="21" Height="21" Foreground="White"/>
-                        </Button>
-                    </StackPanel>
-                    </Border>
+        <!-- ===== LEFT: Playback & Volume & Time ===== -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <!-- Play/Pause / Rewind / FastForward / Prev / Next -->
+            <controls:PlayerPlaybackButtons />
 
-                    <!-- Volume -->
-                    <Border Grid.Column="2" Classes="control-pill" Margin="4,0,0,0">
-                        <controls:PlayerVolumeControl />
-                    </Border>
+            <!-- Volume Control -->
+            <controls:PlayerVolumeControl Margin="4,0,0,0"/>
 
-                    <!-- Time display -->
-                    <Border Grid.Column="3" Classes="control-pill time-pill" Margin="8,0,0,0" VerticalAlignment="Center" IsVisible="{Binding ShowTimeDisplay}">
-                        <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                            <TextBlock Classes="overlay-text"
-                                       Text="{Binding CurrentTimeString}"
-                                       Foreground="#F0FFFFFF" FontSize="12.5" FontWeight="SemiBold" FontFamily="Consolas,Courier New,monospace"/>
-                            <TextBlock Classes="overlay-secondary-text" Text="/" Foreground="#80FFFFFF" FontSize="12.5" FontWeight="Medium"/>
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="{Binding DurationString}"
-                                       Foreground="#B0FFFFFF" FontSize="12.5" FontWeight="SemiBold" FontFamily="Consolas,Courier New,monospace"/>
-                        </StackPanel>
-                    </Border>
+            <!-- Current / Duration Time Display -->
+            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center"
+                        IsVisible="{Binding ShowTimeDisplay}" Margin="6,0,0,0">
+                <TextBlock Classes="overlay-text"
+                           Text="{Binding CurrentTimeString}"
+                           Foreground="White" FontSize="13" FontWeight="SemiBold"
+                           FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"/>
+                <TextBlock Text="/" Foreground="#55FFFFFF" FontSize="13" FontWeight="Normal"/>
+                <TextBlock Text="{Binding DurationString}"
+                           Foreground="#A6FFFFFF" FontSize="13" FontWeight="SemiBold"
+                           FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"/>
+            </StackPanel>
+        </StackPanel>
 
-                    <!-- Torrent Streaming Live Pill -->
-                    <Border Grid.Column="4" Classes="control-pill" Margin="8,0,0,0" VerticalAlignment="Center"
-                            IsVisible="{Binding IsTorrentStream}"
-                            ToolTip.Tip="{Binding TorrentDetailsTooltip}">
-                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="8,0" VerticalAlignment="Center">
-                            <material:MaterialIcon Kind="CloudDownloadOutline" Width="14" Height="14"
-                                                   Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
-                                                   VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding TorrentDownloadSpeedText}"
-                                       Foreground="White" FontSize="12" FontWeight="SemiBold"
-                                       FontFamily="Consolas,Courier New,monospace"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="•" Foreground="#55FFFFFF" FontSize="10" VerticalAlignment="Center"/>
-                            <material:MaterialIcon Kind="AccountMultipleOutline" Width="13" Height="13"
-                                                   Foreground="#B3FFFFFF" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding TorrentPeersBadgeText}"
-                                       Foreground="#B3FFFFFF" FontSize="11.5"
-                                       FontFamily="Consolas,Courier New,monospace"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
+        <!-- ===== RIGHT: Speed, Subs, Audio, Screenshot, Settings, Fullscreen ===== -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="3"
+                    HorizontalAlignment="Right" VerticalAlignment="Center">
 
-                    <!-- RIGHT: speed + subtitles + audio + settings -->
-                    <Border Grid.Column="5" Classes="control-pill" HorizontalAlignment="Right">
-                    <StackPanel Orientation="Horizontal" Spacing="0"
-                                VerticalAlignment="Center">
+            <!-- Playback Speed -->
+            <Button Name="SpeedButton"
+                    Classes="icon-btn"
+                    IsVisible="{Binding ShowSpeedButton}"
+                    ToolTip.Tip="{DynamicResource l.player.controls.speed}">
+                <Button.Flyout>
+                    <MenuFlyout Placement="Top">
+                        <MenuItem Header="0.25x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="0.25"/>
+                        <MenuItem Header="0.5x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="0.5"/>
+                        <MenuItem Header="0.75x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="0.75"/>
+                        <MenuItem Header="1x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="1"/>
+                        <MenuItem Header="1.25x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="1.25"/>
+                        <MenuItem Header="1.5x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="1.5"/>
+                        <MenuItem Header="1.75x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="1.75"/>
+                        <MenuItem Header="2x" Classes="speed-item"
+                                  Command="{Binding SetSpeedCommand}" CommandParameter="2"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center" Margin="2,0">
+                    <material:MaterialIcon Kind="SpeedometerMedium" Width="19" Height="19" Foreground="White"/>
+                    <TextBlock Text="{Binding PlaybackSpeed, StringFormat='{}{0}x'}"
+                               Foreground="White" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
 
-                        <!-- Playback speed -->
-                        <Button Name="SpeedButton"
-                                Classes="icon-btn"
-                                IsVisible="{Binding ShowSpeedButton}"
-                                ToolTip.Tip="{DynamicResource l.player.controls.speed}">
-                            <Button.Flyout>
-                                <MenuFlyout Placement="Top">
-                                    <MenuItem Header="0.25x" Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="0.25"/>
-                                    <MenuItem Header="0.5x"  Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="0.5"/>
-                                    <MenuItem Header="0.75x" Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="0.75"/>
-                                    <MenuItem Header="1x" Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="1"/>
-                                    <MenuItem Header="1.25x" Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="1.25"/>
-                                    <MenuItem Header="1.5x"  Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="1.5"/>
-                                    <MenuItem Header="1.75x" Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="1.75"/>
-                                    <MenuItem Header="2x"    Classes="speed-item"
-                                              Command="{Binding SetSpeedCommand}" CommandParameter="2"/>
-                                </MenuFlyout>
-                            </Button.Flyout>
-                            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                <material:MaterialIcon Kind="SpeedometerMedium" Width="18" Height="18" Foreground="White"/>
-                                <TextBlock Text="{Binding PlaybackSpeed, StringFormat='{}{0}x'}"
-                                           Foreground="White" FontSize="12" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+            <!-- Subtitles -->
+            <Button Name="SubtitleButton"
+                    Classes="icon-btn"
+                    IsVisible="{Binding ShowSubtitleButton}"
+                    ToolTip.Tip="{DynamicResource l.player.controls.subtitles_toggle}">
+                <Button.Flyout>
+                    <Flyout Placement="Top">
+                        <Border Width="260"
+                                MaxHeight="340"
+                                CornerRadius="14"
+                                Background="#F0141414"
+                                BorderBrush="#26FFFFFF"
+                                BorderThickness="1"
+                                BoxShadow="0 14 42 0 #90000000"
+                                Padding="8">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{DynamicResource l.player.controls.subtitles_toggle}"
+                                               FontSize="12.5" FontWeight="SemiBold"
+                                               Foreground="#CCFFFFFF" Margin="8,4,8,4"/>
+                                    <Rectangle Height="1" Fill="#1EFFFFFF" Margin="0,2,0,4"/>
+                                    <ItemsControl ItemsSource="{Binding SubtitleTracks}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="2"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="mpv:TrackInfo">
+                                                <Button Classes="track-menu-item"
+                                                        Click="OnTrackMenuItemClick">
+                                                    <Grid ColumnDefinitions="22,*">
+                                                        <material:MaterialIcon Grid.Column="0"
+                                                                               Kind="Check"
+                                                                               Width="14"
+                                                                               Height="14"
+                                                                               Foreground="{DynamicResource SystemAccentColor}"
+                                                                               VerticalAlignment="Center"
+                                                                               IsVisible="{Binding Selected}"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding DisplayName}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Flyout>
+                </Button.Flyout>
+                <material:MaterialIcon Kind="SubtitlesOutline" Width="21" Height="21" Foreground="White"/>
+            </Button>
 
-                        <!-- Subtitles -->
-                        <Button Name="SubtitleButton"
-                                Classes="icon-btn"
-                                IsVisible="{Binding ShowSubtitleButton}"
-                                ToolTip.Tip="{DynamicResource l.player.controls.subtitles_toggle}">
-                            <Button.Flyout>
-                                <Flyout Placement="Top">
-                                    <Border Width="240"
-                                            MaxHeight="330"
-                                            CornerRadius="14"
-                                            Background="#E6181818"
-                                            BorderBrush="#22FFFFFF"
-                                            BorderThickness="1"
-                                            Padding="6">
-                                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                                      VerticalScrollBarVisibility="Auto">
-                                            <ItemsControl ItemsSource="{Binding SubtitleTracks}">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <StackPanel Spacing="2"/>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="mpv:TrackInfo">
-                                                        <Button Classes="track-menu-item"
-                                                                Click="OnTrackMenuItemClick">
-                                                            <Grid ColumnDefinitions="20,*">
-                                                                <material:MaterialIcon Grid.Column="0"
-                                                                                       Kind="Check"
-                                                                                       Width="14"
-                                                                                       Height="14"
-                                                                                       Foreground="White"
-                                                                                       VerticalAlignment="Center"
-                                                                                       IsVisible="{Binding Selected}"/>
-                                                                <TextBlock Grid.Column="1"
-                                                                           Text="{Binding DisplayName}"
-                                                                           VerticalAlignment="Center"/>
-                                                            </Grid>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Border>
-                                </Flyout>
-                            </Button.Flyout>
-                            <material:MaterialIcon Kind="SubtitlesOutline" Width="21" Height="21" Foreground="White"/>
-                        </Button>
+            <!-- Audio tracks -->
+            <Button Name="AudioButton"
+                    Classes="icon-btn"
+                    IsVisible="{Binding ShowAudioButton}"
+                    ToolTip.Tip="{DynamicResource l.player.controls.audio_track_toggle}">
+                <Button.Flyout>
+                    <Flyout Placement="Top">
+                        <Border Width="260"
+                                MaxHeight="340"
+                                CornerRadius="14"
+                                Background="#F0141414"
+                                BorderBrush="#26FFFFFF"
+                                BorderThickness="1"
+                                BoxShadow="0 14 42 0 #90000000"
+                                Padding="8">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{DynamicResource l.player.controls.audio_track_toggle}"
+                                               FontSize="12.5" FontWeight="SemiBold"
+                                               Foreground="#CCFFFFFF" Margin="8,4,8,4"/>
+                                    <Rectangle Height="1" Fill="#1EFFFFFF" Margin="0,2,0,4"/>
+                                    <ItemsControl ItemsSource="{Binding AudioTracks}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="2"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="mpv:TrackInfo">
+                                                <Button Classes="track-menu-item"
+                                                        Click="OnTrackMenuItemClick">
+                                                    <Grid ColumnDefinitions="22,*">
+                                                        <material:MaterialIcon Grid.Column="0"
+                                                                               Kind="Check"
+                                                                               Width="14"
+                                                                               Height="14"
+                                                                               Foreground="{DynamicResource SystemAccentColor}"
+                                                                               VerticalAlignment="Center"
+                                                                               IsVisible="{Binding Selected}"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding DisplayName}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Flyout>
+                </Button.Flyout>
+                <material:MaterialIcon Kind="MusicNote" Width="21" Height="21" Foreground="White"/>
+            </Button>
 
-                        <!-- Audio tracks -->
-                        <Button Name="AudioButton"
-                                Classes="icon-btn"
-                                IsVisible="{Binding ShowAudioButton}"
-                                ToolTip.Tip="{DynamicResource l.player.controls.audio_track_toggle}">
-                            <Button.Flyout>
-                                <Flyout Placement="Top">
-                                    <Border Width="240"
-                                            MaxHeight="330"
-                                            CornerRadius="14"
-                                            Background="#E6181818"
-                                            BorderBrush="#22FFFFFF"
-                                            BorderThickness="1"
-                                            Padding="6">
-                                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                                      VerticalScrollBarVisibility="Auto">
-                                            <ItemsControl ItemsSource="{Binding AudioTracks}">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <StackPanel Spacing="2"/>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="mpv:TrackInfo">
-                                                        <Button Classes="track-menu-item"
-                                                                Click="OnTrackMenuItemClick">
-                                                            <Grid ColumnDefinitions="20,*">
-                                                                <material:MaterialIcon Grid.Column="0"
-                                                                                       Kind="Check"
-                                                                                       Width="14"
-                                                                                       Height="14"
-                                                                                       Foreground="White"
-                                                                                       VerticalAlignment="Center"
-                                                                                       IsVisible="{Binding Selected}"/>
-                                                                <TextBlock Grid.Column="1"
-                                                                           Text="{Binding DisplayName}"
-                                                                           VerticalAlignment="Center"/>
-                                                            </Grid>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Border>
-                                </Flyout>
-                            </Button.Flyout>
-                            <material:MaterialIcon Kind="MusicNote" Width="21" Height="21" Foreground="White"/>
-                        </Button>
+            <!-- Subtitle position -->
+            <Button Name="SubtitlePositionButton"
+                    Classes="icon-btn"
+                    ToolTip.Tip="{DynamicResource l.player.controls.subtitles_position_tip}"
+                    PointerReleased="OnSubtitlePositionButtonPointerReleased"
+                    IsVisible="{Binding ShowSubtitlePositionButton}">
+                <material:MaterialIcon Kind="FormatLineSpacing" Width="20" Height="20" Foreground="White"/>
+            </Button>
 
-                        <!-- Subtitle position -->
-                        <Button Name="SubtitlePositionButton"
-                                Classes="icon-btn"
-                                ToolTip.Tip="{DynamicResource l.player.controls.subtitles_position_tip}"
-                                IsVisible="{Binding ShowSubtitlePositionButton}">
-                            <material:MaterialIcon Kind="FormatLineSpacing" Width="21" Height="21" Foreground="White"/>
-                        </Button>
+            <!-- Subtitle style override -->
+            <Button Classes="icon-btn"
+                    Classes.active="{Binding SubtitleStyleOverrideEnabled}"
+                    ToolTip.Tip="{DynamicResource l.player.controls.subtitles_style}"
+                    Command="{Binding ToggleSubtitleStyleOverrideCommand}"
+                    IsVisible="{Binding ShowSubtitleStyleButton}">
+                <material:MaterialIcon Kind="FormatPaint" Width="20" Height="20" Foreground="White"/>
+            </Button>
 
-                        <!-- Subtitle style override -->
-                        <Button Classes="icon-btn"
-                                Classes.active="{Binding SubtitleStyleOverrideEnabled}"
-                                ToolTip.Tip="{DynamicResource l.player.controls.subtitles_style}"
-                                Command="{Binding ToggleSubtitleStyleOverrideCommand}"
-                                IsVisible="{Binding ShowSubtitleStyleButton}">
-                            <material:MaterialIcon Kind="FormatPaint" Width="21" Height="21" Foreground="White"/>
-                        </Button>
+            <!-- Screenshot -->
+            <Button Name="ScreenshotButton"
+                    Classes="icon-btn"
+                    ToolTip.Tip="{DynamicResource l.player.controls.screenshot}"
+                    PointerReleased="OnScreenshotButtonPointerReleased"
+                    IsVisible="{Binding ShowScreenshotButton}">
+                <material:MaterialIcon Kind="CameraOutline" Width="20" Height="20" Foreground="White"/>
+            </Button>
 
-                        <!-- Screenshot -->
-                            <Button Name="ScreenshotButton"
-                                    Classes="icon-btn"
-                                    ToolTip.Tip="{DynamicResource l.player.controls.screenshot}"
-                                    IsVisible="{Binding ShowScreenshotButton}">
-                                <material:MaterialIcon Kind="CameraOutline" Width="21" Height="21" Foreground="White"/>
-                            </Button>
+            <!-- Player settings -->
+            <controls:PlayerSettingsButton x:Name="SettingsBtn" />
 
-                        <!-- Player settings -->
-                        <controls:PlayerSettingsButton x:Name="SettingsBtn" />
-
-                    </StackPanel>
-                    </Border>
-                    </Grid>
-                </Grid>
+            <!-- Fullscreen -->
+            <Button Name="FullscreenButton"
+                    Classes="icon-btn"
+                    Click="OnFullscreenButtonClick"
+                    ToolTip.Tip="{DynamicResource l.player.controls.fullscreen}">
+                <material:MaterialIcon Kind="Fullscreen" Width="22" Height="22" Foreground="White"/>
+            </Button>
+        </StackPanel>
+    </Grid>
 </UserControl>
-
-

@@ -69,7 +69,10 @@ public partial class PlayerWindow
     {
         _controlsVisible = false;
         _lastControlsKeepAliveUtc = DateTime.MinValue;
-        if (_topBar != null) _topBar.Opacity = 0;
+        if (_topBar != null && !(DataContext is PlayerViewModel vm && (vm.Overlay.IsOsdVisible || vm.IsBufferingOrLoading)))
+        {
+            _topBar.Opacity = 0;
+        }
         if (_bottomBar != null) _bottomBar.Opacity = 0;
         Cursor = s_noneCursor;
 
@@ -84,8 +87,16 @@ public partial class PlayerWindow
         {
             if (_topBar != null)
             {
-                _topBar.IsHitTestVisible = false;
-                _topBar.IsVisible = false;
+                if (DataContext is PlayerViewModel vm && (vm.Overlay.IsOsdVisible || vm.IsBufferingOrLoading))
+                {
+                    _topBar.IsHitTestVisible = true;
+                    _topBar.IsVisible = true;
+                }
+                else
+                {
+                    _topBar.IsHitTestVisible = false;
+                    _topBar.IsVisible = false;
+                }
             }
             if (_bottomBar != null)
             {
@@ -119,6 +130,7 @@ public partial class PlayerWindow
         if (DataContext is not PlayerViewModel vm) return;
         if (!vm.AutoHideControls) return;
         if (!vm.IsPlaying && !string.IsNullOrEmpty(vm.VideoUrl)) return;
+        if (vm.IsBufferingOrLoading || vm.Overlay.IsOsdVisible) return;
         
         if (IsPointerOverUI())
             return;

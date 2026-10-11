@@ -191,10 +191,21 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                     PlayerMediaMetadata? initialMeta = null;
                     lock (_metadataGate)
                     {
-                        if (_latestMetadata != null && (message.State == null || string.IsNullOrEmpty(message.State.OriginalTitle) ||
-                            string.Equals(_latestMetadata.OriginalTitle, message.State.OriginalTitle, StringComparison.OrdinalIgnoreCase)))
+                        if (_latestMetadata != null)
                         {
-                            initialMeta = _latestMetadata;
+                            bool hashMatch = !string.IsNullOrEmpty(_latestMetadata.TorrentHash) &&
+                                              message.State != null &&
+                                              !string.IsNullOrEmpty(message.State.TorrentHash) &&
+                                              string.Equals(_latestMetadata.TorrentHash, message.State.TorrentHash, StringComparison.OrdinalIgnoreCase);
+
+                            bool titleMatch = message.State == null ||
+                                              string.IsNullOrEmpty(message.State.OriginalTitle) ||
+                                              string.Equals(_latestMetadata.OriginalTitle, message.State.OriginalTitle, StringComparison.OrdinalIgnoreCase);
+
+                            if (hashMatch || titleMatch)
+                            {
+                                initialMeta = _latestMetadata;
+                            }
                         }
                     }
 
@@ -210,6 +221,10 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                     if (message.State != null)
                     {
                         PlayerStateChanged?.Invoke(this, message.State);
+                    }
+                    else
+                    {
+                        PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsLoading = true });
                     }
                     break;
 

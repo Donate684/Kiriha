@@ -23,6 +23,7 @@ public record class ParsedMedia
     public string AnimeType { get; set; } = string.Empty;
     public TimeSpan? Position { get; set; }
     public TimeSpan? Duration { get; set; }
+    public string TorrentHash { get; set; } = string.Empty;
 
     public ParsedMedia WithEpisode(string newEpisode) => this with { Episode = newEpisode };
 }

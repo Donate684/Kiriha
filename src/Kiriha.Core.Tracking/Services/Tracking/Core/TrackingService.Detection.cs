@@ -79,6 +79,7 @@ public partial class TrackingService
             Position = TimeSpan.FromSeconds(state.Position),
             Duration = TimeSpan.FromSeconds(state.Duration),
             IsPlaying = state.IsPlaying,
+            TorrentHash = state.TorrentHash,
             Pid = 0
         };
 

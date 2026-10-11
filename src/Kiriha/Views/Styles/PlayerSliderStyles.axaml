@@ -1,9 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ===== Slider.timeline ===== -->
+    <!-- ===== Slider.timeline (Cinematic Full-Width Scrubber) ===== -->
     <Style Selector="Slider.timeline">
-        <Setter Property="Height" Value="28"/>
+        <Setter Property="Height" Value="24"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
@@ -16,10 +16,11 @@
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Name="DecTrack" Height="3" Background="{DynamicResource SystemAccentColor}" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <Border Name="DecTrack" Height="3.5" Background="{DynamicResource SystemAccentColor}" CornerRadius="2" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                                 <Border.Transitions>
                                                     <Transitions>
-                                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                                        <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut"/>
+                                                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18"/>
                                                     </Transitions>
                                                 </Border.Transitions>
                                             </Border>
@@ -33,10 +34,11 @@
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Name="IncTrack" Height="3" Background="#33FFFFFF" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <Border Name="IncTrack" Height="3.5" Background="#38FFFFFF" CornerRadius="2" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                                 <Border.Transitions>
                                                     <Transitions>
-                                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                                        <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut"/>
+                                                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18"/>
                                                     </Transitions>
                                                 </Border.Transitions>
                                             </Border>
@@ -49,14 +51,20 @@
                             <Thumb Name="thumb" Width="0" Height="0" ClipToBounds="False" Opacity="0">
                                 <Thumb.Transitions>
                                     <Transitions>
-                                        <DoubleTransition Property="Width" Duration="0:0:0.12" Easing="CubicEaseOut"/>
-                                        <DoubleTransition Property="Height" Duration="0:0:0.12" Easing="CubicEaseOut"/>
-                                        <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+                                        <DoubleTransition Property="Width" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                        <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
                                     </Transitions>
                                 </Thumb.Transitions>
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Ellipse Fill="{DynamicResource SystemAccentColor}"/>
+                                        <Grid>
+                                            <!-- Glowing outer ring -->
+                                            <Ellipse Width="15" Height="15" Fill="{DynamicResource SystemAccentColor}"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse Width="7" Height="7" Fill="White"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Grid>
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -66,22 +74,24 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <!-- Timeline hover: thicker track + show thumb -->
+    <!-- Timeline hover: thicker track + prominent glowing thumb -->
     <Style Selector="Slider.timeline:pointerover /template/ Border#DecTrack">
-        <Setter Property="Height" Value="5"/>
+        <Setter Property="Height" Value="6.5"/>
+        <Setter Property="CornerRadius" Value="3.25"/>
     </Style>
     <Style Selector="Slider.timeline:pointerover /template/ Border#IncTrack">
-        <Setter Property="Height" Value="5"/>
+        <Setter Property="Height" Value="6.5"/>
+        <Setter Property="CornerRadius" Value="3.25"/>
     </Style>
     <Style Selector="Slider.timeline:pointerover /template/ Thumb#thumb">
-        <Setter Property="Width" Value="14"/>
-        <Setter Property="Height" Value="14"/>
+        <Setter Property="Width" Value="15"/>
+        <Setter Property="Height" Value="15"/>
         <Setter Property="Opacity" Value="1"/>
     </Style>
 
     <!-- ===== Slider.volume ===== -->
     <Style Selector="Slider.volume">
-        <Setter Property="Height" Value="22"/>
+        <Setter Property="Height" Value="24"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
@@ -94,7 +104,13 @@
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Height="2.5" Background="{DynamicResource SystemAccentColor}" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                            <Border Name="VolDec" Height="3" Background="{DynamicResource SystemAccentColor}" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                                <Border.Transitions>
+                                                    <Transitions>
+                                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                                    </Transitions>
+                                                </Border.Transitions>
+                                            </Border>
                                         </Grid>
                                     </ControlTemplate>
                                 </RepeatButton.Template>
@@ -105,17 +121,29 @@
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Height="2.5" Background="#30FFFFFF" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                            <Border Name="VolInc" Height="3" Background="#33FFFFFF" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                                <Border.Transitions>
+                                                    <Transitions>
+                                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                                    </Transitions>
+                                                </Border.Transitions>
+                                            </Border>
                                         </Grid>
                                     </ControlTemplate>
                                 </RepeatButton.Template>
                             </RepeatButton>
                         </Track.IncreaseButton>
                         <Track.Thumb>
-                            <Thumb Width="10" Height="10" ClipToBounds="False">
+                            <Thumb Name="volThumb" Width="10" Height="10" ClipToBounds="False">
+                                <Thumb.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Width" Duration="0:0:0.12"/>
+                                        <DoubleTransition Property="Height" Duration="0:0:0.12"/>
+                                    </Transitions>
+                                </Thumb.Transitions>
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Ellipse Fill="{DynamicResource SystemAccentColor}"/>
+                                        <Ellipse Fill="White"/>
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -124,6 +152,16 @@
                 </Grid>
             </ControlTemplate>
         </Setter>
+    </Style>
+    <Style Selector="Slider.volume:pointerover /template/ Border#VolDec">
+        <Setter Property="Height" Value="4.5"/>
+    </Style>
+    <Style Selector="Slider.volume:pointerover /template/ Border#VolInc">
+        <Setter Property="Height" Value="4.5"/>
+    </Style>
+    <Style Selector="Slider.volume:pointerover /template/ Thumb#volThumb">
+        <Setter Property="Width" Value="13"/>
+        <Setter Property="Height" Value="13"/>
     </Style>
 
 </Styles>

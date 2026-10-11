@@ -16,6 +16,7 @@ public partial class TorrentsViewModel : ViewModelBase
     private readonly ITorrentFilterRepository _torrentFilterRepo;
     private readonly ITorrServerService _torrServer;
     private readonly ILocalizer _localizer;
+    private readonly IInternalPlayerServer? _internalPlayerServer;
 
     public BulkObservableCollection<TorrentEntity> Torrents { get; } = new();
 
@@ -59,6 +60,12 @@ public partial class TorrentsViewModel : ViewModelBase
     private string? _episodeSelectorError;
 
     [ObservableProperty]
+    private bool _isPlayerLaunching;
+
+    [ObservableProperty]
+    private string _playerLaunchingTitle = string.Empty;
+
+    [ObservableProperty]
     private TorrentEntity? _activeStreamingTorrent;
 
     [ObservableProperty]
@@ -73,7 +80,8 @@ public partial class TorrentsViewModel : ViewModelBase
         ISettingsService settingsService,
         ITorrentFilterRepository torrentFilterRepo,
         ITorrServerService torrServer,
-        ILocalizer localizer)
+        ILocalizer localizer,
+        IInternalPlayerServer? internalPlayerServer = null)
     {
         _rssService = rssService;
         _animeRepo = animeRepo;
@@ -81,6 +89,7 @@ public partial class TorrentsViewModel : ViewModelBase
         _torrentFilterRepo = torrentFilterRepo;
         _torrServer = torrServer;
         _localizer = localizer;
+        _internalPlayerServer = internalPlayerServer;
 
         LoadFilterSettings();
 

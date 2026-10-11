@@ -69,12 +69,52 @@ public partial class TrackingService
             NotifyPlayerMetadata(effectiveMedia, matched);
             UpdateDiscordPresence(effectiveMedia, matched);
 
+            if (_shikiMetadataService != null && (string.IsNullOrEmpty(matched.RussianTitle) || string.IsNullOrEmpty(matched.RussianSynopsis)))
+            {
+                LocalizeAndNotifyAsync(effectiveMedia, matched).SafeFireAndForget("TrackingService.LocalizeMatchedMedia");
+            }
+
             if (matched.Status != UserAnimeStatus.None)
                 _scrobbleService.StartScrobble(effectiveMedia, matched);
         }
         else
         {
             _discordService.UpdatePresence(media.AnimeTitle, media.Episode, 0, null, null, media.Position, media.Duration, null, media.IsPlaying);
+        }
+    }
+
+    private async Task LocalizeAndNotifyAsync(ParsedMedia media, AnimeEntity matched)
+    {
+        try
+        {
+            if (_shikiMetadataService != null)
+            {
+                await _shikiMetadataService.EnsureLocalizedAsync(matched).ConfigureAwait(false);
+            }
+
+            ParsedMedia? cur;
+            AnimeEntity? curMatched;
+            lock (_state)
+            {
+                cur = _currentMedia;
+                curMatched = _matchedAnime;
+            }
+
+            if (IsSameMedia(cur, media) && (curMatched == null || curMatched.Id == matched.Id))
+            {
+                lock (_state)
+                {
+                    _matchedAnime = matched;
+                }
+                NotifyPlayerMetadata(media, matched);
+                UpdateDiscordPresence(media, matched);
+                _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
+                    new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(matched)));
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Debug(ex, "TrackingService: Failed to localize matched anime {AnimeId}", matched.Id);
         }
     }
 
@@ -198,9 +238,6 @@ public partial class TrackingService
         ParsedMedia? media;
         lock (_state)
         {
-            if (_matchedAnime is null || _matchedAnime.Id != matched.Id)
-                return;
-
             _matchedAnime = matched;
             media = _currentMedia;
         }
@@ -226,7 +263,8 @@ public partial class TrackingService
             matched.EnglishTitle ?? string.Empty,
             media.Episode ?? string.Empty,
             matched.Id,
-            matched.Title ?? string.Empty);
+            matched.Title ?? string.Empty,
+            media.TorrentHash);
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
 
@@ -236,7 +274,25 @@ public partial class TrackingService
             matched.RussianTitle,
             matched.EnglishTitle,
             matched.Title,
-            media.Episode);
+            media.Episode,
+            media.TorrentHash);
+    }
+
+    private void ClearPlayerMetadata(ParsedMedia media)
+    {
+        if (!string.Equals(media.ProcessName, "KirihaInternal", StringComparison.Ordinal))
+            return;
+
+        var metadata = new PlayerMediaMetadata(
+            media.OriginalTitle,
+            string.Empty,
+            string.Empty,
+            media.Episode ?? string.Empty,
+            null,
+            media.AnimeTitle ?? string.Empty,
+            media.TorrentHash);
+
+        _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
     }
 
     private void UpdateDiscordPresence(ParsedMedia media, AnimeEntity matched)

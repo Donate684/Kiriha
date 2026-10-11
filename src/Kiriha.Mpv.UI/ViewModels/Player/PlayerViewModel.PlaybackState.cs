@@ -9,7 +9,11 @@ public partial class PlayerViewModel
     [ObservableProperty] private double _duration = 0;
     [ObservableProperty] private string _currentTimeString = "00:00";
     [ObservableProperty] private string _durationString = "--:--";
-    [ObservableProperty] private bool _isLoading;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBufferingOrLoading))]
+    [NotifyPropertyChangedFor(nameof(StreamStatusBadgeText))]
+    [NotifyPropertyChangedFor(nameof(ShowNonTorrentBuffering))]
+    private bool _isLoading;
     [ObservableProperty] private bool _hasPlaybackError;
     [ObservableProperty] private string _playbackStatusMessage = string.Empty;
     [ObservableProperty] private string _playbackErrorMessage = string.Empty;

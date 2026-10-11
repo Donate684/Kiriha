@@ -21,7 +21,8 @@
     "subtitles_position_tip": "ЛКМ: субтитры выше. ПКМ: ниже",
     "subtitles_style": "Стиль субтитров (U)",
     "screenshot": "Скриншот",
-    "mute_toggle": "Звук (M)"
+    "mute_toggle": "Звук (M)",
+    "fullscreen": "Во весь экран (F)"
   },
   "settings_adv": {
     "title": "Расширенные",

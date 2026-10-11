@@ -285,5 +285,32 @@ public static class AppConstants
     public static class Torrents
     {
         public const string TorrentHashLinkRegex = @"[?&]link=([0-9a-zA-Z]+)";
+
+        public const string NyaaDefaultTrackersQuery =
+            "&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce" +
+            "&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce" +
+            "&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce" +
+            "&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce" +
+            "&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce";
+
+        public const string DefaultPublicTrackers =
+            "http://nyaa.tracker.wf:7777/announce\n" +
+            "udp://open.stealth.si:80/announce\n" +
+            "udp://tracker.opentrackr.org:1337/announce\n" +
+            "udp://tracker.torrent.eu.org:451/announce\n" +
+            "udp://exodus.desync.com:6969/announce\n" +
+            "http://bt4.t-ru.org/ann?magnet\n" +
+            "http://retracker.local/announce\n" +
+            "http://retracker.mgts.by:80/announce\n" +
+            "http://tracker.city9x.com:2710/announce\n" +
+            "http://tracker.electro-torrent.pl:80/announce\n" +
+            "http://tracker.internetwarriors.net:1337/announce\n" +
+            "http://tracker2.itzmx.com:6961/announce\n" +
+            "udp://opentor.org:2710\n" +
+            "udp://public.popcorn-tracker.org:6969/announce\n" +
+            "http://bt.svao-ix.ru/announce\n" +
+            "udp://explodie.org:6969/announce\n" +
+            "wss://tracker.btorrent.xyz\n" +
+            "wss://tracker.openwebtorrent.com";
     }
 }

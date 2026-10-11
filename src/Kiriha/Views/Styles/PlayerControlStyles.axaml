@@ -27,10 +27,10 @@
         </Setter>
     </Style>
     <Style Selector="Button.icon-btn:pointerover /template/ Border">
-        <Setter Property="Background" Value="#1CFFFFFF"/>
+        <Setter Property="Background" Value="#22FFFFFF"/>
     </Style>
     <Style Selector="Button.icon-btn:pressed /template/ Border">
-        <Setter Property="Background" Value="#38FFFFFF"/>
+        <Setter Property="Background" Value="#3DFFFFFF"/>
     </Style>
     <Style Selector="Button.icon-btn.active /template/ Border">
         <Setter Property="Background" Value="#33FFFFFF"/>
@@ -39,14 +39,80 @@
         <Setter Property="Background" Value="#4CFFFFFF"/>
     </Style>
     <Style Selector="Button.icon-btn:pressed">
-        <Setter Property="RenderTransform" Value="scale(0.93)"/>
+        <Setter Property="RenderTransform" Value="scale(0.92)"/>
     </Style>
     <Style Selector="Button.icon-btn:disabled">
-        <Setter Property="Opacity" Value="0.38"/>
+        <Setter Property="Opacity" Value="0.32"/>
     </Style>
     <Style Selector="Button.state-action">
         <Setter Property="Background" Value="#22FFFFFF"/>
         <Setter Property="Padding" Value="8"/>
+    </Style>
+
+    <!-- ===== Primary Play/Pause Button (Netflix / Crunchyroll prominent circular action) ===== -->
+    <Style Selector="Button.primary-play-btn">
+        <Setter Property="Background" Value="#24FFFFFF"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="44"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="22"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        BorderBrush="#15FFFFFF"
+                        BorderThickness="1">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.08"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.primary-play-btn:pointerover /template/ Border">
+        <Setter Property="Background" Value="#40FFFFFF"/>
+    </Style>
+    <Style Selector="Button.primary-play-btn:pressed /template/ Border">
+        <Setter Property="Background" Value="#60FFFFFF"/>
+    </Style>
+    <Style Selector="Button.primary-play-btn:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.92)"/>
+    </Style>
+
+
+    <!-- ===== Episode badge ===== -->
+    <Style Selector="Border.episode-badge">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="6,2"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ===== Telemetry Pill (Torrent Streaming HUD) ===== -->
+    <Style Selector="Border.telemetry-pill">
+        <Setter Property="Background" Value="#40121212"/>
+        <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="11,4.5"/>
+        <Setter Property="BoxShadow" Value="0 4 16 0 #50000000"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.telemetry-pill:pointerover">
+        <Setter Property="Background" Value="#66181818"/>
+        <Setter Property="BorderBrush" Value="#40FFFFFF"/>
     </Style>
 
     <!-- ===== Top right window buttons ===== -->
@@ -104,17 +170,25 @@
     <!-- ===== Speed menu & track menu items ===== -->
     <Style Selector="MenuItem.speed-item">
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Padding" Value="14,7"/>
     </Style>
     <Style Selector="Button.track-menu-item">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="CornerRadius" Value="6"/>
-        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="10,8"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12"/>
+            </Transitions>
+        </Setter>
     </Style>
     <Style Selector="Button.track-menu-item:pointerover">
         <Setter Property="Background" Value="#22FFFFFF"/>
+    </Style>
+    <Style Selector="Button.track-menu-item:pressed">
+        <Setter Property="Background" Value="#35FFFFFF"/>
     </Style>
     <Style Selector="Button.track-menu-item TextBlock">
         <Setter Property="Foreground" Value="#E6FFFFFF"/>

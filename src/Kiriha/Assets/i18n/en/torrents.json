@@ -80,6 +80,7 @@
     "add_failed": "Failed to add torrent to TorrServer.",
     "searching_files": "Searching for video files in torrent...",
     "no_video": "No video files found in torrent.",
-    "playback_error": "Playback error: {0}"
+    "playback_error": "Playback error: {0}",
+    "launching_player": "Launching player..."
   }
 }

@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Feed;
@@ -43,7 +44,9 @@ internal static class NyaaTorrentParser
             Resolution = resolution ?? string.Empty,
             ReleaseGroup = group ?? string.Empty,
             DownloadLink = item.Element("link")?.Value ?? string.Empty,
-            MagnetLink = !string.IsNullOrEmpty(infoHash) ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}" : string.Empty,
+            MagnetLink = !string.IsNullOrEmpty(infoHash)
+                ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}{AppConstants.Torrents.NyaaDefaultTrackersQuery}"
+                : string.Empty,
             PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.UtcNow,
             Category = categoryStr,
             FormattedSize = sizeStr,

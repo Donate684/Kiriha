@@ -313,6 +313,56 @@
                 </Border>
             </Grid>
         </Border>
+
+        <!-- Player Launching Overlay -->
+        <Border Grid.Row="0" Grid.RowSpan="3"
+                Background="{DynamicResource ModalOverlayBackgroundBrush}"
+                IsVisible="{Binding IsPlayerLaunching}"
+                ZIndex="70">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="{DynamicResource ModalBackgroundFill}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                    BorderThickness="1" CornerRadius="16"
+                    MinWidth="360" MaxWidth="440"
+                    BoxShadow="0 12 40 0 #66000000"
+                    Padding="26,22" Margin="20">
+                <StackPanel Spacing="16" HorizontalAlignment="Center">
+                    <material:MaterialIcon Kind="Loading" Width="38" Height="38"
+                                           Foreground="{DynamicResource SystemAccentColor}"
+                                           HorizontalAlignment="Center">
+                        <material:MaterialIcon.Styles>
+                            <Style Selector="material|MaterialIcon">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
+                                        <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </material:MaterialIcon.Styles>
+                    </material:MaterialIcon>
+
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock Text="{DynamicResource l.torrents.streaming.launching_player}"
+                                   FontSize="15" FontWeight="Bold"
+                                   TextAlignment="Center"/>
+                        <TextBlock Text="{Binding PlayerLaunchingTitle}"
+                                   FontSize="12" Opacity="0.65"
+                                   TextTrimming="CharacterEllipsis"
+                                   TextAlignment="Center"
+                                   MaxWidth="360"/>
+                    </StackPanel>
+
+                    <Button Classes="ActionPill"
+                            HorizontalAlignment="Center"
+                            Command="{Binding CancelPlayerLaunchingCommand}"
+                            Padding="20,6" Margin="0,4,0,0">
+                        <TextBlock Text="{DynamicResource l.torrents.results.actions.cancel}"
+                                   FontSize="11.5" FontWeight="Medium"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </UserControl>
 

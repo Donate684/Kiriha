@@ -81,7 +81,14 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
     private void OnExternalMetadataReceived(PlayerMediaMetadata metadata)
     {
-        if (MatchesTorrentHash(metadata.TorrentHash) || MatchesOriginalTitle(metadata.OriginalTitle))
+        bool isMatch = MatchesTorrentHash(metadata.TorrentHash) ||
+                       (_animeId.HasValue && metadata.AnimeId.HasValue && _animeId.Value == metadata.AnimeId.Value) ||
+                       MatchesOriginalTitle(metadata.OriginalTitle) ||
+                       MatchesOriginalTitle(metadata.TitleRomaji) ||
+                       MatchesOriginalTitle(metadata.TitleEn) ||
+                       MatchesOriginalTitle(metadata.TitleRu);
+
+        if (isMatch)
         {
             Dispatcher.UIThread.Post(() => ApplyExternalMetadata(metadata));
         }

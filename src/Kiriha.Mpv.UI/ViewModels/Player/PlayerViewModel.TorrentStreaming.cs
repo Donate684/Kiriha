@@ -8,7 +8,10 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public partial class PlayerViewModel
 {
-    [ObservableProperty] private bool _isTorrentStream;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StreamStatusBadgeText))]
+    [NotifyPropertyChangedFor(nameof(ShowNonTorrentBuffering))]
+    private bool _isTorrentStream;
     [ObservableProperty] private string _torrentHash = string.Empty;
     [ObservableProperty] private string _torrentDownloadSpeedText = string.Empty;
     [ObservableProperty] private string _torrentUploadSpeedText = string.Empty;
@@ -20,8 +23,22 @@ public partial class PlayerViewModel
     [ObservableProperty] private string _torrentStatusText = string.Empty;
     [ObservableProperty] private string _torrentDetailsTooltip = string.Empty;
     [ObservableProperty] private bool _isBuffering;
-    [ObservableProperty] private bool _isRebuffering;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBufferingOrLoading))]
+    [NotifyPropertyChangedFor(nameof(StreamStatusBadgeText))]
+    [NotifyPropertyChangedFor(nameof(ShowNonTorrentBuffering))]
+    private bool _isRebuffering;
     [ObservableProperty] private string _bufferingStatusText = string.Empty;
+
+    public bool IsBufferingOrLoading => IsLoading || IsRebuffering;
+    public bool ShowNonTorrentBuffering => !IsTorrentStream && IsBufferingOrLoading;
+
+    public string StreamStatusBadgeText =>
+        IsRebuffering
+            ? (_localizer?.GetLoc("player.streaming.buffering") ?? "\u0411\u0443\u0444\u0435\u0440\u0438\u0437\u0430\u0446\u0438\u044f...")
+            : (IsTorrentStream
+                ? (_localizer?.GetLoc("player.streaming.active_stream") ?? "\u041f\u043e\u0442\u043e\u043a\u043e\u0432\u043e\u0435 \u0432\u0435\u0449\u0430\u043d\u0438\u0435")
+                : (_localizer?.GetLoc("player.state.loading") ?? "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430..."));
 
     public void UpdateRebufferingState()
     {

@@ -19,6 +19,7 @@ public partial class TrackingService : ITrackingService
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly MediaMatchingPipeline _pipeline;
+    private readonly IShikiMetadataService? _shikiMetadataService;
 
     // _state guards _currentMedia and _matchedAnime which are read/written from the
     // Anisthesia background thread (MediaDetected/MediaCleared) and from UI command handlers.
@@ -39,7 +40,8 @@ public partial class TrackingService : ITrackingService
         IScrobbleService scrobbleService,
         IUiDispatcher uiDispatcher,
         IEnumerable<ITrackerService> trackers,
-        MediaMatchingPipeline pipeline)
+        MediaMatchingPipeline pipeline,
+        IShikiMetadataService? shikiMetadataService = null)
     {
         _anisthesiaService = anisthesiaService;
         _internalPlayerServer = internalPlayerServer;
@@ -52,6 +54,7 @@ public partial class TrackingService : ITrackingService
         _uiDispatcher = uiDispatcher;
         _trackers = trackers;
         _pipeline = pipeline;
+        _shikiMetadataService = shikiMetadataService;
 
         _anisthesiaService.MediaDetected += OnMediaDetected;
         _anisthesiaService.MediaCleared += OnMediaCleared;

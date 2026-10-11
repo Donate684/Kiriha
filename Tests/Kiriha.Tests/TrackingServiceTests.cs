@@ -141,6 +141,59 @@ public class TrackingServiceTests : IDisposable
         _mockScrobbleService.Verify(x => x.StartScrobble(It.IsAny<ParsedMedia>(), It.IsAny<AnimeEntity>()), Times.Never);
     }
 
+    [Fact]
+    public async Task SetInternalMedia_SendsMetadataWithTorrentHashAndEnrichesWithShiki()
+    {
+        // Arrange
+        var mockPlayerServer = new Mock<IInternalPlayerServer>();
+        var mockShiki = new Mock<IShikiMetadataService>();
+        var match = new AnimeEntity { Id = 456, Title = "Sample Anime", Status = UserAnimeStatus.Watching };
+        _animeRepository.Collection.Add(match);
+
+        mockShiki
+            .Setup(x => x.EnsureLocalizedAsync(It.IsAny<AnimeEntity>(), It.IsAny<CancellationToken>()))
+            .Returns<AnimeEntity, CancellationToken>((a, _) =>
+            {
+                a.RussianTitle = "Localized Sample";
+                return Task.CompletedTask;
+            });
+
+        using var service = new TrackingService(
+            _mockAnisthesiaService.Object,
+            mockPlayerServer.Object,
+            _mockMappingService.Object,
+            _animeRepository,
+            _settingsService,
+            _mockDiscordService.Object,
+            _mockScrobbleService.Object,
+            _mockUiDispatcher.Object,
+            Array.Empty<ITrackerService>(),
+            new MediaMatchingPipeline(_mockMappingService.Object, Array.Empty<ITrackerService>()),
+            mockShiki.Object
+        );
+
+        var state = new InternalPlayerState
+        {
+            AnimeTitle = "Sample Anime",
+            OriginalTitle = "Sample.Anime.E01.mkv",
+            Episode = "1",
+            TorrentHash = "deadbeef1234",
+            IsPlaying = true
+        };
+
+        _mockMappingService
+            .Setup(x => x.GetIdFromTitleAsync(state.OriginalTitle, It.IsAny<IEnumerable<AnimeEntity>>()))
+            .ReturnsAsync(456);
+
+        // Act
+        await service.SetInternalMediaAsync(state);
+
+        // Assert: SendMetadataAsync was invoked with the matching TorrentHash
+        mockPlayerServer.Verify(x => x.SendMetadataAsync(
+            It.Is<PlayerMediaMetadata>(m => m.TorrentHash == "deadbeef1234"),
+            It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+
     public void Dispose()
     {
         _trackingService.Dispose();
