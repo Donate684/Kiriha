@@ -14,6 +14,7 @@ Indispensable tool for those who care more about meticulously tracking “Chines
 *   **Discord Rich Presence:** Automatically shares the currently watched title, poster, episode number, and elapsed time to your **Discord** status.
 *   **Automatic Scrobbling:** The background **Anisthesia** engine and **AnitomySharp** parser recognize titles and episode numbers on the fly from files and Windows media sessions without a single click.
 *   **Built-in Player:** Native engine powered by **libmpv**.
+*   **Torrent Streaming (TorrServer):** Direct in-memory BitTorrent streaming into **libmpv** without downloading files to disk. Real-time player overlay displaying download rate, active peer count, and pre-buffering progress.
 
 ## Requirements
 
@@ -30,13 +31,15 @@ Indispensable tool for those who care more about meticulously tracking “Chines
 *   **Windows 10/11 (x64)**
 *   **libmpv:**
     *   **Windows:** Automatically downloaded via script, or placed in `subprojects/mpv/`
+*   **TorrServer:**
+    *   **Windows:** Automatically downloaded via script, or placed in `subprojects/torrserver/`
 
 ---
 
 ### Quick Build
 
 #### Windows:
-Run the automated build script (downloads latest `libmpv`, compiles solution, and executes unit tests):
+Run the automated build script (downloads latest `libmpv` and `TorrServer`, compiles solution, and executes unit tests):
 ```build.bat```
 
 ### Manual Build
@@ -50,9 +53,10 @@ git clone https://github.com/Donate684/kiriha.git
 cd kiriha
 ```
 
-2. Download libmpv binaries:
-```
+2. Download native dependencies (`libmpv` and `TorrServer`):
+```powershell
 powershell -ExecutionPolicy Bypass -File scripts\download-mpv.ps1
+powershell -ExecutionPolicy Bypass -File scripts\download-torrserver.ps1
 ```
 
 3. Compile the solution:

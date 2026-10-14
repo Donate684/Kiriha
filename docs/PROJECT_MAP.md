@@ -1,7 +1,7 @@
 # Kiriha — Карта архитектуры и устройства проекта
 
-> **Версия:** 1.5.1+  
-> **Стек:** .NET 11.0 (C# 15), Avalonia UI 12.1.3, Entity Framework Core 11 (SQLite), libmpv  
+> **Версия:** 1.7.1+  
+> **Стек:** .NET 11.0 (C# 15), Avalonia UI 12.1.4, Entity Framework Core 11 (SQLite), libmpv, TorrServer  
 > **Платформа:** Windows (x64)
 
 Документ представляет собой системную карту архитектуры приложения Kiriha для разработчиков и ИИ-ассистентов, а также реестр выявленного технического долга и легаси-компонентов.
@@ -10,7 +10,7 @@
 
 ## 1. Обзор решения (Solution Overview)
 
-Kiriha — настольное приложение на Avalonia UI для каталогизации, трекинга и автоматического скробблинга аниме (MyAnimeList, Shikimori, AniList), парсинга расписаний выхода серий, поиска релизов через Nyaa.si и воспроизведения видео через встроенный `libmpv`.
+Kiriha — настольное приложение на Avalonia UI для каталогизации, трекинга и автоматического скробблинга аниме (MyAnimeList, Shikimori, AniList), парсинга расписаний выхода серий, поиска релизов через Nyaa.si, потокового воспроизведения торрентов через TorrServer и воспроизведения видео через встроенный `libmpv`.
 
 ### Структура проектов (.csproj)
 
@@ -20,11 +20,11 @@ Kiriha.sln
 ├── src/
 │   ├── Kiriha.Core.Domain/           # Чистые доменные сущности, DTO, перечисления, константы (0 зависимостей)
 │   ├── Kiriha.Core.Abstractions/     # Контракты репозиториев, сервисов и системных интерфейсов
-│   ├── Kiriha.Infrastructure/        # Сетевые кеши, Win32 API, SMTC, Discord RPC, парсер AnitomySharp, Anisthesia
+│   ├── Kiriha.Infrastructure/        # TorrServer, сетевые кеши, Win32 API, SMTC, Discord RPC, AnitomySharp, Anisthesia
 │   ├── Kiriha.Data/                  # EF Core SQLite, миграции, реализации репозиториев
 │   ├── Kiriha.Core.Tracking/         # API-клиенты (MAL, Shiki, AniList), синхронизация списков, аир-инфо, Nyaa RSS
 │   ├── Kiriha.Mpv/                   # C# P/Invoke обертка над native libmpv-2.dll, цикл событий, рендерер OpenGL
-│   ├── Kiriha.Mpv.UI/                # ViewModels и контроллеры плеера для легковесного режима
+│   ├── Kiriha.Mpv.UI/                # ViewModels и контроллеры плеера, оверлей торрент-стриминга
 │   └── Kiriha/                       # Главное приложение: Avalonia XAML Views, ViewModels, DI Host, навигация
 │
 └── tests/
@@ -93,11 +93,12 @@ graph TD
 * **Роль:** Интерфейсы и контракты.
 * **Группы контрактов:**
   - `Repositories/`: `IUserAnimeRepository`, `IMetadataRepository`, `IAnimeRepository`, `IHistoryRepository`, `ISyncTaskRepository`, `IEpisodeReleaseRepository`, `IHttpCacheRepository`, `ITorrentFilterRepository`, `ISeasonalHiddenRepository`, `IAnimeCountryRepository`.
-  - `Services/`: `IMalApiService`, `IShikiApiService`, `IAniListApiService`, `ITrackerService`, `ISyncManager`, `IAnimeSyncOrchestrator`, `IAiringInfoService`, `IFranchiseService`, `IHistoryService`, `ISettingsService`, `INotificationService`, `IDiscordService`, `ILocalizer`.
+  - `Services/`: `IMalApiService`, `IShikiApiService`, `IAniListApiService`, `ITrackerService`, `ISyncManager`, `IAnimeSyncOrchestrator`, `IAiringInfoService`, `IFranchiseService`, `IHistoryService`, `ISettingsService`, `INotificationService`, `IDiscordService`, `ILocalizer`, `ITorrServerService`.
 
 ### 3.3. `Kiriha.Infrastructure`
 * **Роль:** Низкоуровневые сервисы ОС и внешних библиотек.
 * **Ключевые компоненты:**
+  - `TorrServer/`: интеграция с движком TorrServer (`TorrServerService`): запуск локального процесса `torrserver.exe`, настройка RAM-кеша (0 байт на диске), загрузка торрентов, опрос прогресса и авто-дроп из памяти.
   - `Tracking/Anisthesia/`: модуль обнаружения внешних плееров (MPC-HC, mpv, VLC, PotPlayer) через Win32 хэндлы окон и аудио-сессии WASAPI.
   - `Utils/Parsing/AnitomySharp/`: порт Anitomy C++ для токенизации и распознавания имен файлов аниме (номер серии, группа ансаба, разрешение).
   - `Infrastructure/Http/HttpConditionalCache.cs`: поддержка условных HTTP GET (ETag / 304 Not Modified).
@@ -122,14 +123,15 @@ graph TD
 ### 3.6. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
 * **Роль:** Видеоплеер.
 * `Kiriha.Mpv`: низкоуровневая обертка P/Invoke `libmpv-2.dll`, OpenGL контекст, захват скриншотов, событийный цикл плеера.
-* `Kiriha.Mpv.UI`: `PlayerViewModel`, `PlayerPlaybackController`, настройки плеера.
+* `Kiriha.Mpv.UI`: `PlayerViewModel`, `PlayerPlaybackController`, оверлей потокового воспроизведения торрентов в реальном времени (скорость, пиры, буфер в `PlayerViewModel.TorrentStreaming.cs`), настройки плеера.
 
 ### 3.7. `Kiriha` (Основное приложение)
 * **Роль:** UI на Avalonia UI, композиция DI, точка входа (`Program.cs`, `App.axaml.cs`).
 * **Ключевые компоненты:**
   - `Composition/`: модульная регистрация DI (`DataServicesRegistration`, `TrackingServicesRegistration`, `BackgroundServicesRegistration`, `UiServicesRegistration`).
   - `Services/AppLifecycle/`: супервизор жизненного цикла (`AppStartupCoordinator`), запуск в обычном режиме или в `--player` режиме для ассоциации файлов.
-  - `ViewModels/` и `Views/`: экраны списков (`AnimeListView`), сезонника (`SeasonalView`), плеера (`PlayerWindow`), аналитики (`AnalyticsView`), торрентов (`TorrentsView`), настроек (`SettingsView`).
+  - `Services/AppLifecycle/Shutdown/`: graceful shutdown хэндлеры (`TorrServerShutdownHandler`, `PlayerResidentShutdownHandler`, `HostedServicesShutdownHandler`).
+  - `ViewModels/` и `Views/`: экраны списков (`AnimeListView`), сезонника (`SeasonalView`), плеера (`PlayerWindow`), аналитики (`AnalyticsView`), торрентов (`TorrentsView` — поиск Nyaa, фильтрация и прямой запуск стриминга), настроек (`SettingsView`).
 
 ---
 
@@ -145,6 +147,10 @@ graph TD
    - Слабосвязанные события между компонентами передаются через `CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default`.
 4. **Avalonia UI:**
    - Включены скомпилированные биндинги (`AvaloniaUseCompiledBindingsByDefault = true`). Все биндинги строго типизированы через `x:DataType`.
+5. **Потоковое воспроизведение торрентов (TorrServer):**
+   - Локальный процесс `torrserver.exe` управляется сервисом `TorrServerService` (порт по умолчанию: 8090, скачивается скриптом `scripts/download-torrserver.ps1`).
+   - Настройки по умолчанию выделяют буфер в оперативной памяти (RAM cache, 0 disk bytes) для исключения износа диска.
+   - Ссылка на воспроизведение передаётся напрямую в `libmpv` (HTTP loopback), а статус буферизации и соединения транслируется в плеер в реальном времени.
 
 ---
 
