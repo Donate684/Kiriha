@@ -4,10 +4,11 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
+using Microsoft.Extensions.Hosting;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public partial class TrackingService : ITrackingService
+public partial class TrackingService : ITrackingService, IHostedService
 {
     private readonly IExternalMediaDetector _anisthesiaService;
     private readonly IInternalPlayerServer _internalPlayerServer;
@@ -63,8 +64,28 @@ public partial class TrackingService : ITrackingService
 
     private void OnPlayerStateChanged(object? sender, InternalPlayerState e) => SetInternalMedia(e);
 
+    private int _disposed;
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        if (_internalPlayerServer.LatestState is { } existingState && !existingState.IsClosed)
+        {
+            SetInternalMedia(existingState);
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        Dispose();
+        return Task.CompletedTask;
+    }
+
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
         _internalPlayerServer.PlayerStateChanged -= OnPlayerStateChanged;
         _anisthesiaService.MediaDetected -= OnMediaDetected;
         _anisthesiaService.MediaCleared -= OnMediaCleared;

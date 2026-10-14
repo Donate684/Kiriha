@@ -21,6 +21,9 @@ internal static class BackgroundServicesRegistration
 {
     public static IServiceCollection AddKirihaBackgroundServices(this IServiceCollection services)
     {
+        // Core tracking & scrobbler service runs in background as IHostedService
+        services.AddForwardedSingleton<TrackingService, IHostedService>();
+
         // IPC / player HTTP server
         services.AddForwardedSingleton<Kiriha.Infrastructure.Tracking.Integration.InternalPlayerServer, IHostedService>();
 

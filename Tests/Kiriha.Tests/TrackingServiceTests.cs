@@ -194,6 +194,51 @@ public class TrackingServiceTests : IDisposable
             It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
 
+    [Fact]
+    public async Task StartAsync_WhenPlayerServerHasExistingState_PicksUpStateAndSetsMedia()
+    {
+        // Arrange
+        var mockPlayerServer = new Mock<IInternalPlayerServer>();
+        var existingState = new InternalPlayerState
+        {
+            AnimeTitle = "Existing Anime",
+            OriginalTitle = "Existing Anime [1080p].mkv",
+            Episode = "2",
+            IsPlaying = true,
+            Position = 50,
+            Duration = 1400
+        };
+        mockPlayerServer.Setup(x => x.LatestState).Returns(existingState);
+
+        var match = new AnimeEntity { Id = 789, Title = "Existing Anime", Status = UserAnimeStatus.Watching };
+        _animeRepository.Collection.Add(match);
+
+        _mockMappingService
+            .Setup(x => x.GetIdFromTitleAsync(existingState.OriginalTitle, It.IsAny<IEnumerable<AnimeEntity>>()))
+            .ReturnsAsync(789);
+
+        using var service = new TrackingService(
+            _mockAnisthesiaService.Object,
+            mockPlayerServer.Object,
+            _mockMappingService.Object,
+            _animeRepository,
+            _settingsService,
+            _mockDiscordService.Object,
+            _mockScrobbleService.Object,
+            _mockUiDispatcher.Object,
+            Array.Empty<ITrackerService>(),
+            new MediaMatchingPipeline(_mockMappingService.Object, Array.Empty<ITrackerService>())
+        );
+
+        // Act
+        await service.StartAsync(CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(service.CurrentMedia);
+        Assert.Equal("Existing Anime", service.CurrentMedia.AnimeTitle);
+        Assert.Equal("2", service.CurrentMedia.Episode);
+    }
+
     public void Dispose()
     {
         _trackingService.Dispose();

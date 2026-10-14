@@ -27,6 +27,7 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
     private readonly HashSet<NamedPipeServerStream> _currentPipes = new();
 
     private readonly Lock _metadataGate = new();
+    private readonly Lock _stateGate = new();
     private readonly string _pipeName;
 
     public InternalPlayerServer(string pipeName = InternalPlayerBridge.PipeName)
@@ -35,6 +36,18 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
     }
 
     private PlayerMediaMetadata? _latestMetadata;
+    private InternalPlayerState? _latestState;
+
+    public InternalPlayerState? LatestState
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _latestState;
+            }
+        }
+    }
 
     public async Task SendMetadataAsync(PlayerMediaMetadata metadata, CancellationToken cancellationToken = default)
     {
@@ -166,6 +179,10 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
             if (noClientsLeft)
             {
                 Log.Information("InternalPlayerServer: All players disconnected. Clearing media.");
+                lock (_stateGate)
+                {
+                    _latestState = null;
+                }
                 PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsClosed = true });
             }
         }
@@ -220,22 +237,39 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
 
                     if (message.State != null)
                     {
+                        lock (_stateGate)
+                        {
+                            _latestState = message.State;
+                        }
                         PlayerStateChanged?.Invoke(this, message.State);
                     }
                     else
                     {
-                        PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsLoading = true });
+                        var loading = new InternalPlayerState { IsLoading = true };
+                        lock (_stateGate)
+                        {
+                            _latestState = loading;
+                        }
+                        PlayerStateChanged?.Invoke(this, loading);
                     }
                     break;
 
                 case InternalPlayerIpcMessage.TypeState:
                     if (message.State != null)
                     {
+                        lock (_stateGate)
+                        {
+                            _latestState = message.State;
+                        }
                         PlayerStateChanged?.Invoke(this, message.State);
                     }
                     break;
 
                 case InternalPlayerIpcMessage.TypeClosed:
+                    lock (_stateGate)
+                    {
+                        _latestState = null;
+                    }
                     PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsClosed = true });
                     break;
 
@@ -253,6 +287,10 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
             var state = JsonSerializer.Deserialize(line, InternalPlayerStateJsonContext.Default.InternalPlayerState);
             if (state != null)
             {
+                lock (_stateGate)
+                {
+                    _latestState = state;
+                }
                 PlayerStateChanged?.Invoke(this, state);
             }
         }
@@ -294,6 +332,11 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                 try { pipe.Dispose(); } catch { }
             }
             _currentPipes.Clear();
+        }
+
+        lock (_stateGate)
+        {
+            _latestState = null;
         }
 
         lock (_clientsGate)
