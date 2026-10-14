@@ -45,8 +45,7 @@ public partial class PlayerWindow
         }
 
         // Fast-path: if controls are already visible, just restart the timer
-        _hideTimer.Stop();
-        _hideTimer.Start();
+        ResetHideTimer();
     }
 
     private void OnTimelinePointerExited(object? sender, PointerEventArgs e)

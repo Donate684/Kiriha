@@ -17,9 +17,12 @@ public partial class PlayerWindow
     {
         if (sender is not PlayerViewModel vm) return;
 
-        if (e.PropertyName == nameof(PlayerViewModel.AutoHideControls) && !vm.AutoHideControls)
+        if (e.PropertyName == nameof(PlayerViewModel.AutoHideControls))
         {
-            ShowControls();
+            if (!vm.AutoHideControls)
+                ShowControls();
+            else if (_controlsVisible)
+                ResetHideTimer();
         }
         else if (e.PropertyName == nameof(PlayerViewModel.IsBufferingOrLoading))
         {
@@ -32,15 +35,33 @@ public partial class PlayerWindow
                     _topBar.IsHitTestVisible = true;
                 }
             }
-            else if (!_controlsVisible && !vm.Overlay.IsOsdVisible)
+            else
             {
-                if (_topBar != null)
+                if (!_controlsVisible && !vm.Overlay.IsOsdVisible)
                 {
-                    _topBar.Opacity = 0;
-                    _hitTestDisableTimer.Stop();
-                    _hitTestDisableTimer.Start();
+                    if (_topBar != null)
+                    {
+                        _topBar.Opacity = 0;
+                        _hitTestDisableTimer.Stop();
+                        _hitTestDisableTimer.Start();
+                    }
+                }
+                else if (_controlsVisible)
+                {
+                    ResetHideTimer();
                 }
             }
+        }
+        else if (e.PropertyName == nameof(PlayerViewModel.IsPlaying))
+        {
+            if (vm.IsPlaying && _controlsVisible)
+            {
+                ResetHideTimer();
+            }
+        }
+        else if (e.PropertyName == nameof(PlayerViewModel.AutoHideTimeout))
+        {
+            UpdateHideTimerInterval();
         }
     }
 
@@ -58,13 +79,20 @@ public partial class PlayerWindow
                     _topBar.IsHitTestVisible = true;
                 }
             }
-            else if (!_controlsVisible && DataContext is PlayerViewModel vm && !vm.IsBufferingOrLoading)
+            else
             {
-                if (_topBar != null)
+                if (!_controlsVisible && DataContext is PlayerViewModel vm && !vm.IsBufferingOrLoading)
                 {
-                    _topBar.Opacity = 0;
-                    _hitTestDisableTimer.Stop();
-                    _hitTestDisableTimer.Start();
+                    if (_topBar != null)
+                    {
+                        _topBar.Opacity = 0;
+                        _hitTestDisableTimer.Stop();
+                        _hitTestDisableTimer.Start();
+                    }
+                }
+                else if (_controlsVisible)
+                {
+                    ResetHideTimer();
                 }
             }
         }

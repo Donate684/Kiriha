@@ -196,6 +196,8 @@ public partial class PlayerViewModel
         }
     }
 
+    public bool IsScrubbing => _timeline.IsScrubbing;
+
     public void BeginScrub()
     {
         _timeline.BeginScrub();

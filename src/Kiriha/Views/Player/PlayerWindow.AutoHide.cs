@@ -34,6 +34,14 @@ public partial class PlayerWindow
         _hideTimer.Start();
     }
 
+    private void ResetHideTimer()
+    {
+        if (!_controlsVisible) return;
+        _hideTimer.Stop();
+        UpdateHideTimerInterval();
+        _hideTimer.Start();
+    }
+
     private void ShowControls()
     {
         _hitTestDisableTimer.Stop();
@@ -59,10 +67,7 @@ public partial class PlayerWindow
         }
 
         _lastControlsKeepAliveUtc = now;
-        // Reset the hide timer
-        _hideTimer.Stop();
-        UpdateHideTimerInterval();
-        _hideTimer.Start();
+        ResetHideTimer();
     }
 
     private void HideControls()
@@ -108,9 +113,6 @@ public partial class PlayerWindow
 
     private bool IsPointerOverUI()
     {
-        if (_topBar?.IsPointerOver == true || _bottomBar?.IsPointerOver == true)
-            return true;
-
         if (IsSettingsOverlayVisible())
             return true;
 
@@ -120,21 +122,42 @@ public partial class PlayerWindow
         if (_settingsButton?.Flyout?.IsOpen == true)
             return true;
 
+        if (DataContext is PlayerViewModel vm && vm.IsScrubbing)
+            return true;
+
         return false;
     }
 
     private void OnHideTimerTick(object? sender, EventArgs e)
     {
-        _hideTimer.Stop();
-        
-        if (DataContext is not PlayerViewModel vm) return;
-        if (!vm.AutoHideControls) return;
-        if (!vm.IsPlaying && !string.IsNullOrEmpty(vm.VideoUrl)) return;
-        if (vm.IsBufferingOrLoading || vm.Overlay.IsOsdVisible) return;
+        if (!_controlsVisible)
+        {
+            _hideTimer.Stop();
+            return;
+        }
+
+        if (DataContext is not PlayerViewModel vm)
+        {
+            _hideTimer.Stop();
+            return;
+        }
+
+        if (!vm.AutoHideControls)
+        {
+            _hideTimer.Stop();
+            return;
+        }
+
+        if (!vm.IsPlaying && !string.IsNullOrEmpty(vm.VideoUrl))
+            return;
+
+        if (vm.IsBufferingOrLoading || vm.Overlay.IsOsdVisible)
+            return;
         
         if (IsPointerOverUI())
             return;
 
+        _hideTimer.Stop();
         HideControls();
     }
 
@@ -153,8 +176,7 @@ public partial class PlayerWindow
         }
 
         // Fast-path: if controls are already visible, just restart the timer
-        _hideTimer.Stop();
-        _hideTimer.Start();
+        ResetHideTimer();
     }
 
     private void OnGridPointerExited(object? sender, PointerEventArgs e)
