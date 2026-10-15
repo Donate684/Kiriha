@@ -164,25 +164,23 @@
 
                                     <!-- Center Info Area -->
                                     <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
-                                        <!-- Title Row -->
+                                        <!-- Title -->
+                                        <TextBlock Text="{Binding DisplayTitle}"
+                                                   ToolTip.Tip="{Binding Title}"
+                                                   FontSize="12" FontWeight="Medium"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"/>
+
+                                        <!-- Metadata chips & stats -->
                                         <WrapPanel Orientation="Horizontal" ItemWidth="NaN" VerticalAlignment="Center">
                                             <!-- Release Group Chip -->
                                             <Border Classes="GroupChip" Margin="0,0,6,0"
                                                     IsVisible="{Binding ReleaseGroup, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                                 <TextBlock Text="{Binding ReleaseGroup}"
                                                            FontSize="10" FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource SystemAccentColor}"/>
+                                                           Foreground="{DynamicResource AnalyticsSectionGreenBrush}"/>
                                             </Border>
 
-                                            <!-- Raw / parsed title -->
-                                            <TextBlock Text="{Binding Title}"
-                                                       FontSize="12" FontWeight="Medium"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       VerticalAlignment="Center"/>
-                                        </WrapPanel>
-
-                                        <!-- Metadata chips & stats -->
-                                        <WrapPanel Orientation="Horizontal" ItemWidth="NaN" VerticalAlignment="Center">
                                             <!-- Resolution Chip: 1080p highlighted -->
                                             <Border Classes="P1080Chip" Margin="0,0,6,0"
                                                     IsVisible="{Binding Is1080p}">
@@ -310,4 +308,55 @@
         </Border>
     </DataTemplate>
 
+    <DataTemplate x:Key="OnlineAnimeItemTemplate" DataType="vmTorrents:OnlineAnimeItem">
+        <Border Classes="TorrentCard" Margin="0,0,16,8" Padding="12,10">
+            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="14">
+                <!-- Thumbnail Poster -->
+                <Border Grid.Column="0" Width="48" Height="68" CornerRadius="6" ClipToBounds="True"
+                        Background="{DynamicResource SubtleFillColorTertiary}" VerticalAlignment="Center">
+                    <Image core:CachedImage.Source="{Binding ThumbnailUrl}"
+                           Stretch="UniformToFill"/>
+                </Border>
+
+                <!-- Info: Title and Provider Badge -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="13" FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis" MaxLines="2"/>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <!-- Provider badge -->
+                        <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                BorderThickness="1"
+                                CornerRadius="4" Padding="6,2">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <material:MaterialIcon Kind="Web" Width="12" Height="12"
+                                                       Foreground="{DynamicResource SystemAccentColor}"
+                                                       VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding ProviderName}" FontSize="10.5" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Action Button: Open Details / Episodes -->
+                <Button Grid.Column="2" Classes="ActionPill PlayPill"
+                        Command="{Binding $parent[UserControl].((vmTorrents:TorrentsViewModel)DataContext).OpenOnlineAnimeCommand}"
+                        CommandParameter="{Binding}"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <material:MaterialIcon Kind="Play" Width="14" Height="14"
+                                               Foreground="{DynamicResource AnalyticsSectionGreenBrush}"/>
+                        <TextBlock Text="{DynamicResource l.torrents.online.play_btn}"
+                                   FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+    </DataTemplate>
 </ResourceDictionary>

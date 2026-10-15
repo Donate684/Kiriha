@@ -1,5 +1,7 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Streaming.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Infrastructure.Tracking.Integration;
@@ -15,6 +17,11 @@ namespace Kiriha.ViewModels.Settings;
 
 public partial class SettingsViewModel : ViewModelBase
 {
+    public const int StreamingSectionIndex = 8;
+
+    [ObservableProperty]
+    private int _selectedSectionIndex;
+
     public SettingsPlaybackViewModel Playback { get; }
     public SettingsUiViewModel Ui { get; }
     public SettingsSystemViewModel System { get; }
@@ -22,6 +29,8 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsAuthViewModel Auth { get; }
     public SettingsUpdateViewModel Update { get; }
     public SettingsCacheViewModel Cache { get; }
+
+    public SettingsStreamingViewModel Streaming { get; }
 
     public SettingsCustomLinksViewModel CustomLinks { get; }
 
@@ -43,7 +52,8 @@ public partial class SettingsViewModel : ViewModelBase
         SystemIntegrationService systemIntegrationService,
         FaviconService faviconService,
         IStartupManager startupManager,
-        IAnimeRefreshService? refreshService = null)
+        IAnimeRefreshService? refreshService = null,
+        Anime365HostResolver? anime365HostResolver = null)
     {
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
@@ -54,6 +64,7 @@ public partial class SettingsViewModel : ViewModelBase
         Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel, localizationService);
 
         CustomLinks = new SettingsCustomLinksViewModel(settingsService, faviconService);
+        Streaming = new SettingsStreamingViewModel(settingsService, anime365HostResolver);
     }
 }
 

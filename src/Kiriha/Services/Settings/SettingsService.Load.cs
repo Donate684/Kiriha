@@ -41,6 +41,7 @@ public partial class SettingsService
                 var torrentsConfig = TryLoadWithBackup(_torrentsSettingsPath, AppSettingsJsonContext.Default.TorrentConfig);
                 if (torrentsConfig != null)
                 {
+                    DecryptOnlineStreamingConfig(torrentsConfig);
                     loaded.Torrents = torrentsConfig;
                 }
 

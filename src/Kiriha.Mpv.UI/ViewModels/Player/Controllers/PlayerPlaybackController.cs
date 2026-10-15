@@ -49,7 +49,7 @@ public sealed class PlayerPlaybackController
     public void WriteWatchLaterConfig() => _player?.WriteWatchLaterConfig();
     public void DeleteWatchLaterConfig() => _player?.DeleteWatchLaterConfig();
     public void SetSavePositionOnQuit(bool enabled) => _player?.SetSavePositionOnQuit(enabled);
-    public void AddSubtitle(string path) => _player?.AddSubtitle(path);
+    public void AddSubtitle(string path, bool select = true) => _player?.AddSubtitle(path, select);
     public void AddAudioTrack(string path) => _player?.AddAudioTrack(path);
     public void Play() => _player?.Play();
     public void Pause() => _player?.Pause();

@@ -18,8 +18,17 @@ public partial class MainWindowViewModel
     [RelayCommand]
     public void NavigateSettings()
     {
+        NavigateSettingsTo(-1);
+    }
+
+    public void NavigateSettingsTo(int sectionIndex)
+    {
         if (IsNavigationBlocked) return;
-        EnsureSettingsViewModel();
+        var vm = EnsureSettingsViewModel();
+        if (sectionIndex >= 0)
+        {
+            vm.SelectedSectionIndex = sectionIndex;
+        }
         IsSettingsOpen = true;
         IsSettingsSelected = true;
     }

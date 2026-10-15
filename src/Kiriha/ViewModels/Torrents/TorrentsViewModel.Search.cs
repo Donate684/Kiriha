@@ -29,7 +29,9 @@ public partial class TorrentsViewModel
             }
             else
             {
-                SearchQuery = value.Title;
+                SearchQuery = IsOnlineMode && !string.IsNullOrWhiteSpace(value.RussianTitle)
+                    ? value.RussianTitle
+                    : value.Title;
             }
             PerformSearchCommand.Execute(null);
         }
@@ -72,6 +74,12 @@ public partial class TorrentsViewModel
     [RelayCommand]
     public async Task PerformSearch()
     {
+        if (IsOnlineMode)
+        {
+            await PerformOnlineSearchAsync(SearchQuery);
+            return;
+        }
+
         SyncFilterContext();
 
         string query = TorrentQueryBuilder.Build(SearchQuery, new TorrentQueryFilters(
@@ -116,6 +124,16 @@ public partial class TorrentsViewModel
         {
             IsLoading = false;
             Log.Debug("Torrents: Search process completed (loading set to false)");
+        }
+    }
+
+    [RelayCommand]
+    public void ClearSearch()
+    {
+        SearchQuery = string.Empty;
+        if (SelectedAnime != null)
+        {
+            SelectedAnime = null;
         }
     }
 
@@ -202,7 +220,7 @@ public partial class TorrentsViewModel
                 {
                     EpisodeFiles.Add(f);
                 }
-                EpisodeSelectorCountText = _localizer.GetLoc("torrents.results.actions.episodes_count", EpisodeFiles.Count);
+                EpisodeSelectorCountText = _localizer.GetLoc(EpisodesCountLocKey, EpisodeFiles.Count);
                 IsEpisodeSelectorLoading = false;
             }
             else
@@ -251,7 +269,7 @@ public partial class TorrentsViewModel
             Log.Error(ex, "TorrentsViewModel: Streaming error for '{Title}'", torrent.Title);
             if (torrent.IsBatch && IsEpisodeSelectorVisible)
             {
-                EpisodeSelectorError = string.Format(_localizer.GetLoc("torrents.streaming.playback_error"), ex.Message);
+                EpisodeSelectorError = string.Format(_localizer.GetLoc(PlaybackErrorLocKey), ex.Message);
                 IsEpisodeSelectorLoading = false;
             }
         }
@@ -417,6 +435,7 @@ public partial class TorrentsViewModel
         SelectedAnime = null;
         SearchQuery = string.Empty;
         Torrents.Clear();
+        OnlineResults.Clear();
         RebuildGroupedTorrents();
     }
 }

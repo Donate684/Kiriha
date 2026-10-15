@@ -10,7 +10,7 @@ public partial class MainWindowViewModel
 {
     public void Receive(NavigationMessage message)
     {
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        void Handle()
         {
             switch (message.Page)
             {
@@ -21,10 +21,20 @@ public partial class MainWindowViewModel
                 case NavigationPage.History: NavigateHistory(); break;
                 case NavigationPage.Torrents: NavigateTorrents(); break;
                 case NavigationPage.Search: NavigateSearch(); break;
-                case NavigationPage.Settings: NavigateSettings(); break;
+                case NavigationPage.Settings:
+                    if (message.TargetSectionIndex >= 0)
+                        NavigateSettingsTo(message.TargetSectionIndex);
+                    else
+                        NavigateSettings();
+                    break;
                 case NavigationPage.Welcome: NavigateWelcome(); break;
             }
-        });
+        }
+
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            Handle();
+        else
+            Avalonia.Threading.Dispatcher.UIThread.Post(Handle);
     }
 
     partial void OnSelectedNavigationIndexChanged(int value)

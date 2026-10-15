@@ -28,6 +28,7 @@ Kiriha.sln
 ├── src/Kiriha.Infrastructure/     # Anisthesia (player detection), TorrServer, AnitomySharp, HTTP cache, Win32
 ├── src/Kiriha.Data/               # EF Core DbContext, migrations, SQLite repositories
 ├── src/Kiriha.Core.Tracking/      # MAL / Shiki / AniList API, sync manager, airing info, Nyaa RSS
+├── src/Kiriha.Core.Streaming/     # Online anime streaming (AniLibria, AnimeVost, AnimeGo, Kodik, Aniboom, Sibnet)
 ├── src/Kiriha.Mpv/                # Native libmpv interop, OpenGL rendering
 ├── src/Kiriha.Mpv.UI/             # Player ViewModels, torrent streaming & state controllers
 └── src/Kiriha/                    # Main Avalonia application, ViewModels, Views, Composition (DI)

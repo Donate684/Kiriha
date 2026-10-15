@@ -50,6 +50,7 @@ public class HardcodeAnalysisTests
         // Legitimate constant definitions
         "Kiriha.Core.Domain/Constants/AppConstants.cs",
         "Kiriha.Core.Domain/Constants/ApiKeys.cs",
+        "Kiriha.Core.Streaming/Constants/StreamingConstants.cs",
 
         // Third-party vendored code — licence header URLs only
         "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/Anitomy.cs",
@@ -163,6 +164,12 @@ public class HardcodeAnalysisTests
         "ML",
         "AL",
         "SH",
+        "AnimeLib",
+        "AniLibria",
+        "DreamCast",
+        "YummyAnime",
+        "Anime 365",
+        "✕",
 
         // Keyboard shortcut hint placeholders in player settings
         "Shift+S",

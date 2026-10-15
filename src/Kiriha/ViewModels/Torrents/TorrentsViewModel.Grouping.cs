@@ -55,6 +55,8 @@ public partial class TorrentsViewModel
     private void RebuildGroupedTorrents()
     {
         GroupedTorrents.Reset(TorrentGrouping.Build(Torrents, SortMode, FilterOnlyNew, FilterOnlyBatches));
+        OnPropertyChanged(nameof(HasTorrentResults));
+        OnPropertyChanged(nameof(IsEmptyResults));
     }
 }
 

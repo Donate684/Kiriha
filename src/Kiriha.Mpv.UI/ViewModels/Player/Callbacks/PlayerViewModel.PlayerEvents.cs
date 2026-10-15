@@ -26,6 +26,13 @@ public partial class PlayerViewModel
             _timelinePreview.WarmUp(VideoUrl);
             _statePublisher.Publish();
 
+            if (!string.IsNullOrWhiteSpace(_pendingSubtitleUrl))
+            {
+                var sub = _pendingSubtitleUrl;
+                _pendingSubtitleUrl = null;
+                _playback.AddSubtitle(sub, select: true);
+            }
+
             if (SmartTrackAutoload)
             {
                 var url = VideoUrl;

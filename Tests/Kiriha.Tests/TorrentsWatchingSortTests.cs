@@ -111,4 +111,66 @@ public class TorrentsWatchingSortTests
         var result = Kiriha.Localization.LocalizationStore.Translate(inputKey);
         Assert.Equal(expectedFallback, result);
     }
+
+    [Fact]
+    public void TorrentsViewModel_OnlineFilters_InitializesFromSettings()
+    {
+        var settings = new AppSettings();
+        settings.Torrents.OnlineStreaming.EnableAniLibria = false;
+        settings.Torrents.OnlineStreaming.EnableAnimeLib = true;
+        settings.Torrents.OnlineStreaming.EnableDreamCast = true;
+        settings.Torrents.OnlineStreaming.EnableYummyAnime = false;
+
+        var animeRepoMock = new Mock<IAnimeRepository>();
+        animeRepoMock.SetupGet(r => r.Collection).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimeEntity>());
+        var filterRepoMock = new Mock<ITorrentFilterRepository>();
+        filterRepoMock.Setup(r => r.GetHiddenAnimeIds()).Returns(new HashSet<int>());
+        var rssMock = new Mock<Kiriha.Core.Abstractions.Services.IRssFeedService>();
+        var settingsMock = new Mock<Kiriha.Core.Abstractions.Services.ISettingsService>();
+        settingsMock.SetupGet(s => s.Current).Returns(settings);
+        var torrServerMock = new Mock<Kiriha.Core.Abstractions.Services.ITorrServerService>();
+        var localizerMock = new Mock<Kiriha.Core.Abstractions.Services.ILocalizer>();
+
+        var vm = new TorrentsViewModel(rssMock.Object, animeRepoMock.Object, settingsMock.Object, filterRepoMock.Object, torrServerMock.Object, localizerMock.Object);
+
+        Assert.False(vm.FilterOnlineAniLibria);
+        Assert.True(vm.FilterOnlineAnimeLib);
+        Assert.True(vm.FilterOnlineDreamCast);
+        Assert.False(vm.FilterOnlineYummyAnime);
+
+        var enabled = vm.GetEnabledOnlineProviders();
+        Assert.Equal(2, enabled.Count);
+        Assert.Contains("AnimeLib", enabled);
+        Assert.Contains("DreamCast", enabled);
+        Assert.DoesNotContain("AniLibria", enabled);
+        Assert.DoesNotContain("YummyAnime", enabled);
+    }
+
+    [Fact]
+    public void TorrentsViewModel_OnlineFilters_Change_PersistsToSettings()
+    {
+        var settings = new AppSettings();
+        var animeRepoMock = new Mock<IAnimeRepository>();
+        animeRepoMock.SetupGet(r => r.Collection).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimeEntity>());
+        var filterRepoMock = new Mock<ITorrentFilterRepository>();
+        filterRepoMock.Setup(r => r.GetHiddenAnimeIds()).Returns(new HashSet<int>());
+        var rssMock = new Mock<Kiriha.Core.Abstractions.Services.IRssFeedService>();
+        var settingsMock = new Mock<Kiriha.Core.Abstractions.Services.ISettingsService>();
+        settingsMock.SetupGet(s => s.Current).Returns(settings);
+        settingsMock.Setup(s => s.Update(It.IsAny<Action<AppSettings>>(), It.IsAny<Kiriha.Core.Abstractions.Services.SettingsSection>(), It.IsAny<bool>()))
+            .Callback<Action<AppSettings>, Kiriha.Core.Abstractions.Services.SettingsSection, bool>((action, _, _) => action(settings));
+
+        var torrServerMock = new Mock<Kiriha.Core.Abstractions.Services.ITorrServerService>();
+        var localizerMock = new Mock<Kiriha.Core.Abstractions.Services.ILocalizer>();
+
+        var vm = new TorrentsViewModel(rssMock.Object, animeRepoMock.Object, settingsMock.Object, filterRepoMock.Object, torrServerMock.Object, localizerMock.Object);
+
+        vm.FilterOnlineAniLibria = false;
+        vm.FilterOnlineDreamCast = false;
+        vm.FilterOnlineAnimeLib = true;
+
+        Assert.False(settings.Torrents.OnlineStreaming.EnableAniLibria);
+        Assert.False(settings.Torrents.OnlineStreaming.EnableDreamCast);
+        Assert.True(settings.Torrents.OnlineStreaming.EnableAnimeLib);
+    }
 }

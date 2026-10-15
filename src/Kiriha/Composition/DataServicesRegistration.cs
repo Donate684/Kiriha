@@ -86,10 +86,21 @@ internal static class DataServicesRegistration
             c.Timeout = TimeSpan.FromSeconds(30);
             c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent);
         });
-        services.AddSingleton<ImageCacheService>(sp => new ImageCacheService(
-            sp.GetRequiredService<IHttpClientFactory>(),
-            sp.GetRequiredService<IBackgroundTaskSupervisor>(),
-            sp.GetService<IImageUrlRewriter>()));
+        services.AddSingleton<ImageCacheService>(sp =>
+        {
+            var rewriters = sp.GetServices<IImageUrlRewriter>().ToList();
+            IImageUrlRewriter? rewriter = rewriters.Count switch
+            {
+                0 => null,
+                1 => rewriters[0],
+                _ => new CompositeImageUrlRewriter(rewriters)
+            };
+
+            return new ImageCacheService(
+                sp.GetRequiredService<IHttpClientFactory>(),
+                sp.GetRequiredService<IBackgroundTaskSupervisor>(),
+                rewriter);
+        });
         services.AddForwardedSingleton<ImageCacheService, IImageCacheService>();
         services.AddSingleton<PosterBatchDownloader>();
         services.AddSingleton<SeasonalCacheStore>();

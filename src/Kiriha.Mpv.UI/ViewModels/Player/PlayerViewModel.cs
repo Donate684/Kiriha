@@ -49,6 +49,9 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private string? _previousVideoUrlForMetadata;
 
     private readonly ITorrServerService? _torrServer;
+    private string? _pendingSubtitleUrl;
+
+    public string? PendingSubtitleUrl => _pendingSubtitleUrl;
 
     public PlayerViewModel(
         string videoUrl,
@@ -56,13 +59,15 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         IPlayerMediaMetadataResolver? metadataResolver,
         ISettingsService? settingsService,
         ILocalizer localizer,
-        ITorrServerService? torrServer = null)
+        ITorrServerService? torrServer = null,
+        string? subtitleUrl = null)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;
         _settingsService = settingsService;
         _localizer = localizer;
         _torrServer = torrServer;
+        _pendingSubtitleUrl = subtitleUrl;
         InitializeOptions();
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
         _statePublisher.MetadataReceived += OnExternalMetadataReceived;

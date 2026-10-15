@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="using:Material.Icons.Avalonia">
         <!-- ═══ Filter Toggle inline chip (used in Flyout) ═══ -->
         <Style Selector="ToggleButton.FilterChip">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
@@ -115,8 +116,8 @@
         </Style>
 
         <Style Selector="Border.GroupChip">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="Background" Value="#1A2E9D62"/>
+            <Setter Property="BorderBrush" Value="#552E9D62"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="Padding" Value="6,2"/>
@@ -199,10 +200,10 @@
         </Style>
 
         <!-- ═══ Filter flyout presenter (Luxury/Glass style) ═══ -->
-        <Style Selector="FlyoutPresenter.FilterFlyout">
+        <Style Selector="FlyoutPresenter.FilterFlyout, FlyoutPresenter.SourcesFlyout">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="MinWidth" Value="280"/>
-            <Setter Property="MaxWidth" Value="300"/>
+            <Setter Property="MaxWidth" Value="380"/>
             <Setter Property="CornerRadius" Value="14"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
             <!-- Semi-transparent background + shadow for depth -->
@@ -210,7 +211,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource LuxuryFlyoutBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
-        <Style Selector="FlyoutPresenter.FilterFlyout ScrollViewer">
+        <Style Selector="FlyoutPresenter.FilterFlyout ScrollViewer, FlyoutPresenter.SourcesFlyout ScrollViewer">
             <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
         </Style>
 
@@ -243,8 +244,9 @@
         </Style>
 
         <!-- ═══ Filter toggle row ═══ -->
-        <Style Selector="ToggleButton.FilterToggle">
+        <Style Selector="ToggleButton.FilterToggle, Button.FilterToggle">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="Opacity" Value="1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -259,26 +261,26 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Style Selector="ToggleButton.FilterToggle:pointerover /template/ ContentPresenter#PART_ContentPresenter, Button.FilterToggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:checked">
+        <Style Selector="ToggleButton.FilterToggle:checked, Button.FilterToggle.active">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Style Selector="ToggleButton.FilterToggle:checked /template/ ContentPresenter#PART_ContentPresenter, Button.FilterToggle.active /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
             <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Style Selector="ToggleButton.FilterToggle:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter, Button.FilterToggle.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
             <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Style Selector="ToggleButton.FilterToggle:pressed /template/ ContentPresenter#PART_ContentPresenter, Button.FilterToggle:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         </Style>
 
         <!-- Switch indicator inside toggle -->
-        <Style Selector="ToggleButton.FilterToggle Border.SwitchTrack">
+        <Style Selector="ToggleButton.FilterToggle Border.SwitchTrack, Button.FilterToggle Border.SwitchTrack">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="18"/>
             <Setter Property="CornerRadius" Value="9"/>
@@ -290,10 +292,10 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:checked Border.SwitchTrack">
+        <Style Selector="ToggleButton.FilterToggle:checked Border.SwitchTrack, Button.FilterToggle.active Border.SwitchTrack">
             <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle Ellipse.SwitchThumb">
+        <Style Selector="ToggleButton.FilterToggle Ellipse.SwitchThumb, Button.FilterToggle Ellipse.SwitchThumb">
             <Setter Property="Width" Value="12"/>
             <Setter Property="Height" Value="12"/>
             <Setter Property="Fill" Value="White"/>
@@ -305,7 +307,7 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="ToggleButton.FilterToggle:checked Ellipse.SwitchThumb">
+        <Style Selector="ToggleButton.FilterToggle:checked Ellipse.SwitchThumb, Button.FilterToggle.active Ellipse.SwitchThumb">
             <Setter Property="Margin" Value="17,0,0,0"/>
         </Style>
 
@@ -345,5 +347,292 @@
             <Setter Property="Opacity" Value="0.5"/>
             <Setter Property="LetterSpacing" Value="1.2"/>
             <Setter Property="Margin" Value="2,0,0,2"/>
+        </Style>
+
+        <!-- ═══ Search Mode (Torrents / Online) Capsule Toggle ═══ -->
+        <Style Selector="ToggleButton.TorrentsModeToggle">
+            <Setter Property="Width" Value="184"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{DynamicResource SubtleFillColorTertiary}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            CornerRadius="15">
+                        <Panel>
+                            <Border x:Name="Thumb"
+                                    Background="{DynamicResource CardBackgroundFillDefault}"
+                                    CornerRadius="12"
+                                    Width="88" Height="24"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Margin="2,0,0,0"
+                                    BoxShadow="0 1 4 0 #18000000, 0 0 0 0.5 #14000000">
+                                <Border.Transitions>
+                                    <Transitions>
+                                        <ThicknessTransition Property="Margin" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                                    </Transitions>
+                                </Border.Transitions>
+                            </Border>
+
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="Magnet" Width="14" Height="14" x:Name="IconLeft"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           VerticalAlignment="Center">
+                                        <material:MaterialIcon.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </material:MaterialIcon.Transitions>
+                                    </material:MaterialIcon>
+                                    <TextBlock Text="{DynamicResource l.torrents.mode.torrents}" FontSize="12" FontWeight="SemiBold"
+                                               x:Name="TextLeft" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                        <TextBlock.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </TextBlock.Transitions>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <material:MaterialIcon Kind="TelevisionPlay" Width="14" Height="14" x:Name="IconRight"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                           VerticalAlignment="Center">
+                                        <material:MaterialIcon.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </material:MaterialIcon.Transitions>
+                                    </material:MaterialIcon>
+                                    <TextBlock Text="{DynamicResource l.torrents.mode.online}" FontSize="12"
+                                               x:Name="TextRight" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                        <TextBlock.Transitions>
+                                            <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2"/></Transitions>
+                                        </TextBlock.Transitions>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Panel>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="ToggleButton.TorrentsModeToggle:checked /template/ Border#Thumb">
+            <Setter Property="Margin" Value="92,0,0,0"/>
+        </Style>
+
+        <Style Selector="ToggleButton.TorrentsModeToggle:checked /template/ material|MaterialIcon#IconLeft">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        </Style>
+
+        <Style Selector="ToggleButton.TorrentsModeToggle:checked /template/ TextBlock#TextLeft">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+
+        <Style Selector="ToggleButton.TorrentsModeToggle:checked /template/ material|MaterialIcon#IconRight">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
+
+        <Style Selector="ToggleButton.TorrentsModeToggle:checked /template/ TextBlock#TextRight">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="ToggleButton.TorrentsModeToggle:pointerover /template/ Border#Thumb">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
+        </Style>
+
+        <!-- ═══ Online Episode Selector Redesign Styles ═══ -->
+        <Style Selector="Button.OnlineEpBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.OnlineEpBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+        </Style>
+        <Style Selector="Button.OnlineEpBtn.selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+        </Style>
+        <Style Selector="Button.OnlineEpBtn.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+        </Style>
+
+        <!-- Online Source Card -->
+        <Style Selector="Border.OnlineSourceCard">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.OnlineSourceCard:pointerover">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+        </Style>
+        <Style Selector="Border.OnlineSourceCard.direct">
+            <Setter Property="BorderBrush" Value="#3300C853"/>
+        </Style>
+        <Style Selector="Border.OnlineSourceCard.direct:pointerover">
+            <Setter Property="BorderBrush" Value="#8000C853"/>
+        </Style>
+
+        <!-- Online Filter Chip -->
+        <Style Selector="Button.OnlineFilterChip">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.OnlineFilterChip:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+        </Style>
+        <Style Selector="Button.OnlineFilterChip.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+        </Style>
+        <Style Selector="Button.OnlineFilterChip.active">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Online Play Pill Button -->
+        <Style Selector="Button.OnlinePlayPill">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.OnlinePlayPill:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+        </Style>
+        <Style Selector="Button.OnlinePlayPill.direct">
+            <Setter Property="Background" Value="#1F00C853"/>
+            <Setter Property="BorderBrush" Value="#4D00C853"/>
+        </Style>
+        <Style Selector="Button.OnlinePlayPill.direct:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3300C853"/>
+            <Setter Property="BorderBrush" Value="#8000C853"/>
+        </Style>
+
+        <!-- Badges -->
+        <Style Selector="Border.QualityBadgeFhd">
+            <Setter Property="Background" Value="#227B61FF"/>
+            <Setter Property="BorderBrush" Value="#557B61FF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.QualityBadgeHd">
+            <Setter Property="Background" Value="#222D7DD2"/>
+            <Setter Property="BorderBrush" Value="#552D7DD2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.QualityBadgeDefault">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.TypeBadgeDirect">
+            <Setter Property="Background" Value="#2200C853"/>
+            <Setter Property="BorderBrush" Value="#5500C853"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.TypeBadgeSub">
+            <Setter Property="Background" Value="#22FFB300"/>
+            <Setter Property="BorderBrush" Value="#55FFB300"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.TypeBadgeLang">
+            <Setter Property="Background" Value="#2200BCD4"/>
+            <Setter Property="BorderBrush" Value="#5500BCD4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.TypeBadgeLang > TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource AnalyticsSectionTealBrush}"/>
+            <Setter Property="FontSize" Value="9.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <!-- Episode Item Badges -->
+        <Style Selector="Border.EpBadgeWatched">
+            <Setter Property="Background" Value="#1A00C853"/>
+            <Setter Property="BorderBrush" Value="#3800C853"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1.5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.EpBadgeNew">
+            <Setter Property="Background" Value="#22FF4500"/>
+            <Setter Property="BorderBrush" Value="#55FF4500"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="5,1.5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.EpBadgeNewText">
+            <Setter Property="Foreground" Value="#FFFF4500"/>
+            <Setter Property="FontSize" Value="9.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 </Styles>

@@ -3,6 +3,7 @@ using Kiriha.Composition;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking;
+using Kiriha.Core.Streaming;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Infrastructure.Tracking;
 using Kiriha.Services.Data.Metadata;
@@ -49,6 +50,7 @@ public sealed partial class AppStartupCoordinator
             .AddKirihaTracking()
             .AddKirihaTrackingInfrastructure()
             .AddKirihaBackgroundServices()
+            .AddKirihaStreaming()
             .AddKirihaUi();
     }
 

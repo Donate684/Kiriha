@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="using:Material.Icons.Avalonia"
+        x:Class="Kiriha.Views.Settings.AnimeLibLoginWindow"
+        Title="{DynamicResource l.settings.streaming.login_window_title}"
+        Width="520" Height="720"
+        MinWidth="420" MinHeight="550"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SolidBackgroundFillColorBase}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header Info -->
+        <Border Grid.Row="0" Background="{DynamicResource SubtleFillColorSecondary}"
+                BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="0,0,0,1"
+                Padding="16,10">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <material:MaterialIcon Kind="ShieldAccountOutline" Width="22" Height="22"
+                                          Foreground="{DynamicResource SystemAccentColor}"/>
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource l.settings.streaming.login_window_title}" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="{DynamicResource l.settings.streaming.login_window_sub}"
+                                   FontSize="11" Opacity="0.6"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Button Grid.Column="2" Name="CancelButton" Content="{DynamicResource l.settings.streaming.cancel_button}"
+                        Padding="12,5" CornerRadius="6" VerticalAlignment="Center"
+                        Click="CancelButton_OnClick"/>
+            </Grid>
+        </Border>
+
+        <!-- Loading / Status Placeholder (behind WebView2) -->
+        <Grid Grid.Row="1" Name="HostGrid">
+            <StackPanel Name="LoadingIndicator" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+                <ProgressBar IsIndeterminate="True" Width="200"/>
+                <TextBlock Name="StatusTextBlock" Text="{DynamicResource l.settings.streaming.login_window_loading}"
+                           FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Footer / Tip -->
+        <Border Grid.Row="2" Background="{DynamicResource SubtleFillColorTertiary}"
+                BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="0,1,0,0"
+                Padding="16,8">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <material:MaterialIcon Kind="LockCheckOutline" Width="16" Height="16" Opacity="0.7"/>
+                <TextBlock Text="{DynamicResource l.settings.streaming.login_window_footer}"
+                           FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

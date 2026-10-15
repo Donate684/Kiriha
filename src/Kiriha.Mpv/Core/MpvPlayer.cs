@@ -71,7 +71,7 @@ public partial class MpvPlayer : IDisposable
 
     public void Load(string url) => PlaybackController.Load(url);
 
-    public void AddSubtitle(string path) => TrackManager.AddSubtitle(path);
+    public void AddSubtitle(string path, bool select = true) => TrackManager.AddSubtitle(path, select);
 
     public void AddAudioTrack(string path) => TrackManager.AddAudioTrack(path);
 

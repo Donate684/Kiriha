@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\Kiriha.Infrastructure\Kiriha.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Kiriha.Data\Kiriha.Data.csproj" />
     <ProjectReference Include="..\..\src\Kiriha.Mpv.UI\Kiriha.Mpv.UI.csproj" />
+    <ProjectReference Include="..\..\src\Kiriha.Core.Streaming\Kiriha.Core.Streaming.csproj" />
   </ItemGroup>
 
   <ItemGroup>

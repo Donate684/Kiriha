@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Streaming.Helpers;
 using Serilog;
 
 namespace Kiriha.Services.Data.Settings;
@@ -16,6 +17,38 @@ public partial class SettingsService
         }
         api.LegacyMal?.Encrypt(Protect);
         api.LegacyShiki?.Encrypt(Protect);
+    }
+
+    private void EncryptOnlineStreamingConfig(AppSettings.TorrentConfig torrents)
+    {
+        if (torrents.OnlineStreaming != null)
+        {
+            if (!string.IsNullOrEmpty(torrents.OnlineStreaming.AnimeLibToken))
+            {
+                var clean = AnimeLibTokenHelper.CleanToken(torrents.OnlineStreaming.AnimeLibToken);
+                torrents.OnlineStreaming.AnimeLibToken = Protect(clean);
+            }
+            if (!string.IsNullOrEmpty(torrents.OnlineStreaming.Anime365Token))
+            {
+                torrents.OnlineStreaming.Anime365Token = Protect(torrents.OnlineStreaming.Anime365Token.Trim());
+            }
+        }
+    }
+
+    private void DecryptOnlineStreamingConfig(AppSettings.TorrentConfig torrents)
+    {
+        if (torrents.OnlineStreaming != null)
+        {
+            if (!string.IsNullOrEmpty(torrents.OnlineStreaming.AnimeLibToken))
+            {
+                var decrypted = Unprotect(torrents.OnlineStreaming.AnimeLibToken);
+                torrents.OnlineStreaming.AnimeLibToken = AnimeLibTokenHelper.CleanToken(decrypted);
+            }
+            if (!string.IsNullOrEmpty(torrents.OnlineStreaming.Anime365Token))
+            {
+                torrents.OnlineStreaming.Anime365Token = Unprotect(torrents.OnlineStreaming.Anime365Token).Trim();
+            }
+        }
     }
 
     private void DecryptApiConfig(AppSettings.ApiConfig api)

@@ -12,6 +12,7 @@ public sealed partial class PlayerModeCoordinator
     private PlayerWindow CreatePlayerWindow(string[] args)
     {
         var videoUrl = GetPlayerVideoUrl(args);
+        var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
 
         var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
@@ -21,7 +22,7 @@ public sealed partial class PlayerModeCoordinator
         var cliMetadata = ExtractMetadataFromArgs(args);
         var initialMetadata = cliMetadata ?? metadataResolver.Resolve(videoUrl);
 
-        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer);
+        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl);
         if (cliMetadata != null)
         {
             playerVm.ApplyExternalMetadata(cliMetadata);
@@ -43,7 +44,8 @@ public sealed partial class PlayerModeCoordinator
         if (string.IsNullOrWhiteSpace(videoUrl))
             return false;
 
-        vm.LoadVideo(videoUrl);
+        var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
+        vm.LoadVideo(videoUrl, subtitleUrl);
         var cliMetadata = ExtractMetadataFromArgs(args);
         if (cliMetadata != null)
         {

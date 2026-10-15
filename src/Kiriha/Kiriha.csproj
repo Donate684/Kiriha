@@ -59,6 +59,7 @@
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Velopack" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,6 +81,7 @@
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Tracking\Kiriha.Core.Tracking.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
+    <ProjectReference Include="..\Kiriha.Core.Streaming\Kiriha.Core.Streaming.csproj" />
     
     <ProjectReference Include="..\Kiriha.Mpv\Kiriha.Mpv.csproj" />
     <ProjectReference Include="..\Kiriha.Mpv.UI\Kiriha.Mpv.UI.csproj" />

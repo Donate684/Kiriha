@@ -105,7 +105,7 @@ public partial class SettingsService
         // 3. torrents.json
         if (forceAll || versions.Torrents != 0 || !File.Exists(_torrentsSettingsPath))
         {
-            var torrentsJson = JsonSerializer.Serialize(snapshot.Torrents, AppSettingsJsonContext.Default.TorrentConfig);
+            var torrentsJson = SerializeTorrents(snapshot.Torrents);
             if (!string.Equals(torrentsJson, _lastSavedTorrentsJson, StringComparison.Ordinal) || !File.Exists(_torrentsSettingsPath))
             {
                 AtomicWrite(_torrentsSettingsPath, torrentsJson);
@@ -154,6 +154,14 @@ public partial class SettingsService
         var clone = api.Clone();
         EncryptApiConfig(clone);
         return JsonSerializer.Serialize(clone, AppSettingsJsonContext.Default.ApiConfig);
+    }
+
+    private string SerializeTorrents(AppSettings.TorrentConfig torrents)
+    {
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(torrents, AppSettingsJsonContext.Default.TorrentConfig);
+        var clone = JsonSerializer.Deserialize(bytes, AppSettingsJsonContext.Default.TorrentConfig)!;
+        EncryptOnlineStreamingConfig(clone);
+        return JsonSerializer.Serialize(clone, AppSettingsJsonContext.Default.TorrentConfig);
     }
 
     private bool CanSkipSave()

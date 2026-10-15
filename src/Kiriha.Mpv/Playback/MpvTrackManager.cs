@@ -97,10 +97,14 @@ public class MpvTrackManager
         });
     }
 
-    public void AddSubtitle(string path)
+    public void AddSubtitle(string path, bool select = true)
     {
         if (string.IsNullOrWhiteSpace(path)) return;
-        _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "sub-add", path), "add subtitle"));
+        _player.Enqueue(handle => MpvPlayer.Check(
+            select
+                ? LibMpvNative.mpv_command_string(handle, "sub-add", path, "select")
+                : LibMpvNative.mpv_command_string(handle, "sub-add", path),
+            "add subtitle"));
     }
 
     public void AddAudioTrack(string path)

@@ -13,5 +13,5 @@ public enum NavigationPage
     Welcome
 }
 
-public sealed record NavigationMessage(NavigationPage Page);
+public sealed record NavigationMessage(NavigationPage Page, int TargetSectionIndex = -1);
 

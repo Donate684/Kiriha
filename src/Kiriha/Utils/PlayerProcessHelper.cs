@@ -15,14 +15,27 @@ public static class PlayerProcessHelper
         string? episode = null,
         int? animeId = null,
         string? torrentHash = null,
-        string? originalTitle = null)
+        string? originalTitle = null,
+        string? subtitleUrl = null)
     {
         var canonicalOriginal = !string.IsNullOrWhiteSpace(originalTitle)
             ? originalTitle
             : (titleEn ?? titleRu ?? string.Empty);
 
         // 1. If resident player instance is running, forward playback and metadata through pipe
-        if (!string.IsNullOrWhiteSpace(videoUrl) && PlayerProcessBridge.TryForward(["--player", videoUrl]))
+        var forwardArgs = new List<string>();
+        if (!string.IsNullOrWhiteSpace(videoUrl))
+        {
+            forwardArgs.Add("--player");
+            forwardArgs.Add(videoUrl);
+            if (!string.IsNullOrWhiteSpace(subtitleUrl))
+            {
+                forwardArgs.Add("--sub-file");
+                forwardArgs.Add(subtitleUrl);
+            }
+        }
+
+        if (forwardArgs.Count > 0 && PlayerProcessBridge.TryForward(forwardArgs.ToArray()))
         {
             if (!string.IsNullOrWhiteSpace(titleRu) || !string.IsNullOrWhiteSpace(titleEn) || animeId.HasValue || !string.IsNullOrWhiteSpace(torrentHash))
             {
@@ -55,6 +68,10 @@ public static class PlayerProcessHelper
         if (!string.IsNullOrWhiteSpace(videoUrl))
         {
             argsBuilder.Append($" \"{videoUrl}\"");
+        }
+        if (!string.IsNullOrWhiteSpace(subtitleUrl))
+        {
+            argsBuilder.Append($" --sub-file \"{subtitleUrl}\"");
         }
         if (!string.IsNullOrWhiteSpace(canonicalOriginal))
         {

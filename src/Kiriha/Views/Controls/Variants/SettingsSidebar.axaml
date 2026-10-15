@@ -187,7 +187,8 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
                     <StackPanel>
                         <TextBlock Classes="SectionHeader" Text="{DynamicResource l.common.status.system}"/>
-                        <ListBox Name="Nav" Classes="SideNav" SelectedIndex="0"
+                        <ListBox Name="Nav" Classes="SideNav"
+                                 SelectedIndex="{Binding SelectedSectionIndex, Mode=TwoWay}"
                                  SelectionChanged="Nav_SelectionChanged">
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
@@ -235,6 +236,12 @@
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <material:MaterialIcon Classes="NavIcon" Kind="PlayCircleOutline" Width="18" Height="18" VerticalAlignment="Center"/>
                                     <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.player}"/>
+                                </StackPanel>
+                            </ListBoxItem>
+                            <ListBoxItem>
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <material:MaterialIcon Classes="NavIcon" Kind="TelevisionPlay" Width="18" Height="18" VerticalAlignment="Center"/>
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.streaming}"/>
                                 </StackPanel>
                             </ListBoxItem>
                         </ListBox>
@@ -320,6 +327,13 @@
             <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                         IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=7}">
                     <pages:SettingsPlayerPage />
+                    <Border Height="110" IsHitTestVisible="False"/>
+            </StackPanel>
+
+            <!-- ── Online Streaming ── -->
+            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=8}">
+                    <pages:SettingsStreamingPage />
                     <Border Height="110" IsHitTestVisible="False"/>
             </StackPanel>
 

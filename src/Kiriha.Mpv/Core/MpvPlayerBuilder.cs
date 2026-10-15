@@ -64,6 +64,8 @@ public static class MpvPlayerBuilder
                 MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "sub-fonts-dir", fontsDir), "set fonts directory");
             }
 
+            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "user-agent", Constants.MpvConstants.UserAgent), "set user agent");
+
             int res = LibMpvNative.mpv_initialize(handle);
             if (res < 0)
             {

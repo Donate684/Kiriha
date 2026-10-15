@@ -24,6 +24,27 @@ public partial class AppSettings
         public System.Collections.Generic.Dictionary<int, TorrentFilterSet> PerTitleFilters { get; set; } = new();
 
         public TorrentStreamingConfig Streaming { get; set; } = new();
+        public OnlineStreamingConfig OnlineStreaming { get; set; } = new();
+    }
+
+    public class OnlineStreamingConfig
+    {
+        public bool EnableAniLibria { get; set; } = true;
+        public bool EnableAnimeLib { get; set; } = false;
+        public bool EnableDreamCast { get; set; } = false;
+        public bool EnableYummyAnime { get; set; } = false;
+        public bool EnableAnime365 { get; set; } = false;
+        public bool Hide480p { get; set; } = false;
+        public bool Hide720p { get; set; } = false;
+        public bool HideNonRussian { get; set; } = false;
+        public string AnimeLibToken { get; set; } = string.Empty;
+        public string AnimeLibUsername { get; set; } = string.Empty;
+        public string Anime365Token { get; set; } = string.Empty;
+        public string Anime365Username { get; set; } = string.Empty;
+        public string Anime365AppId { get; set; } = "app-f77050293d1e92794d78fc1e";
+        public string Anime365Mirror { get; set; } = string.Empty;
+        public bool PreferDirectMp4 { get; set; } = true;
+        public string PreferredSourceType { get; set; } = "dub";
     }
 
     public class TorrentStreamingConfig

@@ -10,6 +10,7 @@ namespace Kiriha.Services.Data.Settings;
 [JsonSerializable(typeof(AppSettings.PlayerConfig))]
 [JsonSerializable(typeof(AppSettings.TorrentConfig))]
 [JsonSerializable(typeof(AppSettings.TorrentStreamingConfig))]
+[JsonSerializable(typeof(AppSettings.OnlineStreamingConfig))]
 [JsonSerializable(typeof(AppSettings.ApiConfig))]
 [JsonSerializable(typeof(AppSettings.WindowPlacement))]
 [JsonSerializable(typeof(EpisodeAiringSource))]

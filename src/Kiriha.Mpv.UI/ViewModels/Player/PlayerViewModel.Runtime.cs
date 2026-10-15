@@ -35,16 +35,25 @@ public partial class PlayerViewModel
         _statePublisher.Connect();
     }
 
-    public void LoadSubtitle(string path)
+    public void LoadSubtitle(string path, bool select = true)
     {
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        _playback.AddSubtitle(path);
+        _playback.AddSubtitle(path, select);
     }
 
-    public void LoadVideo(string videoUrl)
+    public void LoadVideo(string videoUrl, string? subtitleUrl = null)
     {
+        if (subtitleUrl != null)
+        {
+            _pendingSubtitleUrl = subtitleUrl;
+        }
+        else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
+        {
+            _pendingSubtitleUrl = null;
+        }
+
         if (string.IsNullOrWhiteSpace(videoUrl))
             return;
 

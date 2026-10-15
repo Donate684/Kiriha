@@ -16,7 +16,28 @@ public class MpvPlaybackController
 
     public void Load(string url)
     {
-        _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "loadfile", url), "load file"));
+        _player.Enqueue(handle =>
+        {
+            var targetUrl = url;
+            if (targetUrl.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
+            {
+                targetUrl = targetUrl.Replace("video2.anilib.me", "video1.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                     .Replace("video3.anilib.me", "video1.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                     .Replace("anilib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (targetUrl.Contains("cdnlibs.org", StringComparison.OrdinalIgnoreCase) ||
+                targetUrl.Contains("animelib.org", StringComparison.OrdinalIgnoreCase))
+            {
+                LibMpvNative.mpv_set_property_string(handle, "referrer", Constants.MpvConstants.AnimeLibReferer);
+            }
+            else
+            {
+                LibMpvNative.mpv_set_property_string(handle, "referrer", string.Empty);
+            }
+
+            MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "loadfile", targetUrl), "load file");
+        });
     }
 
     public void Play()

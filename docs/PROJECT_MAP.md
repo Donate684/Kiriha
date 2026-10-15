@@ -23,6 +23,7 @@ Kiriha.sln
 │   ├── Kiriha.Infrastructure/        # TorrServer, сетевые кеши, Win32 API, SMTC, Discord RPC, AnitomySharp, Anisthesia
 │   ├── Kiriha.Data/                  # EF Core SQLite, миграции, реализации репозиториев
 │   ├── Kiriha.Core.Tracking/         # API-клиенты (MAL, Shiki, AniList), синхронизация списков, аир-инфо, Nyaa RSS
+│   ├── Kiriha.Core.Streaming/        # Онлайн-стриминг (AniLibria, AnimeGo, Kodik, Aniboom, Sibnet)
 │   ├── Kiriha.Mpv/                   # C# P/Invoke обертка над native libmpv-2.dll, цикл событий, рендерер OpenGL
 │   ├── Kiriha.Mpv.UI/                # ViewModels и контроллеры плеера, оверлей торрент-стриминга
 │   └── Kiriha/                       # Главное приложение: Avalonia XAML Views, ViewModels, DI Host, навигация
@@ -43,6 +44,7 @@ graph TD
     Infrastructure[Kiriha.Infrastructure]
     Data[Kiriha.Data]
     Tracking[Kiriha.Core.Tracking]
+    Streaming[Kiriha.Core.Streaming]
     Mpv[Kiriha.Mpv]
     MpvUI[Kiriha.Mpv.UI]
     App[Kiriha (Executable)]
@@ -59,6 +61,9 @@ graph TD
     Tracking --> Abstractions
     Tracking --> Infrastructure
 
+    Streaming --> Domain
+    Streaming --> Abstractions
+
     MpvUI --> Domain
     MpvUI --> Abstractions
     MpvUI --> Infrastructure
@@ -71,6 +76,7 @@ graph TD
     App --> Infrastructure
     App --> Data
     App --> Tracking
+    App --> Streaming
     App --> Mpv
     App --> MpvUI
 ```
@@ -118,14 +124,21 @@ graph TD
   - `Services/Auth/`: OAuth-аутентификация (PKCE, токены, рефреш).
   - `Services/Sync/`: `SyncManager` (очередь фонового синка с дедупликацией и ретраями), `AnimeSyncOrchestrator` (двустороннее слияние локальной библиотеки и облачных списков), `AnimeListActionService` (быстрые операции со статусом и сериями).
   - `Services/Tracking/Core/`: `TrackingService` (пайплайн матчинга медиа и скробблинга), `AiringInfoService` (кеш и таймеры выхода серий).
-  - `Services/Tracking/Feed/`: `RssFeedService`, `NyaaFeedClient`, `NyaaTorrentParser` (торрент-лента Nyaa.si).
+  - `Services/Feed/`: `RssFeedService`, `NyaaFeedClient`, `NyaaTorrentParser` (торрент-лента Nyaa.si).
 
-### 3.6. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
+### 3.6. `Kiriha.Core.Streaming`
+* **Роль:** Интеграция с каталогами онлайн-просмотра аниме и резолвинг видеопотоков (HLS, MP4, DASH).
+* **Ключевые компоненты:**
+  - `Providers/`: `AniLibriaProvider` (REST API Aniliberty, прямое HLS 1080p/720p/480p), `AnimeGoProvider` (каталог AnimeGo, парсинг эпизодов и озвучек через AngleSharp).
+  - `Extractors/`: `KodikVideoExtractor` (дешифрование ROT-18 + Base64, динамический API-путь плеера), `AniboomVideoExtractor` (извлечение HLS/DASH с корректными заголовками Origin/Referer), `SibnetVideoExtractor` (извлечение MP4).
+  - `Services/StreamingService`: фасад поиска по всем провайдерам и авто-резолвинга стримов для плеера.
+
+### 3.7. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
 * **Роль:** Видеоплеер.
 * `Kiriha.Mpv`: низкоуровневая обертка P/Invoke `libmpv-2.dll`, OpenGL контекст, захват скриншотов, событийный цикл плеера.
 * `Kiriha.Mpv.UI`: `PlayerViewModel`, `PlayerPlaybackController`, оверлей потокового воспроизведения торрентов в реальном времени (скорость, пиры, буфер в `PlayerViewModel.TorrentStreaming.cs`), настройки плеера.
 
-### 3.7. `Kiriha` (Основное приложение)
+### 3.8. `Kiriha` (Основное приложение)
 * **Роль:** UI на Avalonia UI, композиция DI, точка входа (`Program.cs`, `App.axaml.cs`).
 * **Ключевые компоненты:**
   - `Composition/`: модульная регистрация DI (`DataServicesRegistration`, `TrackingServicesRegistration`, `BackgroundServicesRegistration`, `UiServicesRegistration`).
