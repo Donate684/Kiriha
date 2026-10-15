@@ -1,16 +1,18 @@
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Streaming.Constants;
 using Kiriha.Core.Streaming.Models;
 
 namespace Kiriha.ViewModels.Torrents;
 
 public sealed class OnlineAnimeItem : ObservableObject
 {
-    public OnlineAnimeItem(StreamingSearchResult result)
+    public OnlineAnimeItem(StreamingSearchResult result, int relevanceScore = 0)
     {
         ArgumentNullException.ThrowIfNull(result);
         Result = result;
+        RelevanceScore = relevanceScore;
     }
 
     public StreamingSearchResult Result { get; }
@@ -20,6 +22,18 @@ public sealed class OnlineAnimeItem : ObservableObject
     public string? ThumbnailUrl => Result.ThumbnailUrl;
     public string Url => Result.Url;
     public string ProviderName => Result.ProviderName;
+
+    public int RelevanceScore { get; set; }
+
+    public bool IsAniLibria => string.Equals(ProviderName, StreamingConstants.Providers.AniLibria, StringComparison.OrdinalIgnoreCase);
+    public bool IsAnimeLib => string.Equals(ProviderName, StreamingConstants.Providers.AnimeLib, StringComparison.OrdinalIgnoreCase);
+    public bool IsDreamCast => string.Equals(ProviderName, StreamingConstants.Providers.DreamCast, StringComparison.OrdinalIgnoreCase);
+    public bool IsYummyAnime => string.Equals(ProviderName, StreamingConstants.Providers.YummyAnime, StringComparison.OrdinalIgnoreCase);
+    public bool IsAnime365 => string.Equals(ProviderName, StreamingConstants.Providers.Anime365, StringComparison.OrdinalIgnoreCase)
+                           || string.Equals(ProviderName, "Anime 365", StringComparison.OrdinalIgnoreCase);
+    public bool HasKnownProvider => IsAniLibria || IsAnimeLib || IsDreamCast || IsYummyAnime || IsAnime365;
+
+    public string DisplayProviderName => IsAnime365 ? "Anime 365" : ProviderName;
 }
 
 public sealed class OnlineEpisodeItem : ObservableObject

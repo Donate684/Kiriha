@@ -247,6 +247,7 @@ public partial class TorrentsViewModel
         _suppressOnlineFilterPersist = true;
         try
         {
+            IsOnlineMode = _settingsService.Current.Torrents.IsOnlineMode;
             FilterOnlineAniLibria = cfg.EnableAniLibria;
             FilterOnlineAnimeLib = cfg.EnableAnimeLib;
             FilterOnlineDreamCast = cfg.EnableDreamCast;
@@ -301,6 +302,11 @@ public partial class TorrentsViewModel
 
     partial void OnIsOnlineModeChanged(bool value)
     {
+        if (!_suppressOnlineFilterPersist)
+        {
+            _settingsService.Update(settings => settings.Torrents.IsOnlineMode = value, SettingsSection.Torrents);
+        }
+
         if (SelectedAnime != null)
         {
             SearchQuery = value && !string.IsNullOrWhiteSpace(SelectedAnime.RussianTitle)
@@ -362,16 +368,31 @@ public partial class TorrentsViewModel
             IsLoading = true;
             Log.Information("[Torrents.Online] Searching for '{Query}' with providers: {Providers}", query, string.Join(", ", enabledProviders));
 
+            var searchTargets = new List<string> { query };
+            if (SelectedAnime != null)
+            {
+                if (!string.IsNullOrWhiteSpace(SelectedAnime.RussianTitle))
+                    searchTargets.Add(SelectedAnime.RussianTitle);
+                if (!string.IsNullOrWhiteSpace(SelectedAnime.Title))
+                    searchTargets.Add(SelectedAnime.Title);
+                if (!string.IsNullOrWhiteSpace(SelectedAnime.EnglishTitle))
+                    searchTargets.Add(SelectedAnime.EnglishTitle);
+            }
+
             var allItems = new List<OnlineAnimeItem>();
             var hasAny = false;
 
             await foreach (var batch in _streamingService.SearchStreamAsync(query, enabledProviders, ct).ConfigureAwait(false))
             {
                 if (batch.Count == 0) continue;
-                var newItems = batch.Select(r => new OnlineAnimeItem(r)).ToList();
+                var newItems = batch.Select(r => new OnlineAnimeItem(r, OnlineRelevanceScorer.ComputeMaxRelevance(searchTargets, r.Title))).ToList();
                 allItems.AddRange(newItems);
 
-                var snapshot = allItems.ToList();
+                var snapshot = allItems
+                    .OrderByDescending(x => x.RelevanceScore)
+                    .ThenBy(x => x.ProviderName)
+                    .ToList();
+
                 Dispatcher.UIThread.Post(() =>
                 {
                     OnlineResults.Reset(snapshot);

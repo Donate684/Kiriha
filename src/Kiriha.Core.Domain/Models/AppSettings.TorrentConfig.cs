@@ -20,6 +20,9 @@ public partial class AppSettings
         /// <summary>When true, filter toggles are remembered per anime title.</summary>
         public bool FiltersPerTitle { get; set; } = true;
 
+        /// <summary>When true, online streaming search mode is selected instead of torrents mode.</summary>
+        public bool IsOnlineMode { get; set; } = false;
+
         [System.Text.Json.Serialization.JsonIgnore]
         public System.Collections.Generic.Dictionary<int, TorrentFilterSet> PerTitleFilters { get; set; } = new();
 

@@ -324,22 +324,16 @@
                                FontSize="13" FontWeight="SemiBold"
                                TextTrimming="CharacterEllipsis" MaxLines="2"/>
                     
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <!-- Provider badge -->
-                        <Border Background="{DynamicResource SubtleFillColorTertiary}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1"
-                                CornerRadius="4" Padding="6,2">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <material:MaterialIcon Kind="Web" Width="12" Height="12"
-                                                       Foreground="{DynamicResource SystemAccentColor}"
-                                                       VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding ProviderName}" FontSize="10.5" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
+                    <!-- Provider badge matching torrent GroupChip style -->
+                    <Border Classes="ProviderBadge"
+                            Classes.anilibria="{Binding IsAniLibria}"
+                            Classes.animelib="{Binding IsAnimeLib}"
+                            Classes.dreamcast="{Binding IsDreamCast}"
+                            Classes.yummyanime="{Binding IsYummyAnime}"
+                            Classes.anime365="{Binding IsAnime365}">
+                        <TextBlock Text="{Binding DisplayProviderName}" FontSize="10" FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </Border>
                 </StackPanel>
 
                 <!-- Action Button: Open Details / Episodes -->

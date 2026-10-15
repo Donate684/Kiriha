@@ -46,7 +46,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
     private bool _preferDirectMp4;
 
     [ObservableProperty]
-    private bool _enableAniLibria;
+    private bool _enableAniLibria = true;
 
     [ObservableProperty]
     private bool _enableAnimeLib;
