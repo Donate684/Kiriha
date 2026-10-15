@@ -384,16 +384,74 @@ public class StreamingExtractionTests
             }
         };
 
-        var subUrl = "https://api.cdnlibs.org/uploads/subtitles/332904/e500c771-7852-4b70-8a9e-4f684926f16d.ass";
-        player.AddSubtitle(subUrl);
+        var tempSub = Path.Combine(Path.GetTempPath(), $"kiriha_sub_{Guid.NewGuid():N}.ass");
+        await File.WriteAllTextAsync(tempSub, """
+            [Script Info]
+            ScriptType: v4.00+
+            [Events]
+            Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+            Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,AnimeLib Subtitle
+            """);
 
-        var subCompleted = await Task.WhenAny(subTcs.Task, Task.Delay(TimeSpan.FromSeconds(15)));
-        Assert.True(subCompleted == subTcs.Task && await subTcs.Task, "Subtitle was not added to tracks");
+        try
+        {
+            player.AddSubtitle(tempSub);
+
+            var subCompleted = await Task.WhenAny(subTcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+            Assert.True(subCompleted == subTcs.Task && await subTcs.Task, "Subtitle was not added to tracks");
+        }
+        finally
+        {
+            if (File.Exists(tempSub))
+                File.Delete(tempSub);
+        }
     }
 
     [Fact]
     public async Task MpvPlayer_LoadAnimeLib_LegacyMangaLibSubtitle_RewritesAndAddsSuccessfully()
     {
+        // 1. Verify AnimeLibProvider rewrites legacy api2.mangalib.me subtitle URLs to api.cdnlibs.org
+        var stub = new DelegatingHandlerStub(req =>
+        {
+            var json = """
+            {
+                "data": {
+                    "players": [
+                        {
+                            "player": "animelib",
+                            "team": { "name": "AniLibria" },
+                            "video": {
+                                "quality": [
+                                    { "quality": 1080, "href": "1080.mp4" }
+                                ]
+                            },
+                            "video_domain": "video3.anilib.me",
+                            "subtitles": [
+                                {
+                                    "format": "ass",
+                                    "src": "https://api2.mangalib.me/uploads/subtitles/355977/5c6b806b-b197-457b-b84f-c4f145bf9dee.ass"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+            """;
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+        });
+
+        using var client = new HttpClient(stub);
+        var provider = new AnimeLibProvider(client);
+        var sources = await provider.GetEpisodeSourcesAsync("19309", 1);
+
+        Assert.NotEmpty(sources);
+        var source = sources[0];
+        Assert.Equal("https://api.cdnlibs.org/uploads/subtitles/355977/5c6b806b-b197-457b-b84f-c4f145bf9dee.ass", source.SubtitleUrl);
+
+        // 2. Verify MpvPlayer adds subtitle track
         using var player = Kiriha.Mpv.MpvPlayerBuilder.Build();
         var tcs = new TaskCompletionSource<bool>();
         string? error = null;
@@ -425,21 +483,85 @@ public class StreamingExtractionTests
             }
         };
 
-        // Active cdnlibs.org subtitle URL as rewritten by AnimeLibProvider for Tensei shitara Ken deshita ep 1
-        var subUrl = "https://api.cdnlibs.org/uploads/subtitles/355977/5c6b806b-b197-457b-b84f-c4f145bf9dee.ass";
-        player.AddSubtitle(subUrl);
+        var tempSub = Path.Combine(Path.GetTempPath(), $"kiriha_sub_legacy_{Guid.NewGuid():N}.ass");
+        await File.WriteAllTextAsync(tempSub, """
+            [Script Info]
+            ScriptType: v4.00+
+            [Events]
+            Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+            Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,Legacy Subtitle
+            """);
 
-        var subCompleted = await Task.WhenAny(subTcs.Task, Task.Delay(TimeSpan.FromSeconds(15)));
-        Assert.True(subCompleted == subTcs.Task && await subTcs.Task, "Subtitle was not added to tracks");
+        try
+        {
+            player.AddSubtitle(tempSub);
+
+            var subCompleted = await Task.WhenAny(subTcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+            Assert.True(subCompleted == subTcs.Task && await subTcs.Task, "Subtitle was not added to tracks");
+        }
+        finally
+        {
+            if (File.Exists(tempSub))
+                File.Delete(tempSub);
+        }
     }
 
     [Fact]
     public async Task DreamCast_SearchAndGetAnimeDetails_ReturnsEpisodesAndHlsSources()
     {
-        using var client = new HttpClient();
-        var provider = new Kiriha.Core.Streaming.Providers.DreamCastProvider(client);
+        var rawPlaylist = "https://stream.dreamerscast.com/120/1/master.m3u8||||https://stream.dreamerscast.com/120/2/master.m3u8";
+        var b64Playlist = Convert.ToBase64String(Encoding.UTF8.GetBytes(rawPlaylist));
 
-        var searchResults = await provider.SearchAsync("О моём перерождении в меч");
+        var stub = new DelegatingHandlerStub(req =>
+        {
+            var url = req.RequestUri?.ToString() ?? string.Empty;
+            if (req.Method == HttpMethod.Post)
+            {
+                var releasesJson = """
+                {
+                    "releases": [
+                        {
+                            "id": 120,
+                            "russian": "Reincarnated as a Sword",
+                            "original": "Tensei shitara Ken Deshita",
+                            "image": "//dreamerscast.com/posters/120.jpg",
+                            "url": "/home/release/120"
+                        }
+                    ]
+                }
+                """;
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(releasesJson, Encoding.UTF8, "application/json")
+                };
+            }
+
+            if (url.Contains("/home/release/120"))
+            {
+                var pageHtml = $"""
+                <!DOCTYPE html>
+                <html>
+                <body>
+                    <div id="player"></div>
+                    <script>
+                        var playlist = atob("{b64Playlist}");
+                    </script>
+                </body>
+                </html>
+                """;
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(pageHtml, Encoding.UTF8, "text/html")
+                };
+            }
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound);
+        });
+
+        using var client = new HttpClient(stub);
+        var provider = new DreamCastProvider(client);
+
+        var searchResults = await provider.SearchAsync("Reincarnated as a Sword");
         Assert.NotEmpty(searchResults);
 
         var target = searchResults.FirstOrDefault(r => r.Id.Contains("120")) ?? searchResults.First();

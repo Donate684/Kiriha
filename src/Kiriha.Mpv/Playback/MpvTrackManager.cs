@@ -100,10 +100,19 @@ public class MpvTrackManager
     public void AddSubtitle(string path, bool select = true)
     {
         if (string.IsNullOrWhiteSpace(path)) return;
+        var targetPath = path;
+        if (targetPath.Contains("anilib.me", StringComparison.OrdinalIgnoreCase) ||
+            targetPath.Contains("mangalib.me", StringComparison.OrdinalIgnoreCase))
+        {
+            targetPath = targetPath.Replace("api2.mangalib.me", "api.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                   .Replace("api.anilib.me", "api.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                   .Replace("mangalib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                   .Replace("anilib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase);
+        }
         _player.Enqueue(handle => MpvPlayer.Check(
             select
-                ? LibMpvNative.mpv_command_string(handle, "sub-add", path, "select")
-                : LibMpvNative.mpv_command_string(handle, "sub-add", path),
+                ? LibMpvNative.mpv_command_string(handle, "sub-add", targetPath, "select")
+                : LibMpvNative.mpv_command_string(handle, "sub-add", targetPath),
             "add subtitle"));
     }
 
