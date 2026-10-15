@@ -31,7 +31,7 @@
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.EnableMica}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
                     </Grid>
-                    <Border Classes="Divider"/>
+                    <Border Classes="Divider" IsVisible="{Binding Ui.IsMicaSupported}"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_titles}"/>

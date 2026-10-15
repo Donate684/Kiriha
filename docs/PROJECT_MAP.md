@@ -1,7 +1,7 @@
 # Kiriha — Карта архитектуры и устройства проекта
 
 > **Версия:** 1.7.1+  
-> **Стек:** .NET 11.0 (C# 15), Avalonia UI 12.1.4, Entity Framework Core 11 (SQLite), libmpv, TorrServer  
+> **Стек:** .NET 11.0 RC2 (C# 15), Avalonia UI 12.1.4, Entity Framework Core 11 RC2 (SQLite), libmpv, TorrServer  
 > **Платформа:** Windows (x64)
 
 Документ представляет собой системную карту архитектуры приложения Kiriha для разработчиков и ИИ-ассистентов, а также реестр выявленного технического долга и легаси-компонентов.
@@ -10,7 +10,7 @@
 
 ## 1. Обзор решения (Solution Overview)
 
-Kiriha — настольное приложение на Avalonia UI для каталогизации, трекинга и автоматического скробблинга аниме (MyAnimeList, Shikimori, AniList), парсинга расписаний выхода серий, поиска релизов через Nyaa.si, потокового воспроизведения торрентов через TorrServer и воспроизведения видео через встроенный `libmpv`.
+Kiriha — настольное приложение на Avalonia UI для каталогизации, трекинга и автоматического скробблинга аниме (MyAnimeList, Shikimori, AniList), парсинга расписаний выхода серий, поиска релизов через Nyaa.si, потокового воспроизведения торрентов через TorrServer, мульти-провайдерного онлайн-стриминга и воспроизведения видео через встроенный `libmpv`.
 
 ### Структура проектов (.csproj)
 
@@ -23,7 +23,7 @@ Kiriha.sln
 │   ├── Kiriha.Infrastructure/        # TorrServer, сетевые кеши, Win32 API, SMTC, Discord RPC, AnitomySharp, Anisthesia
 │   ├── Kiriha.Data/                  # EF Core SQLite, миграции, реализации репозиториев
 │   ├── Kiriha.Core.Tracking/         # API-клиенты (MAL, Shiki, AniList), синхронизация списков, аир-инфо, Nyaa RSS
-│   ├── Kiriha.Core.Streaming/        # Онлайн-стриминг (AniLibria, AnimeGo, Kodik, Aniboom, Sibnet)
+│   ├── Kiriha.Core.Streaming/        # Онлайн-стриминг (AniLibria, AnimeLib, DreamCast, YummyAnime, Anime 365, Kodik, Aniboom, Sibnet)
 │   ├── Kiriha.Mpv/                   # C# P/Invoke обертка над native libmpv-2.dll, цикл событий, рендерер OpenGL
 │   ├── Kiriha.Mpv.UI/                # ViewModels и контроллеры плеера, оверлей торрент-стриминга
 │   └── Kiriha/                       # Главное приложение: Avalonia XAML Views, ViewModels, DI Host, навигация
@@ -129,9 +129,9 @@ graph TD
 ### 3.6. `Kiriha.Core.Streaming`
 * **Роль:** Интеграция с каталогами онлайн-просмотра аниме и резолвинг видеопотоков (HLS, MP4, DASH).
 * **Ключевые компоненты:**
-  - `Providers/`: `AniLibriaProvider` (REST API Aniliberty, прямое HLS 1080p/720p/480p), `AnimeGoProvider` (каталог AnimeGo, парсинг эпизодов и озвучек через AngleSharp).
+  - `Providers/`: `AniLibriaProvider` (REST API Aniliberty, прямое HLS 1080p/720p/480p), `AnimeLibProvider` (каталог и эпизоды AnimeLib), `DreamCastProvider` (каталог студии DreamCast), `YummyAnimeProvider` (агрегатор плееров и озвучек), `Anime365Provider` (каталог с поддержкой зеркал и авторизации по токену), `AnimeGoProvider` (каталог AnimeGo).
   - `Extractors/`: `KodikVideoExtractor` (дешифрование ROT-18 + Base64, динамический API-путь плеера), `AniboomVideoExtractor` (извлечение HLS/DASH с корректными заголовками Origin/Referer), `SibnetVideoExtractor` (извлечение MP4).
-  - `Services/StreamingService`: фасад поиска по всем провайдерам и авто-резолвинга стримов для плеера.
+  - `Services/StreamingService`: фасад асинхронного поиска по всем провайдерам, дедупликация и авто-резолвинг стримов для плеера.
 
 ### 3.7. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
 * **Роль:** Видеоплеер.
@@ -144,7 +144,7 @@ graph TD
   - `Composition/`: модульная регистрация DI (`DataServicesRegistration`, `TrackingServicesRegistration`, `BackgroundServicesRegistration`, `UiServicesRegistration`).
   - `Services/AppLifecycle/`: супервизор жизненного цикла (`AppStartupCoordinator`), запуск в обычном режиме или в `--player` режиме для ассоциации файлов.
   - `Services/AppLifecycle/Shutdown/`: graceful shutdown хэндлеры (`TorrServerShutdownHandler`, `PlayerResidentShutdownHandler`, `HostedServicesShutdownHandler`).
-  - `ViewModels/` и `Views/`: экраны списков (`AnimeListView`), сезонника (`SeasonalView`), плеера (`PlayerWindow`), аналитики (`AnalyticsView`), торрентов (`TorrentsView` — поиск Nyaa, фильтрация и прямой запуск стриминга), настроек (`SettingsView`).
+  - `ViewModels/` и `Views/`: экраны списков (`AnimeListView`), сезонника (`SeasonalView`), плеера (`PlayerWindow`), аналитики (`AnalyticsView`), торрентов (`TorrentsView` — гибридный агрегатор: поиск Nyaa с умным выделением релиз-групп `[Erai-Raws]` в `GroupChip`, и онлайн-поиск со скорингом релевантности `OnlineRelevanceScorer`, фильтрацией по качеству/языку и персистентным переключателем режимов), настроек (`SettingsView`).
 
 ---
 
@@ -164,6 +164,11 @@ graph TD
    - Локальный процесс `torrserver.exe` управляется сервисом `TorrServerService` (порт по умолчанию: 8090, скачивается скриптом `scripts/download-torrserver.ps1`).
    - Настройки по умолчанию выделяют буфер в оперативной памяти (RAM cache, 0 disk bytes) для исключения износа диска.
    - Ссылка на воспроизведение передаётся напрямую в `libmpv` (HTTP loopback), а статус буферизации и соединения транслируется в плеер в реальном времени.
+6. **Онлайн-стриминг и UI-плашки:**
+   - Переключатель режимов «Торренты» / «Онлайн» в шапке сохраняется в `AppSettings.TorrentConfig.IsOnlineMode` и восстанавливается между сессиями.
+   - Для новых пользователей по умолчанию включена строго одна AniLibria (`1/5`).
+   - Выдача ранжируется многофакторным скорером `OnlineRelevanceScorer` (точное совпадение, вхождение фразы, плотность слов по русскому, английскому и ромадзи названиям).
+   - Плашки провайдеров (`ProviderBadge`) строго унифицированы со стилем `GroupChip` (чистая типографика 10px SemiBold, без иконок, скругление 5px, отступы 6,2, системные кисти `AnalyticsSection*Brush`).
 
 ---
 

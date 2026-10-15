@@ -8,9 +8,9 @@ For the complete architectural breakdown, dependency graph, and legacy/tech-debt
 
 ## 1. Project Tech Stack & Rules
 
-* **Target Framework:** `.NET 11.0` (C# 15)
+* **Target Framework:** `.NET 11.0 RC2` (C# 15)
 * **UI Framework:** `Avalonia UI 12.1.4` with Fluent theme and compiled bindings enabled (`x:DataType` is required on views).
-* **Database:** `SQLite` with EF Core 11 (DbContextFactory pattern, `NoTracking` by default, WAL mode via custom interceptor).
+* **Database:** `SQLite` with EF Core 11 RC2 (DbContextFactory pattern, `NoTracking` by default, WAL mode via custom interceptor).
 * **Video Player:** Native `libmpv-2.dll` (located in `subprojects/mpv/`), OpenGL rendering integration.
 * **Torrent Streaming:** Integrated `TorrServer` (`torrserver.exe` managed via `scripts/download-torrserver.ps1` or external instance), in-memory BitTorrent streaming with direct `libmpv` playback.
 * **Compiler Rules:**
@@ -28,7 +28,7 @@ Kiriha.sln
 ├── src/Kiriha.Infrastructure/     # Anisthesia (player detection), TorrServer, AnitomySharp, HTTP cache, Win32
 ├── src/Kiriha.Data/               # EF Core DbContext, migrations, SQLite repositories
 ├── src/Kiriha.Core.Tracking/      # MAL / Shiki / AniList API, sync manager, airing info, Nyaa RSS
-├── src/Kiriha.Core.Streaming/     # Online anime streaming (AniLibria, AnimeVost, AnimeGo, Kodik, Aniboom, Sibnet)
+├── src/Kiriha.Core.Streaming/     # Online anime streaming (AniLibria, AnimeLib, DreamCast, YummyAnime, Anime 365, Kodik, Aniboom, Sibnet)
 ├── src/Kiriha.Mpv/                # Native libmpv interop, OpenGL rendering
 ├── src/Kiriha.Mpv.UI/             # Player ViewModels, torrent streaming & state controllers
 └── src/Kiriha/                    # Main Avalonia application, ViewModels, Views, Composition (DI)
@@ -51,6 +51,11 @@ Kiriha.sln
    * Managed via `ITorrServerService` (`src/Kiriha.Infrastructure/TorrServer/`).
    * Runs as a managed child process or connects to an existing instance. Configured for pure RAM streaming cache (0 disk bytes).
    * Direct streaming to `libmpv` via loopback HTTP; player overlay tracks buffer, peer count, and download speed in real-time (`PlayerViewModel.TorrentStreaming.cs`), with graceful termination via `TorrServerShutdownHandler`.
+5. **Online Anime Streaming & UI Integration:**
+   * Multi-provider search and stream extraction reside in `src/Kiriha.Core.Streaming/`.
+   * Dual Torrents/Online search toggle is persisted via `AppSettings.TorrentConfig.IsOnlineMode` across restarts.
+   * Relevance scoring (`OnlineRelevanceScorer`) ranks exact and close title matches above fuzzy/junk results.
+   * Provider badges in search results strictly adhere to `GroupChip` styling (clean typography, no icons, 5px radius, 6,2 padding, themed `AnalyticsSection*Brush`). Default online source is AniLibria only (`1/5`).
 
 ---
 

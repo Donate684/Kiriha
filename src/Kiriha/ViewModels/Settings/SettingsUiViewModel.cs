@@ -167,9 +167,10 @@ public partial class SettingsUiViewModel : ObservableObject
         {
             foreach (var window in desktop.Windows)
             {
-                if (window is Views.MainWindow main) main.ApplyMica();
-                else if (window is Views.AnimeDetailsWindow details) details.ApplyMica();
-                else if (window is Views.Player.PlayerSelectionWindow playerSelection) playerSelection.ApplyMica();
+                if (window is Views.KirihaWindowBase kw)
+                {
+                    kw.ApplyMica();
+                }
             }
         }
     }

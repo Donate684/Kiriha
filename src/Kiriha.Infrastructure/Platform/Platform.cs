@@ -7,10 +7,8 @@ namespace Kiriha.Infrastructure.Platform;
 public static class Platform
 {
     /// <summary>
-    /// Mica window backdrop ships in Windows 11 (build 22000+). On older
-    /// Windows or non-Windows the caller should fall back to AcrylicBlur or
-    /// a plain solid brush.
+    /// Mica and AcrylicBlur window backdrops are supported on Windows (Windows 10+).
+    /// Windows 11 uses Mica, while Windows 10 uses AcrylicBlur.
     /// </summary>
-    public static bool IsMicaSupported =>
-        OperatingSystem.IsWindows() && Environment.OSVersion.Version.Build >= 22000;
+    public static bool IsMicaSupported => OperatingSystem.IsWindows();
 }

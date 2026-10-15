@@ -10,7 +10,8 @@ Indispensable tool for those who care more about meticulously tracking “Chines
 *   **Release Map & Schedule:** Intuitive seasonal calendar with countdown timers until new episodes air.
 *   **Mirrored Sync:** Support for **MyAnimeList** and two versions of **Shikimori**.
 *   **Seasonal List:** A convenient seasonal overview tracking upcoming sequels and new releases.
-*   **Torrent Aggregator:** Built-in search and **Nyaa** release RSS feed with automatic episode matching and one-click magnet link launching.
+*   **Torrent Aggregator:** Built-in search and **Nyaa** release RSS feed with automatic episode matching, release group extraction, and one-click magnet link launching.
+*   **Online Streaming Aggregator:** Built-in multi-provider online anime search and streaming (**AniLibria**, **AnimeLib**, **DreamCast**, **YummyAnime**, **Anime 365**) with direct stream extraction (Kodik, Aniboom, Sibnet) into **libmpv**, source and episode selection, and quality/language filtering.
 *   **Discord Rich Presence:** Automatically shares the currently watched title, poster, episode number, and elapsed time to your **Discord** status.
 *   **Automatic Scrobbling:** The background **Anisthesia** engine and **AnitomySharp** parser recognize titles and episode numbers on the fly from files and Windows media sessions without a single click.
 *   **Built-in Player:** Native engine powered by **libmpv**.

@@ -62,7 +62,18 @@ public class KirihaWindowBase : Window
         else
         {
             TransparencyLevelHint = [WindowTransparencyLevel.None];
-            ClearValue(BackgroundProperty);
+            if (this.TryFindResource("SolidBackgroundFillColorBaseBrush", out var brush) && brush is IBrush b)
+            {
+                Background = b;
+            }
+            else if (this.TryFindResource("SolidBackgroundFillColorBase", out var color) && color is Color c)
+            {
+                Background = new SolidColorBrush(c);
+            }
+            else
+            {
+                ClearValue(BackgroundProperty);
+            }
         }
     }
 

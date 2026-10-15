@@ -9,6 +9,11 @@ public static class AboutCredits
         new CreditEntry("Shikimori",   "Russian titles & descriptions · shikimori.one", "https://shikimori.one"),
         new CreditEntry("ShikimoriRIP", "Community fork Shikimori · shikimori.rip", "https://shikimori.rip"),
         new CreditEntry("Nyaa.si",     "Torrent feed · nyaa.si",                    "https://nyaa.si"),
+        new CreditEntry("AniLibria",   "Online streaming · anilibria.tv",           "https://anilibria.tv"),
+        new CreditEntry("AnimeLib",    "Online streaming · animelib.me",            "https://animelib.me"),
+        new CreditEntry("DreamCast",   "Online streaming · dreamerscast.com",       "https://dreamerscast.com"),
+        new CreditEntry("YummyAnime",  "Online streaming · yummyanime.tv",          "https://yummyanime.tv"),
+        new CreditEntry("Anime 365",   "Online streaming · smotret-anime.online",   "https://smotret-anime.online"),
     ];
 
     public static IReadOnlyList<CreditEntry> Inspirations { get; } =
@@ -31,6 +36,8 @@ public static class AboutCredits
         new CreditEntry("Entity Framework Core (SQLite)", "MIT · Microsoft",                           "https://learn.microsoft.com/ef/core/"),
         new CreditEntry("Serilog",                        "Apache 2.0 · Structured logging",           "https://serilog.net"),
         new CreditEntry("Velopack",                       "MIT · Auto-update framework",               "https://velopack.io"),
+        new CreditEntry("AngleSharp",                     "MIT · HTML5 DOM parsing engine",            "https://anglesharp.github.io/"),
+        new CreditEntry("WebView2",                       "BSD · Embedded Chromium browser",           "https://developer.microsoft.com/microsoft-edge/webview2/"),
         new CreditEntry("DiscordRichPresence",            "MIT · Lachee",                              "https://github.com/Lachee/discord-rpc-csharp"),
         new CreditEntry("AnitomySharp",                   "MPL 2.0 · Filename parsing",                "https://github.com/erengy/anitomy"),
         new CreditEntry("Anisthesia",                     "MPL 2.0 · Local media tracking",            "https://github.com/erengy/anisthesia"),
