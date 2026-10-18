@@ -500,6 +500,12 @@ public class AnimeListActionServiceTests
     [Fact]
     public async Task AddToListAsync_OngoingAnime_TriggersAiringSync()
     {
+        var syncTcs = new TaskCompletionSource<bool>();
+        _airingServiceMock
+            .Setup(a => a.SyncEpisodesForAnimeAsync(It.IsAny<AnimeEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Callback(() => syncTcs.TrySetResult(true));
+
         var service = CreateService(enableTracker: true);
         var item = new AnimeEntity
         {
@@ -512,7 +518,8 @@ public class AnimeListActionServiceTests
         var result = await service.AddToListAsync(item, UserAnimeStatus.Watching);
 
         Assert.True(result.Success);
-        await Task.Delay(50);
+        var completed = await Task.WhenAny(syncTcs.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+        Assert.True(completed == syncTcs.Task, "Airing sync was not triggered within timeout");
         _airingServiceMock.Verify(a => a.SyncEpisodesForAnimeAsync(item, It.IsAny<CancellationToken>()), Times.Once);
     }
 
