@@ -70,7 +70,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <Content Include="..\..\subprojects\mpv\**\*" Link="mpv\%(RecursiveDir)%(Filename)%(Extension)">
+    <Content Include="..\..\subprojects\mpv\libmpv-2.dll" Link="mpv\libmpv-2.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\subprojects\mpv\version.txt" Link="mpv\version.txt" Condition="Exists('..\..\subprojects\mpv\version.txt')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\..\subprojects\torrserver\**\*" Link="torrserver\%(RecursiveDir)%(Filename)%(Extension)">
@@ -93,7 +96,8 @@
   <Target Name="DownloadMpv" BeforeTargets="BeforeBuild;AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)..\..\scripts\download-mpv.ps1&quot;" Condition="!Exists('$(ProjectDir)..\..\subprojects\mpv\libmpv-2.dll')" />
     <ItemGroup>
-      <_MpvFiles Include="..\..\subprojects\mpv\**\*" />
+      <_MpvFiles Include="..\..\subprojects\mpv\libmpv-2.dll" />
+      <_MpvFiles Include="..\..\subprojects\mpv\version.txt" Condition="Exists('$(ProjectDir)..\..\subprojects\mpv\version.txt')" />
       <Content Include="@(_MpvFiles)" Link="mpv\%(RecursiveDir)%(Filename)%(Extension)">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
