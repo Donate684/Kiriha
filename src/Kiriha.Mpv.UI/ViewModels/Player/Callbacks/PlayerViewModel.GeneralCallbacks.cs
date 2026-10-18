@@ -171,5 +171,8 @@ public partial class PlayerViewModel
             Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
             _timer?.Stop();
         }
+
+        _lastPublishedIsPlaying = value;
+        _statePublisher?.Publish();
     }
 }

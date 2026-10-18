@@ -239,6 +239,139 @@ public class TrackingServiceTests : IDisposable
         Assert.Equal("2", service.CurrentMedia.Episode);
     }
 
+    [Fact]
+    public async Task SetInternalMedia_PauseAndResume_DoesNotCancelScrobble()
+    {
+        // Arrange
+        var match = new AnimeEntity { Id = 500, Title = "Frieren", Status = UserAnimeStatus.Watching };
+        _animeRepository.Collection.Add(match);
+
+        var playingState = new InternalPlayerState
+        {
+            AnimeId = 500,
+            AnimeTitle = "Frieren",
+            OriginalTitle = "Frieren_01.mkv",
+            Episode = "1",
+            IsPlaying = true,
+            Position = 10,
+            Duration = 1400
+        };
+
+        await _trackingService.SetInternalMediaAsync(playingState);
+        _mockScrobbleService.Verify(x => x.StartScrobble(It.IsAny<ParsedMedia>(), match), Times.Once);
+        _mockScrobbleService.Invocations.Clear();
+
+        // Act 1: Pause
+        var pausedState = new InternalPlayerState
+        {
+            AnimeId = 500,
+            AnimeTitle = "Frieren",
+            OriginalTitle = "Frieren_01.mkv",
+            Episode = "1",
+            IsPlaying = false,
+            Position = 10,
+            Duration = 1400
+        };
+        await _trackingService.SetInternalMediaAsync(pausedState);
+
+        // Act 2: Resume
+        var resumedState = new InternalPlayerState
+        {
+            AnimeId = 500,
+            AnimeTitle = "Frieren",
+            OriginalTitle = "Frieren_01.mkv",
+            Episode = "1",
+            IsPlaying = true,
+            Position = 15,
+            Duration = 1400
+        };
+        await _trackingService.SetInternalMediaAsync(resumedState);
+
+        // Assert: CancelScrobble was NEVER called, and playing state was updated
+        _mockScrobbleService.Verify(x => x.CancelScrobble(), Times.Never);
+        _mockScrobbleService.Verify(x => x.UpdatePlayingState(false), Times.Once);
+        _mockScrobbleService.Verify(x => x.UpdatePlayingState(true), Times.Once);
+    }
+
+    [Fact]
+    public async Task AnisthesiaEvents_WhenInternalPlayerActive_DoNotCancelOrOverrideScrobble()
+    {
+        // Arrange
+        var match = new AnimeEntity { Id = 600, Title = "Dungeon Meshi", Status = UserAnimeStatus.Watching };
+        _animeRepository.Collection.Add(match);
+
+        var internalState = new InternalPlayerState
+        {
+            AnimeId = 600,
+            AnimeTitle = "Dungeon Meshi",
+            OriginalTitle = "Dungeon_Meshi_01.mkv",
+            Episode = "1",
+            IsPlaying = true,
+            Position = 100,
+            Duration = 1400
+        };
+        await _trackingService.SetInternalMediaAsync(internalState);
+        _mockScrobbleService.Invocations.Clear();
+
+        // Act 1: External Anisthesia detector fires MediaCleared
+        _mockAnisthesiaService.Raise(x => x.MediaCleared += null, EventArgs.Empty);
+
+        // Assert: CancelScrobble was NOT called because internal player is active
+        _mockScrobbleService.Verify(x => x.CancelScrobble(), Times.Never);
+
+        // Act 2: External Anisthesia detector fires MediaDetected for an external media
+        _mockAnisthesiaService.Raise(x => x.MediaDetected += null, _mockAnisthesiaService.Object, new ParsedMedia
+        {
+            ProcessName = "mpv",
+            AnimeTitle = "Other Anime",
+            OriginalTitle = "Other Anime 01.mkv",
+            Episode = "1",
+            IsPlaying = false
+        });
+
+        // Assert: External detection was ignored; media remains internal
+        Assert.Equal("Dungeon Meshi", _trackingService.CurrentMedia?.AnimeTitle);
+        Assert.Equal("KirihaInternal", _trackingService.CurrentMedia?.ProcessName);
+        _mockScrobbleService.Verify(x => x.CancelScrobble(), Times.Never);
+    }
+
+    [Fact]
+    public async Task SetInternalMedia_EpisodeFormattingDifference_DoesNotCancelScrobble()
+    {
+        // Arrange
+        var match = new AnimeEntity { Id = 700, Title = "Oshi no Ko", Status = UserAnimeStatus.Watching };
+        _animeRepository.Collection.Add(match);
+
+        var state1 = new InternalPlayerState
+        {
+            AnimeId = 700,
+            AnimeTitle = "Oshi no Ko",
+            OriginalTitle = "Oshi_no_Ko_01.mkv",
+            Episode = "01",
+            IsPlaying = true,
+            Position = 5,
+            Duration = 1400
+        };
+        await _trackingService.SetInternalMediaAsync(state1);
+        _mockScrobbleService.Invocations.Clear();
+
+        // Act: Metadata enrichment normalizes episode to "1"
+        var state2 = new InternalPlayerState
+        {
+            AnimeId = 700,
+            AnimeTitle = "Oshi no Ko",
+            OriginalTitle = "Oshi_no_Ko_01.mkv",
+            Episode = "1",
+            IsPlaying = true,
+            Position = 10,
+            Duration = 1400
+        };
+        await _trackingService.SetInternalMediaAsync(state2);
+
+        // Assert: Should be treated as same media without cancellation
+        _mockScrobbleService.Verify(x => x.CancelScrobble(), Times.Never);
+    }
+
     public void Dispose()
     {
         _trackingService.Dispose();

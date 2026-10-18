@@ -8,14 +8,7 @@
 # The latest version of this file can be found at:
 # <https://github.com/erengy/anisthesia>
 #
-# This file is in the public domain.
-
-Kiriha
-	executables:
-		Kiriha
-	strategies:
-		window_title:
-			^\[KirihaPlayer\]\s+(.+)
+# This file in the public domain.
 
 5KPlayer
 	windows:

@@ -108,6 +108,9 @@ public class DetectionManager
             for (int p = 0; p < _processBuffer.Count; p++)
             {
                 var (pid, procName) = _processBuffer[p];
+                if (procName.Equals("Kiriha", StringComparison.OrdinalIgnoreCase) || pid == Environment.ProcessId)
+                    continue;
+
                 try
                 {
                     var matchingPlayers = GetMatchingPlayers(procName);

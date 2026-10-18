@@ -18,6 +18,15 @@ public partial class TrackingService
     {
         lock (_state)
         {
+            // If internal player is currently active, external detector (Anisthesia)
+            // must NOT clear the media or cancel the scrobble!
+            if (ReferenceEquals(sender, _anisthesiaService) &&
+                _currentMedia != null &&
+                string.Equals(_currentMedia.ProcessName, "KirihaInternal", StringComparison.Ordinal))
+            {
+                return;
+            }
+
             _currentMedia = null;
             _matchedAnime = null;
         }
@@ -44,6 +53,13 @@ public partial class TrackingService
             lock (_state)
             {
                 if (_manualMapInProgress) return;
+
+                // If internal player is currently active, do not allow external detector events to override it
+                if (_currentMedia != null &&
+                    string.Equals(_currentMedia.ProcessName, "KirihaInternal", StringComparison.Ordinal))
+                {
+                    return;
+                }
             }
 
             await MatchMediaAsync(media).ConfigureAwait(false);

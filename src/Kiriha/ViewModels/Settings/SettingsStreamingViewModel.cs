@@ -183,6 +183,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
 
                 IsAnimeLibLoggedIn = true;
                 AnimeLibUsername = username;
+                IsManualTokenExpanded = false;
                 StatusMessage = UIUtils.GetLoc("settings.streaming.success_login");
                 Log.Information("[SettingsStreaming] AnimeLib token saved for user {User}", username);
             }
@@ -450,6 +451,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
             }, SettingsSection.Torrents);
 
             IsAnime365LoggedIn = true;
+            IsAnime365ManualTokenExpanded = false;
             Anime365Username = username ?? "Anime365 User";
             Anime365StatusText = FormatPremiumStatus(isPremium, premiumUntil);
             return true;
@@ -525,6 +527,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         }, SettingsSection.Torrents);
 
         IsAnime365LoggedIn = false;
+        IsAnime365ManualTokenExpanded = false;
         EnableAnime365 = false;
         Anime365Username = string.Empty;
         Anime365StatusText = string.Empty;

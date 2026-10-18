@@ -141,8 +141,9 @@
                     </Grid>
                 </StackPanel>
 
-                <!-- Manual Token input expander (for power users or fallback) -->
-                <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                <!-- Manual Token input expander (for power users or fallback, hidden when logged in) -->
+                <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="0,1,0,0" Padding="0,10,0,0"
+                        IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}">
                     <StackPanel Spacing="8">
                         <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
                                 Command="{Binding Streaming.ToggleManualTokenCommand}">
@@ -279,8 +280,9 @@
                     </ComboBox>
                 </Grid>
 
-                <!-- Manual Token input expander -->
-                <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                <!-- Manual Token input expander (hidden when logged in) -->
+                <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="0,1,0,0" Padding="0,10,0,0"
+                        IsVisible="{Binding !Streaming.IsAnime365LoggedIn}">
                     <StackPanel Spacing="8">
                         <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
                                 Command="{Binding Streaming.ToggleAnime365ManualTokenCommand}">

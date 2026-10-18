@@ -225,7 +225,7 @@
     "status_logged_in": "Авторизован (Прямой MP4)",
     "status_guest": "Гостевой режим",
     "guest_desc": "В гостевом режиме доступен плеер Kodik. Авторизуйтесь, чтобы разблокировать прямые MP4 потоки 1080p с серверов AnimeLib.",
-    "login_button": "Войти в AnimeLib",
+    "login_button": "Войти",
     "logout_button": "Выйти",
     "cancel_button": "Отмена",
     "apply_button": "Применить",

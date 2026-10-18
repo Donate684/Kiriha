@@ -130,10 +130,13 @@ public partial class TrackingService
                 existingMatched = _matchedAnime;
             }
 
+            bool sameOriginal = string.Equals(prev?.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(System.IO.Path.GetFileNameWithoutExtension(prev?.OriginalTitle), System.IO.Path.GetFileNameWithoutExtension(media.OriginalTitle), StringComparison.OrdinalIgnoreCase);
+
             bool isSameMediaFile = prev != null &&
-                string.Equals(prev.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase) &&
-                prev.Episode == media.Episode &&
-                (prev.AnimeTitle == media.AnimeTitle || existingMatched?.Id == animeId);
+                (sameOriginal || (existingMatched?.Id == animeId && existingMatched.Id > 0)) &&
+                AreEpisodesEqual(prev.Episode, media.Episode) &&
+                (string.Equals(prev.AnimeTitle, media.AnimeTitle, StringComparison.OrdinalIgnoreCase) || existingMatched?.Id == animeId);
 
             if (isSameMediaFile)
             {
@@ -226,11 +229,23 @@ public partial class TrackingService
         }
     }
 
+    private static bool AreEpisodesEqual(string? ep1, string? ep2)
+    {
+        if (string.Equals(ep1, ep2, StringComparison.OrdinalIgnoreCase)) return true;
+        if (int.TryParse(ep1, out int n1) && int.TryParse(ep2, out int n2)) return n1 == n2;
+        if (string.IsNullOrWhiteSpace(ep1) && string.IsNullOrWhiteSpace(ep2)) return true;
+        return false;
+    }
+
     private static bool IsSameMedia(ParsedMedia? a, ParsedMedia? b)
     {
         if (ReferenceEquals(a, b)) return true;
         if (a is null || b is null) return false;
-        return a.AnimeTitle == b.AnimeTitle && a.Episode == b.Episode && string.Equals(a.OriginalTitle, b.OriginalTitle, StringComparison.OrdinalIgnoreCase);
+        bool sameOriginal = string.Equals(a.OriginalTitle, b.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(System.IO.Path.GetFileNameWithoutExtension(a.OriginalTitle), System.IO.Path.GetFileNameWithoutExtension(b.OriginalTitle), StringComparison.OrdinalIgnoreCase);
+        return sameOriginal &&
+               AreEpisodesEqual(a.Episode, b.Episode) &&
+               string.Equals(a.AnimeTitle, b.AnimeTitle, StringComparison.OrdinalIgnoreCase);
     }
 
     public void NotifyCurrentMediaMetadataUpdated(AnimeEntity matched)

@@ -225,7 +225,7 @@
     "status_logged_in": "Authorized (Direct MP4)",
     "status_guest": "Guest Mode",
     "guest_desc": "In guest mode, only Kodik player is available. Log in to unlock direct 1080p MP4 streams from AnimeLib CDN.",
-    "login_button": "Log in to AnimeLib",
+    "login_button": "Log in",
     "logout_button": "Log out",
     "cancel_button": "Cancel",
     "apply_button": "Apply",
