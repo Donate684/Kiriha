@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Tracking.Integration;
@@ -16,7 +16,9 @@ public partial class SettingsSystemViewModel : ObservableObject
     [ObservableProperty] private bool _closeToTray;
     [ObservableProperty] private bool _minimizeToTray;
     [ObservableProperty] private bool _enableScrobbler;
+    [ObservableProperty] private ScrobbleDelayMode _scrobbleMode;
     [ObservableProperty] private decimal? _scrobbleDelaySeconds;
+    [ObservableProperty] private decimal? _scrobbleDelayPercent;
     [ObservableProperty] private bool _scrobbleNotifyOnSkip;
     [ObservableProperty] private bool _enableDiscordRPC;
     [ObservableProperty] private bool _enableBackgroundMetadataFetch;
@@ -35,15 +37,36 @@ public partial class SettingsSystemViewModel : ObservableObject
 
     [ObservableProperty] private AiringSourceOption _selectedAiringSource;
 
+    public List<ScrobbleModeOption> AvailableScrobbleModes { get; } = new()
+    {
+        new ScrobbleModeOption(Core.UIUtils.GetLoc("scrobbler.delay.mode_time"), ScrobbleDelayMode.Time),
+        new ScrobbleModeOption(Core.UIUtils.GetLoc("scrobbler.delay.mode_percent"), ScrobbleDelayMode.Percentage)
+    };
+
+    [ObservableProperty] private ScrobbleModeOption _selectedScrobbleMode;
+
     public List<ScrobbleDelayOption> AvailableScrobbleDelays { get; } = new()
     {
         new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.1_min"), 60),
         new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.3_min"), 180),
         new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.5_min"), 300),
         new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.10_min"), 600),
+        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.20_min"), 1200),
     };
 
     [ObservableProperty] private ScrobbleDelayOption _selectedScrobbleDelay;
+
+    public List<ScrobblePercentOption> AvailableScrobblePercentages { get; } = new()
+    {
+        new ScrobblePercentOption(Core.UIUtils.GetLoc("scrobbler.delay.25_percent"), 25),
+        new ScrobblePercentOption(Core.UIUtils.GetLoc("scrobbler.delay.50_percent"), 50),
+        new ScrobblePercentOption(Core.UIUtils.GetLoc("scrobbler.delay.75_percent"), 75),
+    };
+
+    [ObservableProperty] private ScrobblePercentOption _selectedScrobblePercentage;
+
+    public bool IsScrobbleTimeMode => ScrobbleMode == ScrobbleDelayMode.Time;
+    public bool IsScrobblePercentMode => ScrobbleMode == ScrobbleDelayMode.Percentage;
 
     public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService, IStartupManager startupManager)
     {
@@ -56,11 +79,21 @@ public partial class SettingsSystemViewModel : ObservableObject
         CloseToTray = _settingsService.Current.System.CloseToTray;
         MinimizeToTray = _settingsService.Current.System.MinimizeToTray;
         EnableScrobbler = _settingsService.Current.System.Scrobbler.Enabled;
+        ScrobbleMode = _settingsService.Current.System.Scrobbler.Mode;
+        _selectedScrobbleMode = AvailableScrobbleModes.Find(x => x.Value == ScrobbleMode)
+            ?? AvailableScrobbleModes[0];
+
         ScrobbleDelaySeconds = _settingsService.Current.System.Scrobbler.DelaySeconds;
-        ScrobbleNotifyOnSkip = _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode;
         var delaySec = _settingsService.Current.System.Scrobbler.DelaySeconds;
         _selectedScrobbleDelay = AvailableScrobbleDelays.Find(x => x.Seconds == delaySec)
             ?? AvailableScrobbleDelays.OrderBy(x => Math.Abs(x.Seconds - delaySec)).First();
+
+        ScrobbleDelayPercent = _settingsService.Current.System.Scrobbler.DelayPercent;
+        var delayPct = _settingsService.Current.System.Scrobbler.DelayPercent;
+        _selectedScrobblePercentage = AvailableScrobblePercentages.Find(x => x.Percent == delayPct)
+            ?? AvailableScrobblePercentages.OrderBy(x => Math.Abs(x.Percent - delayPct)).First();
+
+        ScrobbleNotifyOnSkip = _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode;
         EnableDiscordRPC = _settingsService.Current.System.EnableDiscordRPC;
         EnableBackgroundMetadataFetch = _settingsService.Current.System.EnableBackgroundMetadataFetch;
         EnableLogging = _settingsService.Current.System.EnableLogging;
@@ -90,10 +123,50 @@ public partial class SettingsSystemViewModel : ObservableObject
     partial void OnEnableBackgroundMetadataFetchChanged(bool value) => _settingsService.Update(settings => settings.System.EnableBackgroundMetadataFetch = value, SettingsSection.System);
     partial void OnEnableLoggingChanged(bool value) => _settingsService.Update(settings => settings.System.EnableLogging = value, SettingsSection.System);
     partial void OnEnableScrobblerChanged(bool value) => _settingsService.Update(settings => settings.System.Scrobbler.Enabled = value, SettingsSection.System);
+
+    partial void OnScrobbleModeChanged(ScrobbleDelayMode value)
+    {
+        OnPropertyChanged(nameof(IsScrobbleTimeMode));
+        OnPropertyChanged(nameof(IsScrobblePercentMode));
+    }
+
+    partial void OnSelectedScrobbleModeChanged(ScrobbleModeOption value)
+    {
+        if (value != null)
+        {
+            ScrobbleMode = value.Value;
+            _settingsService.Update(settings => settings.System.Scrobbler.Mode = value.Value, SettingsSection.System);
+        }
+    }
+
     partial void OnScrobbleDelaySecondsChanged(decimal? value)
     {
         if (value.HasValue) _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = (int)value.Value, SettingsSection.System);
     }
+
+    partial void OnSelectedScrobbleDelayChanged(ScrobbleDelayOption value)
+    {
+        if (value != null)
+        {
+            ScrobbleDelaySeconds = value.Seconds;
+            _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = value.Seconds, SettingsSection.System);
+        }
+    }
+
+    partial void OnScrobbleDelayPercentChanged(decimal? value)
+    {
+        if (value.HasValue) _settingsService.Update(settings => settings.System.Scrobbler.DelayPercent = (int)value.Value, SettingsSection.System);
+    }
+
+    partial void OnSelectedScrobblePercentageChanged(ScrobblePercentOption value)
+    {
+        if (value != null)
+        {
+            ScrobbleDelayPercent = value.Percent;
+            _settingsService.Update(settings => settings.System.Scrobbler.DelayPercent = value.Percent, SettingsSection.System);
+        }
+    }
+
     partial void OnScrobbleNotifyOnSkipChanged(bool value) => _settingsService.Update(settings => settings.System.Scrobbler.NotifyOnSkippedEpisode = value, SettingsSection.System);
 
     partial void OnEnableDiscordRPCChanged(bool value)
@@ -115,16 +188,9 @@ public partial class SettingsSystemViewModel : ObservableObject
             _settingsService.Update(settings => settings.System.AiringSource = value.Value, SettingsSection.System);
         }
     }
-
-    partial void OnSelectedScrobbleDelayChanged(ScrobbleDelayOption value)
-    {
-        if (value != null)
-        {
-            ScrobbleDelaySeconds = value.Seconds;
-            _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = value.Seconds, SettingsSection.System);
-        }
-    }
 }
 
 public record AiringSourceOption(string Name, EpisodeAiringSource Value);
+public record ScrobbleModeOption(string Name, ScrobbleDelayMode Value);
 public record ScrobbleDelayOption(string Name, int Seconds);
+public record ScrobblePercentOption(string Name, int Percent);

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
         xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
@@ -49,6 +49,23 @@
                     <Border Classes="Divider"/>
                     <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.mode_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.mode_subtitle}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center"
+                                  ItemsSource="{Binding System.AvailableScrobbleModes}"
+                                  SelectedItem="{Binding System.SelectedScrobbleMode}"
+                                  Width="200" CornerRadius="6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vmSettings:ScrobbleModeOption">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Border Classes="Divider"/>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding System.IsScrobbleTimeMode}" IsEnabled="{Binding System.EnableScrobbler}">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.title}"/>
                             <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.subtitle}"/>
                         </StackPanel>
@@ -58,6 +75,22 @@
                                   Width="200" CornerRadius="6">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="vmSettings:ScrobbleDelayOption">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding System.IsScrobblePercentMode}" IsEnabled="{Binding System.EnableScrobbler}">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.percent_title}"/>
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.percent_subtitle}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" VerticalAlignment="Center"
+                                  ItemsSource="{Binding System.AvailableScrobblePercentages}"
+                                  SelectedItem="{Binding System.SelectedScrobblePercentage}"
+                                  Width="200" CornerRadius="6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vmSettings:ScrobblePercentOption">
                                     <TextBlock Text="{Binding Name}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>

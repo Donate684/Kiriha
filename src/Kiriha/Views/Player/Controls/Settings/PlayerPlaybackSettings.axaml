@@ -1,6 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+             xmlns:models="using:Kiriha.Core.Domain.Models"
              xmlns:mpv="clr-namespace:Kiriha.Mpv"
              xmlns:material="using:Material.Icons.Avalonia"
              xmlns:conv="using:Kiriha.Views.Converters"
@@ -69,6 +70,33 @@
                                             Command="{Binding ResetSettingCommand}"
                                             CommandParameter="RememberPlaybackPosition"
                                             IsVisible="{Binding RememberPlaybackPosition, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
+                                    </Button>
+                                </Grid>
+                                <Border Classes="player-settings-divider"/>
+
+                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
+                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.skip_op_ed}"/>
+                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.skip_op_ed_sub}"/>
+                                    </StackPanel>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding SkipOpeningEndingOptions}"
+                                              SelectedItem="{Binding SelectedSkipOpeningEndingOption}"
+                                              VerticalAlignment="Center"
+                                              Width="180">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="models:SkipOpeningEndingOption">
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Classes="player-settings-reset-btn"
+                                            Command="{Binding ResetSettingCommand}"
+                                            CommandParameter="SkipOpeningEnding"
+                                            IsVisible="{Binding SkipOpeningEnding, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Prompt}"
                                             ToolTip.Tip="{DynamicResource l.player.reset_default}">
                                         <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
                                     </Button>

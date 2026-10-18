@@ -1,9 +1,10 @@
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Path = Avalonia.Controls.Shapes.Path;
 
@@ -14,6 +15,24 @@ public partial class PlayerChapterMarkers : UserControl
     private PlayerViewModel? _subscribedViewModel;
     private static readonly Geometry s_chapterMarkerGeometry = Geometry.Parse("M0,0 L6,0 L3,3 Z M0,10 L6,10 L3,7 Z");
     private IBrush? _cachedMarkerFill;
+
+    // Skip segment color brushes (accented modern palette for OP, ED, Mixed OP/ED, Recap, Preview)
+    private static readonly IBrush s_introBrush = new SolidColorBrush(Color.FromArgb(230, 255, 150, 0));       // Vibrant Orange (OP)
+    private static readonly IBrush s_outroBrush = new SolidColorBrush(Color.FromArgb(230, 230, 80, 96));       // Coral Red (ED)
+    private static readonly IBrush s_mixedIntroBrush = new SolidColorBrush(Color.FromArgb(230, 255, 183, 77)); // Amber/Gold (Mixed OP)
+    private static readonly IBrush s_mixedOutroBrush = new SolidColorBrush(Color.FromArgb(230, 186, 104, 200));// Soft Violet (Mixed ED)
+    private static readonly IBrush s_recapBrush = new SolidColorBrush(Color.FromArgb(230, 47, 128, 255));      // Tech Blue (Recap)
+    private static readonly IBrush s_previewBrush = new SolidColorBrush(Color.FromArgb(230, 0, 212, 199));     // Cyan (Preview)
+
+    private static IBrush GetSegmentBrush(SkipSegmentType type) => type switch
+    {
+        SkipSegmentType.Intro => s_introBrush,
+        SkipSegmentType.Outro => s_outroBrush,
+        SkipSegmentType.MixedIntro => s_mixedIntroBrush,
+        SkipSegmentType.MixedOutro => s_mixedOutroBrush,
+        SkipSegmentType.Recap => s_recapBrush,
+        _ => s_previewBrush
+    };
 
     private IBrush GetMarkerFill()
     {
@@ -43,8 +62,9 @@ public partial class PlayerChapterMarkers : UserControl
         {
             _subscribedViewModel = vm;
             _subscribedViewModel.Chapters.CollectionChanged += OnChaptersChanged;
+            _subscribedViewModel.SkipSegments.CollectionChanged += OnSkipSegmentsChanged;
             _subscribedViewModel.PropertyChanged += OnViewModelPropertyChanged;
-            DrawChapterMarkers();
+            DrawAll();
         }
     }
 
@@ -54,6 +74,7 @@ public partial class PlayerChapterMarkers : UserControl
         if (_subscribedViewModel != null)
         {
             _subscribedViewModel.Chapters.CollectionChanged -= OnChaptersChanged;
+            _subscribedViewModel.SkipSegments.CollectionChanged -= OnSkipSegmentsChanged;
             _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _subscribedViewModel = null;
         }
@@ -66,6 +87,7 @@ public partial class PlayerChapterMarkers : UserControl
         if (_subscribedViewModel != null)
         {
             _subscribedViewModel.Chapters.CollectionChanged -= OnChaptersChanged;
+            _subscribedViewModel.SkipSegments.CollectionChanged -= OnSkipSegmentsChanged;
             _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
 
@@ -74,10 +96,11 @@ public partial class PlayerChapterMarkers : UserControl
         if (_subscribedViewModel != null)
         {
             _subscribedViewModel.Chapters.CollectionChanged += OnChaptersChanged;
+            _subscribedViewModel.SkipSegments.CollectionChanged += OnSkipSegmentsChanged;
             _subscribedViewModel.PropertyChanged += OnViewModelPropertyChanged;
         }
 
-        DrawChapterMarkers();
+        DrawAll();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -85,7 +108,7 @@ public partial class PlayerChapterMarkers : UserControl
         if (e.PropertyName == nameof(PlayerViewModel.Duration) || 
             e.PropertyName == nameof(PlayerViewModel.ShowChapterMarkers))
         {
-            DrawChapterMarkers();
+            DrawAll();
         }
     }
 
@@ -94,8 +117,19 @@ public partial class PlayerChapterMarkers : UserControl
         DrawChapterMarkers();
     }
 
+    private void OnSkipSegmentsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        DrawSkipSegments();
+    }
+
     private void OnChapterCanvasSizeChanged(object? sender, SizeChangedEventArgs e)
     {
+        DrawAll();
+    }
+
+    private void DrawAll()
+    {
+        DrawSkipSegments();
         DrawChapterMarkers();
     }
 
@@ -105,6 +139,74 @@ public partial class PlayerChapterMarkers : UserControl
         {
             playerVm.SeekTo(chapterTime);
             e.Handled = true;
+        }
+    }
+
+    private void DrawSkipSegments()
+    {
+        if (SegmentCanvas is null) return;
+
+        if (DataContext is not PlayerViewModel vm || !vm.ShowChapterMarkers || vm.Duration <= 0 || vm.SkipSegments.Count == 0)
+        {
+            foreach (var child in SegmentCanvas.Children)
+            {
+                child.IsVisible = false;
+            }
+            return;
+        }
+
+        double trackWidth = SegmentCanvas.Bounds.Width;
+        double trackHeight = SegmentCanvas.Bounds.Height;
+        if (trackWidth <= 0 || trackHeight <= 0) return;
+
+        double duration = vm.Duration;
+        double centerY = trackHeight / 2.0;
+        double barHeight = 4.5;
+        double top = centerY - (barHeight / 2.0);
+
+        int childIndex = 0;
+
+        foreach (var segment in vm.SkipSegments)
+        {
+            if (segment.EndSeconds <= segment.StartSeconds || segment.StartSeconds >= duration)
+                continue;
+
+            double startRatio = Math.Clamp(segment.StartSeconds / duration, 0.0, 1.0);
+            double endRatio = Math.Clamp(segment.EndSeconds / duration, 0.0, 1.0);
+
+            double startX = startRatio * trackWidth;
+            double endX = endRatio * trackWidth;
+            double width = Math.Max(3.0, endX - startX);
+
+            Border bar;
+            if (childIndex < SegmentCanvas.Children.Count)
+            {
+                bar = (Border)SegmentCanvas.Children[childIndex];
+                bar.IsVisible = true;
+            }
+            else
+            {
+                bar = new Border
+                {
+                    Height = barHeight,
+                    CornerRadius = new CornerRadius(2.25),
+                    IsHitTestVisible = false
+                };
+                SegmentCanvas.Children.Add(bar);
+            }
+
+            bar.Background = GetSegmentBrush(segment.Type);
+            bar.Width = width;
+
+            Canvas.SetLeft(bar, startX);
+            Canvas.SetTop(bar, top);
+
+            childIndex++;
+        }
+
+        for (int i = childIndex; i < SegmentCanvas.Children.Count; i++)
+        {
+            SegmentCanvas.Children[i].IsVisible = false;
         }
     }
 

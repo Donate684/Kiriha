@@ -3,5 +3,8 @@
              xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
              x:Class="Kiriha.Views.Player.Controls.PlayerChapterMarkers"
              x:DataType="vmPlayer:PlayerViewModel">
-    <Canvas Name="ChapterCanvas" VerticalAlignment="Stretch" SizeChanged="OnChapterCanvasSizeChanged"/>
+    <Grid VerticalAlignment="Stretch">
+        <Canvas Name="SegmentCanvas" VerticalAlignment="Stretch" IsHitTestVisible="False"/>
+        <Canvas Name="ChapterCanvas" VerticalAlignment="Stretch" SizeChanged="OnChapterCanvasSizeChanged"/>
+    </Grid>
 </UserControl>

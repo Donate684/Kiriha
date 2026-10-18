@@ -1,4 +1,5 @@
 using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Mpv.UI.Services.Player;
 using Serilog;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -14,6 +15,8 @@ public partial class PlayerViewModel
         try { _updateNavigationCts?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing navigation CTS"); }
 
         try { _timelinePreview.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing timeline preview"); }
+        try { _aniSkipCts?.Cancel(); } catch { }
+        try { _aniSkipCts?.Dispose(); } catch { }
 
         if (_timer != null)
         {
@@ -28,12 +31,14 @@ public partial class PlayerViewModel
         {
             if (RememberPlaybackPosition && !_isEofReached && Duration > 0 && CurrentTime > 0)
             {
-                if (CurrentTime < Duration * 0.95)
+                if (CurrentTime < Duration * 0.95 && CurrentTime >= 5)
                 {
+                    PlaybackResumeStore.SavePosition(VideoUrl, CurrentTime, Duration);
                     _playback.WriteWatchLaterConfig();
                 }
                 else
                 {
+                    PlaybackResumeStore.Remove(VideoUrl);
                     _playback.DeleteWatchLaterConfig();
                     _playback.SetSavePositionOnQuit(false);
                 }

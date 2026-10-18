@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Constants;
+﻿using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Core.Domain.Models;
 
@@ -91,6 +91,12 @@ public partial class AppSettings
         public bool MpvVideoSync { get; set; } = false;
         public bool MpvInterpolation { get; set; } = false;
         public bool SmartTrackAutoload { get; set; } = true;
+        public SkipOpeningEndingMode SkipOpeningEnding { get; set; } = SkipOpeningEndingMode.Prompt;
+        public bool SkipOp { get; set; } = true;
+        public bool SkipEd { get; set; } = true;
+        public bool SkipMixedOp { get; set; } = true;
+        public bool SkipMixedEd { get; set; } = true;
+        public bool SkipRecap { get; set; } = true;
         public bool EnableSonokoIntegration { get; set; } = false;
         public string SonokoIntegrationHotkey { get; set; } = "T";
     }

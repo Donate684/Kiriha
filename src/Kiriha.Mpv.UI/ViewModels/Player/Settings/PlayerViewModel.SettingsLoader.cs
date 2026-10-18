@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Constants;
+﻿using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 
@@ -24,6 +24,12 @@ public partial class PlayerViewModel
             AutoHideTimeout = Math.Clamp(settings.AutoHideTimeout, 0.5, 10.0);
             ShowChapterMarkers = settings.ShowChapterMarkers;
             SmartTrackAutoload = settings.SmartTrackAutoload;
+            SkipOpeningEnding = settings.SkipOpeningEnding;
+            SkipOp = settings.SkipOp;
+            SkipEd = settings.SkipEd;
+            SkipMixedOp = settings.SkipMixedOp;
+            SkipMixedEd = settings.SkipMixedEd;
+            SkipRecap = settings.SkipRecap;
             LeftClickAction = FindMouseAction(settings.LeftClickAction);
             RightClickAction = FindMouseAction(settings.RightClickAction);
             MiddleClickAction = FindMouseAction(settings.MiddleClickAction);

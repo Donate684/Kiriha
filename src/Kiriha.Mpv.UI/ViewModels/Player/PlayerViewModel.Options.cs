@@ -1,4 +1,5 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 
@@ -15,6 +16,9 @@ public partial class PlayerViewModel
     [ObservableProperty] private bool _showChapterMarkers = true;
     [ObservableProperty] private bool _smartTrackAutoload = true;
 
+    [ObservableProperty] private SkipOpeningEndingMode _skipOpeningEnding = SkipOpeningEndingMode.Prompt;
+    [ObservableProperty] private SkipOpeningEndingOption _selectedSkipOpeningEndingOption = null!;
+
     [ObservableProperty] private bool _showPlayPauseButton = true;
     [ObservableProperty] private bool _showSkipButtons = true;
     [ObservableProperty] private bool _showMuteButton = true;
@@ -28,6 +32,7 @@ public partial class PlayerViewModel
     [ObservableProperty] private bool _showSubtitleStyleButton = true;
     [ObservableProperty] private string _preferredAudioLanguages = "Japanese,jpn,ja";
 
+    public List<SkipOpeningEndingOption> SkipOpeningEndingOptions { get; private set; } = null!;
     public List<PlayerMouseActionOption> MouseActionOptions { get; private set; } = null!;
     public List<PlayerWheelActionOption> WheelActionOptions { get; private set; } = null!;
     public List<int> WheelStepOptions { get; } = new() { 1, 2, 5, 10 };
@@ -37,6 +42,9 @@ public partial class PlayerViewModel
 
     private void InitializeOptions()
     {
+        SkipOpeningEndingOptions = SkipOpeningEndingOptionFactory.CreateDefaultOptions(key => _localizer.GetLoc(key));
+        SelectedSkipOpeningEndingOption = SkipOpeningEndingOptions.FirstOrDefault(x => x.Value == SkipOpeningEnding) ?? SkipOpeningEndingOptions[1];
+
         MouseActionOptions = new()
         {
             new(_localizer.GetLoc("player.options.none"), PlayerMouseAction.None),
@@ -69,6 +77,91 @@ public partial class PlayerViewModel
 
         PlaybackStatusMessage = _localizer.GetLoc("player.state.loading");
         ScreenshotFolderTitle = _localizer.GetLoc("player.settings_adv.folder");
+    }
+
+    partial void OnSelectedSkipOpeningEndingOptionChanged(SkipOpeningEndingOption value)
+    {
+        if (value != null && !_isApplyingSettings)
+        {
+            SkipOpeningEnding = value.Value;
+        }
+    }
+
+    [ObservableProperty]
+    private bool _skipOp = true;
+
+    [ObservableProperty]
+    private bool _skipEd = true;
+
+    [ObservableProperty]
+    private bool _skipMixedOp = true;
+
+    [ObservableProperty]
+    private bool _skipMixedEd = true;
+
+    [ObservableProperty]
+    private bool _skipRecap = true;
+
+    partial void OnSkipOpChanged(bool value)
+    {
+        if (!_isApplyingSettings)
+        {
+            _settingsService?.Update(settings => settings.Player.SkipOp = value, SettingsSection.Player);
+        }
+    }
+
+    partial void OnSkipEdChanged(bool value)
+    {
+        if (!_isApplyingSettings)
+        {
+            _settingsService?.Update(settings => settings.Player.SkipEd = value, SettingsSection.Player);
+        }
+    }
+
+    partial void OnSkipMixedOpChanged(bool value)
+    {
+        if (!_isApplyingSettings)
+        {
+            _settingsService?.Update(settings => settings.Player.SkipMixedOp = value, SettingsSection.Player);
+        }
+    }
+
+    partial void OnSkipMixedEdChanged(bool value)
+    {
+        if (!_isApplyingSettings)
+        {
+            _settingsService?.Update(settings => settings.Player.SkipMixedEd = value, SettingsSection.Player);
+        }
+    }
+
+    partial void OnSkipRecapChanged(bool value)
+    {
+        if (!_isApplyingSettings)
+        {
+            _settingsService?.Update(settings => settings.Player.SkipRecap = value, SettingsSection.Player);
+        }
+    }
+
+    partial void OnSkipOpeningEndingChanged(SkipOpeningEndingMode value)
+    {
+        if (!_isApplyingSettings)
+        {
+            _settingsService?.Update(settings => settings.Player.SkipOpeningEnding = value, SettingsSection.Player);
+            if (value == SkipOpeningEndingMode.Disabled)
+            {
+                Overlay.DismissSkipPrompt();
+            }
+        }
+
+        if (SkipOpeningEndingOptions != null)
+        {
+            var match = SkipOpeningEndingOptions.FirstOrDefault(x => x.Value == value);
+            if (match != null && SelectedSkipOpeningEndingOption != match)
+            {
+                SelectedSkipOpeningEndingOption = match;
+                OnPropertyChanged(nameof(SelectedSkipOpeningEndingOption));
+            }
+        }
     }
 
     public string ScreenshotFolderTitle { get; private set; } = string.Empty;

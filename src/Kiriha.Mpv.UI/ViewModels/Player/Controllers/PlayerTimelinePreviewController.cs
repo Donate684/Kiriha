@@ -1,4 +1,4 @@
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -23,7 +23,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
         // Thumbnailer is initialized lazily on first hover
     }
 
-    public void Show(string videoUrl, double duration, double timeSeconds, double left)
+    public void Show(string videoUrl, double duration, double timeSeconds, double left, string? segmentLabel = null)
     {
         if (duration <= 0 || string.IsNullOrWhiteSpace(videoUrl))
         {
@@ -33,7 +33,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
 
         try
         {
-            _overlay.ShowTimelinePreview(timeSeconds, left);
+            _overlay.ShowTimelinePreview(timeSeconds, left, segmentLabel);
 
             if (_thumbnailer is null)
             {

@@ -1,5 +1,11 @@
-{
+﻿{
   "title": "Player",
+  "resume": {
+    "prompt": "Resume playback?",
+    "at_time": "from",
+    "continue": "Resume",
+    "dismiss": "Close"
+  },
   "settings": "Settings",
   "reset_default": "Reset to default",
   "reset_section": "Reset this section",
@@ -76,7 +82,7 @@
     "opt_oversample": "oversample (For pixel art)",
     "cscale": "Color scaling",
     "dither_depth": "Shade smoothing",
-    "default_auto": "Removes blocky 'steps' on smooth color transitions",
+    "default_auto": "Removes blocky \u0027steps\u0027 on smooth color transitions",
     "correct_downscaling": "High-quality shrinking",
     "default_yes": "Makes picture clearer when window is smaller than video",
     "deband": "Remove color banding (deband)",
@@ -97,7 +103,7 @@
     "sonoko_enable": "Enable integration",
     "sonoko_enable_ex": "Send the current video time straight to the subtitle editor with a button press",
     "sonoko_hotkey": "Hotkey",
-    "sonoko_hotkey_ex": "Example: A or Shift+A",
+    "sonoko_hotkey_ex": "Example: A or Shift\u002BA",
     "playback_smoothness": "Playback smoothness",
     "video_sync": "Display synchronization",
     "video_sync_desc": "Makes the picture smoother. Will take effect after restarting the player.",
@@ -107,7 +113,7 @@
   "settings_interface": {
     "title": "Interface",
     "hide_controls": "Hide control panel",
-    "hide_controls_sub": "Hide the buttons from the screen if you don't touch the mouse",
+    "hide_controls_sub": "Hide the buttons from the screen if you don\u0027t touch the mouse",
     "hide_timeout": "Hide timeout",
     "hide_timeout_sub": "How many seconds before the buttons disappear",
     "sec_format": "0.0 s",
@@ -164,7 +170,7 @@
     "default_u": "Change how the text looks on the screen",
     "sub_delay_earlier": "Subtitle delay -100ms",
     "default_z": "Shift subtitles 100ms earlier",
-    "sub_delay_later": "Subtitle delay +100ms",
+    "sub_delay_later": "Subtitle delay \u002B100ms",
     "default_x": "Shift subtitles 100ms later",
     "panel_buttons": "Panel buttons",
     "btn_play_pause": "Play / Pause",
@@ -181,9 +187,9 @@
   },
   "settings_audio": {
     "remember_volume": "Remember volume",
-    "remember_volume_sub": "Remember how loud it was last time, so it doesn't blast your ears",
+    "remember_volume_sub": "Remember how loud it was last time, so it doesn\u0027t blast your ears",
     "normalize_audio": "Volume normalization",
-    "normalize_audio_sub": "Makes quiet sounds easier to hear, and loud sounds won't hurt your ears",
+    "normalize_audio_sub": "Makes quiet sounds easier to hear, and loud sounds won\u0027t hurt your ears",
     "default_volume": "Default volume",
     "default_volume_sub": "How loud it will be when you open a video for the very first time"
   },
@@ -195,7 +201,16 @@
     "remember_position": "Remember playback position",
     "remember_position_sub": "Resume playback from where you left off",
     "default_speed": "Default speed",
-    "default_speed_sub": "The speed at which all new videos will start playing"
+    "default_speed_sub": "The speed at which all new videos will start playing",
+    "skip_op_ed": "Skip OP / ED",
+    "skip_op_ed_sub": "Automatically skip or show a quick skip prompt",
+    "skip_types": "Skip Categories",
+    "skip_types_sub": "Select segment categories to skip",
+    "skip_type_op": "OP",
+    "skip_type_ed": "ED",
+    "skip_type_mixed_op": "Mixed OP",
+    "skip_type_mixed_ed": "Mixed ED",
+    "skip_type_recap": "Recap"
   },
   "settings_track": {
     "pref_audio": "Preferred audio",
@@ -203,7 +218,7 @@
     "pref_sub": "Preferred subtitles",
     "pref_sub_sub": "Which language do you want to read text in (e.g. en, ru)",
     "smart_autoload": "Smart track autoload",
-    "smart_autoload_desc": "Automatically finds and turns on the right translation if it's in the same folder"
+    "smart_autoload_desc": "Automatically finds and turns on the right translation if it\u0027s in the same folder"
   },
   "overlay": {
     "error_failed_to_play": "Failed to play video",
@@ -224,7 +239,7 @@
     "peers_format": "Peers: {0} / Seeds: {1}",
     "cache_format": "Cache: {0} / {1} ({2}%)",
     "speed_format": "Speed: {0}",
-    "pill_tooltip": "Torrent streaming (RAM)\n⚡ Speed: {0} (up: {1})\n👥 Peers: {2} (seeds: {3})\n📦 Cache: {4} / {5}",
+    "pill_tooltip": "Torrent streaming (RAM)\n\u26A1 Speed: {0} (up: {1})\n\uD83D\uDC65 Peers: {2} (seeds: {3})\n\uD83D\uDCE6 Cache: {4} / {5}",
     "cancel_stream": "Cancel"
   },
   "osd": {
@@ -248,7 +263,8 @@
     "enabled": "enabled",
     "disabled": "disabled",
     "sub_delay": "Subtitle delay",
-    "ms": "ms"
+    "ms": "ms",
+    "resumed": "Resumed at"
   },
   "options": {
     "none": "None",
@@ -268,5 +284,25 @@
     "speed_down": "Speed down",
     "scale_video": "Original video",
     "scale_window": "Window size"
+  },
+  "skip": {
+    "op_prompt": "Skip opening?",
+    "ed_prompt": "Skip ending?",
+    "recap_prompt": "Skip recap?",
+    "preview_prompt": "Skip preview?",
+    "op_title": "opening",
+    "ed_title": "ending",
+    "recap_title": "recap",
+    "preview_title": "preview",
+    "action": "Skip",
+    "until": "until",
+    "osd_skipped": "{0} skipped",
+    "mode_disabled": "Disabled",
+    "mode_prompt": "Prompt to skip",
+    "mode_auto": "Automatically",
+    "mixed_op_prompt": "Skip mixed opening?",
+    "mixed_ed_prompt": "Skip mixed ending?",
+    "mixed_op_title": "mixed opening",
+    "mixed_ed_title": "mixed ending"
   }
 }

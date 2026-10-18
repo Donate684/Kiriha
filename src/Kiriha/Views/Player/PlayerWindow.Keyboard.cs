@@ -22,6 +22,34 @@ public partial class PlayerWindow
             return;
         }
 
+        if (vm.Overlay.IsResumePromptVisible && e.Key == Key.Escape)
+        {
+            e.Handled = true;
+            vm.Overlay.DismissResumePrompt();
+            return;
+        }
+
+        if (vm.Overlay.IsResumePromptVisible && e.Key == Key.Enter)
+        {
+            e.Handled = true;
+            vm.ResumeFromSavedPositionCommand.Execute(null);
+            return;
+        }
+
+        if (vm.Overlay.IsSkipPromptVisible && e.Key == Key.Escape)
+        {
+            e.Handled = true;
+            vm.DismissSkipPromptCommand.Execute(null);
+            return;
+        }
+
+        if (vm.Overlay.IsSkipPromptVisible && e.Key == Key.Enter)
+        {
+            e.Handled = true;
+            vm.SkipActiveSegmentCommand.Execute(null);
+            return;
+        }
+
         if (MatchesHotkey(e, vm.ScreenshotWithSubtitlesHotkey))
         {
             e.Handled = true;

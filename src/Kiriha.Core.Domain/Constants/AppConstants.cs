@@ -1,4 +1,4 @@
-using Kiriha.Core.Domain.Models.Api;
+﻿using Kiriha.Core.Domain.Models.Api;
 namespace Kiriha.Core.Domain.Constants;
 
 public static class AppConstants
@@ -52,6 +52,11 @@ public static class AppConstants
         {
             public const string BaseUrl = "https://nyaa.si/";
             public const string XmlNamespace = "https://nyaa.si/xmlns/nyaa";
+        }
+
+        public static class AniSkip
+        {
+            public const string BaseUrl = "https://api.aniskip.com/v2/skip-times/";
         }
 
         public static class TorrServer

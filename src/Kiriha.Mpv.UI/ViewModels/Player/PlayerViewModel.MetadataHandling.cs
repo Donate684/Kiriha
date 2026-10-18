@@ -84,6 +84,28 @@ public partial class PlayerViewModel
     {
         _animeId = metadata.AnimeId ?? (overwriteAll ? null : _animeId);
 
+        if (!_animeId.HasValue && _metadataResolver != null)
+        {
+            var searchTitle = !string.IsNullOrWhiteSpace(metadata.TitleRu)
+                ? metadata.TitleRu
+                : (!string.IsNullOrWhiteSpace(metadata.TitleEn) ? metadata.TitleEn : metadata.OriginalTitle);
+
+            if (!string.IsNullOrWhiteSpace(searchTitle))
+            {
+                var resolvedByTitle = _metadataResolver.ResolveByTitle(searchTitle, metadata.EpisodeText);
+                if (resolvedByTitle?.AnimeId.HasValue == true)
+                {
+                    _animeId = resolvedByTitle.AnimeId;
+                    if (string.IsNullOrWhiteSpace(metadata.TitleRu) && !string.IsNullOrWhiteSpace(resolvedByTitle.TitleRu))
+                        metadata = metadata with { TitleRu = resolvedByTitle.TitleRu };
+                    if (string.IsNullOrWhiteSpace(metadata.TitleEn) && !string.IsNullOrWhiteSpace(resolvedByTitle.TitleEn))
+                        metadata = metadata with { TitleEn = resolvedByTitle.TitleEn };
+                    if (string.IsNullOrWhiteSpace(metadata.TitleRomaji) && !string.IsNullOrWhiteSpace(resolvedByTitle.TitleRomaji))
+                        metadata = metadata with { TitleRomaji = resolvedByTitle.TitleRomaji };
+                }
+            }
+        }
+
         if (overwriteAll || !string.IsNullOrWhiteSpace(metadata.OriginalTitle))
             OriginalTitle = metadata.OriginalTitle;
 
@@ -125,6 +147,7 @@ public partial class PlayerViewModel
         OnPropertyChanged(nameof(EpisodeTitle));
         OnPropertyChanged(nameof(HasEpisodeAndBottom));
         OnPropertyChanged(nameof(TrackingTitle));
+        RefreshSkipSegments();
     }
 
     public void ApplyExternalMetadata(PlayerMediaMetadata metadata)

@@ -1,4 +1,4 @@
-using Avalonia.Controls.ApplicationLifetimes;
+﻿using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
@@ -27,13 +27,23 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     [ObservableProperty] private string _mpvGpuContext = "auto";
     [ObservableProperty] private bool _mpvVideoSync = false;
     [ObservableProperty] private bool _mpvInterpolation = false;
+    [ObservableProperty] private SkipOpeningEndingMode _skipOpeningEnding = SkipOpeningEndingMode.Prompt;
+    [ObservableProperty] private bool _skipOp = true;
+    [ObservableProperty] private bool _skipEd = true;
+    [ObservableProperty] private bool _skipMixedOp = true;
+    [ObservableProperty] private bool _skipMixedEd = true;
+    [ObservableProperty] private bool _skipRecap = true;
+    [ObservableProperty] private SkipOpeningEndingOption _selectedSkipOpeningEndingOption = null!;
+
+    public List<SkipOpeningEndingOption> SkipOpeningEndingOptions { get; }
 
     public int EnabledPlayersCount => _settingsService.Current.System.Scrobbler.AllowedProcesses.Count;
 
     public SettingsPlaybackViewModel(
         ISettingsService settingsService, 
         SystemIntegrationService systemIntegrationService,
-        IExternalMediaDetector IExternalMediaDetector)
+        IExternalMediaDetector IExternalMediaDetector,
+        ILocalizer? localizer = null)
     {
         _settingsService = settingsService;
         _systemIntegrationService = systemIntegrationService;
@@ -51,6 +61,14 @@ public partial class SettingsPlaybackViewModel : ObservableObject
         MpvGpuContext = NormalizeMpvOption(_settingsService.Current.Player.MpvGpuContext, "auto");
         MpvVideoSync = _settingsService.Current.Player.MpvVideoSync;
         MpvInterpolation = _settingsService.Current.Player.MpvInterpolation;
+        SkipOpeningEnding = _settingsService.Current.Player.SkipOpeningEnding;
+        SkipOp = _settingsService.Current.Player.SkipOp;
+        SkipEd = _settingsService.Current.Player.SkipEd;
+        SkipMixedOp = _settingsService.Current.Player.SkipMixedOp;
+        SkipMixedEd = _settingsService.Current.Player.SkipMixedEd;
+        SkipRecap = _settingsService.Current.Player.SkipRecap;
+        SkipOpeningEndingOptions = SkipOpeningEndingOptionFactory.CreateDefaultOptions(key => localizer?.GetLoc(key));
+        _selectedSkipOpeningEndingOption = SkipOpeningEndingOptions.FirstOrDefault(x => x.Value == SkipOpeningEnding) ?? SkipOpeningEndingOptions[1];
     }
 
     partial void OnKeepPlayerProcessAliveChanged(bool value)
@@ -63,6 +81,28 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     partial void OnSinglePlayerWindowChanged(bool value) => _settingsService.Update(settings => settings.Player.SingleWindow = value, SettingsSection.Player);
     partial void OnRememberPlaybackPositionChanged(bool value) => _settingsService.Update(settings => settings.Player.RememberPlaybackPosition = value, SettingsSection.Player);
     partial void OnSmartTrackAutoloadChanged(bool value) => _settingsService.Update(settings => settings.Player.SmartTrackAutoload = value, SettingsSection.Player);
+
+    partial void OnSelectedSkipOpeningEndingOptionChanged(SkipOpeningEndingOption value)
+    {
+        if (value != null)
+        {
+            SkipOpeningEnding = value.Value;
+        }
+    }
+
+    partial void OnSkipOpeningEndingChanged(SkipOpeningEndingMode value)
+    {
+        _settingsService.Update(settings => settings.Player.SkipOpeningEnding = value, SettingsSection.Player);
+        if (SkipOpeningEndingOptions != null)
+        {
+            var match = SkipOpeningEndingOptions.FirstOrDefault(x => x.Value == value);
+            if (match != null && _selectedSkipOpeningEndingOption != match)
+            {
+                _selectedSkipOpeningEndingOption = match;
+                OnPropertyChanged(nameof(SelectedSkipOpeningEndingOption));
+            }
+        }
+    }
 
     partial void OnMpvVideoPresetChanged(string value)
     {

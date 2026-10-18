@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
@@ -32,6 +32,7 @@ public partial class TrackingService
 
         _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.MediaChangedMessage(media)));
         _scrobbleService.UpdatePlayingState(media.IsPlaying);
+        _scrobbleService.UpdatePlaybackProgress(media.IsPlaying, media.Position, media.Duration);
 
         AnimeEntity? currentMatched;
         lock (_state) currentMatched = _matchedAnime;

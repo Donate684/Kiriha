@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
@@ -446,6 +446,162 @@
                 Background="Transparent"
                 Cursor="SizeAll"
                 PointerPressed="OnDragStripPointerPressed"/>
+
+        <!-- Resume Playback Prompt Notification -->
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,96"
+                ZIndex="25"
+                IsVisible="{Binding Overlay.IsResumePromptVisible}"
+                Background="#EE141416"
+                BorderBrush="#33FFFFFF"
+                BorderThickness="1"
+                CornerRadius="12"
+                BoxShadow="0 8 32 0 #90000000"
+                Padding="16,10">
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Border.Transitions>
+            <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <Border Width="34" Height="34"
+                        CornerRadius="8"
+                        Background="#2638bdf8"
+                        VerticalAlignment="Center">
+                    <material:MaterialIcon Kind="History"
+                                           Width="18" Height="18"
+                                           Foreground="{DynamicResource SystemAccentColor}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource l.player.resume.prompt}"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="White"/>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{DynamicResource l.player.resume.at_time}"
+                                   FontSize="11.5"
+                                   Foreground="#9EFFFFFF"/>
+                        <TextBlock Text="{Binding Overlay.ResumePromptTimeString}"
+                                   FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SystemAccentColor}"/>
+                    </StackPanel>
+                </StackPanel>
+                <Button Classes="resume-action-btn"
+                        Command="{Binding ResumeFromSavedPositionCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon Kind="Play" Width="14" Height="14" Foreground="White"/>
+                        <TextBlock Text="{DynamicResource l.player.resume.continue}"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="icon-btn"
+                        Command="{Binding DismissResumePromptCommand}"
+                        Width="28" Height="28"
+                        Padding="0"
+                        CornerRadius="6"
+                        Cursor="Hand"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="{DynamicResource l.player.resume.dismiss}">
+                    <material:MaterialIcon Kind="Close" Width="15" Height="15"
+                                           Foreground="#80FFFFFF"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Skip Opening/Ending/Recap Prompt Notification -->
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,96"
+                ZIndex="25"
+                IsVisible="{Binding Overlay.IsSkipPromptVisible}"
+                Background="#EE141416"
+                BorderBrush="#33FFFFFF"
+                BorderThickness="1"
+                CornerRadius="12"
+                BoxShadow="0 8 32 0 #90000000"
+                Padding="16,10">
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Border.Transitions>
+            <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <Border Width="34" Height="34"
+                        CornerRadius="8"
+                        Background="#2638bdf8"
+                        VerticalAlignment="Center">
+                    <material:MaterialIcon Kind="FastForward"
+                                           Width="18" Height="18"
+                                           Foreground="{DynamicResource SystemAccentColor}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding Overlay.SkipPromptTitle}"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="White"/>
+                    <TextBlock Text="{Binding Overlay.SkipPromptSubtitle}"
+                               FontSize="11.5"
+                               Foreground="#9EFFFFFF"/>
+                </StackPanel>
+                <Button Classes="resume-action-btn"
+                        Command="{Binding SkipActiveSegmentCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon Kind="FastForward" Width="14" Height="14" Foreground="White"/>
+                        <TextBlock Text="{DynamicResource l.player.skip.action}"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="icon-btn"
+                        Command="{Binding DismissSkipPromptCommand}"
+                        Width="28" Height="28"
+                        Padding="0"
+                        CornerRadius="6"
+                        Cursor="Hand"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="{DynamicResource l.player.resume.dismiss}">
+                    <material:MaterialIcon Kind="Close" Width="15" Height="15"
+                                           Foreground="#80FFFFFF"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Skip Confirmation Toast Notification (2 seconds) -->
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,96"
+                ZIndex="26"
+                IsVisible="{Binding Overlay.IsSkipToastVisible}"
+                Background="#EE141416"
+                BorderBrush="#33FFFFFF"
+                BorderThickness="1"
+                CornerRadius="12"
+                BoxShadow="0 8 32 0 #90000000"
+                Padding="16,10">
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Border.Transitions>
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <Border Width="34" Height="34"
+                        CornerRadius="8"
+                        Background="#2638bdf8"
+                        VerticalAlignment="Center">
+                    <material:MaterialIcon Kind="FastForward"
+                                           Width="18" Height="18"
+                                           Foreground="{DynamicResource SystemAccentColor}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="{Binding Overlay.SkipToastMessage}"
+                           FontSize="13" FontWeight="SemiBold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
 
         <!-- Settings Overlay -->
         <playerControls:PlayerSettingsOverlay Name="SettingsOverlayControl" OverlayClosed="OnSettingsOverlayClosed" />

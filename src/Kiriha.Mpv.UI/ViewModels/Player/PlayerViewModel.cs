@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Frozen;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -101,4 +102,151 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
 
 
+    private readonly IAniSkipClient _aniSkipClient = new AniSkipClient();
+    private readonly List<SkipSegment> _skipSegments = new();
+    public ObservableCollection<SkipSegment> SkipSegments { get; } = new();
+    private readonly HashSet<SkipSegment> _skippedSegments = new();
+    private List<SkipSegment> _aniSkipSegments = new();
+    private CancellationTokenSource? _aniSkipCts;
+    private (int malId, int epNumber)? _currentAniSkipQuery;
+
+    public void RefreshSkipSegments()
+    {
+        _skippedSegments.Clear();
+        var chapterSegments = SkipMarkerResolver.ResolveChapters(Chapters.ToList(), Duration);
+        _skipSegments.Clear();
+        _skipSegments.AddRange(SkipMarkerResolver.MergeSegments(_aniSkipSegments, chapterSegments, Duration));
+        UpdateSkipSegmentsCollection();
+
+        if (_animeId.HasValue && _animeId.Value > 0)
+        {
+            var epText = RawEpisodeText;
+            if (int.TryParse(epText, out int epNumber) && epNumber > 0)
+            {
+                var malId = _animeId.Value;
+                if (_currentAniSkipQuery == (malId, epNumber) && _aniSkipSegments.Count > 0)
+                {
+                    return;
+                }
+
+                var oldCts = _aniSkipCts;
+                _aniSkipCts = new CancellationTokenSource();
+                try { oldCts?.Cancel(); } catch { }
+                try { oldCts?.Dispose(); } catch { }
+
+                var token = _aniSkipCts.Token;
+                var duration = Duration;
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var segments = await _aniSkipClient.GetSkipSegmentsAsync(malId, epNumber, duration, token).ConfigureAwait(false);
+                        if (token.IsCancellationRequested || segments.Count == 0)
+                            return;
+
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if (token.IsCancellationRequested)
+                                return;
+
+                            _currentAniSkipQuery = (malId, epNumber);
+                            _aniSkipSegments = segments;
+                            var currentChapters = SkipMarkerResolver.ResolveChapters(Chapters.ToList(), Duration);
+                            _skipSegments.Clear();
+                            _skipSegments.AddRange(SkipMarkerResolver.MergeSegments(_aniSkipSegments, currentChapters, Duration));
+                            UpdateSkipSegmentsCollection();
+                            CheckSkipSegments(CurrentTime, Duration);
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Serilog.Log.Debug(ex, "Error fetching AniSkip markers for anime {Id} ep {Ep}", malId, epNumber);
+                    }
+                }, token);
+            }
+        }
+    }
+
+    
+    private bool IsSegmentTypeEnabled(SkipSegmentType type) => type switch
+    {
+        SkipSegmentType.Intro => SkipOp,
+        SkipSegmentType.Outro => SkipEd,
+        SkipSegmentType.MixedIntro => SkipMixedOp,
+        SkipSegmentType.MixedOutro => SkipMixedEd,
+        SkipSegmentType.Recap => SkipRecap,
+        _ => true
+    };
+
+    private void UpdateSkipSegmentsCollection()
+    {
+        SkipSegments.Clear();
+        foreach (var seg in _skipSegments)
+        {
+            SkipSegments.Add(seg);
+        }
+    }
+private void CheckSkipSegments(double currentTime, double duration)
+    {
+        if (SkipOpeningEnding == SkipOpeningEndingMode.Disabled)
+        {
+            if (Overlay.IsSkipPromptVisible)
+                Overlay.DismissSkipPrompt();
+            return;
+        }
+
+        _skippedSegments.RemoveWhere(s => currentTime < s.StartSeconds - 1.0);
+
+        var active = _skipSegments.FirstOrDefault(s =>
+            currentTime >= s.StartSeconds &&
+            currentTime < (s.EndSeconds - 0.5) &&
+            IsSegmentTypeEnabled(s.Type) &&
+            !_skippedSegments.Contains(s));
+
+        if (active != null)
+        {
+            if (SkipOpeningEnding == SkipOpeningEndingMode.Auto)
+            {
+                if (IsPlaying)
+                {
+                    _skippedSegments.Add(active);
+                    var target = SkipMarkerResolver.GetSeekTarget(active, duration);
+                    _playback.Seek(target);
+                    NotifySegmentSkipped(active);
+                }
+            }
+            else if (SkipOpeningEnding == SkipOpeningEndingMode.Prompt)
+            {
+                if (Overlay.IsResumePromptVisible)
+                    return;
+
+                if (Overlay.ActiveSkipSegment != active || !Overlay.IsSkipPromptVisible)
+                {
+                    var promptTitle = active.Type switch
+                    {
+                        SkipSegmentType.Intro => _localizer.GetLoc("player.skip.op_prompt"),
+                        SkipSegmentType.Outro => _localizer.GetLoc("player.skip.ed_prompt"),
+                        SkipSegmentType.MixedIntro => _localizer.GetLoc("player.skip.mixed_op_prompt"),
+                        SkipSegmentType.MixedOutro => _localizer.GetLoc("player.skip.mixed_ed_prompt"),
+                        SkipSegmentType.Recap => _localizer.GetLoc("player.skip.recap_prompt"),
+                        _ => _localizer.GetLoc("player.skip.preview_prompt")
+                    };
+                    var targetTime = PlayerTimelineService.FormatTime(active.EndSeconds);
+                    var subtitle = $"{_localizer.GetLoc("player.skip.until")} {targetTime}";
+                    Overlay.ShowSkipPrompt(active, promptTitle, subtitle);
+                }
+            }
+        }
+        else
+        {
+            if (Overlay.IsSkipPromptVisible && Overlay.ActiveSkipSegment != null)
+            {
+                if (currentTime >= Overlay.ActiveSkipSegment.EndSeconds || currentTime < Overlay.ActiveSkipSegment.StartSeconds)
+                {
+                    Overlay.DismissSkipPrompt();
+                }
+            }
+        }
+    }
 }

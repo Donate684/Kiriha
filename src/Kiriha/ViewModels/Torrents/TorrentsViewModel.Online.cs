@@ -797,8 +797,10 @@ public partial class TorrentsViewModel
 
     private AnimeEntity? ResolveMatchedAnime(string? title)
     {
-        if (SelectedAnime != null) return SelectedAnime;
         if (string.IsNullOrWhiteSpace(title)) return null;
+
+        if (SelectedAnime != null && IsAnimeTitleMatch(SelectedAnime, title))
+            return SelectedAnime;
 
         var exact = ResolveAnimeForQuery(title);
         if (exact != null) return exact;
@@ -810,6 +812,16 @@ public partial class TorrentsViewModel
             NormalizeTitle(a.Title) == norm ||
             (!string.IsNullOrEmpty(a.EnglishTitle) && NormalizeTitle(a.EnglishTitle) == norm) ||
             (!string.IsNullOrEmpty(a.RussianTitle) && NormalizeTitle(a.RussianTitle) == norm));
+    }
+
+    private static bool IsAnimeTitleMatch(AnimeEntity anime, string title)
+    {
+        var norm = NormalizeTitle(title);
+        if (string.IsNullOrEmpty(norm)) return false;
+
+        return NormalizeTitle(anime.Title) == norm ||
+               (!string.IsNullOrEmpty(anime.EnglishTitle) && NormalizeTitle(anime.EnglishTitle) == norm) ||
+               (!string.IsNullOrEmpty(anime.RussianTitle) && NormalizeTitle(anime.RussianTitle) == norm);
     }
 
     private static string NormalizeTitle(string? input)

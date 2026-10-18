@@ -1,5 +1,8 @@
+﻿using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+using Kiriha.Mpv.UI.Services.Player;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -145,6 +148,55 @@ public partial class PlayerViewModel
             LoadVideo(VideoUrl);
     }
 
+    [RelayCommand]
+    public void ResumeFromSavedPosition()
+    {
+        if (Overlay.IsResumePromptVisible && Overlay.ResumePromptPosition > 0)
+        {
+            var pos = Overlay.ResumePromptPosition;
+            Overlay.DismissResumePrompt();
+            if (_playback.HasPlayer)
+            {
+                SeekTo(pos);
+                ShowOsd(_localizer.GetLoc("player.osd.resumed"), PlayerTimelineService.FormatTime(pos));
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void DismissResumePrompt()
+    {
+        Overlay.DismissResumePrompt();
+    }
+
+    [RelayCommand]
+    public void SkipActiveSegment()
+    {
+        var segment = Overlay.ActiveSkipSegment;
+        Overlay.DismissSkipPrompt();
+        if (segment != null)
+        {
+            _skippedSegments.Add(segment);
+            if (_playback.HasPlayer)
+            {
+                var target = SkipMarkerResolver.GetSeekTarget(segment, Duration);
+                SeekTo(target);
+                NotifySegmentSkipped(segment);
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void DismissSkipPrompt()
+    {
+        var segment = Overlay.ActiveSkipSegment;
+        if (segment != null)
+        {
+            _skippedSegments.Add(segment);
+        }
+        Overlay.DismissSkipPrompt();
+    }
+
     public void SeekTo(double time)
     {
         if (_playback.HasPlayer)
@@ -173,8 +225,25 @@ public partial class PlayerViewModel
 
     public void ShowTimelinePreview(double timeSeconds, double left)
     {
-        _timelinePreview.Show(VideoUrl, Duration, timeSeconds, left);
+        string? segmentLabel = null;
+        var activeSegment = _skipSegments.FirstOrDefault(s => timeSeconds >= s.StartSeconds && timeSeconds <= s.EndSeconds);
+        if (activeSegment != null)
+        {
+            segmentLabel = GetSegmentTitle(activeSegment.Type);
+        }
+
+        _timelinePreview.Show(VideoUrl, Duration, timeSeconds, left, segmentLabel);
     }
+
+    public string GetSegmentTitle(SkipSegmentType type) => type switch
+    {
+        SkipSegmentType.Intro => _localizer.GetLoc("player.skip.op_title"),
+        SkipSegmentType.Outro => _localizer.GetLoc("player.skip.ed_title"),
+        SkipSegmentType.MixedIntro => _localizer.GetLoc("player.skip.mixed_op_title"),
+        SkipSegmentType.MixedOutro => _localizer.GetLoc("player.skip.mixed_ed_title"),
+        SkipSegmentType.Recap => _localizer.GetLoc("player.skip.recap_title"),
+        _ => _localizer.GetLoc("player.skip.preview_title")
+    };
 
     public void HideTimelinePreview()
     {
@@ -188,4 +257,13 @@ public partial class PlayerViewModel
             settings => settings.Player.SmartTrackAutoload = value,
             SettingsSection.Player);
     }
+
+    private void NotifySegmentSkipped(SkipSegment segment)
+    {
+        var segmentName = GetSegmentTitle(segment.Type);
+        var message = string.Format(_localizer.GetLoc("player.skip.osd_skipped"), segmentName);
+        ShowOsd(message);
+        Overlay.ShowSkipToast(message);
+    }
+
 }

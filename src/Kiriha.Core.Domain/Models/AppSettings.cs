@@ -1,7 +1,13 @@
-using Kiriha.Core.Domain.Constants;
+﻿using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.Core.Domain.Models;
+
+public enum ScrobbleDelayMode
+{
+    Time = 0,
+    Percentage = 1
+}
 
 public partial class AppSettings
 {
@@ -96,7 +102,9 @@ public partial class AppSettings
     public class ScrobblerConfig
     {
         public bool Enabled { get; set; } = true;
+        public ScrobbleDelayMode Mode { get; set; } = ScrobbleDelayMode.Time;
         public int DelaySeconds { get; set; } = 300;
+        public int DelayPercent { get; set; } = 50;
         public List<string> AllowedProcesses { get; set; } = new();
         public bool AutoMatchConfidence { get; set; } = true;
 

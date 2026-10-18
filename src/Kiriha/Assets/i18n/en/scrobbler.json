@@ -1,4 +1,4 @@
-{
+﻿{
   "title": "Auto-Scrobbler",
   "enable": {
     "title": "Enable scrobbler",
@@ -7,10 +7,20 @@
   "delay": {
     "title": "Update delay",
     "subtitle": "Time to watch an episode before automatically updating progress",
+    "mode_title": "Tracking trigger",
+    "mode_subtitle": "Method used to determine when an episode should be marked as watched",
+    "mode_time": "By timer",
+    "mode_percent": "By completion percentage",
+    "percent_title": "Completion percentage",
+    "percent_subtitle": "Percentage of episode duration before automatically updating progress",
     "1_min": "1 minute",
     "3_min": "3 minutes",
     "5_min": "5 minutes (default)",
-    "10_min": "10 minutes"
+    "10_min": "10 minutes",
+    "20_min": "20 minutes",
+    "25_percent": "25%",
+    "50_percent": "50% (default)",
+    "75_percent": "75%"
   },
   "processes": {
     "title": "App Tracking",

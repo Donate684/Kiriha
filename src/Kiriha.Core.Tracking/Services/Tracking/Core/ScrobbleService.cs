@@ -1,8 +1,9 @@
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync;
@@ -16,6 +17,7 @@ public interface IScrobbleService
     void StartScrobble(ParsedMedia media, AnimeEntity match);
     void CancelScrobble();
     void UpdatePlayingState(bool isPlaying);
+    void UpdatePlaybackProgress(bool isPlaying, TimeSpan? position, TimeSpan? duration);
 }
 
 public class ScrobbleService : IScrobbleService, IDisposable
@@ -27,6 +29,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly ILocalizer _localizer;
+    private readonly IScrobbleProgressStore _progressStore;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -34,6 +37,9 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private CancellationTokenSource? _countdownCts;
     private string _activeHash = string.Empty;
     private bool _isPlaying;
+    private TimeSpan? _currentPosition;
+    private TimeSpan? _currentDuration;
+    private int _currentElapsed;
 
     public ScrobbleService(
         AnimeProgressService progressService,
@@ -42,7 +48,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
         INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
         IUiDispatcher uiDispatcher,
-        ILocalizer localizer)
+        ILocalizer localizer,
+        IScrobbleProgressStore? progressStore = null)
     {
         _progressService = progressService;
         _historyService = historyService;
@@ -51,6 +58,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         _backgroundTasks = backgroundTasks;
         _uiDispatcher = uiDispatcher;
         _localizer = localizer;
+        _progressStore = progressStore ?? new ScrobbleProgressStore();
     }
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
@@ -101,6 +109,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
             _countdownCts = new CancellationTokenSource();
             _activeHash = hash;
             _isPlaying = media.IsPlaying;
+            _currentPosition = media.Position;
+            _currentDuration = media.Duration;
             token = _countdownCts.Token;
         }
         CountdownUpdated?.Invoke(this, string.Empty);
@@ -110,9 +120,16 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public void UpdatePlayingState(bool isPlaying)
     {
+        UpdatePlaybackProgress(isPlaying, null, null);
+    }
+
+    public void UpdatePlaybackProgress(bool isPlaying, TimeSpan? position, TimeSpan? duration)
+    {
         lock (_stateLock)
         {
             _isPlaying = isPlaying;
+            if (position.HasValue) _currentPosition = position.Value;
+            if (duration.HasValue && duration.Value > TimeSpan.Zero) _currentDuration = duration.Value;
         }
     }
 
@@ -120,17 +137,23 @@ public class ScrobbleService : IScrobbleService, IDisposable
     {
         lock (_stateLock)
         {
+            if (!string.IsNullOrEmpty(_activeHash) && _currentElapsed > 0)
+            {
+                _progressStore.SaveElapsed(_activeHash, _currentElapsed);
+            }
             _countdownCts?.Cancel();
             _countdownCts?.Dispose();
             _countdownCts = null;
             _activeHash = string.Empty;
+            _currentElapsed = 0;
         }
         CountdownUpdated?.Invoke(this, string.Empty);
     }
 
     private async Task CountdownTaskAsync(int targetEp, AnimeEntity match, ParsedMedia media, CancellationToken ct)
     {
-        int elapsed = 0;
+        string progressKey = $"{match.Id}_{targetEp}";
+        int elapsed = _progressStore.GetElapsed(progressKey);
 
         try
         {
@@ -139,9 +162,14 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 ct.ThrowIfCancellationRequested();
 
                 bool isPlaying;
+                TimeSpan? currentPos;
+                TimeSpan? currentDur;
                 lock (_stateLock)
                 {
                     isPlaying = _isPlaying;
+                    currentPos = _currentPosition;
+                    currentDur = _currentDuration;
+                    _currentElapsed = elapsed;
                 }
 
                 if (!isPlaying)
@@ -151,17 +179,49 @@ public class ScrobbleService : IScrobbleService, IDisposable
                     continue;
                 }
 
-                int delaySeconds = _settingsService.Current.System.Scrobbler.DelaySeconds;
-                int remaining = delaySeconds - elapsed;
+                var scrobblerConfig = _settingsService.Current.System.Scrobbler;
+                int targetSeconds;
+
+                if (scrobblerConfig.Mode == ScrobbleDelayMode.Percentage)
+                {
+                    var dur = currentDur ?? media.Duration;
+                    if (dur.HasValue && dur.Value.TotalSeconds > 30)
+                    {
+                        int percent = Math.Clamp(scrobblerConfig.DelayPercent, 1, 100);
+                        targetSeconds = (int)(dur.Value.TotalSeconds * percent / 100.0);
+                    }
+                    else
+                    {
+                        targetSeconds = scrobblerConfig.DelaySeconds;
+                    }
+                }
+                else
+                {
+                    targetSeconds = scrobblerConfig.DelaySeconds;
+                }
+
+                int posSec = (int)(currentPos?.TotalSeconds ?? 0);
+                int currentProgress = Math.Max(elapsed, posSec);
+                int remaining = targetSeconds - currentProgress;
 
                 if (remaining <= 0) break;
 
                 CountdownUpdated?.Invoke(this, $"{TimeSpan.FromSeconds(remaining):mm\\:ss}");
                 await Task.Delay(1000, ct);
                 elapsed++;
+
+                if (elapsed % 5 == 0)
+                {
+                    _progressStore.SaveElapsed(progressKey, elapsed);
+                }
             }
 
             ct.ThrowIfCancellationRequested();
+            _progressStore.Clear(progressKey);
+            lock (_stateLock)
+            {
+                _currentElapsed = 0;
+            }
 
             UserAnimeStatus? nextStatus = null;
             if (match.TotalEpisodes > 0 && targetEp >= match.TotalEpisodes)
@@ -216,6 +276,10 @@ public class ScrobbleService : IScrobbleService, IDisposable
     {
         lock (_stateLock)
         {
+            if (!string.IsNullOrEmpty(_activeHash) && _currentElapsed > 0)
+            {
+                _progressStore.SaveElapsed(_activeHash, _currentElapsed);
+            }
             _countdownCts?.Cancel();
             _countdownCts?.Dispose();
             _countdownCts = null;

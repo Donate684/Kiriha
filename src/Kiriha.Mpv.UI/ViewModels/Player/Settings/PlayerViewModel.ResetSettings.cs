@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -273,6 +273,24 @@ public partial class PlayerViewModel
             case "SonokoIntegrationHotkey":
                 SonokoIntegrationHotkey = def.SonokoIntegrationHotkey;
                 break;
+            case "SkipOpeningEnding":
+                SkipOpeningEnding = def.SkipOpeningEnding;
+                break;
+            case "SkipOp":
+                SkipOp = def.SkipOp;
+                break;
+            case "SkipEd":
+                SkipEd = def.SkipEd;
+                break;
+            case "SkipMixedOp":
+                SkipMixedOp = def.SkipMixedOp;
+                break;
+            case "SkipMixedEd":
+                SkipMixedEd = def.SkipMixedEd;
+                break;
+            case "SkipRecap":
+                SkipRecap = def.SkipRecap;
+                break;
         }
     }
 
@@ -283,6 +301,12 @@ public partial class PlayerViewModel
         ResetSetting("SinglePlayerWindow");
         ResetSetting("RememberPlaybackPosition");
         ResetSetting("PlaybackSpeed");
+        ResetSetting("SkipOpeningEnding");
+        ResetSetting("SkipOp");
+        ResetSetting("SkipEd");
+        ResetSetting("SkipMixedOp");
+        ResetSetting("SkipMixedEd");
+        ResetSetting("SkipRecap");
     }
 
     [RelayCommand]

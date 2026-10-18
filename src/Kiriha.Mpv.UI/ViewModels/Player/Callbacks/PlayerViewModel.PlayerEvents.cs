@@ -26,6 +26,15 @@ public partial class PlayerViewModel
             _timelinePreview.WarmUp(VideoUrl);
             _statePublisher.Publish();
 
+            if (RememberPlaybackPosition)
+            {
+                CheckAndPromptResume();
+            }
+
+            _skippedSegments.Clear();
+            Overlay.DismissSkipPrompt();
+            RefreshSkipSegments();
+
             if (!string.IsNullOrWhiteSpace(_pendingSubtitleUrl))
             {
                 var sub = _pendingSubtitleUrl;
@@ -64,6 +73,26 @@ public partial class PlayerViewModel
         Dispatcher.UIThread.Post(() => UpdateTracks());
     }
 
+    private void CheckAndPromptResume()
+    {
+        if (string.IsNullOrWhiteSpace(VideoUrl) || !RememberPlaybackPosition)
+            return;
+
+        var watchLaterDir = Kiriha.Infrastructure.Platform.PathHelper.GetMpvWatchLaterPath();
+        var savedPos = PlaybackResumeStore.TryGetResumePosition(VideoUrl, watchLaterDir);
+
+        if (savedPos.HasValue && savedPos.Value >= 5)
+        {
+            if (Duration > 0 && savedPos.Value >= Duration * 0.95)
+            {
+                return;
+            }
+
+            var formatted = PlayerTimelineService.FormatTime(savedPos.Value);
+            Overlay.ShowResumePrompt(savedPos.Value, formatted);
+        }
+    }
+
     private void OnPlayerPlaybackEnded(object? sender, MpvPlaybackEndedEventArgs e)
     {
         if (!e.StopsPlayback)
@@ -72,8 +101,11 @@ public partial class PlayerViewModel
         Dispatcher.UIThread.Post(() =>
         {
             _isEofReached = true;
+            Overlay.DismissResumePrompt();
+            Overlay.DismissSkipPrompt();
             if (RememberPlaybackPosition)
             {
+                PlaybackResumeStore.Remove(VideoUrl);
                 _playback.DeleteWatchLaterConfig();
                 _playback.SetSavePositionOnQuit(false);
             }
@@ -98,8 +130,11 @@ public partial class PlayerViewModel
         _isEofReached = isEof;
         if (isEof)
         {
+            Overlay.DismissResumePrompt();
+            Overlay.DismissSkipPrompt();
             if (RememberPlaybackPosition)
             {
+                PlaybackResumeStore.Remove(VideoUrl);
                 _playback.DeleteWatchLaterConfig();
                 _playback.SetSavePositionOnQuit(false);
             }
@@ -138,6 +173,7 @@ public partial class PlayerViewModel
 
     private void ApplyPlaybackState(PlaybackState state)
     {
+        IsPlaying = state.IsPlaying;
         PlayerTimelineSnapshot? snapshot = null;
 
         if (state.Duration > 0 && _timeline.TrySetDuration(state.Duration, out var durationSnapshot))
@@ -149,7 +185,6 @@ public partial class PlayerViewModel
         if (snapshot.HasValue)
             ApplyTimelineSnapshot(snapshot.Value);
 
-        IsPlaying = state.IsPlaying;
     }
 
     private void ApplyTimelineSnapshot(PlayerTimelineSnapshot snapshot)
@@ -158,6 +193,7 @@ public partial class PlayerViewModel
         Duration = snapshot.Duration;
         CurrentTimeString = snapshot.CurrentTimeString;
         DurationString = snapshot.DurationString;
+        CheckSkipSegments(snapshot.CurrentTime, snapshot.Duration);
     }
 
     private void RefreshMpvRuntimeInfo()

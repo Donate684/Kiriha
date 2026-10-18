@@ -2,6 +2,8 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 
+using Kiriha.Mpv.UI.Services.Player;
+
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public partial class PlayerViewModel
@@ -74,16 +76,27 @@ public partial class PlayerViewModel
         {
             if (RememberPlaybackPosition && !_isEofReached && Duration > 0 && CurrentTime > 0)
             {
-                if (CurrentTime < Duration * 0.95)
+                if (CurrentTime < Duration * 0.95 && CurrentTime >= 5)
+                {
+                    PlaybackResumeStore.SavePosition(VideoUrl, CurrentTime, Duration);
                     _playback.WriteWatchLaterConfig();
+                }
                 else
+                {
+                    PlaybackResumeStore.Remove(VideoUrl);
                     _playback.DeleteWatchLaterConfig();
+                }
             }
         }
+        Overlay.DismissResumePrompt();
         _isEofReached = false;
 
         if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
+        {
+            _currentAniSkipQuery = null;
+            _aniSkipSegments.Clear();
             VideoUrl = videoUrl;
+        }
         else
             ResolveAndApplyMetadata(videoUrl);
 
@@ -192,6 +205,8 @@ public partial class PlayerViewModel
             Chapters.Clear();
             foreach (var ch in chapters)
                 Chapters.Add(ch);
+
+            RefreshSkipSegments();
         });
     }
 
@@ -209,6 +224,7 @@ public partial class PlayerViewModel
 
     public void BeginScrub()
     {
+        Overlay.DismissResumePrompt();
         _timeline.BeginScrub();
     }
 

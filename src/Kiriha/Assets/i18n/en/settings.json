@@ -1,6 +1,6 @@
-{
+﻿{
   "header": "Settings",
-  "title": "Personalization & Credentials",
+  "title": "Personalization \u0026 Credentials",
   "sections": {
     "advanced": "Advanced customization",
     "appearance": "Appearance",
@@ -52,13 +52,13 @@
     "russian_titles": "Russian Titles",
     "russian_titles_sub": "Additionally show Russian title alongside from Shikimori (does not replace original title)",
     "russian_descriptions": "Russian Descriptions",
-    "russian_descriptions_sub": "Replace English descriptions with Shikimori's version (if available)",
+    "russian_descriptions_sub": "Replace English descriptions with Shikimori\u0027s version (if available)",
     "extended_metadata": "Extended Localization",
     "other_mirror_active": "Disconnect the other Shikimori mirror first",
-    "one_sub": "The original site — recommended for most users",
+    "one_sub": "The original site \u2014 recommended for most users",
     "net_sub": "Fan fork of the Shikimori project",
-    "exclusive_notice": "You can connect only one Shikimori variant at a time — either the original or the fork. Disconnect the current one to switch.",
-    "fork_domains_tooltip": "The fork is served from multiple domains (shikimori.rip, .net, .fi, …) to circumvent regional blocking. The app figures out the working one automatically — including new domains we don't know about yet."
+    "exclusive_notice": "You can connect only one Shikimori variant at a time \u2014 either the original or the fork. Disconnect the current one to switch.",
+    "fork_domains_tooltip": "The fork is served from multiple domains (shikimori.rip, .net, .fi, \u2026) to circumvent regional blocking. The app figures out the working one automatically \u2014 including new domains we don\u0027t know about yet."
   },
   "anilist": {
     "title": "AniList",
@@ -68,8 +68,8 @@
   },
   "accounts_hub": {
     "info_title": "How tracker synchronization works",
-    "info_primary": "Primary tracker — source of truth: your library lists, statuses, and scores are loaded from here.",
-    "info_mirror": "Mirrors — when you watch an episode, progress and status are automatically mirrored here.",
+    "info_primary": "Primary tracker \u2014 source of truth: your library lists, statuses, and scores are loaded from here.",
+    "info_mirror": "Mirrors \u2014 when you watch an episode, progress and status are automatically mirrored here.",
     "primary": "Primary",
     "primary_badge": "Primary Source",
     "set_as_primary": "Set as primary",
@@ -81,10 +81,10 @@
     "shikimori_group_sub": "Russian anime database. Choose official site or community fork:",
     "shikimori_orig_title": "Original",
     "shikimori_orig_badge": "ORIGINAL",
-    "shikimori_orig_sub": "shikimori.one — official site and original database of the Shikimori project",
+    "shikimori_orig_sub": "shikimori.one \u2014 official site and original database of the Shikimori project",
     "shikimori_fork_title": "Community Fork",
     "shikimori_fork_badge": "FORK",
-    "shikimori_fork_sub": "shikimori.rip — community fork of Shikimori.one with an independent database and accounts",
+    "shikimori_fork_sub": "shikimori.rip \u2014 community fork of Shikimori.one with an independent database and accounts",
     "shiki_switch_locked_hint": "Disconnect current account to choose another server",
     "mirror_inactive_hint": "This Shikimori server is not active. Switch the server in the Shikimori settings below to enable it",
     "connected_badge": "Connected",
@@ -196,7 +196,7 @@
     "remember_position": "Remember playback position",
     "remember_position_sub": "Resume video playback from where the player was closed",
     "video_preset_title": "Video Quality",
-    "video_preset_sub": "Determines the GPU load during playback. Custom — manual adjustment.",
+    "video_preset_sub": "Determines the GPU load during playback. Custom \u2014 manual adjustment.",
     "video_preset_default": "Default (mpv)",
     "video_preset_balanced": "Balanced",
     "video_preset_quality": "High Quality",
@@ -210,12 +210,21 @@
     "gpu_api_title": "gpu-api",
     "gpu_api_sub": "Graphics API priority: auto, d3d11, vulkan, opengl",
     "gpu_context_title": "gpu-context",
-    "gpu_context_sub": "Windowing/GPU context: auto, d3d11, win, angle, x11, wayland, cocoa"
+    "gpu_context_sub": "Windowing/GPU context: auto, d3d11, win, angle, x11, wayland, cocoa",
+    "skip_op_ed": "Skip opening and ending",
+    "skip_op_ed_sub": "Automatically skip or show a quick skip prompt",
+    "skip_types": "Skip Categories",
+    "skip_types_sub": "Select segment categories to skip",
+    "skip_type_op": "OP",
+    "skip_type_ed": "ED",
+    "skip_type_mixed_op": "Mixed OP",
+    "skip_type_mixed_ed": "Mixed ED",
+    "skip_type_recap": "Recap"
   },
   "custom_links": {
     "title": "My Links",
     "help_title": "How it works",
-    "help_body": "Added links show up as buttons next to MAL and Shiki on the anime details card\nand in the Now Playing panel.\n\nEnter a URL template — the placeholders below are replaced with the current anime's data\nand URL-encoded automatically.\n\nThe icon is pulled from the site's favicon automatically; if that fails the default globe stays.",
+    "help_body": "Added links show up as buttons next to MAL and Shiki on the anime details card\nand in the Now Playing panel.\n\nEnter a URL template \u2014 the placeholders below are replaced with the current anime\u0027s data\nand URL-encoded automatically.\n\nThe icon is pulled from the site\u0027s favicon automatically; if that fails the default globe stays.",
     "name_placeholder": "Button name (e.g. AniDB)",
     "examples": "Examples:",
     "add": "Add link"
@@ -236,7 +245,7 @@
     "prefer_direct_title": "Prefer direct AnimeLib player (MP4)",
     "prefer_direct_sub": "Play original 1080p streams directly from CDN without delays",
     "manual_token_toggle": "Manual Bearer token input",
-    "manual_token_hint": "If you already have a token from browser DevTools (F12 -> Application -> Local Storage -> token), paste it here:",
+    "manual_token_hint": "If you already have a token from browser DevTools (F12 -\u003E Application -\u003E Local Storage -\u003E token), paste it here:",
     "manual_token_placeholder": "Paste token or Bearer eyJ...",
     "sources_header": "Online Search Sources",
     "sources_sub": "Enable or disable catalog providers for parallel stream and dubbing searches.",

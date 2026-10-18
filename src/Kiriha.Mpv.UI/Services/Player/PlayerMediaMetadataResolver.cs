@@ -9,6 +9,7 @@ namespace Kiriha.Mpv.UI.Services.Player;
 public interface IPlayerMediaMetadataResolver
 {
     PlayerMediaMetadata Resolve(string videoPath);
+    PlayerMediaMetadata? ResolveByTitle(string title, string? episodeText = null) => null;
 }
 
 public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
@@ -92,5 +93,52 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
             Log.Warning(ex, "Failed to resolve player media metadata for {Path}", videoPath);
             return PlayerMediaMetadata.FromVideoPath(videoPath);
         }
+    }
+
+    public PlayerMediaMetadata? ResolveByTitle(string title, string? episodeText = null)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            return null;
+
+        try
+        {
+            using var db = _dbFactory.CreateDbContext();
+            var cleanTitle = title.Trim();
+            var searchLower = cleanTitle.ToLower();
+
+            var match = db.UserAnime.AsNoTracking().FirstOrDefault(a =>
+                (a.RussianTitle != null && a.RussianTitle.ToLower() == searchLower) ||
+                (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchLower) ||
+                (a.Title != null && a.Title.ToLower() == searchLower));
+
+            if (match == null)
+            {
+                var norm = new string(cleanTitle.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
+                if (!string.IsNullOrEmpty(norm))
+                {
+                    match = db.UserAnime.AsNoTracking().AsEnumerable().FirstOrDefault(a =>
+                        (a.RussianTitle != null && new string(a.RussianTitle.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() == norm) ||
+                        (a.EnglishTitle != null && new string(a.EnglishTitle.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() == norm) ||
+                        (!string.IsNullOrEmpty(a.Title) && new string(a.Title.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() == norm));
+                }
+            }
+
+            if (match != null)
+            {
+                return new PlayerMediaMetadata(
+                    cleanTitle,
+                    match.RussianTitle ?? match.Title ?? cleanTitle,
+                    match.EnglishTitle ?? match.Title ?? string.Empty,
+                    episodeText ?? string.Empty,
+                    match.Id,
+                    match.Title ?? cleanTitle);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to resolve metadata by title for '{Title}'", title);
+        }
+
+        return null;
     }
 }

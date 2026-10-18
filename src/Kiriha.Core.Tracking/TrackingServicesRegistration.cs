@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
@@ -136,6 +136,7 @@ public static class TrackingServicesRegistration
         services.AddForwardedSingleton<RssFeedService, IRssFeedService>();
 
         // --- Cross-tracker orchestration ---
+        services.AddSingleton<IScrobbleProgressStore, ScrobbleProgressStore>();
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();

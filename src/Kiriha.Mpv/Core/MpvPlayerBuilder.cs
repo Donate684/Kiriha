@@ -1,4 +1,4 @@
-namespace Kiriha.Mpv;
+﻿namespace Kiriha.Mpv;
 
 public static class MpvPlayerBuilder
 {
@@ -45,6 +45,7 @@ public static class MpvPlayerBuilder
                 MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "save-position-on-quit", "yes"), "enable save-position-on-quit");
                 MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "write-filename-in-watch-later-config", "yes"), "write filename in watch-later config");
                 MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "watch-later-options", "start"), "set watch-later options to position only");
+                MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "resume-playback", "no"), "disable auto resume-playback on start");
             }
             else
             {

@@ -55,7 +55,7 @@ public partial class SettingsViewModel : ViewModelBase
         IAnimeRefreshService? refreshService = null,
         Anime365HostResolver? anime365HostResolver = null)
     {
-        Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService);
+        Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService, localizationService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
         System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
 
