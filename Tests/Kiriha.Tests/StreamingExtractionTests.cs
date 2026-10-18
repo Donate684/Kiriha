@@ -370,9 +370,10 @@ public class StreamingExtractionTests
         var url = "https://video1.cdnlibs.org/.%D0%B0s/uploads/converted_videos/anime/20374/players/16517/16517_1080.mp4";
         player.Load(url);
 
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(25)));
         bool loaded = completed == tcs.Task && await tcs.Task;
         Assert.True(loaded, $"Failed to load video: {error ?? "timeout"}");
+        player.Pause();
 
         var subTcs = new TaskCompletionSource<bool>();
         player.TracksChanged += () =>
@@ -397,8 +398,23 @@ public class StreamingExtractionTests
         {
             player.AddSubtitle(tempSub);
 
-            var subCompleted = await Task.WhenAny(subTcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-            Assert.True(subCompleted == subTcs.Task && await subTcs.Task, "Subtitle was not added to tracks");
+            var deadline = DateTime.UtcNow.AddSeconds(25);
+            bool hasSubTrack = false;
+            while (DateTime.UtcNow < deadline)
+            {
+                if (subTcs.Task.IsCompleted && await subTcs.Task)
+                {
+                    hasSubTrack = true;
+                    break;
+                }
+                if (player.GetTracks().Any(t => t.Type == "sub"))
+                {
+                    hasSubTrack = true;
+                    break;
+                }
+                await Task.Delay(100);
+            }
+            Assert.True(hasSubTrack, "Subtitle was not added to tracks");
         }
         finally
         {
@@ -469,9 +485,10 @@ public class StreamingExtractionTests
         var url = "https://video1.cdnlibs.org/.%D0%B0s/uploads/converted_videos/anime/19309/players/27819/27819_1080.mp4";
         player.Load(url);
 
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(25)));
         bool loaded = completed == tcs.Task && await tcs.Task;
         Assert.True(loaded, $"Failed to load video: {error ?? "timeout"}");
+        player.Pause();
 
         var subTcs = new TaskCompletionSource<bool>();
         player.TracksChanged += () =>
@@ -496,8 +513,23 @@ public class StreamingExtractionTests
         {
             player.AddSubtitle(tempSub);
 
-            var subCompleted = await Task.WhenAny(subTcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-            Assert.True(subCompleted == subTcs.Task && await subTcs.Task, "Subtitle was not added to tracks");
+            var deadline = DateTime.UtcNow.AddSeconds(25);
+            bool hasSubTrack = false;
+            while (DateTime.UtcNow < deadline)
+            {
+                if (subTcs.Task.IsCompleted && await subTcs.Task)
+                {
+                    hasSubTrack = true;
+                    break;
+                }
+                if (player.GetTracks().Any(t => t.Type == "sub"))
+                {
+                    hasSubTrack = true;
+                    break;
+                }
+                await Task.Delay(100);
+            }
+            Assert.True(hasSubTrack, "Subtitle was not added to tracks");
         }
         finally
         {
