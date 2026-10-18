@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
@@ -149,7 +149,7 @@ public partial class PlayerViewModel
             _settingsService?.Update(settings => settings.Player.SkipOpeningEnding = value, SettingsSection.Player);
             if (value == SkipOpeningEndingMode.Disabled)
             {
-                Overlay.DismissSkipPrompt();
+                Overlay.DismissSkipPrompt(smooth: false);
             }
         }
 

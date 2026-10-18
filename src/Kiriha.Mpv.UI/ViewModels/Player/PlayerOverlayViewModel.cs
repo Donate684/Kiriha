@@ -1,4 +1,4 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Domain.Models;
@@ -11,6 +11,10 @@ public sealed partial class PlayerOverlayViewModel : ObservableObject, IDisposab
     private readonly DispatcherTimer _osdTimer = new() { Interval = TimeSpan.FromSeconds(1.4) };
     private readonly DispatcherTimer _resumePromptTimer = new() { Interval = TimeSpan.FromSeconds(10) };
     private readonly DispatcherTimer _skipToastTimer = new() { Interval = TimeSpan.FromSeconds(2) };
+    private readonly DispatcherTimer _skipPromptTimer = new() { Interval = TimeSpan.FromSeconds(5) };
+    private readonly DispatcherTimer _skipPromptFadeTimer = new() { Interval = TimeSpan.FromMilliseconds(380) };
+
+    public event Action<SkipSegment>? SkipPromptDismissed;
 
     [ObservableProperty] private bool _isOsdVisible;
     [ObservableProperty] private string _osdMessage = string.Empty;
@@ -25,6 +29,8 @@ public sealed partial class PlayerOverlayViewModel : ObservableObject, IDisposab
     [ObservableProperty] private string _resumePromptTimeString = string.Empty;
 
     [ObservableProperty] private bool _isSkipPromptVisible;
+    [ObservableProperty] private double _skipPromptOpacity;
+    [ObservableProperty] private bool _isSkipPromptHitTestVisible;
     [ObservableProperty] private string _skipPromptTitle = string.Empty;
     [ObservableProperty] private string _skipPromptSubtitle = string.Empty;
     [ObservableProperty] private SkipSegment? _activeSkipSegment;
@@ -36,6 +42,8 @@ public sealed partial class PlayerOverlayViewModel : ObservableObject, IDisposab
         _osdTimer.Tick += OnOsdTimerTick;
         _resumePromptTimer.Tick += (s, e) => DismissResumePrompt();
         _skipToastTimer.Tick += (s, e) => DismissSkipToast();
+        _skipPromptTimer.Tick += OnSkipPromptTimerTick;
+        _skipPromptFadeTimer.Tick += OnSkipPromptFadeTimerTick;
     }
 
     public void ShowOsd(string message, string detail = "")
@@ -68,20 +76,86 @@ public sealed partial class PlayerOverlayViewModel : ObservableObject, IDisposab
 
     public void ShowSkipPrompt(SkipSegment segment, string title, string subtitle)
     {
+        _skipPromptTimer.Stop();
+        _skipPromptFadeTimer.Stop();
+
         ActiveSkipSegment = segment;
         SkipPromptTitle = title;
         SkipPromptSubtitle = subtitle;
         IsSkipPromptVisible = true;
+        IsSkipPromptHitTestVisible = true;
+        SkipPromptOpacity = 1.0;
+
+        _skipPromptTimer.Start();
     }
 
-    public void DismissSkipPrompt()
+    public void DismissSkipPrompt(bool smooth = true)
     {
+        _skipPromptTimer.Stop();
+
+        var currentSegment = ActiveSkipSegment;
+
+        if (smooth && IsSkipPromptVisible && SkipPromptOpacity > 0)
+        {
+            IsSkipPromptHitTestVisible = false;
+            SkipPromptOpacity = 0.0;
+
+            if (currentSegment != null)
+            {
+                SkipPromptDismissed?.Invoke(currentSegment);
+            }
+
+            _skipPromptFadeTimer.Stop();
+            _skipPromptFadeTimer.Start();
+        }
+        else
+        {
+            _skipPromptFadeTimer.Stop();
+            SkipPromptOpacity = 0.0;
+            IsSkipPromptHitTestVisible = false;
+            IsSkipPromptVisible = false;
+            ActiveSkipSegment = null;
+            SkipPromptTitle = string.Empty;
+            SkipPromptSubtitle = string.Empty;
+
+            if (currentSegment != null)
+            {
+                SkipPromptDismissed?.Invoke(currentSegment);
+            }
+        }
+    }
+
+    public void PauseSkipPromptTimer()
+    {
+        if (IsSkipPromptVisible && SkipPromptOpacity > 0)
+        {
+            _skipPromptTimer.Stop();
+        }
+    }
+
+    public void ResumeSkipPromptTimer()
+    {
+        if (IsSkipPromptVisible && SkipPromptOpacity > 0)
+        {
+            _skipPromptTimer.Stop();
+            _skipPromptTimer.Start();
+        }
+    }
+
+    private void OnSkipPromptTimerTick(object? sender, EventArgs e)
+    {
+        _skipPromptTimer.Stop();
+        DismissSkipPrompt(smooth: true);
+    }
+
+    private void OnSkipPromptFadeTimerTick(object? sender, EventArgs e)
+    {
+        _skipPromptFadeTimer.Stop();
         IsSkipPromptVisible = false;
         ActiveSkipSegment = null;
         SkipPromptTitle = string.Empty;
         SkipPromptSubtitle = string.Empty;
     }
-
 
     public void ShowSkipToast(string message)
     {
@@ -159,9 +233,23 @@ public sealed partial class PlayerOverlayViewModel : ObservableObject, IDisposab
             _skipToastTimer.Stop();
         }
         catch (Exception ex) { Log.Debug(ex, "Error stopping skip toast timer"); }
+
+        try
+        {
+            _skipPromptTimer.Stop();
+            _skipPromptTimer.Tick -= OnSkipPromptTimerTick;
+        }
+        catch (Exception ex) { Log.Debug(ex, "Error stopping skip prompt timer"); }
+
+        try
+        {
+            _skipPromptFadeTimer.Stop();
+            _skipPromptFadeTimer.Tick -= OnSkipPromptFadeTimerTick;
+        }
+        catch (Exception ex) { Log.Debug(ex, "Error stopping skip prompt fade timer"); }
         finally
         {
-            DismissSkipPrompt();
+            DismissSkipPrompt(smooth: false);
             try { ClearTimelinePreview(); } catch (Exception ex) { Log.Debug(ex, "Error clearing timeline preview"); }
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -173,7 +173,7 @@ public partial class PlayerViewModel
     public void SkipActiveSegment()
     {
         var segment = Overlay.ActiveSkipSegment;
-        Overlay.DismissSkipPrompt();
+        Overlay.DismissSkipPrompt(smooth: false);
         if (segment != null)
         {
             _skippedSegments.Add(segment);
@@ -194,7 +194,7 @@ public partial class PlayerViewModel
         {
             _skippedSegments.Add(segment);
         }
-        Overlay.DismissSkipPrompt();
+        Overlay.DismissSkipPrompt(smooth: true);
     }
 
     public void SeekTo(double time)

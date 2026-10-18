@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
         xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
@@ -516,15 +516,19 @@
                 Margin="0,0,0,96"
                 ZIndex="25"
                 IsVisible="{Binding Overlay.IsSkipPromptVisible}"
+                Opacity="{Binding Overlay.SkipPromptOpacity}"
+                IsHitTestVisible="{Binding Overlay.IsSkipPromptHitTestVisible}"
                 Background="#EE141416"
                 BorderBrush="#33FFFFFF"
                 BorderThickness="1"
                 CornerRadius="12"
                 BoxShadow="0 8 32 0 #90000000"
-                Padding="16,10">
+                Padding="16,10"
+                PointerEntered="OnSkipPromptPointerEntered"
+                PointerExited="OnSkipPromptPointerExited">
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.35" Easing="CubicEaseOut"/>
                 </Transitions>
             </Border.Transitions>
             <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">

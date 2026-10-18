@@ -36,14 +36,14 @@ public partial class PlayerWindow
             return;
         }
 
-        if (vm.Overlay.IsSkipPromptVisible && e.Key == Key.Escape)
+        if (vm.Overlay.IsSkipPromptVisible && vm.Overlay.IsSkipPromptHitTestVisible && e.Key == Key.Escape)
         {
             e.Handled = true;
             vm.DismissSkipPromptCommand.Execute(null);
             return;
         }
 
-        if (vm.Overlay.IsSkipPromptVisible && e.Key == Key.Enter)
+        if (vm.Overlay.IsSkipPromptVisible && vm.Overlay.IsSkipPromptHitTestVisible && e.Key == Key.Enter)
         {
             e.Handled = true;
             vm.SkipActiveSegmentCommand.Execute(null);

@@ -32,7 +32,7 @@ public partial class PlayerViewModel
             }
 
             _skippedSegments.Clear();
-            Overlay.DismissSkipPrompt();
+            Overlay.DismissSkipPrompt(smooth: false);
             RefreshSkipSegments();
 
             if (!string.IsNullOrWhiteSpace(_pendingSubtitleUrl))
@@ -102,7 +102,7 @@ public partial class PlayerViewModel
         {
             _isEofReached = true;
             Overlay.DismissResumePrompt();
-            Overlay.DismissSkipPrompt();
+            Overlay.DismissSkipPrompt(smooth: false);
             if (RememberPlaybackPosition)
             {
                 PlaybackResumeStore.Remove(VideoUrl);
@@ -131,7 +131,7 @@ public partial class PlayerViewModel
         if (isEof)
         {
             Overlay.DismissResumePrompt();
-            Overlay.DismissSkipPrompt();
+            Overlay.DismissSkipPrompt(smooth: false);
             if (RememberPlaybackPosition)
             {
                 PlaybackResumeStore.Remove(VideoUrl);

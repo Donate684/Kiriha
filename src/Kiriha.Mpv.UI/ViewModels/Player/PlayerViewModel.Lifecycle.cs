@@ -25,6 +25,7 @@ public partial class PlayerViewModel
             _timer = null;
         }
 
+        Overlay.SkipPromptDismissed -= OnOverlaySkipPromptDismissed;
         try { Overlay.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing overlay"); }
 
         if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl))

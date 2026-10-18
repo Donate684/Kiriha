@@ -74,6 +74,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _statePublisher.MetadataReceived += OnExternalMetadataReceived;
         _settingsApplier = new PlayerSettingsApplier(_playback);
         _timelinePreview = new PlayerTimelinePreviewController(Overlay);
+        Overlay.SkipPromptDismissed += OnOverlaySkipPromptDismissed;
         _playback.BufferingChanged += OnPlayerBufferingChanged;
         ApplyPlayerSettings();
         var initialMetadata = metadata ?? metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl);
@@ -187,12 +188,17 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
             SkipSegments.Add(seg);
         }
     }
-private void CheckSkipSegments(double currentTime, double duration)
+    private void OnOverlaySkipPromptDismissed(SkipSegment segment)
+    {
+        _skippedSegments.Add(segment);
+    }
+
+    private void CheckSkipSegments(double currentTime, double duration)
     {
         if (SkipOpeningEnding == SkipOpeningEndingMode.Disabled)
         {
             if (Overlay.IsSkipPromptVisible)
-                Overlay.DismissSkipPrompt();
+                Overlay.DismissSkipPrompt(smooth: false);
             return;
         }
 
@@ -244,7 +250,7 @@ private void CheckSkipSegments(double currentTime, double duration)
             {
                 if (currentTime >= Overlay.ActiveSkipSegment.EndSeconds || currentTime < Overlay.ActiveSkipSegment.StartSeconds)
                 {
-                    Overlay.DismissSkipPrompt();
+                    Overlay.DismissSkipPrompt(smooth: false);
                 }
             }
         }

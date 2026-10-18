@@ -212,4 +212,19 @@ public partial class PlayerWindow
         }
     }
 
+    private void OnSkipPromptPointerEntered(object? sender, PointerEventArgs e)
+    {
+        if (DataContext is PlayerViewModel vm)
+        {
+            vm.Overlay.PauseSkipPromptTimer();
+        }
+    }
+
+    private void OnSkipPromptPointerExited(object? sender, PointerEventArgs e)
+    {
+        if (DataContext is PlayerViewModel vm)
+        {
+            vm.Overlay.ResumeSkipPromptTimer();
+        }
+    }
 }
