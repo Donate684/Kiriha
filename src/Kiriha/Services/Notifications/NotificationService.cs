@@ -55,7 +55,7 @@ public class NotificationService : INotificationService
             lines.Add(ru!);
 
         Log.Information("NotificationService: New episode toast for {Title} ep {Ep}", orig, episodeNumber);
-        ToastRenderer.Show(lines);
+        ToastRenderer.Show(lines, anime.PosterSource);
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class NotificationService : INotificationService
 
         Log.Information("NotificationService: Scrobble-skip toast for {Title} ep {Ep} (expected {Expected})",
             orig, detectedEp, anime.Progress + 1);
-        ToastRenderer.Show(lines);
+        ToastRenderer.Show(lines, anime.PosterSource);
     }
 
     public virtual void NotifyAnimeCompleted(AnimeEntity anime)
@@ -97,7 +97,7 @@ public class NotificationService : INotificationService
             lines.Add(ru!);
 
         Log.Information("NotificationService: Anime completed toast for {Title}", orig);
-        ToastRenderer.Show(lines);
+        ToastRenderer.Show(lines, anime.PosterSource);
     }
 
     public void NotifyAppUpdate(string newVersion)

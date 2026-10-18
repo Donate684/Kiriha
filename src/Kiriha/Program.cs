@@ -13,6 +13,7 @@ sealed partial class Program
     public static void Main(string[] args)
     {
         Kiriha.Infrastructure.Platform.PathHelper.EnsureDirectoriesExist();
+        Kiriha.Services.Notifications.AppUserModelIdRegistrar.Register();
 
         bool isPlayer = Array.Exists(args, arg => arg.Equals("--player", StringComparison.OrdinalIgnoreCase));
 

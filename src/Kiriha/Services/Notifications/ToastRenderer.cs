@@ -9,10 +9,10 @@ internal static class ToastRenderer
 #endif
 
     /// <summary>
-    /// Renders a toast with up to 3 text lines. The first line is bolded by the
-    /// system template; remaining lines render as regular body text.
+    /// Renders a toast with up to 3 text lines and an optional circular thumbnail image.
+    /// The first line is bolded by the system template; remaining lines render as regular body text.
     /// </summary>
-    public static void Show(IReadOnlyList<string> lines)
+    public static void Show(IReadOnlyList<string> lines, string? imagePath = null)
     {
         if (lines is null || lines.Count == 0) return;
         try
@@ -26,6 +26,13 @@ internal static class ToastRenderer
                 var text = System.Security.SecurityElement.Escape(lines[i] ?? string.Empty);
                 sb.Append("<text>").Append(text).Append("</text>");
             }
+
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                var escapedPath = System.Security.SecurityElement.Escape(imagePath);
+                sb.Append("<image placement=\"appLogoOverride\" hint-crop=\"circle\" src=\"").Append(escapedPath).Append("\"/>");
+            }
+
             sb.Append("</binding></visual></toast>");
 
             var xmlDoc = new global::Windows.Data.Xml.Dom.XmlDocument();

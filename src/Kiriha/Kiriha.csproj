@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
     <!-- Nullable warnings (CS8600..CS8625) become errors. The build is currently clean,
          and we want it to stay clean: silent regressions in null-safety are a top
          source of NREs that bubble up as user-visible crashes. -->
@@ -31,6 +31,9 @@
 
   <ItemGroup>
     <Content Include="Assets\Fonts\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\kiriha_notif.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
