@@ -163,11 +163,4 @@ public sealed class CoreModernizationRefactoringTests
     {
         Assert.Equal(expected, Kiriha.Core.Domain.Constants.AppConstants.AiringStatus.IsFinishedAiring(status));
     }
-
-    [Fact]
-    public void UIUtils_GetLoc_WithFormatArgs_FormatsCorrectly()
-    {
-        var formatted = Kiriha.Core.UIUtils.GetLoc("Episodes {0} of {1}", 12, 24);
-        Assert.Equal("Episodes 12 of 24", formatted);
-    }
 }

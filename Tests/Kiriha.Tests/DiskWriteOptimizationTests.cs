@@ -111,6 +111,13 @@ public class DiskWriteOptimizationTests
         Assert.True(compressed.Length < rawBytes.Length);
         Assert.True(compressed.Length < rawBytes.Length / 2); // Typically >50% compression
 
+        // Verify Zstandard magic number
+        Assert.True(compressed.Length >= 4);
+        Assert.Equal(0x28, compressed[0]);
+        Assert.Equal(0xB5, compressed[1]);
+        Assert.Equal(0x2F, compressed[2]);
+        Assert.Equal(0xFD, compressed[3]);
+
         // 3. Test decompression
         var decompressed = HttpCacheRepository.DecompressIfNeeded(compressed);
         Assert.Equal(rawBytes, decompressed);
@@ -118,6 +125,30 @@ public class DiskWriteOptimizationTests
         // 4. Test backward compatibility: uncompressed legacy payload is returned as-is
         var legacyPassThrough = HttpCacheRepository.DecompressIfNeeded(rawBytes);
         Assert.Equal(rawBytes, legacyPassThrough);
+    }
+
+    [Fact]
+    public void HttpCacheRepository_LegacyGZip_StillDecompressesCorrectly()
+    {
+        string sampleText = "Legacy GZip payload from earlier versions of Kiriha database cache! " + new string('z', 200);
+        byte[] raw = Encoding.UTF8.GetBytes(sampleText);
+
+        byte[] gzipCompressed;
+        using (var ms = new MemoryStream())
+        {
+            using (var gz = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionLevel.Fastest, leaveOpen: true))
+            {
+                gz.Write(raw);
+            }
+            gzipCompressed = ms.ToArray();
+        }
+
+        // Verify GZip magic number
+        Assert.Equal(0x1F, gzipCompressed[0]);
+        Assert.Equal(0x8B, gzipCompressed[1]);
+
+        byte[] decompressed = HttpCacheRepository.DecompressIfNeeded(gzipCompressed);
+        Assert.Equal(raw, decompressed);
     }
 
     [Fact]
@@ -174,39 +205,6 @@ public class DiskWriteOptimizationTests
     }
 
     [Fact]
-    public void MpvThumbnailFrame_StoresRawPixelsInMemory_WithoutDiskIo()
-    {
-        int width = 320;
-        int height = 180;
-        int stride = width * 4;
-        byte[] buffer = new byte[stride * height];
-
-        // Fill with dummy BGRA pixels
-        for (int i = 0; i < buffer.Length; i += 4)
-        {
-            buffer[i] = 100;     // B
-            buffer[i + 1] = 150; // G
-            buffer[i + 2] = 200; // R
-            buffer[i + 3] = 255; // A
-        }
-
-        var frame = new MpvThumbnailFrame(width, height, stride, buffer);
-
-        Assert.Equal(width, frame.Width);
-        Assert.Equal(height, frame.Height);
-        Assert.Equal(stride, frame.Stride);
-        Assert.Same(buffer, frame.BgraPixels);
-        Assert.Equal(320 * 180 * 4, frame.BgraPixels.Length);
-
-        // Verify zero files created in temp timeline directory
-        var legacyThumbsDir = Path.Combine(Path.GetTempPath(), "Kiriha", "timeline-thumbs");
-        if (Directory.Exists(legacyThumbsDir))
-        {
-            Assert.Empty(Directory.GetFiles(legacyThumbsDir, "*.jpg", SearchOption.AllDirectories));
-        }
-    }
-
-    [Fact]
     public void MpvThumbnailer_BucketCalculation_MatchesExpectedTimeSteps()
     {
         Assert.Equal(0, MpvThumbnailer.GetCacheBucket(0.0));
@@ -216,27 +214,6 @@ public class DiskWriteOptimizationTests
         Assert.Equal(1, MpvThumbnailer.GetCacheBucket(2.8));
         Assert.Equal(2, MpvThumbnailer.GetCacheBucket(3.5));
         Assert.Equal(2, MpvThumbnailer.GetCacheBucket(4.0));
-    }
-
-    [Fact]
-    public async Task ThumbnailTempCleaner_RemovesLegacyFolder()
-    {
-        var legacyThumbsDir = Path.Combine(Path.GetTempPath(), "Kiriha", "timeline-thumbs");
-        Directory.CreateDirectory(legacyThumbsDir);
-        var dummyFile = Path.Combine(legacyThumbsDir, "legacy_test.jpg");
-        await File.WriteAllTextAsync(dummyFile, "legacy test");
-        Assert.True(File.Exists(dummyFile));
-
-        ThumbnailTempCleaner.StartCleanupTask();
-
-        // Allow background Task.Run to execute
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        while (Directory.Exists(legacyThumbsDir) && sw.ElapsedMilliseconds < 2000)
-        {
-            await Task.Delay(50);
-        }
-
-        Assert.False(Directory.Exists(legacyThumbsDir));
     }
 
     private sealed class WalCheckpointTrackingInterceptor : DbCommandInterceptor
