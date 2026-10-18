@@ -353,38 +353,7 @@ public class StreamingExtractionTests
     [Fact]
     public async Task MpvPlayer_LoadAnimeLib_WithSubtitleUrl_AddsSubtitleTrackSuccessfully()
     {
-        using var player = Kiriha.Mpv.MpvPlayerBuilder.Build();
-        var tcs = new TaskCompletionSource<bool>();
-        string? error = null;
-
-        player.FileLoaded += (s, e) => tcs.TrySetResult(true);
-        player.PlaybackEnded += (s, e) =>
-        {
-            if (e.HasError)
-            {
-                error = e.ErrorMessage;
-                tcs.TrySetResult(false);
-            }
-        };
-
-        var url = "https://video1.cdnlibs.org/.%D0%B0s/uploads/converted_videos/anime/20374/players/16517/16517_1080.mp4";
-        player.Load(url);
-
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(25)));
-        bool loaded = completed == tcs.Task && await tcs.Task;
-        Assert.True(loaded, $"Failed to load video: {error ?? "timeout"}");
-        player.Pause();
-
-        var subTcs = new TaskCompletionSource<bool>();
-        player.TracksChanged += () =>
-        {
-            var tracks = player.GetTracks();
-            if (tracks.Any(t => t.Type == "sub"))
-            {
-                subTcs.TrySetResult(true);
-            }
-        };
-
+        var tempMedia = CreateDummyMediaFile();
         var tempSub = Path.Combine(Path.GetTempPath(), $"kiriha_sub_{Guid.NewGuid():N}.ass");
         await File.WriteAllTextAsync(tempSub, """
             [Script Info]
@@ -396,9 +365,40 @@ public class StreamingExtractionTests
 
         try
         {
+            using var player = Kiriha.Mpv.MpvPlayerBuilder.Build();
+            var tcs = new TaskCompletionSource<bool>();
+            string? error = null;
+
+            player.FileLoaded += (s, e) => tcs.TrySetResult(true);
+            player.PlaybackEnded += (s, e) =>
+            {
+                if (e.HasError)
+                {
+                    error = e.ErrorMessage;
+                    tcs.TrySetResult(false);
+                }
+            };
+
+            player.Load(tempMedia);
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(20)));
+            bool loaded = completed == tcs.Task && await tcs.Task;
+            Assert.True(loaded, $"Failed to load media: {error ?? "timeout"}");
+            player.Pause();
+
+            var subTcs = new TaskCompletionSource<bool>();
+            player.TracksChanged += () =>
+            {
+                var tracks = player.GetTracks();
+                if (tracks.Any(t => t.Type == "sub"))
+                {
+                    subTcs.TrySetResult(true);
+                }
+            };
+
             player.AddSubtitle(tempSub);
 
-            var deadline = DateTime.UtcNow.AddSeconds(25);
+            var deadline = DateTime.UtcNow.AddSeconds(15);
             bool hasSubTrack = false;
             while (DateTime.UtcNow < deadline)
             {
@@ -412,12 +412,14 @@ public class StreamingExtractionTests
                     hasSubTrack = true;
                     break;
                 }
-                await Task.Delay(100);
+                await Task.Delay(50);
             }
             Assert.True(hasSubTrack, "Subtitle was not added to tracks");
         }
         finally
         {
+            if (File.Exists(tempMedia))
+                File.Delete(tempMedia);
             if (File.Exists(tempSub))
                 File.Delete(tempSub);
         }
@@ -468,38 +470,7 @@ public class StreamingExtractionTests
         Assert.Equal("https://api.cdnlibs.org/uploads/subtitles/355977/5c6b806b-b197-457b-b84f-c4f145bf9dee.ass", source.SubtitleUrl);
 
         // 2. Verify MpvPlayer adds subtitle track
-        using var player = Kiriha.Mpv.MpvPlayerBuilder.Build();
-        var tcs = new TaskCompletionSource<bool>();
-        string? error = null;
-
-        player.FileLoaded += (s, e) => tcs.TrySetResult(true);
-        player.PlaybackEnded += (s, e) =>
-        {
-            if (e.HasError)
-            {
-                error = e.ErrorMessage;
-                tcs.TrySetResult(false);
-            }
-        };
-
-        var url = "https://video1.cdnlibs.org/.%D0%B0s/uploads/converted_videos/anime/19309/players/27819/27819_1080.mp4";
-        player.Load(url);
-
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(25)));
-        bool loaded = completed == tcs.Task && await tcs.Task;
-        Assert.True(loaded, $"Failed to load video: {error ?? "timeout"}");
-        player.Pause();
-
-        var subTcs = new TaskCompletionSource<bool>();
-        player.TracksChanged += () =>
-        {
-            var tracks = player.GetTracks();
-            if (tracks.Any(t => t.Type == "sub"))
-            {
-                subTcs.TrySetResult(true);
-            }
-        };
-
+        var tempMedia = CreateDummyMediaFile();
         var tempSub = Path.Combine(Path.GetTempPath(), $"kiriha_sub_legacy_{Guid.NewGuid():N}.ass");
         await File.WriteAllTextAsync(tempSub, """
             [Script Info]
@@ -511,9 +482,40 @@ public class StreamingExtractionTests
 
         try
         {
+            using var player = Kiriha.Mpv.MpvPlayerBuilder.Build();
+            var tcs = new TaskCompletionSource<bool>();
+            string? error = null;
+
+            player.FileLoaded += (s, e) => tcs.TrySetResult(true);
+            player.PlaybackEnded += (s, e) =>
+            {
+                if (e.HasError)
+                {
+                    error = e.ErrorMessage;
+                    tcs.TrySetResult(false);
+                }
+            };
+
+            player.Load(tempMedia);
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(20)));
+            bool loaded = completed == tcs.Task && await tcs.Task;
+            Assert.True(loaded, $"Failed to load media: {error ?? "timeout"}");
+            player.Pause();
+
+            var subTcs = new TaskCompletionSource<bool>();
+            player.TracksChanged += () =>
+            {
+                var tracks = player.GetTracks();
+                if (tracks.Any(t => t.Type == "sub"))
+                {
+                    subTcs.TrySetResult(true);
+                }
+            };
+
             player.AddSubtitle(tempSub);
 
-            var deadline = DateTime.UtcNow.AddSeconds(25);
+            var deadline = DateTime.UtcNow.AddSeconds(15);
             bool hasSubTrack = false;
             while (DateTime.UtcNow < deadline)
             {
@@ -527,12 +529,14 @@ public class StreamingExtractionTests
                     hasSubTrack = true;
                     break;
                 }
-                await Task.Delay(100);
+                await Task.Delay(50);
             }
             Assert.True(hasSubTrack, "Subtitle was not added to tracks");
         }
         finally
         {
+            if (File.Exists(tempMedia))
+                File.Delete(tempMedia);
             if (File.Exists(tempSub))
                 File.Delete(tempSub);
         }
@@ -889,6 +893,32 @@ public class StreamingExtractionTests
         Assert.False(item4.IsNonRussian);
     }
 
+    private static string CreateDummyMediaFile()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"kiriha_test_media_{Guid.NewGuid():N}.wav");
+        using var fs = File.Create(path);
+        using var bw = new BinaryWriter(fs);
+        int sampleRate = 8000;
+        short channels = 1;
+        short bitsPerSample = 16;
+        int dataSize = sampleRate * channels * (bitsPerSample / 8) * 3; // 3 seconds
+
+        bw.Write("RIFF"u8);
+        bw.Write(36 + dataSize);
+        bw.Write("WAVE"u8);
+        bw.Write("fmt "u8);
+        bw.Write(16);
+        bw.Write((short)1);
+        bw.Write(channels);
+        bw.Write(sampleRate);
+        bw.Write(sampleRate * channels * (bitsPerSample / 8));
+        bw.Write((short)(channels * (bitsPerSample / 8)));
+        bw.Write(bitsPerSample);
+        bw.Write("data"u8);
+        bw.Write(dataSize);
+        bw.Write(new byte[dataSize]);
+        return path;
+    }
     private sealed class DelegatingHandlerStub : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
