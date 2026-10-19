@@ -11,6 +11,19 @@ public sealed record PlayerMediaMetadata(
 {
     public PlayerMediaMetadata() : this(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
 
+    public static bool IsStreamManifest(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+
+        return name.Contains(":hls", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains(":manifest", StringComparison.OrdinalIgnoreCase) ||
+               name.Equals("manifest", StringComparison.OrdinalIgnoreCase) ||
+               name.Equals("master", StringComparison.OrdinalIgnoreCase) ||
+               name.Equals("index", StringComparison.OrdinalIgnoreCase) ||
+               name.Equals("playlist", StringComparison.OrdinalIgnoreCase);
+    }
+
     public static PlayerMediaMetadata FromVideoPath(string videoPath)
     {
         if (string.IsNullOrWhiteSpace(videoPath))
@@ -39,6 +52,11 @@ public sealed record PlayerMediaMetadata(
         else
         {
             fallbackTitle = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+        }
+
+        if (IsStreamManifest(fallbackTitle))
+        {
+            fallbackTitle = string.Empty;
         }
 
         return new PlayerMediaMetadata(fallbackTitle, fallbackTitle, string.Empty, string.Empty, null, fallbackTitle, torrentHash);

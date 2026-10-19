@@ -245,4 +245,61 @@ public sealed class PlayerMediaMetadataTests
         Assert.Equal("Призрак встречает гяру!", vm.TopTitle);
         Assert.Equal("Ghost Meets Gal!", vm.BottomTitle);
     }
+
+    [Theory]
+    [InlineData("https://cache.libria.fun/videos/media/ts/9876/1/720.mp4:hls:manifest.m3u8")]
+    [InlineData("https://stream.example.com/anime/master.m3u8")]
+    [InlineData("https://stream.example.com/hls/index.m3u8")]
+    [InlineData("https://stream.example.com/playlist.m3u8")]
+    public void FilenameResolver_StreamManifestUrl_DoesNotParseAsAnimeTitle(string url)
+    {
+        var resolver = new FilenamePlayerMediaMetadataResolver();
+
+        var metadata = resolver.Resolve(url);
+
+        Assert.Equal(string.Empty, metadata.TitleRu);
+        Assert.Equal(string.Empty, metadata.TitleRomaji);
+        Assert.Equal(string.Empty, metadata.OriginalTitle);
+        Assert.Null(metadata.AnimeId);
+    }
+
+    [Fact]
+    public void PlayerMediaMetadata_FromVideoPath_StreamManifest_ReturnsEmptyFallbackTitle()
+    {
+        var metadata = PlayerMediaMetadata.FromVideoPath("https://cache.libria.fun/videos/media/ts/9876/1/720.mp4:hls:manifest.m3u8");
+
+        Assert.Equal(string.Empty, metadata.OriginalTitle);
+        Assert.Equal(string.Empty, metadata.TitleRu);
+    }
+
+    [Fact]
+    public void PlayerViewModel_LoadVideo_WithExplicitMetadata_PreservesMetadata()
+    {
+        var settings = new AppSettings();
+        var mockSettings = new Moq.Mock<ISettingsService>();
+        mockSettings.Setup(s => s.Current).Returns(settings);
+        var mockLocalizer = new Moq.Mock<ILocalizer>();
+        var resolver = new FilenamePlayerMediaMetadataResolver();
+
+        var vm = new Kiriha.Mpv.UI.ViewModels.Player.PlayerViewModel(
+            @"C:\Anime\dummy.mkv",
+            null,
+            resolver,
+            mockSettings.Object,
+            mockLocalizer.Object);
+
+        var explicitMeta = new PlayerMediaMetadata(
+            "Sousou no Frieren - 01",
+            "Провожающая в последний путь Фрирен",
+            "Frieren: Beyond Journey's End",
+            "01",
+            52991,
+            "Sousou no Frieren");
+
+        vm.LoadVideo("https://cache.libria.fun/videos/media/ts/9876/1/720.mp4:hls:manifest.m3u8", null, explicitMeta);
+
+        Assert.Equal("Sousou no Frieren", vm.AnimeTitleRomaji);
+        Assert.Equal("Провожающая в последний путь Фрирен", vm.AnimeTitleRu);
+        Assert.Equal(52991, vm.AnimeId);
+    }
 }

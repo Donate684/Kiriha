@@ -31,7 +31,21 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
 
         try
         {
-            var filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+            string filename;
+            if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            {
+                var seg = uri.Segments.LastOrDefault() ?? string.Empty;
+                filename = Uri.UnescapeDataString(System.IO.Path.GetFileNameWithoutExtension(seg));
+            }
+            else
+            {
+                filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+            }
+
+            if (PlayerMediaMetadata.IsStreamManifest(filename))
+                return new PlayerMediaMetadata();
+
             var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);
 

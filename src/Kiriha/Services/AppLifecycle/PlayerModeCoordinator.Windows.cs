@@ -45,8 +45,8 @@ public sealed partial class PlayerModeCoordinator
             return false;
 
         var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
-        vm.LoadVideo(videoUrl, subtitleUrl);
         var cliMetadata = ExtractMetadataFromArgs(args);
+        vm.LoadVideo(videoUrl, subtitleUrl, cliMetadata);
         if (cliMetadata != null)
         {
             vm.ApplyExternalMetadata(cliMetadata);

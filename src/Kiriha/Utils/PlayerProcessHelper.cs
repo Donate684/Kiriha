@@ -33,6 +33,36 @@ public static class PlayerProcessHelper
                 forwardArgs.Add("--sub-file");
                 forwardArgs.Add(subtitleUrl);
             }
+            if (!string.IsNullOrWhiteSpace(canonicalOriginal))
+            {
+                forwardArgs.Add("--original-title");
+                forwardArgs.Add(canonicalOriginal);
+            }
+            if (!string.IsNullOrWhiteSpace(titleRu))
+            {
+                forwardArgs.Add("--title-ru");
+                forwardArgs.Add(titleRu);
+            }
+            if (!string.IsNullOrWhiteSpace(titleEn))
+            {
+                forwardArgs.Add("--title-en");
+                forwardArgs.Add(titleEn);
+            }
+            if (!string.IsNullOrWhiteSpace(episode))
+            {
+                forwardArgs.Add("--episode");
+                forwardArgs.Add(episode);
+            }
+            if (animeId.HasValue)
+            {
+                forwardArgs.Add("--anime-id");
+                forwardArgs.Add(animeId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+            if (!string.IsNullOrWhiteSpace(torrentHash))
+            {
+                forwardArgs.Add("--torrent-hash");
+                forwardArgs.Add(torrentHash);
+            }
         }
 
         if (forwardArgs.Count > 0 && PlayerProcessBridge.TryForward(forwardArgs.ToArray()))

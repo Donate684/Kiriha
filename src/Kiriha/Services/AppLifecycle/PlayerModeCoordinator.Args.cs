@@ -24,7 +24,7 @@ public sealed partial class PlayerModeCoordinator
         return string.Empty;
     }
 
-    private static Kiriha.Core.Domain.Models.PlayerMediaMetadata? ExtractMetadataFromArgs(string[] args)
+    internal static Kiriha.Core.Domain.Models.PlayerMediaMetadata? ExtractMetadataFromArgs(string[] args)
     {
         var titleRu = GetArgValue(args, "--title-ru") ?? string.Empty;
         var titleEn = GetArgValue(args, "--title-en") ?? string.Empty;

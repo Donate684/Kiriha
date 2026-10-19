@@ -8,6 +8,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Streaming.Constants;
 using Kiriha.Models;
 using Kiriha.Utils;
+using Kiriha.Utils.Async;
 using Kiriha.ViewModels.Settings;
 using Serilog;
 
@@ -704,6 +705,20 @@ public partial class TorrentsViewModel
             var matchedAnime = ResolveMatchedAnime(animeTitle);
             var titleRu = matchedAnime?.RussianTitle ?? animeTitle;
             var titleEn = matchedAnime?.Title ?? animeTitle;
+
+            if (_internalPlayerServer != null)
+            {
+                var initialMeta = new PlayerMediaMetadata(
+                    originalTitle,
+                    titleRu,
+                    titleEn,
+                    epNum ?? string.Empty,
+                    matchedAnime?.Id,
+                    titleEn,
+                    TorrentHash: string.Empty);
+
+                _internalPlayerServer.SendMetadataAsync(initialMeta).SafeFireAndForget("Torrents.Online.SendMetadata");
+            }
 
             PlayerProcessHelper.LaunchPlayer(
                 videoUrl: streamUrl,

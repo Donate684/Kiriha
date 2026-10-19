@@ -1,7 +1,7 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
-
+using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.Services.Player;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -45,7 +45,7 @@ public partial class PlayerViewModel
         _playback.AddSubtitle(path, select);
     }
 
-    public void LoadVideo(string videoUrl, string? subtitleUrl = null)
+    public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null)
     {
         if (subtitleUrl != null)
         {
@@ -91,7 +91,17 @@ public partial class PlayerViewModel
         Overlay.DismissResumePrompt();
         _isEofReached = false;
 
-        if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
+        if (metadata != null)
+        {
+            _currentAniSkipQuery = null;
+            _aniSkipSegments.Clear();
+            _previousVideoUrlForMetadata = videoUrl;
+            _suppressVideoUrlResolution = true;
+            VideoUrl = videoUrl;
+            ApplyMetadata(metadata, overwriteAll: true);
+            UpdateNavigationAvailability();
+        }
+        else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
         {
             _currentAniSkipQuery = null;
             _aniSkipSegments.Clear();
@@ -100,7 +110,7 @@ public partial class PlayerViewModel
         else
             ResolveAndApplyMetadata(videoUrl);
 
-        InitializeTorrentStream(videoUrl, null);
+        InitializeTorrentStream(videoUrl, metadata);
 
         ApplyTimelineSnapshot(_timeline.Reset());
         _subtitleDelay = 0;

@@ -85,19 +85,29 @@ public class InstanceServer : BackgroundService
             {
                 var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
                 var settingsService = _serviceProvider.GetService<SettingsService>();
+                var cliMetadata = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractMetadataFromArgs(args);
                 if (settingsService?.Current.Player.SingleWindow == true
                     && Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     var existingWindow = desktop.Windows.OfType<PlayerWindow>().LastOrDefault();
                     if (existingWindow?.DataContext is PlayerViewModel existingVm)
                     {
-                        existingVm.LoadVideo(videoUrl);
+                        existingVm.LoadVideo(videoUrl, null, cliMetadata);
+                        if (cliMetadata != null)
+                        {
+                            existingVm.ApplyExternalMetadata(cliMetadata);
+                        }
                         existingWindow.Show();
                         existingWindow.Activate();
                         return;
                     }
                 }
-                var playerVm = new PlayerViewModel(videoUrl, metadataResolver.Resolve(videoUrl), metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>());
+                var initialMeta = cliMetadata ?? metadataResolver.Resolve(videoUrl);
+                var playerVm = new PlayerViewModel(videoUrl, initialMeta, metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>());
+                if (cliMetadata != null)
+                {
+                    playerVm.ApplyExternalMetadata(cliMetadata);
+                }
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
             });
