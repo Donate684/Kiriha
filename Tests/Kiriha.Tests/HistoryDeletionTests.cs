@@ -32,7 +32,7 @@ public class HistoryDeletionTests
             Title = "Rent-a-Girlfriend Season 5",
             RussianTitle = "Девушка на час 5",
             Progress = 2,
-            MainPictureUrl = "https://shikimori.one/system/animes/original/62485.jpg"
+            MainPictureUrl = "https://shikimori.io/system/animes/original/62485.jpg"
         };
 
         mockAnimeRepo.Setup(r => r.Collection).Returns(new ObservableCollection<AnimeEntity> { anime });
@@ -123,7 +123,7 @@ public class HistoryDeletionTests
                 [62485] = new ShikiMetadata
                 {
                     Id = 62485,
-                    PosterUrl = "https://shikimori.one/system/animes/original/62485.jpg"
+                    PosterUrl = "https://shikimori.io/system/animes/original/62485.jpg"
                 }
             });
 
@@ -145,6 +145,6 @@ public class HistoryDeletionTests
 
         // Assert
         Assert.Single(rawHistory);
-        Assert.Equal("https://shikimori.one/system/animes/original/62485.jpg", rawHistory[0].PosterUrl);
+        Assert.Equal("https://shikimori.io/system/animes/original/62485.jpg", rawHistory[0].PosterUrl);
     }
 }

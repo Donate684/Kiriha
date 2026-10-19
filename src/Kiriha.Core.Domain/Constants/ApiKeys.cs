@@ -54,7 +54,7 @@ public static class ApiKeys
 {
     public const string MalClientId = "e702720cb2200e65bd3c470d02f7536a";
 
-    // OAuth app registered on https://shikimori.one.
+    // OAuth app registered on https://shikimori.io.
     public const string ShikiClientId = "nUJtP0ek0IgEwt9KCE5oyn-xpIay2j9VP43ZRNdM2q4";
     public const string ShikiClientSecret = "VQRY6kamejmTriEZ0NoZT-zGou510wA10N_kyD4TXbQ";
 

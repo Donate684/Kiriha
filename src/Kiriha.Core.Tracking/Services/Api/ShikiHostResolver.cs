@@ -13,7 +13,7 @@ public sealed partial class ShikiHostResolver : IImageUrlRewriter
 
     public ShikiHostResolver()
     {
-        _state = new ShikiHostState(ShikiProbeStrategy.KnownOriginalHosts, ShikiProbeStrategy.KnownForkHosts);
+        _state = new ShikiHostState(ShikiProbeStrategy.KnownOriginalHosts, ShikiProbeStrategy.KnownForkHosts, ShikiProbeStrategy.LegacyOriginalHosts);
         _probeStrategy = new ShikiProbeStrategy(_state);
     }
 

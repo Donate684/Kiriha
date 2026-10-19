@@ -1,4 +1,4 @@
-﻿{
+{
   "header": "Settings",
   "title": "Personalization \u0026 Credentials",
   "sections": {
@@ -81,10 +81,10 @@
     "shikimori_group_sub": "Russian anime database. Choose official site or community fork:",
     "shikimori_orig_title": "Original",
     "shikimori_orig_badge": "ORIGINAL",
-    "shikimori_orig_sub": "shikimori.one \u2014 official site and original database of the Shikimori project",
+    "shikimori_orig_sub": "shikimori.io \u2014 official site and original database of the Shikimori project",
     "shikimori_fork_title": "Community Fork",
     "shikimori_fork_badge": "FORK",
-    "shikimori_fork_sub": "shikimori.rip \u2014 community fork of Shikimori.one with an independent database and accounts",
+    "shikimori_fork_sub": "shikimori.rip \u2014 community fork of Shikimori (shikimori.io) with an independent database and accounts",
     "shiki_switch_locked_hint": "Disconnect current account to choose another server",
     "mirror_inactive_hint": "This Shikimori server is not active. Switch the server in the Shikimori settings below to enable it",
     "connected_badge": "Connected",

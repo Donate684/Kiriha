@@ -7,7 +7,7 @@ namespace Kiriha.Tests;
 public sealed class ShikiEndpointsTests
 {
     [Theory]
-    [InlineData(ShikiMirror.One, "https://shikimori.one/api/", "https://shikimori.one/oauth/token", "https://shikimori.one/animes/", "https://shikimori.one/mangas/")]
+    [InlineData(ShikiMirror.One, "https://shikimori.io/api/", "https://shikimori.io/oauth/token", "https://shikimori.io/animes/", "https://shikimori.io/mangas/")]
     [InlineData(ShikiMirror.Net, "https://shikimori.rip/api/", "https://shikimori.rip/oauth/token", "https://shikimori.rip/animes/", "https://shikimori.rip/mangas/")]
     public void Urls_AreResolvedPerMirror(
         ShikiMirror mirror,

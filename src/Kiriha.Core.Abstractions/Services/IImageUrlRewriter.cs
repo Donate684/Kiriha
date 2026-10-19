@@ -2,7 +2,7 @@ namespace Kiriha.Core.Abstractions.Services;
 
 /// <summary>
 /// Rewrites image URLs before download so that host-level redirects that were
-/// discovered during API calls (e.g. shikimori.one → shikimori.me) are also
+/// discovered during API calls (e.g. shikimori.one → shikimori.io) are also
 /// applied to poster/cover image requests, which travel through a separate
 /// HttpClient that has no Shiki-aware retry logic.
 /// </summary>

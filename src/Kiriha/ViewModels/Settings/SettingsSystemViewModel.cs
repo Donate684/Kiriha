@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Tracking.Integration;
@@ -32,7 +32,7 @@ public partial class SettingsSystemViewModel : ObservableObject
     public List<AiringSourceOption> AvailableAiringSources { get; } = new()
     {
         new AiringSourceOption("AniList (anilist.co)", EpisodeAiringSource.AniList),
-        new AiringSourceOption("Shikimori (shikimori.one)", EpisodeAiringSource.Shikimori)
+        new AiringSourceOption("Shikimori (shikimori.io)", EpisodeAiringSource.Shikimori)
     };
 
     [ObservableProperty] private AiringSourceOption _selectedAiringSource;

@@ -309,7 +309,7 @@ public class SettingsAuthViewModelTests
     {
         Assert.True(_vm.IsShikiOrigSelected);
         Assert.False(_vm.IsShikiForkSelected);
-        Assert.Equal("shikimori.one", _vm.ShikiActiveDomain);
+        Assert.Equal("shikimori.io", _vm.ShikiActiveDomain);
 
         _vm.IsShikiForkSelected = true;
 
@@ -369,7 +369,7 @@ public class SettingsAuthViewModelTests
 
         Assert.True(_vm.IsShikiOrigSelected);
         Assert.False(_vm.IsShikiForkSelected);
-        Assert.Equal("shikimori.one", _vm.ShikiActiveDomain);
+        Assert.Equal("shikimori.io", _vm.ShikiActiveDomain);
 
         // After logging out, switching is allowed again
         _vm.ShikiOrigLogout();

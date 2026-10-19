@@ -1,7 +1,7 @@
 namespace Kiriha.Core.Domain.Models.Api;
 
 /// <summary>
-/// Endpoint bundle for one Shikimori OAuth realm (shikimori.one or shikimori.net).
+/// Endpoint bundle for one Shikimori OAuth realm (shikimori.io or shikimori.net).
 /// The two realms have identical contracts but issue mutually-incompatible tokens,
 /// so the active host is resolved per-call from the user's selected mirror.
 /// See <see cref="ShikiEndpoints"/> for the resolver.

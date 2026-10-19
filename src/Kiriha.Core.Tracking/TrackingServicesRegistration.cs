@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
@@ -53,7 +53,7 @@ public static class TrackingServicesRegistration
 
         // --- Shikimori ---
         // No BaseAddress: ShikiApiService resolves the endpoint per-call from settings
-        // (shikimori.one vs shikimori.net) and always passes absolute URLs.
+        // (shikimori.io vs shikimori.net) and always passes absolute URLs.
         //
         // AllowAutoRedirect = false is critical: shikimori.net and shikimori.rip
         // are the same site behind two domains (regional-blocking workaround),

@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Models.Api;
+using Kiriha.Core.Domain.Models.Api;
 namespace Kiriha.Core.Domain.Constants;
 
 public static class AppConstants
@@ -18,7 +18,7 @@ public static class AppConstants
             public const string BaseWebsiteUrl = "https://myanimelist.net/";
         }
 
-        // shikimori.one and shikimori.net are independent OAuth realms with identical
+        // shikimori.io and shikimori.net are independent OAuth realms with identical
         // contracts. We collapse the duplicated four-URL block into a single record
         // and expose two named instances. ShikiEndpoints.cs picks one based on the
         // active mirror in settings; OAuth token exchange runs directly from the
@@ -26,11 +26,11 @@ public static class AppConstants
         public static class Shiki
         {
             public static readonly ShikiHost One = new(
-                BaseUrl: "https://shikimori.one/api/",
-                TokenUrl: "https://shikimori.one/oauth/token",
-                AuthUrl: "https://shikimori.one/oauth/authorize",
-                WebsiteUrl: "https://shikimori.one/animes/",
-                MangaWebsiteUrl: "https://shikimori.one/mangas/");
+                BaseUrl: "https://shikimori.io/api/",
+                TokenUrl: "https://shikimori.io/oauth/token",
+                AuthUrl: "https://shikimori.io/oauth/authorize",
+                WebsiteUrl: "https://shikimori.io/animes/",
+                MangaWebsiteUrl: "https://shikimori.io/mangas/");
 
             public static readonly ShikiHost Net = new(
                 BaseUrl: "https://shikimori.rip/api/",

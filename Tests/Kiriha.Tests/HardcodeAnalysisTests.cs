@@ -154,6 +154,7 @@ public class HardcodeAnalysisTests
         "MyAnimeList",
         "AniList",
         "shikimori.one",
+        "shikimori.io",
         "shikimori.rip",
         "shikimori.rip / .net / …",  // actual ellipsis character in the source file
         "myanimelist.net",

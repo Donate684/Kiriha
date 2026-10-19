@@ -6,7 +6,7 @@ namespace Kiriha.Core.Domain.Models.Api;
 
 /// <summary>
 /// Resolves Shikimori endpoints + OAuth client_id for the active mirror.
-/// shikimori.one and shikimori.net are independent OAuth realms, so every
+/// shikimori.io and shikimori.net are independent OAuth realms, so every
 /// outbound request must read the *current* mirror from settings.
 /// </summary>
 public static class ShikiEndpoints

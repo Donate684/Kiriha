@@ -98,10 +98,21 @@ public sealed class ShikiHostResolverTests
     {
         var resolver = new ShikiHostResolver();
 
-        const string posterUrl = "https://shikimori.one/system/animes/original/12345.jpg";
+        const string posterUrl = "https://shikimori.io/system/animes/original/12345.jpg";
         var result = resolver.Rewrite(posterUrl);
 
         Assert.Equal(posterUrl, result);
+    }
+
+    [Fact]
+    public void RewriteString_RewritesLegacyShikiOneToIoEvenWithoutSessionPin()
+    {
+        var resolver = new ShikiHostResolver();
+
+        const string legacyUrl = "https://shikimori.one/system/animes/original/12345.jpg";
+        var result = resolver.Rewrite(legacyUrl);
+
+        Assert.Equal("https://shikimori.io/system/animes/original/12345.jpg", result);
     }
 
     [Fact]

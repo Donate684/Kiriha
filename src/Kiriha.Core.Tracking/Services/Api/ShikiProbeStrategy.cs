@@ -6,8 +6,12 @@ public sealed class ShikiProbeStrategy
 
     public static readonly IReadOnlyList<string> KnownOriginalHosts =
     [
-        "shikimori.one",
         "shikimori.io"
+    ];
+
+    public static readonly IReadOnlyList<string> LegacyOriginalHosts =
+    [
+        "shikimori.one"
     ];
 
     public static readonly IReadOnlyList<string> KnownForkHosts =

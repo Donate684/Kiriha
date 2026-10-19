@@ -62,7 +62,7 @@ public sealed class ShikiTrackerServiceTests
 
         var entity = ShikiMapper.MapRateToAnimeEntity(
             doc.RootElement,
-            "https://shikimori.one",
+            "https://shikimori.io",
             (primary, shiki) =>
             {
                 capturedPrimary = primary;
@@ -74,7 +74,7 @@ public sealed class ShikiTrackerServiceTests
         Assert.Equal(52991, capturedShiki);
         Assert.Equal("Sousou no Frieren", entity.Title);
         Assert.Equal("Frieren", entity.RussianTitle);
-        Assert.Equal("https://shikimori.one/system/animes/original/52991.jpg", entity.MainPictureUrl);
+        Assert.Equal("https://shikimori.io/system/animes/original/52991.jpg", entity.MainPictureUrl);
         Assert.Equal(UserAnimeStatus.Completed, entity.Status);
         Assert.Equal(28, entity.Progress);
         Assert.Equal(28, entity.TotalEpisodes);
@@ -113,7 +113,7 @@ public sealed class ShikiTrackerServiceTests
 
         var entity = ShikiMapper.MapRateToAnimeEntity(
             doc.RootElement,
-            "https://shikimori.one",
+            "https://shikimori.io",
             (primary, shiki) =>
             {
                 capturedPrimary = primary;
@@ -154,7 +154,7 @@ public sealed class ShikiTrackerServiceTests
         """;
 
         using var doc = JsonDocument.Parse(json);
-        var entity = ShikiMapper.MapRateToAnimeEntity(doc.RootElement, "https://shikimori.one");
+        var entity = ShikiMapper.MapRateToAnimeEntity(doc.RootElement, "https://shikimori.io");
 
         Assert.Equal(1, entity.Id);
         Assert.Equal(MediaKind.Manga, entity.MediaKind);

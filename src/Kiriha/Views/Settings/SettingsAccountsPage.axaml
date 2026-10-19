@@ -222,7 +222,7 @@
                                                         <Border Background="#2a9c5b" CornerRadius="4" Padding="5,2">
                                                             <TextBlock Text="ORIGINAL" Foreground="White" FontSize="8" FontWeight="Bold"/>
                                                         </Border>
-                                                        <TextBlock Text="shikimori.one" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="shikimori.io" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
                                                     </StackPanel>
                                                     <TextBlock Grid.Column="2" Text="{DynamicResource l.settings.accounts_hub.mirror}"
                                                                FontSize="9" Opacity="0.6" VerticalAlignment="Center"/>
@@ -526,7 +526,7 @@
                                         <material:MaterialIcon Kind="Web" Width="15" Height="15" VerticalAlignment="Center"/>
                                         <TextBlock Text="{DynamicResource l.settings.accounts_hub.shikimori_orig_title}"
                                                    FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
-                                        <TextBlock Text="shikimori.one" FontSize="10" Opacity="0.65" FontFamily="Consolas,monospace" VerticalAlignment="Center"/>
+                                        <TextBlock Text="shikimori.io" FontSize="10" Opacity="0.65" FontFamily="Consolas,monospace" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
 

@@ -27,7 +27,7 @@ public static class TrackerConstants
     {
         public const string Mal = "myanimelist.net";
         public const string AniList = "anilist.co";
-        public const string ShikiOrig = "shikimori.one";
+        public const string ShikiOrig = "shikimori.io";
         public const string ShikiFork = "shikimori.rip";
     }
 

@@ -6,7 +6,7 @@ public static class AboutCredits
     [
         new CreditEntry("MyAnimeList", "Account, list, scoring · myanimelist.net",  "https://myanimelist.net"),
         new CreditEntry("AniList",     "Episode airing schedule · anilist.co",      "https://anilist.co"),
-        new CreditEntry("Shikimori",   "Russian titles & descriptions · shikimori.one", "https://shikimori.one"),
+        new CreditEntry("Shikimori",   "Russian titles & descriptions · shikimori.io", "https://shikimori.io"),
         new CreditEntry("ShikimoriRIP", "Community fork Shikimori · shikimori.rip", "https://shikimori.rip"),
         new CreditEntry("AniSkip",     "OP & ED skip timestamps · aniskip.com", "https://aniskip.com"),
         new CreditEntry("Nyaa.si",     "Torrent feed · nyaa.si",                    "https://nyaa.si"),

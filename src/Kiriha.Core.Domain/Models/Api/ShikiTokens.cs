@@ -11,7 +11,7 @@ public class ShikiTokens : OAuthTokens
     public int? UserId { get; set; }
 
     // Which mirror this token was issued by. Tokens are NOT cross-mirror compatible
-    // because shikimori.one and shikimori.net are independent OAuth realms.
+    // because shikimori.io and shikimori.net are independent OAuth realms.
     public ShikiMirror Mirror { get; set; } = ShikiMirror.One;
 
     public override ShikiTokens Clone() => new()

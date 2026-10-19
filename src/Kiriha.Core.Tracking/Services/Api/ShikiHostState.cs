@@ -10,9 +10,19 @@ public sealed class ShikiHostState
     private string? _activeOriginalHost;
     private string? _activeForkHost;
 
-    public ShikiHostState(IReadOnlyList<string> knownOriginalHosts, IReadOnlyList<string> knownForkHosts)
+    public ShikiHostState(
+        IReadOnlyList<string> knownOriginalHosts,
+        IReadOnlyList<string> knownForkHosts,
+        IReadOnlyList<string>? legacyOriginalHosts = null)
     {
         _originalHosts = new(knownOriginalHosts, StringComparer.OrdinalIgnoreCase);
+        if (legacyOriginalHosts != null)
+        {
+            foreach (var legacy in legacyOriginalHosts)
+            {
+                _originalHosts.Add(legacy);
+            }
+        }
         _forkHosts = new(knownForkHosts, StringComparer.OrdinalIgnoreCase);
     }
 
@@ -32,9 +42,10 @@ public sealed class ShikiHostState
         {
             if (_originalHosts.Contains(original.Host))
             {
-                if (_activeOriginalHost != null && !string.Equals(_activeOriginalHost, original.Host, StringComparison.OrdinalIgnoreCase))
+                var target = _activeOriginalHost ?? "shikimori.io";
+                if (!string.Equals(target, original.Host, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new UriBuilder(original) { Host = _activeOriginalHost }.Uri;
+                    return new UriBuilder(original) { Host = target }.Uri;
                 }
             }
             else if (_forkHosts.Contains(original.Host))
