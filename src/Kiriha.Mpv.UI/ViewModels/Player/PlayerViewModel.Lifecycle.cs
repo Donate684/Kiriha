@@ -15,8 +15,6 @@ public partial class PlayerViewModel
         try { _updateNavigationCts?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing navigation CTS"); }
 
         try { _timelinePreview.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing timeline preview"); }
-        try { _aniSkipCts?.Cancel(); } catch { }
-        try { _aniSkipCts?.Dispose(); } catch { }
 
         if (_timer != null)
         {

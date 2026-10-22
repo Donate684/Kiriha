@@ -103,70 +103,18 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
 
 
 
-    private readonly IAniSkipClient _aniSkipClient = new AniSkipClient();
     private readonly List<SkipSegment> _skipSegments = new();
     public ObservableCollection<SkipSegment> SkipSegments { get; } = new();
     private readonly HashSet<SkipSegment> _skippedSegments = new();
-    private List<SkipSegment> _aniSkipSegments = new();
-    private CancellationTokenSource? _aniSkipCts;
-    private (int malId, int epNumber)? _currentAniSkipQuery;
 
     public void RefreshSkipSegments()
     {
         _skippedSegments.Clear();
         var chapterSegments = SkipMarkerResolver.ResolveChapters(Chapters.ToList(), Duration);
         _skipSegments.Clear();
-        _skipSegments.AddRange(SkipMarkerResolver.MergeSegments(_aniSkipSegments, chapterSegments, Duration));
+        _skipSegments.AddRange(chapterSegments);
         UpdateSkipSegmentsCollection();
-
-        if (_animeId.HasValue && _animeId.Value > 0)
-        {
-            var epText = RawEpisodeText;
-            if (int.TryParse(epText, out int epNumber) && epNumber > 0)
-            {
-                var malId = _animeId.Value;
-                if (_currentAniSkipQuery == (malId, epNumber) && _aniSkipSegments.Count > 0)
-                {
-                    return;
-                }
-
-                var oldCts = _aniSkipCts;
-                _aniSkipCts = new CancellationTokenSource();
-                try { oldCts?.Cancel(); } catch { }
-                try { oldCts?.Dispose(); } catch { }
-
-                var token = _aniSkipCts.Token;
-                var duration = Duration;
-
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        var segments = await _aniSkipClient.GetSkipSegmentsAsync(malId, epNumber, duration, token).ConfigureAwait(false);
-                        if (token.IsCancellationRequested || segments.Count == 0)
-                            return;
-
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            if (token.IsCancellationRequested)
-                                return;
-
-                            _currentAniSkipQuery = (malId, epNumber);
-                            _aniSkipSegments = segments;
-                            var currentChapters = SkipMarkerResolver.ResolveChapters(Chapters.ToList(), Duration);
-                            _skipSegments.Clear();
-                            _skipSegments.AddRange(SkipMarkerResolver.MergeSegments(_aniSkipSegments, currentChapters, Duration));
-                            UpdateSkipSegmentsCollection();
-                            CheckSkipSegments(CurrentTime, Duration);
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Serilog.Log.Debug(ex, "Error fetching AniSkip markers for anime {Id} ep {Ep}", malId, epNumber);
-                    }
-                }, token);
-            }
-        }
+        CheckSkipSegments(CurrentTime, Duration);
     }
 
     

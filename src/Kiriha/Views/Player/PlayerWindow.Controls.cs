@@ -32,6 +32,7 @@ public partial class PlayerWindow
         var previewLeft = Math.Clamp(bottomPos.X - 118, 8, maxLeft);
         vm.ShowTimelinePreview(previewTime, previewLeft);
 
+        _lastPointerPosition = e.GetPosition(this);
         var nowUtc = DateTime.UtcNow;
         if (_controlsVisible && nowUtc - _lastControlsKeepAliveUtc < ControlsKeepAliveInterval)
             return;

@@ -93,8 +93,6 @@ public partial class PlayerViewModel
 
         if (metadata != null)
         {
-            _currentAniSkipQuery = null;
-            _aniSkipSegments.Clear();
             _previousVideoUrlForMetadata = videoUrl;
             _suppressVideoUrlResolution = true;
             VideoUrl = videoUrl;
@@ -103,8 +101,6 @@ public partial class PlayerViewModel
         }
         else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
         {
-            _currentAniSkipQuery = null;
-            _aniSkipSegments.Clear();
             VideoUrl = videoUrl;
         }
         else

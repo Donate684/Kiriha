@@ -44,13 +44,23 @@ public partial class TorrentsViewModel
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
     private bool _filterOnlyNew;
 
-    partial void OnFilterOnlyNewChanged(bool value) => RebuildGroupedTorrents();
+    partial void OnFilterOnlyNewChanged(bool value)
+    {
+        if (!_suppressFilterPersist)
+            PersistFilter(nameof(FilterOnlyNew), value);
+        RebuildGroupedTorrents();
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
     private bool _filterOnlyBatches;
 
-    partial void OnFilterOnlyBatchesChanged(bool value) => RebuildGroupedTorrents();
+    partial void OnFilterOnlyBatchesChanged(bool value)
+    {
+        if (!_suppressFilterPersist)
+            PersistFilter(nameof(FilterOnlyBatches), value);
+        RebuildGroupedTorrents();
+    }
 
     private void RebuildGroupedTorrents()
     {

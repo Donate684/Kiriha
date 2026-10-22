@@ -10,7 +10,7 @@ public class PlayerOverlaySkipPromptTests
     public void ShowSkipPrompt_SetsVisibilityOpacityAndHitTest()
     {
         using var overlay = new PlayerOverlayViewModel();
-        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "aniskip");
+        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "chapter");
 
         overlay.ShowSkipPrompt(segment, "Пропустить опенинг", "до 01:40");
 
@@ -26,7 +26,7 @@ public class PlayerOverlaySkipPromptTests
     public void DismissSkipPrompt_Smooth_FadesOutAndDisablesHitTestImmediately()
     {
         using var overlay = new PlayerOverlayViewModel();
-        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "aniskip");
+        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "chapter");
         overlay.ShowSkipPrompt(segment, "Пропустить опенинг", "до 01:40");
 
         SkipSegment? dismissedSegment = null;
@@ -47,7 +47,7 @@ public class PlayerOverlaySkipPromptTests
     public void DismissSkipPrompt_Immediate_CleansUpStateWithoutWaitingForFade()
     {
         using var overlay = new PlayerOverlayViewModel();
-        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "aniskip");
+        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "chapter");
         overlay.ShowSkipPrompt(segment, "Пропустить опенинг", "до 01:40");
 
         SkipSegment? dismissedSegment = null;
@@ -67,7 +67,7 @@ public class PlayerOverlaySkipPromptTests
     public void PauseAndResumeSkipPromptTimer_DoesNotThrow()
     {
         using var overlay = new PlayerOverlayViewModel();
-        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "aniskip");
+        var segment = new SkipSegment(SkipSegmentType.Intro, 10, 100, "Opening", "chapter");
         overlay.ShowSkipPrompt(segment, "Пропустить опенинг", "до 01:40");
 
         overlay.PauseSkipPromptTimer();

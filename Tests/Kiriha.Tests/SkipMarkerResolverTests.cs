@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv;
 using Kiriha.Mpv.UI.Services.Player;
 using Xunit;
@@ -101,33 +101,6 @@ public class SkipMarkerResolverTests
         Assert.Equal(1470.0, segments[3].EndSeconds);
     }
 
-    [Fact]
-    public void MergeSegments_AniSkipPrecedenceOverChapters()
-    {
-        var aniSkip = new List<SkipSegment>
-        {
-            new(SkipSegmentType.Intro, 65.5, 155.5, "Opening", "aniskip")
-        };
-
-        var chapters = new List<SkipSegment>
-        {
-            new(SkipSegmentType.Intro, 60.0, 150.0, "OP", "chapter"),
-            new(SkipSegmentType.Outro, 1350.0, 1440.0, "ED", "chapter")
-        };
-
-        var merged = SkipMarkerResolver.MergeSegments(aniSkip, chapters, 1470.0);
-
-        Assert.Equal(2, merged.Count);
-        // AniSkip segment wins for Intro
-        Assert.Equal("aniskip", merged[0].Source);
-        Assert.Equal(65.5, merged[0].StartSeconds);
-        Assert.Equal(155.5, merged[0].EndSeconds);
-
-        // Chapter segment preserved for Outro
-        Assert.Equal("chapter", merged[1].Source);
-        Assert.Equal(1350.0, merged[1].StartSeconds);
-        Assert.Equal(1440.0, merged[1].EndSeconds);
-    }
 
     [Fact]
     public void GetSeekTarget_GuardsAgainstEOF()

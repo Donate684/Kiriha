@@ -227,6 +227,8 @@ public sealed class TorrentFilterRepository : ITorrentFilterRepository
         FilterJudas = set.FilterJudas,
         FilterHevc = set.FilterHevc,
         Filter1080p = set.Filter1080p,
+        FilterOnlyNew = set.FilterOnlyNew,
+        FilterOnlyBatches = set.FilterOnlyBatches,
         UseCustomQuery = set.UseCustomQuery,
         CustomQuery = set.CustomQuery
     };

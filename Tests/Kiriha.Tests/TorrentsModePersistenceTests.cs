@@ -124,4 +124,43 @@ public class TorrentsModePersistenceTests
         Assert.Single(enabledProviders);
         Assert.Equal("AniLibria", enabledProviders[0]);
     }
+
+    [Fact]
+    public void TorrentFilters_LoadsFromGlobalSettings_WhenNoTitleSelected()
+    {
+        var settings = new AppSettings();
+        settings.Torrents.Filter1080p = true;
+        settings.Torrents.FilterHevc = true;
+        settings.Torrents.FilterEraiRaws = true;
+        settings.Torrents.FilterOnlyNew = true;
+
+        var settingsMock = new Mock<ISettingsService>();
+        var vm = CreateViewModel(settings, settingsMock);
+
+        Assert.True(vm.Filter1080p);
+        Assert.True(vm.FilterHevc);
+        Assert.True(vm.FilterEraiRaws);
+        Assert.True(vm.FilterOnlyNew);
+        Assert.False(vm.FilterVaryg);
+        Assert.False(vm.FilterOnlyBatches);
+    }
+
+    [Fact]
+    public void TorrentFilters_PersistsToGlobalSettings_WhenNoTitleSelected()
+    {
+        var settings = new AppSettings();
+        var settingsMock = new Mock<ISettingsService>();
+        settingsMock
+            .Setup(s => s.Update(It.IsAny<Action<AppSettings>>(), SettingsSection.Torrents, true))
+            .Callback<Action<AppSettings>, SettingsSection, bool>((act, _, _) => act(settings));
+
+        var vm = CreateViewModel(settings, settingsMock);
+        Assert.False(vm.Filter1080p);
+
+        vm.Filter1080p = true;
+        vm.FilterOnlyNew = true;
+
+        Assert.True(settings.Torrents.Filter1080p);
+        Assert.True(settings.Torrents.FilterOnlyNew);
+    }
 }

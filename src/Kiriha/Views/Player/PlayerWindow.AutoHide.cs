@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Kiriha.Mpv.UI.ViewModels.Player;
@@ -8,10 +9,15 @@ public partial class PlayerWindow
 {
     // Auto-hide: hide panels after timeout of no mouse movement
     private static readonly TimeSpan ControlsKeepAliveInterval = TimeSpan.FromMilliseconds(180);
+    private const double ShowControlsMovementThreshold = 25.0;
+    private const double ShowControlsMovementThresholdSquared = ShowControlsMovementThreshold * ShowControlsMovementThreshold;
+
     private readonly DispatcherTimer _hideTimer = new();
     private readonly DispatcherTimer _hitTestDisableTimer = new() { Interval = TimeSpan.FromMilliseconds(320) };
     private bool _controlsVisible = true;
     private DateTime _lastControlsKeepAliveUtc = DateTime.MinValue;
+    private Point? _lastPointerPosition;
+    private Point? _hiddenPointerPosition;
 
     private void UpdateHideTimerInterval()
     {
@@ -45,6 +51,7 @@ public partial class PlayerWindow
     private void ShowControls()
     {
         _hitTestDisableTimer.Stop();
+        _hiddenPointerPosition = null;
 
         var now = DateTime.UtcNow;
         bool wasHidden = !_controlsVisible;
@@ -74,6 +81,7 @@ public partial class PlayerWindow
     {
         _controlsVisible = false;
         _lastControlsKeepAliveUtc = DateTime.MinValue;
+        _hiddenPointerPosition = _lastPointerPosition;
         if (_topBar != null && !(DataContext is PlayerViewModel vm && (vm.Overlay.IsOsdVisible || vm.IsBufferingOrLoading)))
         {
             _topBar.Opacity = 0;
@@ -163,17 +171,33 @@ public partial class PlayerWindow
 
     private void OnGridPointerMoved(object? sender, PointerEventArgs e)
     {
-        var now = DateTime.UtcNow;
-        if (_controlsVisible && now - _lastControlsKeepAliveUtc < ControlsKeepAliveInterval)
-            return;
-            
-        _lastControlsKeepAliveUtc = now;
+        var currentPosition = e.GetPosition(this);
+        _lastPointerPosition = currentPosition;
 
         if (!_controlsVisible)
         {
+            if (_hiddenPointerPosition is null)
+            {
+                _hiddenPointerPosition = currentPosition;
+                return;
+            }
+
+            var deltaX = currentPosition.X - _hiddenPointerPosition.Value.X;
+            var deltaY = currentPosition.Y - _hiddenPointerPosition.Value.Y;
+            var distanceSquared = (deltaX * deltaX) + (deltaY * deltaY);
+
+            if (distanceSquared < ShowControlsMovementThresholdSquared)
+                return;
+
             ShowControls();
             return;
         }
+
+        var now = DateTime.UtcNow;
+        if (now - _lastControlsKeepAliveUtc < ControlsKeepAliveInterval)
+            return;
+            
+        _lastControlsKeepAliveUtc = now;
 
         // Fast-path: if controls are already visible, just restart the timer
         ResetHideTimer();
@@ -184,5 +208,9 @@ public partial class PlayerWindow
         // When the pointer leaves the grid (e.g., moving outside the window or into a flyout popup), 
         // we do not hide the controls instantly. We rely on the hide timer to expire and hide them 
         // naturally via timeout, ensuring that hovering over flyouts doesn't dismiss the UI.
+        if (!_controlsVisible)
+        {
+            _hiddenPointerPosition = null;
+        }
     }
 }

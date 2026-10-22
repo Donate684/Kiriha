@@ -54,10 +54,6 @@ public static class AppConstants
             public const string XmlNamespace = "https://nyaa.si/xmlns/nyaa";
         }
 
-        public static class AniSkip
-        {
-            public const string BaseUrl = "https://api.aniskip.com/v2/skip-times/";
-        }
 
         public static class TorrServer
         {

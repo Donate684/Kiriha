@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -114,47 +114,6 @@ public static partial class SkipMarkerResolver
         return result;
     }
 
-    public static List<SkipSegment> MergeSegments(
-        IEnumerable<SkipSegment> providerSegments,
-        IEnumerable<SkipSegment> chapterSegments,
-        double durationSeconds)
-    {
-        var merged = new List<SkipSegment>();
-
-        // Provider segments (e.g. AniSkip) take precedence
-        foreach (var p in providerSegments)
-        {
-            if (p.IsValid)
-            {
-                var clampedEnd = durationSeconds > 0 ? Math.Min(p.EndSeconds, durationSeconds) : p.EndSeconds;
-                if (clampedEnd > p.StartSeconds)
-                {
-                    merged.Add(p with { EndSeconds = clampedEnd });
-                }
-            }
-        }
-
-        // Add non-overlapping chapter segments as fallback
-        foreach (var c in chapterSegments)
-        {
-            if (!c.IsValid)
-                continue;
-
-            var clampedEnd = durationSeconds > 0 ? Math.Min(c.EndSeconds, durationSeconds) : c.EndSeconds;
-            if (clampedEnd <= c.StartSeconds)
-                continue;
-
-            bool overlaps = merged.Any(existing =>
-                existing.StartSeconds < clampedEnd && c.StartSeconds < existing.EndSeconds);
-
-            if (!overlaps)
-            {
-                merged.Add(c with { EndSeconds = clampedEnd });
-            }
-        }
-
-        return merged.OrderBy(s => s.StartSeconds).ToList();
-    }
 
     public static double GetSeekTarget(SkipSegment segment, double durationSeconds)
     {

@@ -14,6 +14,8 @@ public partial class AppSettings
         public bool FilterJudas { get; set; } = false;
         public bool FilterHevc { get; set; } = false;
         public bool Filter1080p { get; set; } = false;
+        public bool FilterOnlyNew { get; set; } = false;
+        public bool FilterOnlyBatches { get; set; } = false;
         [System.Text.Json.Serialization.JsonIgnore]
         public System.Collections.Generic.List<int> HiddenAnimeIds { get; set; } = new();
 
@@ -71,6 +73,8 @@ public partial class AppSettings
         public bool FilterJudas { get; set; }
         public bool FilterHevc { get; set; }
         public bool Filter1080p { get; set; }
+        public bool FilterOnlyNew { get; set; }
+        public bool FilterOnlyBatches { get; set; }
         public bool UseCustomQuery { get; set; }
         public string? CustomQuery { get; set; }
     }

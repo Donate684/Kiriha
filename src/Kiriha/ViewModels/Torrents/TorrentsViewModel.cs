@@ -58,7 +58,10 @@ public partial class TorrentsViewModel : ViewModelBase
     private bool _isOnlineMode;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSelectedAnime))]
     private AnimeEntity? _selectedAnime;
+
+    public bool HasSelectedAnime => SelectedAnime != null;
 
     [ObservableProperty]
     private bool _isHideMode;
