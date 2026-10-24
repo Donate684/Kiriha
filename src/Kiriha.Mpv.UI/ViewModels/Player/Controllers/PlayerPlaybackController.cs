@@ -53,7 +53,7 @@ public sealed class PlayerPlaybackController
     public void AddAudioTrack(string path) => _player?.AddAudioTrack(path);
     public void Play() => _player?.Play();
     public void Pause() => _player?.Pause();
-    public void Seek(double timeInSeconds) => _player?.Seek(timeInSeconds);
+    public void Seek(double timeInSeconds, bool fast = false) => _player?.Seek(timeInSeconds, fast);
     public void SetVolume(double volume) => _player?.SetVolume(volume);
     public void SetSpeed(double speed) => _player?.SetSpeed(speed);
     public void SetAudioNormalization(bool enabled) => _player?.SetAudioNormalization(enabled);

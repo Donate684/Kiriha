@@ -233,15 +233,20 @@ public partial class PlayerWindow
         }
     }
 
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (Key Key, KeyModifiers Modifiers)?> HotkeyCache = new(StringComparer.OrdinalIgnoreCase);
+
     private static bool IsTextInputSource(object? source)
     {
         if (source is not Visual visual)
             return false;
 
-        return visual.GetVisualAncestors().Prepend(visual).Any(x =>
-            x is TextBox ||
-            x is NumericUpDown ||
-            x is ComboBox);
+        for (Visual? current = visual; current is not null; current = current.GetVisualParent())
+        {
+            if (current is TextBox or NumericUpDown or ComboBox)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsPlayerControlSource(object? source)
@@ -249,16 +254,13 @@ public partial class PlayerWindow
         if (source is not Visual visual)
             return false;
 
-        return visual.GetVisualAncestors().Prepend(visual).Any(x =>
-            x is Button ||
-            x is Slider ||
-            x is Thumb ||
-            x is ToggleSwitch ||
-            x is ComboBox ||
-            x is TextBox ||
-            x is NumericUpDown ||
-            x is ScrollViewer ||
-            x is ListBox);
+        for (Visual? current = visual; current is not null; current = current.GetVisualParent())
+        {
+            if (current is Button or Slider or Thumb or ToggleSwitch or ComboBox or TextBox or NumericUpDown or ScrollViewer or ListBox)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool MatchesHotkey(KeyEventArgs e, string? hotkey)
@@ -266,11 +268,19 @@ public partial class PlayerWindow
         if (string.IsNullOrWhiteSpace(hotkey))
             return false;
 
-        if (!TryParseHotkey(hotkey, out var key, out var modifiers))
+        if (!HotkeyCache.TryGetValue(hotkey, out var parsed))
+        {
+            parsed = TryParseHotkey(hotkey, out var key, out var modifiers)
+                ? (key, modifiers)
+                : null;
+            HotkeyCache[hotkey] = parsed;
+        }
+
+        if (parsed is null)
             return false;
 
         var actualModifiers = e.KeyModifiers & (KeyModifiers.Shift | KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta);
-        return e.Key == key && actualModifiers == modifiers;
+        return e.Key == parsed.Value.Key && actualModifiers == parsed.Value.Modifiers;
     }
 
     private static bool TryParseHotkey(string hotkey, out Key key, out KeyModifiers modifiers)

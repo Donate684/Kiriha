@@ -13,10 +13,12 @@ public partial class PlayerViewModel
     {
         if (!_playback.HasPlayer) return;
 
-        if (IsPlaying)
-            _playback.Pause();
-        else
+        bool shouldPlay = !IsPlaying;
+        IsPlaying = shouldPlay;
+        if (shouldPlay)
             _playback.Play();
+        else
+            _playback.Pause();
     }
 
     [RelayCommand]

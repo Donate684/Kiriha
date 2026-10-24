@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -10,20 +11,27 @@ public partial class PlayerWindow
 {
     private void OnSliderPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (sender is not Slider slider || !e.GetCurrentPoint(slider).Properties.IsLeftButtonPressed)
+            return;
+
         if (DataContext is PlayerViewModel vm)
             vm.BeginScrub();
+
+        if (slider.Bounds.Width > 0)
+        {
+            var point = e.GetCurrentPoint(slider).Position;
+            var ratio = Math.Clamp(point.X / slider.Bounds.Width, 0, 1);
+            slider.Value = slider.Minimum + ratio * (slider.Maximum - slider.Minimum);
+        }
     }
 
     private void OnSliderPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (DataContext is PlayerViewModel vm)
+        if (DataContext is PlayerViewModel { IsScrubbing: true } vm)
             vm.EndScrub();
     }
 
     // Background click / drag
-
-    private DispatcherTimer? _leftClickTimer;
-    private PlayerMouseAction _pendingLeftClickAction = PlayerMouseAction.None;
 
     private void OnBackgroundPointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -53,21 +61,8 @@ public partial class PlayerWindow
 
         if (properties.IsLeftButtonPressed)
         {
-            _leftClickTimer?.Stop();
-            _pendingLeftClickAction = action;
-
-            if (_leftClickTimer is null)
-            {
-                _leftClickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
-                _leftClickTimer.Tick += (s, args) =>
-                {
-                    _leftClickTimer?.Stop();
-                    if (DataContext is PlayerViewModel currentVm && _pendingLeftClickAction != PlayerMouseAction.None)
-                        ExecuteMouseAction(currentVm, _pendingLeftClickAction);
-                    _pendingLeftClickAction = PlayerMouseAction.None;
-                };
-            }
-            _leftClickTimer.Start();
+            if (e.ClickCount == 1)
+                ExecuteMouseAction(vm, action);
         }
         else
         {
@@ -77,12 +72,6 @@ public partial class PlayerWindow
 
     private void OnBackgroundDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (_leftClickTimer != null)
-        {
-            _leftClickTimer.Stop();
-            _pendingLeftClickAction = PlayerMouseAction.None;
-        }
-
         if (IsSettingsOverlayVisible())
         {
             e.Handled = true;
@@ -93,10 +82,16 @@ public partial class PlayerWindow
         if (DataContext is not PlayerViewModel vm)
             return;
 
-        var action = PlayerMouseAction.ToggleFullscreen;
+        var leftAction = vm.LeftClickAction?.Value ?? PlayerMouseAction.TogglePlayPause;
+        var doubleClickAction = PlayerMouseAction.ToggleFullscreen;
+
+        if (leftAction == PlayerMouseAction.TogglePlayPause && doubleClickAction != PlayerMouseAction.None)
+        {
+            ExecuteMouseAction(vm, PlayerMouseAction.TogglePlayPause);
+        }
 
         e.Handled = true;
-        ExecuteMouseAction(vm, action);
+        ExecuteMouseAction(vm, doubleClickAction);
     }
 
     private void OnBackgroundPointerWheelChanged(object? sender, PointerWheelEventArgs e)

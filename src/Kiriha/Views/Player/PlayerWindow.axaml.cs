@@ -153,12 +153,6 @@ public partial class PlayerWindow : Window
             _hitTestDisableTimer.Stop();
             _hitTestDisableTimer.Tick -= OnHitTestDisableTimerTick;
 
-            if (_leftClickTimer != null)
-            {
-                _leftClickTimer.Stop();
-                _leftClickTimer = null;
-            }
-
             RemoveHandler(DragDrop.DragOverEvent, OnDragOver);
             RemoveHandler(DragDrop.DropEvent, OnDrop);
             RemoveHandler(KeyDownEvent, OnOverlayKeyDown);

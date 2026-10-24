@@ -26,22 +26,25 @@ internal sealed class PlayerLoadingPipeline
             return;
 
         _viewModel.Initialize(player);
-        _uiSubscribed = true;
-
         _videoView.Player = player;
+        NotifyUiSubscribed();
+    }
+
+    public void NotifyUiSubscribed()
+    {
+        _uiSubscribed = true;
         TryStartMediaLoad();
     }
 
     public void MarkRenderContextReady()
     {
         _renderContextReady = true;
-        TryStartMediaLoad();
+        TryRequestInitialFrame();
     }
 
     private void TryStartMediaLoad()
     {
         if (!_uiSubscribed ||
-            !_renderContextReady ||
             _mediaLoadStarted ||
             string.IsNullOrWhiteSpace(_viewModel.VideoUrl))
             return;

@@ -2,7 +2,7 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public sealed class PlayerTimelineService
 {
-    private static readonly TimeSpan SeekEchoSuppression = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan SeekEchoSuppression = TimeSpan.FromMilliseconds(120);
 
     private DateTime _lastSeekTime = DateTime.MinValue;
 

@@ -2,7 +2,7 @@ namespace Kiriha.Mpv;
 
 internal sealed class MpvPropertyCache
 {
-    private const double TimePositionMinimumChangeSeconds = 0.016;
+    private const double TimePositionMinimumChangeSeconds = 0.05;
     private static readonly TimeSpan RuntimeInfoRefreshInterval = TimeSpan.FromSeconds(5);
 
     private readonly Lock _gate = new();
@@ -61,7 +61,7 @@ internal sealed class MpvPropertyCache
             var nowMs = Environment.TickCount64;
             var isFirstEvent = _lastTimePositionTickMs == 0;
             var changedEnough = Math.Abs(timePosition - _lastPublishedTimePosition) >= TimePositionMinimumChangeSeconds;
-            var elapsedEnough = nowMs - _lastTimePositionTickMs >= 16;
+            var elapsedEnough = nowMs - _lastTimePositionTickMs >= 50;
 
             var oldState = _playbackState;
             _playbackState = oldState with { Position = timePosition };

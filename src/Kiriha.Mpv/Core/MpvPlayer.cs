@@ -79,7 +79,7 @@ public partial class MpvPlayer : IDisposable
 
     public void Pause() => PlaybackController.Pause();
 
-    public void Seek(double timeInSeconds) => PlaybackController.Seek(timeInSeconds);
+    public void Seek(double timeInSeconds, bool fast = false) => PlaybackController.Seek(timeInSeconds, fast);
 
     public void SetVolume(double volume) => PlaybackController.SetVolume(volume);
 

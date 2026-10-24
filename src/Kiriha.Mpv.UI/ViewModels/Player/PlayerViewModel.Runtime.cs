@@ -230,20 +230,24 @@ public partial class PlayerViewModel
         }
     }
 
+    private long _lastScrubSeekTick;
+
     public bool IsScrubbing => _timeline.IsScrubbing;
 
     public void BeginScrub()
     {
+        _lastScrubSeekTick = 0;
         Overlay.DismissResumePrompt();
         _timeline.BeginScrub();
     }
 
     public void EndScrub()
     {
+        _lastScrubSeekTick = 0;
         if (_playback.HasPlayer)
         {
             var snapshot = _timeline.EndScrub(CurrentTime);
-            _playback.Seek(snapshot.CurrentTime);
+            _playback.Seek(snapshot.CurrentTime, fast: false);
             ApplyTimelineSnapshot(snapshot);
         }
     }
@@ -252,7 +256,17 @@ public partial class PlayerViewModel
     partial void OnCurrentTimeChanged(double value)
     {
         if (_timeline.IsScrubbing)
-            ApplyTimelineSnapshot(_timeline.UpdateScrubTime(value));
+        {
+            var snapshot = _timeline.UpdateScrubTime(value);
+            ApplyTimelineSnapshot(snapshot);
+
+            long now = Environment.TickCount64;
+            if (now - _lastScrubSeekTick >= 50)
+            {
+                _lastScrubSeekTick = now;
+                _playback.Seek(snapshot.CurrentTime, fast: true);
+            }
+        }
     }
 
     partial void OnVolumeChanged(double value)

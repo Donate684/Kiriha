@@ -50,10 +50,10 @@ public class MpvPlaybackController
         _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_set_property_string(handle, "pause", "yes"), "pause"));
     }
 
-    public void Seek(double timeInSeconds)
+    public void Seek(double timeInSeconds, bool fast = false)
     {
         _player.Enqueue(handle => MpvPlayer.Check(
-            LibMpvNative.mpv_command_string(handle, "seek", timeInSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture), "absolute"),
+            LibMpvNative.mpv_command_string(handle, "seek", timeInSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture), fast ? "absolute+keyframes" : "absolute"),
             "seek"), SeekCommandKey);
     }
 

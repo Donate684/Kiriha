@@ -18,7 +18,6 @@
         x:DataType="vmPlayer:PlayerViewModel"
         Title="{Binding TrackingTitle}"
         Background="Black"
-        TransparencyLevelHint="Mica, AcrylicBlur, Transparent"
         TransparencyBackgroundFallback="Black"
         Width="960" Height="540"
         WindowStartupLocation="CenterScreen"
@@ -62,12 +61,13 @@
                 </Transitions>
             </Border.Transitions>
             <material:MaterialIcon Kind="Loading" Width="44" Height="44"
+                                   IsVisible="{Binding IsBufferingOrLoading}"
                                    Foreground="{DynamicResource SystemAccentColor}"
                                    Opacity="0.85">
                 <material:MaterialIcon.Styles>
-                    <Style Selector="material|MaterialIcon">
+                    <Style Selector="material|MaterialIcon[IsVisible=True]">
                         <Style.Animations>
-                            <Animation Duration="0:0:1.0" IterationCount="Infinite">
+                            <Animation Duration="0:0:1.0" IterationCount="Infinite" PlaybackBehavior="OnlyIfVisible">
                                 <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
                                 <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
                             </Animation>
@@ -201,13 +201,14 @@
                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center"
                                         IsVisible="{Binding IsBufferingOrLoading}">
                                 <material:MaterialIcon Classes="overlay-icon"
+                                                       IsVisible="{Binding IsBufferingOrLoading}"
                                                        Kind="Loading" Width="13" Height="13"
                                                        Foreground="{DynamicResource SystemAccentColor}"
                                                        VerticalAlignment="Center">
                                     <material:MaterialIcon.Styles>
-                                        <Style Selector="material|MaterialIcon">
+                                        <Style Selector="material|MaterialIcon[IsVisible=True]">
                                             <Style.Animations>
-                                                <Animation Duration="0:0:1.0" IterationCount="Infinite">
+                                                <Animation Duration="0:0:1.0" IterationCount="Infinite" PlaybackBehavior="OnlyIfVisible">
                                                     <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
                                                     <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
                                                 </Animation>
@@ -280,13 +281,14 @@
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center"
                                     IsVisible="{Binding ShowNonTorrentBuffering}">
                             <material:MaterialIcon Classes="overlay-icon"
+                                                   IsVisible="{Binding ShowNonTorrentBuffering}"
                                                    Kind="Loading" Width="13" Height="13"
                                                    Foreground="{DynamicResource SystemAccentColor}"
                                                    VerticalAlignment="Center">
                                 <material:MaterialIcon.Styles>
-                                    <Style Selector="material|MaterialIcon">
+                                    <Style Selector="material|MaterialIcon[IsVisible=True]">
                                         <Style.Animations>
-                                            <Animation Duration="0:0:1.0" IterationCount="Infinite">
+                                            <Animation Duration="0:0:1.0" IterationCount="Infinite" PlaybackBehavior="OnlyIfVisible">
                                                 <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
                                                 <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
                                             </Animation>

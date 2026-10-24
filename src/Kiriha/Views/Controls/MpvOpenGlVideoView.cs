@@ -11,11 +11,17 @@ namespace Kiriha.Views.Controls;
 
 public sealed class MpvOpenGlVideoView : OpenGlControlBase
 {
+    private readonly Action _dispatchRenderFrame;
     private MpvPlayer? _player;
     private GlInterface? _gl;
     private MpvOpenGlGetProcAddressCallback? _getProcAddress;
     private bool _renderContextReady;
     private int _renderRequestPending;
+
+    public MpvOpenGlVideoView()
+    {
+        _dispatchRenderFrame = DispatchRenderFrame;
+    }
 
     public event EventHandler? RenderContextReady;
 
@@ -117,12 +123,14 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
     {
         if (Interlocked.CompareExchange(ref _renderRequestPending, 1, 0) == 0)
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-                Volatile.Write(ref _renderRequestPending, 0);
-                RequestNextFrameRendering();
-            });
+            Dispatcher.UIThread.Post(_dispatchRenderFrame, DispatcherPriority.Render);
         }
+    }
+
+    private void DispatchRenderFrame()
+    {
+        Volatile.Write(ref _renderRequestPending, 0);
+        RequestNextFrameRendering();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
