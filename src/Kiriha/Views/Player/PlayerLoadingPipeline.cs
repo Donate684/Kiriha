@@ -39,12 +39,14 @@ internal sealed class PlayerLoadingPipeline
     public void MarkRenderContextReady()
     {
         _renderContextReady = true;
+        TryStartMediaLoad();
         TryRequestInitialFrame();
     }
 
     private void TryStartMediaLoad()
     {
         if (!_uiSubscribed ||
+            !_renderContextReady ||
             _mediaLoadStarted ||
             string.IsNullOrWhiteSpace(_viewModel.VideoUrl))
             return;
