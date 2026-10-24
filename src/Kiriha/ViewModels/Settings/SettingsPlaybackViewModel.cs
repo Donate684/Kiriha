@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Services;
@@ -37,7 +37,20 @@ public partial class SettingsPlaybackViewModel : ObservableObject
 
     public List<SkipOpeningEndingOption> SkipOpeningEndingOptions { get; }
 
-    public int EnabledPlayersCount => _settingsService.Current.System.Scrobbler.AllowedProcesses.Count;
+    public int EnabledPlayersCount
+    {
+        get
+        {
+            var available = _IExternalMediaDetector.AvailablePlayers
+                .Where(x => x.Type != PlayerType.WebBrowser)
+                .ToList();
+            var allowed = _settingsService.Current.System.Scrobbler.AllowedProcesses;
+            if (allowed.Count == 0)
+                return available.Count;
+
+            return available.Count(p => allowed.Contains(p.Name, StringComparer.OrdinalIgnoreCase));
+        }
+    }
 
     public SettingsPlaybackViewModel(
         ISettingsService settingsService, 
