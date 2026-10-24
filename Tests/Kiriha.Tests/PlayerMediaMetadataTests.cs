@@ -411,6 +411,68 @@ public sealed class PlayerMediaMetadataTests
         Assert.Equal(string.Empty, vm.AnimeTitleEn);
     }
 
+    [Theory]
+    [InlineData("https://cache-rfn.libria.fun/videos/media/ts/9287/3/1080/2f70f5d98cf932c0d2078b508a418a2d.m3u8?isWithAds=1")]
+    [InlineData("https://cdn.example.com/videos/1080.mp4")]
+    public void IsStreamManifest_And_Resolver_HlsAndMp4Streams_ReturnEmptyTitles(string streamUrl)
+    {
+        var resolver = new FilenamePlayerMediaMetadataResolver();
+
+        Assert.True(PlayerMediaMetadata.IsStreamUrl(streamUrl));
+
+        var metadata = resolver.Resolve(streamUrl);
+        Assert.Equal(string.Empty, metadata.TitleRu);
+        Assert.Equal(string.Empty, metadata.TitleEn);
+        Assert.Equal(string.Empty, metadata.TitleRomaji);
+        Assert.Equal(string.Empty, metadata.OriginalTitle);
+        Assert.Null(metadata.AnimeId);
+
+        var fromVideoPath = PlayerMediaMetadata.FromVideoPath(streamUrl);
+        Assert.Equal(string.Empty, fromVideoPath.TitleRu);
+        Assert.Equal(string.Empty, fromVideoPath.OriginalTitle);
+    }
+
+    [Fact]
+    public void PlayerViewModel_LoadVideo_WithSameUrlAndNullMetadata_DoesNotOverwriteExplicitMetadata()
+    {
+        var settings = new AppSettings();
+        settings.UI.UseRussianTitles = true;
+        var mockSettings = new Moq.Mock<ISettingsService>();
+        mockSettings.Setup(s => s.Current).Returns(settings);
+        var mockLocalizer = new Moq.Mock<ILocalizer>();
+        var explicitMetadata = new PlayerMediaMetadata(
+            OriginalTitle: "Tensei shitara Ken Deshita - 03",
+            TitleRu: "О моём перерождении в меч",
+            TitleEn: "Reincarnated as a Sword",
+            EpisodeText: "03",
+            AnimeId: 49891,
+            TitleRomaji: "Tensei shitara Ken Deshita");
+        var streamUrl = "https://cache-rfn.libria.fun/videos/media/ts/9287/3/1080/2f70f5d98cf932c0d2078b508a418a2d.m3u8?isWithAds=1";
+
+        var vm = new Kiriha.Mpv.UI.ViewModels.Player.PlayerViewModel(
+            streamUrl,
+            explicitMetadata,
+            new FilenamePlayerMediaMetadataResolver(),
+            mockSettings.Object,
+            mockLocalizer.Object);
+
+        Assert.Equal(49891, vm.AnimeId);
+        Assert.Equal("О моём перерождении в меч", vm.TopTitle);
+        Assert.Equal("Tensei shitara Ken Deshita", vm.BottomTitle);
+        Assert.Equal("О моём перерождении в меч", vm.AnimeTitleRu);
+        Assert.Equal("Reincarnated as a Sword", vm.AnimeTitleEn);
+
+        // Act: simulate PlayerLoadingPipeline.TryStartMediaLoad calling LoadVideo with metadata: null
+        vm.LoadVideo(streamUrl, subtitleUrl: null, metadata: null);
+
+        // Assert: titles and AnimeId must be preserved
+        Assert.Equal(49891, vm.AnimeId);
+        Assert.Equal("О моём перерождении в меч", vm.TopTitle);
+        Assert.Equal("Tensei shitara Ken Deshita", vm.BottomTitle);
+        Assert.Equal("О моём перерождении в меч", vm.AnimeTitleRu);
+        Assert.Equal("Reincarnated as a Sword", vm.AnimeTitleEn);
+    }
+
     private sealed class TestDbContextFactory : IDbContextFactory<AppDbContext>
     {
         private readonly DbContextOptions<AppDbContext> _options;

@@ -42,7 +42,7 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
                 filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
             }
 
-            if (PlayerMediaMetadata.IsStreamManifest(filename))
+            if (PlayerMediaMetadata.IsStreamUrl(videoPath) || PlayerMediaMetadata.IsStreamManifest(filename))
             {
                 return new PlayerMediaMetadata(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty, torrentHash);
             }

@@ -16,12 +16,99 @@ public sealed record PlayerMediaMetadata(
         if (string.IsNullOrWhiteSpace(name))
             return false;
 
-        return name.Contains(":hls", StringComparison.OrdinalIgnoreCase) ||
-               name.Contains(":manifest", StringComparison.OrdinalIgnoreCase) ||
-               name.Equals("manifest", StringComparison.OrdinalIgnoreCase) ||
-               name.Equals("master", StringComparison.OrdinalIgnoreCase) ||
-               name.Equals("index", StringComparison.OrdinalIgnoreCase) ||
-               name.Equals("playlist", StringComparison.OrdinalIgnoreCase);
+        if (name.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) ||
+            name.EndsWith(".mpd", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var cleanName = System.IO.Path.GetFileNameWithoutExtension(name);
+        if (string.IsNullOrWhiteSpace(cleanName))
+            cleanName = name;
+
+        if (cleanName.Contains(":hls", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Contains(":manifest", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (cleanName.Equals("manifest", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("master", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("index", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("playlist", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("video", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("stream", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("media", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("chunk", StringComparison.OrdinalIgnoreCase) ||
+            cleanName.Equals("hls", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var span = cleanName.AsSpan().Trim();
+        if (span.EndsWith("p", StringComparison.OrdinalIgnoreCase))
+            span = span[..^1];
+
+        if (!span.IsEmpty && IsAllDigits(span))
+            return true;
+
+        if (cleanName.Length >= 16 && IsHexHash(cleanName))
+            return true;
+
+        return false;
+    }
+
+    private static bool IsAllDigits(ReadOnlySpan<char> span)
+    {
+        foreach (var c in span)
+        {
+            if (!char.IsAsciiDigit(c))
+                return false;
+        }
+        return true;
+    }
+
+    private static bool IsHexHash(string str)
+    {
+        foreach (var c in str)
+        {
+            if (!char.IsAsciiHexDigit(c))
+                return false;
+        }
+        return true;
+    }
+
+    public static bool IsStreamUrl(string? videoPath)
+    {
+        if (string.IsNullOrWhiteSpace(videoPath))
+            return false;
+
+        if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            var query = uri.Query;
+            bool isTorrServer = !string.IsNullOrEmpty(query) &&
+                System.Text.RegularExpressions.Regex.IsMatch(query, Constants.AppConstants.Torrents.TorrentHashLinkRegex);
+
+            var seg = uri.Segments.LastOrDefault() ?? string.Empty;
+            var rawName = System.IO.Path.GetFileNameWithoutExtension(seg);
+            var filename = Uri.UnescapeDataString(rawName);
+
+            if (isTorrServer)
+            {
+                if (!string.IsNullOrWhiteSpace(filename) && !IsStreamManifest(filename) && !filename.Equals("stream", StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            if (uri.AbsolutePath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) ||
+                uri.AbsolutePath.EndsWith(".mpd", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (IsStreamManifest(filename))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
     }
 
     public static PlayerMediaMetadata FromVideoPath(string videoPath)
@@ -54,7 +141,7 @@ public sealed record PlayerMediaMetadata(
             fallbackTitle = System.IO.Path.GetFileNameWithoutExtension(videoPath);
         }
 
-        if (IsStreamManifest(fallbackTitle))
+        if (IsStreamUrl(videoPath) || IsStreamManifest(fallbackTitle))
         {
             fallbackTitle = string.Empty;
         }

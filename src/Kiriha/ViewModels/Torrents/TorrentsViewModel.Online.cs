@@ -701,10 +701,12 @@ public partial class TorrentsViewModel
                 throw new InvalidOperationException(_localizer.GetLoc("torrents.online.stream_not_found"));
             }
 
-            var originalTitle = $"{animeTitle} - {epTitle}";
             var matchedAnime = ResolveMatchedAnime(animeTitle);
             var titleRu = matchedAnime?.RussianTitle ?? animeTitle;
-            var titleEn = matchedAnime?.Title ?? animeTitle;
+            var titleEn = matchedAnime?.Title ?? matchedAnime?.EnglishTitle ?? animeTitle;
+            var originalTitle = !string.IsNullOrWhiteSpace(epNum)
+                ? $"{titleEn} - {epNum}"
+                : titleEn;
 
             if (_internalPlayerServer != null)
             {
@@ -814,8 +816,24 @@ public partial class TorrentsViewModel
     {
         if (string.IsNullOrWhiteSpace(title)) return null;
 
-        if (SelectedAnime != null && IsAnimeTitleMatch(SelectedAnime, title))
-            return SelectedAnime;
+        if (SelectedAnime != null)
+        {
+            if (IsAnimeTitleMatch(SelectedAnime, title))
+                return SelectedAnime;
+
+            var targetTitle = SelectedAnime.RussianTitle ?? SelectedAnime.Title;
+            if (!string.IsNullOrWhiteSpace(targetTitle) &&
+                OnlineRelevanceScorer.ComputeRelevance(targetTitle, title) >= 0.65)
+            {
+                return SelectedAnime;
+            }
+
+            if (!string.IsNullOrWhiteSpace(SelectedAnime.Title) &&
+                OnlineRelevanceScorer.ComputeRelevance(SelectedAnime.Title, title) >= 0.65)
+            {
+                return SelectedAnime;
+            }
+        }
 
         var exact = ResolveAnimeForQuery(title);
         if (exact != null) return exact;

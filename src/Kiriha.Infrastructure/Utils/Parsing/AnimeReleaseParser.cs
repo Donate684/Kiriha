@@ -66,10 +66,10 @@ public static partial class AnimeReleaseParser
     [GeneratedRegex(@"(?:\b|(?<=[._\-\s]))(?<season>\d{1,2})x(?<ep>\d{2,4})(?:v\d+)?(?:\b|(?=[._\-\s]))", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex XFormatRegex();
 
-    [GeneratedRegex(@"(?:\b|(?<=[._\-\s]))(?:Ep|Eps|Episode|Episodes|\u0421\u0435\u0440\u0438\u044F|\u0421\u0435\u0440|\u0412\u044B\u043F\u0443\u0441\u043A)\.?\s*(?<ep>\d{1,4}(?:\.\d)?)(?:v\d+)?(?:\b|(?=[._\-\s]))", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?:\b|(?<=[._\-\s]))(?:Ep|Eps|Episode|Episodes|\u0421\u0435\u0440\u0438\u044F|\u0421\u0435\u0440|\u0412\u044B\u043F\u0443\u0441\u043A|\u042D\u043F\u0438\u0437\u043E\u0434|\u042D\u043F)\.?\s*(?<ep>\d{1,4}(?:\.\d)?)(?:v\d+)?(?:\b|(?=[._\-\s]))", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ExplicitEpRegex();
 
-    [GeneratedRegex(@"(?:\b|(?<=[._\-\s]))(?<ep>\d{1,4}(?:\.\d)?)\s*\u0441\u0435\u0440\u0438\u044F(?:\b|(?=[._\-\s]))", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?:\b|(?<=[._\-\s]))(?<ep>\d{1,4}(?:\.\d)?)\s*(?:\u0441\u0435\u0440\u0438\u044F|\u044D\u043F\u0438\u0437\u043E\u0434)(?:\b|(?=[._\-\s]))", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex CyrillicEpRegex();
 
     [GeneratedRegex(@"(?:\b|(?<=[._\-\s]))(?<ep>\d{1,4})\s*(?:\u0438\u0437|of)\s*\d{1,4}(?:\b|(?=[._\-\s]))", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

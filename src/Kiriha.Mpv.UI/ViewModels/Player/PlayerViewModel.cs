@@ -47,6 +47,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private int? _animeId;
     public int? AnimeId => _animeId;
     private bool _isInitializing;
+    private bool _hasExplicitMetadata;
     private string? _previousVideoUrlForMetadata;
 
     private readonly ITorrServerService? _torrServer;
@@ -77,6 +78,14 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         Overlay.SkipPromptDismissed += OnOverlaySkipPromptDismissed;
         _playback.BufferingChanged += OnPlayerBufferingChanged;
         ApplyPlayerSettings();
+        if (metadata != null && (!string.IsNullOrWhiteSpace(metadata.TitleRu) ||
+                                 !string.IsNullOrWhiteSpace(metadata.TitleEn) ||
+                                 !string.IsNullOrWhiteSpace(metadata.TitleRomaji) ||
+                                 metadata.AnimeId.HasValue))
+        {
+            _hasExplicitMetadata = true;
+        }
+
         var initialMetadata = metadata ?? metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl);
         ApplyMetadata(initialMetadata);
 

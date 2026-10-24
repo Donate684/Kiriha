@@ -26,6 +26,13 @@ public partial class PlayerViewModel
 
         var resolved = _metadataResolver?.Resolve(value) ?? PlayerMediaMetadata.FromVideoPath(value);
 
+        if (string.IsNullOrWhiteSpace(resolved.TitleRu) &&
+            string.IsNullOrWhiteSpace(resolved.TitleRomaji) &&
+            string.IsNullOrWhiteSpace(resolved.OriginalTitle))
+        {
+            return;
+        }
+
         // If the resolver didn't find an anime in DB, but we already have anime context from a previous file
         // of the same anime series in the same directory, preserve the known titles and anime ID!
         if (resolved.AnimeId is null && _animeId.HasValue && IsSameAnimeSeries(resolved, value))
@@ -199,6 +206,7 @@ public partial class PlayerViewModel
         }
         else
         {
+            _hasExplicitMetadata = true;
             bool animeChanged = prevId.HasValue && metadata.AnimeId.HasValue && prevId.Value != metadata.AnimeId.Value;
             ApplyMetadata(metadata, overwriteAll: animeChanged);
         }
@@ -265,12 +273,14 @@ public partial class PlayerViewModel
         get
         {
             var filename = System.IO.Path.GetFileNameWithoutExtension(VideoUrl);
-            if (!string.IsNullOrWhiteSpace(filename) && !PlayerMediaMetadata.IsStreamManifest(filename))
+            if (!string.IsNullOrWhiteSpace(filename) &&
+                !PlayerMediaMetadata.IsStreamUrl(VideoUrl) &&
+                !PlayerMediaMetadata.IsStreamManifest(filename))
                 return $"[KirihaPlayer] {filename}";
 
             var title = !string.IsNullOrEmpty(AnimeTitleRomaji)
                 ? AnimeTitleRomaji
-                : (!string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : AnimeTitleRu);
+                : (!string.IsNullOrEmpty(AnimeTitleEn) ? AnimeTitleEn : (!string.IsNullOrEmpty(AnimeTitleRu) ? AnimeTitleRu : (!string.IsNullOrEmpty(AnimeTitle) ? AnimeTitle : OriginalTitle)));
             return $"[KirihaPlayer] {title}";
         }
     }

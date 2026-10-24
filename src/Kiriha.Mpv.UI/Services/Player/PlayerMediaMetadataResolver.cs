@@ -35,19 +35,30 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
         try
         {
             string filename;
+            string torrentHash = string.Empty;
             if (Uri.TryCreate(videoPath, UriKind.Absolute, out var uri) &&
                 (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
             {
                 var seg = uri.Segments.LastOrDefault() ?? string.Empty;
                 filename = Uri.UnescapeDataString(System.IO.Path.GetFileNameWithoutExtension(seg));
+
+                var query = uri.Query;
+                if (!string.IsNullOrEmpty(query))
+                {
+                    var torrentMatch = System.Text.RegularExpressions.Regex.Match(query, Kiriha.Core.Domain.Constants.AppConstants.Torrents.TorrentHashLinkRegex);
+                    if (torrentMatch.Success)
+                    {
+                        torrentHash = torrentMatch.Groups[1].Value;
+                    }
+                }
             }
             else
             {
                 filename = System.IO.Path.GetFileNameWithoutExtension(videoPath);
             }
 
-            if (PlayerMediaMetadata.IsStreamManifest(filename))
-                return new PlayerMediaMetadata();
+            if (PlayerMediaMetadata.IsStreamUrl(videoPath) || PlayerMediaMetadata.IsStreamManifest(filename))
+                return new PlayerMediaMetadata(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty, torrentHash);
 
             var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);

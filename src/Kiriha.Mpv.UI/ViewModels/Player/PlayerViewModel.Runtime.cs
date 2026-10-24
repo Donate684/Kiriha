@@ -93,6 +93,7 @@ public partial class PlayerViewModel
 
         if (metadata != null)
         {
+            _hasExplicitMetadata = true;
             _previousVideoUrlForMetadata = videoUrl;
             _suppressVideoUrlResolution = true;
             VideoUrl = videoUrl;
@@ -101,10 +102,13 @@ public partial class PlayerViewModel
         }
         else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
         {
+            _hasExplicitMetadata = false;
             VideoUrl = videoUrl;
         }
-        else
+        else if (!_hasExplicitMetadata && string.IsNullOrWhiteSpace(AnimeTitle))
+        {
             ResolveAndApplyMetadata(videoUrl);
+        }
 
         InitializeTorrentStream(videoUrl, metadata);
 

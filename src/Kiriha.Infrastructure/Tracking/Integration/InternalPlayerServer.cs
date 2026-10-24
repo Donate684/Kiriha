@@ -217,12 +217,41 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
 
                             bool titleMatch = message.State == null ||
                                               string.IsNullOrEmpty(message.State.OriginalTitle) ||
-                                              string.Equals(_latestMetadata.OriginalTitle, message.State.OriginalTitle, StringComparison.OrdinalIgnoreCase);
+                                              PlayerMediaMetadata.IsStreamManifest(message.State.OriginalTitle) ||
+                                              string.Equals(_latestMetadata.OriginalTitle, message.State.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
+                                              (_latestMetadata.AnimeId.HasValue && message.State.AnimeId == _latestMetadata.AnimeId);
 
                             if (hashMatch || titleMatch)
                             {
                                 initialMeta = _latestMetadata;
                             }
+                        }
+                    }
+
+                    if (initialMeta != null && message.State != null)
+                    {
+                        if (!message.State.AnimeId.HasValue && initialMeta.AnimeId.HasValue)
+                        {
+                            message.State.AnimeId = initialMeta.AnimeId;
+                        }
+
+                        if (string.IsNullOrEmpty(message.State.OriginalTitle) ||
+                            PlayerMediaMetadata.IsStreamManifest(message.State.OriginalTitle))
+                        {
+                            message.State.OriginalTitle = initialMeta.OriginalTitle;
+                        }
+
+                        if (string.IsNullOrEmpty(message.State.AnimeTitle) ||
+                            PlayerMediaMetadata.IsStreamManifest(message.State.AnimeTitle))
+                        {
+                            message.State.AnimeTitle = !string.IsNullOrEmpty(initialMeta.TitleRu)
+                                ? initialMeta.TitleRu
+                                : (!string.IsNullOrEmpty(initialMeta.TitleEn) ? initialMeta.TitleEn : initialMeta.OriginalTitle);
+                        }
+
+                        if (string.IsNullOrEmpty(message.State.Episode) && !string.IsNullOrEmpty(initialMeta.EpisodeText))
+                        {
+                            message.State.Episode = initialMeta.EpisodeText;
                         }
                     }
 

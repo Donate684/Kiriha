@@ -33,6 +33,14 @@ public static class OnlineRelevanceScorer
     }
 
     /// <summary>
+    /// Computes normalized relevance score (0.0 to 1.0) between query and candidate.
+    /// </summary>
+    public static double ComputeRelevance(string query, string candidate)
+    {
+        return Score(query, candidate) / 10000.0;
+    }
+
+    /// <summary>
     /// Scores a single candidate title against a single target query.
     /// Higher values indicate higher relevance (exact matches score 10000).
     /// </summary>

@@ -155,7 +155,10 @@ public partial class TrackingService
                     break;
 
                 case MediaMatchNotFound:
-                    ClearPlayerMetadata(media);
+                    if (forceMatch)
+                    {
+                        ClearPlayerMetadata(media);
+                    }
                     break;
             }
         }

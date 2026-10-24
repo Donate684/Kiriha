@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Mpv.UI.Services.Player;
 using Serilog;
@@ -70,10 +71,17 @@ public partial class PlayerViewModel
                 ? AnimeTitleEn
                 : (!string.IsNullOrEmpty(AnimeTitleRu) ? AnimeTitleRu : AnimeTitle));
 
+        var filename = System.IO.Path.GetFileNameWithoutExtension(VideoUrl);
+        var originalTitle = !string.IsNullOrEmpty(OriginalTitle) && !PlayerMediaMetadata.IsStreamManifest(OriginalTitle)
+            ? OriginalTitle
+            : ((!string.IsNullOrWhiteSpace(filename) && !PlayerMediaMetadata.IsStreamUrl(VideoUrl) && !PlayerMediaMetadata.IsStreamManifest(filename))
+                ? filename
+                : (!string.IsNullOrEmpty(OriginalTitle) ? OriginalTitle : titleToUse));
+
         return new InternalPlayerState
         {
             AnimeId = _animeId,
-            OriginalTitle = !string.IsNullOrEmpty(OriginalTitle) ? OriginalTitle : System.IO.Path.GetFileNameWithoutExtension(VideoUrl),
+            OriginalTitle = originalTitle,
             AnimeTitle = titleToUse,
             Episode = RawEpisodeText,
             Position = CurrentTime,
