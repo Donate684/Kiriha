@@ -223,6 +223,8 @@ public partial class _20261007185002_InitialCreate_v16 : Migration
                 filter_judas = table.Column<bool>(type: "INTEGER", nullable: false),
                 filter_hevc = table.Column<bool>(type: "INTEGER", nullable: false),
                 filter1080p = table.Column<bool>(type: "INTEGER", nullable: false),
+                filter_only_new = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false),
+                filter_only_batches = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false),
                 use_custom_query = table.Column<bool>(type: "INTEGER", nullable: false),
                 custom_query = table.Column<string>(type: "TEXT", nullable: true),
                 updated_at = table.Column<DateTime>(type: "TEXT", nullable: false)

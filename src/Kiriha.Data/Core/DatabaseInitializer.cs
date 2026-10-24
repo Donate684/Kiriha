@@ -56,6 +56,20 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
                 $"PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000; PRAGMA user_version = {CurrentSchemaVersion};");
             Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE torrent_title_filters ADD COLUMN filter_only_new INTEGER NOT NULL DEFAULT 0;");
+            }
+            catch { }
+
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE torrent_title_filters ADD COLUMN filter_only_batches INTEGER NOT NULL DEFAULT 0;");
+            }
+            catch { }
+
             await LegacyUserStateMigration.MigrateAsync(context);
 
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);

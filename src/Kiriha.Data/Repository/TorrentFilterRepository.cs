@@ -12,6 +12,7 @@ public sealed class TorrentFilterRepository : ITorrentFilterRepository
     private readonly HashSet<int> _cachedHiddenIds = new();
     private readonly Dictionary<int, AppSettings.TorrentFilterSet> _cachedFilters = new();
     private readonly Lock _lock = new();
+    private readonly SemaphoreSlim _dbSemaphore = new(1, 1);
     private bool _initialized;
 
     public TorrentFilterRepository(IDbContextFactory<AppDbContext> contextFactory)
@@ -129,22 +130,36 @@ public sealed class TorrentFilterRepository : ITorrentFilterRepository
             _cachedFilters[animeId] = cloned;
         }
 
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var existing = await context.TorrentTitleFilters
-            .FirstOrDefaultAsync(x => x.AnimeId == animeId, ct);
-
-        if (existing == null)
+        await _dbSemaphore.WaitAsync(ct);
+        try
         {
-            existing = new TorrentTitleFilter { AnimeId = animeId };
-            MapFromFilterSet(existing, cloned);
-            context.TorrentTitleFilters.Add(existing);
-        }
-        else
-        {
-            MapFromFilterSet(existing, cloned);
-        }
+            using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var existing = await context.TorrentTitleFilters
+                .AsTracking()
+                .FirstOrDefaultAsync(x => x.AnimeId == animeId, ct);
 
-        await context.SaveChangesAsync(ct);
+            if (existing == null)
+            {
+                existing = new TorrentTitleFilter { AnimeId = animeId };
+                MapFromFilterSet(existing, cloned);
+                context.TorrentTitleFilters.Add(existing);
+            }
+            else
+            {
+                MapFromFilterSet(existing, cloned);
+                context.TorrentTitleFilters.Update(existing);
+            }
+
+            await context.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Failed to save torrent filter for anime {AnimeId}", animeId);
+        }
+        finally
+        {
+            _dbSemaphore.Release();
+        }
     }
 
     private void EnsureInitialized()
@@ -194,6 +209,8 @@ public sealed class TorrentFilterRepository : ITorrentFilterRepository
         FilterJudas = entity.FilterJudas,
         FilterHevc = entity.FilterHevc,
         Filter1080p = entity.Filter1080p,
+        FilterOnlyNew = entity.FilterOnlyNew,
+        FilterOnlyBatches = entity.FilterOnlyBatches,
         UseCustomQuery = entity.UseCustomQuery,
         CustomQuery = entity.CustomQuery
     };
@@ -210,6 +227,8 @@ public sealed class TorrentFilterRepository : ITorrentFilterRepository
         entity.FilterJudas = set.FilterJudas;
         entity.FilterHevc = set.FilterHevc;
         entity.Filter1080p = set.Filter1080p;
+        entity.FilterOnlyNew = set.FilterOnlyNew;
+        entity.FilterOnlyBatches = set.FilterOnlyBatches;
         entity.UseCustomQuery = set.UseCustomQuery;
         entity.CustomQuery = set.CustomQuery;
         entity.UpdatedAt = DateTime.UtcNow;

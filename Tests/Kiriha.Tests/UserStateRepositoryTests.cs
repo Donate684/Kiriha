@@ -131,6 +131,64 @@ public sealed class UserStateRepositoryTests
     }
 
     [Fact]
+    public async Task TorrentFilterRepository_UpdatingExistingFilter_PersistsChangesToDatabase()
+    {
+        var (context, factory, dbPath) = CreateTestDb();
+        try
+        {
+            var repo = new TorrentFilterRepository(factory);
+            await repo.InitializeAsync();
+
+            // First save (insert)
+            var initial = new AppSettings.TorrentFilterSet
+            {
+                FilterToonsHub = true
+            };
+            await repo.SaveFilterAsync(63337, initial);
+
+            // Verify initial save
+            var repo2 = new TorrentFilterRepository(factory);
+            await repo2.InitializeAsync();
+            var loaded1 = await repo2.GetFilterAsync(63337);
+            Assert.NotNull(loaded1);
+            Assert.True(loaded1.FilterToonsHub);
+            Assert.False(loaded1.Filter1080p);
+            Assert.False(loaded1.OnlyCrunchyroll);
+            Assert.False(loaded1.FilterOnlyNew);
+            Assert.False(loaded1.UseCustomQuery);
+
+            // Second save (update on existing row)
+            var updated = new AppSettings.TorrentFilterSet
+            {
+                FilterToonsHub = true,
+                Filter1080p = true,
+                FilterOnlyNew = true,
+                OnlyCrunchyroll = true,
+                UseCustomQuery = true,
+                CustomQuery = "FX Senshi Kurumi-chan Custom"
+            };
+            await repo2.SaveFilterAsync(63337, updated);
+
+            // Third instance (simulating restart after update)
+            var repo3 = new TorrentFilterRepository(factory);
+            await repo3.InitializeAsync();
+            var loaded2 = await repo3.GetFilterAsync(63337);
+            Assert.NotNull(loaded2);
+            Assert.True(loaded2.FilterToonsHub);
+            Assert.True(loaded2.Filter1080p);
+            Assert.True(loaded2.FilterOnlyNew);
+            Assert.True(loaded2.OnlyCrunchyroll);
+            Assert.True(loaded2.UseCustomQuery);
+            Assert.Equal("FX Senshi Kurumi-chan Custom", loaded2.CustomQuery);
+        }
+        finally
+        {
+            await context.DisposeAsync();
+            CleanupTestDb(dbPath);
+        }
+    }
+
+    [Fact]
     public async Task LegacyUserStateMigration_MigratesJsonDataToSqlite()
     {
         var (context, factory, dbPath) = CreateTestDb();

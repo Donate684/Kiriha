@@ -54,6 +54,7 @@ public partial class TorrentsViewModel
                 {
                     item.IsSelected = false;
                 }
+                ReloadFiltersForCurrentContext();
             }
         }
         else if (!string.IsNullOrWhiteSpace(value))
@@ -67,6 +68,7 @@ public partial class TorrentsViewModel
                 {
                     item.IsSelected = item.Anime.Id == matched.Id;
                 }
+                ReloadFiltersForCurrentContext();
             }
         }
     }

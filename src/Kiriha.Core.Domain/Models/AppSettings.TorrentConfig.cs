@@ -16,6 +16,8 @@ public partial class AppSettings
         public bool Filter1080p { get; set; } = false;
         public bool FilterOnlyNew { get; set; } = false;
         public bool FilterOnlyBatches { get; set; } = false;
+        public bool UseCustomQuery { get; set; } = false;
+        public string? CustomQuery { get; set; } = null;
         [System.Text.Json.Serialization.JsonIgnore]
         public System.Collections.Generic.List<int> HiddenAnimeIds { get; set; } = new();
 

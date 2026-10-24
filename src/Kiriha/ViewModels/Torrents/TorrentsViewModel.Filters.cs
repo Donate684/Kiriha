@@ -232,9 +232,10 @@ public partial class TorrentsViewModel
         if (_suppressFilterPersist) return;
 
         var titleId = ResolveCurrentTitleId();
+        _currentFilterContextId = titleId;
+
         if (titleId != 0)
         {
-            _currentFilterContextId = titleId;
             var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents);
             ApplyFilterValue(target, name, value);
             _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
@@ -299,14 +300,23 @@ public partial class TorrentsViewModel
     {
         if (_suppressFilterPersist) return;
 
-        var titleId = ResolveCurrentTitleId();
+        var titleId = SelectedAnime?.Id ?? 0;
+        _currentFilterContextId = titleId;
+
         if (titleId != 0)
         {
-            _currentFilterContextId = titleId;
             var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents);
             target.UseCustomQuery = UseCustomQuery;
             target.CustomQuery = CustomQuery;
             _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
+        }
+        else
+        {
+            _settingsService.Update(settings =>
+            {
+                settings.Torrents.UseCustomQuery = UseCustomQuery;
+                settings.Torrents.CustomQuery = CustomQuery;
+            }, SettingsSection.Torrents);
         }
     }
 
@@ -362,8 +372,8 @@ public partial class TorrentsViewModel
         Filter1080p = cfg.Filter1080p,
         FilterOnlyNew = cfg.FilterOnlyNew,
         FilterOnlyBatches = cfg.FilterOnlyBatches,
-        UseCustomQuery = false,
-        CustomQuery = null,
+        UseCustomQuery = cfg.UseCustomQuery,
+        CustomQuery = cfg.CustomQuery,
     };
 
     [RelayCommand]
@@ -384,6 +394,8 @@ public partial class TorrentsViewModel
             FilterHidive = false;
             FilterOnlyNew = false;
             FilterOnlyBatches = false;
+            UseCustomQuery = false;
+            CustomQuery = GetCurrentTitleDefaultQuery();
         }
         finally
         {
@@ -391,9 +403,10 @@ public partial class TorrentsViewModel
         }
 
         var titleId = ResolveCurrentTitleId();
+        _currentFilterContextId = titleId;
+
         if (titleId != 0)
         {
-            _currentFilterContextId = titleId;
             var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? new AppSettings.TorrentFilterSet();
             target.FilterVaryg = false;
             target.FilterEraiRaws = false;
@@ -407,6 +420,8 @@ public partial class TorrentsViewModel
             target.FilterHidive = false;
             target.FilterOnlyNew = false;
             target.FilterOnlyBatches = false;
+            target.UseCustomQuery = false;
+            target.CustomQuery = null;
             _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
         }
         else
@@ -426,6 +441,8 @@ public partial class TorrentsViewModel
                 cfg.FilterHidive = false;
                 cfg.FilterOnlyNew = false;
                 cfg.FilterOnlyBatches = false;
+                cfg.UseCustomQuery = false;
+                cfg.CustomQuery = null;
             }, SettingsSection.Torrents);
         }
 

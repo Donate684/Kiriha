@@ -13,6 +13,8 @@ public class TorrentTitleFilter
     public bool FilterJudas { get; set; }
     public bool FilterHevc { get; set; }
     public bool Filter1080p { get; set; }
+    public bool FilterOnlyNew { get; set; }
+    public bool FilterOnlyBatches { get; set; }
     public bool UseCustomQuery { get; set; }
     public string? CustomQuery { get; set; }
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

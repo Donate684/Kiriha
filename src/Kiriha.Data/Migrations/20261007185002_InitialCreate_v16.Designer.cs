@@ -574,6 +574,14 @@ partial class _20261007185002_InitialCreate_v16
                     .HasColumnType("INTEGER")
                     .HasColumnName("filter_netflix");
 
+                b.Property<bool>("FilterOnlyBatches")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("filter_only_batches");
+
+                b.Property<bool>("FilterOnlyNew")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("filter_only_new");
+
                 b.Property<bool>("FilterToonsHub")
                     .HasColumnType("INTEGER")
                     .HasColumnName("filter_toons_hub");
