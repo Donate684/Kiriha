@@ -37,18 +37,25 @@
 
     <UserControl.Styles>
         <Style Selector="MenuFlyoutPresenter.ScoreFlyout MenuItem" x:DataType="models:RatingOption">
-                    <Setter Property="Header" Value="{Binding Display}"/>
-                    <Setter Property="Command" Value="{Binding #animeListRoot.((vmAnimeList:AnimeListViewModel)DataContext).ApplyScoreFromMenuCommand}"/>
-                    <Setter Property="CommandParameter" Value="{Binding}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource ScoreFlyoutItemForeground}"/>
-                    <Setter Property="Padding" Value="12,8"/>
-                    <Setter Property="FontSize" Value="12"/>
-                    <Setter Property="Transitions">
-                        <Transitions>
-                            <BrushTransition Property="Background" Duration="0:0:0.12"/>
-                        </Transitions>
-                    </Setter>
-                </Style>
+            <Setter Property="Header" Value="{Binding}"/>
+            <Setter Property="HeaderTemplate">
+                <DataTemplate x:DataType="models:RatingOption">
+                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </Setter>
+            <Setter Property="Command" Value="{Binding #animeListRoot.((vmAnimeList:AnimeListViewModel)DataContext).ApplyScoreFromMenuCommand}"/>
+            <Setter Property="CommandParameter" Value="{Binding}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ScoreFlyoutItemForeground}"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
 
         <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeCardStyles.axaml"/>
         <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeFilterStyles.axaml"/>

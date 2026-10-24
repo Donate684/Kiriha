@@ -202,7 +202,7 @@ public class AnimeProgressService : IProgressUpdateService
     {
         await _uiDispatcher.InvokeAsync(() =>
         {
-            item.Score = score.ToString();
+            item.Score = score <= 0 ? "-" : score.ToString();
         });
         await _userAnimeRepo.UpdateScoreAsync(item, item.Score);
         // Write history BEFORE sync.
