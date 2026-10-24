@@ -63,9 +63,9 @@ public static class SmartTrackAutoloader
         if (subFiles.Count == 0 && audioFiles.Count == 0)
             return SmartTrackMatches.Empty;
 
-        var videoElements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(videoFileName);
-        string? videoTitle = videoElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-        string? videoEpisode = videoElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+        var videoParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(videoFileName);
+        string videoTitle = videoParsed.Title;
+        string videoEpisode = videoParsed.Episode;
 
         var matchedSubs = new List<string>();
         var matchedAudio = new List<string>();
@@ -107,10 +107,10 @@ public static class SmartTrackAutoloader
         if (trackFileWithoutExt.Equals(videoFileWithoutExt, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        // 2. Anitomy Match
-        var trackElements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(trackFileName);
-        string? trackTitle = trackElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-        string? trackEpisode = trackElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+        // 2. Parser Match
+        var trackParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(trackFileName);
+        string trackTitle = trackParsed.Title;
+        string trackEpisode = trackParsed.Episode;
 
         bool hasVideoTitle = !string.IsNullOrEmpty(videoTitle);
         bool hasTrackTitle = !string.IsNullOrEmpty(trackTitle);

@@ -23,7 +23,7 @@ public class AnimeParseCacheBenchmark
     {
         foreach (var filename in _filenames)
         {
-            _ = AnitomySharp.AnitomySharp.Parse(filename).ToList();
+            _ = AnimeReleaseParser.Parse(filename);
         }
     }
 

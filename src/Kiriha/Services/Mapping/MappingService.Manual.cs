@@ -22,8 +22,7 @@ public partial class MappingService
         if (_manualMapping.TryGetMapping(normOriginal, out _)) return true;
 
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
-        var titleElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-        string cleanTitle = titleElement != null ? titleElement.Value : Path.GetFileNameWithoutExtension(title);
+        string cleanTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(title);
 
         string normClean = Normalize(cleanTitle);
         if (_manualMapping.TryGetMapping(normClean, out _)) return true;
@@ -37,8 +36,7 @@ public partial class MappingService
         if (_manualMapping.IsNegativelyMapped(Normalize(title))) return true;
 
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
-        var titleElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-        string cleanTitle = titleElement != null ? titleElement.Value : Path.GetFileNameWithoutExtension(title);
+        string cleanTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(title);
         if (_manualMapping.IsNegativelyMapped(Normalize(cleanTitle))) return true;
 
         return false;

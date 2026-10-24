@@ -52,15 +52,6 @@ public class HardcodeAnalysisTests
         "Kiriha.Core.Domain/Constants/ApiKeys.cs",
         "Kiriha.Core.Streaming/Constants/StreamingConstants.cs",
 
-        // Third-party vendored code — licence header URLs only
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/Anitomy.cs",
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/Element.cs",
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/Keyword.cs",
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/Options.cs",
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/Parser.cs",
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/ParserHelper.cs",
-        "Kiriha.Infrastructure/Utils/Parsing/AnitomySharp/ParserNumber.cs",
-
         // UI credits model — decorative display data, not API config
         "Kiriha/Models/AboutCredits.cs",
     ];
@@ -70,9 +61,6 @@ public class HardcodeAnalysisTests
     /// </summary>
     private static readonly HashSet<string> DuplicateConstValueAllowList = new(StringComparer.Ordinal)
     {
-        // AnitomySharp regex fragment constants (third-party port)
-        @"\A(?:",
-        @")\z",
     };
 
     /// <summary>

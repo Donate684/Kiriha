@@ -15,9 +15,9 @@ public partial class MappingService
     [System.Text.RegularExpressions.GeneratedRegex(@"[sS](\d{1,2})[eE]\d+|\b[sS]eason\s*(\d{1,2})\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
     private static partial System.Text.RegularExpressions.Regex SeasonRegex();
 
-    private int ExtractSeason(string title, AnitomySharp.Element? seasonElement)
+    private int ExtractSeason(string title, int? parsedSeason)
     {
-        if (seasonElement != null && int.TryParse(seasonElement.Value, out int s)) return s;
+        if (parsedSeason is > 0) return parsedSeason.Value;
 
         var match = SeasonRegex().Match(title);
         if (match.Success)
@@ -31,60 +31,21 @@ public partial class MappingService
     private (string CleanTitle, string SearchTitle, int ParsedSeason, int? ParsedEpisode) ParseAnimeTitle(string title)
     {
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
-        AnitomySharp.Element? titleElement = null;
-        AnitomySharp.Element? seasonElement = null;
-        AnitomySharp.Element? typeElement = null;
-        AnitomySharp.Element? subTitleElement = null;
-        AnitomySharp.Element? otherElement = null;
-        AnitomySharp.Element? episodeElement = null;
 
-        for (int i = 0; i < parsed.Count; i++)
+        int parsedSeason = ExtractSeason(title, parsed.Season);
+        int? parsedEpisode = int.TryParse(parsed.Episode, out int ep) ? ep : null;
+
+        string cleanTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(title);
+
+        if (parsedEpisode is null && !string.IsNullOrEmpty(parsed.EpisodeTitle) && !cleanTitle.Contains(parsed.EpisodeTitle, StringComparison.OrdinalIgnoreCase))
         {
-            var el = parsed[i];
-            switch (el.Category)
-            {
-                case AnitomySharp.Element.ElementCategory.ElementAnimeTitle:
-                    titleElement ??= el;
-                    break;
-                case AnitomySharp.Element.ElementCategory.ElementAnimeSeason:
-                    seasonElement ??= el;
-                    break;
-                case AnitomySharp.Element.ElementCategory.ElementAnimeType:
-                    typeElement ??= el;
-                    break;
-                case AnitomySharp.Element.ElementCategory.ElementEpisodeTitle:
-                    subTitleElement ??= el;
-                    break;
-                case AnitomySharp.Element.ElementCategory.ElementOther:
-                    otherElement ??= el;
-                    break;
-                case AnitomySharp.Element.ElementCategory.ElementEpisodeNumber:
-                    episodeElement ??= el;
-                    break;
-            }
-        }
-
-        int parsedSeason = ExtractSeason(title, seasonElement);
-        int? parsedEpisode = null;
-        if (episodeElement != null && int.TryParse(episodeElement.Value, out int ep))
-        {
-            parsedEpisode = ep;
-        }
-
-        string cleanTitle = titleElement != null ? titleElement.Value : Path.GetFileNameWithoutExtension(title);
-
-        if (episodeElement is null)
-        {
-            if (subTitleElement != null && !cleanTitle.Contains(subTitleElement.Value, StringComparison.OrdinalIgnoreCase))
-                cleanTitle = $"{cleanTitle} {subTitleElement.Value}";
-            if (otherElement != null && !cleanTitle.Contains(otherElement.Value, StringComparison.OrdinalIgnoreCase))
-                cleanTitle = $"{cleanTitle} {otherElement.Value}";
+            cleanTitle = $"{cleanTitle} {parsed.EpisodeTitle}";
         }
 
         string searchTitle = cleanTitle;
-        if (typeElement != null && !string.IsNullOrEmpty(typeElement.Value))
+        if (!string.IsNullOrEmpty(parsed.ReleaseType))
         {
-            string type = typeElement.Value.ToUpperInvariant();
+            string type = parsed.ReleaseType.ToUpperInvariant();
             if (type == "OVA" || type == "OAD" || type == "SPECIAL" || type == "SP" || type == "ONA")
                 searchTitle = $"{cleanTitle} {type}";
         }

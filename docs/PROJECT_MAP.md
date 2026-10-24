@@ -20,7 +20,7 @@ Kiriha.sln
 ├── src/
 │   ├── Kiriha.Core.Domain/           # Чистые доменные сущности, DTO, перечисления, константы (0 зависимостей)
 │   ├── Kiriha.Core.Abstractions/     # Контракты репозиториев, сервисов и системных интерфейсов
-│   ├── Kiriha.Infrastructure/        # TorrServer, сетевые кеши, Win32 API, SMTC, Discord RPC, AnitomySharp, Anisthesia
+│   ├── Kiriha.Infrastructure/        # TorrServer, сетевые кеши, Win32 API, SMTC, Discord RPC, AnimeReleaseParser, Anisthesia
 │   ├── Kiriha.Data/                  # EF Core SQLite, миграции, реализации репозиториев
 │   ├── Kiriha.Core.Tracking/         # API-клиенты (MAL, Shiki, AniList), синхронизация списков, аир-инфо, Nyaa RSS
 │   ├── Kiriha.Core.Streaming/        # Онлайн-стриминг (AniLibria, AnimeLib, DreamCast, YummyAnime, Anime 365, Kodik, Aniboom, Sibnet)
@@ -106,7 +106,7 @@ graph TD
 * **Ключевые компоненты:**
   - `TorrServer/`: интеграция с движком TorrServer (`TorrServerService`): запуск локального процесса `torrserver.exe`, настройка RAM-кеша (0 байт на диске), загрузка торрентов, опрос прогресса и авто-дроп из памяти.
   - `Tracking/Anisthesia/`: модуль обнаружения внешних плееров (MPC-HC, mpv, VLC, PotPlayer) через Win32 хэндлы окон и аудио-сессии WASAPI.
-  - `Utils/Parsing/AnitomySharp/`: порт Anitomy C++ для токенизации и распознавания имен файлов аниме (номер серии, группа ансаба, разрешение).
+  - `Utils/Parsing/AnimeReleaseParser.cs`: детерминированный парсер имен релизов, файлов и заголовков окон аниме (номер серии, сезон, релиз-группа, разрешение, тип релиза).
   - `Infrastructure/Http/HttpConditionalCache.cs`: поддержка условных HTTP GET (ETag / 304 Not Modified).
   - `Platform/`: `PathHelper`, `ShellLauncher`, `WindowsStartupManager` (автозагрузка через реестр Windows).
 

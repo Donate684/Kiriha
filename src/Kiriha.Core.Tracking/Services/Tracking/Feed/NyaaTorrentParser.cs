@@ -12,10 +12,10 @@ internal static class NyaaTorrentParser
         if (string.IsNullOrEmpty(title)) return null;
 
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
-        var animeTitle = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-        var episodeStr = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
-        var resolution = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementVideoResolution)?.Value;
-        var group = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementReleaseGroup)?.Value;
+        var animeTitle = parsed.Title;
+        var episodeStr = parsed.Episode;
+        var resolution = parsed.Resolution;
+        var group = parsed.ReleaseGroup;
 
         var nyaaNs = XNamespace.Get(Kiriha.Core.Domain.Constants.AppConstants.Api.Nyaa.XmlNamespace);
         var infoHash = item.Element(nyaaNs + "infoHash")?.Value;
@@ -29,7 +29,8 @@ internal static class NyaaTorrentParser
         int.TryParse(leechersStr, out var leechers);
         int.TryParse(downloadsStr, out var downloads);
 
-        bool isBatch = title.Contains("Batch", StringComparison.OrdinalIgnoreCase)
+        bool isBatch = parsed.IsBatch
+            || title.Contains("Batch", StringComparison.OrdinalIgnoreCase)
             || title.Contains("Season", StringComparison.OrdinalIgnoreCase)
             || title.Contains("Complete", StringComparison.OrdinalIgnoreCase)
             || (string.IsNullOrEmpty(episodeStr)
@@ -39,10 +40,10 @@ internal static class NyaaTorrentParser
         return new TorrentEntity
         {
             Title = title,
-            AnimeTitle = animeTitle ?? string.Empty,
-            Episode = episodeStr ?? string.Empty,
-            Resolution = resolution ?? string.Empty,
-            ReleaseGroup = group ?? string.Empty,
+            AnimeTitle = animeTitle,
+            Episode = episodeStr,
+            Resolution = resolution,
+            ReleaseGroup = group,
             DownloadLink = item.Element("link")?.Value ?? string.Empty,
             MagnetLink = !string.IsNullOrEmpty(infoHash)
                 ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}{AppConstants.Torrents.NyaaDefaultTrackersQuery}"

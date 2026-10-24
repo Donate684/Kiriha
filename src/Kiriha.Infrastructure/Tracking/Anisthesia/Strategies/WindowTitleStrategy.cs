@@ -30,30 +30,17 @@ public class WindowTitleStrategy
                     {
                         string extracted = match.Groups[i].Value;
 
-                        // Further parse with Anitomy to get episode
-                        var elements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(extracted);
-                        var titleElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-                        var subTitleElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeTitle);
-                        var otherElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementOther);
-                        var episode = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
-                        var season = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeSeason)?.Value;
-
-                        string animeTitle = titleElement != null ? titleElement.Value : extracted;
-                        string episodeTitle = string.Empty;
-
-                        if (subTitleElement != null)
-                            episodeTitle = subTitleElement.Value;
-
-                        if (otherElement != null)
-                            episodeTitle = string.IsNullOrEmpty(episodeTitle) ? otherElement.Value : $"{episodeTitle} {otherElement.Value}";
+                        // Further parse with AnimeReleaseParser to get episode
+                        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(extracted);
+                        string animeTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : extracted;
 
                         return new ParsedMedia
                         {
                             OriginalTitle = extracted,
                             AnimeTitle = animeTitle,
-                            EpisodeTitle = episodeTitle,
-                            Episode = episode ?? string.Empty,
-                            Season = season ?? string.Empty,
+                            EpisodeTitle = parsed.EpisodeTitle,
+                            Episode = parsed.Episode,
+                            Season = parsed.Season?.ToString() ?? string.Empty,
                             IsPlaying = true
                         };
                     }

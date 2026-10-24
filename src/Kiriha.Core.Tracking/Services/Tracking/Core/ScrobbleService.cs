@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
@@ -63,8 +63,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
     {
-        var elements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
-        var epStr = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value ?? media.Episode;
+        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
+        var epStr = !string.IsNullOrEmpty(parsed.Episode) ? parsed.Episode : media.Episode;
 
         if (!int.TryParse(epStr, out int ep))
         {

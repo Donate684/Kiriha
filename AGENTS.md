@@ -25,7 +25,7 @@ For the complete architectural breakdown, dependency graph, and legacy/tech-debt
 Kiriha.sln
 ├── src/Kiriha.Core.Domain/        # Domain entities, value objects, formats, genres (0 dependencies)
 ├── src/Kiriha.Core.Abstractions/  # Contracts for repositories, services, UI dispatcher, ITorrServerService
-├── src/Kiriha.Infrastructure/     # Anisthesia (player detection), TorrServer, AnitomySharp, HTTP cache, Win32
+├── src/Kiriha.Infrastructure/     # Anisthesia (player detection), TorrServer, AnimeReleaseParser, HTTP cache, Win32
 ├── src/Kiriha.Data/               # EF Core DbContext, migrations, SQLite repositories
 ├── src/Kiriha.Core.Tracking/      # MAL / Shiki / AniList API, sync manager, airing info, Nyaa RSS
 ├── src/Kiriha.Core.Streaming/     # Online anime streaming (AniLibria, AnimeLib, DreamCast, YummyAnime, Anime 365, Kodik, Aniboom, Sibnet)

@@ -180,53 +180,38 @@ public class HandleEnumerationStrategy
             {
                 string filename = System.IO.Path.GetFileName(file);
 
-                // Use AnitomySharp to parse the filename
-                var elements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(filename);
-                var titleElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-                var subTitleElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeTitle);
-                var otherElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementOther);
-                var episode = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
-                var season = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeSeason)?.Value;
-                var group = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementReleaseGroup)?.Value;
+                // Use AnimeReleaseParser to parse the filename
+                var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(filename);
 
                 string animeTitle;
                 bool isEmber = file.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(file);
 
-                if (titleElement != null && !isEmber)
+                if (!string.IsNullOrEmpty(parsed.Title) && !isEmber)
                 {
-                    animeTitle = titleElement.Value;
+                    animeTitle = parsed.Title;
                 }
                 else
                 {
                     string meaningfulDir = EmberTitleResolver.GetMeaningfulDirectoryName(file);
                     if (!string.IsNullOrEmpty(meaningfulDir))
                     {
-                        var dirElements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(meaningfulDir);
-                        var dirTitleElement = dirElements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-                        animeTitle = dirTitleElement != null ? dirTitleElement.Value : meaningfulDir;
+                        var dirParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(meaningfulDir);
+                        animeTitle = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
                     }
                     else
                     {
-                        animeTitle = titleElement != null ? titleElement.Value : Path.GetFileNameWithoutExtension(filename);
+                        animeTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(filename);
                     }
                 }
-
-                string episodeTitle = string.Empty;
-
-                if (subTitleElement != null)
-                    episodeTitle = subTitleElement.Value;
-
-                if (otherElement != null)
-                    episodeTitle = string.IsNullOrEmpty(episodeTitle) ? otherElement.Value : $"{episodeTitle} {otherElement.Value}";
 
                 return new ParsedMedia
                 {
                     OriginalTitle = filename,
                     AnimeTitle = animeTitle,
-                    EpisodeTitle = episodeTitle,
-                    Episode = episode ?? string.Empty,
-                    Season = season ?? string.Empty,
-                    Group = group ?? string.Empty,
+                    EpisodeTitle = parsed.EpisodeTitle,
+                    Episode = parsed.Episode,
+                    Season = parsed.Season?.ToString() ?? string.Empty,
+                    Group = parsed.ReleaseGroup,
                     IsPlaying = true,
                     ProcessName = player.Executables.FirstOrDefault() ?? ""
                 };

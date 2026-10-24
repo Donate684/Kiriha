@@ -50,8 +50,8 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
             var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);
 
-            string? title = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-            var episode = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+            string title = parsed.Title;
+            var episode = parsed.Episode;
 
             string originalTitle = filename;
             bool isEmber = videoPath.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(videoPath);
@@ -61,8 +61,7 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
                 if (!string.IsNullOrEmpty(meaningfulDir))
                 {
                     var dirParsed = AnimeParseCache.Parse(meaningfulDir);
-                    var dirTitle = dirParsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-                    title = dirTitle ?? meaningfulDir;
+                    title = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
                     originalTitle = meaningfulDir;
                 }
             }
@@ -72,7 +71,7 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
                 originalTitle,
                 resolvedTitle,
                 string.Empty,
-                episode ?? string.Empty,
+                episode,
                 null,
                 resolvedTitle,
                 torrentHash);

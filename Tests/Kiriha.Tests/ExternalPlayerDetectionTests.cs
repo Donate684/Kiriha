@@ -163,15 +163,13 @@ public class ExternalPlayerDetectionTests
             if (match.Groups[i].Success && !string.IsNullOrEmpty(match.Groups[i].Value))
             {
                 string extracted = match.Groups[i].Value;
-                var elements = Kiriha.Utils.Parsing.AnimeParseCache.Parse(extracted);
-                var titleElement = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle);
-                var episode = elements.FirstOrDefault(e => e.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+                var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(extracted);
 
                 return new ParsedMedia
                 {
                     OriginalTitle = extracted,
-                    AnimeTitle = titleElement != null ? titleElement.Value : extracted,
-                    Episode = episode ?? string.Empty,
+                    AnimeTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : extracted,
+                    Episode = parsed.Episode,
                     IsPlaying = true
                 };
             }

@@ -49,9 +49,9 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
             var filenameToParse = HyphenatedEpisodeRegex().Replace(filename, "$1 - $2");
             var parsed = AnimeParseCache.Parse(filenameToParse);
 
-            var extractedTitle = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-            var episodeText = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value ?? string.Empty;
-            var seasonElement = parsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeSeason)?.Value;
+            var extractedTitle = parsed.Title;
+            var episodeText = parsed.Episode;
+            int parsedSeason = parsed.Season ?? 0;
 
             string originalTitle = filename;
             bool isEmber = videoPath.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(videoPath);
@@ -61,8 +61,7 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
                 if (!string.IsNullOrEmpty(meaningfulDir))
                 {
                     var dirParsed = AnimeParseCache.Parse(meaningfulDir);
-                    var dirTitle = dirParsed.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-                    extractedTitle = dirTitle ?? meaningfulDir;
+                    extractedTitle = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
                     originalTitle = meaningfulDir;
                 }
             }
@@ -70,7 +69,6 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
             if (string.IsNullOrWhiteSpace(extractedTitle))
                 return PlayerMediaMetadata.FromVideoPath(videoPath) with { EpisodeText = episodeText };
 
-            int.TryParse(seasonElement, out int parsedSeason);
             var searchTitle = parsedSeason > 1
                 ? $"{extractedTitle} Season {parsedSeason}"
                 : extractedTitle;

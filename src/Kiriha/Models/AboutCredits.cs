@@ -40,7 +40,6 @@ public static class AboutCredits
         new CreditEntry("AngleSharp",                     "MIT · HTML5 DOM parsing engine",            "https://anglesharp.github.io/"),
         new CreditEntry("WebView2",                       "BSD · Embedded Chromium browser",           "https://developer.microsoft.com/microsoft-edge/webview2/"),
         new CreditEntry("DiscordRichPresence",            "MIT · Lachee",                              "https://github.com/Lachee/discord-rpc-csharp"),
-        new CreditEntry("AnitomySharp",                   "MPL 2.0 · Filename parsing",                "https://github.com/erengy/anitomy"),
         new CreditEntry("Anisthesia",                     "MPL 2.0 · Local media tracking",            "https://github.com/erengy/anisthesia"),
         new CreditEntry("Lato Font",                      "OFL 1.1 · Subtitle typography · Lukasz Dziedzic", "https://www.latofonts.com/"),
     ];
