@@ -1,59 +1,103 @@
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Kiriha.Infrastructure.Platform;
 
-public static class Win32Api
+public static unsafe partial class Win32Api
 {
-    [DllImport("user32.dll")]
-    public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+    private const uint GW_OWNER = 4;
 
-    public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+    private struct FindWindowContext
+    {
+        public uint TargetPid;
+        public IntPtr FoundHwnd;
+        public IntPtr FallbackHwnd;
+    }
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool EnumWindows(delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int> lpEnumFunc, IntPtr lParam);
 
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    public static extern int GetWindowTextLength(IntPtr hWnd);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial int GetWindowTextW(IntPtr hWnd, char* lpString, int nMaxCount);
 
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial int GetWindowTextLengthW(IntPtr hWnd);
 
-    [DllImport("user32.dll")]
-    public static extern bool IsWindowVisible(IntPtr hWnd);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool IsWindowVisible(IntPtr hWnd);
+
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+    private static int EnumWindowsCallback(IntPtr hWnd, IntPtr lParam)
+    {
+        FindWindowContext* ctx = (FindWindowContext*)lParam;
+        GetWindowThreadProcessId(hWnd, out uint pid);
+        if (pid == ctx->TargetPid && IsWindowVisible(hWnd) && GetWindowTextLengthW(hWnd) > 0)
+        {
+            if (GetWindow(hWnd, GW_OWNER) == IntPtr.Zero)
+            {
+                ctx->FoundHwnd = hWnd;
+                return 0;
+            }
+
+            if (ctx->FallbackHwnd == IntPtr.Zero)
+            {
+                ctx->FallbackHwnd = hWnd;
+            }
+        }
+
+        return 1;
+    }
 
     public static string GetWindowTitle(IntPtr hWnd)
     {
         if (!OperatingSystem.IsWindows() || hWnd == IntPtr.Zero) return string.Empty;
 
-        int length = GetWindowTextLength(hWnd);
+        int length = GetWindowTextLengthW(hWnd);
         if (length <= 0) return string.Empty;
 
-        StringBuilder sb = new StringBuilder(length + 1);
-        GetWindowText(hWnd, sb, sb.Capacity);
-        return sb.ToString();
+        if (length < 512)
+        {
+            char* buffer = stackalloc char[length + 1];
+            int copied = GetWindowTextW(hWnd, buffer, length + 1);
+            return copied > 0 ? new string(buffer, 0, copied) : string.Empty;
+        }
+
+        char[] rented = ArrayPool<char>.Shared.Rent(length + 1);
+        try
+        {
+            fixed (char* buffer = rented)
+            {
+                int copied = GetWindowTextW(hWnd, buffer, length + 1);
+                return copied > 0 ? new string(buffer, 0, copied) : string.Empty;
+            }
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(rented);
+        }
     }
 
     public static IntPtr FindMainWindow(uint targetPid)
     {
         if (!OperatingSystem.IsWindows() || targetPid == 0) return IntPtr.Zero;
 
-        IntPtr found = IntPtr.Zero;
-        EnumWindows((hWnd, lParam) =>
+        FindWindowContext context = new()
         {
-            GetWindowThreadProcessId(hWnd, out uint pid);
-            if (pid == targetPid && IsWindowVisible(hWnd))
-            {
-                int len = GetWindowTextLength(hWnd);
-                if (len > 0)
-                {
-                    found = hWnd;
-                    return false;
-                }
-            }
-            return true;
-        }, IntPtr.Zero);
+            TargetPid = targetPid,
+            FoundHwnd = IntPtr.Zero,
+            FallbackHwnd = IntPtr.Zero
+        };
 
-        return found;
+        EnumWindows(&EnumWindowsCallback, (IntPtr)(&context));
+        return context.FoundHwnd != IntPtr.Zero ? context.FoundHwnd : context.FallbackHwnd;
     }
 }

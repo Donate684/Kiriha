@@ -4,9 +4,9 @@ using Kiriha.Infrastructure.Platform;
 
 namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
-public class WindowTitleStrategy
+public static class WindowTitleStrategy
 {
-    public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid, IntPtr hWnd)
+    public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid, IntPtr hWnd, Regex? compiledFormat = null)
     {
         string windowTitle = Win32Api.GetWindowTitle(hWnd);
         if (string.IsNullOrEmpty(windowTitle)) return null;
@@ -19,37 +19,25 @@ public class WindowTitleStrategy
 
         try
         {
-            var match = Regex.Match(windowTitle, player.WindowTitleFormat);
+            var match = compiledFormat != null
+                ? compiledFormat.Match(windowTitle)
+                : Regex.Match(windowTitle, player.WindowTitleFormat);
+
             if (match.Success)
             {
-                bool groupMatched = false;
                 // Find first non-empty group (skipping the full match)
                 for (int i = 1; i < match.Groups.Count; i++)
                 {
                     if (match.Groups[i].Success && !string.IsNullOrEmpty(match.Groups[i].Value))
                     {
-                        string extracted = match.Groups[i].Value;
-
-                        // Further parse with AnimeReleaseParser to get episode
-                        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(extracted);
-                        string animeTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : extracted;
-
-                        return new ParsedMedia
-                        {
-                            OriginalTitle = extracted,
-                            AnimeTitle = animeTitle,
-                            EpisodeTitle = parsed.EpisodeTitle,
-                            Episode = parsed.Episode,
-                            Season = parsed.Season?.ToString() ?? string.Empty,
-                            IsPlaying = true
-                        };
+                        return MediaTitleResolver.FromExtractedTitle(match.Groups[i].Value);
                     }
                 }
 
                 // If there were capturing groups defined in regex, but none matched, 
                 // it means the "idle" part of the regex matched (e.g. "^MPC-BE.*")
                 // In this case we return null because nothing is actually playing.
-                if (player.WindowTitleFormat.Contains("(") && !groupMatched)
+                if (player.WindowTitleFormat.Contains('('))
                 {
                     return null;
                 }
@@ -66,4 +54,3 @@ public class WindowTitleStrategy
         return null;
     }
 }
-

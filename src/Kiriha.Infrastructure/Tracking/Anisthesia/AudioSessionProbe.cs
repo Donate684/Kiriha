@@ -29,8 +29,18 @@ internal enum AudioState
 /// All P/Invoke surface is contained in this file so the rest of the codebase
 /// only deals with the small <see cref="AudioState"/> enum.
 /// </summary>
-internal static class AudioSessionProbe
+internal static unsafe partial class AudioSessionProbe
 {
+    private const uint CLSCTX_INPROC_SERVER = 0x1;
+
+    [LibraryImport("ole32.dll")]
+    private static partial int CoCreateInstance(
+        in Guid rclsid,
+        IntPtr pUnkOuter,
+        uint dwClsContext,
+        in Guid riid,
+        out IntPtr ppv);
+
     /// <summary>
     /// Returns the current <see cref="AudioState"/> of the audio session
     /// owned by <paramref name="pid"/>, or <see cref="AudioState.Unknown"/>
@@ -42,16 +52,25 @@ internal static class AudioSessionProbe
     {
         if (!OperatingSystem.IsWindows() || pid == 0) return AudioState.Unknown;
 
-        object? enumeratorObj = null;
+        IMMDeviceEnumerator? enumerator = null;
         IMMDevice? device = null;
         object? mgrObj = null;
         IAudioSessionEnumerator? sessions = null;
         try
         {
-            enumeratorObj = Activator.CreateInstance(Type.GetTypeFromCLSID(CLSID_MMDeviceEnumerator)!);
-            var enumerator = (IMMDeviceEnumerator)enumeratorObj!;
+            int hr = CoCreateInstance(in CLSID_MMDeviceEnumerator, IntPtr.Zero, CLSCTX_INPROC_SERVER, in IID_IMMDeviceEnumerator, out IntPtr unk);
+            if (hr != 0 || unk == IntPtr.Zero) return AudioState.Unknown;
 
-            int hr = enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device);
+            try
+            {
+                enumerator = (IMMDeviceEnumerator)Marshal.GetObjectForIUnknown(unk);
+            }
+            finally
+            {
+                Marshal.Release(unk);
+            }
+
+            hr = enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device);
             if (hr != 0 || device is null) return AudioState.Unknown;
 
             var iidMgr = typeof(IAudioSessionManager2).GUID;
@@ -99,7 +118,7 @@ internal static class AudioSessionProbe
             if (sessions != null) Marshal.ReleaseComObject(sessions);
             if (mgrObj != null) Marshal.ReleaseComObject(mgrObj);
             if (device != null) Marshal.ReleaseComObject(device);
-            if (enumeratorObj != null) Marshal.ReleaseComObject(enumeratorObj);
+            if (enumerator != null) Marshal.ReleaseComObject(enumerator);
         }
     }
 
@@ -110,6 +129,9 @@ internal static class AudioSessionProbe
 
     private static readonly Guid CLSID_MMDeviceEnumerator =
         new("BCDE0395-E52F-467C-8E3D-C4579291692E");
+
+    private static readonly Guid IID_IMMDeviceEnumerator =
+        typeof(IMMDeviceEnumerator).GUID;
 
     private enum EDataFlow { eRender = 0, eCapture = 1, eAll = 2 }
     private enum ERole { eConsole = 0, eMultimedia = 1, eCommunications = 2 }

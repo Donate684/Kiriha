@@ -1,19 +1,29 @@
 using System.Collections.Frozen;
 using System.Runtime.InteropServices;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Utils.Parsing;
 using Serilog;
 
 namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
 
-public class HandleEnumerationStrategy
+public static unsafe partial class HandleEnumerationStrategy
 {
-    private static readonly FrozenSet<string> _videoExtensions = FrozenSet.ToFrozenSet([".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm", ".webm", ".ts", ".m4v", ".m2ts"], StringComparer.OrdinalIgnoreCase);
+    private static readonly FrozenSet<string> _videoExtensions = FrozenSet.ToFrozenSet(
+        [".mkv", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".ogm", ".webm", ".ts", ".m4v", ".m2ts"],
+        StringComparer.OrdinalIgnoreCase);
 
-    // P/Invoke constants and structures
+    private static readonly FrozenSet<string>.AlternateLookup<ReadOnlySpan<char>> _videoExtensionsLookup =
+        _videoExtensions.GetAlternateLookup<ReadOnlySpan<char>>();
+
     private const int SystemExtendedHandleInformation = 64;
     private const int STATUS_INFO_LENGTH_MISMATCH = unchecked((int)0xC0000004);
     private const int STATUS_SUCCESS = 0;
+
+    private const uint PROCESS_DUP_HANDLE = 0x0040;
+    private const uint DUPLICATE_SAME_ACCESS = 0x00000002;
+    private const uint FILE_TYPE_DISK = 0x0001;
+
+    private static int s_lastBufferSize = 4 * 1024 * 1024;
+    private static volatile int s_fileObjectTypeIndex = -1;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
@@ -28,27 +38,169 @@ public class HandleEnumerationStrategy
         public uint Reserved;
     }
 
-    [DllImport("ntdll.dll")]
-    private static extern int NtQuerySystemInformation(int SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
+    [LibraryImport("ntdll.dll")]
+    private static partial int NtQuerySystemInformation(
+        int SystemInformationClass,
+        IntPtr SystemInformation,
+        int SystemInformationLength,
+        out int ReturnLength);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial IntPtr OpenProcess(
+        uint dwDesiredAccess,
+        [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle,
+        uint dwProcessId);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
+    [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DuplicateHandle(IntPtr hSourceProcessHandle, IntPtr hSourceHandle, IntPtr hTargetProcessHandle, out IntPtr lpTargetHandle, uint dwDesiredAccess, bool bInheritHandle, uint dwOptions);
+    private static partial bool DuplicateHandle(
+        IntPtr hSourceProcessHandle,
+        IntPtr hSourceHandle,
+        IntPtr hTargetProcessHandle,
+        out IntPtr lpTargetHandle,
+        uint dwDesiredAccess,
+        [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle,
+        uint dwOptions);
 
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern uint GetFinalPathNameByHandle(IntPtr hFile, [Out] char[] lpszFilePath, uint cchFilePath, uint dwFlags);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial uint GetFinalPathNameByHandleW(
+        IntPtr hFile,
+        char* lpszFilePath,
+        uint cchFilePath,
+        uint dwFlags);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern uint GetFileType(IntPtr hFile);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial uint GetFileType(IntPtr hFile);
 
-    private const uint PROCESS_DUP_HANDLE = 0x0040;
-    private const uint DUPLICATE_SAME_ACCESS = 0x00000002;
-    private const uint FILE_TYPE_DISK = 0x0001;
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr GetCurrentProcess();
 
-    public static unsafe List<string> GetOpenFiles(uint pid)
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CloseHandle(IntPtr hObject);
+
+    private static string FormatNormalizedPath(char* pathBuffer, uint pathLen)
+    {
+        if (pathLen >= 4 && pathBuffer[0] == '\\' && pathBuffer[1] == '\\' && pathBuffer[2] == '?' && pathBuffer[3] == '\\')
+        {
+            if (pathLen >= 8 && (pathBuffer[4] == 'U' || pathBuffer[4] == 'u') &&
+                                (pathBuffer[5] == 'N' || pathBuffer[5] == 'n') &&
+                                (pathBuffer[6] == 'C' || pathBuffer[6] == 'c') &&
+                                pathBuffer[7] == '\\')
+            {
+                return "\\\\" + new string(pathBuffer, 8, (int)pathLen - 8);
+            }
+
+            return new string(pathBuffer, 4, (int)pathLen - 4);
+        }
+
+        return new string(pathBuffer, 0, (int)pathLen);
+    }
+
+    private static IntPtr QuerySystemHandleTable()
+    {
+        int bufferSize = Volatile.Read(ref s_lastBufferSize);
+        IntPtr buffer = Marshal.AllocHGlobal(bufferSize);
+        int status;
+
+        while ((status = NtQuerySystemInformation(SystemExtendedHandleInformation, buffer, bufferSize, out int returnLength)) == STATUS_INFO_LENGTH_MISMATCH)
+        {
+            bufferSize = Math.Max(returnLength + 65536, bufferSize * 2);
+            Volatile.Write(ref s_lastBufferSize, bufferSize);
+            Marshal.FreeHGlobal(buffer);
+            buffer = Marshal.AllocHGlobal(bufferSize);
+        }
+
+        if (status != STATUS_SUCCESS)
+        {
+            Marshal.FreeHGlobal(buffer);
+            return IntPtr.Zero;
+        }
+
+        return buffer;
+    }
+
+    public static string? TryGetFirstOpenVideoFile(uint pid)
+    {
+        if (!OperatingSystem.IsWindows() || pid == 0) return null;
+
+        IntPtr processHandle = OpenProcess(PROCESS_DUP_HANDLE, false, pid);
+        if (processHandle == IntPtr.Zero) return null;
+
+        try
+        {
+            IntPtr buffer = QuerySystemHandleTable();
+            if (buffer == IntPtr.Zero) return null;
+
+            try
+            {
+                nuint handleCount = *(nuint*)buffer;
+                int entrySize = sizeof(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX);
+                IntPtr currentPtr = buffer + IntPtr.Size * 2;
+                IntPtr currentProcess = GetCurrentProcess();
+
+                char* pathBuffer = stackalloc char[1024];
+
+                for (nuint i = 0; i < handleCount; i++)
+                {
+                    SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX* entry = (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX*)currentPtr;
+                    currentPtr += entrySize;
+
+                    if ((nuint)entry->UniqueProcessId != (nuint)pid) continue;
+
+                    int knownFileType = s_fileObjectTypeIndex;
+                    if (knownFileType >= 0 && entry->ObjectTypeIndex != (ushort)knownFileType) continue;
+
+                    if ((entry->GrantedAccess & 0x0001) == 0) continue;
+
+                    if (DuplicateHandle(processHandle, entry->HandleValue, currentProcess, out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
+                    {
+                        try
+                        {
+                            if (GetFileType(dupHandle) == FILE_TYPE_DISK)
+                            {
+                                if (knownFileType < 0)
+                                {
+                                    s_fileObjectTypeIndex = entry->ObjectTypeIndex;
+                                }
+
+                                uint pathLen = GetFinalPathNameByHandleW(dupHandle, pathBuffer, 1024, 0);
+                                if (pathLen > 0 && pathLen < 1024)
+                                {
+                                    ReadOnlySpan<char> rawSpan = new(pathBuffer, (int)pathLen);
+                                    ReadOnlySpan<char> extSpan = Path.GetExtension(rawSpan);
+                                    if (!extSpan.IsEmpty && _videoExtensionsLookup.Contains(extSpan))
+                                    {
+                                        return FormatNormalizedPath(pathBuffer, pathLen);
+                                    }
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            CloseHandle(dupHandle);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Error inspecting open video files for PID {PID}", pid);
+        }
+        finally
+        {
+            CloseHandle(processHandle);
+        }
+
+        return null;
+    }
+
+    public static List<string> GetOpenFiles(uint pid)
     {
         var files = new List<string>();
         if (!OperatingSystem.IsWindows() || pid == 0) return files;
@@ -59,93 +211,62 @@ public class HandleEnumerationStrategy
 
         try
         {
-            int bufferSize = 1024 * 1024; // 1MB initial
-            IntPtr buffer = Marshal.AllocHGlobal(bufferSize);
+            IntPtr buffer = QuerySystemHandleTable();
+            if (buffer == IntPtr.Zero) return files;
+
             try
             {
-                int returnLength;
-                int status;
+                nuint handleCount = *(nuint*)buffer;
+                int entrySize = sizeof(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX);
+                IntPtr currentPtr = buffer + IntPtr.Size * 2;
+                IntPtr currentProcess = GetCurrentProcess();
 
-                while ((status = NtQuerySystemInformation(SystemExtendedHandleInformation, buffer, bufferSize, out returnLength)) == STATUS_INFO_LENGTH_MISMATCH)
+                char* pathBuffer = stackalloc char[1024];
+
+                for (nuint i = 0; i < handleCount; i++)
                 {
-                    bufferSize = Math.Max(returnLength + 65536, bufferSize * 2);
-                    Marshal.FreeHGlobal(buffer);
-                    buffer = Marshal.AllocHGlobal(bufferSize);
-                }
+                    SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX* entry = (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX*)currentPtr;
+                    currentPtr += entrySize;
 
-                if (status != STATUS_SUCCESS) return files;
+                    if ((nuint)entry->UniqueProcessId != (nuint)pid) continue;
 
-                long handleCount = IntPtr.Size == 8 ? Marshal.ReadInt64(buffer) : Marshal.ReadInt32(buffer);
-                int entrySize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-                IntPtr currentPtr = buffer + IntPtr.Size * 2; // Skip NumberOfHandles and Reserved
+                    int knownFileType = s_fileObjectTypeIndex;
+                    if (knownFileType >= 0 && entry->ObjectTypeIndex != (ushort)knownFileType) continue;
 
-                char[] pathBuffer = System.Buffers.ArrayPool<char>.Shared.Rent(32768);
-                try
-                {
-                    for (long i = 0; i < handleCount; i++)
+                    if ((entry->GrantedAccess & 0x0001) == 0) continue;
+
+                    if (DuplicateHandle(processHandle, entry->HandleValue, currentProcess, out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
                     {
-                        SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX* entry = (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX*)currentPtr;
-                        currentPtr += entrySize;
-
-                        if ((nuint)entry->UniqueProcessId != (nuint)pid) continue;
-
-                        // Simple access mask check (FILE_READ_DATA = 0x0001)
-                        if ((entry->GrantedAccess & 0x0001) == 0) continue;
-
-                        if (DuplicateHandle(processHandle, entry->HandleValue, GetCurrentProcess(), out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
+                        try
                         {
-                            try
+                            if (GetFileType(dupHandle) == FILE_TYPE_DISK)
                             {
-                                if (GetFileType(dupHandle) == FILE_TYPE_DISK)
+                                if (knownFileType < 0)
                                 {
-                                    uint pathLen = GetFinalPathNameByHandle(dupHandle, pathBuffer, (uint)pathBuffer.Length, 0);
-                                    if (pathLen > 0 && pathLen < pathBuffer.Length)
-                                    {
-                                        string path;
-                                        if (pathLen >= 4 && pathBuffer[0] == '\\' && pathBuffer[1] == '\\' && pathBuffer[2] == '?' && pathBuffer[3] == '\\')
-                                        {
-                                            if (pathLen >= 8 && (pathBuffer[4] == 'U' || pathBuffer[4] == 'u') &&
-                                                                (pathBuffer[5] == 'N' || pathBuffer[5] == 'n') &&
-                                                                (pathBuffer[6] == 'C' || pathBuffer[6] == 'c') &&
-                                                                pathBuffer[7] == '\\')
-                                            {
-                                                path = "\\\\" + new string(pathBuffer, 8, (int)pathLen - 8);
-                                            }
-                                            else
-                                            {
-                                                path = new string(pathBuffer, 4, (int)pathLen - 4);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            path = new string(pathBuffer, 0, (int)pathLen);
-                                        }
+                                    s_fileObjectTypeIndex = entry->ObjectTypeIndex;
+                                }
 
-                                        if (seenFiles.Add(path))
-                                        {
-                                            files.Add(path);
-                                        }
+                                uint pathLen = GetFinalPathNameByHandleW(dupHandle, pathBuffer, 1024, 0);
+                                if (pathLen > 0 && pathLen < 1024)
+                                {
+                                    string path = FormatNormalizedPath(pathBuffer, pathLen);
+                                    if (seenFiles.Add(path))
+                                    {
+                                        files.Add(path);
                                     }
                                 }
                             }
-                            finally
-                            {
-                                CloseHandle(dupHandle);
-                            }
+                        }
+                        finally
+                        {
+                            CloseHandle(dupHandle);
                         }
                     }
-                }
-                finally
-                {
-                    System.Buffers.ArrayPool<char>.Shared.Return(pathBuffer);
                 }
             }
             finally
             {
-                if (buffer != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(buffer);
-                }
+                Marshal.FreeHGlobal(buffer);
             }
         }
         catch (Exception ex)
@@ -160,65 +281,13 @@ public class HandleEnumerationStrategy
         return files;
     }
 
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GetCurrentProcess();
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool CloseHandle(IntPtr hObject);
-
     public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid)
     {
         if (!OperatingSystem.IsWindows() || pid == 0) return null;
 
-        var files = GetOpenFiles(pid);
+        string? videoFile = TryGetFirstOpenVideoFile(pid);
+        if (videoFile is null) return null;
 
-        foreach (var file in files)
-        {
-            string ext = System.IO.Path.GetExtension(file);
-            if (_videoExtensions.Contains(ext))
-            {
-                string filename = System.IO.Path.GetFileName(file);
-
-                // Use AnimeReleaseParser to parse the filename
-                var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(filename);
-
-                string animeTitle;
-                bool isEmber = file.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(file);
-
-                if (!string.IsNullOrEmpty(parsed.Title) && !isEmber)
-                {
-                    animeTitle = parsed.Title;
-                }
-                else
-                {
-                    string meaningfulDir = EmberTitleResolver.GetMeaningfulDirectoryName(file);
-                    if (!string.IsNullOrEmpty(meaningfulDir))
-                    {
-                        var dirParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(meaningfulDir);
-                        animeTitle = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
-                    }
-                    else
-                    {
-                        animeTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(filename);
-                    }
-                }
-
-                return new ParsedMedia
-                {
-                    OriginalTitle = filename,
-                    AnimeTitle = animeTitle,
-                    EpisodeTitle = parsed.EpisodeTitle,
-                    Episode = parsed.Episode,
-                    Season = parsed.Season?.ToString() ?? string.Empty,
-                    Group = parsed.ReleaseGroup,
-                    IsPlaying = true,
-                    ProcessName = player.Executables.FirstOrDefault() ?? ""
-                };
-            }
-        }
-
-        return null;
+        return MediaTitleResolver.FromFilePath(videoFile, player);
     }
 }
-

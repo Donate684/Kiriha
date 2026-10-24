@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -15,18 +14,20 @@ public class DetectionManager
     private readonly ISettingsService _settingsService;
     private readonly FrozenDictionary<string, List<AnisthesiaPlayer>> _exactExecutableMap;
     private readonly (Regex Regex, AnisthesiaPlayer Player, List<AnisthesiaPlayer> PlayerList)[] _regexExecutableRules;
+    private readonly FrozenDictionary<AnisthesiaPlayer, Regex> _windowTitleRegexMap;
 
     private static readonly FrozenSet<string> JunkPatterns = FrozenSet.ToFrozenSet(
     [
         "vlc media player", "mpc-hc", "potplayer", "mpv", "kmplayer", "zoom player", "ready", "opening..."
     ], StringComparer.OrdinalIgnoreCase);
 
-    public DetectionManager(List<AnisthesiaPlayer> players, ISettingsService settingsService)
+    public DetectionManager(IReadOnlyList<AnisthesiaPlayer> players, ISettingsService settingsService)
     {
         _settingsService = settingsService;
 
         var exactDict = new Dictionary<string, List<AnisthesiaPlayer>>(StringComparer.OrdinalIgnoreCase);
         var regexList = new List<(Regex, AnisthesiaPlayer, List<AnisthesiaPlayer>)>();
+        var windowTitleDict = new Dictionary<AnisthesiaPlayer, Regex>();
 
         foreach (var player in players)
         {
@@ -46,10 +47,23 @@ public class DetectionManager
                     list.Add(player);
                 }
             }
+
+            if (!string.IsNullOrEmpty(player.WindowTitleFormat))
+            {
+                try
+                {
+                    windowTitleDict[player] = new Regex(player.WindowTitleFormat, RegexOptions.Compiled | RegexOptions.CultureInvariant);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Failed to compile WindowTitleFormat regex for player {Player}", player.Name);
+                }
+            }
         }
 
         _exactExecutableMap = exactDict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _regexExecutableRules = regexList.ToArray();
+        _windowTitleRegexMap = windowTitleDict.ToFrozenDictionary();
     }
 
     private readonly List<(uint Pid, string ProcessName)> _processBuffer = new(350);
@@ -102,7 +116,6 @@ public class DetectionManager
         var hasFilter = allowedProcesses != null && allowedProcesses.Count > 0;
         ParsedMedia? detectedMedia = null;
 
-        // Fast low-allocation path: query Windows toolhelp snapshot without allocating Process objects
         if (WindowsProcessSnapshot.TryEnumerateProcesses(_processBuffer))
         {
             for (int p = 0; p < _processBuffer.Count; p++)
@@ -123,66 +136,10 @@ public class DetectionManager
 
                     if (detectedMedia != null) continue;
 
-                    IntPtr hWnd = IntPtr.Zero;
-                    bool hWndEvaluated = false;
-
-                    playersLoop: for (int i = 0; i < matchingPlayers.Count; i++)
+                    var result = TryDetectFromProcess(pid, procName, matchingPlayers, hasFilter, allowedProcesses);
+                    if (result != null)
                     {
-                        var player = matchingPlayers[i];
-
-                        if (!hasFilter)
-                        {
-                            if (player.Type == PlayerType.WebBrowser) continue;
-                        }
-                        else if (allowedProcesses?.Contains(player.Name) != true)
-                        {
-                            continue;
-                        }
-
-                        ParsedMedia? result = null;
-                        foreach (var strategy in player.Strategies)
-                        {
-                            if (strategy == StrategyType.OpenFiles)
-                            {
-                                result = HandleEnumerationStrategy.Apply(player, pid);
-                            }
-                            else if (strategy == StrategyType.WindowTitle)
-                            {
-                                if (!hWndEvaluated)
-                                {
-                                    if (Process.TryGetProcessById((int)pid, out var pObj))
-                                    {
-                                        using (pObj)
-                                        {
-                                            hWnd = pObj.MainWindowHandle;
-                                        }
-                                    }
-
-                                    if (hWnd == IntPtr.Zero)
-                                    {
-                                        hWnd = Win32Api.FindMainWindow(pid);
-                                    }
-                                    hWndEvaluated = true;
-                                }
-                                if (hWnd != IntPtr.Zero)
-                                {
-                                    result = WindowTitleStrategy.Apply(player, pid, hWnd);
-                                }
-                            }
-
-                            if (result != null)
-                            {
-                                if (IsJunk(result.AnimeTitle, player))
-                                {
-                                    result = null;
-                                    continue;
-                                }
-                                result.ProcessName = procName;
-                                result.Pid = pid;
-                                detectedMedia = result;
-                                break playersLoop;
-                            }
-                        }
+                        detectedMedia = result;
                     }
                 }
                 catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or UnauthorizedAccessException)
@@ -190,100 +147,71 @@ public class DetectionManager
                     Log.Debug(ex, "Process access denied or process exited while inspecting {ProcessName}", procName);
                 }
             }
-
-            return (running, detectedMedia);
-        }
-
-        // Fallback for non-Windows or when Toolhelp32 snapshot fails
-        var processes = Process.GetProcesses();
-        try
-        {
-            foreach (var proc in processes)
-            {
-                try
-                {
-                    string procName = proc.ProcessName;
-                    var matchingPlayers = GetMatchingPlayers(procName);
-                    if (matchingPlayers is null || matchingPlayers.Count == 0) continue;
-
-                    for (int i = 0; i < matchingPlayers.Count; i++)
-                    {
-                        running.Add(matchingPlayers[i].Name);
-                    }
-
-                    if (detectedMedia != null) continue;
-
-                    uint pid = (uint)proc.Id;
-                    IntPtr hWnd = IntPtr.Zero;
-                    bool hWndEvaluated = false;
-
-                    fallbackPlayersLoop: for (int i = 0; i < matchingPlayers.Count; i++)
-                    {
-                        var player = matchingPlayers[i];
-
-                        if (!hasFilter)
-                        {
-                            if (player.Type == PlayerType.WebBrowser) continue;
-                        }
-                        else if (allowedProcesses?.Contains(player.Name) != true)
-                        {
-                            continue;
-                        }
-
-                        ParsedMedia? result = null;
-                        foreach (var strategy in player.Strategies)
-                        {
-                            if (strategy == StrategyType.OpenFiles)
-                            {
-                                result = HandleEnumerationStrategy.Apply(player, pid);
-                            }
-                            else if (strategy == StrategyType.WindowTitle)
-                            {
-                                if (!hWndEvaluated)
-                                {
-                                    hWnd = proc.MainWindowHandle;
-                                    if (hWnd == IntPtr.Zero)
-                                    {
-                                        hWnd = Win32Api.FindMainWindow(pid);
-                                    }
-                                    hWndEvaluated = true;
-                                }
-                                if (hWnd != IntPtr.Zero)
-                                {
-                                    result = WindowTitleStrategy.Apply(player, pid, hWnd);
-                                }
-                            }
-
-                            if (result != null)
-                            {
-                                if (IsJunk(result.AnimeTitle, player))
-                                {
-                                    result = null;
-                                    continue;
-                                }
-                                result.ProcessName = procName;
-                                result.Pid = pid;
-                                detectedMedia = result;
-                                break fallbackPlayersLoop;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or UnauthorizedAccessException)
-                {
-                    Log.Debug(ex, "Process access denied or process exited in fallback process enumeration");
-                }
-            }
-        }
-        finally
-        {
-            for (int i = 0; i < processes.Length; i++)
-            {
-                processes[i].Dispose();
-            }
         }
 
         return (running, detectedMedia);
+    }
+
+    private ParsedMedia? TryDetectFromProcess(
+        uint pid,
+        string procName,
+        IReadOnlyList<AnisthesiaPlayer> matchingPlayers,
+        bool hasFilter,
+        List<string>? allowedProcesses)
+    {
+        IntPtr hWnd = IntPtr.Zero;
+        bool hWndEvaluated = false;
+
+        for (int i = 0; i < matchingPlayers.Count; i++)
+        {
+            var player = matchingPlayers[i];
+
+            if (!hasFilter)
+            {
+                if (player.Type == PlayerType.WebBrowser) continue;
+            }
+            else if (allowedProcesses?.Contains(player.Name) != true)
+            {
+                continue;
+            }
+
+            foreach (var strategy in player.Strategies)
+            {
+                ParsedMedia? result = null;
+                if (strategy == StrategyType.OpenFiles)
+                {
+                    result = HandleEnumerationStrategy.Apply(player, pid);
+                }
+                else if (strategy == StrategyType.WindowTitle)
+                {
+                    if (!hWndEvaluated)
+                    {
+                        hWnd = Win32Api.FindMainWindow(pid);
+                        hWndEvaluated = true;
+                    }
+
+                    if (hWnd != IntPtr.Zero)
+                    {
+                        _windowTitleRegexMap.TryGetValue(player, out var compiledFormat);
+                        result = WindowTitleStrategy.Apply(player, pid, hWnd, compiledFormat);
+                    }
+                }
+
+                if (result != null)
+                {
+                    if (IsJunk(result.AnimeTitle, player))
+                    {
+                        continue;
+                    }
+
+                    result.ProcessName = procName;
+                    result.Pid = pid;
+                    return result;
+                }
+            }
+        }
+
+        return null;
     }
 
     public async Task<ParsedMedia?> DetectAsync()
@@ -323,6 +251,3 @@ public class DetectionManager
         return false;
     }
 }
-
-
-

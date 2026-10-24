@@ -16,16 +16,28 @@ public class ExternalPlayerDetectionTests
 
     public ExternalPlayerDetectionTests()
     {
-        using var stream = typeof(AnisthesiaPlayerLoader).Assembly
-            .GetManifestResourceStream("Kiriha.Infrastructure.Tracking.Anisthesia.players.anisthesia");
-        Assert.NotNull(stream);
-        using var reader = new StreamReader(stream!);
-        var data = reader.ReadToEnd();
-        var players = PlayerParser.ParseData(data);
+        var players = AnisthesiaPlayerLoader.Load();
 
         _mpcHcPlayer = players.First(p => p.Name.Equals("MPC-HC", StringComparison.OrdinalIgnoreCase));
         _mpvPlayer = players.First(p => p.Name.Equals("mpv", StringComparison.OrdinalIgnoreCase));
         _vlcPlayer = players.First(p => p.Name.Equals("VLC media player", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void AnisthesiaPlayerLoader_Load_ReturnsPopulatedPlayerCatalog()
+    {
+        var players = AnisthesiaPlayerLoader.Load();
+        Assert.NotNull(players);
+        Assert.NotEmpty(players);
+
+        string[] requiredPlayers = ["MPC-HC", "MPC-BE", "mpv", "VLC media player", "PotPlayer"];
+        foreach (var requiredName in requiredPlayers)
+        {
+            var player = players.FirstOrDefault(p => p.Name.Equals(requiredName, StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(player);
+            Assert.NotEmpty(player!.Executables);
+            Assert.NotEmpty(player.Strategies);
+        }
     }
 
     [Fact]
@@ -96,6 +108,35 @@ public class ExternalPlayerDetectionTests
     }
 
     [Fact]
+    public void KmPlayer_WindowRegex_ExtractsPlayingTitle_WithPlaylistPrefix()
+    {
+        var kmPlayer = AnisthesiaPlayerLoader.Load().First(p => p.Name.Equals("KMPlayer", StringComparison.OrdinalIgnoreCase));
+        var parsed = ParseSimulatedTitle(kmPlayer, "[1/12] [SubsPlease] Sousou no Frieren - 03 (1080p).mkv - The KMPlayer");
+
+        Assert.NotNull(parsed);
+        Assert.Equal("Sousou no Frieren", parsed!.AnimeTitle);
+        Assert.Equal("03", parsed.Episode);
+    }
+
+    [Fact]
+    public void WebTorrent_WindowRegex_ReturnsNull_WhenBetaIdle()
+    {
+        var webTorrent = AnisthesiaPlayerLoader.Load().First(p => p.Name.Equals("WebTorrent Desktop", StringComparison.OrdinalIgnoreCase));
+        var parsed = ParseSimulatedTitle(webTorrent, "WebTorrent (BETA)");
+        Assert.Null(parsed);
+    }
+
+    [Fact]
+    public void MediaTitleResolver_FromExtractedTitle_ResolvesReleaseFields()
+    {
+        var media = MediaTitleResolver.FromExtractedTitle("[SubsPlease] Dandadan - 04 (1080p) [ABCD1234].mkv");
+        Assert.Equal("Dandadan", media.AnimeTitle);
+        Assert.Equal("04", media.Episode);
+        Assert.Equal("SubsPlease", media.Group);
+        Assert.True(media.IsPlaying);
+    }
+
+    [Fact]
     public void Win32Api_GetWindowTitle_ReturnsEmpty_ForZeroHandle()
     {
         var title = Win32Api.GetWindowTitle(IntPtr.Zero);
@@ -121,6 +162,13 @@ public class ExternalPlayerDetectionTests
     public void HandleEnumerationStrategy_Apply_ReturnsNull_ForZeroPid()
     {
         var result = HandleEnumerationStrategy.Apply(_mpcHcPlayer, 0);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void HandleEnumerationStrategy_TryGetFirstOpenVideoFile_ReturnsNull_ForZeroPid()
+    {
+        var result = HandleEnumerationStrategy.TryGetFirstOpenVideoFile(0);
         Assert.Null(result);
     }
 

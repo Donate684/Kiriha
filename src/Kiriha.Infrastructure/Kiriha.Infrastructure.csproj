@@ -16,9 +16,5 @@
     
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Tracking\Anisthesia\players.anisthesia" />
-  </ItemGroup>
-
 </Project>
 
