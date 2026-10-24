@@ -47,7 +47,8 @@
     "progress": "Прогресс",
     "date": "Дата",
     "popularity": "Популярность",
-    "new_episodes_first": "Сначала новые серии"
+    "new_episodes_first": "Сначала новые серии",
+    "unwatched_first": "Сначала недосмотренные"
   },
   "header_format": "{0} ({1})"
 }

@@ -290,7 +290,7 @@
                         </StackPanel>
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout">
-                                <StackPanel Margin="6" Spacing="4">
+                                <StackPanel Margin="6" Spacing="4" MinWidth="280">
                                     <ListBox Classes="SortList"
                                              ItemsSource="{Binding SortOptions}"
                                              SelectedItem="{Binding SortBy}">
@@ -320,6 +320,23 @@
                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.sort.new_episodes_first}"
+                                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
+                                                <Ellipse Classes="SwitchThumb"/>
+                                            </Border>
+                                        </Grid>
+                                    </ToggleButton>
+
+                                    <ToggleButton Classes="FilterToggle" IsChecked="{Binding PrioritizeUnwatched}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                            <Border Grid.Column="0" Width="22" Height="22" CornerRadius="6"
+                                                    Background="{DynamicResource FilterBlueTintBrush}" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <material:MaterialIcon Kind="PlayCircleOutline" Width="13" Height="13"
+                                                                       Foreground="{DynamicResource FilterBlueBrush}"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{DynamicResource l.filters.sort.unwatched_first}"
                                                        FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">

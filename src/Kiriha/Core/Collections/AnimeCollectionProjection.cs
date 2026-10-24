@@ -162,8 +162,8 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         }
     }
 
-    public List<AnimeEntity> Query(UserAnimeStatus status, string? searchQuery, bool filterNsfw, string? sortBy, MediaKind kind, bool prioritizeNewEpisodes = false)
-        => Query(status, searchQuery, null, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes);
+    public List<AnimeEntity> Query(UserAnimeStatus status, string? searchQuery, bool filterNsfw, string? sortBy, MediaKind kind, bool prioritizeNewEpisodes = false, bool prioritizeUnwatched = false)
+        => Query(status, searchQuery, null, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes, prioritizeUnwatched);
 
     public List<AnimeEntity> Query(
         UserAnimeStatus status,
@@ -172,8 +172,9 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         bool filterNsfw,
         string? sortBy,
         MediaKind kind,
-        bool prioritizeNewEpisodes = false)
-        => Query(status, searchQuery, activeGenreKeys, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes);
+        bool prioritizeNewEpisodes = false,
+        bool prioritizeUnwatched = false)
+        => Query(status, searchQuery, activeGenreKeys, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes, prioritizeUnwatched);
 
     public List<AnimeEntity> Query(
         UserAnimeStatus status,
@@ -183,7 +184,8 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         bool filterNsfw,
         string? sortBy,
         MediaKind kind,
-        bool prioritizeNewEpisodes = false)
+        bool prioritizeNewEpisodes = false,
+        bool prioritizeUnwatched = false)
     {
         lock (_syncLock)
         {
@@ -207,7 +209,7 @@ public sealed partial class AnimeCollectionProjection : IDisposable
                 }
             }
 
-            result.SortInPlace(sortBy, isSeasonal: false, prioritizeNewEpisodes: prioritizeNewEpisodes);
+            result.SortInPlace(sortBy, isSeasonal: false, prioritizeNewEpisodes: prioritizeNewEpisodes, prioritizeUnwatched: prioritizeUnwatched);
             return result;
         }
     }

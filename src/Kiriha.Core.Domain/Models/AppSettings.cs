@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.Core.Domain.Models;
@@ -39,6 +39,7 @@ public partial class AppSettings
         public bool ShowNsfw { get; set; } = false;
         public bool ListShowNsfw { get; set; } = false;
         public bool ListPrioritizeNewEpisodes { get; set; } = false;
+        public bool ListPrioritizeUnwatched { get; set; } = false;
         public bool IsPaneOpen { get; set; } = true;
 
         /// <summary>

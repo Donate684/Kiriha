@@ -143,6 +143,7 @@ public partial class AnimeListViewModel
     public bool IsPopularitySort => string.Equals(SortBy, AppConstants.Sorting.Popularity, StringComparison.OrdinalIgnoreCase);
     public System.Collections.Generic.List<string> SortOptions { get; } = new() { "Title", "RussianTitle", "Score", "Progress", "Date", "Popularity" };
     [ObservableProperty] private bool _prioritizeNewEpisodes;
+    [ObservableProperty] private bool _prioritizeUnwatched;
 
     // Filters
     [ObservableProperty] private bool _filterNsfw;
@@ -730,10 +731,11 @@ public partial class AnimeListViewModel
         var sort = SortBy;
         var kind = SelectedMediaKind;
         var prioritizeNewEpisodes = PrioritizeNewEpisodes;
+        var prioritizeUnwatched = PrioritizeUnwatched;
 
         var (filtered, counts) = await Task.Run(() =>
         {
-            var items = _listProjection.Query(status, query, activeGenreKeys, activeFormatKeys, nsfw, sort, kind, prioritizeNewEpisodes);
+            var items = _listProjection.Query(status, query, activeGenreKeys, activeFormatKeys, nsfw, sort, kind, prioritizeNewEpisodes, prioritizeUnwatched);
             var statusCounts = _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kind);
             return (items, statusCounts);
         }, cancellationToken);

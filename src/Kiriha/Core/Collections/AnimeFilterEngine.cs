@@ -113,16 +113,16 @@ public static class AnimeFilterEngine
         return filterNsfw ? query.Where(x => x.IsNsfw) : query.Where(x => !x.IsNsfw);
     }
 
-    public static IEnumerable<AnimeEntity> ApplySorting(this IEnumerable<AnimeEntity> query, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false)
+    public static IEnumerable<AnimeEntity> ApplySorting(this IEnumerable<AnimeEntity> query, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false, bool prioritizeUnwatched = false)
     {
         var list = query as List<AnimeEntity> ?? query.ToList();
-        list.SortInPlace(sortBy, isSeasonal, prioritizeNewEpisodes);
+        list.SortInPlace(sortBy, isSeasonal, prioritizeNewEpisodes, prioritizeUnwatched);
         return list;
     }
 
-    public static List<AnimeEntity> SortInPlace(this List<AnimeEntity> list, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false)
+    public static List<AnimeEntity> SortInPlace(this List<AnimeEntity> list, string? sortBy, bool isSeasonal = false, bool prioritizeNewEpisodes = false, bool prioritizeUnwatched = false)
     {
-        var comparer = AnimeComparerFactory.GetComparer(sortBy, isSeasonal, prioritizeNewEpisodes);
+        var comparer = AnimeComparerFactory.GetComparer(sortBy, isSeasonal, prioritizeNewEpisodes, prioritizeUnwatched);
         list.Sort(comparer);
         return list;
     }
@@ -130,16 +130,16 @@ public static class AnimeFilterEngine
 
 internal static class AnimeComparerFactory
 {
-    private static readonly IEqualityComparer<(string, bool, bool)> KeyComparer =
-        EqualityComparer<(string, bool, bool)>.Create(
-            (x, y) => string.Equals(x.Item1, y.Item1, StringComparison.OrdinalIgnoreCase) && x.Item2 == y.Item2 && x.Item3 == y.Item3,
-            obj => HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Item1), obj.Item2, obj.Item3));
+    private static readonly IEqualityComparer<(string, bool, bool, bool)> KeyComparer =
+        EqualityComparer<(string, bool, bool, bool)>.Create(
+            (x, y) => string.Equals(x.Item1, y.Item1, StringComparison.OrdinalIgnoreCase) && x.Item2 == y.Item2 && x.Item3 == y.Item3 && x.Item4 == y.Item4,
+            obj => HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Item1), obj.Item2, obj.Item3, obj.Item4));
 
-    private static readonly FrozenDictionary<(string, bool, bool), IComparer<AnimeEntity>> Comparers;
+    private static readonly FrozenDictionary<(string, bool, bool, bool), IComparer<AnimeEntity>> Comparers;
 
     static AnimeComparerFactory()
     {
-        var comparers = new Dictionary<(string, bool, bool), IComparer<AnimeEntity>>(KeyComparer);
+        var comparers = new Dictionary<(string, bool, bool, bool), IComparer<AnimeEntity>>(KeyComparer);
         string[] sortOptions = ["Title", "RussianTitle", "EnglishTitle", "Score", "Progress", "Date", "Popularity", ""];
         bool[] bools = [false, true];
 
@@ -149,7 +149,10 @@ internal static class AnimeComparerFactory
             {
                 foreach (var prioritizeNew in bools)
                 {
-                    comparers[(opt, isSeasonal, prioritizeNew)] = new AnimeEntityComparer(opt, isSeasonal, prioritizeNew);
+                    foreach (var prioritizeUnwatched in bools)
+                    {
+                        comparers[(opt, isSeasonal, prioritizeNew, prioritizeUnwatched)] = new AnimeEntityComparer(opt, isSeasonal, prioritizeNew, prioritizeUnwatched);
+                    }
                 }
             }
         }
@@ -157,12 +160,12 @@ internal static class AnimeComparerFactory
         Comparers = comparers.ToFrozenDictionary(KeyComparer);
     }
 
-    public static IComparer<AnimeEntity> GetComparer(string? sortBy, bool isSeasonal, bool prioritizeNewEpisodes)
+    public static IComparer<AnimeEntity> GetComparer(string? sortBy, bool isSeasonal, bool prioritizeNewEpisodes, bool prioritizeUnwatched = false)
     {
-        var key = (sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes);
+        var key = (sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes, prioritizeUnwatched);
         return Comparers.TryGetValue(key, out var comparer)
             ? comparer
-            : new AnimeEntityComparer(sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes);
+            : new AnimeEntityComparer(sortBy ?? string.Empty, isSeasonal, prioritizeNewEpisodes, prioritizeUnwatched);
     }
 
     private sealed class AnimeEntityComparer : IComparer<AnimeEntity>
@@ -170,12 +173,14 @@ internal static class AnimeComparerFactory
         private readonly string _sortBy;
         private readonly bool _isSeasonal;
         private readonly bool _prioritizeNewEpisodes;
+        private readonly bool _prioritizeUnwatched;
 
-        public AnimeEntityComparer(string sortBy, bool isSeasonal, bool prioritizeNewEpisodes)
+        public AnimeEntityComparer(string sortBy, bool isSeasonal, bool prioritizeNewEpisodes, bool prioritizeUnwatched)
         {
             _sortBy = sortBy;
             _isSeasonal = isSeasonal;
             _prioritizeNewEpisodes = prioritizeNewEpisodes;
+            _prioritizeUnwatched = prioritizeUnwatched;
         }
 
         public int Compare(AnimeEntity? x, AnimeEntity? y)
@@ -188,6 +193,12 @@ internal static class AnimeComparerFactory
             {
                 int badgeCompare = y.Presentation.HasNewEpisodeBadge.CompareTo(x.Presentation.HasNewEpisodeBadge);
                 if (badgeCompare != 0) return badgeCompare;
+            }
+
+            if (_prioritizeUnwatched)
+            {
+                int unwatchedCompare = y.Presentation.HasUnwatchedEpisodes.CompareTo(x.Presentation.HasUnwatchedEpisodes);
+                if (unwatchedCompare != 0) return unwatchedCompare;
             }
 
             if (string.Equals(_sortBy, AppConstants.Sorting.Score, StringComparison.OrdinalIgnoreCase))

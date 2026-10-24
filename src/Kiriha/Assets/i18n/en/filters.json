@@ -47,7 +47,8 @@
     "progress": "Progress",
     "date": "Date",
     "popularity": "Popularity",
-    "new_episodes_first": "New episodes first"
+    "new_episodes_first": "New episodes first",
+    "unwatched_first": "Unwatched first"
   },
   "header_format": "{0} ({1})"
 }

@@ -68,6 +68,8 @@
             <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
             <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
             <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
+            <SolidColorBrush x:Key="FilterBlueBrush" Color="#FF2196F3"/>
+            <SolidColorBrush x:Key="FilterBlueTintBrush" Color="#1F2196F3"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <!-- ═══ Windows 11 Layered Surface System ═══ -->
@@ -136,6 +138,8 @@
             <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
             <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
             <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
+            <SolidColorBrush x:Key="FilterBlueBrush" Color="#FF2196F3"/>
+            <SolidColorBrush x:Key="FilterBlueTintBrush" Color="#1F2196F3"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

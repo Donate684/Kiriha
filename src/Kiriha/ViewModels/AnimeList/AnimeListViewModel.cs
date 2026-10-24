@@ -59,6 +59,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         _filterNsfw = _settingsService.Current.UI.ListShowNsfw;
         _sortBy = _settingsService.Current.UI.ListSortBy;
         _prioritizeNewEpisodes = _settingsService.Current.UI.ListPrioritizeNewEpisodes;
+        _prioritizeUnwatched = _settingsService.Current.UI.ListPrioritizeUnwatched;
         IsFilterActive = _filterNsfw;
         InitializeGenreFilterItems();
         InitializeFormatFilterItems();
@@ -112,6 +113,12 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     partial void OnPrioritizeNewEpisodesChanged(bool value)
     {
         _settingsService.Update(settings => settings.UI.ListPrioritizeNewEpisodes = value, SettingsSection.UI);
+        ScheduleFilterRefresh();
+    }
+
+    partial void OnPrioritizeUnwatchedChanged(bool value)
+    {
+        _settingsService.Update(settings => settings.UI.ListPrioritizeUnwatched = value, SettingsSection.UI);
         ScheduleFilterRefresh();
     }
 

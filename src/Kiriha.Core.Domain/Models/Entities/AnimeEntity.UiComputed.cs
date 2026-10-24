@@ -23,6 +23,10 @@ public partial class AnimeEntity
 
     [NotMapped]
     [JsonIgnore]
+    public bool HasUnwatchedEpisodes => Presentation.HasUnwatchedEpisodes;
+
+    [NotMapped]
+    [JsonIgnore]
     public string? SecondaryTitle => Presentation.SecondaryTitle;
 
     [NotMapped]

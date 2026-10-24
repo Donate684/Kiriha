@@ -60,6 +60,33 @@ public partial class AnimeEntityPresentation
 
     public bool HasNewEpisodes => _item.Status == UserAnimeStatus.Watching && _item.Progress < ResolvedAiredEpisodes;
 
+    public bool HasUnwatchedEpisodes
+    {
+        get
+        {
+            if (_item.Status == UserAnimeStatus.Dropped) return false;
+            if (IsCompleted && !_item.IsRewatching) return false;
+
+            if (IsManga)
+            {
+                return _item.Chapters > 0 && _item.ChaptersRead < _item.Chapters;
+            }
+
+            var aired = ResolvedAiredEpisodes;
+            if (aired > 0)
+            {
+                return _item.Progress < aired;
+            }
+
+            if (_item.TotalEpisodes > 0 && !AppConstants.AiringStatus.IsNotYetAired(_item.StatusDetailed) && !AppConstants.AiringStatus.IsCurrentlyAiring(_item.StatusDetailed))
+            {
+                return _item.Progress < _item.TotalEpisodes;
+            }
+
+            return false;
+        }
+    }
+
     public int UnseenEpisodesCount
     {
         get

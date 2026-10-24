@@ -126,6 +126,60 @@ public sealed class AnimeCollectionProjectionTests
     }
 
     [Fact]
+    public void Query_WithPrioritizeUnwatched_PutsUnwatchedTitlesFirst()
+    {
+        using var projection = new AnimeCollectionProjection();
+
+        // Item 1: Title "A Title", fully caught up (10/10)
+        var item1 = Item(1, "A Title", UserAnimeStatus.Watching);
+        item1.Progress = 10;
+        item1.EpisodesAired = 10;
+
+        // Item 2: Title "B Title", unwatched episodes (5/10)
+        var item2 = Item(2, "B Title", UserAnimeStatus.Watching);
+        item2.Progress = 5;
+        item2.EpisodesAired = 10;
+
+        // Item 3: Title "C Title", fully watched finished series (12/12)
+        var item3 = Item(3, "C Title", UserAnimeStatus.Watching);
+        item3.Progress = 12;
+        item3.TotalEpisodes = 12;
+        item3.StatusDetailed = "released";
+
+        // Item 4: Title "Z Title", unwatched episodes in finished series (3/12)
+        var item4 = Item(4, "Z Title", UserAnimeStatus.Watching);
+        item4.Progress = 3;
+        item4.TotalEpisodes = 12;
+        item4.StatusDetailed = "released";
+
+        // Item 5: Title "M Title", fresh episode badge
+        var item5 = Item(5, "M Title", UserAnimeStatus.Watching);
+        item5.Progress = 1;
+        item5.EpisodesAired = 2;
+        item5.LastEpisodeAt = DateTime.UtcNow.AddHours(-2);
+
+        projection.Rebuild([item1, item2, item3, item4, item5]);
+
+        // Default sort (prioritizeUnwatched: false, prioritizeNewEpisodes: false):
+        // Alphabetical: 1 (A), 2 (B), 3 (C), 5 (M), 4 (Z)
+        var normalSort = projection.Query(UserAnimeStatus.Watching, null, false, AppConstants.Sorting.Title, MediaKind.Anime, prioritizeNewEpisodes: false, prioritizeUnwatched: false);
+        Assert.Equal(new[] { 1, 2, 3, 5, 4 }, normalSort.Select(x => x.Id));
+
+        // PrioritizeUnwatched = true:
+        // Unwatched items are 2, 4, 5. Alphabetical among unwatched: 2 (B), 5 (M), 4 (Z).
+        // Followed by caught up items: 1 (A), 3 (C).
+        var unwatchedSort = projection.Query(UserAnimeStatus.Watching, null, false, AppConstants.Sorting.Title, MediaKind.Anime, prioritizeNewEpisodes: false, prioritizeUnwatched: true);
+        Assert.Equal(new[] { 2, 5, 4, 1, 3 }, unwatchedSort.Select(x => x.Id));
+
+        // Both PrioritizeNewEpisodes = true AND PrioritizeUnwatched = true:
+        // 1st tier: New episode badge (Item 5)
+        // 2nd tier: Other unwatched items (Item 2, Item 4 - alphabetical B, Z)
+        // 3rd tier: Caught up items (Item 1, Item 3 - alphabetical A, C)
+        var bothSort = projection.Query(UserAnimeStatus.Watching, null, false, AppConstants.Sorting.Title, MediaKind.Anime, prioritizeNewEpisodes: true, prioritizeUnwatched: true);
+        Assert.Equal(new[] { 5, 2, 4, 1, 3 }, bothSort.Select(x => x.Id));
+    }
+
+    [Fact]
     public void CountAllStatuses_ReturnsFilteredCountsAcrossStatuses()
     {
         using var projection = new AnimeCollectionProjection();
