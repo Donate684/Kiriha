@@ -19,8 +19,16 @@ public partial class TrackingService
 
         try
         {
-            Log.Information("TrackingService: Manually mapping '{Title}' to ID {Id}", media.AnimeTitle, animeId);
-            _mappingService.AddMapping(media.AnimeTitle, animeId);
+            string primaryTitle = !string.IsNullOrWhiteSpace(media.OriginalTitle) ? media.OriginalTitle : media.AnimeTitle;
+            Log.Information("TrackingService: Manually mapping '{Title}' to ID {Id}", primaryTitle, animeId);
+
+            if (!string.IsNullOrWhiteSpace(media.AnimeTitle) &&
+                !string.Equals(media.AnimeTitle, primaryTitle, StringComparison.OrdinalIgnoreCase))
+            {
+                _mappingService.RemoveMapping(media.AnimeTitle);
+            }
+
+            _mappingService.AddMapping(primaryTitle, animeId);
 
             // Use a temporary flag or bypass to ensure it works even if scrobbler is disabled
             await MatchMediaAsync(media, forceMatch: true);
@@ -45,6 +53,11 @@ public partial class TrackingService
         {
             Log.Information("TrackingService: Removing manual mapping for '{Title}'", media.AnimeTitle);
             _mappingService.RemoveMapping(media.AnimeTitle);
+            if (!string.IsNullOrWhiteSpace(media.OriginalTitle) &&
+                !string.Equals(media.OriginalTitle, media.AnimeTitle, StringComparison.OrdinalIgnoreCase))
+            {
+                _mappingService.RemoveMapping(media.OriginalTitle);
+            }
 
             await MatchMediaAsync(media, forceMatch: true);
         }
@@ -68,6 +81,11 @@ public partial class TrackingService
         {
             Log.Information("TrackingService: Adding negative mapping for '{Title}'", media.AnimeTitle);
             _mappingService.AddNegativeMapping(media.AnimeTitle);
+            if (!string.IsNullOrWhiteSpace(media.OriginalTitle) &&
+                !string.Equals(media.OriginalTitle, media.AnimeTitle, StringComparison.OrdinalIgnoreCase))
+            {
+                _mappingService.AddNegativeMapping(media.OriginalTitle);
+            }
 
             await MatchMediaAsync(media, forceMatch: true);
         }
@@ -137,6 +155,7 @@ public partial class TrackingService
                     break;
 
                 case MediaMatchNotFound:
+                    ClearPlayerMetadata(media);
                     break;
             }
         }

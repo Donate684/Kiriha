@@ -4,12 +4,24 @@ namespace Kiriha.ViewModels.NowPlaying;
 
 public partial class NowPlayingViewModel
 {
+    private static string ResolveBestSearchQuery(Kiriha.Core.Domain.Models.ParsedMedia? media)
+    {
+        if (media is null) return string.Empty;
+        if (!string.IsNullOrWhiteSpace(media.OriginalTitle))
+        {
+            var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
+            if (!string.IsNullOrWhiteSpace(parsed.Title))
+                return parsed.Title;
+        }
+        return media.AnimeTitle;
+    }
+
     [RelayCommand]
     private async Task ManualMatch()
     {
         if (CurrentMedia is null) return;
 
-        SearchQuery = CurrentMedia.AnimeTitle;
+        SearchQuery = ResolveBestSearchQuery(CurrentMedia);
         await SearchSuggestions();
     }
 
@@ -25,13 +37,18 @@ public partial class NowPlayingViewModel
         if (IsManuallyMapped)
         {
             await _trackingService.RemoveManualMappingAsync();
+            if (MatchedAnime is null)
+            {
+                if (CurrentMedia != null) SearchQuery = ResolveBestSearchQuery(CurrentMedia);
+                await OpenSearchPanel();
+            }
         }
         else
         {
             await _trackingService.AddNegativeMappingAsync();
             MatchedAnime = null;
             IsManuallyMapped = false;
-            if (CurrentMedia != null) SearchQuery = CurrentMedia.AnimeTitle;
+            if (CurrentMedia != null) SearchQuery = ResolveBestSearchQuery(CurrentMedia);
             await OpenSearchPanel();
         }
     }

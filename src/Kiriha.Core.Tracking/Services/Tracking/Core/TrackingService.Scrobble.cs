@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
@@ -309,6 +309,15 @@ public partial class TrackingService
             media.TorrentHash);
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
+
+        PlayerProcessBridge.ForwardMetadata(
+            media.OriginalTitle,
+            0,
+            string.Empty,
+            string.Empty,
+            media.AnimeTitle,
+            media.Episode,
+            media.TorrentHash);
     }
 
     private void UpdateDiscordPresence(ParsedMedia media, AnimeEntity matched)

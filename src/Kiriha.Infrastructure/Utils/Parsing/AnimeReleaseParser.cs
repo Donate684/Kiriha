@@ -523,8 +523,17 @@ public static partial class AnimeReleaseParser
                         }
                     }
 
-                    // Season в скобках: (Season 1)
-                    if (inner.StartsWith("Season ", StringComparison.OrdinalIgnoreCase))
+                    // Season в скобках: (Season 1), (2nd Season)
+                    var matchSeasonBracket = ExplicitSeasonRegex().Match(inner);
+                    if (matchSeasonBracket.Success)
+                    {
+                        if (int.TryParse(matchSeasonBracket.Groups["season"].Value, out int parsedSeason))
+                        {
+                            season ??= parsedSeason;
+                            shouldRemove = true;
+                        }
+                    }
+                    else if (inner.StartsWith("Season ", StringComparison.OrdinalIgnoreCase))
                     {
                         if (int.TryParse(inner[7..].Trim(), out int parsedSeason))
                         {

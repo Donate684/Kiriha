@@ -1,7 +1,10 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Mpv.UI.Services.Player;
+using Kiriha.Services.Data.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Tests;
 
@@ -301,5 +304,80 @@ public sealed class PlayerMediaMetadataTests
         Assert.Equal("Sousou no Frieren", vm.AnimeTitleRomaji);
         Assert.Equal("Провожающая в последний путь Фрирен", vm.AnimeTitleRu);
         Assert.Equal(52991, vm.AnimeId);
+    }
+
+    [Fact]
+    public void PlayerMediaMetadataResolver_RomanNumeralSequel_MatchesNormalizedSeason2InDb()
+    {
+        var dbPath = Path.Combine(Path.GetTempPath(), $"Kiriha_Test_Player_{Guid.NewGuid():N}.db");
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite($"Data Source={dbPath}")
+            .Options;
+        var factory = new TestDbContextFactory(options);
+
+        try
+        {
+            using (var db = new AppDbContext(options))
+            {
+                db.Database.EnsureCreated();
+                db.UserAnime.Add(new AnimeEntity { Id = 49891, Title = "Tensei shitara Ken deshita" });
+                db.UserAnime.Add(new AnimeEntity { Id = 53913, Title = "Tensei shitara Ken deshita 2nd Season" });
+                db.SaveChanges();
+            }
+
+            var resolver = new PlayerMediaMetadataResolver(factory);
+            var meta = resolver.Resolve(@"C:\Anime\[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p].mkv");
+
+            Assert.Equal(53913, meta.AnimeId);
+            Assert.Equal("04", meta.EpisodeText);
+        }
+        finally
+        {
+            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            try { if (File.Exists(dbPath)) File.Delete(dbPath); } catch { }
+        }
+    }
+
+    [Fact]
+    public void PlayerMediaMetadataResolver_RomanNumeralSequel_DoesNotFallbackToSeason1InDb()
+    {
+        var dbPath = Path.Combine(Path.GetTempPath(), $"Kiriha_Test_Player_{Guid.NewGuid():N}.db");
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite($"Data Source={dbPath}")
+            .Options;
+        var factory = new TestDbContextFactory(options);
+
+        try
+        {
+            using (var db = new AppDbContext(options))
+            {
+                db.Database.EnsureCreated();
+                db.UserAnime.Add(new AnimeEntity { Id = 49891, Title = "Tensei shitara Ken deshita" });
+                db.SaveChanges();
+            }
+
+            var resolver = new PlayerMediaMetadataResolver(factory);
+            var meta = resolver.Resolve(@"C:\Anime\[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p].mkv");
+
+            Assert.Null(meta.AnimeId);
+            Assert.Equal("04", meta.EpisodeText);
+        }
+        finally
+        {
+            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            try { if (File.Exists(dbPath)) File.Delete(dbPath); } catch { }
+        }
+    }
+
+    private sealed class TestDbContextFactory : IDbContextFactory<AppDbContext>
+    {
+        private readonly DbContextOptions<AppDbContext> _options;
+
+        public TestDbContextFactory(DbContextOptions<AppDbContext> options)
+        {
+            _options = options;
+        }
+
+        public AppDbContext CreateDbContext() => new(_options);
     }
 }

@@ -140,4 +140,107 @@ public sealed class MappingServiceTests
             DeleteQuietly(path);
         }
     }
+
+    [Fact]
+    public async Task RemoveMapping_RemovesByBothOriginalFilenameAndCleanTitle()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            var manualMapping = new ManualMappingService(path);
+            var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
+
+            const string dirtyFilename = "[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p][D47E347C].mkv";
+            const string cleanTitle = "Tensei Shitara Ken Deshita II";
+
+            // 1. Bind with dirty filename -> should be recognized by both dirty filename and clean title
+            service.AddMapping(dirtyFilename, 53913);
+            Assert.True(service.IsManuallyMapped(dirtyFilename));
+            Assert.True(service.IsManuallyMapped(cleanTitle));
+
+            var id = await service.GetIdFromTitleAsync(dirtyFilename, []);
+            Assert.Equal(53913, id);
+
+            // Remove using dirty filename -> both must be unmapped
+            service.RemoveMapping(dirtyFilename);
+            Assert.False(service.IsManuallyMapped(dirtyFilename));
+            Assert.False(service.IsManuallyMapped(cleanTitle));
+            id = await service.GetIdFromTitleAsync(dirtyFilename, []);
+            Assert.Null(id);
+
+            // 2. Bind with clean title -> should be recognized by both
+            service.AddMapping(cleanTitle, 53913);
+            Assert.True(service.IsManuallyMapped(dirtyFilename));
+            Assert.True(service.IsManuallyMapped(cleanTitle));
+
+            // Remove using dirty filename -> both must be unmapped
+            service.RemoveMapping(dirtyFilename);
+            Assert.False(service.IsManuallyMapped(dirtyFilename));
+            Assert.False(service.IsManuallyMapped(cleanTitle));
+            id = await service.GetIdFromTitleAsync(dirtyFilename, []);
+            Assert.Null(id);
+
+            // 3. Bind with dirty filename and remove using clean title -> both must be unmapped
+            service.AddMapping(dirtyFilename, 53913);
+            Assert.True(service.IsManuallyMapped(dirtyFilename));
+            Assert.True(service.IsManuallyMapped(cleanTitle));
+
+            service.RemoveMapping(cleanTitle);
+            Assert.False(service.IsManuallyMapped(dirtyFilename));
+            Assert.False(service.IsManuallyMapped(cleanTitle));
+            id = await service.GetIdFromTitleAsync(dirtyFilename, []);
+            Assert.Null(id);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public async Task GetIdFromTitleAsync_RomanNumeralSequel_DoesNotFallbackToSeason1()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            var manualMapping = new ManualMappingService(path);
+            var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
+
+            var userList = new List<AnimeEntity>
+            {
+                new AnimeEntity { Id = 49891, Title = "Tensei shitara Ken deshita" }
+            };
+
+            var id = await service.GetIdFromTitleAsync("[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p][D47E347C].mkv", userList);
+            Assert.Null(id);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public async Task GetIdFromTitleAsync_RomanNumeralSequel_MatchesSeason2InUserList()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            var manualMapping = new ManualMappingService(path);
+            var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
+
+            var userList = new List<AnimeEntity>
+            {
+                new AnimeEntity { Id = 49891, Title = "Tensei shitara Ken deshita" },
+                new AnimeEntity { Id = 53913, Title = "Tensei shitara Ken deshita 2nd Season" }
+            };
+
+            var id = await service.GetIdFromTitleAsync("[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p][D47E347C].mkv", userList);
+            Assert.Equal(53913, id);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
 }

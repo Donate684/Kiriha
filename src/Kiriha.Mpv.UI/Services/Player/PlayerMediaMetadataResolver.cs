@@ -19,6 +19,9 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
     [System.Text.RegularExpressions.GeneratedRegex(@"([sS]?\d*[eE]\d+)\s*-(.*)")]
     private static partial System.Text.RegularExpressions.Regex HyphenatedEpisodeRegex();
 
+    [System.Text.RegularExpressions.GeneratedRegex(@"\b(II|III|IV|V|VI)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant)]
+    private static partial System.Text.RegularExpressions.Regex RomanSeasonSuffixRegex();
+
     public PlayerMediaMetadataResolver(IDbContextFactory<AppDbContext> dbFactory)
     {
         _dbFactory = dbFactory;
@@ -69,7 +72,28 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
             if (string.IsNullOrWhiteSpace(extractedTitle))
                 return PlayerMediaMetadata.FromVideoPath(videoPath) with { EpisodeText = episodeText };
 
-            var searchTitle = parsedSeason > 1
+            if (parsedSeason <= 1 && !string.IsNullOrWhiteSpace(extractedTitle))
+            {
+                var trimmedExtracted = extractedTitle.Trim().TrimEnd('.', '-', '_', ':', '~', ' ', '!', '?');
+                var romanMatch = RomanSeasonSuffixRegex().Match(trimmedExtracted);
+                if (romanMatch.Success)
+                {
+                    parsedSeason = romanMatch.Groups[1].Value.ToUpperInvariant() switch
+                    {
+                        "II" => 2,
+                        "III" => 3,
+                        "IV" => 4,
+                        "V" => 5,
+                        "VI" => 6,
+                        _ => parsedSeason
+                    };
+                }
+            }
+
+            var trimmed = extractedTitle.Trim().TrimEnd('.', '-', '_', ':', '~', ' ', '!', '?');
+            bool extractedAlreadyHasSeason = RomanSeasonSuffixRegex().IsMatch(trimmed);
+
+            var searchTitle = parsedSeason > 1 && !extractedAlreadyHasSeason
                 ? $"{extractedTitle} Season {parsedSeason}"
                 : extractedTitle;
 
@@ -80,6 +104,31 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
                 (a.RussianTitle != null && a.RussianTitle.ToLower() == searchTitleLower) ||
                 (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchTitleLower) ||
                 (a.Title != null && a.Title.ToLower() == searchTitleLower));
+
+            if (match is null)
+            {
+                string normSearch = AnimeStringHelper.Normalize(searchTitle);
+                if (!string.IsNullOrEmpty(normSearch))
+                {
+                    var allAnimes = db.UserAnime.AsNoTracking().ToList();
+                    match = allAnimes.FirstOrDefault(a =>
+                        (a.Title != null && AnimeStringHelper.Normalize(a.Title) == normSearch) ||
+                        (a.EnglishTitle != null && AnimeStringHelper.Normalize(a.EnglishTitle) == normSearch) ||
+                        (a.RussianTitle != null && AnimeStringHelper.Normalize(a.RussianTitle) == normSearch));
+
+                    if (match is null && parsedSeason <= 1)
+                    {
+                        string normExtracted = AnimeStringHelper.Normalize(extractedTitle);
+                        if (!string.IsNullOrEmpty(normExtracted) && normExtracted != normSearch)
+                        {
+                            match = allAnimes.FirstOrDefault(a =>
+                                (a.Title != null && AnimeStringHelper.Normalize(a.Title) == normExtracted) ||
+                                (a.EnglishTitle != null && AnimeStringHelper.Normalize(a.EnglishTitle) == normExtracted) ||
+                                (a.RussianTitle != null && AnimeStringHelper.Normalize(a.RussianTitle) == normExtracted));
+                        }
+                    }
+                }
+            }
 
             if (match is null && parsedSeason <= 1)
             {

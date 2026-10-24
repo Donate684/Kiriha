@@ -99,8 +99,42 @@ public partial class TrackingService
             Pid = 0
         };
 
-        if (state.AnimeId.HasValue)
+        if (state.AnimeId is > 0)
         {
+            if (_mappingService.IsNegativelyMapped(media.OriginalTitle) ||
+                _mappingService.IsNegativelyMapped(media.AnimeTitle))
+            {
+                ClearPlayerMetadata(media);
+                return Task.CompletedTask;
+            }
+
+            ParsedMedia? prev;
+            Kiriha.Core.Domain.Models.Entities.AnimeEntity? existingMatched;
+            lock (_state)
+            {
+                prev = _currentMedia;
+                existingMatched = _matchedAnime;
+            }
+
+            if (prev != null && IsSameMedia(prev, media))
+            {
+                if (existingMatched is null)
+                {
+                    HandleSameMediaUpdate(prev, media);
+                    return Task.CompletedTask;
+                }
+
+                if (existingMatched.Id != state.AnimeId.Value)
+                {
+                    return SetMatchedInternalMedia(media, existingMatched.Id);
+                }
+            }
+            else if (_mappingService.IsManuallyMapped(media.OriginalTitle) ||
+                     _mappingService.IsManuallyMapped(media.AnimeTitle))
+            {
+                return MatchMediaAsync(media);
+            }
+
             return SetMatchedInternalMedia(media, state.AnimeId.Value);
         }
         else
