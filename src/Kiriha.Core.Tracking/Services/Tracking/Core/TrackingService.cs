@@ -10,7 +10,7 @@ namespace Kiriha.Core.Tracking.Core;
 
 public partial class TrackingService : ITrackingService, IHostedService
 {
-    private readonly IExternalMediaDetector _anisthesiaService;
+    private readonly IExternalMediaDetector _externalMediaDetector;
     private readonly IInternalPlayerServer _internalPlayerServer;
     private readonly IMappingService _mappingService;
     private readonly IAnimeRepository _animeRepo;
@@ -23,7 +23,7 @@ public partial class TrackingService : ITrackingService, IHostedService
     private readonly IShikiMetadataService? _shikiMetadataService;
 
     // _state guards _currentMedia and _matchedAnime which are read/written from the
-    // Anisthesia background thread (MediaDetected/MediaCleared) and from UI command handlers.
+    // External media detector background thread (MediaDetected/MediaCleared) and from UI command handlers.
     private readonly Lock _state = new();
     private ParsedMedia? _currentMedia;
     private AnimeEntity? _matchedAnime;
@@ -33,7 +33,7 @@ public partial class TrackingService : ITrackingService, IHostedService
     public AnimeEntity? MatchedAnime { get { lock (_state) return _matchedAnime; } }
 
     public TrackingService(
-        IExternalMediaDetector anisthesiaService, IInternalPlayerServer internalPlayerServer,
+        IExternalMediaDetector externalMediaDetector, IInternalPlayerServer internalPlayerServer,
         IMappingService mappingService,
         IAnimeRepository animeRepo,
         ISettingsService settingsService,
@@ -44,7 +44,7 @@ public partial class TrackingService : ITrackingService, IHostedService
         MediaMatchingPipeline pipeline,
         IShikiMetadataService? shikiMetadataService = null)
     {
-        _anisthesiaService = anisthesiaService;
+        _externalMediaDetector = externalMediaDetector;
         _internalPlayerServer = internalPlayerServer;
         _internalPlayerServer.PlayerStateChanged += OnPlayerStateChanged;
         _mappingService = mappingService;
@@ -57,8 +57,8 @@ public partial class TrackingService : ITrackingService, IHostedService
         _pipeline = pipeline;
         _shikiMetadataService = shikiMetadataService;
 
-        _anisthesiaService.MediaDetected += OnMediaDetected;
-        _anisthesiaService.MediaCleared += OnMediaCleared;
+        _externalMediaDetector.MediaDetected += OnMediaDetected;
+        _externalMediaDetector.MediaCleared += OnMediaCleared;
         _scrobbleService.CountdownUpdated += OnScrobbleCountdownUpdated;
     }
 
@@ -87,8 +87,8 @@ public partial class TrackingService : ITrackingService, IHostedService
             return;
 
         _internalPlayerServer.PlayerStateChanged -= OnPlayerStateChanged;
-        _anisthesiaService.MediaDetected -= OnMediaDetected;
-        _anisthesiaService.MediaCleared -= OnMediaCleared;
+        _externalMediaDetector.MediaDetected -= OnMediaDetected;
+        _externalMediaDetector.MediaCleared -= OnMediaCleared;
         _scrobbleService.CountdownUpdated -= OnScrobbleCountdownUpdated;
         _scrobbleService.CancelScrobble();
     }

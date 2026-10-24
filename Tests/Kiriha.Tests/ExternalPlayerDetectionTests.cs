@@ -1,8 +1,8 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Infrastructure.Tracking.Anisthesia;
-using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
+using Kiriha.Infrastructure.Tracking.ExternalDetection.Strategies;
 using Kiriha.Mpv.UI.ViewModels.Player;
 using Moq;
 
@@ -10,13 +10,13 @@ namespace Kiriha.Tests;
 
 public class ExternalPlayerDetectionTests
 {
-    private readonly AnisthesiaPlayer _mpcHcPlayer;
-    private readonly AnisthesiaPlayer _mpvPlayer;
-    private readonly AnisthesiaPlayer _vlcPlayer;
+    private readonly ExternalPlayerDefinition _mpcHcPlayer;
+    private readonly ExternalPlayerDefinition _mpvPlayer;
+    private readonly ExternalPlayerDefinition _vlcPlayer;
 
     public ExternalPlayerDetectionTests()
     {
-        var players = AnisthesiaPlayerLoader.Load();
+        var players = ExternalPlayerCatalog.Load();
 
         _mpcHcPlayer = players.First(p => p.Name.Equals("MPC-HC", StringComparison.OrdinalIgnoreCase));
         _mpvPlayer = players.First(p => p.Name.Equals("mpv", StringComparison.OrdinalIgnoreCase));
@@ -24,9 +24,9 @@ public class ExternalPlayerDetectionTests
     }
 
     [Fact]
-    public void AnisthesiaPlayerLoader_Load_ReturnsPopulatedPlayerCatalog()
+    public void ExternalPlayerCatalog_Load_ReturnsPopulatedPlayerCatalog()
     {
-        var players = AnisthesiaPlayerLoader.Load();
+        var players = ExternalPlayerCatalog.Load();
         Assert.NotNull(players);
         Assert.NotEmpty(players);
 
@@ -110,7 +110,7 @@ public class ExternalPlayerDetectionTests
     [Fact]
     public void KmPlayer_WindowRegex_ExtractsPlayingTitle_WithPlaylistPrefix()
     {
-        var kmPlayer = AnisthesiaPlayerLoader.Load().First(p => p.Name.Equals("KMPlayer", StringComparison.OrdinalIgnoreCase));
+        var kmPlayer = ExternalPlayerCatalog.Load().First(p => p.Name.Equals("KMPlayer", StringComparison.OrdinalIgnoreCase));
         var parsed = ParseSimulatedTitle(kmPlayer, "[1/12] [SubsPlease] Sousou no Frieren - 03 (1080p).mkv - The KMPlayer");
 
         Assert.NotNull(parsed);
@@ -121,7 +121,7 @@ public class ExternalPlayerDetectionTests
     [Fact]
     public void WebTorrent_WindowRegex_ReturnsNull_WhenBetaIdle()
     {
-        var webTorrent = AnisthesiaPlayerLoader.Load().First(p => p.Name.Equals("WebTorrent Desktop", StringComparison.OrdinalIgnoreCase));
+        var webTorrent = ExternalPlayerCatalog.Load().First(p => p.Name.Equals("WebTorrent Desktop", StringComparison.OrdinalIgnoreCase));
         var parsed = ParseSimulatedTitle(webTorrent, "WebTorrent (BETA)");
         Assert.Null(parsed);
     }
@@ -182,10 +182,10 @@ public class ExternalPlayerDetectionTests
         mockSettings.Setup(s => s.Current).Returns(settings);
 
         var mockDetector = new Mock<IExternalMediaDetector>();
-        mockDetector.Setup(d => d.AvailablePlayers).Returns(new System.Collections.Generic.List<AnisthesiaPlayer>
+        mockDetector.Setup(d => d.AvailablePlayers).Returns(new System.Collections.Generic.List<ExternalPlayerDefinition>
         {
-            new AnisthesiaPlayer { Name = "mpv", Type = PlayerType.Default },
-            new AnisthesiaPlayer { Name = "Google Chrome", Type = PlayerType.WebBrowser }
+            new ExternalPlayerDefinition { Name = "mpv", Type = PlayerType.Default },
+            new ExternalPlayerDefinition { Name = "Google Chrome", Type = PlayerType.WebBrowser }
         });
         mockDetector.Setup(d => d.RunningPlayerNames).Returns(new System.Collections.Generic.HashSet<string>());
 
@@ -199,7 +199,7 @@ public class ExternalPlayerDetectionTests
         Assert.Null(chromeItem);
     }
 
-    private static ParsedMedia? ParseSimulatedTitle(AnisthesiaPlayer player, string windowTitle)
+    private static ParsedMedia? ParseSimulatedTitle(ExternalPlayerDefinition player, string windowTitle)
     {
         if (string.IsNullOrEmpty(player.WindowTitleFormat)) return null;
 

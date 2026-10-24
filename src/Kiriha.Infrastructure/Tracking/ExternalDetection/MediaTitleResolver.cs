@@ -1,14 +1,14 @@
 using Kiriha.Core.Domain.Models;
 using Kiriha.Utils.Parsing;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 /// <summary>
 /// Centralized title parser and media resolver for window titles and file paths.
 /// </summary>
 public static class MediaTitleResolver
 {
-    public static ParsedMedia FromFilePath(string filePath, AnisthesiaPlayer player)
+    public static ParsedMedia FromFilePath(string filePath, ExternalPlayerDefinition player)
     {
         string filename = Path.GetFileName(filePath);
         var parsed = AnimeParseCache.Parse(filename);

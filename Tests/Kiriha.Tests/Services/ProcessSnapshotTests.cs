@@ -1,4 +1,4 @@
-using Kiriha.Infrastructure.Tracking.Anisthesia;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 namespace Kiriha.Tests.Services;
 

@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using Serilog;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 /// <summary>
 /// Per-process state of the audio session in the Windows audio engine.

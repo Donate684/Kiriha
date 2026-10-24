@@ -13,7 +13,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
     private readonly SystemIntegrationService _systemIntegrationService;
-    private readonly IExternalMediaDetector _IExternalMediaDetector;
+    private readonly IExternalMediaDetector _externalMediaDetector;
 
     [ObservableProperty] private bool _isSystemPlayer;
     [ObservableProperty] private bool _keepPlayerProcessAlive;
@@ -41,7 +41,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     {
         get
         {
-            var available = _IExternalMediaDetector.AvailablePlayers
+            var available = _externalMediaDetector.AvailablePlayers
                 .Where(x => x.Type != PlayerType.WebBrowser)
                 .ToList();
             var allowed = _settingsService.Current.System.Scrobbler.AllowedProcesses;
@@ -55,12 +55,12 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     public SettingsPlaybackViewModel(
         ISettingsService settingsService, 
         SystemIntegrationService systemIntegrationService,
-        IExternalMediaDetector IExternalMediaDetector,
+        IExternalMediaDetector externalMediaDetector,
         ILocalizer? localizer = null)
     {
         _settingsService = settingsService;
         _systemIntegrationService = systemIntegrationService;
-        _IExternalMediaDetector = IExternalMediaDetector;
+        _externalMediaDetector = externalMediaDetector;
 
         IsSystemPlayer = _systemIntegrationService.IsRegistered();
         KeepPlayerProcessAlive = _settingsService.Current.System.KeepPlayerProcessAlive;
@@ -164,7 +164,7 @@ public partial class SettingsPlaybackViewModel : ObservableObject
     [RelayCommand]
     private async Task ManagePlayers()
     {
-        using var viewModel = new PlayerSelectionViewModel(_IExternalMediaDetector, _settingsService);
+        using var viewModel = new PlayerSelectionViewModel(_externalMediaDetector, _settingsService);
         var window = new PlayerSelectionWindow(_settingsService) { DataContext = viewModel };
 
         var mainWindow = (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;

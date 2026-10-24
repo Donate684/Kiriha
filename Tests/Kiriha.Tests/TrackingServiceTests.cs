@@ -20,7 +20,7 @@ public class TrackingServiceTests : IDisposable
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
     private readonly Mock<MappingService> _mockMappingService;
     private readonly Mock<IDiscordService> _mockDiscordService;
-    private readonly Mock<IExternalMediaDetector> _mockAnisthesiaService;
+    private readonly Mock<IExternalMediaDetector> _mockExternalMediaDetector;
     private readonly AnimeRepository _animeRepository;
     private readonly TrackingService _trackingService;
 
@@ -41,7 +41,7 @@ public class TrackingServiceTests : IDisposable
 
         _mockMappingService = new Mock<MappingService>(null!, new ManualMappingService(_tempMappingPath), null!, new RecognitionCache());
         _mockDiscordService = new Mock<IDiscordService>();
-        _mockAnisthesiaService = new Mock<IExternalMediaDetector>();
+        _mockExternalMediaDetector = new Mock<IExternalMediaDetector>();
 
         _animeRepository = new AnimeRepository(null!, null!, null!, _mockUiDispatcher.Object, null!);
         // Force the initialization task to complete so we don't wait 5 seconds in tests
@@ -52,7 +52,7 @@ public class TrackingServiceTests : IDisposable
         }
 
         _trackingService = new TrackingService(
-            _mockAnisthesiaService.Object,
+            _mockExternalMediaDetector.Object,
             new Mock<IInternalPlayerServer>().Object,
             _mockMappingService.Object,
             _animeRepository,
@@ -159,7 +159,7 @@ public class TrackingServiceTests : IDisposable
             });
 
         using var service = new TrackingService(
-            _mockAnisthesiaService.Object,
+            _mockExternalMediaDetector.Object,
             mockPlayerServer.Object,
             _mockMappingService.Object,
             _animeRepository,
@@ -218,7 +218,7 @@ public class TrackingServiceTests : IDisposable
             .ReturnsAsync(789);
 
         using var service = new TrackingService(
-            _mockAnisthesiaService.Object,
+            _mockExternalMediaDetector.Object,
             mockPlayerServer.Object,
             _mockMappingService.Object,
             _animeRepository,
@@ -294,7 +294,7 @@ public class TrackingServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task AnisthesiaEvents_WhenInternalPlayerActive_DoNotCancelOrOverrideScrobble()
+    public async Task ExternalDetectorEvents_WhenInternalPlayerActive_DoNotCancelOrOverrideScrobble()
     {
         // Arrange
         var match = new AnimeEntity { Id = 600, Title = "Dungeon Meshi", Status = UserAnimeStatus.Watching };
@@ -313,14 +313,14 @@ public class TrackingServiceTests : IDisposable
         await _trackingService.SetInternalMediaAsync(internalState);
         _mockScrobbleService.Invocations.Clear();
 
-        // Act 1: External Anisthesia detector fires MediaCleared
-        _mockAnisthesiaService.Raise(x => x.MediaCleared += null, EventArgs.Empty);
+        // Act 1: External detector fires MediaCleared
+        _mockExternalMediaDetector.Raise(x => x.MediaCleared += null, EventArgs.Empty);
 
         // Assert: CancelScrobble was NOT called because internal player is active
         _mockScrobbleService.Verify(x => x.CancelScrobble(), Times.Never);
 
-        // Act 2: External Anisthesia detector fires MediaDetected for an external media
-        _mockAnisthesiaService.Raise(x => x.MediaDetected += null, _mockAnisthesiaService.Object, new ParsedMedia
+        // Act 2: External detector fires MediaDetected for an external media
+        _mockExternalMediaDetector.Raise(x => x.MediaDetected += null, _mockExternalMediaDetector.Object, new ParsedMedia
         {
             ProcessName = "mpv",
             AnimeTitle = "Other Anime",

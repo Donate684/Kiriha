@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 /// <summary>
 /// Low-allocation Win32 process enumerator using CreateToolhelp32Snapshot.

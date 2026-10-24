@@ -9,7 +9,7 @@ namespace Kiriha.Utils.Parsing;
 ///   * <see cref="Kiriha.Services.Data.MappingService"/> calls Parse 4 times for
 ///     a single matching attempt (IsManuallyMapped, IsNegativelyMapped,
 ///     GetIdFromTitleAsync, SearchOnMalAsync).
-///   * Anisthesia detection strategies (WindowTitle / HandleEnumeration) parse
+///   * External player detection strategies (WindowTitle / HandleEnumeration) parse
 ///     the same title every detection tick.
 /// A single parse is fast, but multiplied by N files × M ticks memoization
 /// completely eliminates string parsing overhead.

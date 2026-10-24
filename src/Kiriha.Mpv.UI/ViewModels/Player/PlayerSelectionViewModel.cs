@@ -9,7 +9,7 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
 {
     private readonly ISettingsService _settingsService;
-    private readonly IExternalMediaDetector _anisthesia;
+    private readonly IExternalMediaDetector _externalMediaDetector;
     private readonly List<PlayerSelectionItem> _allPlayers = new();
 
     [ObservableProperty] private string _searchText = string.Empty;
@@ -21,15 +21,15 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
     public ObservableCollection<PlayerSelectionItem> ActivePlayers { get; } = new();
     public ObservableCollection<PlayerSelectionItem> VideoPlayers { get; } = new();
 
-    public PlayerSelectionViewModel(IExternalMediaDetector anisthesia, ISettingsService settingsService)
+    public PlayerSelectionViewModel(IExternalMediaDetector externalMediaDetector, ISettingsService settingsService)
     {
-        _anisthesia = anisthesia;
+        _externalMediaDetector = externalMediaDetector;
         _settingsService = settingsService;
         var allowed = _settingsService.Current.System.Scrobbler.AllowedProcesses;
         bool listWasEmpty = allowed.Count == 0;
-        var running = _anisthesia.RunningPlayerNames;
+        var running = _externalMediaDetector.RunningPlayerNames;
 
-        foreach (var p in _anisthesia.AvailablePlayers.Where(x => x.Type != PlayerType.WebBrowser).OrderBy(x => x.Name))
+        foreach (var p in _externalMediaDetector.AvailablePlayers.Where(x => x.Type != PlayerType.WebBrowser).OrderBy(x => x.Name))
         {
             // If the list is empty, default behavior permits all video players.
             bool isEnabled = listWasEmpty || allowed.Contains(p.Name);
@@ -40,7 +40,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
             _allPlayers.Add(item);
         }
 
-        _anisthesia.RunningPlayersChanged += OnRunningPlayersChanged;
+        _externalMediaDetector.RunningPlayersChanged += OnRunningPlayersChanged;
         RefreshLists();
         UpdateCounts();
     }
@@ -127,7 +127,7 @@ public partial class PlayerSelectionViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
-        _anisthesia.RunningPlayersChanged -= OnRunningPlayersChanged;
+        _externalMediaDetector.RunningPlayersChanged -= OnRunningPlayersChanged;
         foreach (var item in _allPlayers)
         {
             item.PropertyChanged -= OnItemPropertyChanged;

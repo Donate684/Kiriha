@@ -34,7 +34,7 @@ internal sealed class LruStringMemoizer<TVal> where TVal : class
             }
         }
 
-        // Compute outside the lock — the factory may be expensive (Anitomy
+        // Compute outside the lock — the factory may be expensive (AnimeReleaseParser
         // parse takes a few ms). Holding the lock here would serialize all
         // first-touch callers across unrelated keys.
         var value = factory(key);

@@ -2,7 +2,7 @@ using System.Collections.Frozen;
 using System.Text.RegularExpressions;
 using BenchmarkDotNet.Attributes;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure.Tracking.Anisthesia;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 namespace Kiriha.Benchmarks.Detection;
 
@@ -10,16 +10,16 @@ namespace Kiriha.Benchmarks.Detection;
 [ShortRunJob]
 public class ProcessDetectionBenchmark
 {
-    private readonly List<AnisthesiaPlayer> _players;
+    private readonly List<ExternalPlayerDefinition> _players;
     private readonly string[] _simulatedProcesses;
 
     // Optimized index structures:
-    private readonly FrozenDictionary<string, AnisthesiaPlayer> _exactMap;
-    private readonly (Regex Regex, AnisthesiaPlayer Player)[] _regexRules;
+    private readonly FrozenDictionary<string, ExternalPlayerDefinition> _exactMap;
+    private readonly (Regex Regex, ExternalPlayerDefinition Player)[] _regexRules;
 
     public ProcessDetectionBenchmark()
     {
-        _players = AnisthesiaPlayerLoader.Load().ToList();
+        _players = ExternalPlayerCatalog.Load().ToList();
 
         // 300 processes typical for Windows desktop
         var procList = new List<string>(300);
@@ -39,8 +39,8 @@ public class ProcessDetectionBenchmark
         _simulatedProcesses = procList.ToArray();
 
         // Precompute exact map & regexes
-        var exactDict = new Dictionary<string, AnisthesiaPlayer>(StringComparer.OrdinalIgnoreCase);
-        var regexList = new List<(Regex, AnisthesiaPlayer)>();
+        var exactDict = new Dictionary<string, ExternalPlayerDefinition>(StringComparer.OrdinalIgnoreCase);
+        var regexList = new List<(Regex, ExternalPlayerDefinition)>();
 
         foreach (var player in _players)
         {

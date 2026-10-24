@@ -1,9 +1,10 @@
 using System.Collections.Frozen;
 using System.Runtime.InteropServices;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
 using Serilog;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection.Strategies;
 
 public static unsafe partial class HandleEnumerationStrategy
 {
@@ -281,7 +282,7 @@ public static unsafe partial class HandleEnumerationStrategy
         return files;
     }
 
-    public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid)
+    public static ParsedMedia? Apply(ExternalPlayerDefinition player, uint pid)
     {
         if (!OperatingSystem.IsWindows() || pid == 0) return null;
 

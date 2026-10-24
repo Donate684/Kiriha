@@ -258,7 +258,7 @@ public partial class PlayerViewModel
 
     /// <summary>
     /// Window title used by external now-playing detectors. Keep the raw filename here:
-    /// parsed display metadata can lose release/season/episode details that Anitomy needs.
+    /// parsed display metadata can lose release/season/episode details that AnimeReleaseParser needs.
     /// </summary>
     public string TrackingTitle
     {

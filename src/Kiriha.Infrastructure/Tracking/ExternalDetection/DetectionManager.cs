@@ -4,30 +4,30 @@ using System.Text.RegularExpressions;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
+using Kiriha.Infrastructure.Tracking.ExternalDetection.Strategies;
 using Serilog;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 public class DetectionManager
 {
     private readonly ISettingsService _settingsService;
-    private readonly FrozenDictionary<string, List<AnisthesiaPlayer>> _exactExecutableMap;
-    private readonly (Regex Regex, AnisthesiaPlayer Player, List<AnisthesiaPlayer> PlayerList)[] _regexExecutableRules;
-    private readonly FrozenDictionary<AnisthesiaPlayer, Regex> _windowTitleRegexMap;
+    private readonly FrozenDictionary<string, List<ExternalPlayerDefinition>> _exactExecutableMap;
+    private readonly (Regex Regex, ExternalPlayerDefinition Player, List<ExternalPlayerDefinition> PlayerList)[] _regexExecutableRules;
+    private readonly FrozenDictionary<ExternalPlayerDefinition, Regex> _windowTitleRegexMap;
 
     private static readonly FrozenSet<string> JunkPatterns = FrozenSet.ToFrozenSet(
     [
         "vlc media player", "mpc-hc", "potplayer", "mpv", "kmplayer", "zoom player", "ready", "opening..."
     ], StringComparer.OrdinalIgnoreCase);
 
-    public DetectionManager(IReadOnlyList<AnisthesiaPlayer> players, ISettingsService settingsService)
+    public DetectionManager(IReadOnlyList<ExternalPlayerDefinition> players, ISettingsService settingsService)
     {
         _settingsService = settingsService;
 
-        var exactDict = new Dictionary<string, List<AnisthesiaPlayer>>(StringComparer.OrdinalIgnoreCase);
-        var regexList = new List<(Regex, AnisthesiaPlayer, List<AnisthesiaPlayer>)>();
-        var windowTitleDict = new Dictionary<AnisthesiaPlayer, Regex>();
+        var exactDict = new Dictionary<string, List<ExternalPlayerDefinition>>(StringComparer.OrdinalIgnoreCase);
+        var regexList = new List<(Regex, ExternalPlayerDefinition, List<ExternalPlayerDefinition>)>();
+        var windowTitleDict = new Dictionary<ExternalPlayerDefinition, Regex>();
 
         foreach (var player in players)
         {
@@ -35,13 +35,13 @@ public class DetectionManager
             {
                 if (exe.StartsWith('^'))
                 {
-                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled), player, new List<AnisthesiaPlayer>(1) { player }));
+                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled), player, new List<ExternalPlayerDefinition>(1) { player }));
                 }
                 else
                 {
                     if (!exactDict.TryGetValue(exe, out var list))
                     {
-                        list = new List<AnisthesiaPlayer>(1);
+                        list = new List<ExternalPlayerDefinition>(1);
                         exactDict[exe] = list;
                     }
                     list.Add(player);
@@ -73,7 +73,7 @@ public class DetectionManager
         return Task.FromResult(DetectSession());
     }
 
-    private List<AnisthesiaPlayer>? GetMatchingPlayers(string procName)
+    private List<ExternalPlayerDefinition>? GetMatchingPlayers(string procName)
     {
         if (_exactExecutableMap.TryGetValue(procName, out var exactMatches))
         {
@@ -82,7 +82,7 @@ public class DetectionManager
 
         if (_regexExecutableRules.Length > 0)
         {
-            List<AnisthesiaPlayer>? matchingPlayers = null;
+            List<ExternalPlayerDefinition>? matchingPlayers = null;
             for (int r = 0; r < _regexExecutableRules.Length; r++)
             {
                 if (_regexExecutableRules[r].Regex.IsMatch(procName))
@@ -95,7 +95,7 @@ public class DetectionManager
                     {
                         if (ReferenceEquals(matchingPlayers, _regexExecutableRules[r].PlayerList))
                         {
-                            matchingPlayers = new List<AnisthesiaPlayer>(matchingPlayers);
+                            matchingPlayers = new List<ExternalPlayerDefinition>(matchingPlayers);
                         }
                         matchingPlayers.Add(_regexExecutableRules[r].Player);
                     }
@@ -155,7 +155,7 @@ public class DetectionManager
     private ParsedMedia? TryDetectFromProcess(
         uint pid,
         string procName,
-        IReadOnlyList<AnisthesiaPlayer> matchingPlayers,
+        IReadOnlyList<ExternalPlayerDefinition> matchingPlayers,
         bool hasFilter,
         List<string>? allowedProcesses)
     {
@@ -225,7 +225,7 @@ public class DetectionManager
         return DetectSession().RunningPlayers;
     }
 
-    private static bool IsJunk(string title, AnisthesiaPlayer player)
+    private static bool IsJunk(string title, ExternalPlayerDefinition player)
     {
         if (string.IsNullOrWhiteSpace(title)) return true;
 

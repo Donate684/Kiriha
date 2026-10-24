@@ -43,7 +43,7 @@ public partial class SettingsViewModel : ViewModelBase
         AnimeListViewModel animeListViewModel,
         LocalizationService localizationService,
         UpdateService updateService,
-        IExternalMediaDetector anisthesiaService,
+        IExternalMediaDetector externalMediaDetector,
         DiscordService discordService,
         CacheCleanupService cacheCleanupService,
         IImageCacheService imageCacheService,
@@ -55,7 +55,7 @@ public partial class SettingsViewModel : ViewModelBase
         IAnimeRefreshService? refreshService = null,
         Anime365HostResolver? anime365HostResolver = null)
     {
-        Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, anisthesiaService, localizationService);
+        Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, externalMediaDetector, localizationService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
         System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
 

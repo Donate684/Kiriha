@@ -1,10 +1,10 @@
 using Serilog;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 /// <summary>
 /// Translates raw <see cref="AudioState"/> samples (one per polling tick of
-/// <c>AnisthesiaService</c>) into a debounced "is the player playing?" signal,
+/// <c>ExternalMediaDetectorService</c>) into a debounced "is the player playing?" signal,
 /// and emits Serilog lines on every Play&#x2194;Pause transition so we can
 /// audit the scrobble timeline post-hoc.
 ///
@@ -25,7 +25,7 @@ internal sealed class PauseDetector
     /// <summary>
     /// Number of consecutive <see cref="AudioState.Inactive"/> samples
     /// required before flipping to paused. With the 5 s polling interval
-    /// in <c>AnisthesiaService</c> this maps to ~10 s of silence.
+    /// in <c>ExternalMediaDetectorService</c> this maps to ~10 s of silence.
     /// </summary>
     private const int InactiveTicksToPause = 2;
 
@@ -115,4 +115,3 @@ internal sealed class PauseDetector
         }
     }
 }
-

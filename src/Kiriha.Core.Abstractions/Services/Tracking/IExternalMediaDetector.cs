@@ -8,6 +8,6 @@ public interface IExternalMediaDetector
     event EventHandler? MediaCleared;
     event EventHandler<IReadOnlySet<string>>? RunningPlayersChanged;
 
-    List<AnisthesiaPlayer> AvailablePlayers { get; }
+    List<ExternalPlayerDefinition> AvailablePlayers { get; }
     IReadOnlySet<string> RunningPlayerNames { get; }
 }

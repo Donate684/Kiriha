@@ -18,9 +18,9 @@ public partial class TrackingService
     {
         lock (_state)
         {
-            // If internal player is currently active, external detector (Anisthesia)
+            // If internal player is currently active, external detector (ExternalMediaDetectorService)
             // must NOT clear the media or cancel the scrobble!
-            if (ReferenceEquals(sender, _anisthesiaService) &&
+            if (ReferenceEquals(sender, _externalMediaDetector) &&
                 _currentMedia != null &&
                 string.Equals(_currentMedia.ProcessName, "KirihaInternal", StringComparison.Ordinal))
             {
@@ -44,7 +44,7 @@ public partial class TrackingService
     {
         // async void event handler: any leaked exception bubbles to the
         // synchronization context (here: process-wide) and tears the app down.
-        // The handler is invoked from AnisthesiaService's polling thread, so
+        // The handler is invoked from ExternalMediaDetectorService's polling thread, so
         // we can't rely on a UI-thread safety net either.
         try
         {

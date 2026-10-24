@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
-using Kiriha.Infrastructure.Tracking.Anisthesia;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 namespace Kiriha.Benchmarks.Detection;
 

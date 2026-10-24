@@ -42,8 +42,8 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<AiringInfoService>();
         services.AddForwardedSingleton<AiringInfoService, IAiringInfoService>();
 
-        // AnisthesiaService (Discord presence) also runs as IHostedService
-        services.AddForwardedSingleton<Kiriha.Infrastructure.Tracking.Integration.AnisthesiaService, IHostedService>();
+        // ExternalMediaDetectorService also runs as IHostedService
+        services.AddForwardedSingleton<Kiriha.Infrastructure.Tracking.Integration.ExternalMediaDetectorService, IHostedService>();
 
         // Maintenance tasks
         services.AddSingleton<Services.Maintenance.IMaintenanceTask, Services.Maintenance.AiringSyncMaintenanceTask>();

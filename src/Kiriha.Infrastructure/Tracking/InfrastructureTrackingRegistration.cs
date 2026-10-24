@@ -10,12 +10,13 @@ public static class InfrastructureTrackingRegistration
 {
     public static IServiceCollection AddKirihaTrackingInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton<System.Collections.Generic.IReadOnlyList<AnisthesiaPlayer>>(sp => Kiriha.Infrastructure.Tracking.Anisthesia.AnisthesiaPlayerLoader.Load());
+        services.AddSingleton<IReadOnlyList<ExternalPlayerDefinition>>(_ =>
+            Kiriha.Infrastructure.Tracking.ExternalDetection.ExternalPlayerCatalog.Load());
         services.AddSingleton<SmtcService>();
         services.AddSingleton<DiscordService>();
         services.AddForwardedSingleton<DiscordService, IDiscordService>();
-        services.AddSingleton<AnisthesiaService>();
-        services.AddForwardedSingleton<AnisthesiaService, IExternalMediaDetector>();
+        services.AddSingleton<ExternalMediaDetectorService>();
+        services.AddForwardedSingleton<ExternalMediaDetectorService, IExternalMediaDetector>();
         services.AddSingleton<InternalPlayerServer>();
         services.AddForwardedSingleton<InternalPlayerServer, IInternalPlayerServer>();
         services.AddSingleton<IStartupManager, Platform.WindowsStartupManager>();

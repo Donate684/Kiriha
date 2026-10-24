@@ -1,13 +1,13 @@
 using Kiriha.Core.Domain.Models;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 
 /// <summary>
 /// Provides a static catalog of known media players and their detection rules.
 /// </summary>
-public static class AnisthesiaPlayerLoader
+public static class ExternalPlayerCatalog
 {
-    private static readonly AnisthesiaPlayer[] Players =
+    private static readonly ExternalPlayerDefinition[] Players =
     [
         new()
         {
@@ -209,5 +209,5 @@ public static class AnisthesiaPlayerLoader
         }
     ];
 
-    public static IReadOnlyList<AnisthesiaPlayer> Load() => Players;
+    public static IReadOnlyList<ExternalPlayerDefinition> Load() => Players;
 }

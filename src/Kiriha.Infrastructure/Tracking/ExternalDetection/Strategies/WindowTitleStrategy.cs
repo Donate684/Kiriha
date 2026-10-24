@@ -1,12 +1,13 @@
 using System.Text.RegularExpressions;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
 
-namespace Kiriha.Infrastructure.Tracking.Anisthesia.Strategies;
+namespace Kiriha.Infrastructure.Tracking.ExternalDetection.Strategies;
 
 public static class WindowTitleStrategy
 {
-    public static ParsedMedia? Apply(AnisthesiaPlayer player, uint pid, IntPtr hWnd, Regex? compiledFormat = null)
+    public static ParsedMedia? Apply(ExternalPlayerDefinition player, uint pid, IntPtr hWnd, Regex? compiledFormat = null)
     {
         string windowTitle = Win32Api.GetWindowTitle(hWnd);
         if (string.IsNullOrEmpty(windowTitle)) return null;

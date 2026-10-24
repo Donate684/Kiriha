@@ -13,7 +13,7 @@ public enum PlayerType
     WebBrowser
 }
 
-public class AnisthesiaPlayer
+public class ExternalPlayerDefinition
 {
     public string Name { get; set; } = string.Empty;
     public List<string> WindowClasses { get; set; } = new();

@@ -1,20 +1,20 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure.Tracking.Anisthesia;
+using Kiriha.Infrastructure.Tracking.ExternalDetection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace Kiriha.Infrastructure.Tracking.Integration;
 
-public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDetector
+public class ExternalMediaDetectorService : IHostedService, IDisposable, IExternalMediaDetector
 {
     private readonly ISettingsService _settingsService;
     private readonly SmtcService _smtcService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly DetectionManager _detectionManager;
     private readonly PauseDetector _pauseDetector = new();
-    private readonly List<AnisthesiaPlayer> _availablePlayers;
+    private readonly List<ExternalPlayerDefinition> _availablePlayers;
     private IReadOnlySet<string> _runningPlayerNames = new HashSet<string>();
     private uint _lastTrackedPid;
     private readonly CancellationTokenSource _disposeCts = new();
@@ -23,26 +23,26 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
     public event EventHandler? MediaCleared;
     public event EventHandler<IReadOnlySet<string>>? RunningPlayersChanged;
 
-    public List<AnisthesiaPlayer> AvailablePlayers => _availablePlayers;
+    public List<ExternalPlayerDefinition> AvailablePlayers => _availablePlayers;
     public IReadOnlySet<string> RunningPlayerNames => _runningPlayerNames;
 
-    public AnisthesiaService(
+    public ExternalMediaDetectorService(
         ISettingsService settingsService,
         SmtcService smtcService,
         IBackgroundTaskSupervisor backgroundTasks,
-        IReadOnlyList<AnisthesiaPlayer> players)
+        IReadOnlyList<ExternalPlayerDefinition> players)
     {
         _settingsService = settingsService;
         _smtcService = smtcService;
         _backgroundTasks = backgroundTasks;
 
-        _availablePlayers = new List<AnisthesiaPlayer>(players);
+        _availablePlayers = new List<ExternalPlayerDefinition>(players);
         _detectionManager = new DetectionManager(_availablePlayers, _settingsService);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _backgroundTasks.Run("AnisthesiaService.PollingLoop", async ct =>
+        _backgroundTasks.Run("ExternalMediaDetectorService.PollingLoop", async ct =>
         {
             try
             {
@@ -74,7 +74,7 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
 
     private async Task PollingLoopAsync(CancellationToken ct)
     {
-        Log.Information("Anisthesia Polling Service started.");
+        Log.Information("External media detector polling service started.");
 
         await _smtcService.StartAsync();
 
@@ -154,7 +154,7 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
             }
             catch (Exception ex)
             {
-                Log.Debug("Anisthesia polling error: {Msg}", ex.Message);
+                Log.Debug("External media detector polling error: {Msg}", ex.Message);
             }
 
             int delayMs = 5000;
@@ -162,7 +162,6 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
                 delayMs = 2000; // Actively tracking media, poll fast to catch pause/play
             else if (_runningPlayerNames.Count > 0)
                 delayMs = 3000; // Player is open, waiting for media
-
             await Task.Delay(delayMs, ct);
         }
     }
