@@ -18,12 +18,16 @@ public partial class TrackingService
             timeLeap = Math.Abs((media.Position.Value - prev.Position.Value).TotalSeconds) > 3;
         }
 
+        bool durationChanged = Math.Abs((prev.Duration?.TotalSeconds ?? 0) - (media.Duration?.TotalSeconds ?? 0)) > 1.0;
+
         bool changed = prev.IsPlaying != media.IsPlaying ||
                        prev.ProcessName != media.ProcessName ||
                        timeLeap ||
-                       prev.Duration != media.Duration;
+                       durationChanged;
 
         lock (_state) _currentMedia = media;
+
+        _scrobbleService.UpdatePlaybackProgress(media.IsPlaying, media.Position, media.Duration);
 
         if (!changed)
         {
@@ -32,7 +36,6 @@ public partial class TrackingService
 
         _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.MediaChangedMessage(media)));
         _scrobbleService.UpdatePlayingState(media.IsPlaying);
-        _scrobbleService.UpdatePlaybackProgress(media.IsPlaying, media.Position, media.Duration);
 
         AnimeEntity? currentMatched;
         lock (_state) currentMatched = _matchedAnime;
@@ -48,12 +51,14 @@ public partial class TrackingService
     private void ApplyMatchedMedia(ParsedMedia media, AnimeEntity? matched)
     {
         bool isValid;
+        ParsedMedia actualMedia = media;
         lock (_state)
         {
             isValid = IsSameMedia(_currentMedia, media);
             if (isValid)
             {
                 _matchedAnime = matched;
+                actualMedia = _currentMedia!;
             }
         }
 
@@ -63,9 +68,9 @@ public partial class TrackingService
 
         if (matched != null)
         {
-            var effectiveMedia = (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
-                ? media.WithEpisode("1")
-                : media;
+            var effectiveMedia = (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(actualMedia.Episode))
+                ? actualMedia.WithEpisode("1")
+                : actualMedia;
 
             NotifyPlayerMetadata(effectiveMedia, matched);
             UpdateDiscordPresence(effectiveMedia, matched);
@@ -80,7 +85,7 @@ public partial class TrackingService
         }
         else
         {
-            _discordService.UpdatePresence(media.AnimeTitle, media.Episode, 0, null, null, media.Position, media.Duration, null, media.IsPlaying);
+            _discordService.UpdatePresence(actualMedia.AnimeTitle, actualMedia.Episode, 0, null, null, actualMedia.Position, actualMedia.Duration, null, actualMedia.IsPlaying);
         }
     }
 

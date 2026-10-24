@@ -52,7 +52,9 @@ public sealed partial class PlayerModeCoordinator
         var titleRomaji = GetArgValue(args, "--title-romaji") ?? string.Empty;
         var episodeText = GetArgValue(args, "--episode") ?? string.Empty;
         var torrentHash = GetArgValue(args, "--torrent-hash") ?? string.Empty;
-        int? animeId = int.TryParse(GetArgValue(args, "--anime-id"), out var parsedAnimeId) ? parsedAnimeId : null;
+        int? animeId = int.TryParse(GetArgValue(args, "--anime-id"), out var parsedAnimeId) && parsedAnimeId > 0
+            ? parsedAnimeId
+            : null;
 
         if (_app.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;

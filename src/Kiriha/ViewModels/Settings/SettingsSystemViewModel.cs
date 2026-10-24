@@ -149,7 +149,6 @@ public partial class SettingsSystemViewModel : ObservableObject
         if (value != null)
         {
             ScrobbleDelaySeconds = value.Seconds;
-            _settingsService.Update(settings => settings.System.Scrobbler.DelaySeconds = value.Seconds, SettingsSection.System);
         }
     }
 
@@ -163,7 +162,6 @@ public partial class SettingsSystemViewModel : ObservableObject
         if (value != null)
         {
             ScrobbleDelayPercent = value.Percent;
-            _settingsService.Update(settings => settings.System.Scrobbler.DelayPercent = value.Percent, SettingsSection.System);
         }
     }
 

@@ -26,6 +26,7 @@ public sealed class InternalPlayerStateClient : IDisposable
     private NamedPipeClientStream? _client;
     private StreamWriter? _writer;
     private InternalPlayerState? _pendingState;
+    private InternalPlayerState? _stateToFlush;
 
     private Task? _supervisorTask;
     private readonly AsyncAutoResetEvent _reconnectTrigger = new();
@@ -65,11 +66,12 @@ public sealed class InternalPlayerStateClient : IDisposable
         lock (_stateGate)
         {
             _pendingState = state;
+            _stateToFlush = state;
         }
 
         if (IsConnected)
         {
-            _ = SendStateMessageAsync(state);
+            _ = FlushPendingStateAsync();
         }
         else
         {
@@ -267,14 +269,22 @@ public sealed class InternalPlayerStateClient : IDisposable
             }
 
             // Flush any state queued while connecting
-            InternalPlayerState? pending;
+            bool shouldFlush = false;
             lock (_stateGate)
             {
-                pending = _pendingState;
+                if (_pendingState != null && !ReferenceEquals(_pendingState, stateForHandshake))
+                {
+                    _stateToFlush = _pendingState;
+                    shouldFlush = true;
+                }
+                else
+                {
+                    _stateToFlush = null;
+                }
             }
-            if (pending != null && !ReferenceEquals(pending, stateForHandshake))
+            if (shouldFlush)
             {
-                _ = SendStateMessageAsync(pending);
+                _ = FlushPendingStateAsync();
             }
 
             // Start background reader loop to listen for metadata and detect disconnects
@@ -336,35 +346,43 @@ public sealed class InternalPlayerStateClient : IDisposable
         }
     }
 
-    private async Task SendStateMessageAsync(InternalPlayerState state)
+    private async Task FlushPendingStateAsync()
     {
-        StreamWriter? writer;
-        lock (_connectionGate)
-        {
-            if (!_isHandshakeConfirmed || _client?.IsConnected != true)
-                return;
-            writer = _writer;
-        }
-
-        if (writer is null) return;
-
         await _writeGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            lock (_connectionGate)
+            while (!_disposed)
             {
-                if (!_isHandshakeConfirmed || _client?.IsConnected != true)
-                    return;
-            }
+                InternalPlayerState? stateToWrite;
+                lock (_stateGate)
+                {
+                    stateToWrite = _stateToFlush;
+                    _stateToFlush = null;
+                }
 
-            var msg = new InternalPlayerIpcMessage
-            {
-                Type = InternalPlayerIpcMessage.TypeState,
-                State = state
-            };
-            var json = JsonSerializer.Serialize(msg, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
-            await writer.WriteLineAsync(json).ConfigureAwait(false);
-            await writer.FlushAsync().ConfigureAwait(false);
+                if (stateToWrite is null)
+                    return;
+
+                StreamWriter? writer;
+                lock (_connectionGate)
+                {
+                    if (!_isHandshakeConfirmed || _client?.IsConnected != true)
+                        return;
+                    writer = _writer;
+                }
+
+                if (writer is null)
+                    return;
+
+                var msg = new InternalPlayerIpcMessage
+                {
+                    Type = InternalPlayerIpcMessage.TypeState,
+                    State = stateToWrite
+                };
+                var json = JsonSerializer.Serialize(msg, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                await writer.FlushAsync().ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {
@@ -408,6 +426,7 @@ public sealed class InternalPlayerStateClient : IDisposable
         {
             _disposed = true;
             _pendingState = null;
+            _stateToFlush = null;
         }
 
         try { _cts.Cancel(); } catch { }
@@ -421,34 +440,35 @@ public sealed class InternalPlayerStateClient : IDisposable
 
     private sealed class AsyncAutoResetEvent
     {
-        private static readonly Task s_completed = Task.CompletedTask;
         private readonly Queue<TaskCompletionSource<bool>> _waits = new();
         private bool _signaled;
 
-        public Task WaitAsync(CancellationToken token)
+        public async Task WaitAsync(CancellationToken token)
         {
+            TaskCompletionSource<bool> tcs;
             lock (_waits)
             {
                 if (_signaled)
                 {
                     _signaled = false;
-                    return s_completed;
+                    return;
                 }
 
-                var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                if (token.CanBeCanceled)
-                {
-                    token.Register(() =>
-                    {
-                        lock (_waits)
-                        {
-                            tcs.TrySetCanceled(token);
-                        }
-                    });
-                }
+                tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _waits.Enqueue(tcs);
-                return tcs.Task;
             }
+
+            await using var reg = token.CanBeCanceled
+                ? token.Register(() =>
+                {
+                    lock (_waits)
+                    {
+                        tcs.TrySetCanceled(token);
+                    }
+                })
+                : default;
+
+            await tcs.Task.ConfigureAwait(false);
         }
 
         public void Set()

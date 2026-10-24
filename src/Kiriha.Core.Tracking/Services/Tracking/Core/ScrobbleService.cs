@@ -37,7 +37,6 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private CancellationTokenSource? _countdownCts;
     private string _activeHash = string.Empty;
     private bool _isPlaying;
-    private TimeSpan? _currentPosition;
     private TimeSpan? _currentDuration;
     private int _currentElapsed;
 
@@ -60,6 +59,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
         _localizer = localizer;
         _progressStore = progressStore ?? new ScrobbleProgressStore();
     }
+
+    private const double DefaultEpisodeDurationSeconds = 24 * 60; // 1440s (24 min)
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
     {
@@ -104,13 +105,23 @@ public class ScrobbleService : IScrobbleService, IDisposable
         {
             if (_activeHash == hash && _countdownCts != null && !_countdownCts.IsCancellationRequested) return;
 
+            bool isHashChanged = !string.IsNullOrEmpty(_activeHash) && _activeHash != hash;
+
             _countdownCts?.Cancel();
             _countdownCts?.Dispose();
             _countdownCts = new CancellationTokenSource();
+
+            if (media.Duration is { TotalSeconds: > 0 })
+            {
+                _currentDuration = media.Duration;
+            }
+            else if (isHashChanged)
+            {
+                _currentDuration = null;
+            }
+
             _activeHash = hash;
             _isPlaying = media.IsPlaying;
-            _currentPosition = media.Position;
-            _currentDuration = media.Duration;
             token = _countdownCts.Token;
         }
         CountdownUpdated?.Invoke(this, string.Empty);
@@ -128,7 +139,6 @@ public class ScrobbleService : IScrobbleService, IDisposable
         lock (_stateLock)
         {
             _isPlaying = isPlaying;
-            if (position.HasValue) _currentPosition = position.Value;
             if (duration.HasValue && duration.Value > TimeSpan.Zero) _currentDuration = duration.Value;
         }
     }
@@ -146,8 +156,26 @@ public class ScrobbleService : IScrobbleService, IDisposable
             _countdownCts = null;
             _activeHash = string.Empty;
             _currentElapsed = 0;
+            _currentDuration = null;
         }
         CountdownUpdated?.Invoke(this, string.Empty);
+    }
+
+    internal int CalculateTargetSeconds(TimeSpan? currentDur, ParsedMedia media)
+    {
+        var scrobblerConfig = _settingsService.Current.System.Scrobbler;
+        if (scrobblerConfig.Mode == ScrobbleDelayMode.Percentage)
+        {
+            var dur = currentDur ?? media.Duration;
+            double effectiveDurationSeconds = (dur.HasValue && dur.Value.TotalSeconds > 60)
+                ? dur.Value.TotalSeconds
+                : DefaultEpisodeDurationSeconds;
+
+            int percent = Math.Clamp(scrobblerConfig.DelayPercent, 1, 100);
+            return Math.Max(1, (int)Math.Round(effectiveDurationSeconds * percent / 100.0));
+        }
+
+        return scrobblerConfig.DelaySeconds <= 0 ? 0 : Math.Max(1, scrobblerConfig.DelaySeconds);
     }
 
     private async Task CountdownTaskAsync(int targetEp, AnimeEntity match, ParsedMedia media, CancellationToken ct)
@@ -162,12 +190,10 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 ct.ThrowIfCancellationRequested();
 
                 bool isPlaying;
-                TimeSpan? currentPos;
                 TimeSpan? currentDur;
                 lock (_stateLock)
                 {
                     isPlaying = _isPlaying;
-                    currentPos = _currentPosition;
                     currentDur = _currentDuration;
                     _currentElapsed = elapsed;
                 }
@@ -179,30 +205,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
                     continue;
                 }
 
-                var scrobblerConfig = _settingsService.Current.System.Scrobbler;
-                int targetSeconds;
-
-                if (scrobblerConfig.Mode == ScrobbleDelayMode.Percentage)
-                {
-                    var dur = currentDur ?? media.Duration;
-                    if (dur.HasValue && dur.Value.TotalSeconds > 30)
-                    {
-                        int percent = Math.Clamp(scrobblerConfig.DelayPercent, 1, 100);
-                        targetSeconds = (int)(dur.Value.TotalSeconds * percent / 100.0);
-                    }
-                    else
-                    {
-                        targetSeconds = scrobblerConfig.DelaySeconds;
-                    }
-                }
-                else
-                {
-                    targetSeconds = scrobblerConfig.DelaySeconds;
-                }
-
-                int posSec = (int)(currentPos?.TotalSeconds ?? 0);
-                int currentProgress = Math.Max(elapsed, posSec);
-                int remaining = targetSeconds - currentProgress;
+                int targetSeconds = CalculateTargetSeconds(currentDur, media);
+                int remaining = targetSeconds - elapsed;
 
                 if (remaining <= 0) break;
 

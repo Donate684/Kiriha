@@ -369,6 +369,48 @@ public sealed class PlayerMediaMetadataTests
         }
     }
 
+    [Fact]
+    public void PlayerViewModel_ApplyExternalMetadata_UnlinkClearsTitlesAndId()
+    {
+        var settings = new AppSettings();
+        settings.UI.UseRussianTitles = true;
+        var mockSettings = new Moq.Mock<ISettingsService>();
+        mockSettings.Setup(s => s.Current).Returns(settings);
+        var mockLocalizer = new Moq.Mock<ILocalizer>();
+
+        var vm = new Kiriha.Mpv.UI.ViewModels.Player.PlayerViewModel(
+            @"C:\Anime\frieren_01.mkv",
+            null,
+            null,
+            mockSettings.Object,
+            mockLocalizer.Object);
+
+        vm.ApplyExternalMetadata(new PlayerMediaMetadata(
+            "frieren_01",
+            "Провожающая в последний путь Фрирен",
+            "Frieren: Beyond Journey's End",
+            "01",
+            52991,
+            "Sousou no Frieren"));
+
+        Assert.Equal("Провожающая в последний путь Фрирен", vm.TopTitle);
+        Assert.True(vm.HasBottomTitle);
+
+        // Simulate ClearPlayerMetadata (Unlink)
+        vm.ApplyExternalMetadata(new PlayerMediaMetadata(
+            "frieren_01",
+            string.Empty,
+            string.Empty,
+            "01",
+            null,
+            "frieren"));
+
+        Assert.Equal("frieren", vm.TopTitle);
+        Assert.False(vm.HasBottomTitle);
+        Assert.Equal(string.Empty, vm.AnimeTitleRu);
+        Assert.Equal(string.Empty, vm.AnimeTitleEn);
+    }
+
     private sealed class TestDbContextFactory : IDbContextFactory<AppDbContext>
     {
         private readonly DbContextOptions<AppDbContext> _options;

@@ -41,6 +41,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         _settingsService.Update(s =>
         {
             s.System.Scrobbler.Enabled = true;
+            s.System.Scrobbler.Mode = ScrobbleDelayMode.Time;
             s.System.Scrobbler.DelaySeconds = 0;
             s.System.Scrobbler.NotifyOnSkippedEpisode = false;
         }, save: false);

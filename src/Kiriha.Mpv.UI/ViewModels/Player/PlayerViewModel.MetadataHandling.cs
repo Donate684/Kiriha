@@ -165,7 +165,43 @@ public partial class PlayerViewModel
         var prevId = _animeId;
         var prevEp = RawEpisodeText;
 
-        ApplyMetadata(metadata, overwriteAll: false);
+        bool isUnlink = (!metadata.AnimeId.HasValue || metadata.AnimeId <= 0)
+            && string.IsNullOrWhiteSpace(metadata.TitleRu)
+            && string.IsNullOrWhiteSpace(metadata.TitleEn);
+
+        if (isUnlink)
+        {
+            _animeId = null;
+            if (!string.IsNullOrWhiteSpace(metadata.OriginalTitle))
+                OriginalTitle = metadata.OriginalTitle;
+
+            AnimeTitleRu = string.Empty;
+            AnimeTitleEn = string.Empty;
+            AnimeTitleRomaji = !string.IsNullOrWhiteSpace(metadata.TitleRomaji)
+                ? metadata.TitleRomaji
+                : OriginalTitle;
+            AnimeTitle = AnimeTitleRomaji;
+
+            if (!string.IsNullOrWhiteSpace(metadata.EpisodeText))
+            {
+                RawEpisodeText = metadata.EpisodeText;
+                var epPrefix = _localizer?.GetLoc("anime.labels.episode") ?? "\u0421\u0435\u0440\u0438\u044F";
+                EpisodeTitle = $"{epPrefix} {metadata.EpisodeText}";
+            }
+
+            OnPropertyChanged(nameof(TopTitle));
+            OnPropertyChanged(nameof(BottomTitle));
+            OnPropertyChanged(nameof(HasBottomTitle));
+            OnPropertyChanged(nameof(EpisodeTitle));
+            OnPropertyChanged(nameof(HasEpisodeAndBottom));
+            OnPropertyChanged(nameof(TrackingTitle));
+            RefreshSkipSegments();
+        }
+        else
+        {
+            bool animeChanged = prevId.HasValue && metadata.AnimeId.HasValue && prevId.Value != metadata.AnimeId.Value;
+            ApplyMetadata(metadata, overwriteAll: animeChanged);
+        }
 
         if (!string.Equals(prevTitle, AnimeTitle, StringComparison.Ordinal) ||
             prevId != _animeId ||

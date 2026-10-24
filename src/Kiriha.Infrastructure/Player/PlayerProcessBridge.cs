@@ -35,6 +35,27 @@ public static class PlayerProcessBridge
     private static long s_lastWakeupAttemptTicks;
     private static readonly TimeSpan WakeupCooldown = TimeSpan.FromSeconds(15);
 
+    public static bool IsPlayerInstanceRunning()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            try
+            {
+                if (System.Threading.Mutex.TryOpenExisting(MutexName, out var mutex))
+                {
+                    mutex.Dispose();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
     public static bool IsMainAppRunning()
     {
         if (OperatingSystem.IsWindows())
@@ -158,6 +179,9 @@ public static class PlayerProcessBridge
         string? episodeText,
         string? torrentHash = null)
     {
+        if (!IsPlayerInstanceRunning())
+            return;
+
         var key = $"{originalTitle}|{animeId}|{titleRu}|{titleEn}|{titleRomaji}|{episodeText}|{torrentHash}";
         lock (s_forwardGate)
         {

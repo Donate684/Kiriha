@@ -134,7 +134,8 @@ public class AnisthesiaService : IHostedService, IDisposable, IExternalMediaDete
                         lastDetected.AnimeTitle != detected.AnimeTitle ||
                         lastDetected.Episode != detected.Episode ||
                         lastDetected.IsPlaying != detected.IsPlaying ||
-                        lastDetected.ProcessName != detected.ProcessName)
+                        lastDetected.ProcessName != detected.ProcessName ||
+                        lastDetected.Duration != detected.Duration)
                     {
                         lastDetected = detected;
                         MediaDetected?.Invoke(this, detected);

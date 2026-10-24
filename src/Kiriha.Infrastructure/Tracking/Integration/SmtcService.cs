@@ -38,13 +38,12 @@ public class SmtcService : IDisposable
     public (TimeSpan Position, TimeSpan Duration, DateTimeOffset LastUpdatedTime)? GetTimeline(string processName)
     {
 #if WINDOWS
-        if (_manager is null || !OperatingSystem.IsWindows()) return null;
+        if (string.IsNullOrWhiteSpace(processName) || _manager is null || !OperatingSystem.IsWindows()) return null;
 
         try
         {
             var sessions = _manager.GetSessions();
-            var session = sessions.FirstOrDefault(s => s.SourceAppUserModelId.Contains(processName, StringComparison.OrdinalIgnoreCase))
-                          ?? _manager.GetCurrentSession();
+            var session = sessions.FirstOrDefault(s => s.SourceAppUserModelId.Contains(processName, StringComparison.OrdinalIgnoreCase));
 
             if (session != null)
             {

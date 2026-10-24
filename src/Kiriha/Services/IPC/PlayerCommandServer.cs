@@ -39,12 +39,16 @@ public sealed class PlayerCommandServer : IDisposable
                 lock (_pipeGate) _currentPipe = pipe;
 
                 await pipe.WaitForConnectionAsync(_cts.Token);
-                using var reader = new StreamReader(pipe);
-                var line = await reader.ReadLineAsync(_cts.Token);
-                if (string.IsNullOrWhiteSpace(line)) continue;
 
-                var args = PipeArgumentSerializer.Deserialize(line);
-                _handleCommand(args);
+                var connectedPipe = pipe;
+                pipe = null;
+                lock (_pipeGate)
+                {
+                    if (ReferenceEquals(_currentPipe, connectedPipe))
+                        _currentPipe = null;
+                }
+
+                _ = HandleClientAsync(connectedPipe);
             }
             catch (OperationCanceledException)
             {
@@ -67,6 +71,28 @@ public sealed class PlayerCommandServer : IDisposable
                 }
                 pipe?.Dispose();
             }
+        }
+    }
+
+    private async Task HandleClientAsync(NamedPipeServerStream pipe)
+    {
+        try
+        {
+            using (pipe)
+            using (var reader = new StreamReader(pipe))
+            {
+                var line = await reader.ReadLineAsync(_cts.Token);
+                if (string.IsNullOrWhiteSpace(line))
+                    return;
+
+                var args = PipeArgumentSerializer.Deserialize(line);
+                _handleCommand(args);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "PlayerCommandServer: failed reading client command");
         }
     }
 

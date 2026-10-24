@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
@@ -53,13 +53,16 @@ public class ScrobbleTimerAndResumeTests : IDisposable
     [Fact]
     public void ScrobbleService_PercentageMode_ScrobblesWhenReachingThreshold()
     {
-        // Arrange: 50% threshold on a 100s video, media is currently at position 50s
+        // Arrange: 50% threshold on a 100s video (target 50s), 50s already elapsed
         _settingsService.Update(s =>
         {
             s.System.Scrobbler.Enabled = true;
             s.System.Scrobbler.Mode = ScrobbleDelayMode.Percentage;
             s.System.Scrobbler.DelayPercent = 50;
         }, save: false);
+
+        var mockStore = new Mock<IScrobbleProgressStore>();
+        mockStore.Setup(x => x.GetElapsed("10_1")).Returns(50);
 
         var service = new ScrobbleService(
             _mockProgressService.Object,
@@ -68,7 +71,8 @@ public class ScrobbleTimerAndResumeTests : IDisposable
             _mockNotificationService.Object,
             _mockBackgroundTasks.Object,
             _mockUiDispatcher.Object,
-            _mockLocalizer.Object);
+            _mockLocalizer.Object,
+            mockStore.Object);
 
         var media = new ParsedMedia
         {

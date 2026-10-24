@@ -13,7 +13,7 @@ Indispensable tool for those who care more about meticulously tracking “Chines
 *   **Torrent Aggregator:** Built-in search and **Nyaa** release RSS feed with automatic episode matching, release group extraction, and one-click magnet link launching.
 *   **Online Streaming Aggregator:** Built-in multi-provider online anime search and streaming (**AniLibria**, **AnimeLib**, **DreamCast**, **YummyAnime**, **Anime 365**) with direct stream extraction (Kodik, Aniboom, Sibnet) into **libmpv**, source and episode selection, and quality/language filtering.
 *   **Discord Rich Presence:** Automatically shares the currently watched title, poster, episode number, and elapsed time to your **Discord** status.
-*   **Automatic Scrobbling:** The background **Anisthesia** engine and **AnitomySharp** parser recognize titles and episode numbers on the fly from files and Windows media sessions without a single click.
+*   **Automatic Scrobbling:** Parser recognize titles and episode numbers on the fly from files and Windows media sessions without a single click.
 *   **Built-in Player:** Native engine powered by **libmpv**.
 *   **Torrent Streaming (TorrServer):** Direct in-memory BitTorrent streaming into **libmpv** without downloading files to disk. Real-time player overlay displaying download rate, active peer count, and pre-buffering progress.
 

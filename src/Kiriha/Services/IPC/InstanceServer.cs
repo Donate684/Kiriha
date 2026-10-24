@@ -30,18 +30,21 @@ public class InstanceServer : BackgroundService
                 pipeServer = new NamedPipeServerStream(
                     "Kiriha.InstanceServer",
                     PipeDirection.In,
-                    1,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous);
                 lock (_pipeGate) _currentPipe = pipeServer;
                 await pipeServer.WaitForConnectionAsync(stoppingToken);
-                using var reader = new System.IO.StreamReader(pipeServer);
-                var line = await reader.ReadLineAsync(stoppingToken);
-                if (!string.IsNullOrEmpty(line))
+
+                var connectedPipe = pipeServer;
+                pipeServer = null;
+                lock (_pipeGate)
                 {
-                    var args = PipeArgumentSerializer.Deserialize(line);
-                    HandleArguments(args);
+                    if (ReferenceEquals(_currentPipe, connectedPipe))
+                        _currentPipe = null;
                 }
+
+                _ = HandleClientAsync(connectedPipe, stoppingToken);
             }
             catch (OperationCanceledException) { break; }
             catch (ObjectDisposedException) when (stoppingToken.IsCancellationRequested) { break; }
@@ -61,6 +64,28 @@ public class InstanceServer : BackgroundService
             }
         }
     }
+    private async Task HandleClientAsync(NamedPipeServerStream pipeServer, CancellationToken stoppingToken)
+    {
+        try
+        {
+            using (pipeServer)
+            using (var reader = new System.IO.StreamReader(pipeServer))
+            {
+                var line = await reader.ReadLineAsync(stoppingToken);
+                if (!string.IsNullOrEmpty(line))
+                {
+                    var args = PipeArgumentSerializer.Deserialize(line);
+                    HandleArguments(args);
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "InstanceServer: failed reading client command");
+        }
+    }
+
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         var stopTask = base.StopAsync(cancellationToken);

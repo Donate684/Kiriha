@@ -75,6 +75,14 @@ public partial class SettingsService : IDisposable, ISettingsService
                 var dir = Path.GetDirectoryName(settingsPathOrDir)!;
                 if (string.IsNullOrEmpty(dir)) dir = ".";
 
+                var tempRoot = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var fullDir = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                if (string.Equals(fullDir, tempRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    dir = Path.Combine(dir, "Kiriha.Tests", Path.GetFileNameWithoutExtension(settingsPathOrDir));
+                    Directory.CreateDirectory(dir);
+                }
+
                 _legacySettingsPath = settingsPathOrDir;
                 _settingsDir = dir;
             }

@@ -23,6 +23,7 @@ public class ScrobbleServiceTests : IDisposable
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
     private readonly Mock<ILocalizer> _mockLocalizer;
+    private readonly Mock<IScrobbleProgressStore> _mockProgressStore;
     private readonly ScrobbleService _scrobbleService;
 
     public ScrobbleServiceTests()
@@ -44,6 +45,7 @@ public class ScrobbleServiceTests : IDisposable
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
         _mockUiDispatcher = new Mock<IUiDispatcher>();
         _mockLocalizer = new Mock<ILocalizer>();
+        _mockProgressStore = new Mock<IScrobbleProgressStore>();
 
         // When background task is queued, run it synchronously for testing
         _mockBackgroundTasks
@@ -60,7 +62,8 @@ public class ScrobbleServiceTests : IDisposable
             _mockNotificationService.Object,
             _mockBackgroundTasks.Object,
             _mockUiDispatcher.Object,
-            _mockLocalizer.Object);
+            _mockLocalizer.Object,
+            _mockProgressStore.Object);
     }
 
     [Fact]
@@ -278,6 +281,213 @@ public class ScrobbleServiceTests : IDisposable
 
         // Assert
         Assert.True(taskToken.Value.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task ScrobbleService_PercentageMode_KnownDuration_SeekDoesNotFastScrobbleOrFreezeTimer()
+    {
+        // Arrange
+        _settingsService.Update(s =>
+        {
+            s.System.Scrobbler.Enabled = true;
+            s.System.Scrobbler.Mode = ScrobbleDelayMode.Percentage;
+            s.System.Scrobbler.DelayPercent = 50;
+        }, save: false);
+
+        var bgMock = new Mock<IBackgroundTaskSupervisor>();
+        bgMock
+            .Setup(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, Func<CancellationToken, Task>, CancellationToken>((name, task, ct) =>
+            {
+                Task.Run(() => task(ct));
+            });
+
+        using var service = new ScrobbleService(
+            _mockProgressService.Object,
+            _mockHistoryService.Object,
+            _settingsService,
+            _mockNotificationService.Object,
+            bgMock.Object,
+            _mockUiDispatcher.Object,
+            _mockLocalizer.Object,
+            _mockProgressStore.Object);
+
+        var firstTickTcs = new TaskCompletionSource<string>();
+        var secondTickTcs = new TaskCompletionSource<string>();
+
+        service.CountdownUpdated += (s, msg) =>
+        {
+            if (string.IsNullOrEmpty(msg)) return;
+            if (!firstTickTcs.Task.IsCompleted)
+            {
+                firstTickTcs.TrySetResult(msg);
+            }
+            else
+            {
+                secondTickTcs.TrySetResult(msg);
+            }
+        };
+
+        var media = new ParsedMedia
+        {
+            Episode = "1",
+            Duration = TimeSpan.FromSeconds(100),
+            Position = TimeSpan.Zero,
+            IsPlaying = true
+        };
+        var match = new AnimeEntity { Id = 10, Progress = 0, TotalEpisodes = 12 };
+
+        // Act 1: start scrobble -> should emit 00:50 (50% of 100s)
+        service.StartScrobble(media, match);
+
+        var firstResult = await Task.WhenAny(firstTickTcs.Task, Task.Delay(10000));
+        Assert.Same(firstTickTcs.Task, firstResult);
+        Assert.Equal("00:50", await firstTickTcs.Task);
+
+        // Act 2: seek position forward to 90s (past the 50% threshold)
+        service.UpdatePlaybackProgress(true, TimeSpan.FromSeconds(90), TimeSpan.FromSeconds(100));
+
+        // Must not scrobble immediately on seek
+        await Task.Delay(200);
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
+
+        // Assert: countdown continues decrementing and does not freeze
+        var secondResult = await Task.WhenAny(secondTickTcs.Task, Task.Delay(10000));
+        Assert.Same(secondTickTcs.Task, secondResult);
+        Assert.Equal("00:49", await secondTickTcs.Task);
+
+        service.CancelScrobble();
+        _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ScrobbleService_PercentageMode_WithoutDuration_UsesDefaultEpisodeDuration()
+    {
+        // Arrange: 50% threshold, Duration = null (external player without SMTC), DelaySeconds = 300 (should be ignored)
+        _settingsService.Update(s =>
+        {
+            s.System.Scrobbler.Enabled = true;
+            s.System.Scrobbler.Mode = ScrobbleDelayMode.Percentage;
+            s.System.Scrobbler.DelayPercent = 50;
+            s.System.Scrobbler.DelaySeconds = 300;
+        }, save: false);
+
+        var bgMock = new Mock<IBackgroundTaskSupervisor>();
+        bgMock
+            .Setup(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, Func<CancellationToken, Task>, CancellationToken>((name, task, ct) =>
+            {
+                Task.Run(() => task(ct));
+            });
+
+        using var service = new ScrobbleService(
+            _mockProgressService.Object,
+            _mockHistoryService.Object,
+            _settingsService,
+            _mockNotificationService.Object,
+            bgMock.Object,
+            _mockUiDispatcher.Object,
+            _mockLocalizer.Object,
+            _mockProgressStore.Object);
+
+        var firstTickTcs = new TaskCompletionSource<string>();
+        service.CountdownUpdated += (s, msg) =>
+        {
+            if (!string.IsNullOrEmpty(msg) && !firstTickTcs.Task.IsCompleted)
+            {
+                firstTickTcs.TrySetResult(msg);
+            }
+        };
+
+        var media = new ParsedMedia
+        {
+            Episode = "1",
+            Duration = null,
+            IsPlaying = true
+        };
+        var match = new AnimeEntity { Id = 10, Progress = 0, TotalEpisodes = 12 };
+
+        // Act
+        service.StartScrobble(media, match);
+
+        // Assert: 50% of 24 min (1440s) = 720s -> 12:00 (not 05:00 from DelaySeconds)
+        var completed = await Task.WhenAny(firstTickTcs.Task, Task.Delay(10000));
+        Assert.Same(firstTickTcs.Task, completed);
+        Assert.Equal("12:00", await firstTickTcs.Task);
+
+        service.CancelScrobble();
+    }
+
+    [Fact]
+    public async Task ScrobbleService_PercentageMode_DynamicDurationUpdate_RecalculatesTarget()
+    {
+        // Arrange
+        _settingsService.Update(s =>
+        {
+            s.System.Scrobbler.Enabled = true;
+            s.System.Scrobbler.Mode = ScrobbleDelayMode.Percentage;
+            s.System.Scrobbler.DelayPercent = 50;
+        }, save: false);
+
+        var bgMock = new Mock<IBackgroundTaskSupervisor>();
+        bgMock
+            .Setup(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, Func<CancellationToken, Task>, CancellationToken>((name, task, ct) =>
+            {
+                Task.Run(() => task(ct));
+            });
+
+        using var service = new ScrobbleService(
+            _mockProgressService.Object,
+            _mockHistoryService.Object,
+            _settingsService,
+            _mockNotificationService.Object,
+            bgMock.Object,
+            _mockUiDispatcher.Object,
+            _mockLocalizer.Object,
+            _mockProgressStore.Object);
+
+        var firstTickTcs = new TaskCompletionSource<string>();
+        var updatedTickTcs = new TaskCompletionSource<string>();
+
+        service.CountdownUpdated += (s, msg) =>
+        {
+            if (string.IsNullOrEmpty(msg)) return;
+            if (!firstTickTcs.Task.IsCompleted)
+            {
+                firstTickTcs.TrySetResult(msg);
+            }
+            else if (msg.StartsWith("10:") || msg.StartsWith("09:"))
+            {
+                updatedTickTcs.TrySetResult(msg);
+            }
+        };
+
+        var media = new ParsedMedia
+        {
+            Episode = "1",
+            Duration = TimeSpan.Zero, // Initially 0
+            IsPlaying = true
+        };
+        var match = new AnimeEntity { Id = 10, Progress = 0, TotalEpisodes = 12 };
+
+        // Act 1: start with 0 duration -> fallback to 24 min (12:00)
+        service.StartScrobble(media, match);
+
+        var first = await Task.WhenAny(firstTickTcs.Task, Task.Delay(10000));
+        Assert.Same(firstTickTcs.Task, first);
+        Assert.Equal("12:00", await firstTickTcs.Task);
+
+        // Act 2: player sends updated duration = 1200s (20 min)
+        service.UpdatePlaybackProgress(true, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1200));
+
+        // Assert: target automatically recalculates to 50% of 1200s = 600s (10:00 or 09:59)
+        var updated = await Task.WhenAny(updatedTickTcs.Task, Task.Delay(10000));
+        Assert.Same(updatedTickTcs.Task, updated);
+        var updatedMsg = await updatedTickTcs.Task;
+        Assert.True(updatedMsg.StartsWith("10:") || updatedMsg.StartsWith("09:"), $"Expected 10:xx or 09:xx but got {updatedMsg}");
+
+        service.CancelScrobble();
     }
 
     public void Dispose()
