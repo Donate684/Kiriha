@@ -243,4 +243,82 @@ public sealed class MappingServiceTests
             DeleteQuietly(path);
         }
     }
+
+    [Fact]
+    public void ManualMappingService_LegacyFlatJson_IsResetOnLoad()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            File.WriteAllText(path, """{"tensei shitara ken deshita ii": 49891}""");
+
+            var service = new ManualMappingService(path);
+
+            Assert.False(service.TryGetMapping("tensei shitara ken deshita ii", out _));
+            Assert.False(File.Exists(path));
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public void ManualMappingService_OutdatedVersionJson_IsResetOnLoad()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            File.WriteAllText(path, """{"version": 1, "mappings": {"sousou no frieren": 123}}""");
+
+            var service = new ManualMappingService(path);
+
+            Assert.False(service.TryGetMapping("sousou no frieren", out _));
+            Assert.False(File.Exists(path));
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public async Task ManualMappingService_CurrentVersionJson_PersistsAndReloadsCorrectly()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            var service = new ManualMappingService(path);
+            service.AddMapping("Sousou no Frieren", 52991);
+            await service.FlushAsync();
+
+            var reloaded = new ManualMappingService(path);
+
+            Assert.True(reloaded.TryGetMapping("sousou no frieren", out int id));
+            Assert.Equal(52991, id);
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
+
+    [Fact]
+    public void ManualMappingService_CorruptJson_IsResetOnLoad()
+    {
+        var path = CreateTempMappingPath();
+        try
+        {
+            File.WriteAllText(path, "{ corrupt json !!!");
+
+            var service = new ManualMappingService(path);
+
+            Assert.False(service.TryGetMapping("test", out _));
+            Assert.False(File.Exists(path));
+        }
+        finally
+        {
+            DeleteQuietly(path);
+        }
+    }
 }

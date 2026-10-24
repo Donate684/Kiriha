@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Utils.Async;
 using Kiriha.Utils.Parsing;
@@ -9,13 +10,25 @@ namespace Kiriha.Services.Data.Mapping;
 
 public class ManualMappingService
 {
+    public const int CurrentSchemaVersion = 2;
+
+    /// <summary>
+    /// Sentinel value indicating the title was explicitly unlinked by the user
+    /// and must not be auto-matched.
+    /// </summary>
+    public const int NegativeMappingId = -1;
+
     private readonly string _mappingFilePath;
     // ConcurrentDictionary so reads from the matching path don't race with writes from
     // UI commands. Snapshotted (ToArray) on serialization to avoid "Collection was modified".
     private readonly ConcurrentDictionary<string, int> _manualMappings = new();
     private readonly Debouncer _saveDebouncer;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true
+    };
 
     public ManualMappingService(string? mappingFilePath = null)
     {
@@ -27,12 +40,6 @@ public class ManualMappingService
 
         LoadMappings();
     }
-
-    /// <summary>
-    /// Sentinel value indicating the title was explicitly unlinked by the user
-    /// and must not be auto-matched.
-    /// </summary>
-    public const int NegativeMappingId = -1;
 
     public bool TryGetMapping(string normalizedTitle, out int malId)
     {
@@ -92,13 +99,52 @@ public class ManualMappingService
         try
         {
             var json = File.ReadAllText(_mappingFilePath);
-            var loaded = JsonSerializer.Deserialize<Dictionary<string, int>>(json);
-            if (loaded is null) return;
-            foreach (var kv in loaded) _manualMappings[kv.Key] = kv.Value;
+            var doc = JsonSerializer.Deserialize<TitleMappingsDocument>(json, JsonOptions);
+            if (doc is null || doc.Version != CurrentSchemaVersion || doc.Mappings is null)
+            {
+                Log.Information(
+                    "ManualMappingService: Outdated title mappings schema (v{LoadedVersion} != v{CurrentVersion}), resetting file.",
+                    doc?.Version ?? 0,
+                    CurrentSchemaVersion);
+                _manualMappings.Clear();
+                TryDeleteMappingFile();
+                return;
+            }
+
+            foreach (var kv in doc.Mappings)
+            {
+                _manualMappings[kv.Key] = kv.Value;
+            }
+        }
+        catch (JsonException ex)
+        {
+            Log.Warning(ex, "ManualMappingService: Corrupt or incompatible title mappings JSON, resetting file: {Path}", _mappingFilePath);
+            _manualMappings.Clear();
+            TryDeleteMappingFile();
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "ManualMappingService: Failed to load title mappings");
+            Log.Error(ex, "ManualMappingService: Failed to load title mappings from {Path}", _mappingFilePath);
+        }
+    }
+
+    private void TryDeleteMappingFile()
+    {
+        try
+        {
+            if (File.Exists(_mappingFilePath))
+            {
+                File.Delete(_mappingFilePath);
+            }
+            var tmp = _mappingFilePath + ".tmp";
+            if (File.Exists(tmp))
+            {
+                File.Delete(tmp);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "ManualMappingService: Failed to delete mapping file: {Path}", _mappingFilePath);
         }
     }
 
@@ -114,7 +160,12 @@ public class ManualMappingService
             // a ConcurrentDictionary directly is safe but iterates lock-free; taking a snapshot
             // first guarantees a consistent view and is cheap for our small cardinality.
             var snapshot = _manualMappings.ToArray().ToDictionary(kv => kv.Key, kv => kv.Value);
-            var json = JsonSerializer.Serialize(snapshot, JsonOptions);
+            var document = new TitleMappingsDocument
+            {
+                Version = CurrentSchemaVersion,
+                Mappings = snapshot
+            };
+            var json = JsonSerializer.Serialize(document, JsonOptions);
 
             // Atomic write: write to temp + rename so a process kill mid-write
             // never produces a corrupt mappings file (which would be silently
@@ -138,5 +189,14 @@ public class ManualMappingService
     {
         _saveDebouncer.CancelPending();
         await SaveMappingsAsync();
+    }
+
+    private sealed record TitleMappingsDocument
+    {
+        [JsonPropertyName("version")]
+        public int Version { get; init; }
+
+        [JsonPropertyName("mappings")]
+        public Dictionary<string, int>? Mappings { get; init; }
     }
 }
