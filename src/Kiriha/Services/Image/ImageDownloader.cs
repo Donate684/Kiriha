@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Streaming.Constants;
 using Serilog;
 
 namespace Kiriha.Services.Data.Image;
@@ -153,8 +154,8 @@ public class ImageDownloader : IDisposable
             url.Contains("mangalib.me", StringComparison.OrdinalIgnoreCase) ||
             url.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
         {
-            request.Headers.TryAddWithoutValidation("Referer", "https://animelib.org/");
-            request.Headers.TryAddWithoutValidation("Origin", "https://animelib.org");
+            request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Referer, StreamingConstants.AnimeLib.RefererUrl);
+            request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Origin, StreamingConstants.AnimeLib.SiteUrl);
         }
 
         return request;
