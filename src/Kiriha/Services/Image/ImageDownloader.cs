@@ -106,7 +106,10 @@ public class ImageDownloader : IDisposable
                     try
                     {
                         using var client = _httpClientFactory.CreateClient("ImageClient");
-                        var bytes = await client.GetByteArrayAsync(url, cts.Token);
+                        using var request = CreateImageRequest(url);
+                        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, cts.Token);
+                        response.EnsureSuccessStatusCode();
+                        var bytes = await response.Content.ReadAsByteArrayAsync(cts.Token);
                         await File.WriteAllBytesAsync(tmpPath, bytes, cts.Token);
 
                         File.Move(tmpPath, localPath, true);
@@ -138,6 +141,23 @@ public class ImageDownloader : IDisposable
         }
 
         return string.Empty;
+    }
+
+    internal static HttpRequestMessage CreateImageRequest(string url)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        if (url.Contains("imglib.info", StringComparison.OrdinalIgnoreCase) ||
+            url.Contains("cdnlibs.org", StringComparison.OrdinalIgnoreCase) ||
+            url.Contains("animelib.org", StringComparison.OrdinalIgnoreCase) ||
+            url.Contains("mangalib.me", StringComparison.OrdinalIgnoreCase) ||
+            url.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
+        {
+            request.Headers.TryAddWithoutValidation("Referer", "https://animelib.org/");
+            request.Headers.TryAddWithoutValidation("Origin", "https://animelib.org");
+        }
+
+        return request;
     }
 
     public static string GetHashString(string inputString)

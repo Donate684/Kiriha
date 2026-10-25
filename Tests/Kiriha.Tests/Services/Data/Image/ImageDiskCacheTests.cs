@@ -86,4 +86,24 @@ public class ImageDiskCacheTests : IDisposable
         Assert.False(File.Exists(cachedFile));
         Assert.Empty(result); // Download failed because we didn't mock HttpClient, which is fine for this test.
     }
+
+    [Theory]
+    [InlineData("https://cover.imglib.info/uploads/anime/26785/cover/1cd411df-2c97-4ad0-b3e8-b7c328eac9f9.jpg", true)]
+    [InlineData("https://api.cdnlibs.org/uploads/cover.jpg", true)]
+    [InlineData("https://shikimori.io/uploads/poster/animes/1/test.jpg", false)]
+    public void CreateImageRequest_AnimeLibCdnUrls_AddsRefererHeader(string url, bool expectReferer)
+    {
+        using var request = ImageDownloader.CreateImageRequest(url);
+
+        if (expectReferer)
+        {
+            Assert.Equal("https://animelib.org/", request.Headers.Referrer?.ToString());
+            Assert.Contains("https://animelib.org", request.Headers.GetValues("Origin"));
+        }
+        else
+        {
+            Assert.Null(request.Headers.Referrer);
+            Assert.False(request.Headers.Contains("Origin"));
+        }
+    }
 }
