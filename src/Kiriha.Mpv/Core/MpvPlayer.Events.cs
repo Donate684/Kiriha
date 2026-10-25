@@ -32,9 +32,10 @@ public partial class MpvPlayer
                 {
                     unsafe { endFile = *(MpvEventEndFile*)mpvEvent.Data; }
                 }
-                if (_propertyCache.TryUpdatePlaybackEnded())
+                var endedArgs = new MpvPlaybackEndedEventArgs(endFile.Reason, endFile.Error);
+                if (endedArgs.StopsPlayback && _propertyCache.TryUpdatePlaybackEnded())
                     PublishPlaybackState();
-                PlaybackEnded?.Invoke(this, new MpvPlaybackEndedEventArgs(endFile.Reason, endFile.Error));
+                PlaybackEnded?.Invoke(this, endedArgs);
                 break;
 
             case LibMpvNative.MPV_EVENT_PROPERTY_CHANGE:

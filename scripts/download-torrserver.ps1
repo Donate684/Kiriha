@@ -14,8 +14,8 @@ $exePath = Join-Path $torrServerDir "torrserver.exe"
 $exeExists = Test-Path $exePath
 
 # Known pinned release fallback in case dynamic metadata fetching fails
-$fallbackVersion = "MatriX.146"
-$fallbackUrl = "https://github.com/YouROK/TorrServer/releases/download/MatriX.146/TorrServer-windows-amd64.exe"
+$fallbackVersion = "MatriX.147.1"
+$fallbackUrl = "https://github.com/YouROK/TorrServer/releases/download/MatriX.147.1/TorrServer-windows-amd64.exe"
 
 $latestVersion = $null
 $downloadUrl = $null

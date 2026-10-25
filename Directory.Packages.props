@@ -53,7 +53,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <!-- Misc -->
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
     <PackageVersion Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageVersion Include="Velopack" Version="1.2.161" />
     <!-- Tests -->

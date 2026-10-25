@@ -31,6 +31,7 @@ public partial class PlayerViewModel
         _timer.Tick += OnTimerTick;
         if (IsPlaying)
         {
+            Kiriha.Infrastructure.Utils.PowerManager.KeepDisplayActive();
             _timer.Start();
         }
 
@@ -115,6 +116,16 @@ public partial class PlayerViewModel
         ApplyTimelineSnapshot(_timeline.Reset());
         _subtitleDelay = 0;
         IsPlaying = PlayerAutoPlay;
+        if (IsPlaying)
+        {
+            Kiriha.Infrastructure.Utils.PowerManager.KeepDisplayActive();
+            _timer?.Start();
+        }
+        else
+        {
+            Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
+            _timer?.Stop();
+        }
         IsLoading = true;
         HasPlaybackError = false;
         PlaybackErrorMessage = string.Empty;
@@ -140,6 +151,11 @@ public partial class PlayerViewModel
     private void OnTimerTick(object? sender, EventArgs e)
     {
         if (!_playback.HasPlayer) return;
+
+        if (IsPlaying)
+        {
+            Kiriha.Infrastructure.Utils.PowerManager.KeepDisplayActive();
+        }
 
         if (IsPlaying || _lastPublishedIsPlaying != IsPlaying || Math.Abs(_lastPublishedPosition - CurrentTime) > 0.5)
         {

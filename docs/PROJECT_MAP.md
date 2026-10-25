@@ -68,7 +68,6 @@ graph TD
     MpvUI --> Abstractions
     MpvUI --> Infrastructure
     MpvUI --> Data
-    MpvUI --> Tracking
     MpvUI --> Mpv
 
     App --> Domain
