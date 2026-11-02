@@ -14,6 +14,8 @@ public record MediaChangedMessage(ParsedMedia? Media) : TrackingMessage;
 
 public record AnimeMatchedMessage(AnimeEntity? Anime) : TrackingMessage;
 
+public record AnimeProgressChangedMessage(AnimeEntity Anime, int Progress) : TrackingMessage;
+
 public record TrackingCountdownMessage(string Countdown) : TrackingMessage;
 
 public record TrackingStatusMessage(string Status) : TrackingMessage;

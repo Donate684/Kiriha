@@ -1,7 +1,11 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.TorrServer;
 using Kiriha.Core.Streaming.Abstractions;
@@ -162,7 +166,32 @@ public partial class TorrentsViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsEmptyResults));
             OnPropertyChanged(nameof(HasOnlineResults));
         };
-        _animeRepo.Collection.CollectionChanged += (_, _) => RefreshWatchingList();
+        _animeRepo.Collection.CollectionChanged += (_, _) =>
+        {
+            RefreshWatchingList();
+            if (IsOnlineEpisodeSelectorVisible && ActiveOnlineAnime != null)
+            {
+                var matched = ResolveMatchedAnime(ActiveOnlineAnime.Title);
+                if (matched != null && !ReferenceEquals(_activeMatchedAnime, matched))
+                {
+                    SetActiveMatchedAnime(matched);
+                    UpdateEpisodeWatchedStates(matched);
+                }
+            }
+        };
         RefreshWatchingList();
+
+        WeakReferenceMessenger.Default.Register<AnimeProgressChangedMessage>(this, (r, m) =>
+        {
+            Dispatcher.UIThread.Post(() => ((TorrentsViewModel)r).OnAnimeProgressChanged(m));
+        });
+        WeakReferenceMessenger.Default.Register<AnimeMatchedMessage>(this, (r, m) =>
+        {
+            Dispatcher.UIThread.Post(() => ((TorrentsViewModel)r).OnAnimeMatched(m));
+        });
+        WeakReferenceMessenger.Default.Register<AnimeListRefreshMessage>(this, (r, m) =>
+        {
+            Dispatcher.UIThread.Post(() => ((TorrentsViewModel)r).OnAnimeListRefreshed());
+        });
     }
 }

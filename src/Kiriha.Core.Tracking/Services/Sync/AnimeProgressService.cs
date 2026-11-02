@@ -220,6 +220,7 @@ public class AnimeProgressService : IProgressUpdateService
             item.Status = UserAnimeStatus.Watching;
             item.DateStarted = DateTime.Today;
             item.DateCompleted = null;
+            WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(item, episode));
         });
 
         await _userAnimeRepo.UpdateProgressAsync(item, episode, UserAnimeStatus.Watching);
@@ -256,6 +257,8 @@ public class AnimeProgressService : IProgressUpdateService
             item.Progress = nextProgress;
             if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
                 item.Status = nextStatus.Value;
+
+            WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(item, nextProgress));
         });
 
         await _userAnimeRepo.UpdateProgressAsync(item, nextProgress, nextStatus);

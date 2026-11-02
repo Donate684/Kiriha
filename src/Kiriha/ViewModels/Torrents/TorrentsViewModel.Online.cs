@@ -2,6 +2,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
@@ -548,6 +549,7 @@ public partial class TorrentsViewModel
             }
 
             var matchedAnime = ResolveMatchedAnime(item.Title);
+            Dispatcher.UIThread.Post(() => SetActiveMatchedAnime(matchedAnime));
             var watchedProgress = matchedAnime?.Progress ?? 0;
             var isCompleted = matchedAnime?.Status == UserAnimeStatus.Completed;
             var isWatching = matchedAnime?.Status == UserAnimeStatus.Watching;
@@ -571,7 +573,8 @@ public partial class TorrentsViewModel
 
                 if (OnlineEpisodes.Count > 0)
                 {
-                    SelectOnlineEpisodeCommand.Execute(OnlineEpisodes[0]);
+                    var targetEp = OnlineEpisodes.FirstOrDefault(e => !e.IsWatched) ?? OnlineEpisodes[0];
+                    SelectOnlineEpisodeCommand.Execute(targetEp);
                 }
             });
         }
@@ -601,6 +604,7 @@ public partial class TorrentsViewModel
         }
 
         SelectedOnlineEpisode = episodeItem;
+        _selectedEpisodeWasWatchedWhenSelected = episodeItem.IsWatched;
         OnlineSources.Clear();
         DisplayedOnlineSources.Clear();
         IsOnlineSourcesLoading = true;
@@ -771,6 +775,7 @@ public partial class TorrentsViewModel
         Dispatcher.UIThread.Post(() =>
         {
             UpdateEpisodeWatchedStates(matchedAnime);
+            WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(matchedAnime, newProgress));
         });
     }
 
@@ -810,6 +815,99 @@ public partial class TorrentsViewModel
                 ep.IsNew = false;
             }
         }
+
+        if (SelectedOnlineEpisode != null && SelectedOnlineEpisode.IsWatched && !_selectedEpisodeWasWatchedWhenSelected)
+        {
+            var nextUnwatched = OnlineEpisodes.FirstOrDefault(e => !e.IsWatched);
+            if (nextUnwatched != null)
+            {
+                SelectOnlineEpisodeCommand.Execute(nextUnwatched);
+            }
+        }
+    }
+
+    private AnimeEntity? _activeMatchedAnime;
+    private bool _selectedEpisodeWasWatchedWhenSelected;
+
+    public void OnAnimeProgressChanged(AnimeProgressChangedMessage message)
+    {
+        RefreshWatchingList();
+
+        if (!IsOnlineEpisodeSelectorVisible || ActiveOnlineAnime == null)
+            return;
+
+        var targetAnime = _activeMatchedAnime ?? ResolveMatchedAnime(ActiveOnlineAnime.Title);
+        if (targetAnime != null && (targetAnime.Id == message.Anime.Id || IsAnimeTitleMatch(message.Anime, ActiveOnlineAnime.Title)))
+        {
+            if (!ReferenceEquals(_activeMatchedAnime, targetAnime))
+            {
+                SetActiveMatchedAnime(targetAnime);
+            }
+            UpdateEpisodeWatchedStates(targetAnime);
+        }
+    }
+
+    public void OnAnimeMatched(AnimeMatchedMessage message)
+    {
+        if (!IsOnlineEpisodeSelectorVisible || ActiveOnlineAnime == null || message.Anime == null)
+            return;
+
+        if (IsAnimeTitleMatch(message.Anime, ActiveOnlineAnime.Title) ||
+            OnlineRelevanceScorer.ComputeRelevance(message.Anime.Title, ActiveOnlineAnime.Title) >= 0.65 ||
+            (!string.IsNullOrWhiteSpace(message.Anime.RussianTitle) && OnlineRelevanceScorer.ComputeRelevance(message.Anime.RussianTitle, ActiveOnlineAnime.Title) >= 0.65))
+        {
+            SetActiveMatchedAnime(message.Anime);
+            UpdateEpisodeWatchedStates(message.Anime);
+        }
+    }
+
+    public void OnAnimeListRefreshed()
+    {
+        RefreshWatchingList();
+
+        if (IsOnlineEpisodeSelectorVisible && ActiveOnlineAnime != null)
+        {
+            var matched = ResolveMatchedAnime(ActiveOnlineAnime.Title);
+            if (matched != null)
+            {
+                if (!ReferenceEquals(_activeMatchedAnime, matched))
+                {
+                    SetActiveMatchedAnime(matched);
+                }
+                UpdateEpisodeWatchedStates(matched);
+            }
+        }
+    }
+
+    public void SetActiveMatchedAnime(AnimeEntity? anime)
+    {
+        if (_activeMatchedAnime != null)
+        {
+            _activeMatchedAnime.PropertyChanged -= OnActiveMatchedAnimePropertyChanged;
+        }
+
+        _activeMatchedAnime = anime;
+
+        if (_activeMatchedAnime != null)
+        {
+            _activeMatchedAnime.PropertyChanged += OnActiveMatchedAnimePropertyChanged;
+        }
+    }
+
+    private void OnActiveMatchedAnimePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AnimeEntity.Progress) ||
+            e.PropertyName == nameof(AnimeEntity.Status) ||
+            e.PropertyName == nameof(AnimeEntity.Presentation))
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (IsOnlineEpisodeSelectorVisible && _activeMatchedAnime != null)
+                {
+                    UpdateEpisodeWatchedStates(_activeMatchedAnime);
+                }
+            });
+        }
     }
 
     private AnimeEntity? ResolveMatchedAnime(string? title)
@@ -844,7 +942,10 @@ public partial class TorrentsViewModel
         return _animeRepo.Collection.FirstOrDefault(a =>
             NormalizeTitle(a.Title) == norm ||
             (!string.IsNullOrEmpty(a.EnglishTitle) && NormalizeTitle(a.EnglishTitle) == norm) ||
-            (!string.IsNullOrEmpty(a.RussianTitle) && NormalizeTitle(a.RussianTitle) == norm));
+            (!string.IsNullOrEmpty(a.RussianTitle) && NormalizeTitle(a.RussianTitle) == norm) ||
+            a.AlternativeTitles.Any(alt => NormalizeTitle(alt) == norm) ||
+            OnlineRelevanceScorer.ComputeRelevance(a.Title, title) >= 0.75 ||
+            (!string.IsNullOrEmpty(a.RussianTitle) && OnlineRelevanceScorer.ComputeRelevance(a.RussianTitle, title) >= 0.75));
     }
 
     private static bool IsAnimeTitleMatch(AnimeEntity anime, string title)
@@ -854,7 +955,8 @@ public partial class TorrentsViewModel
 
         return NormalizeTitle(anime.Title) == norm ||
                (!string.IsNullOrEmpty(anime.EnglishTitle) && NormalizeTitle(anime.EnglishTitle) == norm) ||
-               (!string.IsNullOrEmpty(anime.RussianTitle) && NormalizeTitle(anime.RussianTitle) == norm);
+               (!string.IsNullOrEmpty(anime.RussianTitle) && NormalizeTitle(anime.RussianTitle) == norm) ||
+               anime.AlternativeTitles.Any(alt => NormalizeTitle(alt) == norm);
     }
 
     private static string NormalizeTitle(string? input)
@@ -867,6 +969,8 @@ public partial class TorrentsViewModel
     public void CloseOnlineEpisodeSelector()
     {
         _streamingCts?.Cancel();
+        SetActiveMatchedAnime(null);
+        _selectedEpisodeWasWatchedWhenSelected = false;
         IsOnlineEpisodeSelectorVisible = false;
         IsOnlineEpisodeSelectorLoading = false;
         IsOnlineSourcesLoading = false;

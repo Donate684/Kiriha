@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
@@ -239,6 +240,10 @@ public class AnimeListActionService : IAnimeListActionService
             }
 
             updatedItem.CopyTo(originalItem);
+            if (progressChanged)
+            {
+                WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(originalItem, newProgress));
+            }
         });
 
         await _animeRepository.AddOrUpdateAnimeAsync(originalItem);
