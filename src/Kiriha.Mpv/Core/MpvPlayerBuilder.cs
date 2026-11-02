@@ -55,13 +55,13 @@ public static class MpvPlayerBuilder
 
             // Keep the embedded player modest: mpv defaults are tuned for a full player,
             // while Kiriha mostly needs enough buffer for smooth anime playback.
-            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "demuxer-max-bytes", "128MiB"), "increase demuxer cache");
-            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "demuxer-max-back-bytes", "32MiB"), "increase back buffer");
-            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "demuxer-readahead-secs", "60"), "buffer ahead up to 60s");
+            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, Constants.MpvConstants.Options.DemuxerMaxBytes, "128MiB"), "increase demuxer cache");
+            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, Constants.MpvConstants.Options.DemuxerMaxBackBytes, "32MiB"), "increase back buffer");
+            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, Constants.MpvConstants.Options.DemuxerReadaheadSecs, "60"), "buffer ahead up to 60s");
 
             // Network resilience for online streaming: avoid hanging indefinitely on laggy CDNs/mirrors
-            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "network-timeout", "20"), "set network timeout to 20s");
-            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, "stream-lavf-o", "reconnect=1,reconnect_streamed=1,reconnect_delay_max=5"), "enable HTTP stream reconnect");
+            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, Constants.MpvConstants.Options.NetworkTimeout, "20"), "set network timeout to 20s");
+            MpvPlayer.Check(LibMpvNative.mpv_set_option_string(handle, Constants.MpvConstants.Options.StreamLavfOptions, "reconnect=1,reconnect_streamed=1,reconnect_delay_max=5"), "enable HTTP stream reconnect");
             player.ScreenshotManager.ConfigureScreenshots(handle);
 
             var fontsDir = MpvPlayer.ResolveFontsDirectory();

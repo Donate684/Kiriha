@@ -51,10 +51,10 @@ public sealed partial class MpvThumbnailer : IDisposable
         SetOption("vd-lavc-skipidct", "nonref");
         SetOption("video-rotate", "no");
         SetOption("sws-scaler", "bicubic");
-        SetOption("demuxer-readahead-secs", "2");
+        SetOption(Constants.MpvConstants.Options.DemuxerReadaheadSecs, "2");
         SetOption("vf", $"lavfi=[scale=w={ThumbnailWidth}:h={ThumbnailHeight}:force_original_aspect_ratio=decrease:flags=bicubic,pad=w={ThumbnailWidth}:h={ThumbnailHeight}:x=(ow-iw)/2:y=(oh-ih)/2]");
-        SetOption("demuxer-max-bytes", "16MiB");
-        SetOption("demuxer-max-back-bytes", "4MiB");
+        SetOption(Constants.MpvConstants.Options.DemuxerMaxBytes, "16MiB");
+        SetOption(Constants.MpvConstants.Options.DemuxerMaxBackBytes, "4MiB");
 
         Check(LibMpvNative.mpv_initialize(_handle), "initialize mpv thumbnailer");
     }
