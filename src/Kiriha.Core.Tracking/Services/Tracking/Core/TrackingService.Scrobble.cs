@@ -175,43 +175,19 @@ public partial class TrackingService
 
             if (matched is null)
             {
-                var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled)
-                    ?? System.Linq.Enumerable.FirstOrDefault(_trackers.OfType<IMalApiService>());
-                if (activeTracker != null)
+                var fetched = await FetchDetailsFromTrackersAsync(animeId);
+                if (fetched != null)
                 {
-                    try
-                    {
-                        var fetched = await activeTracker.GetAnimeDetailsAsync(animeId);
-                        if (fetched != null)
-                        {
-                            matched = fetched.Clone();
-                            matched.Status = UserAnimeStatus.None; // Ensure it's not scrobbled or auto-added incorrectly
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Serilog.Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId}", animeId);
-                    }
+                    matched = fetched.Clone();
+                    matched.Status = UserAnimeStatus.None; // Ensure it's not scrobbled or auto-added incorrectly
                 }
             }
-            else if (matched.IsMissingDetails)
+            else if (matched.IsMissingDetails || (matched.MediaKind == MediaKind.Anime && matched.TotalEpisodes <= 0))
             {
-                var activeTracker = System.Linq.Enumerable.FirstOrDefault(_trackers, t => t.IsEnabled)
-                    ?? System.Linq.Enumerable.FirstOrDefault(_trackers.OfType<IMalApiService>());
-                if (activeTracker != null)
+                var fetched = await FetchDetailsFromTrackersAsync(animeId);
+                if (fetched != null)
                 {
-                    try
-                    {
-                        var fetched = await activeTracker.GetAnimeDetailsAsync(animeId);
-                        if (fetched != null)
-                        {
-                            matched.MergeFullDetails(fetched);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Serilog.Log.Warning(ex, "Failed to enrich anime details for ID {AnimeId}", animeId);
-                    }
+                    matched.MergeFullDetails(fetched);
                 }
             }
 
@@ -270,6 +246,10 @@ public partial class TrackingService
                 : media;
 
             NotifyPlayerMetadata(effectiveMedia, matched);
+            UpdateDiscordPresence(effectiveMedia, matched);
+
+            if (matched.Status != UserAnimeStatus.None)
+                _scrobbleService.StartScrobble(effectiveMedia, matched);
         }
     }
 
@@ -338,5 +318,25 @@ public partial class TrackingService
         string shikiUrl = $"{ShikiEndpoints.WebsiteUrl(_settingsService.Current.Api.ShikiMirror)}{matched.Id}";
 
         _discordService.UpdatePresence(discordTitle, media.Episode, matched.TotalEpisodes, malUrl, shikiUrl, media.Position, media.Duration, matched.MainPictureUrl, media.IsPlaying);
+    }
+
+    private async Task<AnimeEntity?> FetchDetailsFromTrackersAsync(int animeId)
+    {
+        foreach (var tracker in System.Linq.Enumerable.Concat(
+            System.Linq.Enumerable.Where(_trackers, t => t.IsEnabled),
+            System.Linq.Enumerable.Where(_trackers, t => !t.IsEnabled)))
+        {
+            try
+            {
+                var fetched = await tracker.GetAnimeDetailsAsync(animeId);
+                if (fetched != null)
+                    return fetched;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId} via {Tracker}", animeId, tracker.TrackerId);
+            }
+        }
+        return null;
     }
 }

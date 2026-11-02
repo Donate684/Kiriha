@@ -88,10 +88,12 @@ public partial class ShikiMetadataService
     {
         if (item is null) return;
         bool useRussian = _settingsService.Current.UI.UseRussianTitles || _settingsService.Current.UI.UseRussianDescriptions;
-        if (!useRussian) return;
-        if (!string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(item.RussianSynopsis)) return;
+        bool missingEpisodes = item.MediaKind == MediaKind.Anime && item.TotalEpisodes <= 0;
+        if (!useRussian && !missingEpisodes) return;
+        if (!missingEpisodes && !string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(item.RussianSynopsis)) return;
 
-        bool missingData = (string.IsNullOrEmpty(item.RussianTitle) && _settingsService.Current.UI.UseRussianTitles) ||
+        bool missingData = missingEpisodes ||
+                           (string.IsNullOrEmpty(item.RussianTitle) && _settingsService.Current.UI.UseRussianTitles) ||
                            (string.IsNullOrEmpty(item.RussianSynopsis) && _settingsService.Current.UI.UseRussianDescriptions);
         TimeSpan? maxAge = missingData ? TimeSpan.FromHours(12) : null;
 
@@ -123,6 +125,12 @@ public partial class ShikiMetadataService
         if (!string.IsNullOrEmpty(meta.PosterUrl) && (string.IsNullOrEmpty(item.MainPictureUrl) || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl)))
         {
             item.MainPictureUrl = meta.PosterUrl;
+            changed = true;
+        }
+
+        if (item.MediaKind == MediaKind.Anime && item.TotalEpisodes <= 0 && meta.Episodes is > 0)
+        {
+            item.TotalEpisodes = meta.Episodes.Value;
             changed = true;
         }
 

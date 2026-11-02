@@ -44,9 +44,10 @@ public class AiringInfoService : IAiringInfoService
         if (anime.Status != UserAnimeStatus.Watching) return;
 
         var status = anime.StatusDetailed?.ToLowerInvariant();
-        bool isTrackableStatus = status is "currently_airing" or "currently airing" or "ongoing" or "releasing"
+        bool isTrackableStatus = anime.TotalEpisodes <= 0
+            || status is "currently_airing" or "currently airing" or "ongoing" or "releasing"
             || AppConstants.AiringStatus.IsCurrentlyAiring(status)
-            || (!AppConstants.AiringStatus.IsFinishedAiring(status) && (anime.TotalEpisodes == 0 || anime.EpisodesAired < anime.TotalEpisodes));
+            || (!AppConstants.AiringStatus.IsFinishedAiring(status) && anime.EpisodesAired < anime.TotalEpisodes);
 
         if (!isTrackableStatus && !anime.NextEpisodeAt.HasValue) return;
 

@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Hosting;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -60,6 +61,39 @@ public partial class TrackingService : ITrackingService, IHostedService
         _externalMediaDetector.MediaDetected += OnMediaDetected;
         _externalMediaDetector.MediaCleared += OnMediaCleared;
         _scrobbleService.CountdownUpdated += OnScrobbleCountdownUpdated;
+        WeakReferenceMessenger.Default.Register<AnimeListRefreshMessage>(this, (_, _) => OnAnimeListRefreshed());
+    }
+
+    private void OnAnimeListRefreshed()
+    {
+        ParsedMedia? media;
+        AnimeEntity? matched;
+        lock (_state)
+        {
+            media = _currentMedia;
+            matched = _matchedAnime;
+        }
+
+        if (media != null && matched != null)
+        {
+            var inRepo = _animeRepo.Collection.FirstOrDefault(x => x.Id == matched.Id);
+            if (inRepo != null && inRepo.Status != UserAnimeStatus.None &&
+                (!ReferenceEquals(matched, inRepo) || matched.Status == UserAnimeStatus.None))
+            {
+                lock (_state)
+                {
+                    _matchedAnime = inRepo;
+                }
+
+                var effectiveMedia = (inRepo.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
+                    ? media.WithEpisode("1")
+                    : media;
+
+                NotifyPlayerMetadata(effectiveMedia, inRepo);
+                UpdateDiscordPresence(effectiveMedia, inRepo);
+                _scrobbleService.StartScrobble(effectiveMedia, inRepo);
+            }
+        }
     }
 
     private void OnPlayerStateChanged(object? sender, InternalPlayerState e) => SetInternalMedia(e);
@@ -91,6 +125,7 @@ public partial class TrackingService : ITrackingService, IHostedService
         _externalMediaDetector.MediaCleared -= OnMediaCleared;
         _scrobbleService.CountdownUpdated -= OnScrobbleCountdownUpdated;
         _scrobbleService.CancelScrobble();
+        WeakReferenceMessenger.Default.Unregister<AnimeListRefreshMessage>(this);
     }
 }
 

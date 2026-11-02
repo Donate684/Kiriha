@@ -25,7 +25,7 @@ public partial class NowPlayingViewModel
         {
             MatchedAnime = suggestion;
             IsManuallyMapped = true;
-            if (suggestion.IsMissingDetails)
+            if (NeedsDetailsEnrichment(suggestion))
             {
                 EnsureFullDetailsSafeAsync(suggestion).SafeFireAndForget("NowPlaying.SelectSuggestion");
             }
@@ -62,7 +62,17 @@ public partial class NowPlayingViewModel
         try
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _disposeCts.Token);
-            var results = await _malApi.SearchAnimeAsync(SearchQuery, linkedCts.Token);
+            string actualQuery = SearchQuery;
+            if (actualQuery.Any(c => c >= '\u0400' && c <= '\u04FF'))
+            {
+                var englishName = await _shikiMetadataService.ResolveRussianQueryAsync(actualQuery, linkedCts.Token);
+                if (!string.IsNullOrEmpty(englishName))
+                {
+                    actualQuery = englishName;
+                }
+            }
+
+            var results = await _malApi.SearchAnimeAsync(actualQuery, linkedCts.Token);
             if (linkedCts.Token.IsCancellationRequested) return;
 
             Suggestions.Clear();

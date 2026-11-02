@@ -72,6 +72,11 @@ public class ScrobbleService : IScrobbleService, IDisposable
             return;
         }
 
+        if (ep == 0 && match.TotalEpisodes == 1)
+        {
+            ep = 1;
+        }
+
         // Auto-Rewatch candidate: title is Completed, not currently rewatching, and user launched episode 1
         bool isRewatchCandidate = match.Status == UserAnimeStatus.Completed && !match.IsRewatching && ep == 1;
 

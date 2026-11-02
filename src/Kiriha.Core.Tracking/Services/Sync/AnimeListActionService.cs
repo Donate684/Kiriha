@@ -336,9 +336,10 @@ public class AnimeListActionService : IAnimeListActionService
         if (item.Status != UserAnimeStatus.Watching) return;
 
         var statusDetailed = item.StatusDetailed?.ToLowerInvariant();
-        bool isOngoing = statusDetailed is "currently_airing" or "currently airing" or "ongoing" or "releasing"
+        bool isOngoing = item.TotalEpisodes <= 0
+            || statusDetailed is "currently_airing" or "currently airing" or "ongoing" or "releasing"
             || AppConstants.AiringStatus.IsCurrentlyAiring(statusDetailed)
-            || (!AppConstants.AiringStatus.IsFinishedAiring(statusDetailed) && (item.TotalEpisodes == 0 || item.EpisodesAired < item.TotalEpisodes))
+            || (!AppConstants.AiringStatus.IsFinishedAiring(statusDetailed) && item.EpisodesAired < item.TotalEpisodes)
             || item.NextEpisodeAt.HasValue;
 
         if (isOngoing)

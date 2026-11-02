@@ -21,6 +21,10 @@ public partial class NowPlayingViewModel
             {
                 Log.Warning("NowPlayingViewModel: Failed to add anime to watching: {Message}", result.Message);
             }
+            else
+            {
+                _trackingService.NotifyCurrentMediaMetadataUpdated(MatchedAnime);
+            }
 
             OnPropertyChanged(nameof(IsNotInList));
         }

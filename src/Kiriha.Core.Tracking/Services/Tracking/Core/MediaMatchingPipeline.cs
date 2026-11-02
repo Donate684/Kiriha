@@ -54,43 +54,19 @@ public class MediaMatchingPipeline
             }
             if (matched is null)
             {
-                var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled)
-                    ?? _trackers.OfType<IMalApiService>().FirstOrDefault();
-                if (activeTracker != null)
+                var fetched = await FetchDetailsFromTrackersAsync(malId.Value);
+                if (fetched != null)
                 {
-                    try
-                    {
-                        var fetched = await activeTracker.GetAnimeDetailsAsync(malId.Value);
-                        if (fetched != null)
-                        {
-                            matched = fetched.Clone();
-                            matched.Status = UserAnimeStatus.None;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId}", malId.Value);
-                    }
+                    matched = fetched.Clone();
+                    matched.Status = UserAnimeStatus.None;
                 }
             }
-            else if (matched.IsMissingDetails)
+            else if (matched.IsMissingDetails || (matched.MediaKind == MediaKind.Anime && matched.TotalEpisodes <= 0))
             {
-                var activeTracker = _trackers.FirstOrDefault(t => t.IsEnabled)
-                    ?? _trackers.OfType<IMalApiService>().FirstOrDefault();
-                if (activeTracker != null)
+                var fetched = await FetchDetailsFromTrackersAsync(malId.Value);
+                if (fetched != null)
                 {
-                    try
-                    {
-                        var fetched = await activeTracker.GetAnimeDetailsAsync(malId.Value);
-                        if (fetched != null)
-                        {
-                            matched.MergeFullDetails(fetched);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning(ex, "Failed to enrich anime details for ID {AnimeId}", malId.Value);
-                    }
+                    matched.MergeFullDetails(fetched);
                 }
             }
 
@@ -98,5 +74,23 @@ public class MediaMatchingPipeline
         }
 
         return new MediaMatchNotFound();
+    }
+
+    private async Task<AnimeEntity?> FetchDetailsFromTrackersAsync(int animeId)
+    {
+        foreach (var tracker in _trackers.Where(t => t.IsEnabled).Concat(_trackers.Where(t => !t.IsEnabled)))
+        {
+            try
+            {
+                var fetched = await tracker.GetAnimeDetailsAsync(animeId);
+                if (fetched != null)
+                    return fetched;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to fetch anime details for ID {AnimeId} via {Tracker}", animeId, tracker.TrackerId);
+            }
+        }
+        return null;
     }
 }

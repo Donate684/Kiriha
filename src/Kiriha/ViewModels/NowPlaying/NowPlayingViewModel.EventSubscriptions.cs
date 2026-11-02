@@ -40,7 +40,7 @@ public partial class NowPlayingViewModel
             IsManuallyMapped = _trackingService.IsManuallyMapped();
             LogDetection(CurrentMedia ?? new ParsedMedia { AnimeTitle = anime.Title }, _localizer.GetLoc("scrobbler.status.matched"));
 
-            if (anime.IsMissingDetails)
+            if (NeedsDetailsEnrichment(anime))
             {
                 EnsureFullDetailsSafeAsync(anime).SafeFireAndForget("NowPlaying.AnimeMatched");
             }

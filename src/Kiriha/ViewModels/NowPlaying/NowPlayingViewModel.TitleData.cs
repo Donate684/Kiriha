@@ -21,6 +21,9 @@ public partial class NowPlayingViewModel
 
     public bool HasAlternativeTitles => AllAlternativeTitles.Any();
 
+    private static bool NeedsDetailsEnrichment(AnimeEntity anime) =>
+        anime.IsMissingDetails || (anime.MediaKind == MediaKind.Anime && anime.TotalEpisodes <= 0);
+
     partial void OnMatchedAnimeChanged(AnimeEntity? value)
     {
         UpdateAlternativeTitles(value);
@@ -28,7 +31,7 @@ public partial class NowPlayingViewModel
 
         if (value is null) return;
 
-        if (value.IsMissingDetails)
+        if (NeedsDetailsEnrichment(value))
         {
             EnsureFullDetailsSafeAsync(value).SafeFireAndForget("NowPlaying.OnMatchedAnimeChanged");
         }
@@ -41,7 +44,7 @@ public partial class NowPlayingViewModel
     public async Task EnsureFullDetailsSafeAsync(AnimeEntity anime)
     {
         if (anime is null || anime.Id <= 0) return;
-        if (!anime.IsMissingDetails) return;
+        if (!NeedsDetailsEnrichment(anime)) return;
 
         int animeId = anime.Id;
         if (!_detailsLoadingIds.TryAdd(animeId, 0)) return;
@@ -55,14 +58,18 @@ public partial class NowPlayingViewModel
                 ? await _malApi.GetMangaDetailsAsync(animeId, _disposeCts.Token)
                 : await _malApi.GetAnimeDetailsAsync(animeId, _disposeCts.Token);
 
-            if (full != null && MatchedAnime?.Id == animeId)
+            if (MatchedAnime?.Id == animeId)
             {
-                MatchedAnime.MergeFullDetails(full);
+                if (full != null)
+                {
+                    MatchedAnime.MergeFullDetails(full);
+                }
 
                 UpdateAlternativeTitles(MatchedAnime);
                 UpdateCustomShareLinks(MatchedAnime);
 
                 await EnsureLocalizedSafeAsync(MatchedAnime);
+                MatchedAnime.RefreshMetadata();
                 _trackingService.NotifyCurrentMediaMetadataUpdated(MatchedAnime);
 
                 if (MatchedAnime.Status != UserAnimeStatus.None)
