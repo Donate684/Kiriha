@@ -24,23 +24,23 @@
     <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="$(AvaloniaSubpackagesVersion)" />
     <!-- 3rd-party UI -->
     <PackageVersion Include="AsyncImageLoader.Avalonia" Version="4.0.0" />
-    <PackageVersion Include="AngleSharp" Version="1.10.0" />
+    <PackageVersion Include="AngleSharp" Version="1.10.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
     <!-- MVVM / messaging -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- Data / EF / SQLite -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.2.26504.105" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0" />
     <!-- Microsoft.Extensions.* — keep versions in lockstep -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0-rc.2.26504.105" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0-rc.2.26504.105" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="11.0.0-rc.2.26504.105" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="11.0.0" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="Serilog" Version="4.4.0" />
-    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="11.0.0-rc.2.26504.105" />
-    <PackageVersion Include="System.Threading.RateLimiting" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="11.0.0" />
+    <PackageVersion Include="System.Threading.RateLimiting" Version="11.0.0" />
     <!-- Transitive update pins: keep outdated reports clean while CPM is enabled. -->
     <PackageVersion Include="Humanizer.Core" Version="3.0.10" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.11.0" />

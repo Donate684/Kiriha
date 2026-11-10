@@ -11,7 +11,7 @@
     <Features>runtime-async=on</Features>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AvaloniaVersion>12.1.5</AvaloniaVersion>
+    <AvaloniaVersion>12.1.6</AvaloniaVersion>
     <AvaloniaSubpackagesVersion>12.0.0</AvaloniaSubpackagesVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <NoWarn>$(NoWarn);EnableGenerateDocumentationFile;MSB3277</NoWarn>
