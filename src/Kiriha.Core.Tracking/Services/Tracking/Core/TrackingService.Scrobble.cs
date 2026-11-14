@@ -166,7 +166,7 @@ public partial class TrackingService
             try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(repoInitTimeoutMs)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
             var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.GetCollection()));
-            var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId);
+            var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId && x.MediaKind == Kiriha.Core.Domain.Models.Entities.MediaKind.Anime);
 
             if (matched is null && existingMatched != null && existingMatched.Id == animeId)
             {

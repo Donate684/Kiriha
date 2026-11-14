@@ -52,6 +52,7 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
 
             string title = parsed.Title;
             var episode = parsed.Episode;
+            int? parsedYear = parsed.Year;
 
             string originalTitle = filename;
             bool isEmber = videoPath.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(videoPath);
@@ -62,11 +63,17 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
                 {
                     var dirParsed = AnimeParseCache.Parse(meaningfulDir);
                     title = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
+                    parsedYear ??= dirParsed.Year;
                     originalTitle = meaningfulDir;
                 }
             }
 
             var resolvedTitle = string.IsNullOrWhiteSpace(title) ? filename : title;
+            if (parsedYear.HasValue && !string.IsNullOrWhiteSpace(title) && !resolvedTitle.Contains(parsedYear.Value.ToString(), StringComparison.Ordinal))
+            {
+                resolvedTitle = $"{resolvedTitle} ({parsedYear.Value})";
+            }
+
             return new PlayerMediaMetadata(
                 originalTitle,
                 resolvedTitle,

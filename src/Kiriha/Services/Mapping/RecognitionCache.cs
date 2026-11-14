@@ -8,47 +8,78 @@ namespace Kiriha.Services.Data.Mapping;
 
 public class RecognitionCache : IRecognitionCache
 {
-    private readonly ConcurrentDictionary<string, ImmutableArray<WeightedMatch>> _cache = new();
+    private readonly ConcurrentDictionary<string, ImmutableArray<WeightedMatch>> _indexCache = new();
+    private readonly ConcurrentDictionary<string, ImmutableArray<WeightedMatch>> _learnedCache = new();
+
+    public bool IsIndexEmpty => _indexCache.IsEmpty;
 
     public void BuildIndex(IEnumerable<AnimeEntity> collection)
     {
-        _cache.Clear();
+        _indexCache.Clear();
         foreach (var anime in collection)
         {
+            if (anime.MediaKind != MediaKind.Anime)
+                continue;
+
             // Index Title, EnglishTitle, RussianTitle with weight 1.0
-            IndexTitle(anime.Title, anime.Id, 1.0f);
-            IndexTitle(anime.EnglishTitle, anime.Id, 1.0f);
-            IndexTitle(anime.RussianTitle, anime.Id, 1.0f);
+            IndexTitle(_indexCache, anime.Title, anime.Id, 1.0f);
+            IndexTitle(_indexCache, anime.EnglishTitle, anime.Id, 1.0f);
+            IndexTitle(_indexCache, anime.RussianTitle, anime.Id, 1.0f);
 
             // Index Synonyms with weight 0.5
             if (anime.AlternativeTitles != null)
             {
                 foreach (var alt in anime.AlternativeTitles)
                 {
-                    IndexTitle(alt, anime.Id, 0.5f);
+                    IndexTitle(_indexCache, alt, anime.Id, 0.5f);
                 }
             }
 
-            // Index Title (Year) with weight 0.5
-            if (anime.StartYear.HasValue)
+            // Index Title (Year) for year-disambiguated releases and remakes
+            int? year = anime.StartYear ?? anime.AiringDate?.Year;
+            if (year.HasValue)
             {
-                IndexTitle($"{anime.Title} ({anime.StartYear})", anime.Id, 0.5f);
-                if (!string.IsNullOrEmpty(anime.EnglishTitle))
-                    IndexTitle($"{anime.EnglishTitle} ({anime.StartYear})", anime.Id, 0.5f);
-                if (!string.IsNullOrEmpty(anime.RussianTitle))
-                    IndexTitle($"{anime.RussianTitle} ({anime.StartYear})", anime.Id, 0.5f);
+                string yearStr = year.Value.ToString();
+                if (!string.IsNullOrEmpty(anime.Title) && !anime.Title.Contains(yearStr, StringComparison.Ordinal))
+                    IndexTitle(_indexCache, $"{anime.Title} ({year.Value})", anime.Id, 0.9f);
+                if (!string.IsNullOrEmpty(anime.EnglishTitle) && !anime.EnglishTitle.Contains(yearStr, StringComparison.Ordinal))
+                    IndexTitle(_indexCache, $"{anime.EnglishTitle} ({year.Value})", anime.Id, 0.9f);
+                if (!string.IsNullOrEmpty(anime.RussianTitle) && !anime.RussianTitle.Contains(yearStr, StringComparison.Ordinal))
+                    IndexTitle(_indexCache, $"{anime.RussianTitle} ({year.Value})", anime.Id, 0.9f);
+
+                if (anime.AlternativeTitles != null)
+                {
+                    foreach (var alt in anime.AlternativeTitles)
+                    {
+                        if (!string.IsNullOrWhiteSpace(alt) && !alt.Contains(yearStr, StringComparison.Ordinal))
+                            IndexTitle(_indexCache, $"{alt} ({year.Value})", anime.Id, 0.5f);
+                    }
+                }
             }
         }
     }
 
-    private void IndexTitle(string? title, int id, float weight)
+    private static void IndexTitle(
+        ConcurrentDictionary<string, ImmutableArray<WeightedMatch>> target,
+        string? title,
+        int id,
+        float weight)
     {
         if (string.IsNullOrWhiteSpace(title)) return;
         string norm = AnimeStringHelper.Normalize(title);
         if (string.IsNullOrWhiteSpace(norm)) return;
 
-        _cache.AddOrUpdate(
-            norm,
+        UpsertMatch(target, norm, id, weight);
+    }
+
+    private static void UpsertMatch(
+        ConcurrentDictionary<string, ImmutableArray<WeightedMatch>> target,
+        string normalizedTitle,
+        int id,
+        float weight)
+    {
+        target.AddOrUpdate(
+            normalizedTitle,
             static (_, arg) => ImmutableArray.Create(new WeightedMatch(arg.id, arg.weight)),
             static (_, existing, arg) =>
             {
@@ -70,27 +101,43 @@ public class RecognitionCache : IRecognitionCache
 
     public IEnumerable<WeightedMatch> Search(string normalizedTitle)
     {
-        if (_cache.TryGetValue(normalizedTitle, out var matches))
-            return matches;
-        return [];
+        bool hasIndexed = _indexCache.TryGetValue(normalizedTitle, out var indexed);
+        bool hasLearned = _learnedCache.TryGetValue(normalizedTitle, out var learned);
+
+        if (hasIndexed && !hasLearned) return indexed;
+        if (!hasIndexed && hasLearned) return learned;
+        if (!hasIndexed) return [];
+
+        var merged = new List<WeightedMatch>(indexed.Length + learned.Length);
+        merged.AddRange(indexed);
+        for (int i = 0; i < learned.Length; i++)
+        {
+            var l = learned[i];
+            int existingIdx = merged.FindIndex(x => x.Id == l.Id);
+            if (existingIdx >= 0)
+            {
+                if (merged[existingIdx].Weight < l.Weight)
+                    merged[existingIdx] = l;
+            }
+            else
+            {
+                merged.Add(l);
+            }
+        }
+        return merged;
     }
 
-    public void Clear() => _cache.Clear();
+    public void Clear()
+    {
+        _indexCache.Clear();
+        _learnedCache.Clear();
+    }
+
+    public void ClearLearnedMatches() => _learnedCache.Clear();
 
     public void AddMatch(string normalizedTitle, int id, float weight)
     {
-        _cache.AddOrUpdate(
-            normalizedTitle,
-            static (_, arg) => ImmutableArray.Create(new WeightedMatch(arg.id, arg.weight)),
-            static (_, existing, arg) =>
-            {
-                for (int i = 0; i < existing.Length; i++)
-                {
-                    if (existing[i].Id == arg.id)
-                        return existing;
-                }
-                return existing.Add(new WeightedMatch(arg.id, arg.weight));
-            },
-            (id, weight));
+        if (string.IsNullOrWhiteSpace(normalizedTitle)) return;
+        UpsertMatch(_learnedCache, normalizedTitle, id, weight);
     }
 }

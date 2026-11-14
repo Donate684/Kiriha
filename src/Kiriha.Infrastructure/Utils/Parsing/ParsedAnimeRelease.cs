@@ -16,6 +16,9 @@ public sealed record ParsedAnimeRelease
     /// <summary>Номер сезона (например, 2 для S02E05 / Season 2 / 2nd Season / ТВ-2), если явно указан в релизе.</summary>
     public int? Season { get; init; }
 
+    /// <summary>Год выхода релиза (например, 2026 для "Title (2026)"), если явно указан в скобках.</summary>
+    public int? Year { get; init; }
+
     /// <summary>Релиз-группа или студия озвучки (например, "SubsPlease", "Erai-raws", "AniLibria.TV").</summary>
     public string ReleaseGroup { get; init; } = string.Empty;
 

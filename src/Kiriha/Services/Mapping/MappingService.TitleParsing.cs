@@ -4,11 +4,35 @@ namespace Kiriha.Services.Data.Mapping;
 
 public partial class MappingService
 {
-    private bool IsValidMatch(AnimeEntity match, int? episodeNumber)
+    private bool IsValidMatch(AnimeEntity match, int? episodeNumber, int? parsedYear = null)
     {
+        if (match.MediaKind != MediaKind.Anime) return false;
+
+        if (parsedYear.HasValue)
+        {
+            int? matchYear = match.StartYear ?? match.AiringDate?.Year;
+            if (matchYear.HasValue && Math.Abs(matchYear.Value - parsedYear.Value) > 1)
+                return false;
+        }
+
         if (episodeNumber is null) return true;
         if (match.TotalEpisodes <= 1) return true;
         if (episodeNumber > match.TotalEpisodes) return false;
+        return true;
+    }
+
+    private bool IsValidBareTitleFallback(AnimeEntity match, int? episodeNumber, int? parsedYear)
+    {
+        if (!IsValidMatch(match, episodeNumber, parsedYear))
+            return false;
+
+        if (parsedYear.HasValue)
+        {
+            int? matchYear = match.StartYear ?? match.AiringDate?.Year;
+            if (!matchYear.HasValue || Math.Abs(matchYear.Value - parsedYear.Value) > 1)
+                return false;
+        }
+
         return true;
     }
 
@@ -17,6 +41,9 @@ public partial class MappingService
 
     [System.Text.RegularExpressions.GeneratedRegex(@"\b(II|III|IV|V|VI)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant)]
     private static partial System.Text.RegularExpressions.Regex RomanSeasonSuffixRegex();
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\((19[6-9]\d|20\d{2})\)", System.Text.RegularExpressions.RegexOptions.CultureInvariant)]
+    private static partial System.Text.RegularExpressions.Regex ParenthesizedYearRegex();
 
     private int ExtractSeason(string title, string cleanTitle, int? parsedSeason)
     {
@@ -63,13 +90,20 @@ public partial class MappingService
         return 0;
     }
 
-    private (string CleanTitle, string SearchTitle, int ParsedSeason, int? ParsedEpisode) ParseAnimeTitle(string title)
+    private (string CleanTitle, string SearchTitle, int ParsedSeason, int? ParsedEpisode, int? ParsedYear) ParseAnimeTitle(string title)
     {
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
 
         string cleanTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(title);
         int? parsedEpisode = int.TryParse(parsed.Episode, out int ep) ? ep : null;
         int parsedSeason = ExtractSeason(title, cleanTitle, parsed.Season);
+        int? parsedYear = parsed.Year;
+        if (!parsedYear.HasValue)
+        {
+            var yearMatch = ParenthesizedYearRegex().Match(title);
+            if (yearMatch.Success && int.TryParse(yearMatch.Groups[1].Value, out int y))
+                parsedYear = y;
+        }
 
         if (parsedEpisode is null && !string.IsNullOrEmpty(parsed.EpisodeTitle) && !cleanTitle.Contains(parsed.EpisodeTitle, StringComparison.OrdinalIgnoreCase))
         {
@@ -91,7 +125,10 @@ public partial class MappingService
         if (searchTitle == cleanTitle && parsedSeason > 1 && !cleanTitleAlreadyHasSeason)
             searchTitle = $"{cleanTitle} Season {parsedSeason}";
 
-        return (cleanTitle, searchTitle, parsedSeason, parsedEpisode);
+        if (searchTitle == cleanTitle && parsedYear.HasValue && !cleanTitle.Contains(parsedYear.Value.ToString(), StringComparison.Ordinal))
+            searchTitle = $"{cleanTitle} ({parsedYear.Value})";
+
+        return (cleanTitle, searchTitle, parsedSeason, parsedEpisode, parsedYear);
     }
 
     private string Normalize(string s) => Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(s);

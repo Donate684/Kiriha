@@ -105,7 +105,7 @@ public partial class PlayerViewModel
             _previousVideoUrlForMetadata = videoUrl;
             _suppressVideoUrlResolution = true;
             VideoUrl = videoUrl;
-            ApplyMetadata(metadata, overwriteAll: true);
+            ApplyMetadata(metadata, overwriteAll: true, allowResolveByTitle: true);
             UpdateNavigationAvailability();
         }
         else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))

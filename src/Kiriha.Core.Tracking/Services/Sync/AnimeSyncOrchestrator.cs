@@ -92,10 +92,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             Log.Information("AnimeSyncOrchestrator: got {Count} items for DB sync", snapshot.Count);
             await _userAnimeRepo.SyncFromRemoteAsync(snapshot, [MediaKind.Anime], ct);
 
-            Log.Information("AnimeSyncOrchestrator: getting full snapshot for recognition cache");
-            var fullList = await _animeRepository.GetSnapshotAsync();
-            Log.Information("AnimeSyncOrchestrator: building recognition cache for {Count} items", fullList.Count);
-            await Task.Run(() => _recognitionCache.BuildIndex(fullList));
+            Log.Information("AnimeSyncOrchestrator: building recognition cache for {Count} anime items", snapshot.Count);
+            await Task.Run(() => _recognitionCache.BuildIndex(snapshot));
             Log.Information("AnimeSyncOrchestrator: recognition cache built");
 
             Log.Information("AnimeSyncOrchestrator: sending AnimeListRefreshMessage");

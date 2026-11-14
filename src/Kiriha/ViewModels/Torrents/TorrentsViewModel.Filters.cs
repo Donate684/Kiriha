@@ -307,10 +307,21 @@ public partial class TorrentsViewModel
     {
         if (string.IsNullOrWhiteSpace(query)) return null;
         var trimmed = query.Trim();
-        return _animeRepo.Collection.FirstOrDefault(a =>
-            string.Equals(a.Title, trimmed, StringComparison.OrdinalIgnoreCase) ||
-            (!string.IsNullOrEmpty(a.EnglishTitle) && string.Equals(a.EnglishTitle, trimmed, StringComparison.OrdinalIgnoreCase)) ||
-            (!string.IsNullOrEmpty(a.RussianTitle) && string.Equals(a.RussianTitle, trimmed, StringComparison.OrdinalIgnoreCase)));
+        return _animeRepo.Collection
+            .Where(a => a.MediaKind == MediaKind.Anime &&
+                        (string.Equals(a.Title, trimmed, StringComparison.OrdinalIgnoreCase) ||
+                         (!string.IsNullOrEmpty(a.EnglishTitle) && string.Equals(a.EnglishTitle, trimmed, StringComparison.OrdinalIgnoreCase)) ||
+                         (!string.IsNullOrEmpty(a.RussianTitle) && string.Equals(a.RussianTitle, trimmed, StringComparison.OrdinalIgnoreCase))))
+            .OrderByDescending(a => a.Status switch
+            {
+                UserAnimeStatus.Watching => 5,
+                UserAnimeStatus.PlanToWatch => 4,
+                UserAnimeStatus.OnHold => 3,
+                UserAnimeStatus.Completed => 2,
+                UserAnimeStatus.Dropped => 1,
+                _ => 0
+            })
+            .FirstOrDefault();
     }
 
     private string GetCurrentTitleDefaultQuery()

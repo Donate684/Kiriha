@@ -1,4 +1,5 @@
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.Data.Core;
 using Kiriha.Utils.Parsing;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,12 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
 
     [System.Text.RegularExpressions.GeneratedRegex(@"\b(II|III|IV|V|VI)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant)]
     private static partial System.Text.RegularExpressions.Regex RomanSeasonSuffixRegex();
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"[sS](\d{1,2})[eE]\d+|\b[sS]eason\s*(\d{1,2})\b|\b(\d{1,2})(?:st|nd|rd|th)\s+[sS]eason\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant)]
+    private static partial System.Text.RegularExpressions.Regex SeasonRegex();
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\((19[6-9]\d|20\d{2})\)", System.Text.RegularExpressions.RegexOptions.CultureInvariant)]
+    private static partial System.Text.RegularExpressions.Regex ParenthesizedYearRegex();
 
     public PlayerMediaMetadataResolver(IDbContextFactory<AppDbContext> dbFactory)
     {
@@ -66,6 +73,7 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
             var extractedTitle = parsed.Title;
             var episodeText = parsed.Episode;
             int parsedSeason = parsed.Season ?? 0;
+            int? parsedYear = parsed.Year;
 
             string originalTitle = filename;
             bool isEmber = videoPath.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(videoPath);
@@ -76,89 +84,64 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
                 {
                     var dirParsed = AnimeParseCache.Parse(meaningfulDir);
                     extractedTitle = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
+                    parsedYear ??= dirParsed.Year;
+                    if (parsedSeason <= 0 && dirParsed.Season.HasValue)
+                        parsedSeason = dirParsed.Season.Value;
                     originalTitle = meaningfulDir;
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(extractedTitle))
-                return PlayerMediaMetadata.FromVideoPath(videoPath) with { EpisodeText = episodeText };
-
-            if (parsedSeason <= 1 && !string.IsNullOrWhiteSpace(extractedTitle))
+            if (!parsedYear.HasValue)
             {
-                var trimmedExtracted = extractedTitle.Trim().TrimEnd('.', '-', '_', ':', '~', ' ', '!', '?');
-                var romanMatch = RomanSeasonSuffixRegex().Match(trimmedExtracted);
-                if (romanMatch.Success)
-                {
-                    parsedSeason = romanMatch.Groups[1].Value.ToUpperInvariant() switch
-                    {
-                        "II" => 2,
-                        "III" => 3,
-                        "IV" => 4,
-                        "V" => 5,
-                        "VI" => 6,
-                        _ => parsedSeason
-                    };
-                }
+                var ym = ParenthesizedYearRegex().Match(originalTitle);
+                if (ym.Success && int.TryParse(ym.Groups[1].Value, out int y))
+                    parsedYear = y;
             }
+
+            if (string.IsNullOrWhiteSpace(extractedTitle))
+                return PlayerMediaMetadata.FromVideoPath(videoPath) with { EpisodeText = episodeText, TorrentHash = torrentHash };
+
+            parsedSeason = ResolveEffectiveSeason(originalTitle, extractedTitle, parsedSeason);
 
             var trimmed = extractedTitle.Trim().TrimEnd('.', '-', '_', ':', '~', ' ', '!', '?');
-            bool extractedAlreadyHasSeason = RomanSeasonSuffixRegex().IsMatch(trimmed);
+            bool extractedAlreadyHasSeason = RomanSeasonSuffixRegex().IsMatch(trimmed) || SeasonRegex().IsMatch(extractedTitle);
 
-            var searchTitle = parsedSeason > 1 && !extractedAlreadyHasSeason
-                ? $"{extractedTitle} Season {parsedSeason}"
+            var displayExtractedTitle = parsedYear.HasValue && !extractedTitle.Contains(parsedYear.Value.ToString(), StringComparison.Ordinal)
+                ? $"{extractedTitle} ({parsedYear.Value})"
                 : extractedTitle;
 
+            string searchTitle = extractedTitle;
+            if (!string.IsNullOrEmpty(parsed.ReleaseType))
+            {
+                string rt = parsed.ReleaseType.ToUpperInvariant();
+                if (rt is "OVA" or "OAD" or "SPECIAL" or "SP" or "ONA")
+                    searchTitle = $"{extractedTitle} {rt}";
+            }
+            if (searchTitle == extractedTitle && parsedSeason > 1 && !extractedAlreadyHasSeason)
+                searchTitle = $"{extractedTitle} Season {parsedSeason}";
+            if (searchTitle == extractedTitle && parsedYear.HasValue)
+                searchTitle = displayExtractedTitle;
+
+            int? parsedEp = int.TryParse(episodeText, out int epVal) ? epVal : null;
+            bool allowBareFallback = parsedSeason <= 1 && string.IsNullOrEmpty(parsed.ReleaseType);
+
             using var db = _dbFactory.CreateDbContext();
+            var allAnimes = db.UserAnime.AsNoTracking()
+                .Where(a => a.MediaKind == MediaKind.Anime)
+                .ToList();
 
-            var searchTitleLower = searchTitle.ToLower();
-            var match = db.UserAnime.AsNoTracking().FirstOrDefault(a =>
-                (a.RussianTitle != null && a.RussianTitle.ToLower() == searchTitleLower) ||
-                (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchTitleLower) ||
-                (a.Title != null && a.Title.ToLower() == searchTitleLower));
-
-            if (match is null)
-            {
-                string normSearch = AnimeStringHelper.Normalize(searchTitle);
-                if (!string.IsNullOrEmpty(normSearch))
-                {
-                    var allAnimes = db.UserAnime.AsNoTracking().ToList();
-                    match = allAnimes.FirstOrDefault(a =>
-                        (a.Title != null && AnimeStringHelper.Normalize(a.Title) == normSearch) ||
-                        (a.EnglishTitle != null && AnimeStringHelper.Normalize(a.EnglishTitle) == normSearch) ||
-                        (a.RussianTitle != null && AnimeStringHelper.Normalize(a.RussianTitle) == normSearch));
-
-                    if (match is null && parsedSeason <= 1)
-                    {
-                        string normExtracted = AnimeStringHelper.Normalize(extractedTitle);
-                        if (!string.IsNullOrEmpty(normExtracted) && normExtracted != normSearch)
-                        {
-                            match = allAnimes.FirstOrDefault(a =>
-                                (a.Title != null && AnimeStringHelper.Normalize(a.Title) == normExtracted) ||
-                                (a.EnglishTitle != null && AnimeStringHelper.Normalize(a.EnglishTitle) == normExtracted) ||
-                                (a.RussianTitle != null && AnimeStringHelper.Normalize(a.RussianTitle) == normExtracted));
-                        }
-                    }
-                }
-            }
-
-            if (match is null && parsedSeason <= 1)
-            {
-                var extractedTitleLower = extractedTitle.ToLower();
-                match = db.UserAnime.AsNoTracking().FirstOrDefault(a =>
-                    (a.RussianTitle != null && a.RussianTitle.ToLower() == extractedTitleLower) ||
-                    (a.EnglishTitle != null && a.EnglishTitle.ToLower() == extractedTitleLower) ||
-                    (a.Title != null && a.Title.ToLower() == extractedTitleLower));
-            }
+            var match = FindBestAnimeMatch(allAnimes, searchTitle, extractedTitle, allowBareFallback, parsedEp, parsedYear);
 
             return match is null
-                ? new PlayerMediaMetadata(originalTitle, extractedTitle, string.Empty, episodeText, null, extractedTitle)
+                ? new PlayerMediaMetadata(originalTitle, displayExtractedTitle, string.Empty, episodeText, null, displayExtractedTitle, torrentHash)
                 : new PlayerMediaMetadata(
                     originalTitle,
-                    match.RussianTitle ?? match.Title ?? extractedTitle,
+                    match.RussianTitle ?? match.Title ?? displayExtractedTitle,
                     match.EnglishTitle ?? match.Title ?? string.Empty,
                     episodeText,
                     match.Id,
-                    match.Title ?? extractedTitle);
+                    match.Title ?? displayExtractedTitle,
+                    torrentHash);
         }
         catch (Exception ex)
         {
@@ -174,36 +157,58 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
 
         try
         {
-            using var db = _dbFactory.CreateDbContext();
-            var cleanTitle = title.Trim();
-            var searchLower = cleanTitle.ToLower();
+            var rawTitle = title.Trim();
+            var parsed = AnimeParseCache.Parse(rawTitle);
 
-            var match = db.UserAnime.AsNoTracking().FirstOrDefault(a =>
-                (a.RussianTitle != null && a.RussianTitle.ToLower() == searchLower) ||
-                (a.EnglishTitle != null && a.EnglishTitle.ToLower() == searchLower) ||
-                (a.Title != null && a.Title.ToLower() == searchLower));
-
-            if (match == null)
+            var extractedTitle = !string.IsNullOrWhiteSpace(parsed.Title) ? parsed.Title : rawTitle;
+            int parsedSeason = ResolveEffectiveSeason(rawTitle, extractedTitle, parsed.Season ?? 0);
+            int? parsedYear = parsed.Year;
+            if (!parsedYear.HasValue)
             {
-                var norm = new string(cleanTitle.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
-                if (!string.IsNullOrEmpty(norm))
-                {
-                    match = db.UserAnime.AsNoTracking().AsEnumerable().FirstOrDefault(a =>
-                        (a.RussianTitle != null && new string(a.RussianTitle.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() == norm) ||
-                        (a.EnglishTitle != null && new string(a.EnglishTitle.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() == norm) ||
-                        (!string.IsNullOrEmpty(a.Title) && new string(a.Title.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() == norm));
-                }
+                var ym = ParenthesizedYearRegex().Match(rawTitle);
+                if (ym.Success && int.TryParse(ym.Groups[1].Value, out int y))
+                    parsedYear = y;
             }
 
+            var effectiveEpText = !string.IsNullOrWhiteSpace(episodeText) ? episodeText : parsed.Episode;
+            int? parsedEp = int.TryParse(effectiveEpText, out int epVal) ? epVal : null;
+
+            var trimmed = extractedTitle.Trim().TrimEnd('.', '-', '_', ':', '~', ' ', '!', '?');
+            bool extractedAlreadyHasSeason = RomanSeasonSuffixRegex().IsMatch(trimmed) || SeasonRegex().IsMatch(extractedTitle);
+
+            var displayExtractedTitle = parsedYear.HasValue && !extractedTitle.Contains(parsedYear.Value.ToString(), StringComparison.Ordinal)
+                ? $"{extractedTitle} ({parsedYear.Value})"
+                : extractedTitle;
+
+            string searchTitle = extractedTitle;
+            if (!string.IsNullOrEmpty(parsed.ReleaseType))
+            {
+                string rt = parsed.ReleaseType.ToUpperInvariant();
+                if (rt is "OVA" or "OAD" or "SPECIAL" or "SP" or "ONA")
+                    searchTitle = $"{extractedTitle} {rt}";
+            }
+            if (searchTitle == extractedTitle && parsedSeason > 1 && !extractedAlreadyHasSeason)
+                searchTitle = $"{extractedTitle} Season {parsedSeason}";
+            if (searchTitle == extractedTitle && parsedYear.HasValue)
+                searchTitle = displayExtractedTitle;
+
+            bool allowBareFallback = parsedSeason <= 1 && string.IsNullOrEmpty(parsed.ReleaseType);
+
+            using var db = _dbFactory.CreateDbContext();
+            var allAnimes = db.UserAnime.AsNoTracking()
+                .Where(a => a.MediaKind == MediaKind.Anime)
+                .ToList();
+
+            var match = FindBestAnimeMatch(allAnimes, searchTitle, extractedTitle, allowBareFallback, parsedEp, parsedYear);
             if (match != null)
             {
                 return new PlayerMediaMetadata(
-                    cleanTitle,
-                    match.RussianTitle ?? match.Title ?? cleanTitle,
+                    rawTitle,
+                    match.RussianTitle ?? match.Title ?? displayExtractedTitle,
                     match.EnglishTitle ?? match.Title ?? string.Empty,
                     episodeText ?? string.Empty,
                     match.Id,
-                    match.Title ?? cleanTitle);
+                    match.Title ?? displayExtractedTitle);
             }
         }
         catch (Exception ex)
@@ -212,5 +217,233 @@ public sealed partial class PlayerMediaMetadataResolver : IPlayerMediaMetadataRe
         }
 
         return null;
+    }
+
+    private static int ResolveEffectiveSeason(string rawTitle, string extractedTitle, int parsedSeason)
+    {
+        if (parsedSeason > 0)
+            return parsedSeason;
+
+        var m = SeasonRegex().Match(rawTitle);
+        if (m.Success)
+        {
+            string val = m.Groups[1].Success ? m.Groups[1].Value : (m.Groups[2].Success ? m.Groups[2].Value : m.Groups[3].Value);
+            if (int.TryParse(val, out int s) && s > 0)
+                return s;
+        }
+
+        if (!string.IsNullOrWhiteSpace(extractedTitle))
+        {
+            var mc = SeasonRegex().Match(extractedTitle);
+            if (mc.Success)
+            {
+                string val = mc.Groups[1].Success ? mc.Groups[1].Value : (mc.Groups[2].Success ? mc.Groups[2].Value : mc.Groups[3].Value);
+                if (int.TryParse(val, out int s) && s > 0)
+                    return s;
+            }
+
+            var trimmed = extractedTitle.Trim().TrimEnd('.', '-', '_', ':', '~', ' ', '!', '?');
+            var romanMatch = RomanSeasonSuffixRegex().Match(trimmed);
+            if (romanMatch.Success)
+            {
+                return romanMatch.Groups[1].Value.ToUpperInvariant() switch
+                {
+                    "II" => 2,
+                    "III" => 3,
+                    "IV" => 4,
+                    "V" => 5,
+                    "VI" => 6,
+                    _ => 0
+                };
+            }
+        }
+
+        return 0;
+    }
+
+    private static AnimeEntity? FindBestAnimeMatch(
+        List<AnimeEntity> allAnimes,
+        string searchTitle,
+        string extractedTitle,
+        bool allowBareFallback,
+        int? parsedEp,
+        int? parsedYear)
+    {
+        if (allAnimes.Count == 0)
+            return null;
+
+        // 1. Exact case-insensitive match on searchTitle (including synthetic "Title (StartYear)")
+        var match = PickBestCandidate(
+            allAnimes,
+            a => MatchesExact(a, searchTitle) && IsCompatibleCandidate(a, parsedEp, parsedYear, requireExplicitYear: false),
+            parsedYear);
+        if (match != null)
+            return match;
+
+        // 2. Normalized match on searchTitle
+        string normSearch = AnimeStringHelper.Normalize(searchTitle);
+        if (!string.IsNullOrEmpty(normSearch))
+        {
+            match = PickBestCandidate(
+                allAnimes,
+                a => MatchesNormalized(a, normSearch) && IsCompatibleCandidate(a, parsedEp, parsedYear, requireExplicitYear: false),
+                parsedYear);
+            if (match != null)
+                return match;
+        }
+
+        // 3. Bare extractedTitle fallback (only when not a Season 2+ / OVA / ONA, and if year was parsed, candidate must explicitly match year)
+        if (allowBareFallback && !string.Equals(searchTitle, extractedTitle, StringComparison.OrdinalIgnoreCase))
+        {
+            match = PickBestCandidate(
+                allAnimes,
+                a => MatchesExact(a, extractedTitle) && IsCompatibleCandidate(a, parsedEp, parsedYear, requireExplicitYear: parsedYear.HasValue),
+                parsedYear);
+            if (match != null)
+                return match;
+
+            string normExtracted = AnimeStringHelper.Normalize(extractedTitle);
+            if (!string.IsNullOrEmpty(normExtracted) && normExtracted != normSearch)
+            {
+                match = PickBestCandidate(
+                    allAnimes,
+                    a => MatchesNormalized(a, normExtracted) && IsCompatibleCandidate(a, parsedEp, parsedYear, requireExplicitYear: parsedYear.HasValue),
+                    parsedYear);
+                if (match != null)
+                    return match;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool MatchesExact(AnimeEntity a, string target)
+    {
+        if (string.Equals(a.Title, target, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(a.EnglishTitle, target, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(a.RussianTitle, target, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        int? year = a.StartYear ?? a.AiringDate?.Year;
+        if (year.HasValue)
+        {
+            string ys = year.Value.ToString();
+            if (!string.IsNullOrEmpty(a.Title) && !a.Title.Contains(ys, StringComparison.Ordinal) &&
+                string.Equals($"{a.Title} ({ys})", target, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (!string.IsNullOrEmpty(a.EnglishTitle) && !a.EnglishTitle.Contains(ys, StringComparison.Ordinal) &&
+                string.Equals($"{a.EnglishTitle} ({ys})", target, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (!string.IsNullOrEmpty(a.RussianTitle) && !a.RussianTitle.Contains(ys, StringComparison.Ordinal) &&
+                string.Equals($"{a.RussianTitle} ({ys})", target, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool MatchesNormalized(AnimeEntity a, string normTarget)
+    {
+        if ((!string.IsNullOrEmpty(a.Title) && AnimeStringHelper.Normalize(a.Title) == normTarget) ||
+            (!string.IsNullOrEmpty(a.EnglishTitle) && AnimeStringHelper.Normalize(a.EnglishTitle) == normTarget) ||
+            (!string.IsNullOrEmpty(a.RussianTitle) && AnimeStringHelper.Normalize(a.RussianTitle) == normTarget))
+        {
+            return true;
+        }
+
+        if (a.AlternativeTitles != null)
+        {
+            for (int i = 0; i < a.AlternativeTitles.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(a.AlternativeTitles[i]) &&
+                    AnimeStringHelper.Normalize(a.AlternativeTitles[i]) == normTarget)
+                {
+                    return true;
+                }
+            }
+        }
+
+        int? year = a.StartYear ?? a.AiringDate?.Year;
+        if (year.HasValue)
+        {
+            string ys = year.Value.ToString();
+            if (!string.IsNullOrEmpty(a.Title) && !a.Title.Contains(ys, StringComparison.Ordinal) &&
+                AnimeStringHelper.Normalize($"{a.Title} ({ys})") == normTarget)
+                return true;
+            if (!string.IsNullOrEmpty(a.EnglishTitle) && !a.EnglishTitle.Contains(ys, StringComparison.Ordinal) &&
+                AnimeStringHelper.Normalize($"{a.EnglishTitle} ({ys})") == normTarget)
+                return true;
+            if (!string.IsNullOrEmpty(a.RussianTitle) && !a.RussianTitle.Contains(ys, StringComparison.Ordinal) &&
+                AnimeStringHelper.Normalize($"{a.RussianTitle} ({ys})") == normTarget)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsCompatibleCandidate(AnimeEntity a, int? parsedEp, int? parsedYear, bool requireExplicitYear)
+    {
+        if (a.MediaKind != MediaKind.Anime)
+            return false;
+
+        int? ay = a.StartYear ?? a.AiringDate?.Year;
+        if (parsedYear.HasValue)
+        {
+            if (ay.HasValue && Math.Abs(ay.Value - parsedYear.Value) > 1)
+                return false;
+            if (requireExplicitYear && !ay.HasValue)
+                return false;
+        }
+
+        if (parsedEp.HasValue && a.TotalEpisodes > 1 && parsedEp.Value > a.TotalEpisodes)
+            return false;
+
+        return true;
+    }
+
+    private static AnimeEntity? PickBestCandidate(
+        List<AnimeEntity> candidates,
+        Func<AnimeEntity, bool> predicate,
+        int? parsedYear)
+    {
+        AnimeEntity? best = null;
+        int bestYearBonus = int.MinValue;
+        int bestPriority = int.MinValue;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            var c = candidates[i];
+            if (!predicate(c))
+                continue;
+
+            int yearBonus = 0;
+            if (parsedYear.HasValue)
+            {
+                int? cy = c.StartYear ?? c.AiringDate?.Year;
+                if (cy.HasValue)
+                    yearBonus = cy.Value == parsedYear.Value ? 2 : (Math.Abs(cy.Value - parsedYear.Value) == 1 ? 1 : 0);
+            }
+
+            int priority = c.Status switch
+            {
+                UserAnimeStatus.Watching => 5,
+                UserAnimeStatus.PlanToWatch => 4,
+                UserAnimeStatus.OnHold => 3,
+                UserAnimeStatus.Completed => 2,
+                UserAnimeStatus.Dropped => 1,
+                _ => 0
+            };
+
+            if (best is null || yearBonus > bestYearBonus || (yearBonus == bestYearBonus && priority > bestPriority))
+            {
+                best = c;
+                bestYearBonus = yearBonus;
+                bestPriority = priority;
+            }
+        }
+
+        return best;
     }
 }

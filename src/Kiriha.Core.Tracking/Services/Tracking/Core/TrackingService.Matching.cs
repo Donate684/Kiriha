@@ -79,13 +79,9 @@ public partial class TrackingService
 
         try
         {
-            Log.Information("TrackingService: Adding negative mapping for '{Title}'", media.AnimeTitle);
-            _mappingService.AddNegativeMapping(media.AnimeTitle);
-            if (!string.IsNullOrWhiteSpace(media.OriginalTitle) &&
-                !string.Equals(media.OriginalTitle, media.AnimeTitle, StringComparison.OrdinalIgnoreCase))
-            {
-                _mappingService.AddNegativeMapping(media.OriginalTitle);
-            }
+            string primaryTitle = !string.IsNullOrWhiteSpace(media.OriginalTitle) ? media.OriginalTitle : media.AnimeTitle;
+            Log.Information("TrackingService: Adding negative mapping for '{Title}'", primaryTitle);
+            _mappingService.AddNegativeMapping(primaryTitle);
 
             await MatchMediaAsync(media, forceMatch: true);
         }
@@ -100,8 +96,8 @@ public partial class TrackingService
         ParsedMedia? media;
         lock (_state) media = _currentMedia;
         if (media is null) return false;
-        return _mappingService.IsManuallyMapped(media.AnimeTitle) ||
-               _mappingService.IsManuallyMapped(media.OriginalTitle);
+        string primaryTitle = !string.IsNullOrWhiteSpace(media.OriginalTitle) ? media.OriginalTitle : media.AnimeTitle;
+        return _mappingService.IsManuallyMapped(primaryTitle);
     }
 
     private async Task MatchMediaAsync(ParsedMedia media, bool forceMatch = false)

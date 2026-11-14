@@ -13,6 +13,12 @@ internal static class NyaaTorrentParser
 
         var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
         var animeTitle = parsed.Title;
+        if (parsed.Year.HasValue &&
+            !string.IsNullOrWhiteSpace(animeTitle) &&
+            !animeTitle.Contains(parsed.Year.Value.ToString(), StringComparison.Ordinal))
+        {
+            animeTitle = $"{animeTitle} ({parsed.Year.Value})";
+        }
         var episodeStr = parsed.Episode;
         var resolution = parsed.Resolution;
         var group = parsed.ReleaseGroup;

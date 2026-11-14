@@ -1010,25 +1010,36 @@ public partial class TorrentsViewModel
     {
         if (string.IsNullOrWhiteSpace(title)) return null;
 
-        if (SelectedAnime != null && IsAnimeTitleMatch(SelectedAnime, title))
+        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
+        int? parsedYear = parsed.Year;
+
+        if (SelectedAnime is { MediaKind: MediaKind.Anime } &&
+            IsOnlineYearCompatible(SelectedAnime, parsedYear, requireExplicitYear: false) &&
+            IsAnimeTitleMatch(SelectedAnime, title))
+        {
             return SelectedAnime;
+        }
 
         var exact = ResolveAnimeForQuery(title);
-        if (exact != null) return exact;
+        if (exact != null && IsOnlineYearCompatible(exact, parsedYear, requireExplicitYear: false))
+            return exact;
 
         var norm = NormalizeTitle(title);
         if (!string.IsNullOrEmpty(norm))
         {
             var libraryExact = _animeRepo.Collection.FirstOrDefault(a =>
-                NormalizeTitle(a.Title) == norm ||
-                (!string.IsNullOrEmpty(a.EnglishTitle) && NormalizeTitle(a.EnglishTitle) == norm) ||
-                (!string.IsNullOrEmpty(a.RussianTitle) && NormalizeTitle(a.RussianTitle) == norm) ||
-                a.AlternativeTitles.Any(alt => NormalizeTitle(alt) == norm));
+                a.MediaKind == MediaKind.Anime &&
+                IsOnlineYearCompatible(a, parsedYear, requireExplicitYear: false) &&
+                (NormalizeTitle(a.Title) == norm ||
+                 (!string.IsNullOrEmpty(a.EnglishTitle) && NormalizeTitle(a.EnglishTitle) == norm) ||
+                 (!string.IsNullOrEmpty(a.RussianTitle) && NormalizeTitle(a.RussianTitle) == norm) ||
+                 a.AlternativeTitles.Any(alt => NormalizeTitle(alt) == norm)));
 
             if (libraryExact != null) return libraryExact;
         }
 
-        if (SelectedAnime != null)
+        if (SelectedAnime is { MediaKind: MediaKind.Anime } &&
+            IsOnlineYearCompatible(SelectedAnime, parsedYear, requireExplicitYear: parsedYear.HasValue))
         {
             var targetTitle = SelectedAnime.RussianTitle ?? SelectedAnime.Title;
             if (!string.IsNullOrWhiteSpace(targetTitle) &&
@@ -1045,8 +1056,30 @@ public partial class TorrentsViewModel
         }
 
         return _animeRepo.Collection.FirstOrDefault(a =>
-            OnlineRelevanceScorer.ComputeRelevance(a.Title, title) >= 0.75 ||
-            (!string.IsNullOrEmpty(a.RussianTitle) && OnlineRelevanceScorer.ComputeRelevance(a.RussianTitle, title) >= 0.75));
+            a.MediaKind == MediaKind.Anime &&
+            IsOnlineYearCompatible(a, parsedYear, requireExplicitYear: parsedYear.HasValue) &&
+            (OnlineRelevanceScorer.ComputeRelevance(a.Title, title) >= 0.75 ||
+             (!string.IsNullOrEmpty(a.RussianTitle) && OnlineRelevanceScorer.ComputeRelevance(a.RussianTitle, title) >= 0.75)));
+    }
+
+    private static bool IsOnlineYearCompatible(AnimeEntity anime, int? parsedYear, bool requireExplicitYear)
+    {
+        if (!parsedYear.HasValue)
+            return true;
+
+        int? ay = anime.StartYear ?? anime.AiringDate?.Year;
+        if (ay.HasValue)
+            return Math.Abs(ay.Value - parsedYear.Value) <= 1;
+
+        if (requireExplicitYear)
+        {
+            string ys = parsedYear.Value.ToString();
+            return anime.Title.Contains(ys, StringComparison.Ordinal) ||
+                   (anime.EnglishTitle?.Contains(ys, StringComparison.Ordinal) == true) ||
+                   (anime.RussianTitle?.Contains(ys, StringComparison.Ordinal) == true);
+        }
+
+        return true;
     }
 
     private static bool IsAnimeTitleMatch(AnimeEntity anime, string title)

@@ -29,16 +29,16 @@ public class MediaMatchingPipeline
 
     public async Task<MediaMatchResult> RunAsync(ParsedMedia media, IReadOnlyList<AnimeEntity> userList)
     {
-        if (_mappingService.IsNegativelyMapped(media.OriginalTitle) ||
-            _mappingService.IsNegativelyMapped(media.AnimeTitle))
+        string primaryTitle = !string.IsNullOrWhiteSpace(media.OriginalTitle) ? media.OriginalTitle : media.AnimeTitle;
+        if (_mappingService.IsNegativelyMapped(primaryTitle))
         {
             return new MediaNegativelyMapped();
         }
 
-        int? malId = await _mappingService.GetIdFromTitleAsync(media.OriginalTitle, userList);
+        int? malId = await _mappingService.GetIdFromTitleAsync(primaryTitle, userList);
         if (!malId.HasValue)
         {
-            malId = await _mappingService.SearchOnMalAsync(media.OriginalTitle);
+            malId = await _mappingService.SearchOnMalAsync(primaryTitle);
         }
 
         if (malId.HasValue)
@@ -46,7 +46,7 @@ public class MediaMatchingPipeline
             AnimeEntity? matched = null;
             for (int i = 0; i < userList.Count; i++)
             {
-                if (userList[i].Id == malId.Value)
+                if (userList[i].Id == malId.Value && userList[i].MediaKind == MediaKind.Anime)
                 {
                     matched = userList[i];
                     break;

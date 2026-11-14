@@ -47,7 +47,7 @@ public partial class PlayerViewModel
         }
         _previousVideoUrlForMetadata = value;
 
-        ApplyMetadata(resolved, overwriteAll: true);
+        ApplyMetadata(resolved, overwriteAll: true, allowResolveByTitle: false);
         UpdateNavigationAvailability();
     }
 
@@ -59,6 +59,11 @@ public partial class PlayerViewModel
         var prevDir = System.IO.Path.GetDirectoryName(_previousVideoUrlForMetadata);
         var newDir = System.IO.Path.GetDirectoryName(newVideoUrl);
         if (string.IsNullOrEmpty(prevDir) || !string.Equals(prevDir, newDir, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var prevParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(_previousVideoUrlForMetadata));
+        var newParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(newVideoUrl));
+        if ((prevParsed.Season ?? 1) != (newParsed.Season ?? 1) || prevParsed.Year != newParsed.Year)
             return false;
 
         var newTitle = !string.IsNullOrWhiteSpace(newResolved.TitleRomaji)
@@ -96,15 +101,17 @@ public partial class PlayerViewModel
         return new string(span[..pos]);
     }
 
-    private void ApplyMetadata(PlayerMediaMetadata metadata, bool overwriteAll = false)
+    private void ApplyMetadata(PlayerMediaMetadata metadata, bool overwriteAll = false, bool allowResolveByTitle = false)
     {
         _animeId = metadata.AnimeId ?? (overwriteAll ? null : _animeId);
 
-        if (!_animeId.HasValue && _metadataResolver != null)
+        if (allowResolveByTitle && !_animeId.HasValue && _metadataResolver != null)
         {
-            var searchTitle = !string.IsNullOrWhiteSpace(metadata.TitleRu)
-                ? metadata.TitleRu
-                : (!string.IsNullOrWhiteSpace(metadata.TitleEn) ? metadata.TitleEn : metadata.OriginalTitle);
+            var searchTitle = !string.IsNullOrWhiteSpace(metadata.OriginalTitle) && !PlayerMediaMetadata.IsStreamManifest(metadata.OriginalTitle)
+                ? metadata.OriginalTitle
+                : (!string.IsNullOrWhiteSpace(metadata.TitleRu)
+                    ? metadata.TitleRu
+                    : (!string.IsNullOrWhiteSpace(metadata.TitleEn) ? metadata.TitleEn : metadata.OriginalTitle));
 
             if (!string.IsNullOrWhiteSpace(searchTitle))
             {
@@ -208,7 +215,7 @@ public partial class PlayerViewModel
         {
             _hasExplicitMetadata = true;
             bool animeChanged = prevId.HasValue && metadata.AnimeId.HasValue && prevId.Value != metadata.AnimeId.Value;
-            ApplyMetadata(metadata, overwriteAll: animeChanged);
+            ApplyMetadata(metadata, overwriteAll: animeChanged, allowResolveByTitle: true);
         }
 
         if (!string.Equals(prevTitle, AnimeTitle, StringComparison.Ordinal) ||

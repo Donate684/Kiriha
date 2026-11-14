@@ -42,7 +42,8 @@ public class RssFeedService : IRssFeedService
             // Snapshot ObservableCollection on UI thread to avoid "Collection was modified" races.
             var activeAnime = await _uiDispatcher.InvokeAsync(() =>
                 _animeRepo.GetCollection()
-                    .Where(x => x.Status == UserAnimeStatus.Watching || x.Status == UserAnimeStatus.PlanToWatch)
+                    .Where(x => x.MediaKind == MediaKind.Anime &&
+                                (x.Status == UserAnimeStatus.Watching || x.Status == UserAnimeStatus.PlanToWatch))
                     .ToList());
 
             foreach (var item in items)
@@ -53,8 +54,9 @@ public class RssFeedService : IRssFeedService
                 // Match only if this torrent contains an episode the user hasn't watched yet
                 if (!string.IsNullOrEmpty(torrent.AnimeTitle))
                 {
-                    var parsedSeason = Kiriha.Utils.Parsing.AnimeParseCache.Parse(torrent.Title).Season;
-                    var matchedAnime = MatchActiveAnime(activeAnime, torrent.AnimeTitle, parsedSeason);
+                    var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
+                    var baseTitle = !string.IsNullOrWhiteSpace(parsed.Title) ? parsed.Title : torrent.AnimeTitle;
+                    var matchedAnime = MatchActiveAnime(activeAnime, baseTitle, parsed.Season, parsed.Year);
 
                     if (matchedAnime != null
                         && int.TryParse(torrent.Episode, out var epNum)
@@ -75,13 +77,27 @@ public class RssFeedService : IRssFeedService
         }
     }
 
-    internal static AnimeEntity? MatchActiveAnime(List<AnimeEntity> activeAnime, string animeTitle, int? parsedSeason)
+    internal static AnimeEntity? MatchActiveAnime(
+        List<AnimeEntity> activeAnime,
+        string animeTitle,
+        int? parsedSeason,
+        int? parsedYear = null)
     {
         if (activeAnime.Count == 0 || string.IsNullOrWhiteSpace(animeTitle))
             return null;
 
-        var normBase = NormalizeAlphaNum(animeTitle);
+        var parsedInput = Kiriha.Utils.Parsing.AnimeParseCache.Parse(animeTitle);
+        int? effectiveYear = parsedYear ?? parsedInput.Year;
+        var cleanBaseTitle = effectiveYear.HasValue && !string.IsNullOrWhiteSpace(parsedInput.Title)
+            ? parsedInput.Title
+            : animeTitle;
+
+        var normBase = NormalizeAlphaNum(cleanBaseTitle);
         if (string.IsNullOrEmpty(normBase))
+            return null;
+
+        var eligible = activeAnime.Where(x => x.MediaKind == MediaKind.Anime && IsYearCompatible(x, effectiveYear)).ToList();
+        if (eligible.Count == 0)
             return null;
 
         if (parsedSeason is > 1)
@@ -95,7 +111,7 @@ public class RssFeedService : IRssFeedService
             };
             string[] seasonMarkers = [$"season{s}", $"{ordinal}season", $"s{s}", $"part{s}"];
 
-            foreach (var candidate in activeAnime)
+            foreach (var candidate in eligible)
             {
                 if (MatchesSequelCandidate(candidate.Title, normBase, seasonMarkers) ||
                     MatchesSequelCandidate(candidate.EnglishTitle, normBase, seasonMarkers) ||
@@ -108,19 +124,51 @@ public class RssFeedService : IRssFeedService
             return null;
         }
 
+        if (effectiveYear.HasValue)
+        {
+            string yearQualified = $"{cleanBaseTitle} ({effectiveYear.Value})";
+            string normWithYear = NormalizeAlphaNum(yearQualified);
+
+            var yearMatch = eligible.FirstOrDefault(x =>
+                string.Equals(x.Title, yearQualified, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(x.EnglishTitle, yearQualified, StringComparison.OrdinalIgnoreCase) ||
+                NormalizeAlphaNum(x.Title) == normWithYear ||
+                NormalizeAlphaNum(x.EnglishTitle) == normWithYear ||
+                x.AlternativeTitles.Any(alt => NormalizeAlphaNum(alt) == normWithYear));
+            if (yearMatch != null)
+                return yearMatch;
+
+            // Bare title fallback when year is present: require candidate to explicitly match effectiveYear
+            return eligible.FirstOrDefault(x =>
+                (x.StartYear ?? x.AiringDate?.Year) is int y &&
+                Math.Abs(y - effectiveYear.Value) <= 1 &&
+                (NormalizeAlphaNum(x.Title) == normBase ||
+                 NormalizeAlphaNum(x.EnglishTitle) == normBase ||
+                 x.AlternativeTitles.Any(alt => NormalizeAlphaNum(alt) == normBase)));
+        }
+
         // Exact case-insensitive match first
-        var exact = activeAnime.FirstOrDefault(x =>
-            string.Equals(x.Title, animeTitle, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(x.EnglishTitle, animeTitle, StringComparison.OrdinalIgnoreCase) ||
-            x.AlternativeTitles.Any(alt => string.Equals(alt, animeTitle, StringComparison.OrdinalIgnoreCase)));
+        var exact = eligible.FirstOrDefault(x =>
+            string.Equals(x.Title, cleanBaseTitle, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.EnglishTitle, cleanBaseTitle, StringComparison.OrdinalIgnoreCase) ||
+            x.AlternativeTitles.Any(alt => string.Equals(alt, cleanBaseTitle, StringComparison.OrdinalIgnoreCase)));
         if (exact != null)
             return exact;
 
         // Normalized punctuation-insensitive match (e.g. "Re Zero..." == "Re:Zero...")
-        return activeAnime.FirstOrDefault(x =>
+        return eligible.FirstOrDefault(x =>
             NormalizeAlphaNum(x.Title) == normBase ||
             NormalizeAlphaNum(x.EnglishTitle) == normBase ||
             x.AlternativeTitles.Any(alt => NormalizeAlphaNum(alt) == normBase));
+    }
+
+    private static bool IsYearCompatible(AnimeEntity candidate, int? parsedYear)
+    {
+        if (!parsedYear.HasValue)
+            return true;
+
+        int? cy = candidate.StartYear ?? candidate.AiringDate?.Year;
+        return !cy.HasValue || Math.Abs(cy.Value - parsedYear.Value) <= 1;
     }
 
     private static bool MatchesSequelCandidate(string? candidateTitle, string normBase, string[] seasonMarkers)

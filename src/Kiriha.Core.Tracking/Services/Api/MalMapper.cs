@@ -42,6 +42,8 @@ public static class MalMapper
             item.StartSeason = ss.GetOptionalString("season");
         }
 
+        item.StartYear ??= item.AiringDate?.Year;
+
         if (node.TryGetProperty("broadcast", out var b))
         {
             item.BroadcastDay = b.GetOptionalString("day_of_the_week");

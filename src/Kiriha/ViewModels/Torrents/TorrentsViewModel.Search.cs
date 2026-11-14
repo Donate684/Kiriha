@@ -546,8 +546,11 @@ public partial class TorrentsViewModel
     {
         var originalTitle = !string.IsNullOrWhiteSpace(fileName) ? fileName : torrent.Title;
         var episode = !string.IsNullOrWhiteSpace(torrent.Episode) ? torrent.Episode : null;
-        var titleRu = SelectedAnime?.RussianTitle ?? (!string.IsNullOrWhiteSpace(torrent.AnimeTitle) ? torrent.AnimeTitle : string.Empty);
-        var titleEn = SelectedAnime?.Title ?? torrent.Title;
+        var effectiveSelected = IsSelectedAnimeCompatibleWithTorrent(SelectedAnime, torrent, originalTitle)
+            ? SelectedAnime
+            : null;
+        var titleRu = effectiveSelected?.RussianTitle ?? (!string.IsNullOrWhiteSpace(torrent.AnimeTitle) ? torrent.AnimeTitle : string.Empty);
+        var titleEn = effectiveSelected?.Title ?? torrent.Title;
 
         if (_internalPlayerServer != null)
         {
@@ -556,7 +559,7 @@ public partial class TorrentsViewModel
                 titleRu,
                 titleEn,
                 episode ?? string.Empty,
-                SelectedAnime?.Id,
+                effectiveSelected?.Id,
                 titleEn,
                 _currentStreamingHash ?? string.Empty);
 
@@ -568,9 +571,59 @@ public partial class TorrentsViewModel
             titleRu: titleRu,
             titleEn: titleEn,
             episode: episode,
-            animeId: SelectedAnime?.Id,
+            animeId: effectiveSelected?.Id,
             torrentHash: _currentStreamingHash,
             originalTitle: originalTitle);
+    }
+
+    private bool IsSelectedAnimeCompatibleWithTorrent(AnimeEntity? selected, TorrentEntity torrent, string originalTitle)
+    {
+        if (selected is null || selected.MediaKind != MediaKind.Anime)
+            return false;
+
+        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(originalTitle);
+        if (string.IsNullOrWhiteSpace(parsed.Title))
+            parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
+
+        if (parsed.Year.HasValue)
+        {
+            int? sy = selected.StartYear ?? selected.AiringDate?.Year;
+            if (sy.HasValue && System.Math.Abs(sy.Value - parsed.Year.Value) > 1)
+                return false;
+
+            if (!sy.HasValue)
+            {
+                string ys = parsed.Year.Value.ToString();
+                bool titleHasYear = selected.Title.Contains(ys, StringComparison.Ordinal) ||
+                                    (selected.EnglishTitle?.Contains(ys, StringComparison.Ordinal) == true) ||
+                                    (selected.RussianTitle?.Contains(ys, StringComparison.Ordinal) == true);
+                if (!titleHasYear)
+                    return false;
+            }
+        }
+
+        if (!UseCustomQuery && parsed.Season is > 1)
+        {
+            int s = parsed.Season.Value;
+            string normSel = Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(selected.Title);
+            string normEn = Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(selected.EnglishTitle ?? string.Empty);
+            string seasonToken = s.ToString();
+            bool hasSeasonMarker = normSel.Split(' ').Contains(seasonToken) ||
+                                   normEn.Split(' ').Contains(seasonToken) ||
+                                   selected.AlternativeTitles.Any(alt => Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(alt).Split(' ').Contains(seasonToken));
+            if (!hasSeasonMarker)
+                return false;
+        }
+
+        if (!UseCustomQuery &&
+            int.TryParse(torrent.Episode, out int epNum) &&
+            selected.TotalEpisodes > 1 &&
+            epNum > selected.TotalEpisodes)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     [RelayCommand]

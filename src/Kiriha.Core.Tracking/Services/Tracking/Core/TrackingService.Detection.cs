@@ -101,8 +101,8 @@ public partial class TrackingService
 
         if (state.AnimeId is > 0)
         {
-            if (_mappingService.IsNegativelyMapped(media.OriginalTitle) ||
-                _mappingService.IsNegativelyMapped(media.AnimeTitle))
+            string primaryTitle = !string.IsNullOrWhiteSpace(media.OriginalTitle) ? media.OriginalTitle : media.AnimeTitle;
+            if (_mappingService.IsNegativelyMapped(primaryTitle))
             {
                 ClearPlayerMetadata(media);
                 return Task.CompletedTask;
@@ -129,8 +129,7 @@ public partial class TrackingService
                     return SetMatchedInternalMedia(media, existingMatched.Id);
                 }
             }
-            else if (_mappingService.IsManuallyMapped(media.OriginalTitle) ||
-                     _mappingService.IsManuallyMapped(media.AnimeTitle))
+            else if (_mappingService.IsManuallyMapped(primaryTitle))
             {
                 return MatchMediaAsync(media);
             }

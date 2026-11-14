@@ -90,7 +90,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         }
 
         var initialMetadata = metadata ?? metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl);
-        ApplyMetadata(initialMetadata);
+        ApplyMetadata(initialMetadata, allowResolveByTitle: metadata != null);
 
         _previousVideoUrlForMetadata = videoUrl;
         VideoUrl = videoUrl; // Sets VideoUrl and triggers OnVideoUrlChanged if needed, but since it's constructor, we already set the fields above.

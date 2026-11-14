@@ -11,7 +11,13 @@ public partial class NowPlayingViewModel
         {
             var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
             if (!string.IsNullOrWhiteSpace(parsed.Title))
+            {
+                if (parsed.Season is > 1)
+                    return $"{parsed.Title} Season {parsed.Season.Value}";
+                if (parsed.Year.HasValue && !parsed.Title.Contains(parsed.Year.Value.ToString(), StringComparison.Ordinal))
+                    return $"{parsed.Title} ({parsed.Year.Value})";
                 return parsed.Title;
+            }
         }
         return media.AnimeTitle;
     }

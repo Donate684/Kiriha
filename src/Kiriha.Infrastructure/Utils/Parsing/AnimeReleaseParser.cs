@@ -168,6 +168,7 @@ public static partial class AnimeReleaseParser
         string resolution = string.Empty;
         string releaseType = string.Empty;
         int? season = null;
+        int? year = null;
         string episode = string.Empty;
         string episodeTitle = string.Empty;
         bool isBatch = false;
@@ -220,6 +221,7 @@ public static partial class AnimeReleaseParser
             ref resolution,
             ref releaseType,
             ref season,
+            ref year,
             ref episode,
             ref isBatch);
 
@@ -443,6 +445,7 @@ public static partial class AnimeReleaseParser
             Title = titlePart,
             Episode = episode,
             Season = season,
+            Year = year,
             ReleaseGroup = releaseGroup,
             Resolution = resolution,
             ReleaseType = releaseType,
@@ -457,6 +460,7 @@ public static partial class AnimeReleaseParser
         ref string resolution,
         ref string releaseType,
         ref int? season,
+        ref int? year,
         ref string episode,
         ref bool isBatch)
     {
@@ -503,7 +507,8 @@ public static partial class AnimeReleaseParser
                         {
                             if (startVal >= 1960 && endVal >= 1960 && startVal <= 2099 && endVal <= 2099)
                             {
-                                // Multi-year range like (2023-2024): remove bracket without assigning episode/batch
+                                // Multi-year range like (2023-2024): record start year and remove bracket without assigning episode/batch
+                                year ??= startVal;
                                 shouldRemove = true;
                             }
                             else
@@ -518,6 +523,7 @@ public static partial class AnimeReleaseParser
                     // Single year like (2023)
                     if (!shouldRemove && int.TryParse(inner, out int singleYear) && singleYear >= 1960 && singleYear <= 2099)
                     {
+                        year ??= singleYear;
                         shouldRemove = true;
                     }
 

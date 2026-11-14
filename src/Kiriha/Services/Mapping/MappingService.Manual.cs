@@ -5,7 +5,7 @@ public partial class MappingService
     public void AddMapping(string title, int malId)
     {
         if (string.IsNullOrWhiteSpace(title)) return;
-        var (cleanTitle, searchTitle, _, _) = ParseAnimeTitle(title);
+        var (cleanTitle, searchTitle, _, _, _) = ParseAnimeTitle(title);
 
         string target = !string.IsNullOrWhiteSpace(searchTitle) && searchTitle != cleanTitle
             ? searchTitle
@@ -26,7 +26,7 @@ public partial class MappingService
 
         _manualMapping.RemoveMapping(title);
 
-        var (cleanTitle, searchTitle, _, _) = ParseAnimeTitle(title);
+        var (cleanTitle, searchTitle, _, _, _) = ParseAnimeTitle(title);
         if (!string.IsNullOrWhiteSpace(cleanTitle) && !string.Equals(cleanTitle, title, StringComparison.OrdinalIgnoreCase))
         {
             _manualMapping.RemoveMapping(cleanTitle);
@@ -49,13 +49,16 @@ public partial class MappingService
         string normOriginal = Normalize(title);
         if (_manualMapping.TryGetMapping(normOriginal, out _)) return true;
 
-        var (cleanTitle, searchTitle, _, _) = ParseAnimeTitle(title);
+        var (cleanTitle, searchTitle, parsedSeason, _, parsedYear) = ParseAnimeTitle(title);
 
         string normClean = Normalize(cleanTitle);
-        if (_manualMapping.TryGetMapping(normClean, out _)) return true;
-
         string normSearch = Normalize(searchTitle);
-        if (normSearch != normClean && _manualMapping.TryGetMapping(normSearch, out _)) return true;
+        bool isDistinctVariant = parsedSeason > 1 ||
+                                 parsedYear.HasValue ||
+                                 !string.Equals(normSearch, normClean, StringComparison.OrdinalIgnoreCase);
+
+        if (_manualMapping.TryGetMapping(normSearch, out _)) return true;
+        if (!isDistinctVariant && _manualMapping.TryGetMapping(normClean, out _)) return true;
 
         return false;
     }
@@ -67,13 +70,16 @@ public partial class MappingService
         string normOriginal = Normalize(title);
         if (_manualMapping.IsNegativelyMapped(normOriginal)) return true;
 
-        var (cleanTitle, searchTitle, _, _) = ParseAnimeTitle(title);
+        var (cleanTitle, searchTitle, parsedSeason, _, parsedYear) = ParseAnimeTitle(title);
 
         string normClean = Normalize(cleanTitle);
-        if (_manualMapping.IsNegativelyMapped(normClean)) return true;
-
         string normSearch = Normalize(searchTitle);
-        if (normSearch != normClean && _manualMapping.IsNegativelyMapped(normSearch)) return true;
+        bool isDistinctVariant = parsedSeason > 1 ||
+                                 parsedYear.HasValue ||
+                                 !string.Equals(normSearch, normClean, StringComparison.OrdinalIgnoreCase);
+
+        if (_manualMapping.IsNegativelyMapped(normSearch)) return true;
+        if (!isDistinctVariant && _manualMapping.IsNegativelyMapped(normClean)) return true;
 
         return false;
     }
@@ -81,17 +87,15 @@ public partial class MappingService
     public void AddNegativeMapping(string title)
     {
         if (string.IsNullOrWhiteSpace(title)) return;
-        var (cleanTitle, searchTitle, _, _) = ParseAnimeTitle(title);
+        var (cleanTitle, searchTitle, _, _, _) = ParseAnimeTitle(title);
 
         _manualMapping.RemoveMapping(title);
 
         if (!string.IsNullOrWhiteSpace(searchTitle))
             _manualMapping.AddNegativeMapping(searchTitle);
-
-        if (!string.IsNullOrWhiteSpace(cleanTitle) && !string.Equals(cleanTitle, searchTitle, StringComparison.OrdinalIgnoreCase))
+        else if (!string.IsNullOrWhiteSpace(cleanTitle))
             _manualMapping.AddNegativeMapping(cleanTitle);
-
-        if (string.IsNullOrWhiteSpace(searchTitle) && string.IsNullOrWhiteSpace(cleanTitle))
+        else
             _manualMapping.AddNegativeMapping(title);
 
         ClearRecognitionCaches();
