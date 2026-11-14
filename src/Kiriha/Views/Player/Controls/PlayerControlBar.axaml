@@ -191,7 +191,6 @@
             <Button Name="SubtitlePositionButton"
                     Classes="icon-btn"
                     ToolTip.Tip="{DynamicResource l.player.controls.subtitles_position_tip}"
-                    PointerReleased="OnSubtitlePositionButtonPointerReleased"
                     IsVisible="{Binding ShowSubtitlePositionButton}">
                 <material:MaterialIcon Kind="FormatLineSpacing" Width="20" Height="20" Foreground="White"/>
             </Button>
@@ -209,7 +208,6 @@
             <Button Name="ScreenshotButton"
                     Classes="icon-btn"
                     ToolTip.Tip="{DynamicResource l.player.controls.screenshot}"
-                    PointerReleased="OnScreenshotButtonPointerReleased"
                     IsVisible="{Binding ShowScreenshotButton}">
                 <material:MaterialIcon Kind="CameraOutline" Width="20" Height="20" Foreground="White"/>
             </Button>

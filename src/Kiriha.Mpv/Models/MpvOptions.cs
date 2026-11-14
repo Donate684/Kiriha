@@ -11,6 +11,26 @@ public sealed record MpvOptions(
     bool SavePositionOnQuit = true,
     string? WatchLaterDirectory = null)
 {
-    public static MpvOptions Default { get; } = new("auto", "gpu-next", "auto", "auto");
+    public static MpvOptions Default { get; } = new("auto", "libmpv", "auto", "auto");
+
+    public static MpvOptions Sanitize(MpvOptions options)
+    {
+        var gpuApi = options.GpuApi?.Trim().ToLowerInvariant();
+        if (gpuApi is "d3d11" or "vulkan" or "" or null)
+        {
+            gpuApi = "auto";
+        }
+        else if (gpuApi is not ("auto" or "opengl"))
+        {
+            gpuApi = "auto";
+        }
+
+        return options with
+        {
+            VideoOutput = "libmpv",
+            GpuApi = gpuApi,
+            GpuContext = "auto"
+        };
+    }
 }
 

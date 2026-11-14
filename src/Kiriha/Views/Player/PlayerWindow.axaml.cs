@@ -28,9 +28,12 @@ public partial class PlayerWindow : Window
     private Slider? _timelineSlider;
     private Views.Player.Controls.PlayerControlBar? _controlBar;
     private Button? _settingsButton;
-    private Button? _screenshotButton;
     private Button? _closeButton;
     private TextBlock? _maximizeIcon;
+    private Border? _topDragStrip;
+    private Border? _leftDragStrip;
+    private Border? _rightDragStrip;
+    private Border? _bottomDragStrip;
     
     private PlayerViewModel? _subscribedViewModel;
     private PropertyChangedEventHandler? _viewModelPropertyChanged;
@@ -60,10 +63,8 @@ public partial class PlayerWindow : Window
         {
             _timelineSlider.AddHandler(PointerPressedEvent, OnSliderPointerPressed, RoutingStrategies.Tunnel);
             _timelineSlider.AddHandler(PointerReleasedEvent, OnSliderPointerReleased, RoutingStrategies.Tunnel);
+            _timelineSlider.AddHandler(PointerCaptureLostEvent, OnSliderPointerCaptureLost, RoutingStrategies.Tunnel);
         }
-
-        if (_screenshotButton != null)
-            _screenshotButton.AddHandler(PointerReleasedEvent, OnScreenshotButtonPointerReleased, RoutingStrategies.Tunnel);
     }
 
     public PlayerWindow(ISettingsService settingsService) : this()
@@ -161,10 +162,8 @@ public partial class PlayerWindow : Window
             {
                 _timelineSlider.RemoveHandler(PointerPressedEvent, OnSliderPointerPressed);
                 _timelineSlider.RemoveHandler(PointerReleasedEvent, OnSliderPointerReleased);
+                _timelineSlider.RemoveHandler(PointerCaptureLostEvent, OnSliderPointerCaptureLost);
             }
-
-            if (_screenshotButton != null)
-                _screenshotButton.RemoveHandler(PointerReleasedEvent, OnScreenshotButtonPointerReleased);
 
             if (_subscribedViewModel != null)
             {
@@ -229,9 +228,12 @@ public partial class PlayerWindow : Window
         _timelineSlider = this.FindControl<Slider>("TimelineSlider");
         _controlBar = this.FindControl<Views.Player.Controls.PlayerControlBar>("ControlBar");
         _settingsButton = this.FindControl<Button>("SettingsButton");
-        _screenshotButton = this.FindControl<Button>("ScreenshotButton");
         _closeButton = this.FindControl<Button>("CloseButton");
         _maximizeIcon = this.FindControl<TextBlock>("MaximizeIcon");
+        _topDragStrip = this.FindControl<Border>("TopDragStrip");
+        _leftDragStrip = this.FindControl<Border>("LeftDragStrip");
+        _rightDragStrip = this.FindControl<Border>("RightDragStrip");
+        _bottomDragStrip = this.FindControl<Border>("BottomDragStrip");
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)

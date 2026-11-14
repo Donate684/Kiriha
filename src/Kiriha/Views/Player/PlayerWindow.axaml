@@ -347,10 +347,8 @@
                         HorizontalAlignment="Stretch"
                         IsHitTestVisible="False"
                         ZIndex="20">
-                    <Border Width="236"
-                            Height="160"
-                            Canvas.Left="{Binding Overlay.TimelinePreviewLeft}"
-                            Canvas.Top="-168"
+                    <Border Canvas.Left="{Binding Overlay.TimelinePreviewLeft}"
+                            Canvas.Bottom="14"
                             IsVisible="{Binding Overlay.IsTimelinePreviewVisible}"
                             Background="#F0141414"
                             BorderBrush="#2AFFFFFF"
@@ -358,13 +356,14 @@
                             CornerRadius="10"
                             BoxShadow="0 12 36 0 #80000000"
                             Padding="6">
-                        <Grid RowDefinitions="126,Auto">
+                        <Grid RowDefinitions="Auto,Auto">
                             <Border Grid.Row="0"
                                     Width="224"
                                     Height="126"
                                     Background="#FF050505"
                                     CornerRadius="6"
-                                    ClipToBounds="True">
+                                    ClipToBounds="True"
+                                    IsVisible="{Binding Overlay.TimelinePreviewImage, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <Image Source="{Binding Overlay.TimelinePreviewImage}"
                                        Stretch="Uniform"
                                        HorizontalAlignment="Center"

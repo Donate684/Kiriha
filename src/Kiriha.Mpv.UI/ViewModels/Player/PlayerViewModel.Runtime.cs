@@ -43,6 +43,12 @@ public partial class PlayerViewModel
         if (string.IsNullOrWhiteSpace(path))
             return;
 
+        if (IsLoading || !_playback.HasPlayer)
+        {
+            _pendingSubtitleUrl = path;
+            return;
+        }
+
         _playback.AddSubtitle(path, select);
     }
 
@@ -261,12 +267,12 @@ public partial class PlayerViewModel
     public void EndScrub()
     {
         _lastScrubSeekTick = 0;
+        var snapshot = _timeline.EndScrub(CurrentTime);
         if (_playback.HasPlayer)
         {
-            var snapshot = _timeline.EndScrub(CurrentTime);
             _playback.Seek(snapshot.CurrentTime, fast: false);
-            ApplyTimelineSnapshot(snapshot);
         }
+        ApplyTimelineSnapshot(snapshot);
     }
 
     // Called when CurrentTime is changed via UI while scrubbing

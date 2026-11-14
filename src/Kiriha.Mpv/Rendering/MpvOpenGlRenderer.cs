@@ -117,11 +117,8 @@ public class MpvOpenGlRenderer : IDisposable
         }
     }
 
-    public void Dispose()
+    public void ResetRenderContext()
     {
-        if (Interlocked.Exchange(ref _disposeState, 1) == 1) return;
-        _disposed = true;
-
         try
         {
             _renderGate.EnterWriteLock();
@@ -142,8 +139,15 @@ public class MpvOpenGlRenderer : IDisposable
 
             if (renderContext != IntPtr.Zero)
             {
-                LibMpvNative.mpv_render_context_set_update_callback(renderContext, null!, IntPtr.Zero);
-                LibMpvNative.mpv_render_context_free(renderContext);
+                try
+                {
+                    LibMpvNative.mpv_render_context_set_update_callback(renderContext, null!, IntPtr.Zero);
+                    LibMpvNative.mpv_render_context_free(renderContext);
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Debug(ex, "ResetRenderContext: failed to free render context");
+                }
             }
 
             lock (_renderUpdateLock)
@@ -157,8 +161,21 @@ public class MpvOpenGlRenderer : IDisposable
         finally
         {
             _renderGate.ExitWriteLock();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposeState, 1) == 1) return;
+        _disposed = true;
+
+        ResetRenderContext();
+
+        try
+        {
             _renderGate.Dispose();
         }
+        catch (ObjectDisposedException) { }
     }
 
 

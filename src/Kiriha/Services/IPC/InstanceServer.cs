@@ -99,12 +99,32 @@ public class InstanceServer : BackgroundService
     private void HandleArguments(string[] args)
     {
         int playerArgIndex = Array.FindIndex(args, arg => arg.Equals("--player", StringComparison.OrdinalIgnoreCase));
+        string? candidateMediaUrl = null;
         if (playerArgIndex >= 0)
         {
-            string videoUrl = string.Empty;
-            if (playerArgIndex + 1 < args.Length && !args[playerArgIndex + 1].StartsWith("--"))
+            candidateMediaUrl = playerArgIndex + 1 < args.Length && !args[playerArgIndex + 1].StartsWith("--")
+                ? args[playerArgIndex + 1]
+                : string.Empty;
+        }
+        else
+        {
+            candidateMediaUrl = args.FirstOrDefault(a => !a.StartsWith("--") && (
+                a.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
+                a.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
+                a.EndsWith(".avi", StringComparison.OrdinalIgnoreCase) ||
+                a.EndsWith(".webm", StringComparison.OrdinalIgnoreCase) ||
+                a.EndsWith(".ts", StringComparison.OrdinalIgnoreCase) ||
+                (Uri.TryCreate(a, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)) ||
+                File.Exists(a)));
+        }
+
+        if (playerArgIndex >= 0 || candidateMediaUrl != null)
+        {
+            string videoUrl = candidateMediaUrl ?? string.Empty;
+            var torrServer = _serviceProvider.GetService<ITorrServerService>();
+            if (torrServer != null && !torrServer.IsRunning && Utils.PlayerProcessHelper.IsTorrentStream(videoUrl, args))
             {
-                videoUrl = args[playerArgIndex + 1];
+                _ = torrServer.EnsureRunningAsync();
             }
             _uiDispatcher.Post(() =>
             {
@@ -143,6 +163,7 @@ public class InstanceServer : BackgroundService
                 }
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
+                window.Activate();
             });
         }
         else

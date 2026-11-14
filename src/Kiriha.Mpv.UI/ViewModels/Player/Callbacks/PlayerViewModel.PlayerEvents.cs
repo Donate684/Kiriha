@@ -127,22 +127,25 @@ public partial class PlayerViewModel
 
     private void OnPlayerEofReachedChanged(bool isEof)
     {
-        _isEofReached = isEof;
-        if (isEof)
+        Dispatcher.UIThread.Post(() =>
         {
-            Overlay.DismissResumePrompt();
-            Overlay.DismissSkipPrompt(smooth: false);
-            if (RememberPlaybackPosition)
+            _isEofReached = isEof;
+            if (isEof)
             {
-                PlaybackResumeStore.Remove(VideoUrl);
-                _playback.DeleteWatchLaterConfig();
-                _playback.SetSavePositionOnQuit(false);
+                Overlay.DismissResumePrompt();
+                Overlay.DismissSkipPrompt(smooth: false);
+                if (RememberPlaybackPosition)
+                {
+                    PlaybackResumeStore.Remove(VideoUrl);
+                    _playback.DeleteWatchLaterConfig();
+                    _playback.SetSavePositionOnQuit(false);
+                }
             }
-        }
-        else
-        {
-            _playback.SetSavePositionOnQuit(RememberPlaybackPosition);
-        }
+            else
+            {
+                _playback.SetSavePositionOnQuit(RememberPlaybackPosition);
+            }
+        });
     }
 
     private void OnPlayerPlaybackStateChanged(PlaybackState state)

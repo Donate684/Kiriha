@@ -28,7 +28,7 @@ public partial class ShikiApiService
                 {
                     st.UserId = userId;
                 }
-            }, save: false);
+            }, SettingsSection.Api, save: false);
             _settingsService.SaveImmediate();
         }
 

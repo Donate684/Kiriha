@@ -76,7 +76,7 @@
                                     </Grid>
                                     <Slider Minimum="0" Maximum="100"
                                             Value="{Binding Volume}"
-                                            IsEnabled="{Binding RememberPlayerVolume}"/>
+                                            IsEnabled="{Binding !RememberPlayerVolume}"/>
                                 </StackPanel>
 
                                 <Border Height="110" IsHitTestVisible="False"/>

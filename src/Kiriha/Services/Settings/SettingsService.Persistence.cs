@@ -77,8 +77,11 @@ public partial class SettingsService
             versions = GetVersions();
         }
 
-        bool forceAll = versions.Ui == 0 && versions.System == 0 && versions.Player == 0
-            && versions.Torrents == 0 && versions.Api == 0 && versions.CustomLinks == 0 && versions.Window == 0;
+        bool forceAll = !File.Exists(_appSettingsPath)
+            && !File.Exists(_playerSettingsPath)
+            && !File.Exists(_torrentsSettingsPath)
+            && !File.Exists(_authSettingsPath)
+            && !File.Exists(_windowSettingsPath);
 
         // 1. app.json
         if (forceAll || versions.Ui != 0 || versions.System != 0 || versions.CustomLinks != 0 || !File.Exists(_appSettingsPath))

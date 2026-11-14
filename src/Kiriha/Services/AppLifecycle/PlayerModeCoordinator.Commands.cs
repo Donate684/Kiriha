@@ -10,7 +10,7 @@ namespace Kiriha.Services.AppLifecycle;
 
 public sealed partial class PlayerModeCoordinator
 {
-    private void HandlePlayerCommand(string[] args)
+    private async void HandlePlayerCommand(string[] args)
     {
         if (args.Any(arg => arg.Equals(PlayerProcessBridge.ShutdownArg, StringComparison.OrdinalIgnoreCase)))
         {
@@ -19,7 +19,20 @@ public sealed partial class PlayerModeCoordinator
                 foreach (var playerWindow in desktop.Windows.OfType<PlayerWindow>().ToArray())
                     playerWindow.Close();
 
-                FlushSettings();
+                _playerCommandServer?.Dispose();
+                _playerCommandServer = null;
+
+                if (_shutdownCoordinator != null)
+                {
+                    await _shutdownCoordinator.DrainAsync();
+                }
+                else
+                {
+                    FlushSettings();
+                }
+
+                if (_serviceProvider is IDisposable disposable)
+                    disposable.Dispose();
                 desktop.Shutdown();
             }
 

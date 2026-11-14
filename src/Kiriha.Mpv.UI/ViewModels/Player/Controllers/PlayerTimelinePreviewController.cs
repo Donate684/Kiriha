@@ -148,6 +148,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
 
     public void WarmUp(string videoUrl)
     {
+        _overlay.ClearTimelinePreview();
         var thumbnailer = _thumbnailer;
         if (thumbnailer is null || string.IsNullOrWhiteSpace(videoUrl))
             return;

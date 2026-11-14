@@ -72,71 +72,26 @@ public partial class PlayerWindow
         OnFullscreenClick(sender, e);
     }
 
+    private WindowState _previousWindowState = WindowState.Normal;
+
     private void OnFullscreenClick(object? sender, EventArgs e)
     {
-        this.WindowState = this.WindowState == WindowState.FullScreen
-            ? WindowState.Normal
-            : WindowState.FullScreen;
+        if (this.WindowState == WindowState.FullScreen)
+        {
+            this.WindowState = _previousWindowState == WindowState.Maximized
+                ? WindowState.Maximized
+                : WindowState.Normal;
+        }
+        else
+        {
+            _previousWindowState = this.WindowState;
+            this.WindowState = WindowState.FullScreen;
+        }
     }
 
     private void OnSettingsButtonClick(object? sender, RoutedEventArgs e)
     {
         e.Handled = true;
         ShowSettingsOverlay();
-    }
-
-    private void OnScreenshotButtonPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (DataContext is not PlayerViewModel vm)
-            return;
-
-        var properties = e.GetCurrentPoint(this).Properties;
-        switch (properties.PointerUpdateKind)
-        {
-            case PointerUpdateKind.LeftButtonReleased:
-                e.Handled = true;
-                vm.TakeScreenshot(includeSubtitles: false);
-                ShowControls();
-                break;
-            case PointerUpdateKind.RightButtonReleased:
-                e.Handled = true;
-                vm.TakeScreenshot(includeSubtitles: true);
-                ShowControls();
-                break;
-        }
-    }
-
-    private void OnSubtitlePositionButtonPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (DataContext is not PlayerViewModel vm)
-            return;
-
-        var properties = e.GetCurrentPoint(this).Properties;
-        switch (properties.PointerUpdateKind)
-        {
-            case PointerUpdateKind.LeftButtonReleased:
-                e.Handled = true;
-                vm.MoveSubtitleUp();
-                ShowControls();
-                break;
-            case PointerUpdateKind.RightButtonReleased:
-                e.Handled = true;
-                vm.MoveSubtitleDown();
-                ShowControls();
-                break;
-        }
-    }
-
-    private void OnTrackMenuItemClick(object? sender, RoutedEventArgs e)
-    {
-        e.Handled = true;
-        if (sender is not Button { DataContext: TrackInfo track } || DataContext is not PlayerViewModel vm)
-            return;
-
-        vm.SelectTrackCommand.Execute(track);
-
-        var flyoutButtonName = track.Type == "sub" ? "SubtitleButton" : "AudioButton";
-        this.FindControl<Button>(flyoutButtonName)?.Flyout?.Hide();
-        ShowControls();
     }
 }

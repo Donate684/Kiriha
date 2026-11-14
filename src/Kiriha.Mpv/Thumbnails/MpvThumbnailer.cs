@@ -87,7 +87,8 @@ public sealed partial class MpvThumbnailer : IDisposable
         CancellationTokenSource localCts;
         lock (_gate)
         {
-            _currentCaptureCts?.Cancel();
+            try { _currentCaptureCts?.Cancel(); } catch (ObjectDisposedException) { }
+            try { _currentCaptureCts?.Dispose(); } catch (ObjectDisposedException) { }
             _currentCaptureCts = new CancellationTokenSource();
             localCts = _currentCaptureCts;
         }
@@ -113,7 +114,7 @@ public sealed partial class MpvThumbnailer : IDisposable
             }
             finally
             {
-                _captureGate.Release();
+                try { _captureGate.Release(); } catch (ObjectDisposedException) { }
             }
         }
         catch (OperationCanceledException)
@@ -146,7 +147,7 @@ public sealed partial class MpvThumbnailer : IDisposable
             }
             finally
             {
-                _captureGate.Release();
+                try { _captureGate.Release(); } catch (ObjectDisposedException) { }
             }
         }, cancellationToken);
     }
@@ -196,8 +197,8 @@ public sealed partial class MpvThumbnailer : IDisposable
                 }
             }
 
-            try { _captureGate?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Failed to dispose capture gate"); }
             try { _currentCaptureCts?.Cancel(); _currentCaptureCts?.Dispose(); } catch { }
+            try { _captureGate?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Failed to dispose capture gate"); }
         }
         else
         {

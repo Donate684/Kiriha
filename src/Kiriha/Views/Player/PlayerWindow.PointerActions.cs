@@ -31,6 +31,12 @@ public partial class PlayerWindow
             vm.EndScrub();
     }
 
+    private void OnSliderPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+    {
+        if (DataContext is PlayerViewModel { IsScrubbing: true } vm)
+            vm.EndScrub();
+    }
+
     // Background click / drag
 
     private void OnBackgroundPointerPressed(object? sender, PointerPressedEventArgs e)

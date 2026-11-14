@@ -10,18 +10,26 @@ using Serilog;
 
 namespace Kiriha.Services.AppLifecycle;
 
-public sealed partial class PlayerModeCoordinator
+public sealed partial class PlayerModeCoordinator : IDisposable
 {
     private readonly Application _app;
     private readonly IServiceProvider _serviceProvider;
     private readonly TrayService _trayService;
+    private readonly ShutdownCoordinator? _shutdownCoordinator;
     private PlayerCommandServer? _playerCommandServer;
 
-    public PlayerModeCoordinator(Application app, IServiceProvider serviceProvider, TrayService trayService)
+    public PlayerModeCoordinator(Application app, IServiceProvider serviceProvider, TrayService trayService, ShutdownCoordinator? shutdownCoordinator = null)
     {
         _app = app;
         _serviceProvider = serviceProvider;
         _trayService = trayService;
+        _shutdownCoordinator = shutdownCoordinator;
+    }
+
+    public void Dispose()
+    {
+        _playerCommandServer?.Dispose();
+        _playerCommandServer = null;
     }
 
     public void Initialize(string[] args)
@@ -31,7 +39,14 @@ public sealed partial class PlayerModeCoordinator
 
         _trayService.DisableTrayIcons();
         desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-        desktop.ShutdownRequested += OnShutdownRequested;
+        if (_shutdownCoordinator != null)
+        {
+            desktop.ShutdownRequested += _shutdownCoordinator.OnShutdownRequested;
+        }
+        else
+        {
+            desktop.ShutdownRequested += OnShutdownRequested;
+        }
         StartPlayerCommandServer();
 
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();

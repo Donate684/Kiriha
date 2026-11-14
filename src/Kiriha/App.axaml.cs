@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.AppLifecycle;
 using Material.Icons.Avalonia;
@@ -27,9 +29,10 @@ public partial class App : Application
         }
         _shutdownCoordinator = new ShutdownCoordinator(ServiceProvider, ServiceProvider.GetServices<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler>());
         _trayService = new TrayService(this, ServiceProvider, _shutdownCoordinator);
+        ApplyAppThemeAndAccents(appSettingsService);
         if (isPlayerMode)
         {
-            _playerModeCoordinator = new PlayerModeCoordinator(this, ServiceProvider, _trayService);
+            _playerModeCoordinator = new PlayerModeCoordinator(this, ServiceProvider, _trayService, _shutdownCoordinator);
             _playerModeCoordinator.Initialize(args);
             base.OnFrameworkInitializationCompleted();
             _trayService.DisableTrayIcons();
@@ -37,23 +40,29 @@ public partial class App : Application
         }
         _startupCoordinator = new AppStartupCoordinator(this, ServiceProvider, _trayService, _shutdownCoordinator);
         _startupCoordinator.Initialize(args);
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ApplyAppThemeAndAccents(Kiriha.Services.Data.Settings.SettingsService? settings)
+    {
+        if (settings == null) return;
+
+        RequestedThemeVariant = settings.Current.UI.Theme switch
+        {
+            ThemeType.Light => ThemeVariant.Light,
+            ThemeType.Dark => ThemeVariant.Dark,
+            _ => ThemeVariant.Default
+        };
+
+        ApplyCustomAccentColor(settings.Current.UI.CustomAccentColor);
+
         if (Current?.PlatformSettings != null)
         {
             Current.PlatformSettings.ColorValuesChanged += (sender, e) =>
             {
-                if (ServiceProvider != null)
-                {
-                    var settings = ServiceProvider.GetRequiredService<Kiriha.Services.Data.Settings.SettingsService>();
-                    ApplyCustomAccentColor(settings.Current.UI.CustomAccentColor);
-                }
+                ApplyCustomAccentColor(settings.Current.UI.CustomAccentColor);
             };
         }
-        if (ServiceProvider != null)
-        {
-            var settings = ServiceProvider.GetRequiredService<Kiriha.Services.Data.Settings.SettingsService>();
-            ApplyCustomAccentColor(settings.Current.UI.CustomAccentColor);
-        }
-        base.OnFrameworkInitializationCompleted();
     }
     public override void Initialize()
     {

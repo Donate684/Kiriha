@@ -95,67 +95,18 @@ public static class PlayerProcessHelper
         var processPath = Environment.ProcessPath;
         if (string.IsNullOrEmpty(assemblyPath) || string.IsNullOrEmpty(processPath)) return;
 
-        var isDotnet = System.IO.Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
-
-        var argsBuilder = new StringBuilder();
-        if (isDotnet)
-        {
-            argsBuilder.Append($"\"{assemblyPath}\" ");
-        }
-        argsBuilder.Append("--player");
-
-        if (!string.IsNullOrWhiteSpace(videoUrl))
-        {
-            argsBuilder.Append($" \"{videoUrl}\"");
-        }
-        if (!string.IsNullOrWhiteSpace(subtitleUrl))
-        {
-            argsBuilder.Append($" --sub-file \"{subtitleUrl}\"");
-        }
-        if (!string.IsNullOrWhiteSpace(canonicalOriginal))
-        {
-            argsBuilder.Append($" --original-title \"{canonicalOriginal}\"");
-        }
-        if (!string.IsNullOrWhiteSpace(titleRu))
-        {
-            argsBuilder.Append($" --title-ru \"{titleRu}\"");
-        }
-        if (!string.IsNullOrWhiteSpace(titleEn))
-        {
-            argsBuilder.Append($" --title-en \"{titleEn}\"");
-        }
-        if (!string.IsNullOrWhiteSpace(episode))
-        {
-            argsBuilder.Append($" --episode \"{episode}\"");
-        }
-        if (animeId.HasValue)
-        {
-            argsBuilder.Append($" --anime-id {animeId.Value}");
-        }
-        if (!string.IsNullOrWhiteSpace(torrentHash))
-        {
-            argsBuilder.Append($" --torrent-hash \"{torrentHash}\"");
-        }
-        if (headers != null)
-        {
-            foreach (var kvp in headers)
-            {
-                argsBuilder.Append($" --http-header \"{kvp.Key}={kvp.Value}\"");
-            }
-        }
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = processPath,
-            Arguments = argsBuilder.ToString(),
-            UseShellExecute = false,
-            WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
-        };
-
-        if (OperatingSystem.IsWindows())
-        {
-            startInfo.KillOnParentExit = true;
-        }
+        var startInfo = CreatePlayerStartInfo(
+            processPath,
+            assemblyPath,
+            videoUrl,
+            titleRu,
+            titleEn,
+            episode,
+            animeId,
+            torrentHash,
+            canonicalOriginal,
+            subtitleUrl,
+            headers);
 
         try
         {
@@ -165,5 +116,107 @@ public static class PlayerProcessHelper
         {
             Serilog.Log.Error(ex, "Failed to launch player process");
         }
+    }
+
+    public static ProcessStartInfo CreatePlayerStartInfo(
+        string processPath,
+        string? assemblyPath,
+        string? videoUrl,
+        string? titleRu = null,
+        string? titleEn = null,
+        string? episode = null,
+        int? animeId = null,
+        string? torrentHash = null,
+        string? originalTitle = null,
+        string? subtitleUrl = null,
+        IReadOnlyDictionary<string, string>? headers = null)
+    {
+        var canonicalOriginal = !string.IsNullOrWhiteSpace(originalTitle)
+            ? originalTitle
+            : (titleEn ?? titleRu ?? string.Empty);
+
+        var isDotnet = System.IO.Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = processPath,
+            UseShellExecute = false,
+            WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+        };
+
+        if (isDotnet && !string.IsNullOrEmpty(assemblyPath))
+        {
+            startInfo.ArgumentList.Add(assemblyPath);
+        }
+
+        startInfo.ArgumentList.Add("--player");
+
+        if (!string.IsNullOrWhiteSpace(videoUrl))
+        {
+            startInfo.ArgumentList.Add(videoUrl);
+        }
+        if (!string.IsNullOrWhiteSpace(subtitleUrl))
+        {
+            startInfo.ArgumentList.Add("--sub-file");
+            startInfo.ArgumentList.Add(subtitleUrl);
+        }
+        if (!string.IsNullOrWhiteSpace(canonicalOriginal))
+        {
+            startInfo.ArgumentList.Add("--original-title");
+            startInfo.ArgumentList.Add(canonicalOriginal);
+        }
+        if (!string.IsNullOrWhiteSpace(titleRu))
+        {
+            startInfo.ArgumentList.Add("--title-ru");
+            startInfo.ArgumentList.Add(titleRu);
+        }
+        if (!string.IsNullOrWhiteSpace(titleEn))
+        {
+            startInfo.ArgumentList.Add("--title-en");
+            startInfo.ArgumentList.Add(titleEn);
+        }
+        if (!string.IsNullOrWhiteSpace(episode))
+        {
+            startInfo.ArgumentList.Add("--episode");
+            startInfo.ArgumentList.Add(episode);
+        }
+        if (animeId.HasValue)
+        {
+            startInfo.ArgumentList.Add("--anime-id");
+            startInfo.ArgumentList.Add(animeId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        if (!string.IsNullOrWhiteSpace(torrentHash))
+        {
+            startInfo.ArgumentList.Add("--torrent-hash");
+            startInfo.ArgumentList.Add(torrentHash);
+        }
+        if (headers != null)
+        {
+            foreach (var kvp in headers)
+            {
+                startInfo.ArgumentList.Add("--http-header");
+                startInfo.ArgumentList.Add($"{kvp.Key}={kvp.Value}");
+            }
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            startInfo.KillOnParentExit = true;
+        }
+
+        return startInfo;
+    }
+
+    public static bool IsTorrentStream(string? url, string[]? args = null)
+    {
+        if (args != null && args.Any(a => a.Equals("--torrent-hash", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        if (string.IsNullOrWhiteSpace(url))
+            return false;
+
+        return url.Contains(Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.DefaultHost, StringComparison.OrdinalIgnoreCase) ||
+               url.Contains("/stream", StringComparison.OrdinalIgnoreCase) ||
+               System.Text.RegularExpressions.Regex.IsMatch(url, Kiriha.Core.Domain.Constants.AppConstants.Torrents.TorrentHashLinkRegex);
     }
 }

@@ -6,14 +6,11 @@ public partial class MpvPlayer
 {
     internal T Read<T>(Func<IntPtr, T> read, T defaultValue)
     {
-        IntPtr handle;
         lock (_gate)
         {
             if (_disposed || _mpvHandle == IntPtr.Zero) return defaultValue;
-            handle = _mpvHandle;
+            return read(_mpvHandle);
         }
-
-        return read(handle);
     }
 
     internal T ReadNodeProperty<T>(string name, Func<MpvNode, T> parse, T defaultValue)

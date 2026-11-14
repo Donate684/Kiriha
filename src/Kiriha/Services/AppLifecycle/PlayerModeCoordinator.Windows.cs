@@ -18,6 +18,10 @@ public sealed partial class PlayerModeCoordinator
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
         var localizer = _serviceProvider.GetRequiredService<ILocalizer>();
         var torrServer = _serviceProvider.GetService<ITorrServerService>();
+        if (torrServer != null && !torrServer.IsRunning && Utils.PlayerProcessHelper.IsTorrentStream(videoUrl, args))
+        {
+            _ = torrServer.EnsureRunningAsync();
+        }
 
         var cliMetadata = ExtractMetadataFromArgs(args);
         var initialMetadata = cliMetadata ?? metadataResolver.Resolve(videoUrl);

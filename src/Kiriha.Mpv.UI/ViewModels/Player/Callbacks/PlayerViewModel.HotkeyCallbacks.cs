@@ -74,6 +74,21 @@ public partial class PlayerViewModel
         SaveHotkey(value, "X", (settings, hotkey) => settings.SubtitleDelayLaterHotkey = hotkey);
     }
 
+    partial void OnReloadSubtitlesHotkeyChanged(string value)
+    {
+        SaveHotkey(value, "Q", (settings, hotkey) => settings.ReloadSubtitlesHotkey = hotkey);
+    }
+
+    partial void OnFrameStepForwardHotkeyChanged(string value)
+    {
+        SaveHotkey(value, "OemPeriod", (settings, hotkey) => settings.FrameStepForwardHotkey = hotkey);
+    }
+
+    partial void OnFrameStepBackwardHotkeyChanged(string value)
+    {
+        SaveHotkey(value, "OemComma", (settings, hotkey) => settings.FrameStepBackwardHotkey = hotkey);
+    }
+
     private void SaveHotkey(string value, string fallback, Action<AppSettings.PlayerConfig, string> update)
     {
         if (_isApplyingSettings || _settingsService is null) return;

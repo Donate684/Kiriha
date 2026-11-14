@@ -16,6 +16,7 @@ public class MpvPlaybackController
 
     public void Load(string url, IReadOnlyDictionary<string, string>? headers = null)
     {
+        _player.ResetPropertyCache();
         _player.Enqueue(handle =>
         {
             var targetUrl = url;

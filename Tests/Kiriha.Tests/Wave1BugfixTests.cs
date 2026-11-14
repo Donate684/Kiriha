@@ -826,6 +826,8 @@ public sealed class Wave1BugfixTests
         mockSettings.Setup(s => s.Current).Returns(settings);
         mockSettings.Setup(s => s.Update(It.IsAny<Action<AppSettings>>(), It.IsAny<bool>()))
             .Callback<Action<AppSettings>, bool>((action, _) => action(settings));
+        mockSettings.Setup(s => s.Update(It.IsAny<Action<AppSettings>>(), It.IsAny<SettingsSection>(), It.IsAny<bool>()))
+            .Callback<Action<AppSettings>, SettingsSection, bool>((action, _, _) => action(settings));
 
         int refreshCount = 0;
         var handler = new DelegatingHandlerStub(async req =>

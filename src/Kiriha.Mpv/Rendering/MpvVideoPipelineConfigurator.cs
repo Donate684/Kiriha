@@ -11,10 +11,11 @@ public class MpvVideoPipelineConfigurator
 
     internal void ConfigureVideoPipeline(IntPtr handle, MpvOptions options)
     {
-        SetOptionalStringOption(handle, "hwdec", options.Hwdec, "set hardware decoder");
+        var sanitized = MpvOptions.Sanitize(options);
+        SetOptionalStringOption(handle, "hwdec", sanitized.Hwdec, "set hardware decoder");
         SetOptionalStringOption(handle, "vo", "libmpv", "set video output");
-        SetOptionalStringOption(handle, "gpu-api", options.GpuApi, "set GPU API");
-        SetOptionalStringOption(handle, "gpu-context", options.GpuContext, "set GPU context");
+        SetOptionalStringOption(handle, "gpu-api", sanitized.GpuApi, "set GPU API");
+        SetOptionalStringOption(handle, "gpu-context", sanitized.GpuContext, "set GPU context");
     }
 
     private void SetOptionalStringOption(IntPtr handle, string name, string? value, string action)

@@ -54,6 +54,18 @@ internal sealed class MpvPropertyCache
         }
     }
 
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            _playbackState = new PlaybackState(0, 0, false, false, false);
+            _lastPublishedTimePosition = 0;
+            _lastTimePositionTickMs = 0;
+            _runtimeVideoInfoDirty = true;
+            _runtimeVideoInfoRefreshedUtc = DateTime.MinValue;
+        }
+    }
+
     public bool TryUpdateTimePosition(double timePosition)
     {
         lock (_gate)

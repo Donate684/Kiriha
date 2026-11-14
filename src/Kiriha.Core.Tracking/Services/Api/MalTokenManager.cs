@@ -41,7 +41,7 @@ public class MalTokenManager : IDisposable
             if (newTokens != null)
             {
                 _refreshFailures = 0;
-                _settingsService.Update(settings => settings.Api.Mal = newTokens, save: false);
+                _settingsService.Update(settings => settings.Api.Mal = newTokens, SettingsSection.Api, save: false);
                 _settingsService.SaveImmediate();
                 return newTokens.AccessToken;
             }
@@ -50,7 +50,7 @@ public class MalTokenManager : IDisposable
             if (_refreshFailures >= MaxRefreshFailures)
             {
                 Log.Warning("MalTokenManager: clearing saved tokens after {Count} consecutive refresh failures. User must re-authenticate.", _refreshFailures);
-                _settingsService.Update(settings => settings.Api.Mal = null, save: false);
+                _settingsService.Update(settings => settings.Api.Mal = null, SettingsSection.Api, save: false);
                 _settingsService.SaveImmediate();
                 _refreshFailures = 0;
             }

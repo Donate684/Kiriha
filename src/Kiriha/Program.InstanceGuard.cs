@@ -17,7 +17,7 @@ partial class Program
             playerMutex = new System.Threading.Mutex(true, Kiriha.Infrastructure.Player.PlayerProcessBridge.MutexName, out var playerCreatedNew);
             if (!playerCreatedNew)
             {
-                Kiriha.Infrastructure.Player.PlayerProcessBridge.TryForward(args);
+                Kiriha.Infrastructure.Player.PlayerProcessBridge.TryForward(args, 3000);
                 return false;
             }
         }

@@ -34,7 +34,7 @@ public static class SmartTrackAutoloader
         if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
             return SmartTrackMatches.Empty;
 
-        string videoFileName = Path.GetRelativePath(directory, videoPath);
+        string videoFileName = Path.GetFileName(videoPath);
         string videoFileWithoutExt = Path.GetFileNameWithoutExtension(videoFileName);
 
         List<string> allFiles = new();
@@ -52,12 +52,12 @@ public static class SmartTrackAutoloader
 
         var subFiles = allFiles
             .Where(f => SubtitleExtensions.Contains(Path.GetExtension(f)))
-            .OrderBy(f => f, StringComparer.Ordinal)
+            .OrderBy(f => f, Kiriha.Infrastructure.Utils.Sorting.NaturalSortComparer.Instance)
             .ToList();
 
         var audioFiles = allFiles
             .Where(f => AudioExtensions.Contains(Path.GetExtension(f)))
-            .OrderBy(f => f, StringComparer.Ordinal)
+            .OrderBy(f => f, Kiriha.Infrastructure.Utils.Sorting.NaturalSortComparer.Instance)
             .ToList();
 
         if (subFiles.Count == 0 && audioFiles.Count == 0)
@@ -87,7 +87,8 @@ public static class SmartTrackAutoloader
 
     private static bool IsTrackMatch(string videoFileName, string videoFileWithoutExt, string? videoTitle, string? videoEpisode, string trackFileName)
     {
-        string trackFileWithoutExt = Path.GetFileNameWithoutExtension(trackFileName);
+        string trackBareFileName = Path.GetFileName(trackFileName);
+        string trackFileWithoutExt = Path.GetFileNameWithoutExtension(trackBareFileName);
         
         // 1. Exact Name Match (stripping common language codes)
         // e.g. "Video 01.en" == "Video 01"
@@ -108,7 +109,7 @@ public static class SmartTrackAutoloader
             return true;
 
         // 2. Parser Match
-        var trackParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(trackFileName);
+        var trackParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(trackBareFileName);
         string trackTitle = trackParsed.Title;
         string trackEpisode = trackParsed.Episode;
 

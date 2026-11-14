@@ -88,6 +88,7 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
     {
         _renderContextReady = false;
         _gl = null;
+        _player?.OpenGlRenderer.ResetRenderContext();
         base.OnOpenGlLost();
     }
 

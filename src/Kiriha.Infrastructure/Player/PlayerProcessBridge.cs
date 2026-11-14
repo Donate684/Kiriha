@@ -14,12 +14,27 @@ public static class PlayerProcessBridge
     public static bool IsResident(string[] args) =>
         Array.Exists(args, arg => arg.Equals(ResidentArg, StringComparison.OrdinalIgnoreCase));
 
-    public static bool TryForward(string[] args, int timeoutMs = 300)
+    public static bool TryForward(string[] args, int timeoutMs = 3000)
     {
         try
         {
             using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
-            client.Connect(timeoutMs);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            bool connected = false;
+            while (sw.ElapsedMilliseconds < timeoutMs)
+            {
+                try
+                {
+                    var remaining = (int)Math.Max(50, timeoutMs - sw.ElapsedMilliseconds);
+                    client.Connect(Math.Min(remaining, 250));
+                    connected = true;
+                    break;
+                }
+                catch (TimeoutException) { }
+                catch (IOException) { Thread.Sleep(50); }
+                catch { Thread.Sleep(50); }
+            }
+            if (!connected) return false;
             using var writer = new StreamWriter(client) { AutoFlush = true };
             writer.WriteLine(PipeArgumentSerializer.Serialize(args));
             writer.Flush();

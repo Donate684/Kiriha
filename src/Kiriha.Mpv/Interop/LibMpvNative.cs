@@ -115,6 +115,8 @@ public static class LibMpvNative
     public const int MPV_EVENT_SHUTDOWN = 1;
     public const int MPV_EVENT_END_FILE = 7;
     public const int MPV_EVENT_FILE_LOADED = 8;
+    public const int MPV_EVENT_SEEK = 20;
+    public const int MPV_EVENT_PLAYBACK_RESTART = 21;
     public const int MPV_EVENT_PROPERTY_CHANGE = 22;
 
     public const int MPV_RENDER_PARAM_INVALID = 0;

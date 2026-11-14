@@ -16,13 +16,20 @@ internal static class MpvPlayerLifecycle
             return;
         }
 
-        if (!commandQueue.WaitForStop(TimeSpan.FromSeconds(2)))
+        if (!commandQueue.WaitForStop(TimeSpan.FromSeconds(3)))
             Log.Warning("Timed out waiting for mpv command loop to stop");
 
-        if (!eventLoop.Stop(handle, TimeSpan.FromSeconds(1)))
+        if (!eventLoop.Stop(handle, TimeSpan.FromSeconds(3)))
             Log.Warning("Timed out waiting for mpv event loop to stop");
 
-        unobservePlaybackProperties(handle);
+        try
+        {
+            unobservePlaybackProperties(handle);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to unobserve mpv properties");
+        }
         Terminate(handle);
         eventLoop.Dispose();
     }

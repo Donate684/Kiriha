@@ -271,7 +271,7 @@ public partial class MpvPlayer : IDisposable
         });
     }
 
-    public void FreeRenderContext() => OpenGlRenderer.Dispose();
+    public void FreeRenderContext() => OpenGlRenderer.ResetRenderContext();
 
     internal void Enqueue(Action<IntPtr> action, string? coalescingKey = null)
     {
@@ -281,6 +281,11 @@ public partial class MpvPlayer : IDisposable
     internal void InvalidateRuntimeVideoInfo()
     {
         _propertyCache.InvalidateRuntimeVideoInfo();
+    }
+
+    public void ResetPropertyCache()
+    {
+        _propertyCache.Reset();
     }
 
 }

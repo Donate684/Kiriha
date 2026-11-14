@@ -95,19 +95,10 @@ public partial class SettingsService : IDisposable, ISettingsService
         _windowSettingsPath = Path.Combine(_settingsDir, AppConstants.System.FileNames.SettingsWindow);
     }
 
+    [Obsolete("Use Update(Action<AppSettings>, SettingsSection, bool) to prevent clobbering unrelated sections across processes.")]
     public void Update(Action<AppSettings> update, bool save = true)
     {
-        ArgumentNullException.ThrowIfNull(update);
-
-        lock (_stateLock)
-        {
-            var clone = CloneSettings(_current);
-            update(clone);
-            Volatile.Write(ref _current, clone);
-            MarkAllSectionsChanged();
-        }
-
-        if (save) Save();
+        Update(update, SettingsSection.All, save);
     }
 
     public void Update(Action<AppSettings> update, SettingsSection changedSections, bool save = true)

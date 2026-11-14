@@ -35,7 +35,14 @@ public class MpvTrackManager
 
     public void ReloadSubtitles()
     {
-        _player.Enqueue(handle => MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "sub-reload"), "reload subtitles"));
+        _player.Enqueue(handle =>
+        {
+            var err = LibMpvNative.mpv_command_string(handle, "sub-reload");
+            if (err != 0)
+            {
+                Serilog.Log.Debug("ReloadSubtitles: sub-reload returned {ErrorCode}", err);
+            }
+        });
     }
 
     public void SetTrack(string type, string id)

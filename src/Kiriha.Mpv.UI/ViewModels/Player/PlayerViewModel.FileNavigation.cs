@@ -40,7 +40,7 @@ public partial class PlayerViewModel
         {
             var files = Directory.EnumerateFiles(directory)
                 .Where(IsSupportedMediaPath)
-                .OrderBy(x => x, StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(x => x, Kiriha.Infrastructure.Utils.Sorting.NaturalSortComparer.Instance)
                 .ToList();
 
             if (token.IsCancellationRequested) return;

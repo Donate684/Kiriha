@@ -142,5 +142,11 @@ public partial class PlayerWindow
         {
             _bottomBar.CornerRadius = isEdgeToEdge ? new CornerRadius(0) : new CornerRadius(0, 0, 8, 8);
         }
+
+        // Hide edge drag strips in fullscreen or maximized mode to prevent accidental resizing/moving
+        if (_topDragStrip != null) _topDragStrip.IsVisible = !isEdgeToEdge;
+        if (_leftDragStrip != null) _leftDragStrip.IsVisible = !isEdgeToEdge;
+        if (_rightDragStrip != null) _rightDragStrip.IsVisible = !isEdgeToEdge;
+        if (_bottomDragStrip != null) _bottomDragStrip.IsVisible = !isEdgeToEdge;
     }
 }

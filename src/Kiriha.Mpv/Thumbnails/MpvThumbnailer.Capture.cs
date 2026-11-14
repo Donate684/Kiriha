@@ -19,8 +19,8 @@ public sealed partial class MpvThumbnailer
             var seconds = (bucket * CacheStepSeconds).ToString("0.###", CultureInfo.InvariantCulture);
             Check(LibMpvNative.mpv_command_string(handle, "seek", seconds, "absolute+keyframes"), "seek thumbnailer");
 
-            if (cancellationToken.WaitHandle.WaitOne(45))
-                cancellationToken.ThrowIfCancellationRequested();
+            WaitForSeekRestart(handle, cancellationToken, 200);
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (!TryCaptureRawScreenshot(handle, out var frame) || frame is null)
                 return null;
@@ -265,6 +265,26 @@ public sealed partial class MpvThumbnailer
                     _loadedPath = null;
             }
             throw new InvalidOperationException($"Thumbnailer failed to load file within timeout: {videoPath}");
+        }
+    }
+
+    private static void WaitForSeekRestart(IntPtr handle, CancellationToken ct, int timeoutMs = 200)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sw.ElapsedMilliseconds < timeoutMs && !ct.IsCancellationRequested)
+        {
+            var eventPtr = LibMpvNative.mpv_wait_event(handle, 0.02);
+            if (eventPtr == IntPtr.Zero)
+                continue;
+
+            unsafe
+            {
+                var mpvEvent = *(MpvEvent*)eventPtr;
+                if (mpvEvent.EventId == LibMpvNative.MPV_EVENT_PLAYBACK_RESTART)
+                {
+                    break;
+                }
+            }
         }
     }
 }

@@ -11,6 +11,8 @@ public partial class PlayerControlBar : UserControl
     private readonly Button? _speedButton;
     private readonly Button? _subtitleButton;
     private readonly Button? _audioButton;
+    private readonly Button? _screenshotButton;
+    private readonly Button? _subtitlePositionButton;
 
     public event EventHandler? SettingsClicked;
     public event EventHandler? ActionExecuted;
@@ -23,6 +25,18 @@ public partial class PlayerControlBar : UserControl
         _speedButton = this.FindControl<Button>("SpeedButton");
         _subtitleButton = this.FindControl<Button>("SubtitleButton");
         _audioButton = this.FindControl<Button>("AudioButton");
+        _screenshotButton = this.FindControl<Button>("ScreenshotButton");
+        _subtitlePositionButton = this.FindControl<Button>("SubtitlePositionButton");
+
+        if (_screenshotButton != null)
+        {
+            _screenshotButton.AddHandler(PointerReleasedEvent, OnScreenshotButtonPointerReleased, RoutingStrategies.Tunnel);
+        }
+
+        if (_subtitlePositionButton != null)
+        {
+            _subtitlePositionButton.AddHandler(PointerReleasedEvent, OnSubtitlePositionButtonPointerReleased, RoutingStrategies.Tunnel);
+        }
         
         var settingsBtn = this.FindControl<PlayerSettingsButton>("SettingsBtn");
         if (settingsBtn != null)
