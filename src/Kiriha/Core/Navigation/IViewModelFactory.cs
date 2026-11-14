@@ -30,11 +30,25 @@ public interface IViewModelFactory
 public sealed class ViewModelFactory : IViewModelFactory
 {
     private readonly IServiceProvider _services;
+    private readonly IReadOnlySet<Type>? _transientTypes;
 
-    public ViewModelFactory(IServiceProvider services) => _services = services;
+    public ViewModelFactory(IServiceProvider services, IReadOnlySet<Type>? transientTypes = null)
+    {
+        _services = services;
+        _transientTypes = transientTypes;
+    }
 
-    public TViewModel Create<TViewModel>() where TViewModel : ViewModelBase =>
-        _services.GetRequiredService<TViewModel>();
+    public TViewModel Create<TViewModel>() where TViewModel : ViewModelBase
+    {
+        // Avoid resolving transient IDisposable ViewModels via root IServiceProvider, which
+        // retains strong references to every transient IDisposable until application exit.
+        if (_transientTypes != null && _transientTypes.Contains(typeof(TViewModel)))
+        {
+            return ActivatorUtilities.CreateInstance<TViewModel>(_services);
+        }
+
+        return _services.GetRequiredService<TViewModel>();
+    }
 
     public TViewModel CreateWithArgs<TViewModel>(params object[] args) where TViewModel : ViewModelBase =>
         ActivatorUtilities.CreateInstance<TViewModel>(_services, args);

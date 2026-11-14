@@ -14,7 +14,7 @@ public partial class ReadNextSectionViewModel
             Subtitle = item.RussianTitle != null ? item.Title : null,
             Badge = badge,
             Detail = detail,
-            PosterUrl = item.MainPictureUrl,
+            PosterUrl = item.PosterSource ?? item.MainPictureUrl,
             Accent = accent
         };
     }
@@ -87,7 +87,12 @@ public partial class ReadNextSectionViewModel
 
     private static bool IsCurrentOngoing(AnimeEntity item, DateTime now)
     {
-        if (!string.Equals(item.StatusDetailed, "currently_airing", StringComparison.OrdinalIgnoreCase))
+        var isPublishing = string.Equals(item.StatusDetailed, "currently_airing", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.StatusDetailed, "currently_publishing", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.StatusDetailed, "ongoing", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.StatusDetailed, "publishing", StringComparison.OrdinalIgnoreCase);
+
+        if (!isPublishing)
         {
             return false;
         }
@@ -102,26 +107,28 @@ public partial class ReadNextSectionViewModel
             return item.LastEpisodeAt.Value >= now.AddDays(-21);
         }
 
-        if (item.StartYear == now.Year && string.Equals(item.StartSeason, GetSeason(now.Month), StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
-    private static string GetSeason(int month)
+    internal static int GetChaptersProgress(AnimeEntity item) =>
+        item.ChaptersRead > 0 ? item.ChaptersRead : Math.Max(0, item.Progress);
+
+    internal static int GetTotalChapters(AnimeEntity item) =>
+        item.Chapters > 0 ? item.Chapters : Math.Max(0, item.TotalEpisodes);
+
+    internal static int GetUnreadChaptersCount(AnimeEntity item)
     {
-        return month switch
-        {
-            12 or 1 or 2 => AppConstants.Seasons.Winter,
-            3 or 4 or 5 => AppConstants.Seasons.Spring,
-            6 or 7 or 8 => AppConstants.Seasons.Summer,
-            _ => AppConstants.Seasons.Fall
-        };
+        var total = GetTotalChapters(item);
+        if (total <= 0) return 0;
+        var read = GetChaptersProgress(item);
+        return Math.Max(0, total - read);
     }
 
-    private static string DisplayTotal(AnimeEntity item) => item.TotalEpisodes > 0 ? item.TotalEpisodes.ToString(CultureInfo.InvariantCulture) : "?";
+    private static string DisplayTotal(AnimeEntity item)
+    {
+        var total = GetTotalChapters(item);
+        return total > 0 ? total.ToString(CultureInfo.InvariantCulture) : "?";
+    }
 
     private static double ParsedMeanScore(AnimeEntity item) =>
         double.TryParse(item.MeanScore, NumberStyles.Float, CultureInfo.InvariantCulture, out var score)

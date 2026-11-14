@@ -97,10 +97,6 @@
         </Style>
     </Window.Styles>
 
-    <Window.KeyBindings>
-        <KeyBinding Gesture="F9" Command="{Binding TestPlayerCommand}" />
-    </Window.KeyBindings>
-
     <LayoutTransformControl Name="ScaleRoot">
         <LayoutTransformControl.LayoutTransform>
             <ScaleTransform ScaleX="1" ScaleY="1"/>

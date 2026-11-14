@@ -138,6 +138,29 @@ public partial class MainWindow : KirihaWindowBase
         }
     }
 
+    protected override void OnKeyDown(Avalonia.Input.KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Handled) return;
+
+        if (e.Key == Avalonia.Input.Key.Escape && DataContext is Kiriha.ViewModels.Main.MainWindowViewModel vm)
+        {
+            if (vm.TryHandleEscapeKey())
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
+#if DEBUG
+        if (e.Key == Avalonia.Input.Key.F9 && DataContext is Kiriha.ViewModels.Main.MainWindowViewModel debugVm)
+        {
+            debugVm.TestPlayer();
+            e.Handled = true;
+        }
+#endif
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         PositionChanged -= OnWindowPositionChanged;

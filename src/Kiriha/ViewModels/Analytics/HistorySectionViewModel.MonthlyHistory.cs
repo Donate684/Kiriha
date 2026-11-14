@@ -22,6 +22,8 @@ public partial class HistorySectionViewModel
         var maxYear = Math.Max(monthGroups.Keys.Max(x => x.Year), now.Year);
         var monthHeaders = MonthHeaders;
 
+        var isLightTheme = Avalonia.Application.Current?.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Light;
+
         for (var year = maxYear; year >= minYear; year--)
         {
             var row = new AnalyticsMonthlyHistoryRow { Year = year };
@@ -39,6 +41,7 @@ public partial class HistorySectionViewModel
                     .DefaultIfEmpty()
                     .Average() ?? 0;
                 var intensity = count == 0 ? 0 : count / (double)max;
+                var isHighIntensity = intensity >= 0.48;
                 var alpha = count == 0
                     ? (byte)0x10
                     : (byte)Math.Round(0x32 + intensity * (0xFF - 0x32));
@@ -50,7 +53,10 @@ public partial class HistorySectionViewModel
                     Count = count,
                     Alpha = count == 0 ? 0.06 : 0.22 + count / (double)max * 0.78,
                     Fill = $"#{alpha:X2}2D7DD2",
-                    TextColor = intensity >= 0.48 ? "#FFFFFFFF" : "#FF1F2937",
+                    IsHighIntensity = isHighIntensity,
+                    TextColor = isHighIntensity
+                        ? "#FFFFFFFF"
+                        : (isLightTheme ? "#FF1F2937" : "#FFE5E7EB"),
                     IsCurrentMonth = year == now.Year && month == now.Month,
                     Tooltip = mean > 0
                         ? string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), $"{monthLabel} {year}", mean.ToString("0.00"))
@@ -68,7 +74,7 @@ public partial class HistorySectionViewModel
                             Detail = int.TryParse(entry.Score, out var score) && score > 0
                                 ? string.Format(LocalizationStore.Translate("analytics.history.score_format"), score)
                                 : LocalizationStore.Translate("analytics.history.no_score"),
-                            PosterUrl = entry.MainPictureUrl
+                            PosterUrl = entry.PosterSource ?? entry.MainPictureUrl
                         });
                     }
                 }

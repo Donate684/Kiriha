@@ -12,7 +12,30 @@ public static class LocalizationStore
         if (keyToUse.StartsWith("l.", StringComparison.OrdinalIgnoreCase))
             keyToUse = keyToUse[2..];
 
-        if (Application.Current is null) return keyToUse;
+        var snapshot = Kiriha.Services.Data.Metadata.LocalizationService.ActiveResources;
+        if (snapshot.Count > 0)
+        {
+            if (snapshot.TryGetValue(keyToUse, out var directSnap))
+                return directSnap;
+
+            string lowerSnap = keyToUse.ToLowerInvariant().Replace(" ", "");
+            if (snapshot.TryGetValue(lowerSnap, out var lowerVal))
+                return lowerVal;
+
+            string snakeSnap = PascalToSnake(keyToUse);
+            if (snakeSnap != lowerSnap && snapshot.TryGetValue(snakeSnap, out var snakeVal))
+                return snakeVal;
+
+            foreach (var prefix in CommonPrefixes)
+            {
+                if (snapshot.TryGetValue($"{prefix}{lowerSnap}", out var nestedLower))
+                    return nestedLower;
+                if (snakeSnap != lowerSnap && snapshot.TryGetValue($"{prefix}{snakeSnap}", out var nestedSnake))
+                    return nestedSnake;
+            }
+        }
+
+        if (Application.Current is null || !Avalonia.Threading.Dispatcher.UIThread.CheckAccess()) return keyToUse;
 
         string lowerKey = keyToUse.ToLowerInvariant().Replace(" ", "");
         string snakeKey = PascalToSnake(keyToUse);

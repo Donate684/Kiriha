@@ -67,37 +67,35 @@ public class NotificationService : INotificationService
     {
         if (anime is null) return;
 
-        var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
-        var ru = anime.RussianTitle;
+        var displayTitle = !string.IsNullOrWhiteSpace(anime.Presentation.DisplayTitle)
+            ? anime.Presentation.DisplayTitle
+            : "Anime";
 
         var title = UIUtils.GetLoc("scrobbler.skip_notify.title");
         var body = UIUtils.GetLoc("scrobbler.skip_notify.body", detectedEp, anime.Progress + 1);
 
-        var lines = new System.Collections.Generic.List<string> { title, body, orig };
-        if (!string.IsNullOrEmpty(ru) && !string.Equals(ru, orig, StringComparison.Ordinal))
-            lines.Add(ru!);
+        var lines = new System.Collections.Generic.List<string> { title, displayTitle, body };
 
         Log.Information("NotificationService: Scrobble-skip toast for {Title} ep {Ep} (expected {Expected})",
-            orig, detectedEp, anime.Progress + 1);
-        ToastRenderer.Show(lines, anime.PosterSource);
+            displayTitle, detectedEp, anime.Progress + 1);
+        ToastRenderer.Show(lines, anime.LocalPosterPath ?? anime.PosterSource);
     }
 
     public virtual void NotifyAnimeCompleted(AnimeEntity anime)
     {
         if (anime is null) return;
 
-        var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
-        var ru = anime.RussianTitle;
+        var displayTitle = !string.IsNullOrWhiteSpace(anime.Presentation.DisplayTitle)
+            ? anime.Presentation.DisplayTitle
+            : "Anime";
 
         var title = UIUtils.GetLoc("scrobbler.quick_rating.title");
         var body = UIUtils.GetLoc("scrobbler.quick_rating.subtitle");
 
-        var lines = new System.Collections.Generic.List<string> { title, orig, body };
-        if (!string.IsNullOrEmpty(ru) && !string.Equals(ru, orig, StringComparison.Ordinal))
-            lines.Add(ru!);
+        var lines = new System.Collections.Generic.List<string> { title, displayTitle, body };
 
-        Log.Information("NotificationService: Anime completed toast for {Title}", orig);
-        ToastRenderer.Show(lines, anime.PosterSource);
+        Log.Information("NotificationService: Anime completed toast for {Title}", displayTitle);
+        ToastRenderer.Show(lines, anime.LocalPosterPath ?? anime.PosterSource);
     }
 
     public void NotifyAppUpdate(string newVersion)

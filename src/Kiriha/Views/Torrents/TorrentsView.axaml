@@ -162,15 +162,29 @@
                 </StackPanel>
 
                 <!-- Grouped results (Torrents mode) -->
-                <ScrollViewer u:SmoothScroll.IsEnabled="True"
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto"
+                              u:SmoothScroll.IsEnabled="True"
                               IsVisible="{Binding HasTorrentResults}">
-                    <ItemsControl ItemsSource="{Binding GroupedTorrents}" ItemTemplate="{StaticResource TorrentGroupTemplate}"/>
+                    <ItemsRepeater ItemsSource="{Binding GroupedTorrents}"
+                                   ItemTemplate="{StaticResource TorrentGroupTemplate}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Vertical" Spacing="0"/>
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
                 </ScrollViewer>
 
                 <!-- Online results (Online mode) -->
-                <ScrollViewer u:SmoothScroll.IsEnabled="True"
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto"
+                              u:SmoothScroll.IsEnabled="True"
                               IsVisible="{Binding HasOnlineResults}">
-                    <ItemsControl ItemsSource="{Binding OnlineResults}" ItemTemplate="{StaticResource OnlineAnimeItemTemplate}"/>
+                    <ItemsRepeater ItemsSource="{Binding OnlineResults}"
+                                   ItemTemplate="{StaticResource OnlineAnimeItemTemplate}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Vertical" Spacing="0"/>
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
                 </ScrollViewer>
             </Grid>
         </Grid>
@@ -265,9 +279,14 @@
 
                             <!-- Episode Files List -->
                             <ScrollViewer IsVisible="{Binding !IsEpisodeSelectorLoading}"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Auto"
                                           u:SmoothScroll.IsEnabled="True" Margin="0,0,0,10">
-                                <ItemsControl ItemsSource="{Binding EpisodeFiles}">
-                                    <ItemsControl.ItemTemplate>
+                                <ItemsRepeater ItemsSource="{Binding EpisodeFiles}">
+                                    <ItemsRepeater.Layout>
+                                        <StackLayout Orientation="Vertical" Spacing="0"/>
+                                    </ItemsRepeater.Layout>
+                                    <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="modelsTorrServer:TorrServerFileItem">
                                             <Border Classes="TorrentCard" Margin="0,3" Padding="12,10" CornerRadius="8"
                                                     Background="{DynamicResource SubtleFillColorSecondary}">
@@ -298,8 +317,8 @@
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
                             </ScrollViewer>
                         </Grid>
 
@@ -381,7 +400,7 @@
 
                                         <!-- FHD Available Badge -->
                                         <Border Classes="QualityBadgeFhd"
-                                                IsVisible="{Binding IsAnimeLibLoggedIn}"
+                                                IsVisible="{Binding ShowActiveOnlineFhdBadge}"
                                                 VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                                 <material:MaterialIcon Kind="CheckDecagram" Width="12" Height="12"
@@ -475,9 +494,15 @@
                                     </Grid>
 
                                     <!-- Episodes List -->
-                                    <ScrollViewer Grid.Row="1" u:SmoothScroll.IsEnabled="True" Padding="0,0,10,0">
-                                        <ItemsControl ItemsSource="{Binding OnlineEpisodes}">
-                                            <ItemsControl.ItemTemplate>
+                                    <ScrollViewer Grid.Row="1"
+                                                  HorizontalScrollBarVisibility="Disabled"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  u:SmoothScroll.IsEnabled="True" Padding="0,0,10,0">
+                                        <ItemsRepeater ItemsSource="{Binding OnlineEpisodes}">
+                                            <ItemsRepeater.Layout>
+                                                <StackLayout Orientation="Vertical" Spacing="0"/>
+                                            </ItemsRepeater.Layout>
+                                            <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="vmTorrents:OnlineEpisodeItem">
                                                     <Button Classes="OnlineEpBtn"
                                                             Classes.selected="{Binding IsSelected}"
@@ -556,8 +581,8 @@
                                                         </Grid>
                                                     </Button>
                                                 </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
                                     </ScrollViewer>
                                 </Grid>
                             </Border>
@@ -625,15 +650,21 @@
                                 </StackPanel>
 
                                 <!-- Sources List -->
-                                <ScrollViewer Grid.Row="1" u:SmoothScroll.IsEnabled="True" Padding="0,0,10,0">
+                                <ScrollViewer Grid.Row="1"
+                                              HorizontalScrollBarVisibility="Disabled"
+                                              VerticalScrollBarVisibility="Auto"
+                                              u:SmoothScroll.IsEnabled="True" Padding="0,0,10,0">
                                     <ScrollViewer.IsVisible>
                                         <MultiBinding Converter="{x:Static BoolConverters.And}">
                                             <Binding Path="!IsOnlineSourcesLoading"/>
                                             <Binding Path="!HasNoDisplayedSources"/>
                                         </MultiBinding>
                                     </ScrollViewer.IsVisible>
-                                    <ItemsControl ItemsSource="{Binding DisplayedOnlineSources}">
-                                        <ItemsControl.ItemTemplate>
+                                    <ItemsRepeater ItemsSource="{Binding DisplayedOnlineSources}">
+                                        <ItemsRepeater.Layout>
+                                            <StackLayout Orientation="Vertical" Spacing="0"/>
+                                        </ItemsRepeater.Layout>
+                                        <ItemsRepeater.ItemTemplate>
                                             <DataTemplate x:DataType="vmTorrents:OnlineSourceItem">
                                                 <Border Classes="OnlineSourceCard"
                                                         Classes.direct="{Binding IsDirectMp4}"
@@ -730,8 +761,8 @@
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
                                 </ScrollViewer>
                             </Grid>
                         </Grid>

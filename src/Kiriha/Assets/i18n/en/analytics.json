@@ -1,9 +1,12 @@
 {
   "profile": "Profile",
-  "tastes": "Tastes",
-  "watch_next": "Watch Next",
-  "read_next": "Read Next",
-  "history": "History",
+  "tabs": {
+    "profile": "Profile",
+    "tastes": "Tastes",
+    "watch_next": "Watch Next",
+    "read_next": "Read Next",
+    "history": "History"
+  },
   "empty_state": "Analytics will appear after list synchronization",
   "hero_title": "My Profile",
   "hero_subtitle": "Anime library statistics",
@@ -51,7 +54,11 @@
     "catch_up_released": "Catch up released",
     "catch_up_released_sub": "Completed manga with missed chapters",
     "plans": "Plans",
-    "plans_sub": "Best from planned"
+    "plans_sub": "Best from planned",
+    "chapters_format": "{0} ch.",
+    "read_progress": "Read {0}/{1}",
+    "days_format": "{0} d.",
+    "paused_on": "Paused on {0}/{1}"
   },
   "history": {
     "recent_activity": "Recent activity",
@@ -69,6 +76,7 @@
     "months_short": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
     "empty_monthly": "Completed titles do not have completion dates yet, so the monthly map is empty.",
     "popup_favorite_subtitle": "{0} title(s) \u2022 avg {1} \u2022 weight {2}",
+    "today": "Today",
     "yesterday": "Yesterday",
     "days_ago_format": "{0} days ago",
     "popup_daily_subtitle": "{0} · {1} ep. · {2} title(s)",

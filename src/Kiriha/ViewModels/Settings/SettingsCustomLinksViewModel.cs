@@ -56,9 +56,9 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
 
     private void OnCustomLinkPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // User typed something into Name / UrlTemplate — persist.
-        _settingsService.Update(settings => { }, SettingsSection.CustomLinks, save: false);
-        _settingsService.Save();
+        // User typed something into Name / UrlTemplate (or IconPath resolved) — mirror snapshot into AppSettings
+        // because SettingsService.Update clones AppSettings and would otherwise detach UI link references.
+        SyncCustomLinksToSettings();
 
         // When the URL changes, try to refresh the favicon. We deliberately
         // do NOT trigger on IconPath changes (that's the destination of this
@@ -125,10 +125,25 @@ public partial class SettingsCustomLinksViewModel : ViewModelBase
             foreach (CustomShareLink added in e.NewItems) HookCustomLink(added);
 
         // Mirror the ObservableCollection back into AppSettings (single source of truth on disk).
+        SyncCustomLinksToSettings();
+    }
+
+    private void SyncCustomLinksToSettings()
+    {
+        var snapshot = CustomLinks
+            .Select(static link => new CustomShareLink
+            {
+                Name = link.Name,
+                UrlTemplate = link.UrlTemplate,
+                IconKind = link.IconKind,
+                IconPath = link.IconPath
+            })
+            .ToList();
+
         _settingsService.Update(settings =>
         {
             settings.CustomLinks.Clear();
-            foreach (var link in CustomLinks) settings.CustomLinks.Add(link);
+            settings.CustomLinks.AddRange(snapshot);
         }, SettingsSection.CustomLinks);
     }
 

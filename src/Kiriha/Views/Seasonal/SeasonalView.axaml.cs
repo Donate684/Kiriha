@@ -8,11 +8,15 @@ namespace Kiriha.Views.Seasonal;
 
 public partial class SeasonalView : UserControl
 {
+    private const int MaxQueueVisibleRetries = 15;
     private ItemsRepeater? _gridRepeater;
     private SeasonalRevealController? _revealController;
     private readonly SeasonalHideConfirmController _hideConfirmController = new();
     private readonly HashSet<AnimeEntity> _pendingViewportItems = new();
     private DispatcherTimer? _viewportDebounceTimer;
+    private SeasonalViewModel? _subscribedVm;
+    private bool _isLoaded;
+    private int _queueVisibleRetries;
 
     public SeasonalView()
     {
@@ -29,6 +33,8 @@ public partial class SeasonalView : UserControl
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        _isLoaded = true;
+        _queueVisibleRetries = 0;
 
         if (_gridRepeater != null)
         {
@@ -37,11 +43,7 @@ public partial class SeasonalView : UserControl
             _revealController ??= new SeasonalRevealController(_gridRepeater);
         }
 
-        if (DataContext is SeasonalViewModel vm)
-        {
-            vm.PropertyChanged -= OnViewModelPropertyChanged;
-            vm.PropertyChanged += OnViewModelPropertyChanged;
-        }
+        UpdateViewModelSubscription(DataContext as SeasonalViewModel);
 
         _revealController?.BeginInitialRevealWindow();
         Avalonia.Threading.Dispatcher.UIThread.Post(QueueVisibleItems, Avalonia.Threading.DispatcherPriority.Loaded);
@@ -49,6 +51,8 @@ public partial class SeasonalView : UserControl
 
     protected override void OnUnloaded(RoutedEventArgs e)
     {
+        _isLoaded = false;
+        _queueVisibleRetries = 0;
         if (_gridRepeater != null)
         {
             _gridRepeater.ElementPrepared -= OnGridElementPrepared;
@@ -61,29 +65,39 @@ public partial class SeasonalView : UserControl
         {
             _pendingViewportItems.Clear();
         }
-        if (DataContext is SeasonalViewModel vm)
-        {
-            vm.PropertyChanged -= OnViewModelPropertyChanged;
-        }
+        UpdateViewModelSubscription(null);
         base.OnUnloaded(e);
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is SeasonalViewModel vm)
+        UpdateViewModelSubscription(_isLoaded ? DataContext as SeasonalViewModel : null);
+    }
+
+    private void UpdateViewModelSubscription(SeasonalViewModel? nextVm)
+    {
+        if (ReferenceEquals(_subscribedVm, nextVm)) return;
+        if (_subscribedVm != null)
         {
-            vm.PropertyChanged -= OnViewModelPropertyChanged;
-            vm.PropertyChanged += OnViewModelPropertyChanged;
+            _subscribedVm.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+        _subscribedVm = nextVm;
+        if (_subscribedVm != null)
+        {
+            _subscribedVm.PropertyChanged += OnViewModelPropertyChanged;
         }
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        if (!_isLoaded) return;
         if (e.PropertyName == nameof(SeasonalViewModel.DisplayItems))
         {
+            _queueVisibleRetries = 0;
             _revealController?.BeginInitialRevealWindow();
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                if (!_isLoaded) return;
                 ContentScrollViewer.Offset = Avalonia.Vector.Zero;
                 QueueVisibleItems();
             }, Avalonia.Threading.DispatcherPriority.Loaded);
@@ -137,7 +151,7 @@ public partial class SeasonalView : UserControl
 
     private void QueueVisibleItems()
     {
-        if (_gridRepeater?.ItemsSourceView is null || _gridRepeater.ItemsSourceView.Count == 0) return;
+        if (!_isLoaded || _gridRepeater?.ItemsSourceView is null || _gridRepeater.ItemsSourceView.Count == 0) return;
 
         var items = new List<AnimeEntity>();
         for (int i = 0; i < Math.Min(_gridRepeater.ItemsSourceView.Count, 50); i++)
@@ -151,14 +165,19 @@ public partial class SeasonalView : UserControl
 
         if (items.Count > 0 && DataContext is SeasonalViewModel vm)
         {
+            _queueVisibleRetries = 0;
             vm.EnqueueItemsForViewport(items);
         }
-        else if (items.Count == 0 && _gridRepeater.ItemsSourceView.Count > 0)
+        else if (items.Count == 0 && _gridRepeater.ItemsSourceView.Count > 0 && _queueVisibleRetries < MaxQueueVisibleRetries)
         {
+            _queueVisibleRetries++;
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 await Task.Delay(100);
-                QueueVisibleItems();
+                if (_isLoaded)
+                {
+                    QueueVisibleItems();
+                }
             }, Avalonia.Threading.DispatcherPriority.Background);
         }
     }

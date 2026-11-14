@@ -44,10 +44,11 @@
                         
                         <!-- Score overlay on poster -->
                         <Border VerticalAlignment="Top" HorizontalAlignment="Right" 
-                                Background="#CC000000" CornerRadius="0,0,0,8" Padding="5,3">
+                                Background="#CC000000" CornerRadius="0,0,0,8" Padding="5,3"
+                                IsVisible="{Binding Presentation.HasMeanScore}">
                             <StackPanel Orientation="Horizontal" Spacing="2">
                                 <material:MaterialIcon Kind="Star" Width="10" Height="10" Foreground="Gold" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding MeanScore}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding MeanScore}" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </Panel>
@@ -73,7 +74,7 @@
                                     </Border>
                                     <!-- Episodes Card -->
                                     <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="4" Padding="6,2"
-                                            IsVisible="{Binding TotalEpisodes, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            IsVisible="{Binding Presentation.HasTotalEpisodes}">
                                         <StackPanel Orientation="Horizontal" Spacing="3">
                                             <TextBlock Text="{Binding TotalEpisodes}" FontSize="10" FontWeight="Bold" Opacity="0.9"/>
                                             <TextBlock Text="{DynamicResource l.history.unit_ep}" FontSize="10" FontWeight="Bold" Opacity="0.9"/>

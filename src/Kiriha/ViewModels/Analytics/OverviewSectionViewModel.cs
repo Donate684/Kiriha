@@ -26,7 +26,9 @@ public partial class OverviewSectionViewModel : ViewModelBase
 
         if (items.Count == 0) return;
 
-        var totalEpisodes = items.Sum(x => Math.Max(0, x.Progress));
+        var totalEpisodes = items
+            .Where(static x => x.MediaKind == MediaKind.Anime)
+            .Sum(static x => Math.Max(0, x.Progress));
         var approximateHours = AnalyticsHelpers.EstimateHoursWatched(items);
         var meanScore = scored.Count > 0 ? scored.Average() : 0;
         var completionRate = items.Count > 0 ? completed.Count * 100.0 / items.Count : 0;

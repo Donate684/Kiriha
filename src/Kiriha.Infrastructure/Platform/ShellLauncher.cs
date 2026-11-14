@@ -12,14 +12,32 @@ namespace Kiriha.Infrastructure.Platform;
 /// </summary>
 public static class ShellLauncher
 {
+    public static bool IsAllowedExternalUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
+            return false;
+
+        return uri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            || uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            || uri.Scheme.Equals("magnet", StringComparison.OrdinalIgnoreCase);
+    }
+
     public static void OpenUrl(string url)
     {
-        if (string.IsNullOrEmpty(url)) return;
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        var trimmed = url.Trim();
+        if (!IsAllowedExternalUrl(trimmed))
+        {
+            Log.Warning("ShellLauncher: blocked disallowed URL scheme for {Url}", url);
+            return;
+        }
+
         try
         {
-            // UseShellExecute=true so the system browser handles registration
-            // and protocol resolution (about:, file:, custom schemes, etc.).
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true })?.Dispose();
+            Process.Start(new ProcessStartInfo(trimmed) { UseShellExecute = true })?.Dispose();
         }
         catch (Exception ex)
         {

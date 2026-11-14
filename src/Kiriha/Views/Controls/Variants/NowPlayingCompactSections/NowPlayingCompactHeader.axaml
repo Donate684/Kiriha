@@ -27,7 +27,7 @@
                         <Border Grid.Column="0" Width="100" Height="140" CornerRadius="8" ClipToBounds="True"
                                 BoxShadow="0 4 20 0 #60000000">
                             <Panel>
-                                <asyncImageLoader:AdvancedImage Source="{Binding MatchedAnime.MainPictureUrl}"
+                                <asyncImageLoader:AdvancedImage Source="{Binding MatchedAnime.PosterSource}"
                                                                  Stretch="UniformToFill"
                                                                  IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 <Border Background="#22000000"
@@ -56,7 +56,7 @@
                             </StackPanel>
 
                             <!-- Main title -->
-                            <TextBlock Text="{Binding MatchedAnime.Title}" FontSize="24" FontWeight="Bold"
+                            <TextBlock Text="{Binding MatchedAnime.Presentation.DisplayTitle}" FontSize="24" FontWeight="Bold"
                                        Foreground="White" TextWrapping="Wrap" LineHeight="30"
                                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             <TextBlock Text="{Binding CurrentMedia.AnimeTitle}" FontSize="22" FontWeight="Bold"

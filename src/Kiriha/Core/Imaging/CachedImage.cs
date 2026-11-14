@@ -50,6 +50,13 @@ public static class CachedImage
             return;
         }
 
+        // Clear stale bitmap immediately on container recycling so the previous item's
+        // poster does not flash while the new poster is decoding.
+        if (!string.Equals(args.OldValue as string, url, StringComparison.Ordinal))
+        {
+            img.Source = null;
+        }
+
         if (_imageCache is null) return;
 
         try

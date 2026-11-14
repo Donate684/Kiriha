@@ -8,7 +8,14 @@ using Serilog;
 namespace Kiriha.Services.Data.Metadata;
 public class LocalizationService : ILocalizer
 {
+    private static volatile IReadOnlyDictionary<string, string> _activeSnapshot =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    internal static IReadOnlyDictionary<string, string> ActiveResources => _activeSnapshot;
+
     private readonly ConcurrentDictionary<string, CompositeFormat> _formatCache = new();
+    private volatile IReadOnlyDictionary<string, string> _currentResources =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     private string _currentLanguage = "en";
     private readonly string[] _namespaces =
     {
@@ -29,7 +36,16 @@ public class LocalizationService : ILocalizer
 
     public string GetLoc(string key)
     {
-        return Application.Current?.Resources[$"l.{key}"] as string ?? key;
+        if (_currentResources.TryGetValue(key, out var cached))
+            return cached;
+
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess() && Application.Current != null &&
+            Application.Current.Resources.TryGetValue($"l.{key}", out var val) && val is string str)
+        {
+            return str;
+        }
+
+        return key;
     }
     public string GetLoc(string key, params object?[] args)
     {
@@ -55,7 +71,7 @@ public class LocalizationService : ILocalizer
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-            var resources = new Dictionary<string, string>();
+            var resources = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             // 1. Load English as base (fallback)
             LoadAllNamespaces("en", resources);
             // 2. If not English, load and override
@@ -63,13 +79,32 @@ public class LocalizationService : ILocalizer
             {
                 LoadAllNamespaces(langCode, resources);
             }
-            // 3. Inject into Avalonia resources
+
+            _currentResources = resources;
+            _activeSnapshot = resources;
+
+            // 3. Inject into Avalonia resources on UI thread, updating only changed entries
             if (Application.Current != null)
             {
-                foreach (var kvp in resources)
+                void ApplyToAvaloniaResources()
                 {
-                    Application.Current.Resources[$"l.{kvp.Key}"] = kvp.Value;
+                    var appResources = Application.Current?.Resources;
+                    if (appResources is null) return;
+
+                    foreach (var kvp in resources)
+                    {
+                        var fullKey = $"l.{kvp.Key}";
+                        if (!appResources.TryGetValue(fullKey, out var existing) || !string.Equals(existing as string, kvp.Value, StringComparison.Ordinal))
+                        {
+                            appResources[fullKey] = kvp.Value;
+                        }
+                    }
                 }
+
+                if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+                    ApplyToAvaloniaResources();
+                else
+                    Avalonia.Threading.Dispatcher.UIThread.Post(ApplyToAvaloniaResources);
             }
             Log.Information("Language loaded: {Lang} ({Count} keys, Culture: {Culture})", langCode, resources.Count, culture.Name);
         }

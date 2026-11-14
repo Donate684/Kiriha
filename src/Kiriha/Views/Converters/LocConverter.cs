@@ -35,7 +35,7 @@ public class LocConverter : IValueConverter
         if (param == "advanced_step") return keyStr == "advanced_localization";
         if (param == "theme_icon")
         {
-            if (value is ThemeType tt)
+            if (Enum.TryParse<ThemeType>(keyStr, ignoreCase: true, out var tt))
             {
                 return tt switch
                 {
@@ -44,28 +44,36 @@ public class LocConverter : IValueConverter
                     _ => "Monitor"
                 };
             }
-            return keyStr?.ToLowerInvariant() switch
+
+            if (string.Equals(keyStr, "settings.theme.light", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(keyStr, UIUtils.GetLoc("settings.theme.light"), StringComparison.OrdinalIgnoreCase))
             {
-                "???????" or "light" => "Sun",
-                "??????" or "??????" or "dark" => "Moon",
-                _ => "Monitor"
-            };
+                return "Sun";
+            }
+
+            if (string.Equals(keyStr, "settings.theme.dark", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(keyStr, UIUtils.GetLoc("settings.theme.dark"), StringComparison.OrdinalIgnoreCase))
+            {
+                return "Moon";
+            }
+
+            return "Monitor";
         }
         if (param == "language_check") return keyStr == "language";
 
         // Button logic based on IsLastStep (value is bool)
         if (param == "btn_text")
         {
-            bool isLast = (bool)(value ?? false);
+            bool isLast = value is true;
             return UIUtils.GetLoc(isLast ? "wizard.finish" : "wizard.next");
         }
-        if (param == "show_arrow") return !(bool)(value ?? false);
-        if (param == "eye_logic") return (bool)value! ? "EyeOffOutline" : "EyeOutline";
+        if (param == "show_arrow") return value is not true;
+        if (param == "eye_logic") return value is true ? "EyeOffOutline" : "EyeOutline";
 
         // Style logic
-        if (param == "radius_logic") return (bool)value! ? new CornerRadius(8, 0, 0, 0) : new CornerRadius(0);
-        if (param == "thickness_logic") return (bool)value! ? new Thickness(1, 1, 0, 0) : new Thickness(0);
-        if (param == "shadow_logic") return (bool)value! ? BoxShadows.Parse("-2 0 12 0 #08000000") : new BoxShadows();
+        if (param == "radius_logic") return value is true ? new CornerRadius(8, 0, 0, 0) : new CornerRadius(0);
+        if (param == "thickness_logic") return value is true ? new Thickness(1, 1, 0, 0) : new Thickness(0);
+        if (param == "shadow_logic") return value is true ? BoxShadows.Parse("-2 0 12 0 #08000000") : new BoxShadows();
 
         // Formatting logic: param="format:l.Key"
         if (param != null && param.StartsWith("format:"))

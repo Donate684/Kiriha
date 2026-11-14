@@ -75,9 +75,12 @@ public partial class HistorySectionViewModel : ViewModelBase
     {
         if (point is null || point.Count == 0) return;
 
-        HistoryPopupTitle = point.DaysAgo == 1
-            ? LocalizationStore.Translate("analytics.history.yesterday")
-            : string.Format(LocalizationStore.Translate("analytics.history.days_ago_format"), point.DaysAgo);
+        HistoryPopupTitle = point.DaysAgo switch
+        {
+            0 => LocalizationStore.Translate("analytics.history.today"),
+            1 => LocalizationStore.Translate("analytics.history.yesterday"),
+            _ => string.Format(LocalizationStore.Translate("analytics.history.days_ago_format"), point.DaysAgo)
+        };
         HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_daily_subtitle"), point.DateLabel, point.Count, point.Entries.Select(x => x.Title).Distinct().Count());
         ShowHistoryPopup(point.Entries);
     }

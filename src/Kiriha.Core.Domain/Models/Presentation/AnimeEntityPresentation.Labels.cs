@@ -72,6 +72,8 @@ public partial class AnimeEntityPresentation
 
     public bool HasPopularity => _item.Popularity > 0;
 
+    public bool HasTotalEpisodes => _item.TotalEpisodes > 0;
+
     public string PopularityDisplay => _item.Popularity > 0 ? $"#{_item.Popularity}" : string.Empty;
 
     public bool HasMeanScore => !string.IsNullOrWhiteSpace(_item.MeanScore) && _item.MeanScore != "-" && _item.MeanScoreValue > 0;

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Remove="Assets\Fonts\**" />
   </ItemGroup>
 
   <ItemGroup>

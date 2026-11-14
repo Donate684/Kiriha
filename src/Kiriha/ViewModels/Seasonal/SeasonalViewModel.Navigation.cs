@@ -32,31 +32,64 @@ public partial class SeasonalViewModel
         }
     }
 
+    private bool _suppressSeasonReload;
+
     [RelayCommand]
     public void NextSeason()
     {
         int idx = Seasons.IndexOf(CurrentSeason);
-        if (idx == 3) { CurrentSeason = Seasons[0]; CurrentYear++; }
-        else { CurrentSeason = Seasons[idx + 1]; }
+        if (idx == 3)
+        {
+            SetSeasonAndYear(Seasons[0], CurrentYear + 1);
+        }
+        else
+        {
+            CurrentSeason = Seasons[idx + 1];
+        }
     }
 
     [RelayCommand]
     public void PreviousSeason()
     {
         int idx = Seasons.IndexOf(CurrentSeason);
-        if (idx == 0) { CurrentSeason = Seasons[3]; CurrentYear--; }
-        else { CurrentSeason = Seasons[idx - 1]; }
+        if (idx == 0)
+        {
+            SetSeasonAndYear(Seasons[3], CurrentYear - 1);
+        }
+        else
+        {
+            CurrentSeason = Seasons[idx - 1];
+        }
+    }
+
+    private void SetSeasonAndYear(string season, int year)
+    {
+        _suppressSeasonReload = true;
+        try
+        {
+            CurrentSeason = season;
+            CurrentYear = year;
+        }
+        finally
+        {
+            _suppressSeasonReload = false;
+        }
+
+        if (!_isInitializing)
+        {
+            LoadSeasonalAnimeAsync().SafeFireAndForget("LoadSeasonalAnimeAsync");
+        }
     }
 
     partial void OnCurrentYearChanged(int value)
     {
-        if (_isInitializing) return;
+        if (_isInitializing || _suppressSeasonReload) return;
         LoadSeasonalAnimeAsync().SafeFireAndForget("LoadSeasonalAnimeAsync");
     }
 
     partial void OnCurrentSeasonChanged(string value)
     {
-        if (_isInitializing) return;
+        if (_isInitializing || _suppressSeasonReload) return;
         LoadSeasonalAnimeAsync().SafeFireAndForget("LoadSeasonalAnimeAsync");
     }
 }

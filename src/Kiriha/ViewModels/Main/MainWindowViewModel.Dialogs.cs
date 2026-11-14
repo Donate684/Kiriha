@@ -68,4 +68,59 @@ public partial class MainWindowViewModel
         IsUpdateDialogOpen = false;
         UpdateDialog = null;
     }
+
+    public bool TryHandleEscapeKey()
+    {
+        if (IsRewatchPromptVisible)
+        {
+            DismissRewatchPrompt();
+            return true;
+        }
+
+        if (IsQuickRatingVisible)
+        {
+            CloseQuickRating();
+            return true;
+        }
+
+        if (IsUpdateDialogOpen)
+        {
+            if (UpdateDialog?.IsDownloadingOrFinished != true)
+            {
+                CloseUpdateDialog();
+                return true;
+            }
+            return false;
+        }
+
+        if (IsSettingsOpen)
+        {
+            CloseSettings();
+            return true;
+        }
+
+        if (CurrentPage is Kiriha.ViewModels.Torrents.TorrentsViewModel torrentsVm)
+        {
+            if (torrentsVm.IsOnlineEpisodeSelectorVisible)
+            {
+                torrentsVm.CloseOnlineEpisodeSelectorCommand.Execute(null);
+                return true;
+            }
+
+            if (torrentsVm.IsEpisodeSelectorVisible)
+            {
+                torrentsVm.CloseEpisodeSelectorCommand.Execute(null);
+                return true;
+            }
+        }
+
+        if (CurrentPage is Kiriha.ViewModels.Analytics.AnalyticsViewModel analyticsVm &&
+            analyticsVm.History.IsHistoryPopupOpen)
+        {
+            analyticsVm.History.CloseHistoryPopup();
+            return true;
+        }
+
+        return false;
+    }
 }

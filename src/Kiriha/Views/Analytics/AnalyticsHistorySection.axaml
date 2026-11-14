@@ -219,9 +219,18 @@
                                                                         Background="{Binding Fill}"
                                                                         HorizontalAlignment="Stretch"
                                                                         Margin="1">
-                                                                    <TextBlock Text="{Binding Count}"
+                                                                    <Border.Styles>
+                                                                        <Style Selector="TextBlock.HeatmapCellCount">
+                                                                            <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColor}"/>
+                                                                        </Style>
+                                                                        <Style Selector="TextBlock.HeatmapCellCount.high">
+                                                                            <Setter Property="Foreground" Value="White"/>
+                                                                        </Style>
+                                                                    </Border.Styles>
+                                                                    <TextBlock Classes="HeatmapCellCount"
+                                                                               Classes.high="{Binding IsHighIntensity}"
+                                                                               Text="{Binding Count}"
                                                                                FontSize="10"
-                                                                               Foreground="{Binding TextColor}"
                                                                                FontWeight="SemiBold"
                                                                                HorizontalAlignment="Center"
                                                                                VerticalAlignment="Center"

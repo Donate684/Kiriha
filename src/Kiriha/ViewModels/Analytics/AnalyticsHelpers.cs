@@ -8,20 +8,22 @@ public static class AnalyticsHelpers
 {
     public static double EstimateHoursWatched(IEnumerable<AnimeEntity> items)
     {
-        return items.Sum(item =>
-        {
-            var episodeMinutes = string.Equals(item.Type, AppConstants.AnimeTypes.Movie, StringComparison.OrdinalIgnoreCase)
-                ? 95
-                : 24;
-            return Math.Max(0, item.Progress) * episodeMinutes / 60.0;
-        });
+        return items
+            .Where(static item => item.MediaKind == MediaKind.Anime)
+            .Sum(static item =>
+            {
+                var episodeMinutes = string.Equals(item.Type, AppConstants.AnimeTypes.Movie, StringComparison.OrdinalIgnoreCase)
+                    ? 95
+                    : 24;
+                return Math.Max(0, item.Progress) * episodeMinutes / 60.0;
+            });
     }
 
     public static double Percent(int value, int max) => Math.Clamp(value * 100.0 / Math.Max(1, max), 0, 100);
 
     public static string GetAccent(string label)
     {
-        var hash = Math.Abs(label.GetHashCode());
+        uint hash = (uint)(label?.GetHashCode() ?? 0);
         ReadOnlySpan<string> palette =
         [
             "#FF0F7B83",
@@ -33,7 +35,7 @@ public static class AnalyticsHelpers
             "#FF5C80BC",
             "#FF8E6C88"
         ];
-        return palette[hash % palette.Length];
+        return palette[(int)(hash % (uint)palette.Length)];
     }
 
     public static string GetStatusLabel(UserAnimeStatus status, ILocalizer _localizer)

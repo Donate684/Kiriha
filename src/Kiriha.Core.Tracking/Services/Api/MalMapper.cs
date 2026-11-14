@@ -14,7 +14,7 @@ public static class MalMapper
             MainPictureUrl = GetMainPicture(node),
             Synopsis = node.GetOptionalString("synopsis"),
             TotalEpisodes = node.GetOptionalInt("num_episodes") ?? 0,
-            MeanScore = node.TryGetProperty("mean", out var mean) ? mean.GetDouble().ToString("0.00") : null,
+            MeanScore = node.TryGetProperty("mean", out var mean) ? mean.GetDouble().ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : null,
             Popularity = node.GetOptionalInt("popularity") ?? 0,
             Rank = node.GetOptionalInt("rank") ?? 0,
             AiringDate = node.GetOptionalDateTime("start_date"),

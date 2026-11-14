@@ -14,7 +14,7 @@ public partial class WatchNextSectionViewModel
             Subtitle = item.RussianTitle != null ? item.Title : null,
             Badge = badge,
             Detail = detail,
-            PosterUrl = item.MainPictureUrl,
+            PosterUrl = item.PosterSource ?? item.MainPictureUrl,
             Accent = accent
         };
     }

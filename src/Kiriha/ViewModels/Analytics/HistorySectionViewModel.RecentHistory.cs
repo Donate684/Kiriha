@@ -11,11 +11,12 @@ public partial class HistorySectionViewModel
     {
         var today = DateTime.Today;
         var posterMap = items
-            .DistinctBy(x => x.Id)
-            .ToDictionary(x => x.Id, x => x.MainPictureUrl);
+            .OrderByDescending(static x => x.MediaKind == MediaKind.Anime)
+            .DistinctBy(static x => x.Id)
+            .ToDictionary(static x => x.Id, static x => x.PosterSource ?? x.MainPictureUrl);
         var watched = history
             .Where(x => x.ActionType is 1 or 4 or 6)
-            .Where(x => x.Timestamp.ToLocalTime().Date < today && x.Timestamp.ToLocalTime().Date >= today.AddDays(-RecentHistoryDays))
+            .Where(x => x.Timestamp.ToLocalTime().Date <= today && x.Timestamp.ToLocalTime().Date > today.AddDays(-RecentHistoryDays))
             .ToList();
 
         var grouped = watched
@@ -26,7 +27,7 @@ public partial class HistorySectionViewModel
         RecentHistoryEpisodes = watched.Count;
         RecentHistoryTitles = watched.Select(x => x.AnimeId).Distinct().Count();
 
-        for (var daysAgo = RecentHistoryDays; daysAgo >= 1; daysAgo--)
+        for (var daysAgo = RecentHistoryDays - 1; daysAgo >= 0; daysAgo--)
         {
             grouped.TryGetValue(daysAgo, out var entries);
             var count = entries?.Count ?? 0;

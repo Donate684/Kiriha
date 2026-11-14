@@ -101,6 +101,7 @@ public partial class TorrentsViewModel : ViewModelBase
     private string _episodeSelectorCountText = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowActiveOnlineFhdBadge))]
     private OnlineAnimeItem? _activeOnlineAnime;
 
     [ObservableProperty]

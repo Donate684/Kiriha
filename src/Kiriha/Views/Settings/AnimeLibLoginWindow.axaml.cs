@@ -61,7 +61,15 @@ public partial class AnimeLibLoginWindow : Window
             Directory.CreateDirectory(userDataFolder);
 
             var env = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder).ConfigureAwait(true);
-            _controller = await env.CreateCoreWebView2ControllerAsync(hwnd).ConfigureAwait(true);
+            if (_isDisposed) return;
+
+            var controller = await env.CreateCoreWebView2ControllerAsync(hwnd).ConfigureAwait(true);
+            if (_isDisposed)
+            {
+                try { controller.Close(); } catch { /* ignore */ }
+                return;
+            }
+            _controller = controller;
 
             UpdateBounds();
             _controller.IsVisible = true;
@@ -142,12 +150,70 @@ public partial class AnimeLibLoginWindow : Window
         }
     }
 
+    internal static bool IsAnimeLibAuthHost(string? uriOrHost)
+    {
+        if (string.IsNullOrWhiteSpace(uriOrHost)) return false;
+
+        string host;
+        if (Uri.TryCreate(uriOrHost, UriKind.Absolute, out var parsedUri))
+        {
+            host = parsedUri.Host;
+        }
+        else
+        {
+            host = uriOrHost.Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(host)) return false;
+
+        ReadOnlySpan<string> allowedDomains =
+        [
+            "animelib.org",
+            "anilib.me",
+            "mangalib.me",
+            "cdnlibs.org",
+            "sociallib.org",
+            "lib.social"
+        ];
+
+        foreach (var domain in allowedDomains)
+        {
+            if (host.Equals(domain, StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith("." + domain, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal static string? ParseScriptStringResult(string? rawScriptResult)
+    {
+        if (string.IsNullOrWhiteSpace(rawScriptResult) || rawScriptResult == "null" || rawScriptResult == "\"\"")
+            return null;
+
+        try
+        {
+            var unescaped = System.Text.Json.JsonSerializer.Deserialize<string>(rawScriptResult);
+            return string.IsNullOrWhiteSpace(unescaped) ? null : unescaped;
+        }
+        catch
+        {
+            var trimmed = rawScriptResult.Trim('"');
+            return string.IsNullOrWhiteSpace(trimmed) ? null : trimmed;
+        }
+    }
+
     private void OnWebResourceResponseReceived(object? sender, CoreWebView2WebResourceResponseReceivedEventArgs e)
     {
         if (_authCompleted) return;
 
         try
         {
+            if (!IsAnimeLibAuthHost(e.Request.Uri))
+                return;
+
             // Inspect request headers for Bearer token
             if (e.Request.Headers.Contains("Authorization"))
             {
@@ -182,6 +248,8 @@ public partial class AnimeLibLoginWindow : Window
         try
         {
             var core = _controller.CoreWebView2;
+            if (!IsAnimeLibAuthHost(core.Source))
+                return;
 
             // Script to query token from localStorage
             var script = @"(function() {
@@ -206,14 +274,11 @@ public partial class AnimeLibLoginWindow : Window
             })()";
             var result = await core.ExecuteScriptAsync(script).ConfigureAwait(true);
 
-            if (!string.IsNullOrWhiteSpace(result) && result != "\"\"" && result != "null")
+            var token = ParseScriptStringResult(result);
+            if (!string.IsNullOrWhiteSpace(token))
             {
-                var token = result.Trim('"');
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    CompleteAuth(token);
-                    return;
-                }
+                CompleteAuth(token);
+                return;
             }
 
             // Check cookies as fallback

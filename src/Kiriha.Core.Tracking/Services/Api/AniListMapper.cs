@@ -60,7 +60,7 @@ public static class AniListMapper
         string? meanScore = null;
         if (media.TryGetProperty("averageScore", out var avgScoreProp) && avgScoreProp.ValueKind == JsonValueKind.Number && avgScoreProp.TryGetDouble(out var avgScore))
         {
-            meanScore = (avgScore / 10.0).ToString("0.00");
+            meanScore = (avgScore / 10.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         int popularity = media.TryGetProperty("popularity", out var popProp) && popProp.ValueKind == JsonValueKind.Number && popProp.TryGetInt32(out var pop)

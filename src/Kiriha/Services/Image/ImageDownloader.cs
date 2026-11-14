@@ -35,10 +35,12 @@ public class ImageDownloader : IDisposable
 
         if (ReferenceEquals(addedTask, tcs.Task))
         {
-            _ = ExecuteDownloadAsync(url, tcs, ct);
+            // Run the shared deduplicated download without binding it to a single caller's token
+            // so one cancelled viewport request does not abort the download for other callers.
+            _ = ExecuteDownloadAsync(url, tcs, CancellationToken.None);
         }
 
-        return addedTask;
+        return ct.CanBeCanceled ? addedTask.WaitAsync(ct) : addedTask;
     }
 
     private async Task ExecuteDownloadAsync(string url, TaskCompletionSource<string> tcs, CancellationToken ct = default)

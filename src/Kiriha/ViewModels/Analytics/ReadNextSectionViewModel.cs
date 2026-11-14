@@ -31,31 +31,36 @@ public partial class ReadNextSectionViewModel : ViewModelBase
 
         var now = DateTime.UtcNow;
         foreach (var item in items
-                     .Where(x => IsCurrentOngoing(x, now) && x.Presentation.ShowAiredProgressBar && x.Presentation.UnseenEpisodesCount > 0)
-                     .OrderByDescending(x => x.Presentation.UnseenEpisodesCount)
+                     .Where(x => IsCurrentOngoing(x, now)
+                                 && x.Status == UserAnimeStatus.Watching
+                                 && GetUnreadChaptersCount(x) > 0)
+                     .OrderByDescending(GetUnreadChaptersCount)
                      .ThenByDescending(x => x.NextEpisodeAt ?? DateTime.MinValue)
                      .Take(6))
         {
+            var unread = GetUnreadChaptersCount(item);
+            var read = GetChaptersProgress(item);
             ReadTodo.Add(ToTodo(
                 item,
-                $"{item.Presentation.UnseenEpisodesCount} ??.",
-                $"????????? {item.Progress}/{DisplayTotal(item)}",
+                _localizer.GetLoc("analytics.read_next.chapters_format", unread),
+                _localizer.GetLoc("analytics.read_next.read_progress", read, DisplayTotal(item)),
                 "#FFE53935"));
         }
 
         foreach (var item in items
                      .Where(x => !IsCurrentOngoing(x, now)
                                  && x.Status == UserAnimeStatus.Watching
-                                 && x.Presentation.ShowAiredProgressBar
-                                 && x.Presentation.UnseenEpisodesCount > 0)
-                     .OrderByDescending(x => x.Presentation.UnseenEpisodesCount)
+                                 && GetUnreadChaptersCount(x) > 0)
+                     .OrderByDescending(GetUnreadChaptersCount)
                      .ThenByDescending(ParsedMeanScore)
                      .Take(6))
         {
+            var unread = GetUnreadChaptersCount(item);
+            var read = GetChaptersProgress(item);
             FinishedReadTodo.Add(ToTodo(
                 item,
-                $"{item.Presentation.UnseenEpisodesCount} ??.",
-                $"????????? {item.Progress}/{DisplayTotal(item)}",
+                _localizer.GetLoc("analytics.read_next.chapters_format", unread),
+                _localizer.GetLoc("analytics.read_next.read_progress", read, DisplayTotal(item)),
                 "#FF7B61FF"));
         }
 
@@ -85,17 +90,18 @@ public partial class ReadNextSectionViewModel : ViewModelBase
         }
 
         foreach (var item in items
-                     .Where(x => x.Status == UserAnimeStatus.Watching && x.Progress > 0 && !IsCurrentOngoing(x, now))
+                     .Where(x => x.Status == UserAnimeStatus.Watching && GetChaptersProgress(x) > 0 && !IsCurrentOngoing(x, now))
                      .OrderBy(x => x.DateStarted ?? DateTime.MaxValue)
                      .ThenBy(x => x.LastEpisodeAt ?? DateTime.MaxValue)
                      .Take(6))
         {
             var pauseFrom = item.DateStarted ?? item.LastEpisodeAt ?? now;
             var days = Math.Max(1, (int)(now - pauseFrom).TotalDays);
+            var read = GetChaptersProgress(item);
             StaleTodo.Add(ToTodo(
                 item,
-                $"{days} ??.",
-                $"????? ?? {item.Progress}/{DisplayTotal(item)}",
+                _localizer.GetLoc("analytics.read_next.days_format", days),
+                _localizer.GetLoc("analytics.read_next.paused_on", read, DisplayTotal(item)),
                 "#FFD17A22"));
         }
     }

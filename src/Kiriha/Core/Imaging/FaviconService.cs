@@ -37,7 +37,7 @@ public class FaviconService : IDisposable
     /// parsing so e.g. <c>https://x.com/?q={title}</c> still yields host
     /// <c>x.com</c>.
     /// </summary>
-    public async Task<string?> TryGetFaviconAsync(string urlTemplate, CancellationToken ct = default)
+    public virtual async Task<string?> TryGetFaviconAsync(string urlTemplate, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(urlTemplate)) return null;
 

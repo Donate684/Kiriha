@@ -25,7 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
     [ObservableProperty]
     private ViewModelBase _currentPage = null!;
 
-    public SettingsViewModel? SettingsViewModel => EnsureSettingsViewModel();
+    public SettingsViewModel? SettingsViewModel => _settingsViewModel;
 
     // IViewModelFactory delivers a fresh transient instance on each navigation —
     // see DI registrations: WelcomeViewModel and SearchViewModel are AddTransient.

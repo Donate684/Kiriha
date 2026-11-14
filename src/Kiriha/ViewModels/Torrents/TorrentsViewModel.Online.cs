@@ -48,9 +48,12 @@ public partial class TorrentsViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowAnimeLibWarning))]
+    [NotifyPropertyChangedFor(nameof(ShowActiveOnlineFhdBadge))]
     private bool _isAnimeLibLoggedIn;
 
     public bool ShowAnimeLibWarning => !IsAnimeLibLoggedIn && FilterOnlineAnimeLib;
+
+    public bool ShowActiveOnlineFhdBadge => IsAnimeLibLoggedIn && ActiveOnlineAnime?.IsAnimeLib == true;
 
     public void RefreshAnimeLibAuthStatus()
     {
@@ -497,19 +500,12 @@ public partial class TorrentsViewModel
 
     private void ApplyOnlineSourceFilter()
     {
-        var byType = OnlineSourceFilter switch
+        IEnumerable<OnlineSourceItem> filtered = OnlineSourceFilter switch
         {
             "sub" => OnlineSources.Where(s => s.IsSubtitles),
             _ => OnlineSources.Where(s => !s.IsSubtitles)
         };
 
-        var typeList = byType.ToList();
-        if (typeList.Count == 0 && OnlineSources.Count > 0)
-        {
-            typeList = OnlineSources.ToList();
-        }
-
-        IEnumerable<OnlineSourceItem> filtered = typeList;
         if (Hide480pSources)
         {
             filtered = filtered.Where(s => !s.Is480pOrLower);

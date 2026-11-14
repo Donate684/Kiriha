@@ -69,6 +69,7 @@ public sealed class AnalyticsMonthlyHistoryCell
     public double Alpha { get; init; }
     public string Fill { get; init; } = string.Empty;
     public string TextColor { get; init; } = string.Empty;
+    public bool IsHighIntensity { get; init; }
     public bool IsCurrentMonth { get; init; }
     public bool HasCount => Count > 0;
     public string Tooltip { get; init; } = string.Empty;
