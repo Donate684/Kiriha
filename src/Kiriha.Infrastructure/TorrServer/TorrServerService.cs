@@ -12,6 +12,8 @@ namespace Kiriha.Infrastructure.TorrServer;
 public sealed class TorrServerService : ITorrServerService
 {
     private static readonly ILogger Logger = Log.ForContext<TorrServerService>();
+    private static readonly TimeSpan EchoPingTimeout = TimeSpan.FromSeconds(1);
+    private const int StartupReadyTimeoutSeconds = 12;
 
     private readonly ISettingsService _settingsService;
     private readonly HttpClient _httpClient;
@@ -108,20 +110,30 @@ public sealed class TorrServerService : ITorrServerService
             }
 
             Logger.Information("TorrServerService: Launching local TorrServer on port {Port} from {Path}", port, exePath);
-            _process = Process.Start(psi);
+            try
+            {
+                _process = Process.Start(psi);
+            }
+            catch (Exception startEx) when (OperatingSystem.IsWindows() && psi.KillOnParentExit)
+            {
+                Logger.Warning(startEx, "TorrServerService: Process.Start with KillOnParentExit failed; retrying without JobObject binding");
+                psi.KillOnParentExit = false;
+                _process = Process.Start(psi);
+            }
+
             if (_process == null)
             {
                 Logger.Error("TorrServerService: Failed to start TorrServer process");
                 return false;
             }
 
-            // Wait up to 6 seconds for the server to become responsive
-            var deadline = DateTime.UtcNow.AddSeconds(6);
+            // Wait up to StartupReadyTimeoutSeconds for the server to become responsive (accounts for first-run AV scan on 64MB Go binary)
+            var deadline = DateTime.UtcNow.AddSeconds(StartupReadyTimeoutSeconds);
             while (DateTime.UtcNow < deadline && !ct.IsCancellationRequested)
             {
                 if (_process.HasExited)
                 {
-                    Logger.Error("TorrServerService: TorrServer process exited prematurely with code {Code}", _process.ExitCode);
+                    Logger.Error("TorrServerService: TorrServer process exited prematurely with code {Code} (Path: {Path})", _process.ExitCode, exePath);
                     _process.Dispose();
                     _process = null;
                     return false;
@@ -159,7 +171,7 @@ public sealed class TorrServerService : ITorrServerService
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromMilliseconds(500));
+            cts.CancelAfter(EchoPingTimeout);
             var response = await _httpClient.GetAsync($"{ServerUrl}/echo", cts.Token).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return false;
@@ -467,36 +479,61 @@ public sealed class TorrServerService : ITorrServerService
         _httpClient.Dispose();
     }
 
-    private static string? LocateExecutable()
+    internal static string? LocateExecutable()
     {
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var baseDir = AppContext.BaseDirectory;
+        var candidates = new List<string>
+        {
+            Path.Combine(baseDir, "torrserver", "torrserver.exe"),
+            Path.Combine(baseDir, "torrserver.exe"),
+            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "subprojects", "torrserver", "torrserver.exe")),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kiriha", "torrserver", "torrserver.exe")
+        };
 
-        // 1. Output folder: torrserver/torrserver.exe
-        var candidate1 = Path.Combine(baseDir, "torrserver", "torrserver.exe");
-        if (File.Exists(candidate1))
-            return candidate1;
-
-        // 2. Application root folder: torrserver.exe
-        var candidate2 = Path.Combine(baseDir, "torrserver.exe");
-        if (File.Exists(candidate2))
-            return candidate2;
-
-        // 3. Dev folder: subprojects/torrserver/torrserver.exe
-        var candidate3 = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "subprojects", "torrserver", "torrserver.exe"));
-        if (File.Exists(candidate3))
-            return candidate3;
-
-        // 4. Fallback search up the directory tree
         var current = new DirectoryInfo(baseDir);
         for (int i = 0; i < 6 && current != null; i++)
         {
-            var subprojectPath = Path.Combine(current.FullName, "subprojects", "torrserver", "torrserver.exe");
-            if (File.Exists(subprojectPath))
-                return subprojectPath;
+            candidates.Add(Path.Combine(current.FullName, "subprojects", "torrserver", "torrserver.exe"));
             current = current.Parent;
         }
 
-        return null;
+        string? fallbackAny = null;
+        foreach (var candidate in candidates)
+        {
+            if (!File.Exists(candidate))
+                continue;
+
+            fallbackAny ??= candidate;
+            if (IsCompatibleMatriXCandidate(candidate))
+                return candidate;
+        }
+
+        return fallbackAny;
+    }
+
+    private static bool IsCompatibleMatriXCandidate(string exePath)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(exePath);
+            if (string.IsNullOrEmpty(dir))
+                return true;
+
+            var versionFile = Path.Combine(dir, "version.txt");
+            if (!File.Exists(versionFile))
+                return true;
+
+            var version = File.ReadAllText(versionFile).Trim();
+            if (string.IsNullOrEmpty(version) || version.StartsWith("MatriX.", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            Logger.Error("TorrServerService: Skipping incompatible TorrServer binary at {Path} (version.txt='{Version}'; MatriX.* required)", exePath, version);
+            return false;
+        }
+        catch
+        {
+            return true;
+        }
     }
 
     private static int ReadInt32(JsonNode? node, int fallback = 0)

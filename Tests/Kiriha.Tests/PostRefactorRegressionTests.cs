@@ -592,4 +592,48 @@ public sealed class PostRefactorRegressionTests
         Assert.Equal("https://cdn.example.com/hls/master.m3u8?Policy=xyz&Key-Pair-Id=1", videos[0].Url);
         Assert.Equal("m3u8", videos[0].VideoType);
     }
+
+    [Fact]
+    public void TorrServer_DownloadScript_And_CandidateCheck_RejectIncompatibleSiloReleases()
+    {
+        var method = typeof(TorrServerService).GetMethod("IsCompatibleMatriXCandidate", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(method);
+
+        var tempRoot = Path.Combine(Path.GetTempPath(), $"kiriha_ts_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempRoot);
+        try
+        {
+            var siloExe = Path.Combine(tempRoot, "torrserver.exe");
+            File.WriteAllBytes(siloExe, [0x4D, 0x5A]);
+            File.WriteAllText(Path.Combine(tempRoot, "version.txt"), "Silo.2");
+            Assert.False((bool)method.Invoke(null, [siloExe])!);
+
+            File.WriteAllText(Path.Combine(tempRoot, "version.txt"), "MatriX.150");
+            Assert.True((bool)method.Invoke(null, [siloExe])!);
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, recursive: true);
+        }
+
+        // Verify scripts/download-torrserver.ps1 never queries /releases/latest blindly and filters for ^MatriX\.
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        string? scriptPath = null;
+        for (int i = 0; i < 6 && current != null; i++)
+        {
+            var candidate = Path.Combine(current.FullName, "scripts", "download-torrserver.ps1");
+            if (File.Exists(candidate))
+            {
+                scriptPath = candidate;
+                break;
+            }
+            current = current.Parent;
+        }
+
+        Assert.NotNull(scriptPath);
+        var scriptContent = File.ReadAllText(scriptPath);
+        Assert.DoesNotContain("/releases/latest\"", scriptContent, StringComparison.Ordinal);
+        Assert.Contains("^MatriX\\.", scriptContent, StringComparison.Ordinal);
+        Assert.Contains("--version", scriptContent, StringComparison.Ordinal);
+    }
 }

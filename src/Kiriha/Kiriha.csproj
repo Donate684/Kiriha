@@ -12,7 +12,7 @@
     <RootNamespace>Kiriha</RootNamespace>
     <Title>Kiriha</Title>
     <ApplicationIcon>Assets\kiriha.ico</ApplicationIcon>
-    <Version>1.8.28</Version>
+    <Version>1.8.29</Version>
 
 
     <!-- Optimization: Ahead-of-time compilation for faster startup -->
@@ -106,7 +106,11 @@
   </Target>
 
   <Target Name="DownloadTorrServer" BeforeTargets="BeforeBuild;AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)..\..\scripts\download-torrserver.ps1&quot;" Condition="!Exists('$(ProjectDir)..\..\subprojects\torrserver\torrserver.exe')" />
+    <PropertyGroup>
+      <_TorrServerVersion Condition="Exists('$(ProjectDir)..\..\subprojects\torrserver\version.txt')">$([System.IO.File]::ReadAllText('$(ProjectDir)..\..\subprojects\torrserver\version.txt').Trim())</_TorrServerVersion>
+    </PropertyGroup>
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)..\..\scripts\download-torrserver.ps1&quot;"
+          Condition="!Exists('$(ProjectDir)..\..\subprojects\torrserver\torrserver.exe') Or !$([System.String]::Copy('$(_TorrServerVersion)').StartsWith('MatriX.'))" />
     <ItemGroup>
       <_TorrServerFiles Include="..\..\subprojects\torrserver\**\*" />
       <Content Include="@(_TorrServerFiles)" Link="torrserver\%(RecursiveDir)%(Filename)%(Extension)">
