@@ -38,7 +38,7 @@ public partial class AnimeRepository
                     for (int i = 0; i < cached.Count; i++)
                     {
                         var item = cached[i];
-                        _idIndex[item.Id] = item;
+                        _idIndex[(item.Id, item.MediaKind)] = item;
                     }
                 }
                 else

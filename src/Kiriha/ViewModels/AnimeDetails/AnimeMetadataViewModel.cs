@@ -85,54 +85,8 @@ public partial class AnimeMetadataViewModel : ObservableObject
 
         if (full != null)
         {
-            if (full.Status != UserAnimeStatus.None) _anime.Status = full.Status;
-            _anime.Progress = full.Progress;
-            _anime.Score = full.Score;
-            _anime.Notes = full.Notes;
-            _anime.RewatchCount = full.RewatchCount;
-            _anime.IsRewatching = full.IsRewatching;
-            _anime.DateStarted = full.DateStarted;
-            _anime.DateCompleted = full.DateCompleted;
-
-            if (!string.IsNullOrEmpty(full.Synopsis)) _anime.Synopsis = full.Synopsis;
-
-            if (full.Genres.Count > 0)
-            {
-                _anime.Genres.Clear();
-                foreach (var g in full.Genres) _anime.Genres.Add(g);
-            }
-
-            if (full.Studios.Count > 0)
-            {
-                _anime.Studios.Clear();
-                foreach (var s in full.Studios) _anime.Studios.Add(s);
-            }
-
-            if (full.AlternativeTitles.Count > 0)
-            {
-                foreach (var t in full.AlternativeTitles)
-                {
-                    if (!_anime.AlternativeTitles.Contains(t))
-                        _anime.AlternativeTitles.Add(t);
-                }
-            }
-
-            _anime.EnglishTitle = full.EnglishTitle;
-            _anime.JapaneseTitle = full.JapaneseTitle;
-            _anime.StatusDetailed = full.StatusDetailed;
-            _anime.MeanScore = full.MeanScore;
-            _anime.Popularity = full.Popularity;
-            _anime.Rank = full.Rank;
-            _anime.AiringDate = full.AiringDate;
-            _anime.StartSeason = full.StartSeason;
-            _anime.StartYear = full.StartYear;
-
-            if (!string.IsNullOrEmpty(full.MainPictureUrl)) _anime.MainPictureUrl = full.MainPictureUrl;
-            if (!string.IsNullOrEmpty(full.LocalPosterPath)) _anime.LocalPosterPath = full.LocalPosterPath;
-
-            _anime.Season = full.Season;
+            _anime.MergeFullDetails(full);
             _anime.RefreshMetadata();
-            
             NotifyMetadataChanged();
         }
     }

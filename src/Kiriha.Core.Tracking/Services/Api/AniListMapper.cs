@@ -81,7 +81,12 @@ public static class AniListMapper
 
             if (y > 1900)
             {
-                try { startDate = new DateTime(y, Math.Clamp(m, 1, 12), Math.Clamp(d, 1, 28), 0, 0, 0, DateTimeKind.Utc); }
+                try
+                {
+                    var clampedM = Math.Clamp(m, 1, 12);
+                    var maxDays = DateTime.DaysInMonth(y, clampedM);
+                    startDate = new DateTime(y, clampedM, Math.Clamp(d, 1, maxDays), 0, 0, 0, DateTimeKind.Utc);
+                }
                 catch { /* Ignore invalid date */ }
             }
         }

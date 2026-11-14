@@ -72,8 +72,8 @@ public class AnimeListActionService : IAnimeListActionService
         }
 
         // Check if this anime already exists in local collection or DB to preserve user tracking data
-        var existing = _animeRepository.Collection?.FirstOrDefault(x => x.Id == item.Id)
-                       ?? (_userAnimeRepo != null ? await _userAnimeRepo.GetByIdAsync(item.Id, ct) : null);
+        var existing = _animeRepository.Collection?.FirstOrDefault(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
+                       ?? (_userAnimeRepo != null ? await _userAnimeRepo.GetByIdAsync(item.Id, item.MediaKind, ct) : null);
         if (existing != null)
         {
             item.PreserveUserFieldsFrom(existing);

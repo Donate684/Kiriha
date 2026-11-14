@@ -42,12 +42,12 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         if (item.Status == UserAnimeStatus.None)
         {
             Log.Warning("UserAnimeRepository.UpsertAsync: Rejected entity with Status None (Id: {Id}). Removing from user_anime if present.", item.Id);
-            await DeleteAsync(item.Id, ct);
+            await DeleteAsync(item.Id, item.MediaKind, ct);
             return;
         }
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id, ct);
+        var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id && x.MediaKind == item.MediaKind, ct);
         if (existing is null)
         {
             Log.Information("Inserting new Anime {Title} (ID: {Id})", item.Title, item.Id);
@@ -55,10 +55,6 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         }
         else
         {
-            if (item.IsMissingDetails)
-            {
-                item.PreserveUserFieldsFrom(existing);
-            }
             context.Entry(existing).CurrentValues.SetValues(item);
         }
         await context.SaveChangesAsync(ct);
@@ -75,12 +71,12 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         if (item.Status == UserAnimeStatus.None)
         {
             Log.Warning("UserAnimeRepository.UpdateAsync: Rejected entity with Status None (Id: {Id}). Removing from user_anime if present.", item.Id);
-            await DeleteAsync(item.Id, ct);
+            await DeleteAsync(item.Id, item.MediaKind, ct);
             return;
         }
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id, ct);
+        var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id && x.MediaKind == item.MediaKind, ct);
         if (existing is null)
         {
             Log.Warning("Attempted to update non-existent anime {Title} (ID: {Id})", item.Title, item.Id);
@@ -90,28 +86,24 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         }
 
         Log.Information("Updating Anime {Title} (ID: {Id}). Rewatching: {Rewatch}", item.Title, item.Id, item.IsRewatching);
-        if (item.IsMissingDetails)
-        {
-            item.PreserveUserFieldsFrom(existing);
-        }
         context.Entry(existing).CurrentValues.SetValues(item);
         await context.SaveChangesAsync(ct);
 
         Log.Information("Successfully saved {Title} to database", item.Title);
     }
 
-    public async Task<AnimeEntity?> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<AnimeEntity?> GetByIdAsync(int id, MediaKind kind = MediaKind.Anime, CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         return await context.UserAnime
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, ct);
+            .FirstOrDefaultAsync(x => x.Id == id && x.MediaKind == kind, ct);
     }
 
-    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    public async Task DeleteAsync(int id, MediaKind kind = MediaKind.Anime, CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var existing = await context.UserAnime.FirstOrDefaultAsync(x => x.Id == id, ct);
+        var existing = await context.UserAnime.FirstOrDefaultAsync(x => x.Id == id && x.MediaKind == kind, ct);
         if (existing is null) return;
         context.UserAnime.Remove(existing);
         await context.SaveChangesAsync(ct);

@@ -55,7 +55,7 @@ public class AiringInfoService : IAiringInfoService
         Log.Information("AiringInfoService: Immediate {Source} sync requested for {Title} (ID: {Id})", source, anime.Title, anime.Id);
 
         var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force: true, ct);
-        if (_animeRepo.IsRecentlyDeleted(anime.Id)) return;
+        if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
 
         if (airing is null)
         {
@@ -110,7 +110,7 @@ public class AiringInfoService : IAiringInfoService
         var tasks = toSync.Select(async (anime, i) =>
         {
             if (ct.IsCancellationRequested) return;
-            if (_animeRepo.IsRecentlyDeleted(anime.Id)) return;
+            if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
 
             await semaphore.WaitAsync(ct);
             try

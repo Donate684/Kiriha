@@ -6,18 +6,18 @@ public partial class AnimeSyncOrchestrator
 {
     private async Task ProcessSyncResults(List<AnimeEntity> apiList, List<AnimeEntity> currentItems, IProgress<string>? status, CancellationToken ct)
     {
-        var distinctApiList = apiList.DistinctBy(x => x.Id).ToList();
+        var distinctApiList = apiList.DistinctBy(x => (x.Id, x.MediaKind)).ToList();
 
-        var apiMap = new Dictionary<int, AnimeEntity>(distinctApiList.Count);
-        for (int i = 0; i < distinctApiList.Count; i++) apiMap[distinctApiList[i].Id] = distinctApiList[i];
+        var apiMap = new Dictionary<(int Id, MediaKind Kind), AnimeEntity>(distinctApiList.Count);
+        for (int i = 0; i < distinctApiList.Count; i++) apiMap[(distinctApiList[i].Id, distinctApiList[i].MediaKind)] = distinctApiList[i];
 
-        var existingMap = new Dictionary<int, AnimeEntity>(currentItems.Count);
-        for (int i = 0; i < currentItems.Count; i++) existingMap[currentItems[i].Id] = currentItems[i];
+        var existingMap = new Dictionary<(int Id, MediaKind Kind), AnimeEntity>(currentItems.Count);
+        for (int i = 0; i < currentItems.Count; i++) existingMap[(currentItems[i].Id, currentItems[i].MediaKind)] = currentItems[i];
 
         var toRemove = new List<AnimeEntity>();
         for (int i = 0; i < currentItems.Count; i++)
         {
-            if (!apiMap.ContainsKey(currentItems[i].Id))
+            if (!apiMap.ContainsKey((currentItems[i].Id, currentItems[i].MediaKind)))
             {
                 toRemove.Add(currentItems[i]);
             }
@@ -32,9 +32,9 @@ public partial class AnimeSyncOrchestrator
 
             var newItem = distinctApiList[i];
 
-            if (_animeRepository.IsRecentlyDeleted(newItem.Id)) continue;
+            if (_animeRepository.IsRecentlyDeleted(newItem.Id, newItem.MediaKind)) continue;
 
-            if (existingMap.TryGetValue(newItem.Id, out var existing))
+            if (existingMap.TryGetValue((newItem.Id, newItem.MediaKind), out var existing))
             {
                 var captured = newItem;
                 var capturedExisting = existing;
@@ -42,33 +42,25 @@ public partial class AnimeSyncOrchestrator
             }
             else
             {
-                existingMap[newItem.Id] = newItem;
+                existingMap[(newItem.Id, newItem.MediaKind)] = newItem;
                 uiBatch.Add(() =>
                 {
                     _animeRepository.AddToCollection(newItem);
                 });
             }
 
-            if (uiBatch.Count >= 50 || i == total - 1)
+            if (uiBatch.Count >= 50)
             {
-                if (uiBatch.Count > 0)
-                {
-                    var currentBatch = uiBatch.ToList();
-                    uiBatch.Clear();
-                    var removeList = (i == total - 1) ? toRemove : new List<AnimeEntity>();
-                    await _animeRepository.ApplySyncBatchAsync(removeList, currentBatch);
-                }
+                var currentBatch = uiBatch.ToList();
+                uiBatch.Clear();
+                await _animeRepository.ApplySyncBatchAsync(new List<AnimeEntity>(), currentBatch);
 
                 status?.Report($"{"sync.updating.metadata"}: {i + 1}/{total}");
-                if (i < total - 1)
-                {
-                    await Task.Delay(1, ct);
-                }
+                await Task.Delay(1, ct);
             }
         }
 
-        // If total == 0, still remove
-        if (total == 0 && toRemove.Any())
+        if (!ct.IsCancellationRequested && (uiBatch.Count > 0 || toRemove.Count > 0))
         {
             await _animeRepository.ApplySyncBatchAsync(toRemove, uiBatch);
         }

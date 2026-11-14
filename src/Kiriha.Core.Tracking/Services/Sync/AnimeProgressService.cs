@@ -108,6 +108,7 @@ public class AnimeProgressService : IProgressUpdateService
                 {
                     item.DateCompleted ??= DateTime.Today;
                     item.DateStarted ??= DateTime.Today;
+                    item.IsRewatching = false;
                 }
                 item.ChaptersRead = nextProgress;
                 if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)
@@ -253,6 +254,7 @@ public class AnimeProgressService : IProgressUpdateService
             {
                 item.DateCompleted ??= DateTime.Today;
                 item.DateStarted ??= DateTime.Today;
+                item.IsRewatching = false;
             }
             item.Progress = nextProgress;
             if (nextStatus.HasValue && nextStatus != UserAnimeStatus.None)

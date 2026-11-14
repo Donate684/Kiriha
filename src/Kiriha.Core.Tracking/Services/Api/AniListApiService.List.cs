@@ -77,6 +77,7 @@ public partial class AniListApiService
             if (doc == null) return null;
 
             var list = new List<AnimeEntity>();
+            var seenMediaIds = new HashSet<int>();
             var root = doc.RootElement;
 
             if (root.TryGetProperty("data", out var data) &&
@@ -97,7 +98,8 @@ public partial class AniListApiService
 
                                 if (media.TryGetProperty("id", out var aniIdProp) && aniIdProp.TryGetInt32(out var aniId))
                                 {
-                                    _malToAniListMap[anime.Id] = aniId;
+                                    _malToAniListMap[(anime.Id, "ANIME")] = aniId;
+                                    if (!seenMediaIds.Add(aniId)) continue;
                                 }
 
                                 list.Add(anime);
@@ -129,11 +131,11 @@ public partial class AniListApiService
         var account = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
         if (account?.Tokens == null) return SyncOutcome.PermanentFailure;
 
-        var mediaId = await ResolveAniListMediaIdAsync(animeId, "ANIME", ct);
+        var (mediaId, resolveOutcome) = await ResolveAniListMediaIdAsync(animeId, "ANIME", ct);
         if (mediaId == null || mediaId <= 0)
         {
-            Log.Warning("AniList: could not resolve mediaId for anime {AnimeId}", animeId);
-            return SyncOutcome.TransientFailure;
+            Log.Warning("AniList: could not resolve mediaId for anime {AnimeId} ({Outcome})", animeId, resolveOutcome);
+            return resolveOutcome;
         }
 
         const string mutation = """
@@ -155,7 +157,7 @@ public partial class AniListApiService
         };
 
         if (!string.IsNullOrEmpty(aniStatus)) variables["status"] = aniStatus;
-        if (score.HasValue && score.Value > 0) variables["score"] = (double)score.Value;
+        if (score.HasValue) variables["score"] = (double)score.Value;
         if (rewatchCount.HasValue) variables["repeat"] = rewatchCount.Value;
 
         try
@@ -182,7 +184,18 @@ public partial class AniListApiService
 
     public Task<SyncOutcome> SaveFullListStatusAsync(AnimeEntity item, CancellationToken ct = default)
     {
-        int? score = int.TryParse(item.Score, out var s) && s > 0 ? s : null;
+        int? score = int.TryParse(item.Score, out var s) && s > 0 ? s : 0;
+        if (item.MediaKind != MediaKind.Anime)
+        {
+            return UpdateMangaProgressAsync(
+                item.Id,
+                item.ChaptersRead,
+                item.VolumesRead > 0 ? item.VolumesRead : null,
+                item.Status,
+                score,
+                ct);
+        }
+
         return UpdateProgressAsync(
             item.Id,
             item.Progress,
@@ -195,8 +208,11 @@ public partial class AniListApiService
 
     public async Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
     {
-        var mediaId = await ResolveAniListMediaIdAsync(animeId, "ANIME", ct);
-        if (mediaId == null || mediaId <= 0) return SyncOutcome.PermanentFailure;
+        var (mediaId, resolveOutcome) = await ResolveAniListMediaIdAsync(animeId, "ANIME", ct);
+        if (mediaId == null || mediaId <= 0)
+        {
+            return resolveOutcome == SyncOutcome.PermanentFailure ? SyncOutcome.Success : resolveOutcome;
+        }
 
         const string queryEntry = """
         query ($mediaId: Int) {
@@ -219,23 +235,34 @@ public partial class AniListApiService
         try
         {
             using var queryDoc = await ExecuteGraphQlAsync(queryEntry, new { mediaId = mediaId.Value }, ct);
-            if (queryDoc != null &&
-                queryDoc.RootElement.TryGetProperty("data", out var data) &&
-                data.TryGetProperty("Media", out var media) &&
-                media.TryGetProperty("mediaListEntry", out var mle) &&
-                mle.ValueKind == JsonValueKind.Object &&
-                mle.TryGetProperty("id", out var entryIdProp) &&
-                entryIdProp.TryGetInt32(out var entryId))
+            if (queryDoc == null) return SyncOutcome.TransientFailure;
+
+            if (queryDoc.RootElement.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("Media", out var media))
             {
-                using var delDoc = await ExecuteGraphQlAsync(deleteMutation, new { id = entryId }, ct);
-                if (delDoc != null)
+                if (media.TryGetProperty("mediaListEntry", out var mle) && mle.ValueKind == JsonValueKind.Object &&
+                    mle.TryGetProperty("id", out var entryIdProp) && entryIdProp.TryGetInt32(out var entryId))
                 {
-                    Log.Information("AniList: removed entry {EntryId} for anime {AnimeId}", entryId, animeId);
+                    using var delDoc = await ExecuteGraphQlAsync(deleteMutation, new { id = entryId }, ct);
+                    if (delDoc != null &&
+                        delDoc.RootElement.TryGetProperty("data", out var delData) &&
+                        delData.TryGetProperty("DeleteMediaListEntry", out var delEntry) &&
+                        delEntry.TryGetProperty("deleted", out var deletedProp) &&
+                        deletedProp.GetBoolean())
+                    {
+                        Log.Information("AniList: removed entry {EntryId} for anime {AnimeId}", entryId, animeId);
+                        return SyncOutcome.Success;
+                    }
+                    return SyncOutcome.TransientFailure;
+                }
+                else
+                {
+                    Log.Information("AniList: entry for media {MediaId} not found in library; treated as removed", mediaId.Value);
                     return SyncOutcome.Success;
                 }
             }
 
-            return SyncOutcome.Success;
+            return SyncOutcome.TransientFailure;
         }
         catch (Exception ex)
         {
@@ -305,6 +332,7 @@ public partial class AniListApiService
             if (doc == null) return null;
 
             var list = new List<AnimeEntity>();
+            var seenMediaIds = new HashSet<int>();
             var root = doc.RootElement;
 
             if (root.TryGetProperty("data", out var data) &&
@@ -325,7 +353,8 @@ public partial class AniListApiService
 
                                 if (media.TryGetProperty("id", out var aniIdProp) && aniIdProp.TryGetInt32(out var aniId))
                                 {
-                                    _malToAniListMap[manga.Id] = aniId;
+                                    _malToAniListMap[(manga.Id, "MANGA")] = aniId;
+                                    if (!seenMediaIds.Add(aniId)) continue;
                                 }
 
                                 list.Add(manga);
@@ -352,8 +381,12 @@ public partial class AniListApiService
         int? score = null,
         CancellationToken ct = default)
     {
-        var mediaId = await ResolveAniListMediaIdAsync(mangaId, "MANGA", ct);
-        if (mediaId == null || mediaId <= 0) return SyncOutcome.PermanentFailure;
+        var (mediaId, resolveOutcome) = await ResolveAniListMediaIdAsync(mangaId, "MANGA", ct);
+        if (mediaId == null || mediaId <= 0)
+        {
+            Log.Warning("AniList: could not resolve mediaId for manga {MangaId} ({Outcome})", mangaId, resolveOutcome);
+            return resolveOutcome;
+        }
 
         const string mutation = """
         mutation ($mediaId: Int, $progress: Int, $progressVolumes: Int, $status: MediaListStatus, $score: Float) {
@@ -374,7 +407,7 @@ public partial class AniListApiService
 
         if (volumes.HasValue) variables["progressVolumes"] = volumes.Value;
         if (!string.IsNullOrEmpty(aniStatus)) variables["status"] = aniStatus;
-        if (score.HasValue && score.Value > 0) variables["score"] = (double)score.Value;
+        if (score.HasValue) variables["score"] = (double)score.Value;
 
         try
         {

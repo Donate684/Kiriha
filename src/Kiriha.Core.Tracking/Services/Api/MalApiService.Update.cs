@@ -33,10 +33,11 @@ public partial class MalApiService
             values.Add(new("num_volumes_read", item.VolumesRead.ToString()));
         }
 
-        if (int.TryParse(item.Score, out int s)) values.Add(new("score", s.ToString()));
-        if (!string.IsNullOrEmpty(item.Notes)) values.Add(new("notes", item.Notes));
-        if (item.DateStarted.HasValue) values.Add(new("start_date", item.DateStarted.Value.ToString("yyyy-MM-dd")));
-        if (item.DateCompleted.HasValue) values.Add(new("finish_date", item.DateCompleted.Value.ToString("yyyy-MM-dd")));
+        int scoreVal = int.TryParse(item.Score, out int s) && s > 0 ? s : 0;
+        values.Add(new("score", scoreVal.ToString()));
+        values.Add(new("notes", item.Notes ?? string.Empty));
+        values.Add(new("start_date", item.DateStarted.HasValue ? item.DateStarted.Value.ToString("yyyy-MM-dd") : string.Empty));
+        values.Add(new("finish_date", item.DateCompleted.HasValue ? item.DateCompleted.Value.ToString("yyyy-MM-dd") : string.Empty));
 
         var endpoint = isManga ? $"manga/{item.Id}/my_list_status" : $"anime/{item.Id}/my_list_status";
         return await SendPatchAsync(endpoint, values, ct);
@@ -44,12 +45,16 @@ public partial class MalApiService
 
     public async Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
     {
-        // MAL returns 404 if the anime is already not on the list — treat as Success so
-        // a redundant Remove doesn't get queued forever after the user deleted it via web.
-        var outcome = await SendRequestAsync(
+        var statusCode = await SendRequestRawAsync(
             () => new HttpRequestMessage(HttpMethod.Delete, MalBaseUrl + $"anime/{animeId}/my_list_status"),
             ct);
-        return outcome == SyncOutcome.PermanentFailure ? SyncOutcome.Success : outcome;
+
+        if (statusCode is null) return SyncOutcome.TransientFailure;
+        if ((int)statusCode.Value >= 200 && (int)statusCode.Value < 300) return SyncOutcome.Success;
+        if (statusCode.Value == System.Net.HttpStatusCode.NotFound) return SyncOutcome.Success;
+        if ((int)statusCode.Value >= 500 || statusCode.Value == System.Net.HttpStatusCode.RequestTimeout || statusCode.Value == System.Net.HttpStatusCode.TooManyRequests)
+            return SyncOutcome.TransientFailure;
+        return SyncOutcome.PermanentFailure;
     }
 
     public async Task<SyncOutcome> UpdateMangaProgressAsync(int mangaId, int chapters, int? volumes = null, UserAnimeStatus? status = null, int? score = null, CancellationToken ct = default)

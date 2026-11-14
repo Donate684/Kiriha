@@ -23,8 +23,8 @@ public interface IUserAnimeRepository
     Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null, CancellationToken ct = default);
     Task UpdateScoreAsync(AnimeEntity item, string score, CancellationToken ct = default);
     Task UpdateMetadataAsync(AnimeEntity item, CancellationToken ct = default);
-    Task<AnimeEntity?> GetByIdAsync(int id, CancellationToken ct = default);
-    Task DeleteAsync(int id, CancellationToken ct = default);
+    Task<AnimeEntity?> GetByIdAsync(int id, MediaKind kind = MediaKind.Anime, CancellationToken ct = default);
+    Task DeleteAsync(int id, MediaKind kind = MediaKind.Anime, CancellationToken ct = default);
 
     /// <summary>
     /// Mirrors a remote tracker snapshot into the local table: upserts items

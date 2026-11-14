@@ -69,7 +69,6 @@ public partial class AppSettings
             {
                 var mirrorTrackerId = ShikiMirror == ShikiMirror.Net ? TrackerConstants.Ids.ShikiFork : TrackerConstants.Ids.ShikiOrig;
                 return (Accounts.FirstOrDefault(a => a.TrackerId == mirrorTrackerId && a.IsEnabled)?.Tokens as ShikiTokens)
-                    ?? (Accounts.FirstOrDefault(a => (a.TrackerId == TrackerConstants.Ids.ShikiOrig || a.TrackerId == TrackerConstants.Ids.ShikiFork) && a.IsEnabled)?.Tokens as ShikiTokens)
                     ?? LegacyShiki;
             }
             set
@@ -79,8 +78,7 @@ public partial class AppSettings
                     ? TrackerConstants.Ids.ShikiFork
                     : TrackerConstants.Ids.ShikiOrig;
 
-                var acc = Accounts.FirstOrDefault(a => a.TrackerId == mirrorTrackerId)
-                       ?? Accounts.FirstOrDefault(a => a.TrackerId == TrackerConstants.Ids.ShikiOrig || a.TrackerId == TrackerConstants.Ids.ShikiFork);
+                var acc = Accounts.FirstOrDefault(a => a.TrackerId == mirrorTrackerId);
 
                 if (value == null)
                 {
@@ -98,10 +96,6 @@ public partial class AppSettings
                             IsMirror = true
                         };
                         Accounts.Add(acc);
-                    }
-                    else
-                    {
-                        acc.TrackerId = mirrorTrackerId;
                     }
                     acc.Tokens = value;
                     acc.IsEnabled = true;

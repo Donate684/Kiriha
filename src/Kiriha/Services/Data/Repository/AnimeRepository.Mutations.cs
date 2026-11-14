@@ -8,7 +8,12 @@ public partial class AnimeRepository
     private static readonly TimeSpan RecentDeleteExpiryDelay = TimeSpan.FromSeconds(60);
     public bool IsRecentlyDeleted(int animeId)
     {
-        lock (_recentlyDeletedLock) return _recentlyDeletedIds.ContainsKey(animeId);
+        lock (_recentlyDeletedLock) return _recentlyDeletedIds.Keys.Any(k => k.Id == animeId);
+    }
+
+    public bool IsRecentlyDeleted(int animeId, MediaKind kind)
+    {
+        lock (_recentlyDeletedLock) return _recentlyDeletedIds.ContainsKey((animeId, kind));
     }
 
 
@@ -23,60 +28,54 @@ public partial class AnimeRepository
         if (item.Status == UserAnimeStatus.None)
         {
             Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Item has Status None (Id: {Id}). Ensuring it is removed from list.", item.Id);
-            await RemoveAnimeLocalAsync(item.Id);
+            await RemoveAnimeLocalAsync(item.Id, item.MediaKind);
             return;
         }
 
+        var key = (item.Id, item.MediaKind);
         lock (_recentlyDeletedLock)
         {
-            if (_recentlyDeletedIds.TryGetValue(item.Id, out var cts))
+            if (_recentlyDeletedIds.TryGetValue(key, out var cts))
             {
                 try { cts.Cancel(); } catch (ObjectDisposedException) { }
-                _recentlyDeletedIds.Remove(item.Id);
+                _recentlyDeletedIds.Remove(key);
             }
         }
 
         var existing = await _uiDispatcher.InvokeAsync(() =>
         {
-            _idIndex.TryGetValue(item.Id, out var found);
+            _idIndex.TryGetValue(key, out var found);
             if (found != null)
             {
                 if (!ReferenceEquals(item, found))
                 {
-                    item.PreserveUserFieldsFrom(found);
                     item.CopyTo(found);
                 }
             }
             else
             {
                 Collection.Add(item);
-                _idIndex[item.Id] = item;
+                _idIndex[key] = item;
             }
             return found;
         });
 
-        if (existing == null)
-        {
-            var dbExisting = await _userAnimeRepo.GetByIdAsync(item.Id);
-            if (dbExisting != null)
-            {
-                item.PreserveUserFieldsFrom(dbExisting);
-            }
-        }
-
         await _userAnimeRepo.UpdateAsync(existing ?? item);
     }
 
-    public async Task RemoveAnimeLocalAsync(int animeId)
+    public Task RemoveAnimeLocalAsync(int animeId) => RemoveAnimeLocalAsync(animeId, MediaKind.Anime);
+
+    public async Task RemoveAnimeLocalAsync(int animeId, MediaKind kind)
     {
+        var key = (animeId, kind);
         var newCts = new CancellationTokenSource();
         lock (_recentlyDeletedLock)
         {
-            if (_recentlyDeletedIds.TryGetValue(animeId, out var oldCts))
+            if (_recentlyDeletedIds.TryGetValue(key, out var oldCts))
             {
                 try { oldCts.Cancel(); } catch (ObjectDisposedException) { }
             }
-            _recentlyDeletedIds[animeId] = newCts;
+            _recentlyDeletedIds[key] = newCts;
         }
 
         _ = _backgroundTasks.Run("AnimeRepository.RecentDeleteExpiry", async ct =>
@@ -91,9 +90,9 @@ public partial class AnimeRepository
             {
                 lock (_recentlyDeletedLock)
                 {
-                    if (_recentlyDeletedIds.TryGetValue(animeId, out var currentCts) && currentCts == newCts)
+                    if (_recentlyDeletedIds.TryGetValue(key, out var currentCts) && currentCts == newCts)
                     {
-                        _recentlyDeletedIds.Remove(animeId);
+                        _recentlyDeletedIds.Remove(key);
                     }
                 }
                 newCts.Dispose();
@@ -102,13 +101,13 @@ public partial class AnimeRepository
 
         await _uiDispatcher.InvokeAsync(() =>
         {
-            if (_idIndex.TryGetValue(animeId, out var item))
+            if (_idIndex.TryGetValue(key, out var item))
             {
                 Collection.Remove(item);
-                _idIndex.Remove(animeId);
+                _idIndex.Remove(key);
             }
         });
 
-        await _userAnimeRepo.DeleteAsync(animeId);
+        await _userAnimeRepo.DeleteAsync(animeId, kind);
     }
 }

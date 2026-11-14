@@ -9,7 +9,7 @@ public sealed partial class UserAnimeRepository
 {
     public async Task SyncFromRemoteAsync(IEnumerable<AnimeEntity> items, MediaKind[]? syncKinds = null, CancellationToken ct = default)
     {
-        var incomingItems = items.DistinctBy(x => x.Id).ToList(); // materialize and deduplicate to avoid multiple evaluations and UNIQUE violations
+        var incomingItems = items.DistinctBy(x => (x.Id, x.MediaKind)).ToList(); // materialize and deduplicate to avoid multiple evaluations and UNIQUE violations
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
 
@@ -47,8 +47,8 @@ public sealed partial class UserAnimeRepository
             var reconciliation = CollectionReconciliation.Reconcile(
                 existingItems,
                 incomingItems,
-                x => x.Id,
-                x => x.Id);
+                x => (x.Id, x.MediaKind),
+                x => (x.Id, x.MediaKind));
 
             if (reconciliation.LocalOnly.Count > 0)
             {
@@ -59,35 +59,33 @@ public sealed partial class UserAnimeRepository
 
             foreach (var (existing, item) in reconciliation.Matched)
             {
+                var localPoster = existing.LocalPosterPath;
+                var russianTitle = existing.RussianTitle;
+                var russianSynopsis = existing.RussianSynopsis;
+                var nextEpisodeAt = existing.NextEpisodeAt;
+                var lastEpisodesSync = existing.LastEpisodesSync;
+                var totalEpisodes = existing.TotalEpisodes;
+
                 context.Entry(existing).CurrentValues.SetValues(item);
+
+                if (string.IsNullOrEmpty(item.LocalPosterPath) && !string.IsNullOrEmpty(localPoster))
+                    existing.LocalPosterPath = localPoster;
+                if (string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(russianTitle))
+                    existing.RussianTitle = russianTitle;
+                if (string.IsNullOrEmpty(item.RussianSynopsis) && !string.IsNullOrEmpty(russianSynopsis))
+                    existing.RussianSynopsis = russianSynopsis;
+                if (!item.NextEpisodeAt.HasValue && nextEpisodeAt.HasValue)
+                    existing.NextEpisodeAt = nextEpisodeAt;
+                if (!item.LastEpisodesSync.HasValue && lastEpisodesSync.HasValue)
+                    existing.LastEpisodesSync = lastEpisodesSync;
+                if (item.TotalEpisodes <= 0 && totalEpisodes > 0)
+                    existing.TotalEpisodes = totalEpisodes;
             }
 
             if (reconciliation.RemoteOnly.Count > 0)
             {
-                var distinctRemote = reconciliation.RemoteOnly.DistinctBy(x => x.Id).ToList();
-                var remoteIds = distinctRemote.Select(x => x.Id).ToList();
-                var existingAnyKind = await context.UserAnime
-                    .AsTracking()
-                    .Where(x => remoteIds.Contains(x.Id))
-                    .ToDictionaryAsync(x => x.Id, ct);
-
-                var toAdd = new List<AnimeEntity>();
-                foreach (var item in distinctRemote)
-                {
-                    if (existingAnyKind.TryGetValue(item.Id, out var existingRow))
-                    {
-                        context.Entry(existingRow).CurrentValues.SetValues(item);
-                    }
-                    else
-                    {
-                        toAdd.Add(item);
-                    }
-                }
-
-                if (toAdd.Count > 0)
-                {
-                    context.UserAnime.AddRange(toAdd);
-                }
+                var distinctRemote = reconciliation.RemoteOnly.DistinctBy(x => (x.Id, x.MediaKind)).ToList();
+                context.UserAnime.AddRange(distinctRemote);
             }
 
             await context.SaveChangesAsync(ct);
@@ -98,6 +96,7 @@ public sealed partial class UserAnimeRepository
         {
             await transaction.RollbackAsync(ct);
             Log.Error(ex, "Failed to sync anime list to EF Core database");
+            throw;
         }
     }
 }

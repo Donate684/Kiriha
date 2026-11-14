@@ -120,6 +120,7 @@ public static class StatusMapper
     public static string? ToAniList(UserAnimeStatus? status, bool isRewatching = false)
     {
         if (status is null || status == UserAnimeStatus.None) return null;
+        if (status == UserAnimeStatus.Completed) return "COMPLETED";
         if (isRewatching) return "REPEATING";
         return status switch
         {

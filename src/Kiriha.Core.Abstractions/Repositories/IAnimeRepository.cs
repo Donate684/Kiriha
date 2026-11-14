@@ -11,6 +11,7 @@ public interface IAnimeRepository
     IEnumerable<AnimeEntity> GetCollection();
     
     bool IsRecentlyDeleted(int animeId);
+    bool IsRecentlyDeleted(int animeId, MediaKind kind);
     Task AddOrUpdateAnimeAsync(AnimeEntity anime);
     Task<List<AnimeEntity>> GetSnapshotAsync(MediaKind[] kinds);
     Task<IReadOnlyList<AnimeEntity>> GetSnapshotAsync();

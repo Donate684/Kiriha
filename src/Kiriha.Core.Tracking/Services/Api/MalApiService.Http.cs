@@ -11,8 +11,9 @@ public partial class MalApiService
         // Factory — the value collection is captured once, but the HttpRequestMessage
         // is rebuilt per attempt so a 401-retry can re-issue the same logical request
         // without tripping HttpClient's "request already sent" guard.
+        var fullUrl = url.StartsWith("http") ? url : MalBaseUrl + url.TrimStart('/');
         return SendRequestAsync(
-            () => new HttpRequestMessage(new HttpMethod("PATCH"), url) { Content = new FormUrlEncodedContent(values) },
+            () => new HttpRequestMessage(new HttpMethod("PATCH"), fullUrl) { Content = new FormUrlEncodedContent(values) },
             ct);
     }
 
@@ -25,11 +26,11 @@ public partial class MalApiService
     /// disposes the request's content stream after sending, so a second send of
     /// the same instance would throw.
     /// </param>
-    private async Task<SyncOutcome> SendRequestAsync(Func<HttpRequestMessage> requestFactory, CancellationToken ct)
+    private async Task<System.Net.HttpStatusCode?> SendRequestRawAsync(Func<HttpRequestMessage> requestFactory, CancellationToken ct)
     {
         var token = await EnsureValidTokenAsync(ct);
         var statusCode = await SendOnceAsync(requestFactory, token, ct);
-        if (statusCode is null) return SyncOutcome.TransientFailure;
+        if (statusCode is null) return null;
 
         if (statusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -37,16 +38,22 @@ public partial class MalApiService
             // a clock skew. Force a refresh and retry exactly once — looping further
             // would just hammer the auth endpoint with an invalid refresh token.
             Log.Information("MalApiService: 401 on first attempt; forcing token refresh and retrying once");
-            token = await EnsureValidTokenAsync(ct, forceRefresh: true);
+            token = await EnsureValidTokenAsync(ct, forceRefresh: true, failedToken: token);
             if (string.IsNullOrEmpty(token))
             {
                 Log.Warning("MalApiService: 401 retry aborted - token refresh failed");
-                return SyncOutcome.PermanentFailure;
+                return System.Net.HttpStatusCode.Unauthorized;
             }
             statusCode = await SendOnceAsync(requestFactory, token, ct);
-            if (statusCode is null) return SyncOutcome.TransientFailure;
         }
 
+        return statusCode;
+    }
+
+    private async Task<SyncOutcome> SendRequestAsync(Func<HttpRequestMessage> requestFactory, CancellationToken ct)
+    {
+        var statusCode = await SendRequestRawAsync(requestFactory, ct);
+        if (statusCode is null) return SyncOutcome.TransientFailure;
         return MapStatusToOutcome(statusCode.Value);
     }
 
@@ -101,9 +108,9 @@ public partial class MalApiService
         if (!lease.IsAcquired) throw new HttpRequestException("Rate limit queue exceeded.");
     }
 
-    private async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false)
+    private async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false, string? failedToken = null)
     {
-        return await _tokenManager.EnsureValidTokenAsync(ct, forceRefresh);
+        return await _tokenManager.EnsureValidTokenAsync(ct, forceRefresh, failedToken);
     }
 
     private async Task<HttpResponseMessage> GetAsync(string url, CancellationToken ct = default)

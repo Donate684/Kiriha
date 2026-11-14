@@ -12,15 +12,10 @@ public partial class ShikiApiService
 {
     private async Task<int?> GetEffectiveUserIdAsync(CancellationToken ct)
     {
-        var acc = _settingsService.Current.Api.GetAccount(TrackerId);
+        var acc = _settingsService.Current.Api.GetAccount(_boundTrackerId);
         if (acc?.Tokens is ShikiTokens accTokens && accTokens.UserId.HasValue)
         {
             return accTokens.UserId.Value;
-        }
-
-        if (_settingsService.Current.Api.Shiki?.UserId != null)
-        {
-            return _settingsService.Current.Api.Shiki.UserId;
         }
 
         var userId = await GetCurrentUserIdAsync(ct);
@@ -28,14 +23,10 @@ public partial class ShikiApiService
         {
             _settingsService.Update(settings =>
             {
-                var targetAcc = settings.Api.GetAccount(TrackerId);
+                var targetAcc = settings.Api.GetAccount(_boundTrackerId);
                 if (targetAcc?.Tokens is ShikiTokens st)
                 {
                     st.UserId = userId;
-                }
-                if (settings.Api.Shiki != null)
-                {
-                    settings.Api.Shiki.UserId = userId;
                 }
             }, save: false);
             _settingsService.SaveImmediate();
@@ -144,7 +135,7 @@ public partial class ShikiApiService
                         var anime = ShikiMapper.MapRateToAnimeEntity(
                             element,
                             ShikiWebsiteRoot,
-                            (primaryId, shikiId) => _malToShikiMap[primaryId] = shikiId);
+                            (primaryId, shikiId) => _malToShikiMap[(primaryId, targetType)] = shikiId);
 
                         list.Add(anime);
 
@@ -194,7 +185,7 @@ public partial class ShikiApiService
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
 
-        var targetId = ResolveShikiTargetId(animeId);
+        var targetId = ResolveShikiTargetId(animeId, "Anime");
         var userRate = new Dictionary<string, object>
         {
             ["user_id"] = userId.Value,
@@ -205,7 +196,7 @@ public partial class ShikiApiService
 
         var shikiStatus = StatusMapper.ToShiki(status);
         if (!string.IsNullOrEmpty(shikiStatus)) userRate["status"] = shikiStatus;
-        if (score.HasValue && score.Value > 0) userRate["score"] = score.Value;
+        if (score.HasValue) userRate["score"] = score.Value;
         if (isRewatching.HasValue) userRate["is_rewatching"] = isRewatching.Value;
         if (rewatchCount.HasValue) userRate["rewatches"] = rewatchCount.Value;
 
@@ -222,12 +213,13 @@ public partial class ShikiApiService
         if (userId is null) return SyncOutcome.TransientFailure;
 
         bool isManga = item.MediaKind != MediaKind.Anime;
-        var targetId = ResolveShikiTargetId(item.Id);
+        var targetType = isManga ? "Manga" : "Anime";
+        var targetId = ResolveShikiTargetId(item.Id, targetType);
         var userRate = new Dictionary<string, object>
         {
             ["user_id"] = userId.Value,
             ["target_id"] = targetId,
-            ["target_type"] = isManga ? "Manga" : "Anime"
+            ["target_type"] = targetType
         };
 
         if (isManga)
@@ -242,7 +234,9 @@ public partial class ShikiApiService
 
         var shikiStatus = StatusMapper.ToShiki(item.Status);
         if (!string.IsNullOrEmpty(shikiStatus)) userRate["status"] = shikiStatus;
-        if (int.TryParse(item.Score, out var score) && score > 0) userRate["score"] = score;
+        int scoreVal = int.TryParse(item.Score, out var score) && score > 0 ? score : 0;
+        userRate["score"] = scoreVal;
+        userRate["text"] = item.Notes ?? string.Empty;
         userRate["is_rewatching"] = item.IsRewatching;
         userRate["rewatches"] = item.RewatchCount;
 
@@ -258,7 +252,7 @@ public partial class ShikiApiService
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
 
-        var targetId = ResolveShikiTargetId(mangaId);
+        var targetId = ResolveShikiTargetId(mangaId, "Manga");
         var userRate = new Dictionary<string, object>
         {
             ["user_id"] = userId.Value,
@@ -272,7 +266,7 @@ public partial class ShikiApiService
         var shikiStatus = StatusMapper.ToShiki(status);
         if (!string.IsNullOrEmpty(shikiStatus)) userRate["status"] = shikiStatus;
 
-        if (score.HasValue && score.Value > 0) userRate["score"] = score.Value;
+        if (score.HasValue) userRate["score"] = score.Value;
 
         var payload = new { user_rate = userRate };
         return await PostAsync("v2/user_rates", payload, ct);
@@ -286,14 +280,12 @@ public partial class ShikiApiService
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
 
-        var targetId = ResolveShikiTargetId(animeId);
+        var targetId = ResolveShikiTargetId(animeId, "Anime");
 
-        // 1. Check in-memory user_rate map
+        // 1. Check in-memory user_rate map (strictly "Anime_")
         int? userRateId = null;
         if (_userRateMap.TryGetValue($"Anime_{targetId}", out var cachedRateId) ||
-            _userRateMap.TryGetValue($"Anime_{animeId}", out cachedRateId) ||
-            _userRateMap.TryGetValue($"Manga_{targetId}", out cachedRateId) ||
-            _userRateMap.TryGetValue($"Manga_{animeId}", out cachedRateId))
+            _userRateMap.TryGetValue($"Anime_{animeId}", out cachedRateId))
         {
             userRateId = cachedRateId;
         }
@@ -301,18 +293,15 @@ public partial class ShikiApiService
         // 2. Query Shikimori API if not found in memory
         if (userRateId == null)
         {
-            userRateId = await FindUserRateIdAsync(userId.Value, targetId, "Anime", ct);
+            var (foundRateId, success) = await FindUserRateIdAsync(userId.Value, targetId, "Anime", ct);
+            if (!success) return SyncOutcome.TransientFailure;
+            userRateId = foundRateId;
+
             if (userRateId == null && targetId != animeId)
             {
-                userRateId = await FindUserRateIdAsync(userId.Value, animeId, "Anime", ct);
-            }
-            if (userRateId == null)
-            {
-                userRateId = await FindUserRateIdAsync(userId.Value, targetId, "Manga", ct);
-                if (userRateId == null && targetId != animeId)
-                {
-                    userRateId = await FindUserRateIdAsync(userId.Value, animeId, "Manga", ct);
-                }
+                var (altRateId, altSuccess) = await FindUserRateIdAsync(userId.Value, animeId, "Anime", ct);
+                if (!altSuccess) return SyncOutcome.TransientFailure;
+                userRateId = altRateId;
             }
         }
 
@@ -328,14 +317,12 @@ public partial class ShikiApiService
         {
             _userRateMap.TryRemove($"Anime_{targetId}", out _);
             _userRateMap.TryRemove($"Anime_{animeId}", out _);
-            _userRateMap.TryRemove($"Manga_{targetId}", out _);
-            _userRateMap.TryRemove($"Manga_{animeId}", out _);
         }
 
         return outcome;
     }
 
-    private async Task<int?> FindUserRateIdAsync(int userId, int targetId, string targetType, CancellationToken ct)
+    private async Task<(int? RateId, bool Success)> FindUserRateIdAsync(int userId, int targetId, string targetType, CancellationToken ct)
     {
         try
         {
@@ -343,7 +330,9 @@ public partial class ShikiApiService
             using var response = await GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return (null, true);
+                return (null, false);
             }
 
             using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -354,17 +343,17 @@ public partial class ShikiApiService
                 {
                     if (el.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var rateId))
                     {
-                        return rateId;
+                        return (rateId, true);
                     }
                 }
             }
-            return null;
+            return (null, true);
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             Log.Warning(ex, "ShikiApiService ({Tracker}): FindUserRateIdAsync failed for target {TargetId} ({TargetType})", Name, targetId, targetType);
-            return null;
+            return (null, false);
         }
     }
 

@@ -19,7 +19,7 @@ public sealed partial class UserAnimeRepository
         {
             affected = shouldUpdateStatus
                 ? await context.UserAnime
-                    .Where(x => x.Id == item.Id)
+                    .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.Progress, progress)
                         .SetProperty(x => x.ChaptersRead, item.ChaptersRead)
@@ -30,7 +30,7 @@ public sealed partial class UserAnimeRepository
                         .SetProperty(x => x.DateCompleted, item.DateCompleted)
                         .SetProperty(x => x.Status, status!.Value), ct)
                 : await context.UserAnime
-                    .Where(x => x.Id == item.Id)
+                    .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.Progress, progress)
                         .SetProperty(x => x.ChaptersRead, item.ChaptersRead)
@@ -44,7 +44,7 @@ public sealed partial class UserAnimeRepository
         {
             affected = shouldUpdateStatus
                 ? await context.UserAnime
-                    .Where(x => x.Id == item.Id)
+                    .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.Progress, progress)
                         .SetProperty(x => x.IsRewatching, item.IsRewatching)
@@ -53,7 +53,7 @@ public sealed partial class UserAnimeRepository
                         .SetProperty(x => x.DateCompleted, item.DateCompleted)
                         .SetProperty(x => x.Status, status!.Value), ct)
                 : await context.UserAnime
-                    .Where(x => x.Id == item.Id)
+                    .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.Progress, progress)
                         .SetProperty(x => x.IsRewatching, item.IsRewatching)
@@ -75,7 +75,7 @@ public sealed partial class UserAnimeRepository
         using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var affected = await context.UserAnime
-            .Where(x => x.Id == item.Id)
+            .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(x => x.Score, score), ct);
 
@@ -92,7 +92,7 @@ public sealed partial class UserAnimeRepository
 
         var alternativeTitles = new List<string>(item.AlternativeTitles);
         var affected = await context.UserAnime
-            .Where(x => x.Id == item.Id)
+            .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(x => x.Title, item.Title)
                 .SetProperty(x => x.RussianTitle, item.RussianTitle)
@@ -101,6 +101,7 @@ public sealed partial class UserAnimeRepository
                 .SetProperty(x => x.JapaneseTitle, item.JapaneseTitle)
                 .SetProperty(x => x.MainPictureUrl, item.MainPictureUrl)
                 .SetProperty(x => x.LocalPosterPath, item.LocalPosterPath)
+                .SetProperty(x => x.TotalEpisodes, item.TotalEpisodes)
                 .SetProperty(x => x.AlternativeTitles, alternativeTitles), ct);
 
         if (affected == 0)

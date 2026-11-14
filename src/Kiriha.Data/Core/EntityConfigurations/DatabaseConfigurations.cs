@@ -26,7 +26,7 @@ public class AnimeEntityConfiguration : IEntityTypeConfiguration<AnimeEntity>
     public void Configure(EntityTypeBuilder<AnimeEntity> builder)
     {
         builder.ToTable("user_anime");
-        builder.HasKey(e => e.Id);
+        builder.HasKey(e => new { e.Id, e.MediaKind });
         builder.Property(e => e.Id).ValueGeneratedNever();
 
         builder.Property(e => e.MediaKind)

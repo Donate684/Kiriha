@@ -83,7 +83,7 @@ public static class ShikiHttp
                         {
                             using var probeRequest = await CloneRequestAsync(request, target, ct).ConfigureAwait(false);
                             var probeResponse = await client.SendAsync(probeRequest, ct).ConfigureAwait(false);
-                            if (probeResponse.IsSuccessStatusCode || (int)probeResponse.StatusCode < 500)
+                            if (probeResponse.IsSuccessStatusCode)
                             {
                                 resolver.Remember(originalHost, alias);
                                 return probeResponse;
@@ -157,7 +157,7 @@ public static class ShikiHttp
                     using var probeRequest = await CloneRequestAsync(request, target, ct).ConfigureAwait(false);
                     var probeResponse = await client.SendAsync(probeRequest, ct).ConfigureAwait(false);
 
-                    if ((int)probeResponse.StatusCode != 404)
+                    if (probeResponse.IsSuccessStatusCode)
                     {
                         if (resolver.Remember(originalHost, alias))
                         {

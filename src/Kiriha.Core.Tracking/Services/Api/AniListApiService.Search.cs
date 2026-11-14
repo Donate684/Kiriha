@@ -54,7 +54,7 @@ public partial class AniListApiService
                     var item = AniListMapper.MapMediaToAnimeEntity(media);
                     if (media.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var aniId))
                     {
-                        _malToAniListMap[item.Id] = aniId;
+                        _malToAniListMap[(item.Id, "ANIME")] = aniId;
                     }
                     list.Add(item);
                 }
@@ -109,7 +109,7 @@ public partial class AniListApiService
                 var item = AniListMapper.MapMediaToAnimeEntity(media);
                 if (media.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var aniId))
                 {
-                    _malToAniListMap[item.Id] = aniId;
+                    _malToAniListMap[(item.Id, "ANIME")] = aniId;
                 }
                 return item;
             }
@@ -168,7 +168,7 @@ public partial class AniListApiService
                     var item = AniListMapper.MapMediaToAnimeEntity(media);
                     if (media.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var aniId))
                     {
-                        _malToAniListMap[item.Id] = aniId;
+                        _malToAniListMap[(item.Id, "MANGA")] = aniId;
                     }
                     list.Add(item);
                 }
@@ -220,7 +220,7 @@ public partial class AniListApiService
                 var item = AniListMapper.MapMediaToAnimeEntity(media);
                 if (media.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var aniId))
                 {
-                    _malToAniListMap[item.Id] = aniId;
+                    _malToAniListMap[(item.Id, "MANGA")] = aniId;
                 }
                 return item;
             }

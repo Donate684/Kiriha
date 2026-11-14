@@ -15,7 +15,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261007185002_InitialCreate_v16";
+    public override string LastMigrationId => "20261114000000_UserAnimeCompositeKey";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -274,7 +274,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("INTEGER")
                     .HasColumnName("volumes_read");
 
-                b.HasKey("Id");
+                b.HasKey("Id", "MediaKind");
 
                 b.HasIndex("RussianTitle")
                     .HasDatabaseName("idx_user_anime_russian_title");

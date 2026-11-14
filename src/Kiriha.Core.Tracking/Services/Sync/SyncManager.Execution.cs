@@ -32,6 +32,11 @@ public partial class SyncManager
                             await HandleTaskFailureAsync(task);
                         }
                     }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                    {
+                        // Clean shutdown: do not call HandleTaskFailureAsync, break out preserving task
+                        break;
+                    }
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Error processing sync task {Id}", task.Id);
@@ -58,14 +63,15 @@ public partial class SyncManager
                 return (true, false);
             }
 
-            // Optimization: If a newer FULL update is pending, we can skip this task.
-            // BUT: If this is a FullUpdate and the latest is just a Progress update, we SHOULD NOT skip,
-            // because the FullUpdate might contain data (notes/dates) that Progress update doesn't have.
+            if (task.Type == SyncTaskType.Remove)
+            {
+                // User re-added or updated this anime after deleting it earlier.
+                // The earlier delayed Remove task must NOT run because it would delete the re-added title.
+                Log.Information("SyncManager: Skipping outdated Remove task {TaskId} for Anime {AnimeId} because newer task {LatestId} ({LatestType}) exists.", task.Id, task.AnimeId, latest.Id, latest.Type);
+                return (true, false);
+            }
 
-            // We only skip if the newer task is of the same or "broader" type.
-            // In our case, FullUpdate is the broadest. Remove must always run - it's the
-            // user-facing intent and skipping it would silently keep the entry on the tracker.
-            if (task.Type != SyncTaskType.FullUpdate && task.Type != SyncTaskType.Remove)
+            if (latest.Type == SyncTaskType.FullUpdate || task.Type != SyncTaskType.FullUpdate)
             {
                 Log.Information("SyncManager: Skipping outdated task {TaskId} for Anime {AnimeId} because newer task {LatestId} is pending.", task.Id, task.AnimeId, latest.Id);
                 if (task.Progress.HasValue)
@@ -153,6 +159,10 @@ public partial class SyncManager
                 }
 
                 Log.Information("{Tracker} sync for {Id}: {Outcome}", tracker.Name, task.AnimeId, outcome);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {

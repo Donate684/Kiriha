@@ -23,7 +23,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
     private readonly HttpClient _httpClient;
     private readonly IHttpCacheRepository _cache;
     private readonly ISettingsService _settingsService;
-    private readonly ConcurrentDictionary<int, int> _malToAniListMap = new();
+    private readonly ConcurrentDictionary<(int MalId, string MediaType), int> _malToAniListMap = new();
 
     private readonly RateLimiter _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
     {
@@ -90,12 +90,23 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
 
         var stream = await response.Content.ReadAsStreamAsync(ct);
-        return await JsonDocument.ParseAsync(stream, default, ct);
+        var doc = await JsonDocument.ParseAsync(stream, default, ct);
+        if (doc.RootElement.TryGetProperty("errors", out var errors) &&
+            (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind == JsonValueKind.Null))
+        {
+            Log.Warning("AniList: GraphQL returned error payload: {Errors}", errors.ToString());
+            return null;
+        }
+        return doc;
     }
 
-    private async Task<int?> ResolveAniListMediaIdAsync(int malId, string mediaType = "ANIME", CancellationToken ct = default)
+    internal async Task<(int? MediaId, SyncOutcome Outcome)> ResolveAniListMediaIdAsync(
+        int malId,
+        string mediaType = "ANIME",
+        CancellationToken ct = default)
     {
-        if (_malToAniListMap.TryGetValue(malId, out var cachedId)) return cachedId;
+        if (_malToAniListMap.TryGetValue((malId, mediaType), out var cachedId))
+            return (cachedId, SyncOutcome.Success);
 
         const string query = """
         query ($malId: Int, $type: MediaType) {
@@ -106,26 +117,68 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
         """;
 
+        using var lease = await _rateLimiter.AcquireAsync(1, ct);
+
+        var payload = new { query, variables = new { malId, type = mediaType } };
+        using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Add("User-Agent", AppInfo.UserAgent);
+
+        var token = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
+        if (!string.IsNullOrEmpty(token))
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         try
         {
-            using var doc = await ExecuteGraphQlAsync(query, new { malId, type = mediaType }, ct);
-            if (doc != null &&
-                doc.RootElement.TryGetProperty("data", out var data) &&
-                data.TryGetProperty("Media", out var media) &&
-                media.ValueKind == JsonValueKind.Object &&
-                media.TryGetProperty("id", out var idProp) &&
-                idProp.TryGetInt32(out var aniListId))
+            using var response = await _httpClient.SendAsync(request, ct);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                _malToAniListMap[malId] = aniListId;
-                return aniListId;
+                Log.Warning("AniList: Media not found for MAL {MalId} (404)", malId);
+                return (null, SyncOutcome.PermanentFailure);
             }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Log.Warning("AniList: GraphQL returned {StatusCode} for MAL {MalId}", response.StatusCode, malId);
+                return (null, SyncOutcome.TransientFailure);
+            }
+
+            using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var doc = await JsonDocument.ParseAsync(stream, default, ct);
+
+            if (doc != null)
+            {
+                if (doc.RootElement.TryGetProperty("errors", out _) &&
+                    (!doc.RootElement.TryGetProperty("data", out var d) || d.ValueKind == JsonValueKind.Null))
+                {
+                    Log.Warning("AniList: GraphQL error resolving media for MAL {MalId}", malId);
+                    return (null, SyncOutcome.PermanentFailure);
+                }
+
+                if (doc.RootElement.TryGetProperty("data", out var data) &&
+                    data.TryGetProperty("Media", out var media) &&
+                    media.ValueKind == JsonValueKind.Object &&
+                    media.TryGetProperty("id", out var idProp) &&
+                    idProp.TryGetInt32(out var aniListId))
+                {
+                    _malToAniListMap[(malId, mediaType)] = aniListId;
+                    return (aniListId, SyncOutcome.Success);
+                }
+            }
+
+            return (null, SyncOutcome.PermanentFailure);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "AniList: failed to resolve mediaId for MAL {MalId}", malId);
+            Log.Warning(ex, "AniList: Network error resolving mediaId for MAL {MalId}", malId);
+            return (null, SyncOutcome.TransientFailure);
         }
-
-        return malId;
     }
 
     public async Task<AniListAiringInfo?> GetNextAiringAsync(int malId, bool force = false, CancellationToken ct = default)

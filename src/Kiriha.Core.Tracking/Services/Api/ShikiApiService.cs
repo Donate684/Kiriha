@@ -23,6 +23,7 @@ public partial class ShikiApiService : IShikiApiService
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiRateLimiter _rateLimiter;
     private readonly ShikiMirror? _fixedMirror;
+    private readonly string _boundTrackerId;
 
     public string Name => _fixedMirror switch
     {
@@ -52,7 +53,7 @@ public partial class ShikiApiService : IShikiApiService
     private ShikiMirror EffectiveMirror => _fixedMirror ?? _settingsService.Current.Api.ShikiMirror;
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(EffectiveMirror);
 
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<int, int> _malToShikiMap = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(int PrimaryId, string TargetType), int> _malToShikiMap = new();
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _posterMemoryCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _userRateMap = new(StringComparer.OrdinalIgnoreCase);
 
@@ -78,9 +79,9 @@ public partial class ShikiApiService : IShikiApiService
         }
     }
 
-    private int ResolveShikiTargetId(int animeId)
+    private int ResolveShikiTargetId(int primaryId, string targetType = "Anime")
     {
-        return _malToShikiMap.TryGetValue(animeId, out var mapped) ? mapped : animeId;
+        return _malToShikiMap.TryGetValue((primaryId, targetType), out var mapped) ? mapped : primaryId;
     }
 
 
@@ -99,6 +100,14 @@ public partial class ShikiApiService : IShikiApiService
         _hostResolver = hostResolver;
         _rateLimiter = rateLimiter ?? new ShikiRateLimiter();
         _fixedMirror = fixedMirror;
+        _boundTrackerId = fixedMirror switch
+        {
+            ShikiMirror.Net => TrackerConstants.Ids.ShikiFork,
+            ShikiMirror.One => TrackerConstants.Ids.ShikiOrig,
+            _ => (_fixedMirror ?? _settingsService.Current.Api.ShikiMirror) == ShikiMirror.Net
+                ? TrackerConstants.Ids.ShikiFork
+                : TrackerConstants.Ids.ShikiOrig
+        };
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,
@@ -189,6 +198,7 @@ public partial class ShikiApiService : IShikiApiService
 
     private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, CancellationToken ct)
     {
+        await _rateLimiter.ThrottleAsync(ct);
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
         var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
         if (!string.IsNullOrEmpty(token))

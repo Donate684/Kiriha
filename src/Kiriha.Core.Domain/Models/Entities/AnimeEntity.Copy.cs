@@ -17,10 +17,10 @@ public partial class AnimeEntity
     public void CopyTo(AnimeEntity target)
     {
         target.Title = Title;
-        target.RussianTitle = RussianTitle;
+        if (!string.IsNullOrEmpty(RussianTitle)) target.RussianTitle = RussianTitle;
         target.Status = Status;
         target.Progress = Progress;
-        target.TotalEpisodes = TotalEpisodes;
+        if (TotalEpisodes > 0 || target.TotalEpisodes <= 0) target.TotalEpisodes = TotalEpisodes;
         target.Score = Score;
         target.Type = Type;
         target.MediaKind = MediaKind;
@@ -28,8 +28,8 @@ public partial class AnimeEntity
         target.Volumes = Volumes;
         target.ChaptersRead = ChaptersRead;
         target.VolumesRead = VolumesRead;
-        target.Synopsis = Synopsis;
-        target.RussianSynopsis = RussianSynopsis;
+        if (!string.IsNullOrEmpty(Synopsis) || string.IsNullOrEmpty(target.Synopsis)) target.Synopsis = Synopsis;
+        if (!string.IsNullOrEmpty(RussianSynopsis)) target.RussianSynopsis = RussianSynopsis;
         if (!string.IsNullOrEmpty(MainPictureUrl) && !IsMissingPosterUrl(MainPictureUrl))
         {
             target.MainPictureUrl = MainPictureUrl;
@@ -61,7 +61,7 @@ public partial class AnimeEntity
         target.DateCompleted = DateCompleted;
         target.BroadcastDay = BroadcastDay;
         target.BroadcastTime = BroadcastTime;
-        target.LastEpisodesSync = LastEpisodesSync;
+        if (LastEpisodesSync.HasValue) target.LastEpisodesSync = LastEpisodesSync;
 
         if (AiredSourcePriority >= target.AiredSourcePriority || EpisodesAired > target.EpisodesAired)
         {
@@ -88,7 +88,9 @@ public partial class AnimeEntity
     [System.Text.Json.Serialization.JsonIgnore]
     public bool IsMissingDetails =>
         string.IsNullOrEmpty(StatusDetailed) ||
-        (Genres.Count == 0 && Studios.Count == 0);
+        (MediaKind == MediaKind.Anime
+            ? (Genres.Count == 0 && Studios.Count == 0)
+            : Genres.Count == 0);
 
     /// <summary>
     /// Merges full metadata from a fully-populated entity into this instance,

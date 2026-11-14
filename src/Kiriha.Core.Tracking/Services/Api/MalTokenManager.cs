@@ -18,7 +18,7 @@ public class MalTokenManager : IDisposable
         _authService = authService;
     }
 
-    public async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false)
+    public async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false, string? failedToken = null)
     {
         var tokens = _settingsService.Current.Api.Mal;
         if (tokens is null) return null;
@@ -29,7 +29,13 @@ public class MalTokenManager : IDisposable
         {
             tokens = _settingsService.Current.Api.Mal;
             if (tokens is null) return null;
-            if (!forceRefresh && !tokens.IsExpired) return tokens.AccessToken;
+
+            // If another thread already refreshed the token while we were waiting for the lock,
+            // we can use the freshly obtained token if it is not expired and differs from the failed token.
+            if (!tokens.IsExpired && (failedToken != null ? tokens.AccessToken != failedToken : !forceRefresh))
+            {
+                return tokens.AccessToken;
+            }
 
             var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);
             if (newTokens != null)

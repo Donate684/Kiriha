@@ -48,7 +48,7 @@ public class ImageCacheCleanup
                 {
                     if (!activeSet.Contains(file.Name.ToLowerInvariant()))
                     {
-                        if (file.LastWriteTime < threshold)
+                        if (file.LastWriteTimeUtc < threshold)
                         {
                             try
                             {

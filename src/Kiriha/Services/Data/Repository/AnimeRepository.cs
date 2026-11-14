@@ -18,9 +18,9 @@ public partial class AnimeRepository : IAnimeRepository
 
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted;
-    private readonly Dictionary<int, CancellationTokenSource> _recentlyDeletedIds = new();
+    private readonly Dictionary<(int Id, MediaKind Kind), CancellationTokenSource> _recentlyDeletedIds = new();
     private readonly Lock _recentlyDeletedLock = new();
-    private readonly Dictionary<int, AnimeEntity> _idIndex = new();
+    private readonly Dictionary<(int Id, MediaKind Kind), AnimeEntity> _idIndex = new();
 
     public Task InitializationTask => _initTcs.Task;
     public bool IsInitializing => Volatile.Read(ref _initStarted) == 1 && !_initTcs.Task.IsCompleted;
@@ -82,7 +82,7 @@ public partial class AnimeRepository : IAnimeRepository
                 foreach (var item in toRemove)
                 {
                     Collection.Remove(item);
-                    _idIndex.Remove(item.Id);
+                    _idIndex.Remove((item.Id, item.MediaKind));
                 }
             });
         }
@@ -104,13 +104,13 @@ public partial class AnimeRepository : IAnimeRepository
 
     public void AddToCollection(AnimeEntity item)
     {
-        if (_idIndex.TryGetValue(item.Id, out var existing))
+        if (_idIndex.TryGetValue((item.Id, item.MediaKind), out var existing))
         {
             item.CopyTo(existing);
             return;
         }
 
         Collection.Add(item);
-        _idIndex[item.Id] = item;
+        _idIndex[(item.Id, item.MediaKind)] = item;
     }
 }
