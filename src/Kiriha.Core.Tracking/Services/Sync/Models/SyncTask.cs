@@ -13,6 +13,7 @@ public class SyncTask
 {
     public int Id { get; set; }
     public int AnimeId { get; set; }
+    public MediaKind MediaKind { get; set; } = MediaKind.Anime;
     public SyncTaskType Type { get; set; }
     public int? Progress { get; set; }
     public UserAnimeStatus? Status { get; set; }

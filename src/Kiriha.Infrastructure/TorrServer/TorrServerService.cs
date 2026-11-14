@@ -70,7 +70,7 @@ public sealed class TorrServerService : ITorrServerService
             {
                 Logger.Information("TorrServerService: External TorrServer detected at {Url}", ServerUrl);
                 IsRunning = true;
-                await ApplyMemorySettingsAsync(ct).ConfigureAwait(false);
+                await ApplyMemorySettingsAsync(ct, isExternalInstance: true).ConfigureAwait(false);
                 return true;
             }
 
@@ -131,7 +131,7 @@ public sealed class TorrServerService : ITorrServerService
                 {
                     IsRunning = true;
                     Logger.Information("TorrServerService: Local TorrServer started successfully");
-                    await ApplyMemorySettingsAsync(ct).ConfigureAwait(false);
+                    await ApplyMemorySettingsAsync(ct, isExternalInstance: false).ConfigureAwait(false);
                     return true;
                 }
 
@@ -173,10 +173,16 @@ public sealed class TorrServerService : ITorrServerService
         }
     }
 
-    private async Task ApplyMemorySettingsAsync(CancellationToken ct)
+    private async Task ApplyMemorySettingsAsync(CancellationToken ct, bool isExternalInstance = false)
     {
         try
         {
+            if (isExternalInstance && await HasActiveTorrentsAsync(ct).ConfigureAwait(false))
+            {
+                Logger.Debug("TorrServerService: Active torrents detected on running TorrServer instance. Skipping settings reset.");
+                return;
+            }
+
             var cacheMb = Math.Clamp(_settingsService.Current.Torrents.Streaming.RamCacheMb, 50, 2048);
             long cacheBytes = (long)cacheMb * 1024L * 1024L;
 
@@ -196,16 +202,17 @@ public sealed class TorrServerService : ITorrServerService
 
             if (setsObj != null)
             {
-                var currentCache = setsObj["CacheSize"]?.GetValue<long>() ?? 0L;
-                var currentUseDisk = setsObj["UseDisk"]?.GetValue<bool>() ?? true;
-                var currentRemoveOnDrop = setsObj["RemoveCacheOnDrop"]?.GetValue<bool>() ?? false;
-                var currentTrackers = setsObj["DefaultTrackers"]?.GetValue<string>() ?? string.Empty;
+                var currentCache = ReadInt64(setsObj["CacheSize"], 0L);
+                var currentUseDisk = ReadBoolean(setsObj["UseDisk"], true);
+                var currentRemoveOnDrop = ReadBoolean(setsObj["RemoveCacheOnDrop"], false);
+                var currentTrackers = ReadString(setsObj["DefaultTrackers"], string.Empty);
 
                 bool hasTrackers = !string.IsNullOrWhiteSpace(currentTrackers) && currentTrackers.Contains("nyaa.tracker.wf", StringComparison.OrdinalIgnoreCase);
 
-                // If already configured as requested and trackers are present, DO NOT call action: "set".
+                // If attaching to an already running RAM-configured server, or if settings already match, DO NOT call action: "set".
                 // Calling "set" causes TorrServer to drop all torrents, disconnect all peers, and restart its BitTorrent client.
-                if (currentCache == cacheBytes && !currentUseDisk && currentRemoveOnDrop && hasTrackers)
+                if ((isExternalInstance && !currentUseDisk) ||
+                    (currentCache == cacheBytes && !currentUseDisk && currentRemoveOnDrop && hasTrackers))
                 {
                     Logger.Debug("TorrServerService: Settings already match RAM streaming requirements. Preserving active client session.");
                     return;
@@ -227,6 +234,11 @@ public sealed class TorrServerService : ITorrServerService
                 {
                     setsObj["DefaultTrackers"] = $"{AppConstants.Torrents.DefaultPublicTrackers}\n{currentTrackers}";
                 }
+            }
+            else if (isExternalInstance)
+            {
+                Logger.Debug("TorrServerService: Skipping blind settings override on external TorrServer instance.");
+                return;
             }
             else
             {
@@ -263,6 +275,23 @@ public sealed class TorrServerService : ITorrServerService
         }
     }
 
+    private async Task<bool> HasActiveTorrentsAsync(CancellationToken ct)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", new { action = "list" }, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            var array = await response.Content.ReadFromJsonAsync<JsonArray>(cancellationToken: ct).ConfigureAwait(false);
+            return array is { Count: > 0 };
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public async Task<TorrServerTorrentStatus?> AddTorrentAsync(string link, string title, CancellationToken ct = default)
     {
         if (!await EnsureRunningAsync(ct).ConfigureAwait(false))
@@ -296,7 +325,7 @@ public sealed class TorrServerService : ITorrServerService
             if (json == null)
                 return null;
 
-            var hash = json["hash"]?.GetValue<string>() ?? string.Empty;
+            var hash = ReadString(json["hash"], string.Empty);
             return await GetTorrentAsync(hash, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -329,9 +358,9 @@ public sealed class TorrServerService : ITorrServerService
                 {
                     if (node is JsonObject fileObj)
                     {
-                        var id = fileObj["id"]?.GetValue<int>() ?? 0;
-                        var path = fileObj["path"]?.GetValue<string>() ?? string.Empty;
-                        var length = fileObj["length"]?.GetValue<long>() ?? 0L;
+                        var id = ReadInt32(fileObj["id"], 0);
+                        var path = ReadString(fileObj["path"], string.Empty);
+                        var length = ReadInt64(fileObj["length"], 0L);
                         files.Add(new TorrServerFileItem
                         {
                             Id = id,
@@ -344,18 +373,18 @@ public sealed class TorrServerService : ITorrServerService
 
             return new TorrServerTorrentStatus
             {
-                Hash = json["hash"]?.GetValue<string>() ?? hash,
-                Title = json["title"]?.GetValue<string>() ?? string.Empty,
-                StatString = json["stat_string"]?.GetValue<string>() ?? string.Empty,
-                Stat = json["stat"]?.GetValue<int>() ?? 0,
-                TorrentSize = json["torrent_size"]?.GetValue<long>() ?? 0L,
-                DownloadSpeed = json["download_speed"]?.GetValue<double>() ?? 0.0,
-                UploadSpeed = json["upload_speed"]?.GetValue<double>() ?? 0.0,
-                TotalPeers = json["total_peers"]?.GetValue<int>() ?? 0,
-                ActivePeers = json["active_peers"]?.GetValue<int>() ?? 0,
-                ConnectedSeeders = json["connected_seeders"]?.GetValue<int>() ?? 0,
-                PreloadSize = json["preload_size"]?.GetValue<long>() ?? 0L,
-                PreloadedBytes = json["preloaded_bytes"]?.GetValue<long>() ?? 0L,
+                Hash = ReadString(json["hash"], hash),
+                Title = ReadString(json["title"], string.Empty),
+                StatString = ReadString(json["stat_string"], string.Empty),
+                Stat = ReadInt32(json["stat"], 0),
+                TorrentSize = ReadInt64(json["torrent_size"], 0L),
+                DownloadSpeed = ReadDouble(json["download_speed"], 0.0),
+                UploadSpeed = ReadDouble(json["upload_speed"], 0.0),
+                TotalPeers = ReadInt32(json["total_peers"], 0),
+                ActivePeers = ReadInt32(json["active_peers"], 0),
+                ConnectedSeeders = ReadInt32(json["connected_seeders"], 0),
+                PreloadSize = ReadInt64(json["preload_size"], 0L),
+                PreloadedBytes = ReadInt64(json["preloaded_bytes"], 0L),
                 Files = files
             };
         }
@@ -459,7 +488,7 @@ public sealed class TorrServerService : ITorrServerService
 
         // 4. Fallback search up the directory tree
         var current = new DirectoryInfo(baseDir);
-        for (int i = 0; i < 4 && current != null; i++)
+        for (int i = 0; i < 6 && current != null; i++)
         {
             var subprojectPath = Path.Combine(current.FullName, "subprojects", "torrserver", "torrserver.exe");
             if (File.Exists(subprojectPath))
@@ -468,5 +497,86 @@ public sealed class TorrServerService : ITorrServerService
         }
 
         return null;
+    }
+
+    private static int ReadInt32(JsonNode? node, int fallback = 0)
+    {
+        if (node is not JsonValue val) return fallback;
+        if (val.TryGetValue<int>(out var i)) return i;
+        if (val.TryGetValue<long>(out var l) && l is >= int.MinValue and <= int.MaxValue) return (int)l;
+        if (val.TryGetValue<double>(out var d) && double.IsFinite(d)) return (int)d;
+        if (val.TryGetValue<JsonElement>(out var el))
+        {
+            if (el.ValueKind == JsonValueKind.Number)
+            {
+                if (el.TryGetInt32(out var elInt)) return elInt;
+                if (el.TryGetInt64(out var elLong) && elLong is >= int.MinValue and <= int.MaxValue) return (int)elLong;
+                if (el.TryGetDouble(out var elDouble) && double.IsFinite(elDouble)) return (int)elDouble;
+            }
+            else if (el.ValueKind == JsonValueKind.String && int.TryParse(el.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+        return fallback;
+    }
+
+    private static long ReadInt64(JsonNode? node, long fallback = 0L)
+    {
+        if (node is not JsonValue val) return fallback;
+        if (val.TryGetValue<long>(out var l)) return l;
+        if (val.TryGetValue<int>(out var i)) return i;
+        if (val.TryGetValue<double>(out var d) && double.IsFinite(d)) return (long)d;
+        if (val.TryGetValue<JsonElement>(out var el))
+        {
+            if (el.ValueKind == JsonValueKind.Number)
+            {
+                if (el.TryGetInt64(out var elLong)) return elLong;
+                if (el.TryGetDouble(out var elDouble) && double.IsFinite(elDouble)) return (long)elDouble;
+            }
+            else if (el.ValueKind == JsonValueKind.String && long.TryParse(el.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+        return fallback;
+    }
+
+    private static double ReadDouble(JsonNode? node, double fallback = 0.0)
+    {
+        if (node is not JsonValue val) return fallback;
+        if (val.TryGetValue<double>(out var d) && double.IsFinite(d)) return d;
+        if (val.TryGetValue<long>(out var l)) return l;
+        if (val.TryGetValue<int>(out var i)) return i;
+        if (val.TryGetValue<JsonElement>(out var el))
+        {
+            if (el.ValueKind == JsonValueKind.Number && el.TryGetDouble(out var elDouble) && double.IsFinite(elDouble))
+                return elDouble;
+            if (el.ValueKind == JsonValueKind.String && double.TryParse(el.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed) && double.IsFinite(parsed))
+                return parsed;
+        }
+        return fallback;
+    }
+
+    private static bool ReadBoolean(JsonNode? node, bool fallback = false)
+    {
+        if (node is not JsonValue val) return fallback;
+        if (val.TryGetValue<bool>(out var b)) return b;
+        if (val.TryGetValue<JsonElement>(out var el))
+        {
+            if (el.ValueKind == JsonValueKind.True) return true;
+            if (el.ValueKind == JsonValueKind.False) return false;
+            if (el.ValueKind == JsonValueKind.String && bool.TryParse(el.GetString(), out var parsed)) return parsed;
+        }
+        return fallback;
+    }
+
+    private static string ReadString(JsonNode? node, string fallback = "")
+    {
+        if (node is not JsonValue val) return fallback;
+        if (val.TryGetValue<string>(out var s) && s != null) return s;
+        if (val.TryGetValue<JsonElement>(out var el) && el.ValueKind == JsonValueKind.String)
+            return el.GetString() ?? fallback;
+        return fallback;
     }
 }

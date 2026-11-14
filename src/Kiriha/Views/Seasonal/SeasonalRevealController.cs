@@ -6,6 +6,7 @@ public class SeasonalRevealController
 {
     private DateTime _lastRevealEvent = DateTime.MinValue;
     private int _revealStaggerIndex;
+    private int _revealGeneration;
     private bool _initialRevealActive = true;
     private const int BaseRevealDelayMs = 35;
     private const int RevealStaggerStepMs = 45;
@@ -29,9 +30,14 @@ public class SeasonalRevealController
 
     public void BeginInitialRevealWindow()
     {
+        int gen = ++_revealGeneration;
         _initialRevealActive = true;
         _revealStaggerIndex = 0;
-        Avalonia.Threading.DispatcherTimer.RunOnce(() => _initialRevealActive = false, InitialRevealWindow);
+        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+        {
+            if (_revealGeneration == gen)
+                _initialRevealActive = false;
+        }, InitialRevealWindow);
     }
 
     private void OnGridElementPrepared(object? sender, ItemsRepeaterElementPreparedEventArgs e)

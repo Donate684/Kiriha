@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Abstractions.Infrastructure;
@@ -123,7 +123,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
                 return fetched;
             }
 
-            // Live fetch failed but we still have a stale entry � better to
+            // Live fetch failed but we still have a stale entry — better to
             // return it than nothing, the caller can apply best-effort.
             if (cached != null)
             {

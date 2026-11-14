@@ -30,6 +30,7 @@ public partial class AnimeLibLoginWindow : Window
         if (!OperatingSystem.IsWindows())
         {
             StatusTextBlock.Text = Kiriha.Core.UIUtils.GetLoc("settings.streaming.error_windows_only");
+            LoadingIndicator.IsVisible = false;
             return;
         }
 
@@ -53,6 +54,7 @@ public partial class AnimeLibLoginWindow : Window
             if (platformHandle == null)
             {
                 StatusTextBlock.Text = Kiriha.Core.UIUtils.GetLoc("settings.streaming.error_no_handle");
+                LoadingIndicator.IsVisible = false;
                 return;
             }
 
@@ -105,12 +107,13 @@ public partial class AnimeLibLoginWindow : Window
         catch (WebView2RuntimeNotFoundException)
         {
             StatusTextBlock.Text = Kiriha.Core.UIUtils.GetLoc("settings.streaming.error_webview_missing");
-            LoadingIndicator.IsVisible = true;
+            LoadingIndicator.IsVisible = false;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "[AnimeLibLoginWindow] Failed to initialize WebView2");
             StatusTextBlock.Text = ex.Message;
+            LoadingIndicator.IsVisible = false;
         }
     }
 

@@ -207,7 +207,7 @@ public class AnimeListActionService : IAnimeListActionService
 
         if (updatedItem.Status == UserAnimeStatus.None)
         {
-            return await RemoveFromListAsync(originalItem.Id, ct);
+            return await RemoveFromListAsync(originalItem.Id, originalItem.MediaKind, ct);
         }
 
         bool isManga = originalItem.MediaKind != MediaKind.Anime;
@@ -358,13 +358,23 @@ public class AnimeListActionService : IAnimeListActionService
         }
     }
 
+    public Task<ListActionResult> RemoveFromListAsync(
+        int animeId,
+        CancellationToken ct = default) =>
+        RemoveFromListAsync(animeId, MediaKind.Anime, ct);
+
     public async Task<ListActionResult> RemoveFromListAsync(
         int animeId,
+        MediaKind mediaKind,
         CancellationToken ct = default)
     {
         if (animeId <= 0) return ListActionResult.Fail("Invalid anime ID");
 
-        await _progressService.RemoveAnimeAsync(animeId);
+        if (mediaKind == MediaKind.Anime)
+            await _progressService.RemoveAnimeAsync(animeId);
+        else
+            await _progressService.RemoveAnimeAsync(animeId, mediaKind);
+
         WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
 
         bool hasActiveTrackers = CheckHasActiveTrackers();

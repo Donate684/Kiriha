@@ -6,6 +6,8 @@ namespace Kiriha.Utils;
 
 public static class PlayerProcessHelper
 {
+    internal static Action<string?, string?, string?, string?, int?, string?, string?, string?, IReadOnlyDictionary<string, string>?>? LaunchOverrideForTests { get; set; }
+
     public static void LaunchPlayer() => LaunchPlayer(videoUrl: null);
 
     public static void LaunchPlayer(
@@ -19,15 +21,19 @@ public static class PlayerProcessHelper
         string? subtitleUrl = null,
         IReadOnlyDictionary<string, string>? headers = null)
     {
+        if (LaunchOverrideForTests is { } testHook)
+        {
+            testHook(videoUrl, titleRu, titleEn, episode, animeId, torrentHash, originalTitle, subtitleUrl, headers);
+            return;
+        }
         var canonicalOriginal = !string.IsNullOrWhiteSpace(originalTitle)
             ? originalTitle
             : (titleEn ?? titleRu ?? string.Empty);
 
         // 1. If resident player instance is running, forward playback and metadata through pipe
-        var forwardArgs = new List<string>();
+        var forwardArgs = new List<string> { "--player" };
         if (!string.IsNullOrWhiteSpace(videoUrl))
         {
-            forwardArgs.Add("--player");
             forwardArgs.Add(videoUrl);
             if (!string.IsNullOrWhiteSpace(subtitleUrl))
             {
@@ -74,26 +80,18 @@ public static class PlayerProcessHelper
             }
         }
 
-        if (forwardArgs.Count > 0 && PlayerProcessBridge.TryForward(forwardArgs.ToArray()))
+        if (PlayerProcessBridge.IsPlayerInstanceRunning() && PlayerProcessBridge.TryForward(forwardArgs.ToArray()))
         {
-            if (!string.IsNullOrWhiteSpace(titleRu) || !string.IsNullOrWhiteSpace(titleEn) || animeId.HasValue || !string.IsNullOrWhiteSpace(torrentHash))
-            {
-                PlayerProcessBridge.ForwardMetadata(
-                    originalTitle: canonicalOriginal,
-                    animeId: animeId ?? 0,
-                    titleRu: titleRu,
-                    titleEn: titleEn,
-                    titleRomaji: titleEn,
-                    episodeText: episode,
-                    torrentHash: torrentHash);
-            }
             return;
         }
 
         // 2. Otherwise launch a standalone player process
-        var assemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
         var processPath = Environment.ProcessPath;
-        if (string.IsNullOrEmpty(assemblyPath) || string.IsNullOrEmpty(processPath)) return;
+        if (string.IsNullOrEmpty(processPath)) return;
+
+        var assemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+        var isDotnet = System.IO.Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+        if (isDotnet && string.IsNullOrEmpty(assemblyPath)) return;
 
         var startInfo = CreatePlayerStartInfo(
             processPath,
@@ -215,8 +213,18 @@ public static class PlayerProcessHelper
         if (string.IsNullOrWhiteSpace(url))
             return false;
 
-        return url.Contains(Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.DefaultHost, StringComparison.OrdinalIgnoreCase) ||
-               url.Contains("/stream", StringComparison.OrdinalIgnoreCase) ||
-               System.Text.RegularExpressions.Regex.IsMatch(url, Kiriha.Core.Domain.Constants.AppConstants.Torrents.TorrentHashLinkRegex);
+        if (System.Text.RegularExpressions.Regex.IsMatch(url, Kiriha.Core.Domain.Constants.AppConstants.Torrents.TorrentHashLinkRegex))
+            return true;
+
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
+            (uri.IsLoopback || string.Equals(uri.Host, Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.DefaultHost, StringComparison.OrdinalIgnoreCase)) &&
+            (uri.AbsolutePath.StartsWith("/stream", StringComparison.OrdinalIgnoreCase) ||
+             uri.AbsolutePath.StartsWith("/play", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

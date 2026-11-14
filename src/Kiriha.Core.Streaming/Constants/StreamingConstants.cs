@@ -89,7 +89,7 @@ public static class StreamingConstants
 
     public static class Timeouts
     {
-        public const int HttpClientTimeoutSeconds = 5;
+        public const int HttpClientTimeoutSeconds = 12;
         public const int ProviderSearchTimeoutSeconds = 8;
         public const int MirrorProbeTimeoutSeconds = 2;
     }

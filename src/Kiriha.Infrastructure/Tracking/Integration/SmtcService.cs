@@ -56,13 +56,13 @@ public class SmtcService : IDisposable
                     var playbackInfo = session.GetPlaybackInfo();
                     if (playbackInfo != null &&
                         playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing &&
-                        timeline.LastUpdatedTime > DateTimeOffset.MinValue)
+                        timeline.LastUpdatedTime.Year >= 2020)
                     {
                         var elapsed = DateTimeOffset.UtcNow - timeline.LastUpdatedTime;
-                        if (elapsed > TimeSpan.Zero)
+                        if (elapsed > TimeSpan.Zero && elapsed < TimeSpan.FromHours(12))
                         {
                             double rate = playbackInfo.PlaybackRate ?? 1.0;
-                            if (rate <= 0) rate = 1.0;
+                            if (!double.IsFinite(rate) || rate <= 0) rate = 1.0;
 
                             var extrapolated = position + TimeSpan.FromTicks((long)(elapsed.Ticks * rate));
                             if (extrapolated > timeline.EndTime) extrapolated = timeline.EndTime;

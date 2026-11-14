@@ -28,11 +28,6 @@ public sealed partial class PlayerModeCoordinator
         var headers = ExtractHeadersFromArgs(args);
 
         var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl, headers);
-        if (cliMetadata != null)
-        {
-            playerVm.ApplyExternalMetadata(cliMetadata);
-        }
-
         return new PlayerWindow(settingsService) { DataContext = playerVm };
     }
 
@@ -47,16 +42,22 @@ public sealed partial class PlayerModeCoordinator
 
         var videoUrl = GetPlayerVideoUrl(args);
         if (string.IsNullOrWhiteSpace(videoUrl))
-            return false;
+        {
+            window.Show();
+            window.Activate();
+            return true;
+        }
+
+        var torrServer = _serviceProvider.GetService<ITorrServerService>();
+        if (torrServer != null && !torrServer.IsRunning && Utils.PlayerProcessHelper.IsTorrentStream(videoUrl, args))
+        {
+            _ = torrServer.EnsureRunningAsync();
+        }
 
         var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
         var cliMetadata = ExtractMetadataFromArgs(args);
         var headers = ExtractHeadersFromArgs(args);
         vm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
-        if (cliMetadata != null)
-        {
-            vm.ApplyExternalMetadata(cliMetadata);
-        }
 
         window.Show();
         window.Activate();

@@ -49,6 +49,15 @@ public sealed partial class PlayerModeCoordinator
             return;
 
         var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
+        if (string.IsNullOrWhiteSpace(GetPlayerVideoUrl(args)) &&
+            _app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime existingDesktop &&
+            existingDesktop.Windows.OfType<PlayerWindow>().LastOrDefault() is { } existingWindow)
+        {
+            existingWindow.Show();
+            existingWindow.Activate();
+            return;
+        }
+
         if (settingsService.Current.Player.SingleWindow && TryReplacePlayerWindow(args))
             return;
 

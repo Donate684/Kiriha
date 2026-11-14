@@ -38,7 +38,7 @@
     </UserControl.Styles>
     <Grid RowDefinitions="Auto, Auto, Auto, *" Margin="0">
 
-        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ Top Bar Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
+        <!-- ═══ Top Bar ═══ -->
         <Border Grid.Row="0" Margin="20,4,20,12" Padding="8,6" Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
                 BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
             <Grid ColumnDefinitions="*, Auto, Auto, Auto">
@@ -146,7 +146,7 @@
             </Grid>
         </Border>
 
-        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ Category Tabs Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
+        <!-- ═══ Category Tabs ═══ -->
         <Border Grid.Row="1" Margin="20,0,20,12" Padding="4"
                 Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="8"
                 HorizontalAlignment="Center">
@@ -181,9 +181,9 @@
             </StackPanel>
         </Border>
 
-        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
-        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ GRID VIEW (Virtualized ItemsRepeater) Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
-        <!-- Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰Î“Ã²Ã‰ -->
+        <!-- ═══════════════════════════════════════ -->
+        <!-- ═══ GRID VIEW (Virtualized ItemsRepeater) ═══ -->
+        <!-- ═══════════════════════════════════════ -->
         <Panel Grid.Row="3">
             <ScrollViewer x:Name="ContentScrollViewer"
                           HorizontalScrollBarVisibility="Disabled"

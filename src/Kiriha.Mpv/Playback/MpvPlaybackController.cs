@@ -67,15 +67,7 @@ public class MpvPlaybackController
                 LibMpvNative.mpv_set_property_string(handle, "user-agent", Constants.MpvConstants.UserAgent);
             }
 
-            if (extraHeaders.Count > 0)
-            {
-                var headerFieldsValue = string.Join(",", extraHeaders);
-                LibMpvNative.mpv_set_property_string(handle, "http-header-fields", headerFieldsValue);
-            }
-            else
-            {
-                LibMpvNative.mpv_set_property_string(handle, "http-header-fields", string.Empty);
-            }
+            LibMpvNative.SetHttpHeaderFields(handle, extraHeaders);
 
             MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "loadfile", targetUrl), "load file");
         });

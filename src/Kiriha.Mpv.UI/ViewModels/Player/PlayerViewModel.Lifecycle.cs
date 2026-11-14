@@ -56,11 +56,18 @@ public partial class PlayerViewModel
         if (!string.IsNullOrEmpty(TorrentHash) && _torrServer != null)
         {
             var hashToDrop = TorrentHash;
-            _ = Task.Run(async () =>
+            try
             {
-                try { await _torrServer.DropTorrentAsync(hashToDrop).ConfigureAwait(false); }
-                catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop torrent {Hash} on dispose", hashToDrop); }
-            });
+                _ = Task.Run(async () =>
+                {
+                    try { await _torrServer.DropTorrentAsync(hashToDrop).ConfigureAwait(false); }
+                    catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop torrent {Hash} on dispose", hashToDrop); }
+                }).Wait(TimeSpan.FromMilliseconds(500));
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "PlayerViewModel: Timed out waiting for torrent {Hash} drop on dispose", hashToDrop);
+            }
         }
         DisposeTorrentMonitor();
         ResetTorrentOverlayState();

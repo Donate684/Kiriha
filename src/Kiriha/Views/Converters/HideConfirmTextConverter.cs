@@ -6,8 +6,8 @@ namespace Kiriha.Views.Converters;
 
 /// <summary>
 /// Picks the right localized confirmation label for the seasonal hide button:
-/// "Hide?" / "???????" when the title is not yet hidden,
-/// "Restore?" / "????????" when un-hiding.
+/// "Hide?" / "Скрыть?" when the title is not yet hidden,
+/// "Restore?" / "Вернуть?" when un-hiding.
 /// </summary>
 public class HideConfirmTextConverter : IMultiValueConverter
 {

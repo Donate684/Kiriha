@@ -52,6 +52,11 @@ public sealed class MpvOpenGlVideoView : OpenGlControlBase
         base.OnOpenGlInit(gl);
         _gl = gl;
         _getProcAddress = GetProcAddress;
+        if (_player != null)
+        {
+            _player.RenderUpdateRequested -= OnRenderUpdateRequested;
+            _player.RenderUpdateRequested += OnRenderUpdateRequested;
+        }
         TryCreateRenderContext();
     }
 

@@ -126,8 +126,12 @@ public partial class SyncManager : ISyncManager, IHostedService
                     if (!string.IsNullOrEmpty(entity.Payload))
                     {
                         task.FullItem = JsonSerializer.Deserialize<AnimeEntity>(entity.Payload);
+                        if (task.FullItem != null)
+                        {
+                            task.MediaKind = task.FullItem.MediaKind;
+                        }
                     }
-                    _latestTaskIds.AddOrUpdate(task.AnimeId, (task.Id, task.Type), (k, existing) => task.Id > existing.Id ? (task.Id, task.Type) : existing);
+                    _latestTaskIds.AddOrUpdate((task.AnimeId, task.MediaKind), (task.Id, task.Type), (k, existing) => task.Id > existing.Id ? (task.Id, task.Type) : existing);
                     _lowPriorityQueue.Enqueue(task);
                     _queueSignal.Release();
                     restoredCount++;

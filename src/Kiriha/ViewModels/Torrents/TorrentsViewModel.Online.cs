@@ -729,7 +729,10 @@ public partial class TorrentsViewModel
         }
         finally
         {
-            Dispatcher.UIThread.Post(() => IsOnlineSourcesLoading = false);
+            if (!ct.IsCancellationRequested)
+            {
+                Dispatcher.UIThread.Post(() => IsOnlineSourcesLoading = false);
+            }
         }
     }
 
@@ -838,7 +841,10 @@ public partial class TorrentsViewModel
         }
         finally
         {
-            Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
+            if (!ct.IsCancellationRequested)
+            {
+                Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
+            }
         }
     }
 
@@ -852,7 +858,8 @@ public partial class TorrentsViewModel
         var newProgress = episodeItem.EpisodeNumber;
         if (_progressService != null)
         {
-            await _progressService.UpdateProgressAsync(matchedAnime, newProgress).ConfigureAwait(false);
+            await _progressService.SmartIncrementProgressAsync(matchedAnime, newProgress).ConfigureAwait(false);
+            Dispatcher.UIThread.Post(() => UpdateEpisodeWatchedStates(matchedAnime));
         }
         else
         {
@@ -867,12 +874,12 @@ public partial class TorrentsViewModel
             }
 
             await _animeRepo.AddOrUpdateAnimeAsync(matchedAnime).ConfigureAwait(false);
+            Dispatcher.UIThread.Post(() =>
+            {
+                UpdateEpisodeWatchedStates(matchedAnime);
+                WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(matchedAnime, newProgress));
+            });
         }
-        Dispatcher.UIThread.Post(() =>
-        {
-            UpdateEpisodeWatchedStates(matchedAnime);
-            WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(matchedAnime, newProgress));
-        });
     }
 
     private void UpdateEpisodeWatchedStates(AnimeEntity? anime)

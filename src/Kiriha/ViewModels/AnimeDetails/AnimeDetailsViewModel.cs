@@ -267,7 +267,12 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
             IsLoading = true;
             try
             {
-                await Metadata.LoadFullDetailsAsync();
+                var loadedFull = await Metadata.LoadFullDetailsAsync();
+                if (loadedFull != null && !ReferenceEquals(_originalAnime, Anime))
+                {
+                    _originalAnime.MergeFullDetails(loadedFull);
+                    Editor.RefreshBaselineState();
+                }
             }
             finally
             {

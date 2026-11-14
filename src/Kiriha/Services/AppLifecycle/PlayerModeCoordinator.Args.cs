@@ -28,12 +28,18 @@ public sealed partial class PlayerModeCoordinator
     {
         var titleRu = GetArgValue(args, "--title-ru") ?? string.Empty;
         var titleEn = GetArgValue(args, "--title-en") ?? string.Empty;
-        var originalTitle = GetArgValue(args, "--original-title") ?? (string.IsNullOrEmpty(titleEn) ? titleRu : titleEn);
+        var rawOriginalTitle = GetArgValue(args, "--original-title");
+        var originalTitle = rawOriginalTitle ?? (string.IsNullOrEmpty(titleEn) ? titleRu : titleEn);
         var episode = GetArgValue(args, "--episode") ?? string.Empty;
         var torrentHash = GetArgValue(args, "--torrent-hash") ?? string.Empty;
         int? animeId = int.TryParse(GetArgValue(args, "--anime-id"), out var id) ? id : null;
 
-        if (string.IsNullOrWhiteSpace(titleRu) && string.IsNullOrWhiteSpace(titleEn) && !animeId.HasValue && string.IsNullOrWhiteSpace(torrentHash))
+        if (string.IsNullOrWhiteSpace(titleRu) &&
+            string.IsNullOrWhiteSpace(titleEn) &&
+            string.IsNullOrWhiteSpace(rawOriginalTitle) &&
+            string.IsNullOrWhiteSpace(episode) &&
+            !animeId.HasValue &&
+            string.IsNullOrWhiteSpace(torrentHash))
             return null;
 
         return new Kiriha.Core.Domain.Models.PlayerMediaMetadata(

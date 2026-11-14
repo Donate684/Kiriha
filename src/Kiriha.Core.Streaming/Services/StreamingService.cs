@@ -117,6 +117,9 @@ public sealed class StreamingService : IStreamingService
         if (string.IsNullOrWhiteSpace(playerUrl))
             return [];
 
+        if (playerUrl.StartsWith("//", StringComparison.Ordinal))
+            playerUrl = "https:" + playerUrl;
+
         foreach (var extractor in _extractors)
         {
             if (extractor.CanExtract(playerUrl))
@@ -134,8 +137,12 @@ public sealed class StreamingService : IStreamingService
             }
         }
 
-        // Direct stream URL fallback (e.g. .m3u8 or .mp4 URL provided directly)
-        if (playerUrl.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+        // Direct stream URL fallback (e.g. .m3u8 or .mp4 URL provided directly, with or without query string)
+        string urlPath = Uri.TryCreate(playerUrl, UriKind.Absolute, out var parsedUri)
+            ? parsedUri.AbsolutePath
+            : playerUrl;
+
+        if (urlPath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
         {
             return [
                 new StreamingVideo
@@ -147,7 +154,7 @@ public sealed class StreamingService : IStreamingService
             ];
         }
 
-        if (playerUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+        if (urlPath.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
         {
             return [
                 new StreamingVideo

@@ -30,4 +30,9 @@ public interface IAnimeListActionService
     Task<ListActionResult> RemoveFromListAsync(
         int animeId,
         CancellationToken ct = default);
+
+    Task<ListActionResult> RemoveFromListAsync(
+        int animeId,
+        MediaKind mediaKind,
+        CancellationToken ct = default);
 }

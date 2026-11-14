@@ -67,6 +67,7 @@ namespace Kiriha.Views.AnimeList
 
                 if (vm != null)
                 {
+                    flyout.ItemsSource = vm.AvailableScores;
                     vm.OpenScoreMenuCommand.Execute(item);
                 }
             }

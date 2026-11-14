@@ -58,6 +58,7 @@ public partial class MainWindowViewModel
     public void ShowUpdateDialog(bool isDownloaded = false)
     {
         if (IsUpdateDialogOpen) return;
+        UpdateDialog?.Dispose();
         UpdateDialog = _viewModelFactory.CreateWithArgs<UpdateDialogViewModel>((Action)CloseUpdateDialog, isDownloaded);
         IsUpdateDialogOpen = true;
     }
@@ -66,7 +67,9 @@ public partial class MainWindowViewModel
     public void CloseUpdateDialog()
     {
         IsUpdateDialogOpen = false;
+        var dialog = UpdateDialog;
         UpdateDialog = null;
+        dialog?.Dispose();
     }
 
     public bool TryHandleEscapeKey()

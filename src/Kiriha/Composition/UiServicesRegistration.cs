@@ -31,14 +31,6 @@ internal static class UiServicesRegistration
     public static IServiceCollection AddKirihaUi(this IServiceCollection services)
     {
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
-        services.AddSingleton<IViewModelFactory>(sp =>
-        {
-            var transientTypes = services
-                .Where(static d => d.Lifetime == ServiceLifetime.Transient)
-                .Select(static d => d.ServiceType)
-                .ToHashSet();
-            return new ViewModelFactory(sp, transientTypes);
-        });
 
         services.AddSingleton<NowPlayingViewModel>();
         services.AddSingleton<SettingsViewModel>();
@@ -52,6 +44,12 @@ internal static class UiServicesRegistration
         services.AddTransient<WelcomeViewModel>();
         services.AddTransient<SearchViewModel>();
         services.AddTransient<FirstStartupViewModel>();
+
+        var transientTypes = services
+            .Where(static d => d.Lifetime == ServiceLifetime.Transient)
+            .Select(static d => d.ServiceType)
+            .ToHashSet();
+        services.AddSingleton<IViewModelFactory>(sp => new ViewModelFactory(sp, transientTypes));
 
         // Client UI Support Services
         services.AddSingleton<Kiriha.Services.SystemIntegrationService>();

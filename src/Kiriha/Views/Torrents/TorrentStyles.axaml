@@ -448,6 +448,15 @@
             <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
         </Style>
 
+        <!-- ═══ Modal Dim Overlay Button ═══ -->
+        <Style Selector="Button.DimOverlay">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="Transparent"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
         <!-- ═══ Online Episode Selector Redesign Styles ═══ -->
         <Style Selector="Button.OnlineEpBtn">
             <Setter Property="Background" Value="Transparent"/>

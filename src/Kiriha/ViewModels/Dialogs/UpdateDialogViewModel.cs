@@ -5,12 +5,13 @@ using Kiriha.Services;
 
 namespace Kiriha.ViewModels.Dialogs;
 
-public partial class UpdateDialogViewModel : ViewModelBase
+public partial class UpdateDialogViewModel : ViewModelBase, IDisposable
 {
     private readonly UpdateService _updateService;
     private readonly Action _closeAction;
     private readonly CancellationTokenSource _cts = new();
     private readonly ILocalizer _localizer;
+    private bool _disposed;
 
     [ObservableProperty]
     private string _versionText;
@@ -96,7 +97,16 @@ public partial class UpdateDialogViewModel : ViewModelBase
     [RelayCommand]
     private void CloseDialog()
     {
-        _cts.Cancel();
+        if (!_disposed)
+            _cts.Cancel();
         _closeAction();
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        try { _cts.Cancel(); } catch (ObjectDisposedException) { }
+        _cts.Dispose();
     }
 }

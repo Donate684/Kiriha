@@ -158,8 +158,8 @@ public partial class PlayerViewModel
 
         if (!string.IsNullOrWhiteSpace(metadata.TorrentHash))
         {
-            TorrentHash = metadata.TorrentHash;
-            IsTorrentStream = true;
+            // TorrentHash lifecycle is owned exclusively by InitializeTorrentStream so previous torrents are dropped on switch.
+
         }
 
         AnimeTitle = !string.IsNullOrWhiteSpace(AnimeTitleRu) ? AnimeTitleRu : AnimeTitleRomaji;
@@ -216,6 +216,11 @@ public partial class PlayerViewModel
             _hasExplicitMetadata = true;
             bool animeChanged = prevId.HasValue && metadata.AnimeId.HasValue && prevId.Value != metadata.AnimeId.Value;
             ApplyMetadata(metadata, overwriteAll: animeChanged, allowResolveByTitle: true);
+            if (!string.IsNullOrWhiteSpace(metadata.TorrentHash) &&
+                !string.Equals(TorrentHash, metadata.TorrentHash, StringComparison.OrdinalIgnoreCase))
+            {
+                InitializeTorrentStream(VideoUrl, metadata);
+            }
         }
 
         if (!string.Equals(prevTitle, AnimeTitle, StringComparison.Ordinal) ||

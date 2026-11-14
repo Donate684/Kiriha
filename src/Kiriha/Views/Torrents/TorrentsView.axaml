@@ -21,6 +21,7 @@
              xmlns:u="using:Kiriha.Utils.UI"
              xmlns:modelsTorrServer="using:Kiriha.Core.Domain.Models.TorrServer"
              x:Class="Kiriha.Views.Torrents.TorrentsView"
+             x:Name="torrentsRoot"
              x:DataType="vmTorrents:TorrentsViewModel"
              xmlns:local="using:Kiriha.Views.Torrents">
 
@@ -194,16 +195,6 @@
                 Background="{DynamicResource ModalOverlayBackgroundBrush}"
                 IsVisible="{Binding IsEpisodeSelectorVisible}"
                 ZIndex="60">
-            <Border.Styles>
-                <Style Selector="Button.DimOverlay">
-                    <Setter Property="Template">
-                        <ControlTemplate>
-                            <Border Background="Transparent"/>
-                        </ControlTemplate>
-                    </Setter>
-                </Style>
-            </Border.Styles>
-
             <Grid>
                 <!-- Click dim overlay to close -->
                 <Button Classes="DimOverlay"
@@ -512,7 +503,7 @@
                                                         <Button.ContextMenu>
                                                             <ContextMenu>
                                                                 <MenuItem Header="{DynamicResource l.torrents.online.mark_watched}"
-                                                                          Command="{Binding $parent[UserControl].((vmTorrents:TorrentsViewModel)DataContext).MarkEpisodeWatchedCommand}"
+                                                                          Command="{Binding #torrentsRoot.((vmTorrents:TorrentsViewModel)DataContext).MarkEpisodeWatchedCommand}"
                                                                           CommandParameter="{Binding}">
                                                                     <MenuItem.Icon>
                                                                         <material:MaterialIcon Kind="Check" Width="15" Height="15"
@@ -841,6 +832,47 @@
                     </Button>
                 </StackPanel>
             </Border>
+        </Border>
+
+        <!-- Streaming Error Overlay (Single-episode torrents) -->
+        <Border Grid.Row="0" Grid.RowSpan="3"
+                Background="{DynamicResource ModalOverlayBackgroundBrush}"
+                IsVisible="{Binding StreamingErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                ZIndex="75">
+            <Grid>
+                <Button Classes="DimOverlay"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Focusable="False"
+                        Command="{Binding DismissStreamingErrorCommand}"/>
+
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="{DynamicResource ModalBackgroundFill}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1" CornerRadius="16"
+                        MinWidth="360" MaxWidth="460"
+                        BoxShadow="0 12 40 0 #66000000"
+                        Padding="26,22" Margin="20">
+                    <StackPanel Spacing="14" HorizontalAlignment="Center">
+                        <material:MaterialIcon Kind="AlertCircleOutline" Width="36" Height="36"
+                                               Foreground="{DynamicResource SystemErrorTextColor}"
+                                               HorizontalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource l.common.errors.generic}"
+                                   FontSize="15" FontWeight="Bold"
+                                   TextAlignment="Center"/>
+                        <TextBlock Text="{Binding StreamingErrorMessage}"
+                                   FontSize="12.5" Opacity="0.85"
+                                   TextAlignment="Center" TextWrapping="Wrap"
+                                   MaxWidth="380"/>
+                        <Button Classes="ActionPill"
+                                HorizontalAlignment="Center"
+                                Command="{Binding DismissStreamingErrorCommand}"
+                                Padding="22,6" Margin="0,4,0,0">
+                            <TextBlock Text="{DynamicResource l.common.actions.close}"
+                                       FontSize="11.5" FontWeight="Medium"/>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

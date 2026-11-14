@@ -69,13 +69,13 @@ public class ScrobbleService : IScrobbleService, IDisposable
             return;
         }
 
-        var epStr = !string.IsNullOrWhiteSpace(media.Episode)
-            ? media.Episode
-            : Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle).Episode;
-
-        if (!int.TryParse(epStr, out int ep))
+        if (!int.TryParse(media.Episode, out int ep))
         {
-            return;
+            var fallbackEp = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle).Episode;
+            if (!int.TryParse(fallbackEp, out ep))
+            {
+                return;
+            }
         }
 
         if (ep == 0 && match.TotalEpisodes == 1)

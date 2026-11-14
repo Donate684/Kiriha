@@ -10,6 +10,7 @@ public partial class HistoryView : UserControl
     private ItemsRepeater? _historyRepeater;
     private DateTime _lastRevealEvent = DateTime.MinValue;
     private int _revealStaggerIndex;
+    private int _revealGeneration;
     private bool _initialRevealActive = true;
     private const int BaseRevealDelayMs = 35;
     private const int RevealStaggerStepMs = 45;
@@ -35,6 +36,13 @@ public partial class HistoryView : UserControl
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (_historyRepeater != null)
+        {
+            _historyRepeater.ElementPrepared -= OnElementPrepared;
+            _historyRepeater.ElementClearing -= OnElementClearing;
+            _historyRepeater.ElementPrepared += OnElementPrepared;
+            _historyRepeater.ElementClearing += OnElementClearing;
+        }
         if (_subscribedVm == null && DataContext is HistoryViewModel vm)
         {
             _subscribedVm = vm;
@@ -76,9 +84,14 @@ public partial class HistoryView : UserControl
 
     public void BeginInitialRevealWindow()
     {
+        int gen = ++_revealGeneration;
         _initialRevealActive = true;
         _revealStaggerIndex = 0;
-        DispatcherTimer.RunOnce(() => _initialRevealActive = false, InitialRevealWindow);
+        DispatcherTimer.RunOnce(() =>
+        {
+            if (_revealGeneration == gen)
+                _initialRevealActive = false;
+        }, InitialRevealWindow);
     }
 
     private void OnElementPrepared(object? sender, ItemsRepeaterElementPreparedEventArgs e)

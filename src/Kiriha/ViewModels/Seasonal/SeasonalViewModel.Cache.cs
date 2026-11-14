@@ -236,8 +236,17 @@ public partial class SeasonalViewModel
                 SaveSeasonalCache(year, season, fresh);
                 if (year == CurrentYear && season == CurrentSeason)
                 {
-                    SetAllSeasonalItems(fresh);
-                    await ApplyFiltersAsync();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (!_isDisposed && year == CurrentYear && season == CurrentSeason)
+                        {
+                            SetAllSeasonalItems(fresh);
+                        }
+                    });
+                    if (!_isDisposed && year == CurrentYear && season == CurrentSeason)
+                    {
+                        await ApplyFiltersAsync();
+                    }
                 }
             }
             catch (OperationCanceledException) { }

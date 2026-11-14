@@ -28,8 +28,11 @@ public partial class PlayerWindow
         _lastTimelinePreviewTime = previewTime;
 
         var bottomPos = _bottomBar != null ? e.GetPosition(_bottomBar) : timelinePos;
-        var maxLeft = Math.Max(8, (_bottomBar?.Bounds.Width ?? Bounds.Width) - 244);
-        var previewLeft = Math.Clamp(bottomPos.X - 118, 8, maxLeft);
+        double popupWidth = _timelinePreviewBorder is { Bounds.Width: > 1 } b
+            ? b.Bounds.Width
+            : (vm.Overlay.TimelinePreviewImage != null ? 236.0 : 72.0);
+        var maxLeft = Math.Max(8, (_bottomBar?.Bounds.Width ?? Bounds.Width) - popupWidth - 8);
+        var previewLeft = Math.Clamp(bottomPos.X - (popupWidth / 2.0), 8, maxLeft);
         vm.ShowTimelinePreview(previewTime, previewLeft);
 
         _lastPointerPosition = e.GetPosition(this);

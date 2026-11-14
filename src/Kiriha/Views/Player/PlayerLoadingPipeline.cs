@@ -53,7 +53,7 @@ internal sealed class PlayerLoadingPipeline
 
         _mediaLoadStarted = true;
         Log.Information("Loading video: {Url}", _viewModel.VideoUrl);
-        _viewModel.LoadVideo(_viewModel.VideoUrl, _viewModel.PendingSubtitleUrl);
+        _viewModel.StartInitialPlayback();
         TryRequestInitialFrame();
     }
 

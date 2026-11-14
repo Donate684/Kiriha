@@ -107,9 +107,8 @@
                                 Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).OpenScoreMenuCommand}"
                                 CommandParameter="{Binding}">
                             <Button.Flyout>
-                                <MenuFlyout ItemsSource="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).AvailableScores}"
-                                            FlyoutPresenterClasses="ScoreFlyout"
-                                            Opened="ScoreMenu_Opened"/>
+                                <MenuFlyout FlyoutPresenterClasses="ScoreFlyout"
+                                            Opening="ScoreMenu_Opened"/>
                             </Button.Flyout>
                             <StackPanel Orientation="Horizontal" Spacing="3">
                                 <material:MaterialIcon Kind="Star" Width="11" Height="11" Foreground="{DynamicResource AnimeCardStarForeground}" VerticalAlignment="Center"/>

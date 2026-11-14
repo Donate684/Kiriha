@@ -18,28 +18,26 @@ public static class PlayerProcessBridge
     {
         try
         {
-            using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            bool connected = false;
             while (sw.ElapsedMilliseconds < timeoutMs)
             {
                 try
                 {
+                    using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
                     var remaining = (int)Math.Max(50, timeoutMs - sw.ElapsedMilliseconds);
                     client.Connect(Math.Min(remaining, 250));
-                    connected = true;
-                    break;
+
+                    using var writer = new StreamWriter(client) { AutoFlush = true };
+                    writer.WriteLine(PipeArgumentSerializer.Serialize(args));
+                    writer.Flush();
+                    try { client.WaitForPipeDrain(); } catch { }
+                    return true;
                 }
                 catch (TimeoutException) { }
                 catch (IOException) { Thread.Sleep(50); }
                 catch { Thread.Sleep(50); }
             }
-            if (!connected) return false;
-            using var writer = new StreamWriter(client) { AutoFlush = true };
-            writer.WriteLine(PipeArgumentSerializer.Serialize(args));
-            writer.Flush();
-            try { client.WaitForPipeDrain(); } catch { }
-            return true;
+            return false;
         }
         catch
         {

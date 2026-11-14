@@ -160,6 +160,8 @@ public partial class SeasonalViewModel
         OnaHeader = result.Headers["ONA"];
         SpecialsHeader = result.Headers["Specials"];
         OtherHeader = result.Headers["Other"];
+        DonghuaHeader = result.Headers["Donghua"];
+        AeniHeader = result.Headers["Aeni"];
     }
 
     partial void OnSearchQueryChanged(string? value) => ApplyFilters();

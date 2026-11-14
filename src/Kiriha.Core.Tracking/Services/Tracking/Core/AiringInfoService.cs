@@ -115,6 +115,8 @@ public class AiringInfoService : IAiringInfoService
             await semaphore.WaitAsync(ct);
             try
             {
+                if (ct.IsCancellationRequested || _animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
+
                 int currentCompleted = Interlocked.Increment(ref completed);
                 var progressMsg = TrackingLoc.GetLoc("sync.syncing.episodes_progress", currentCompleted.ToString(), total.ToString(), anime.Title);
                 progress?.Report(progressMsg);
@@ -123,6 +125,8 @@ public class AiringInfoService : IAiringInfoService
 
                 var now = DateTime.UtcNow;
                 var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
+                if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
+
                 if (airing is null)
                 {
                     await _cache.MarkSyncedAsync(anime, now);

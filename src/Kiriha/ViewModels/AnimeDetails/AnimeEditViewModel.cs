@@ -252,9 +252,19 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
         }
 
         _isRemoving = true;
-        await _listActionService.RemoveFromListAsync(_originalAnime.Id);
+        if (_originalAnime.MediaKind == MediaKind.Anime)
+            await _listActionService.RemoveFromListAsync(_originalAnime.Id);
+        else
+            await _listActionService.RemoveFromListAsync(_originalAnime.Id, _originalAnime.MediaKind);
 
         if (window is Avalonia.Controls.Window w) w.Close(true);
+    }
+
+    public void RefreshBaselineState()
+    {
+        OnPropertyChanged(nameof(IsInList));
+        OnPropertyChanged(nameof(HasChanges));
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     public void Dispose()

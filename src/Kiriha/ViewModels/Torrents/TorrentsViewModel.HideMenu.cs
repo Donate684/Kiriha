@@ -19,7 +19,7 @@ public partial class TorrentsViewModel
     {
         if (SelectedAnime != null)
         {
-            var refreshedSelected = _animeRepo.Collection.FirstOrDefault(a => a.Id == SelectedAnime.Id);
+            var refreshedSelected = _animeRepo.Collection.FirstOrDefault(a => a.Id == SelectedAnime.Id && a.MediaKind == MediaKind.Anime);
             if (refreshedSelected != null && !ReferenceEquals(SelectedAnime, refreshedSelected))
             {
 #pragma warning disable MVVMTK0034

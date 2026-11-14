@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Runtime.InteropServices;
 using Kiriha.Core.Domain.Models;
@@ -93,62 +94,182 @@ public static unsafe partial class HandleEnumerationStrategy
     [LibraryImport("kernel32.dll")]
     private static partial IntPtr GetCurrentThread();
 
-    private static string? QueryDiskFilePathWithTimeout(IntPtr dupHandle, int timeoutMs = 100)
-    {
-        string? resolvedPath = null;
-        IntPtr workerThreadHandle = IntPtr.Zero;
-        using var doneEvent = new ManualResetEventSlim(false);
+    private static readonly Lock s_queryLock = new();
+    private static HandleQueryWorker? s_activeWorker;
 
-        var thread = new Thread(() =>
+    private sealed class HandleQueryWorkItem(IntPtr fileHandle)
+    {
+        public IntPtr FileHandle { get; } = fileHandle;
+        public ManualResetEventSlim DoneEvent { get; } = new(false);
+        public volatile string? ResultPath;
+        private int _refCount = 2; // 1 for caller, 1 for worker
+
+        public void Release()
         {
-            if (DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), out workerThreadHandle, 0, false, DUPLICATE_SAME_ACCESS))
+            if (Interlocked.Decrement(ref _refCount) == 0)
             {
-                try
+                if (FileHandle != IntPtr.Zero)
                 {
-                    if (GetFileType(dupHandle) == FILE_TYPE_DISK)
+                    CloseHandle(FileHandle);
+                }
+                DoneEvent.Dispose();
+            }
+        }
+    }
+
+    private sealed class HandleQueryWorker
+    {
+        private readonly BlockingCollection<HandleQueryWorkItem> _queue = new();
+        private readonly Lock _threadHandleLock = new();
+        private IntPtr _workerThreadHandle;
+        private bool _closed;
+
+        public HandleQueryWorker()
+        {
+            var thread = new Thread(RunLoop)
+            {
+                IsBackground = true,
+                Name = "HandleQueryWorker"
+            };
+            thread.Start();
+        }
+
+        public bool TryEnqueue(HandleQueryWorkItem item)
+        {
+            try
+            {
+                return _queue.TryAdd(item);
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        public void AbandonAndCancelIo()
+        {
+            try
+            {
+                _queue.CompleteAdding();
+            }
+            catch
+            {
+                // Ignore if already completed/disposed
+            }
+
+            lock (_threadHandleLock)
+            {
+                if (!_closed && _workerThreadHandle != IntPtr.Zero)
+                {
+                    CancelSynchronousIo(_workerThreadHandle);
+                }
+            }
+        }
+
+        private void RunLoop()
+        {
+            try
+            {
+                lock (_threadHandleLock)
+                {
+                    if (!_closed)
                     {
-                        char* pathBuffer = stackalloc char[1024];
-                        uint pathLen = GetFinalPathNameByHandleW(dupHandle, pathBuffer, 1024, 0);
-                        if (pathLen > 0 && pathLen < 1024)
-                        {
-                            resolvedPath = FormatNormalizedPath(pathBuffer, pathLen);
-                        }
+                        DuplicateHandle(
+                            GetCurrentProcess(),
+                            GetCurrentThread(),
+                            GetCurrentProcess(),
+                            out _workerThreadHandle,
+                            0,
+                            false,
+                            DUPLICATE_SAME_ACCESS);
                     }
                 }
-                catch { }
-                finally
+
+                char* pathBuffer = stackalloc char[1024];
+                foreach (var item in _queue.GetConsumingEnumerable())
                 {
-                    doneEvent.Set();
+                    try
+                    {
+                        if (GetFileType(item.FileHandle) == FILE_TYPE_DISK)
+                        {
+                            uint pathLen = GetFinalPathNameByHandleW(item.FileHandle, pathBuffer, 1024, 0);
+                            if (pathLen > 0 && pathLen < 1024)
+                            {
+                                item.ResultPath = FormatNormalizedPath(pathBuffer, pathLen);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Guard worker thread against any P/Invoke or marshaling exception
+                    }
+                    finally
+                    {
+                        try { item.DoneEvent.Set(); } catch { }
+                        item.Release();
+                    }
                 }
             }
-            else
+            catch
             {
-                doneEvent.Set();
+                // Never allow unhandled exceptions on background thread
             }
-        })
-        {
-            IsBackground = true,
-            Name = "HandleQueryWorker"
-        };
-
-        thread.Start();
-
-        if (!doneEvent.Wait(timeoutMs))
-        {
-            if (workerThreadHandle != IntPtr.Zero)
+            finally
             {
-                CancelSynchronousIo(workerThreadHandle);
+                lock (_threadHandleLock)
+                {
+                    _closed = true;
+                    if (_workerThreadHandle != IntPtr.Zero)
+                    {
+                        CloseHandle(_workerThreadHandle);
+                        _workerThreadHandle = IntPtr.Zero;
+                    }
+                }
+
+                try { _queue.Dispose(); } catch { }
             }
-            thread.Join(25);
-            Log.Debug("Handle query timed out on handle 0x{Handle:X}, cancelled synchronous I/O", dupHandle);
         }
+    }
 
-        if (workerThreadHandle != IntPtr.Zero)
+    /// <summary>
+    /// Queries disk file path for <paramref name="dupHandle"/> on a persistent background worker
+    /// and takes ownership of closing <paramref name="dupHandle"/> via reference counting so a
+    /// timed-out kernel call can never race against handle recycling.
+    /// </summary>
+    private static string? QueryDiskFilePathWithTimeout(IntPtr dupHandle, int timeoutMs = 100)
+    {
+        var item = new HandleQueryWorkItem(dupHandle);
+        try
         {
-            CloseHandle(workerThreadHandle);
-        }
+            lock (s_queryLock)
+            {
+                var worker = s_activeWorker ??= new HandleQueryWorker();
+                if (!worker.TryEnqueue(item))
+                {
+                    worker = s_activeWorker = new HandleQueryWorker();
+                    if (!worker.TryEnqueue(item))
+                    {
+                        // Worker never took ownership — release worker's ref here
+                        item.Release();
+                        return null;
+                    }
+                }
 
-        return resolvedPath;
+                if (!item.DoneEvent.Wait(timeoutMs))
+                {
+                    s_activeWorker = null;
+                    worker.AbandonAndCancelIo();
+                    Log.Debug("Handle query timed out on handle 0x{Handle:X}, cancelled synchronous I/O", dupHandle);
+                    return null;
+                }
+            }
+
+            return item.ResultPath;
+        }
+        finally
+        {
+            item.Release();
+        }
     }
 
     private static string FormatNormalizedPath(char* pathBuffer, uint pathLen)
@@ -227,26 +348,20 @@ public static unsafe partial class HandleEnumerationStrategy
 
                     if (DuplicateHandle(processHandle, entry->HandleValue, currentProcess, out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
                     {
-                        try
+                        // Ownership of dupHandle is transferred to QueryDiskFilePathWithTimeout.
+                        string? filePath = QueryDiskFilePathWithTimeout(dupHandle);
+                        if (filePath != null)
                         {
-                            string? filePath = QueryDiskFilePathWithTimeout(dupHandle);
-                            if (filePath != null)
+                            if (knownFileType < 0)
                             {
-                                if (knownFileType < 0)
-                                {
-                                    s_fileObjectTypeIndex = entry->ObjectTypeIndex;
-                                }
-
-                                ReadOnlySpan<char> extSpan = Path.GetExtension(filePath.AsSpan());
-                                if (!extSpan.IsEmpty && _videoExtensionsLookup.Contains(extSpan))
-                                {
-                                    return filePath;
-                                }
+                                s_fileObjectTypeIndex = entry->ObjectTypeIndex;
                             }
-                        }
-                        finally
-                        {
-                            CloseHandle(dupHandle);
+
+                            ReadOnlySpan<char> extSpan = Path.GetExtension(filePath.AsSpan());
+                            if (!extSpan.IsEmpty && _videoExtensionsLookup.Contains(extSpan))
+                            {
+                                return filePath;
+                            }
                         }
                     }
                 }
@@ -305,25 +420,19 @@ public static unsafe partial class HandleEnumerationStrategy
 
                     if (DuplicateHandle(processHandle, entry->HandleValue, currentProcess, out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
                     {
-                        try
+                        // Ownership of dupHandle is transferred to QueryDiskFilePathWithTimeout.
+                        string? filePath = QueryDiskFilePathWithTimeout(dupHandle);
+                        if (filePath != null)
                         {
-                            string? filePath = QueryDiskFilePathWithTimeout(dupHandle);
-                            if (filePath != null)
+                            if (knownFileType < 0)
                             {
-                                if (knownFileType < 0)
-                                {
-                                    s_fileObjectTypeIndex = entry->ObjectTypeIndex;
-                                }
-
-                                if (seenFiles.Add(filePath))
-                                {
-                                    files.Add(filePath);
-                                }
+                                s_fileObjectTypeIndex = entry->ObjectTypeIndex;
                             }
-                        }
-                        finally
-                        {
-                            CloseHandle(dupHandle);
+
+                            if (seenFiles.Add(filePath))
+                            {
+                                files.Add(filePath);
+                            }
                         }
                     }
                 }

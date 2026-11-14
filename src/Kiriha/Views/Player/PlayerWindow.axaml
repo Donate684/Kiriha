@@ -347,7 +347,8 @@
                         HorizontalAlignment="Stretch"
                         IsHitTestVisible="False"
                         ZIndex="20">
-                    <Border Canvas.Left="{Binding Overlay.TimelinePreviewLeft}"
+                    <Border Name="TimelinePreviewBorder"
+                            Canvas.Left="{Binding Overlay.TimelinePreviewLeft}"
                             Canvas.Bottom="14"
                             IsVisible="{Binding Overlay.IsTimelinePreviewVisible}"
                             Background="#F0141414"

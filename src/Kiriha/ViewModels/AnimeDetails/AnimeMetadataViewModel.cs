@@ -77,7 +77,7 @@ public partial class AnimeMetadataViewModel : ObservableObject
         OnPropertyChanged(nameof(AllAlternativeTitles));
     }
 
-    public async Task LoadFullDetailsAsync()
+    public async Task<AnimeEntity?> LoadFullDetailsAsync()
     {
         var full = _anime.Presentation.IsManga
             ? await _malApiService.GetMangaDetailsAsync(_anime.Id)
@@ -89,5 +89,7 @@ public partial class AnimeMetadataViewModel : ObservableObject
             _anime.RefreshMetadata();
             NotifyMetadataChanged();
         }
+
+        return full;
     }
 }

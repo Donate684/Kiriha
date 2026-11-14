@@ -20,4 +20,5 @@ public interface ITrackerService
     Task<SyncOutcome> UpdateMangaProgressAsync(int mangaId, int chapters, int? volumes = null, UserAnimeStatus? status = null, int? score = null, CancellationToken ct = default);
     Task<List<AnimeEntity>> SearchMangaAsync(string query, CancellationToken ct = default);
     Task<AnimeEntity?> GetMangaDetailsAsync(int mangaId, CancellationToken ct = default);
+    Task<SyncOutcome> RemoveMangaAsync(int mangaId, CancellationToken ct = default);
 }

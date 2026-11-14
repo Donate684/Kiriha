@@ -31,34 +31,46 @@ public class AnimeProgressService : IProgressUpdateService
         _uiDispatcher = uiDispatcher;
     }
 
-    public async Task RemoveAnimeAsync(int animeId)
+    public Task RemoveAnimeAsync(int animeId) => RemoveAnimeAsync(animeId, MediaKind.Anime);
+
+    public async Task RemoveAnimeAsync(int animeId, MediaKind mediaKind)
     {
-        var item = _animeRepository.Collection.FirstOrDefault(x => x.Id == animeId)
-                ?? await _userAnimeRepo.GetByIdAsync(animeId);
+        bool isManga = mediaKind != MediaKind.Anime;
+        var item = _animeRepository.Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == mediaKind)
+                ?? (isManga
+                    ? await _userAnimeRepo.GetByIdAsync(animeId, mediaKind)
+                    : (await _userAnimeRepo.GetByIdAsync(animeId, mediaKind) ?? await _userAnimeRepo.GetByIdAsync(animeId)));
 
         if (item != null)
         {
+            int historyProgress = isManga ? item.ChaptersRead : item.Progress;
             await _historyService.AddEntryAsync(
                 item.Id,
                 item.Title,
                 item.RussianTitle,
-                item.Progress,
+                historyProgress,
                 "Deleted",
                 detail: null,
                 posterUrl: item.MainPictureUrl);
         }
 
         // Remove locally first so the UI is responsive even when offline.
-        await _animeRepository.RemoveAnimeLocalAsync(animeId);
+        if (isManga)
+            await _animeRepository.RemoveAnimeLocalAsync(animeId, mediaKind);
+        else
+            await _animeRepository.RemoveAnimeLocalAsync(animeId);
 
         // Persist a Remove sync task so the deletion is replayed against trackers
         try
         {
-            await _syncManager.EnqueueRemoveAsync(animeId);
+            if (isManga)
+                await _syncManager.EnqueueRemoveAsync(animeId, mediaKind);
+            else
+                await _syncManager.EnqueueRemoveAsync(animeId);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "AnimeProgressService: Failed to enqueue Remove sync task for {AnimeId}", animeId);
+            Log.Error(ex, "AnimeProgressService: Failed to enqueue Remove sync task for {AnimeId} ({MediaKind})", animeId, mediaKind);
         }
     }
 
@@ -206,9 +218,16 @@ public class AnimeProgressService : IProgressUpdateService
             item.Score = score <= 0 ? "-" : score.ToString();
         });
         await _userAnimeRepo.UpdateScoreAsync(item, item.Score);
+
+        bool isManga = item.MediaKind != MediaKind.Anime;
+        int displayProgress = isManga ? item.ChaptersRead : item.Progress;
+
         // Write history BEFORE sync.
-        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, item.Progress, "ScoreSet", score.ToString(), item.MainPictureUrl);
-        await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
+        await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, displayProgress, "ScoreSet", score.ToString(), item.MainPictureUrl);
+        if (isManga)
+            await _syncManager.EnqueueFullUpdateAsync(item);
+        else
+            await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
     }
 
     public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)

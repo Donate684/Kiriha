@@ -43,10 +43,16 @@ public partial class MalApiService
         return await SendPatchAsync(endpoint, values, ct);
     }
 
-    public async Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
+    public Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default) =>
+        RemoveEntryInternalAsync($"anime/{animeId}/my_list_status", ct);
+
+    public Task<SyncOutcome> RemoveMangaAsync(int mangaId, CancellationToken ct = default) =>
+        RemoveEntryInternalAsync($"manga/{mangaId}/my_list_status", ct);
+
+    private async Task<SyncOutcome> RemoveEntryInternalAsync(string endpoint, CancellationToken ct)
     {
         var statusCode = await SendRequestRawAsync(
-            () => new HttpRequestMessage(HttpMethod.Delete, MalBaseUrl + $"anime/{animeId}/my_list_status"),
+            () => new HttpRequestMessage(HttpMethod.Delete, MalBaseUrl + endpoint),
             ct);
 
         if (statusCode is null) return SyncOutcome.TransientFailure;

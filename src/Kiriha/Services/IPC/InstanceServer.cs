@@ -145,10 +145,9 @@ public class InstanceServer : BackgroundService
                     var existingWindow = desktop.Windows.OfType<PlayerWindow>().LastOrDefault();
                     if (existingWindow?.DataContext is PlayerViewModel existingVm)
                     {
-                        existingVm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
-                        if (cliMetadata != null)
+                        if (!string.IsNullOrWhiteSpace(videoUrl))
                         {
-                            existingVm.ApplyExternalMetadata(cliMetadata);
+                            existingVm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
                         }
                         existingWindow.Show();
                         existingWindow.Activate();
@@ -157,10 +156,6 @@ public class InstanceServer : BackgroundService
                 }
                 var initialMeta = cliMetadata ?? metadataResolver.Resolve(videoUrl);
                 var playerVm = new PlayerViewModel(videoUrl, initialMeta, metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>(), _serviceProvider.GetService<ITorrServerService>(), subtitleUrl, headers);
-                if (cliMetadata != null)
-                {
-                    playerVm.ApplyExternalMetadata(cliMetadata);
-                }
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
                 window.Activate();

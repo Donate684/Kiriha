@@ -1,5 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
 
@@ -55,7 +56,7 @@ public partial class SyncManager
 
     private async Task<(bool Success, bool Executed)> ExecuteTaskAsync(SyncTask task, CancellationToken ct)
     {
-        if (_latestTaskIds.TryGetValue(task.AnimeId, out var latest) && latest.Id > task.Id)
+        if (_latestTaskIds.TryGetValue((task.AnimeId, task.MediaKind), out var latest) && latest.Id > task.Id)
         {
             if (latest.Type == SyncTaskType.Remove)
             {
@@ -127,7 +128,9 @@ public partial class SyncManager
                     SyncTaskType.FullUpdate => task.FullItem != null
                         ? await tracker.SaveFullListStatusAsync(task.FullItem, ct)
                         : SyncOutcome.PermanentFailure,
-                    SyncTaskType.Remove => await tracker.RemoveAnimeAsync(task.AnimeId, ct),
+                    SyncTaskType.Remove => task.MediaKind != MediaKind.Anime
+                        ? await tracker.RemoveMangaAsync(task.AnimeId, ct)
+                        : await tracker.RemoveAnimeAsync(task.AnimeId, ct),
                     _ => SyncOutcome.PermanentFailure
                 };
 

@@ -105,6 +105,8 @@ public partial class AnimeEntity
         MediaKind = source.MediaKind;
         if (!string.IsNullOrEmpty(source.StatusDetailed)) StatusDetailed = source.StatusDetailed;
         if (source.TotalEpisodes > 0 && TotalEpisodes <= 0) TotalEpisodes = source.TotalEpisodes;
+        if (source.Chapters > 0 && Chapters <= 0) Chapters = source.Chapters;
+        if (source.Volumes > 0 && Volumes <= 0) Volumes = source.Volumes;
         if (!string.IsNullOrEmpty(source.MeanScore)) MeanScore = source.MeanScore;
         if (source.Popularity > 0) Popularity = source.Popularity;
         if (source.Rank > 0) Rank = source.Rank;
@@ -154,7 +156,10 @@ public partial class AnimeEntity
         }
 
         if (Status == UserAnimeStatus.None && source.Status != UserAnimeStatus.None)
+        {
             Status = source.Status;
+            PreserveUserFieldsFrom(source);
+        }
 
         RefreshMetadata();
     }

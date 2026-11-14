@@ -120,13 +120,18 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         var index = _index;
         foreach (var item in items)
         {
+            if (item.MediaKind != MediaKind.Anime)
+            {
+                item.Franchise = null;
+                continue;
+            }
             item.Franchise = index.TryGetValue(item.Id, out var ctx) ? ctx : null;
         }
     }
 
     public void EnqueueForResolution(AnimeEntity item)
     {
-        if (_isDisposed || item == null) return;
+        if (_isDisposed || item == null || item.MediaKind != MediaKind.Anime) return;
         if (item.Status == UserAnimeStatus.Completed || item.Status == UserAnimeStatus.Dropped) return;
 
         // Fast path: if already resolved in memory, apply immediately
@@ -318,7 +323,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
             }
 
             var userDict = userAnimeList
-                .Where(x => x.Status != UserAnimeStatus.None)
+                .Where(x => x.MediaKind == MediaKind.Anime && x.Status != UserAnimeStatus.None)
                 .DistinctBy(x => x.Id)
                 .ToDictionary(x => x.Id);
 

@@ -12,6 +12,7 @@ public partial class AnimeListView
     // dozens of parallel Opacity/Transform animations hurting scroll FPS.
     private DateTime _lastRevealEvent = DateTime.MinValue;
     private int _revealStaggerIndex;
+    private int _revealGeneration;
     // Start as active because ItemsRepeater may realize initial elements
     // before OnLoaded; BeginInitialRevealWindow restarts the timer there.
     private bool _initialRevealActive = true;
@@ -75,9 +76,14 @@ public partial class AnimeListView
     /// </summary>
     private void BeginInitialRevealWindow()
     {
+        int gen = ++_revealGeneration;
         _initialRevealActive = true;
         _revealStaggerIndex = 0;
-        DispatcherTimer.RunOnce(() => _initialRevealActive = false, InitialRevealWindow);
+        DispatcherTimer.RunOnce(() =>
+        {
+            if (_revealGeneration == gen)
+                _initialRevealActive = false;
+        }, InitialRevealWindow);
     }
 
     /// <summary>

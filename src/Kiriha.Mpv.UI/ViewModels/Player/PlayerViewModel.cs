@@ -77,7 +77,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
         _statePublisher.MetadataReceived += OnExternalMetadataReceived;
         _settingsApplier = new PlayerSettingsApplier(_playback);
-        _timelinePreview = new PlayerTimelinePreviewController(Overlay);
+        _timelinePreview = new PlayerTimelinePreviewController(Overlay, () => IsTorrentStream, () => StreamHeaders);
         Overlay.SkipPromptDismissed += OnOverlaySkipPromptDismissed;
         _playback.BufferingChanged += OnPlayerBufferingChanged;
         ApplyPlayerSettings();

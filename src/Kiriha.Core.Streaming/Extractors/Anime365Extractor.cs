@@ -129,6 +129,11 @@ public sealed partial class Anime365Extractor : IVideoExtractor
 
             if (dataProp.TryGetProperty("embedUrl", out var embedProp) && embedProp.GetString() is { } embedUrl && !string.IsNullOrWhiteSpace(embedUrl))
             {
+                if (embedUrl.StartsWith("//", StringComparison.Ordinal))
+                {
+                    embedUrl = "https:" + embedUrl;
+                }
+
                 var kodik = new KodikVideoExtractor(_httpClient);
                 if (kodik.CanExtract(embedUrl))
                 {
@@ -143,6 +148,16 @@ public sealed partial class Anime365Extractor : IVideoExtractor
                 if (sibnet.CanExtract(embedUrl))
                 {
                     var extVideos = await sibnet.ExtractVideosAsync(embedUrl, ct).ConfigureAwait(false);
+                    if (extVideos.Count > 0)
+                    {
+                        return extVideos.Select(v => v with { SubtitleUrl = subtitlesUrl ?? v.SubtitleUrl }).ToList();
+                    }
+                }
+
+                var aniboom = new AniboomVideoExtractor(_httpClient);
+                if (aniboom.CanExtract(embedUrl))
+                {
+                    var extVideos = await aniboom.ExtractVideosAsync(embedUrl, ct).ConfigureAwait(false);
                     if (extVideos.Count > 0)
                     {
                         return extVideos.Select(v => v with { SubtitleUrl = subtitlesUrl ?? v.SubtitleUrl }).ToList();
@@ -163,6 +178,10 @@ public sealed partial class Anime365Extractor : IVideoExtractor
     private string ResolveSubtitlesUrl(string subUrl)
     {
         if (string.IsNullOrWhiteSpace(subUrl)) return subUrl;
+        if (subUrl.StartsWith("//", StringComparison.Ordinal))
+        {
+            return "https:" + subUrl;
+        }
         if (subUrl.StartsWith('/'))
         {
             var host = _hostResolver?.ActiveMirror ?? StreamingConstants.Anime365.DefaultMirror;

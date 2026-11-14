@@ -23,7 +23,6 @@ public partial class ShikiApiService : IShikiApiService
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiRateLimiter _rateLimiter;
     private readonly ShikiMirror? _fixedMirror;
-    private readonly string _boundTrackerId;
 
     public string Name => _fixedMirror switch
     {
@@ -100,14 +99,6 @@ public partial class ShikiApiService : IShikiApiService
         _hostResolver = hostResolver;
         _rateLimiter = rateLimiter ?? new ShikiRateLimiter();
         _fixedMirror = fixedMirror;
-        _boundTrackerId = fixedMirror switch
-        {
-            ShikiMirror.Net => TrackerConstants.Ids.ShikiFork,
-            ShikiMirror.One => TrackerConstants.Ids.ShikiOrig,
-            _ => (_fixedMirror ?? _settingsService.Current.Api.ShikiMirror) == ShikiMirror.Net
-                ? TrackerConstants.Ids.ShikiFork
-                : TrackerConstants.Ids.ShikiOrig
-        };
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,

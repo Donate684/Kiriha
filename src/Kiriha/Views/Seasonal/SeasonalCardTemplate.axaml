@@ -24,14 +24,14 @@
             </Panel>
         </ControlTemplate>
 
-        <!-- ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ Compact Horizontal Card ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ -->
+        <!-- ═══════════ Compact Horizontal Card ═══════════ -->
         <DataTemplate x:Key="AnimeGridItemTemplate" x:DataType="entities:AnimeEntity">
             <Border Classes="AnimeCard revealItem FloatingMagCard" Margin="4" ClipToBounds="False"
                     CornerRadius="10" Background="{DynamicResource CardBackgroundFillSecondary}"
                     BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1">
                 <Grid ColumnDefinitions="110, *" DoubleTapped="Poster_DoubleTapped">
 
-                    <!-- ΓöÇΓöÇΓöÇ Left: Poster ΓöÇΓöÇΓöÇ -->
+                    <!-- ─── Left: Poster ─── -->
                     <Border Grid.Column="0" Width="110" Height="165" CornerRadius="9,0,0,9" ClipToBounds="True">
                         <Panel Width="110" Height="165">
                             <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
@@ -202,7 +202,7 @@
                     </Panel>
                     </Border>
 
-                    <!-- ΓöÇΓöÇΓöÇ Right: Info ΓöÇΓöÇΓöÇ -->
+                    <!-- ─── Right: Info ─── -->
                     <Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="11,10,10,10">
 
                         <!-- Row 0: EN title + RU title -->

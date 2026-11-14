@@ -187,7 +187,7 @@ public sealed partial class PlayerOverlayViewModel : ObservableObject, IDisposab
         IsTimelinePreviewVisible = true;
     }
 
-    public void SetTimelinePreviewImage(Bitmap image)
+    public void SetTimelinePreviewImage(Bitmap? image)
     {
         TimelinePreviewImage?.Dispose();
         TimelinePreviewImage = image;

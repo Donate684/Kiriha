@@ -109,13 +109,22 @@ public class RssFeedService : IRssFeedService
                 3 => "3rd",
                 _ => $"{s}th"
             };
+            string? romanNumeral = s switch
+            {
+                2 => "ii",
+                3 => "iii",
+                4 => "iv",
+                5 => "v",
+                6 => "vi",
+                _ => null
+            };
             string[] seasonMarkers = [$"season{s}", $"{ordinal}season", $"s{s}", $"part{s}"];
 
             foreach (var candidate in eligible)
             {
-                if (MatchesSequelCandidate(candidate.Title, normBase, seasonMarkers) ||
-                    MatchesSequelCandidate(candidate.EnglishTitle, normBase, seasonMarkers) ||
-                    candidate.AlternativeTitles.Any(alt => MatchesSequelCandidate(alt, normBase, seasonMarkers)))
+                if (MatchesSequelCandidate(candidate.Title, normBase, seasonMarkers, s, romanNumeral) ||
+                    MatchesSequelCandidate(candidate.EnglishTitle, normBase, seasonMarkers, s, romanNumeral) ||
+                    candidate.AlternativeTitles.Any(alt => MatchesSequelCandidate(alt, normBase, seasonMarkers, s, romanNumeral)))
                 {
                     return candidate;
                 }
@@ -138,10 +147,19 @@ public class RssFeedService : IRssFeedService
             if (yearMatch != null)
                 return yearMatch;
 
-            // Bare title fallback when year is present: require candidate to explicitly match effectiveYear
-            return eligible.FirstOrDefault(x =>
+            // Prefer candidate that explicitly matches effectiveYear
+            var explicitYearMatch = eligible.FirstOrDefault(x =>
                 (x.StartYear ?? x.AiringDate?.Year) is int y &&
                 Math.Abs(y - effectiveYear.Value) <= 1 &&
+                (NormalizeAlphaNum(x.Title) == normBase ||
+                 NormalizeAlphaNum(x.EnglishTitle) == normBase ||
+                 x.AlternativeTitles.Any(alt => NormalizeAlphaNum(alt) == normBase)));
+            if (explicitYearMatch != null)
+                return explicitYearMatch;
+
+            // Fallback to shallow Watching/PTW entries whose StartYear has not been hydrated yet
+            return eligible.FirstOrDefault(x =>
+                (x.StartYear ?? x.AiringDate?.Year) is null &&
                 (NormalizeAlphaNum(x.Title) == normBase ||
                  NormalizeAlphaNum(x.EnglishTitle) == normBase ||
                  x.AlternativeTitles.Any(alt => NormalizeAlphaNum(alt) == normBase)));
@@ -171,7 +189,12 @@ public class RssFeedService : IRssFeedService
         return !cy.HasValue || Math.Abs(cy.Value - parsedYear.Value) <= 1;
     }
 
-    private static bool MatchesSequelCandidate(string? candidateTitle, string normBase, string[] seasonMarkers)
+    private static bool MatchesSequelCandidate(
+        string? candidateTitle,
+        string normBase,
+        string[] seasonMarkers,
+        int seasonNumber,
+        string? romanNumeral)
     {
         var normCandidate = NormalizeAlphaNum(candidateTitle);
         if (string.IsNullOrEmpty(normCandidate) || !normCandidate.StartsWith(normBase, StringComparison.Ordinal))
@@ -184,7 +207,52 @@ public class RssFeedService : IRssFeedService
                 return true;
         }
 
+        if (!string.IsNullOrWhiteSpace(candidateTitle))
+        {
+            var tokens = TokenizeAlphaNumWords(candidateTitle);
+            int consumedChars = 0;
+            int idx = 0;
+            while (idx < tokens.Count && consumedChars < normBase.Length)
+            {
+                consumedChars += tokens[idx].Length;
+                idx++;
+            }
+
+            if (consumedChars == normBase.Length)
+            {
+                string numStr = seasonNumber.ToString();
+                for (int i = idx; i < tokens.Count; i++)
+                {
+                    if (tokens[i] == numStr || (romanNumeral != null && tokens[i] == romanNumeral))
+                        return true;
+                }
+            }
+        }
+
         return false;
+    }
+
+    private static List<string> TokenizeAlphaNumWords(string value)
+    {
+        var words = new List<string>();
+        int start = -1;
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (char.IsLetterOrDigit(value[i]))
+            {
+                if (start < 0) start = i;
+            }
+            else if (start >= 0)
+            {
+                words.Add(value[start..i].ToLowerInvariant());
+                start = -1;
+            }
+        }
+
+        if (start >= 0)
+            words.Add(value[start..].ToLowerInvariant());
+
+        return words;
     }
 
     private static string NormalizeAlphaNum(string? value)

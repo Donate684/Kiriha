@@ -12,7 +12,8 @@ public partial class ShikiApiService
 {
     private async Task<int?> GetEffectiveUserIdAsync(CancellationToken ct)
     {
-        var acc = _settingsService.Current.Api.GetAccount(_boundTrackerId);
+        var trackerId = TrackerId;
+        var acc = _settingsService.Current.Api.GetAccount(trackerId);
         if (acc?.Tokens is ShikiTokens accTokens && accTokens.UserId.HasValue)
         {
             return accTokens.UserId.Value;
@@ -23,7 +24,7 @@ public partial class ShikiApiService
         {
             _settingsService.Update(settings =>
             {
-                var targetAcc = settings.Api.GetAccount(_boundTrackerId);
+                var targetAcc = settings.Api.GetAccount(trackerId);
                 if (targetAcc?.Tokens is ShikiTokens st)
                 {
                     st.UserId = userId;
@@ -272,7 +273,13 @@ public partial class ShikiApiService
         return await PostAsync("v2/user_rates", payload, ct);
     }
 
-    public async Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
+    public Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default) =>
+        RemoveRateByTargetAsync(animeId, "Anime", ct);
+
+    public Task<SyncOutcome> RemoveMangaAsync(int mangaId, CancellationToken ct = default) =>
+        RemoveRateByTargetAsync(mangaId, "Manga", ct);
+
+    private async Task<SyncOutcome> RemoveRateByTargetAsync(int primaryId, string targetType, CancellationToken ct)
     {
         var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
         if (string.IsNullOrEmpty(token)) return SyncOutcome.PermanentFailure;
@@ -280,12 +287,12 @@ public partial class ShikiApiService
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
 
-        var targetId = ResolveShikiTargetId(animeId, "Anime");
+        var targetId = ResolveShikiTargetId(primaryId, targetType);
 
-        // 1. Check in-memory user_rate map (strictly "Anime_")
+        // 1. Check in-memory user_rate map (strictly "{targetType}_")
         int? userRateId = null;
-        if (_userRateMap.TryGetValue($"Anime_{targetId}", out var cachedRateId) ||
-            _userRateMap.TryGetValue($"Anime_{animeId}", out cachedRateId))
+        if (_userRateMap.TryGetValue($"{targetType}_{targetId}", out var cachedRateId) ||
+            _userRateMap.TryGetValue($"{targetType}_{primaryId}", out cachedRateId))
         {
             userRateId = cachedRateId;
         }
@@ -293,13 +300,13 @@ public partial class ShikiApiService
         // 2. Query Shikimori API if not found in memory
         if (userRateId == null)
         {
-            var (foundRateId, success) = await FindUserRateIdAsync(userId.Value, targetId, "Anime", ct);
+            var (foundRateId, success) = await FindUserRateIdAsync(userId.Value, targetId, targetType, ct);
             if (!success) return SyncOutcome.TransientFailure;
             userRateId = foundRateId;
 
-            if (userRateId == null && targetId != animeId)
+            if (userRateId == null && targetId != primaryId)
             {
-                var (altRateId, altSuccess) = await FindUserRateIdAsync(userId.Value, animeId, "Anime", ct);
+                var (altRateId, altSuccess) = await FindUserRateIdAsync(userId.Value, primaryId, targetType, ct);
                 if (!altSuccess) return SyncOutcome.TransientFailure;
                 userRateId = altRateId;
             }
@@ -307,16 +314,16 @@ public partial class ShikiApiService
 
         if (userRateId == null)
         {
-            Log.Information("ShikiApiService ({Tracker}): entry for anime {AnimeId} not found on Shikimori; treated as already removed.", Name, animeId);
+            Log.Information("ShikiApiService ({Tracker}): entry for {Type} {Id} not found on Shikimori; treated as already removed.", Name, targetType, primaryId);
             return SyncOutcome.Success;
         }
 
-        Log.Information("ShikiApiService ({Tracker}): deleting user rate {RateId} for anime {AnimeId}...", Name, userRateId.Value, animeId);
+        Log.Information("ShikiApiService ({Tracker}): deleting user rate {RateId} for {Type} {Id}...", Name, userRateId.Value, targetType, primaryId);
         var outcome = await DeleteAsync($"v2/user_rates/{userRateId.Value}", ct);
         if (outcome == SyncOutcome.Success)
         {
-            _userRateMap.TryRemove($"Anime_{targetId}", out _);
-            _userRateMap.TryRemove($"Anime_{animeId}", out _);
+            _userRateMap.TryRemove($"{targetType}_{targetId}", out _);
+            _userRateMap.TryRemove($"{targetType}_{primaryId}", out _);
         }
 
         return outcome;
@@ -479,10 +486,11 @@ public partial class ShikiApiService
 
         Log.Information("ShikiApiService ({Tracker}): Found {Count} items missing poster. Enriching via Shikimori GraphQL...", Name, missing.Count);
 
+        var targetType = isManga ? "Manga" : "Anime";
         var shikiIdMap = new Dictionary<int, List<AnimeEntity>>();
         foreach (var item in missing)
         {
-            var shikiId = ResolveShikiTargetId(item.Id);
+            var shikiId = ResolveShikiTargetId(item.Id, targetType);
             if (shikiId <= 0) continue;
             if (!shikiIdMap.TryGetValue(shikiId, out var group))
             {

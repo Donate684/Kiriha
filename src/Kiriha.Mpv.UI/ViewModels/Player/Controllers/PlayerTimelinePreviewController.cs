@@ -6,6 +6,8 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 public sealed class PlayerTimelinePreviewController : IDisposable
 {
     private readonly PlayerOverlayViewModel _overlay;
+    private readonly Func<bool>? _isTorrentStream;
+    private readonly Func<IReadOnlyDictionary<string, string>?>? _getStreamHeaders;
     private MpvThumbnailer? _thumbnailer;
     private CancellationTokenSource? _thumbnailCts;
     private CancellationTokenSource? _warmUpCts;
@@ -13,9 +15,14 @@ public sealed class PlayerTimelinePreviewController : IDisposable
     private int _previewBucket = -1;
     private int _displayedBucket = -1;
 
-    public PlayerTimelinePreviewController(PlayerOverlayViewModel overlay)
+    public PlayerTimelinePreviewController(
+        PlayerOverlayViewModel overlay,
+        Func<bool>? isTorrentStream = null,
+        Func<IReadOnlyDictionary<string, string>?>? getStreamHeaders = null)
     {
         _overlay = overlay;
+        _isTorrentStream = isTorrentStream;
+        _getStreamHeaders = getStreamHeaders;
     }
 
     public void Initialize()
@@ -35,11 +42,21 @@ public sealed class PlayerTimelinePreviewController : IDisposable
         {
             _overlay.ShowTimelinePreview(timeSeconds, left, segmentLabel);
 
+            // Never spin up a second libmpv instance against TorrServer's 0-disk RAM preload stream:
+            // concurrent random seeks evict pieces ahead of the active playback cursor and stall video.
+            if (_isTorrentStream?.Invoke() == true)
+            {
+                _overlay.SetTimelinePreviewImage(null);
+                return;
+            }
+
+            var headers = _getStreamHeaders?.Invoke();
+
             if (_thumbnailer is null)
             {
                 _thumbnailer = CreateThumbnailer();
                 if (_thumbnailer != null)
-                    _thumbnailer.WarmUpAsync(videoUrl, default);
+                    _ = _thumbnailer.WarmUpAsync(videoUrl, default, headers);
             }
 
             var thumbnailer = _thumbnailer;
@@ -60,7 +77,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             
             var token = _thumbnailCts.Token;
 
-            _ = ShowThumbnailAsync(thumbnailer, videoUrl, timeSeconds, bucket, requestId, token);
+            _ = ShowThumbnailAsync(thumbnailer, videoUrl, timeSeconds, bucket, requestId, headers, token);
         }
         catch (Exception ex)
         {
@@ -68,7 +85,14 @@ public sealed class PlayerTimelinePreviewController : IDisposable
         }
     }
 
-    private async Task ShowThumbnailAsync(MpvThumbnailer thumbnailer, string videoUrl, double timeSeconds, int bucket, int requestId, CancellationToken token)
+    private async Task ShowThumbnailAsync(
+        MpvThumbnailer thumbnailer,
+        string videoUrl,
+        double timeSeconds,
+        int bucket,
+        int requestId,
+        IReadOnlyDictionary<string, string>? headers,
+        CancellationToken token)
     {
         try
         {
@@ -77,7 +101,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             if (token.IsCancellationRequested || requestId != _requestId)
                 return;
 
-            var frame = await thumbnailer.GetThumbnailAsync(videoUrl, timeSeconds, token);
+            var frame = await thumbnailer.GetThumbnailAsync(videoUrl, timeSeconds, token, headers);
             if (token.IsCancellationRequested || requestId != _requestId || frame is null)
                 return;
 
@@ -149,9 +173,14 @@ public sealed class PlayerTimelinePreviewController : IDisposable
     public void WarmUp(string videoUrl)
     {
         _overlay.ClearTimelinePreview();
+        if (_isTorrentStream?.Invoke() == true)
+            return;
+
         var thumbnailer = _thumbnailer;
         if (thumbnailer is null || string.IsNullOrWhiteSpace(videoUrl))
             return;
+
+        var headers = _getStreamHeaders?.Invoke();
 
         _warmUpCts?.Cancel();
         _warmUpCts?.Dispose();
@@ -163,7 +192,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             if (token.IsCancellationRequested || !IsValidVideoSource(videoUrl))
                 return Task.CompletedTask;
 
-            return thumbnailer.WarmUpAsync(videoUrl, token)
+            return thumbnailer.WarmUpAsync(videoUrl, token, headers)
                 .ContinueWith(task =>
                 {
                     if (task.Exception != null)

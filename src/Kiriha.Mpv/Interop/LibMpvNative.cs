@@ -40,8 +40,60 @@ public static class LibMpvNative
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mpv_set_property(IntPtr ctx, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int format, ref double data);
 
+    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mpv_set_property")]
+    public static extern int mpv_set_property_node(IntPtr ctx, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int format, ref MpvNode data);
+
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mpv_set_property_string(IntPtr ctx, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, [MarshalAs(UnmanagedType.LPUTF8Str)] string data);
+
+    /// <summary>
+    /// Sets <c>http-header-fields</c> via <see cref="MPV_FORMAT_NODE_ARRAY"/> so header values
+    /// containing commas (e.g. <c>Accept</c> or <c>User-Agent</c>) are passed intact without
+    /// libmpv's string-list comma splitting.
+    /// </summary>
+    public static unsafe void SetHttpHeaderFields(IntPtr handle, IReadOnlyList<string> headers)
+    {
+        if (headers is null || headers.Count == 0)
+        {
+            mpv_set_property_string(handle, "http-header-fields", string.Empty);
+            return;
+        }
+
+        int count = headers.Count;
+        var utf8Ptrs = new IntPtr[count];
+        try
+        {
+            var nodes = new MpvNode[count];
+            for (int i = 0; i < count; i++)
+            {
+                utf8Ptrs[i] = Marshal.StringToCoTaskMemUTF8(headers[i]);
+                nodes[i] = new MpvNode
+                {
+                    Format = MPV_FORMAT_STRING,
+                    U = new MpvNodeUnion { String = utf8Ptrs[i] }
+                };
+            }
+
+            fixed (MpvNode* pNodes = nodes)
+            {
+                var list = new MpvNodeList(count, (IntPtr)pNodes, IntPtr.Zero);
+                var arrayNode = new MpvNode
+                {
+                    Format = MPV_FORMAT_NODE_ARRAY,
+                    U = new MpvNodeUnion { List = (IntPtr)(&list) }
+                };
+                mpv_set_property_node(handle, "http-header-fields", MPV_FORMAT_NODE_ARRAY, ref arrayNode);
+            }
+        }
+        finally
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (utf8Ptrs[i] != IntPtr.Zero)
+                    Marshal.FreeCoTaskMem(utf8Ptrs[i]);
+            }
+        }
+    }
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mpv_get_property(IntPtr ctx, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int format, out double data);

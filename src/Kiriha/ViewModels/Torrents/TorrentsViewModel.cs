@@ -127,6 +127,7 @@ public partial class TorrentsViewModel : ViewModelBase
     public bool HasOnlineResults => IsOnlineMode && OnlineResults.Count > 0;
 
     private string? _currentStreamingHash;
+    private string? _launchedStreamingHash;
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _modalCts;
     private CancellationTokenSource? _launchCts;

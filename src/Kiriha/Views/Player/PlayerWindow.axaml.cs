@@ -25,6 +25,7 @@ public partial class PlayerWindow : Window
     // Chapter markers
     private Border? _topBar;
     private Border? _bottomBar;
+    private Border? _timelinePreviewBorder;
     private Slider? _timelineSlider;
     private Views.Player.Controls.PlayerControlBar? _controlBar;
     private Button? _settingsButton;
@@ -216,7 +217,15 @@ public partial class PlayerWindow : Window
         {
             if (desktop.MainWindow == this)
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+                var nextPlayerWindow = desktop.Windows.OfType<PlayerWindow>().FirstOrDefault(w => w != this && w.IsVisible);
+                if (nextPlayerWindow != null)
+                {
+                    desktop.MainWindow = nextPlayerWindow;
+                }
+                else
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+                }
             }
         }
     }
@@ -225,6 +234,7 @@ public partial class PlayerWindow : Window
     {
         _topBar = this.FindControl<Border>("TopBar");
         _bottomBar = this.FindControl<Border>("BottomBar");
+        _timelinePreviewBorder = this.FindControl<Border>("TimelinePreviewBorder");
         _timelineSlider = this.FindControl<Slider>("TimelineSlider");
         _controlBar = this.FindControl<Views.Player.Controls.PlayerControlBar>("ControlBar");
         _settingsButton = this.FindControl<Button>("SettingsButton");

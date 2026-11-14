@@ -13,15 +13,15 @@ public static class OnlineRelevanceScorer
 
     internal static bool HasUnpromptedSequelTokens(string query, string candidate)
     {
-        var remainder = candidate.Length > query.Length ? candidate[query.Length..] : string.Empty;
-        var remainderWords = remainder.Split([' ', ':', '-', '_', '(', ')', '[', ']', '.'], StringSplitOptions.RemoveEmptyEntries);
-        var queryWords = query.Split([' ', ':', '-', '_', '(', ')', '[', ']', '.'], StringSplitOptions.RemoveEmptyEntries);
+        char[] separators = [' ', ':', '-', '_', '(', ')', '[', ']', '.'];
+        var candidateWords = candidate.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+        var queryWords = query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var rw in remainderWords)
+        foreach (var cw in candidateWords)
         {
             foreach (var token in SequelTokens)
             {
-                if (string.Equals(rw, token, StringComparison.OrdinalIgnoreCase) &&
+                if (string.Equals(cw, token, StringComparison.OrdinalIgnoreCase) &&
                     !queryWords.Any(qw => string.Equals(qw, token, StringComparison.OrdinalIgnoreCase)))
                 {
                     return true;

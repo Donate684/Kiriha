@@ -20,15 +20,22 @@ public partial class MappingService
         var (cleanTitle, searchQuery, _, parsedEpisode, parsedYear) = ParseAnimeTitle(title);
 
         string normQuery = Normalize(searchQuery);
+        UserListIndex? currentIndex;
+        lock (_indexLock) currentIndex = _cachedIndex;
+
         if (_sessionCache.TryGetValue(normQuery, out int cachedId))
-            return cachedId == 0 ? null : cachedId;
+        {
+            if (cachedId == 0)
+                return null;
+
+            var sessIndexed = currentIndex?.FindById(cachedId);
+            if (sessIndexed == null || IsValidMatch(sessIndexed, parsedEpisode, parsedYear))
+                return cachedId;
+        }
 
         var cachedMatches = _recognitionCache.Search(normQuery);
         if (cachedMatches != null)
         {
-            UserListIndex? currentIndex;
-            lock (_indexLock) currentIndex = _cachedIndex;
-
             foreach (var m in cachedMatches.OrderByDescending(m => m.Weight))
             {
                 if (m.Id == 0) continue;
@@ -66,8 +73,19 @@ public partial class MappingService
                     }
                     else
                     {
-                        _sessionCache[normQuery] = dbHit.AnimeId; // promote to L1
-                        return dbHit.AnimeId == 0 ? null : dbHit.AnimeId;
+                        if (dbHit.AnimeId == 0)
+                        {
+                            _sessionCache[normQuery] = 0;
+                            return null;
+                        }
+
+                        var dbIndexed = currentIndex?.FindById(dbHit.AnimeId);
+                        if (dbIndexed == null || IsValidMatch(dbIndexed, parsedEpisode, parsedYear))
+                        {
+                            _sessionCache[normQuery] = dbHit.AnimeId; // promote to L1
+                            return dbHit.AnimeId;
+                        }
+                        // Otherwise fall through to live API for episode/year disambiguation.
                     }
                 }
             }

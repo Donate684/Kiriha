@@ -52,9 +52,71 @@ public partial class PlayerViewModel
         _playback.AddSubtitle(path, select);
     }
 
+    public void StartInitialPlayback()
+    {
+        if (string.IsNullOrWhiteSpace(VideoUrl))
+            return;
+
+        var normalizedUrl = VideoUrl.Trim().Trim('"');
+        try
+        {
+            if (System.IO.Path.IsPathRooted(normalizedUrl))
+            {
+                normalizedUrl = System.IO.Path.GetFullPath(normalizedUrl);
+            }
+        }
+        catch
+        {
+            // Ignore path normalization failure for URLs/streams
+        }
+
+        if (!string.Equals(VideoUrl, normalizedUrl, StringComparison.Ordinal))
+        {
+            _suppressVideoUrlResolution = true;
+            _previousVideoUrlForMetadata = normalizedUrl;
+            VideoUrl = normalizedUrl;
+        }
+
+        Overlay.DismissResumePrompt();
+        _isEofReached = false;
+        ApplyTimelineSnapshot(_timeline.Reset());
+        _subtitleDelay = 0;
+        IsPlaying = PlayerAutoPlay;
+        if (IsPlaying)
+        {
+            Kiriha.Infrastructure.Utils.PowerManager.KeepDisplayActive();
+            _timer?.Start();
+        }
+        else
+        {
+            Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
+            _timer?.Stop();
+        }
+
+        IsLoading = true;
+        HasPlaybackError = false;
+        PlaybackErrorMessage = string.Empty;
+        PlaybackStatusMessage = IsTorrentStream && !string.IsNullOrEmpty(TorrentStatusText)
+            ? TorrentStatusText
+            : _localizer.GetLoc("player.state.loading");
+
+        if (!_playback.HasPlayer)
+            return;
+
+        if (!PlayerAutoPlay)
+            _playback.Pause();
+
+        _playback.Load(VideoUrl, StreamHeaders);
+
+        if (PlayerAutoPlay)
+            _playback.Play();
+
+        _statePublisher.Publish();
+    }
+
     public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null, IReadOnlyDictionary<string, string>? headers = null)
     {
-        if (headers != null) StreamHeaders = headers;
+        StreamHeaders = headers;
         if (subtitleUrl != null)
         {
             _pendingSubtitleUrl = subtitleUrl;

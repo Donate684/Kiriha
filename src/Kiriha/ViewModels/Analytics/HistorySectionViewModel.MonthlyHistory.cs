@@ -59,8 +59,8 @@ public partial class HistorySectionViewModel
                         : (isLightTheme ? "#FF1F2937" : "#FFE5E7EB"),
                     IsCurrentMonth = year == now.Year && month == now.Month,
                     Tooltip = mean > 0
-                        ? string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), $"{monthLabel} {year}", mean.ToString("0.00"))
-                        : string.Format(LocalizationStore.Translate("analytics.history.completed_count"), $"{monthLabel} {year}")
+                        ? $"{monthLabel} {year} — {string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), count, mean.ToString("0.00"))}"
+                        : $"{monthLabel} {year} — {string.Format(LocalizationStore.Translate("analytics.history.completed_count"), count)}"
                 };
 
                 if (entries != null)

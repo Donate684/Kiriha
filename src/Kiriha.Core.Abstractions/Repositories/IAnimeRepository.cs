@@ -19,4 +19,5 @@ public interface IAnimeRepository
     void AddToCollection(AnimeEntity entity);
     Task ApplySyncBatchAsync(List<AnimeEntity> toRemove, List<System.Action> uiBatch);
     Task RemoveAnimeLocalAsync(int animeId);
+    Task RemoveAnimeLocalAsync(int animeId, MediaKind kind);
 }

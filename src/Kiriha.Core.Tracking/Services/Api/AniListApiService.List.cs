@@ -192,7 +192,7 @@ public partial class AniListApiService
             return UpdateMangaProgressAsync(
                 item.Id,
                 item.ChaptersRead,
-                item.VolumesRead > 0 ? item.VolumesRead : null,
+                item.VolumesRead,
                 item.Status,
                 score,
                 ct);
@@ -208,9 +208,15 @@ public partial class AniListApiService
             ct);
     }
 
-    public async Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default)
+    public Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default) =>
+        RemoveMediaEntryAsync(animeId, "ANIME", ct);
+
+    public Task<SyncOutcome> RemoveMangaAsync(int mangaId, CancellationToken ct = default) =>
+        RemoveMediaEntryAsync(mangaId, "MANGA", ct);
+
+    private async Task<SyncOutcome> RemoveMediaEntryAsync(int primaryId, string mediaType, CancellationToken ct)
     {
-        var (mediaId, resolveOutcome) = await ResolveAniListMediaIdAsync(animeId, "ANIME", ct);
+        var (mediaId, resolveOutcome) = await ResolveAniListMediaIdAsync(primaryId, mediaType, ct);
         if (mediaId == null || mediaId <= 0)
         {
             return resolveOutcome == SyncOutcome.PermanentFailure ? SyncOutcome.Success : resolveOutcome;
@@ -252,7 +258,7 @@ public partial class AniListApiService
                         delEntry.TryGetProperty("deleted", out var deletedProp) &&
                         deletedProp.GetBoolean())
                     {
-                        Log.Information("AniList: removed entry {EntryId} for anime {AnimeId}", entryId, animeId);
+                        Log.Information("AniList: removed entry {EntryId} for {Type} {PrimaryId}", entryId, mediaType, primaryId);
                         return SyncOutcome.Success;
                     }
                     return SyncOutcome.TransientFailure;
@@ -268,7 +274,7 @@ public partial class AniListApiService
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "AniList: error removing anime {AnimeId}", animeId);
+            Log.Error(ex, "AniList: error removing {Type} {PrimaryId}", mediaType, primaryId);
             return SyncOutcome.TransientFailure;
         }
     }

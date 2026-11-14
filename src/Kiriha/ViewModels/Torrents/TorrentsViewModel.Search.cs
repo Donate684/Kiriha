@@ -263,11 +263,17 @@ public partial class TorrentsViewModel
     }
 
     [RelayCommand]
+    public void DismissStreamingError() => StreamingErrorMessage = null;
+
+    [RelayCommand]
     public async Task PlayTorrentAsync(TorrentEntity torrent)
     {
         if (torrent is null) return;
         var link = !string.IsNullOrWhiteSpace(torrent.MagnetLink) ? torrent.MagnetLink : torrent.DownloadLink;
         if (string.IsNullOrWhiteSpace(link)) return;
+
+        StreamingErrorMessage = null;
+        CancellationToken launchToken = default;
 
         try
         {
@@ -303,7 +309,7 @@ public partial class TorrentsViewModel
 
                 _currentStreamingHash = status.Hash;
 
-                var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(25), ct);
+                var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(35), ct);
                 var videoFiles = files.Where(f => f.IsVideo).ToList();
 
                 if (videoFiles.Count == 0)
@@ -336,6 +342,7 @@ public partial class TorrentsViewModel
                 _launchCts?.Dispose();
                 _launchCts = new CancellationTokenSource();
                 var ct = _launchCts.Token;
+                launchToken = ct;
 
                 IsPlayerLaunching = true;
                 PlayerLaunchingTitle = torrent.Title;
@@ -345,6 +352,7 @@ public partial class TorrentsViewModel
                 {
                     Log.Warning("TorrentsViewModel: TorrServer is not ready");
                     IsPlayerLaunching = false;
+                    StreamingErrorMessage = _localizer.GetLoc("torrents.streaming.start_failed");
                     return;
                 }
 
@@ -353,21 +361,23 @@ public partial class TorrentsViewModel
                 {
                     Log.Warning("TorrentsViewModel: Failed to add torrent to TorrServer");
                     IsPlayerLaunching = false;
+                    StreamingErrorMessage = _localizer.GetLoc("torrents.streaming.add_failed");
                     return;
                 }
 
                 _currentStreamingHash = status.Hash;
 
-                // Wait up to 15 seconds for TorrServer to connect to peers and resolve torrent metadata
-                var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(15), ct);
+                // Wait briefly for TorrServer to resolve file list; if metadata is still resolving over DHT/peers,
+                // hand off directly to the player so libmpv + TorrServer resolve on '&play' while showing peer status.
+                var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(12), ct);
                 var videoFiles = files.Where(f => f.IsVideo).ToList();
-                if (videoFiles.Count == 0)
+                if (files.Count > 0 && videoFiles.Count == 0)
                 {
-                    Log.Warning("TorrentsViewModel: No video files found in torrent {Hash} (0 seeds or dead magnet)", status.Hash);
+                    Log.Warning("TorrentsViewModel: Torrent {Hash} resolved metadata ({Count} files) with no video files", status.Hash, files.Count);
                     await _torrServer.DropTorrentAsync(status.Hash, ct).ConfigureAwait(false);
                     _currentStreamingHash = null;
                     IsPlayerLaunching = false;
-                    EpisodeSelectorError = _localizer.GetLoc("torrents.streaming.no_video");
+                    StreamingErrorMessage = _localizer.GetLoc("torrents.streaming.no_video");
                     return;
                 }
 
@@ -375,10 +385,18 @@ public partial class TorrentsViewModel
                 var fileId = targetFile?.Id ?? -1;
                 var fileName = targetFile?.FileName ?? (torrent.Title + ".mkv");
 
-                var streamUrl = _torrServer.GetStreamUrl(status.Hash, fileId, fileName);
-                LaunchStream(streamUrl, torrent, fileName);
+                var streamHash = status.Hash;
+                _currentStreamingHash = null;
+                _launchedStreamingHash = streamHash;
 
-                await WaitForPlayerWakeupAsync(status.Hash, torrent.Title, ct).ConfigureAwait(false);
+                var streamUrl = _torrServer.GetStreamUrl(streamHash, fileId, fileName);
+                LaunchStream(streamUrl, torrent, fileName, streamHash);
+
+                await WaitForPlayerWakeupAsync(streamHash, torrent.Title, ct).ConfigureAwait(false);
+                if (string.Equals(_launchedStreamingHash, streamHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    _launchedStreamingHash = null;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -393,10 +411,14 @@ public partial class TorrentsViewModel
                 EpisodeSelectorError = string.Format(_localizer.GetLoc(PlaybackErrorLocKey), ex.Message);
                 IsEpisodeSelectorLoading = false;
             }
+            else if (!torrent.IsBatch)
+            {
+                StreamingErrorMessage = string.Format(_localizer.GetLoc(PlaybackErrorLocKey), ex.Message);
+            }
         }
         finally
         {
-            if (!torrent.IsBatch)
+            if (!torrent.IsBatch && !launchToken.IsCancellationRequested)
             {
                 Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
             }
@@ -410,7 +432,11 @@ public partial class TorrentsViewModel
             return;
 
         var torrent = ActiveStreamingTorrent;
-        var streamUrl = _torrServer.GetStreamUrl(_currentStreamingHash, file.Id, file.FileName);
+        var streamHash = _currentStreamingHash;
+        _currentStreamingHash = null;
+        _launchedStreamingHash = streamHash;
+
+        var streamUrl = _torrServer.GetStreamUrl(streamHash, file.Id, file.FileName);
         CloseEpisodeSelector(dropTorrent: false);
 
         _launchCts?.Cancel();
@@ -423,8 +449,12 @@ public partial class TorrentsViewModel
 
         try
         {
-            LaunchStream(streamUrl, torrent, file.FileName);
-            await WaitForPlayerWakeupAsync(_currentStreamingHash, torrent.Title, ct).ConfigureAwait(false);
+            LaunchStream(streamUrl, torrent, file.FileName, streamHash);
+            await WaitForPlayerWakeupAsync(streamHash, torrent.Title, ct).ConfigureAwait(false);
+            if (string.Equals(_launchedStreamingHash, streamHash, StringComparison.OrdinalIgnoreCase))
+            {
+                _launchedStreamingHash = null;
+            }
         }
         catch (OperationCanceledException)
         {
@@ -432,7 +462,10 @@ public partial class TorrentsViewModel
         }
         finally
         {
-            Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
+            if (!ct.IsCancellationRequested)
+            {
+                Dispatcher.UIThread.Post(() => IsPlayerLaunching = false);
+            }
         }
     }
 
@@ -472,10 +505,11 @@ public partial class TorrentsViewModel
     {
         _launchCts?.Cancel();
         IsPlayerLaunching = false;
-        if (!string.IsNullOrEmpty(_currentStreamingHash))
+        var hash = !string.IsNullOrEmpty(_currentStreamingHash) ? _currentStreamingHash : _launchedStreamingHash;
+        _currentStreamingHash = null;
+        _launchedStreamingHash = null;
+        if (!string.IsNullOrEmpty(hash))
         {
-            var hash = _currentStreamingHash;
-            _currentStreamingHash = null;
             _ = Task.Run(async () =>
             {
                 try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
@@ -509,7 +543,7 @@ public partial class TorrentsViewModel
             {
                 matches = true;
             }
-            else if (state.IsLoading || state.IsBuffering || state.IsPlaying)
+            else if (string.IsNullOrEmpty(torrentHash) && (state.IsLoading || state.IsBuffering || state.IsPlaying))
             {
                 matches = true;
             }
@@ -542,10 +576,24 @@ public partial class TorrentsViewModel
         }
     }
 
-    private void LaunchStream(string streamUrl, TorrentEntity torrent, string fileName)
+    private void LaunchStream(string streamUrl, TorrentEntity torrent, string fileName, string? torrentHash)
     {
         var originalTitle = !string.IsNullOrWhiteSpace(fileName) ? fileName : torrent.Title;
-        var episode = !string.IsNullOrWhiteSpace(torrent.Episode) ? torrent.Episode : null;
+        string? episode = null;
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            var parsedFromFile = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(fileName)).Episode;
+            if (int.TryParse(parsedFromFile, out _))
+            {
+                episode = parsedFromFile;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(episode) && !string.IsNullOrWhiteSpace(torrent.Episode) && !torrent.IsBatch)
+        {
+            episode = torrent.Episode;
+        }
+
         var effectiveSelected = IsSelectedAnimeCompatibleWithTorrent(SelectedAnime, torrent, originalTitle)
             ? SelectedAnime
             : null;
@@ -561,7 +609,7 @@ public partial class TorrentsViewModel
                 episode ?? string.Empty,
                 effectiveSelected?.Id,
                 titleEn,
-                _currentStreamingHash ?? string.Empty);
+                torrentHash ?? string.Empty);
 
             _internalPlayerServer.SendMetadataAsync(initialMeta).SafeFireAndForget("Torrents.SendMetadata");
         }
@@ -572,7 +620,7 @@ public partial class TorrentsViewModel
             titleEn: titleEn,
             episode: episode,
             animeId: effectiveSelected?.Id,
-            torrentHash: _currentStreamingHash,
+            torrentHash: torrentHash,
             originalTitle: originalTitle);
     }
 
@@ -581,7 +629,7 @@ public partial class TorrentsViewModel
         if (selected is null || selected.MediaKind != MediaKind.Anime)
             return false;
 
-        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(originalTitle);
+        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(originalTitle));
         if (string.IsNullOrWhiteSpace(parsed.Title))
             parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
 
@@ -590,35 +638,49 @@ public partial class TorrentsViewModel
             int? sy = selected.StartYear ?? selected.AiringDate?.Year;
             if (sy.HasValue && System.Math.Abs(sy.Value - parsed.Year.Value) > 1)
                 return false;
-
-            if (!sy.HasValue)
-            {
-                string ys = parsed.Year.Value.ToString();
-                bool titleHasYear = selected.Title.Contains(ys, StringComparison.Ordinal) ||
-                                    (selected.EnglishTitle?.Contains(ys, StringComparison.Ordinal) == true) ||
-                                    (selected.RussianTitle?.Contains(ys, StringComparison.Ordinal) == true);
-                if (!titleHasYear)
-                    return false;
-            }
         }
 
         if (!UseCustomQuery && parsed.Season is > 1)
         {
             int s = parsed.Season.Value;
-            string normSel = Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(selected.Title);
-            string normEn = Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(selected.EnglishTitle ?? string.Empty);
             string seasonToken = s.ToString();
-            bool hasSeasonMarker = normSel.Split(' ').Contains(seasonToken) ||
-                                   normEn.Split(' ').Contains(seasonToken) ||
-                                   selected.AlternativeTitles.Any(alt => Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(alt).Split(' ').Contains(seasonToken));
+            string[] romanTokens = s switch
+            {
+                2 => ["ii", "2nd", "second"],
+                3 => ["iii", "3rd", "third"],
+                4 => ["iv", "4th", "fourth"],
+                _ => []
+            };
+
+            static bool TitleHasSeasonSignal(string? raw, string seasonToken, string[] romanTokens)
+            {
+                if (string.IsNullOrWhiteSpace(raw)) return false;
+                var words = Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(raw).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (words.Contains(seasonToken)) return true;
+                foreach (var r in romanTokens)
+                {
+                    if (words.Contains(r)) return true;
+                }
+                return raw.Contains(':', StringComparison.Ordinal) || raw.Contains(" - ", StringComparison.Ordinal);
+            }
+
+            bool hasSeasonMarker = TitleHasSeasonSignal(selected.Title, seasonToken, romanTokens) ||
+                                   TitleHasSeasonSignal(selected.EnglishTitle, seasonToken, romanTokens) ||
+                                   TitleHasSeasonSignal(selected.RussianTitle, seasonToken, romanTokens) ||
+                                   selected.AlternativeTitles.Any(alt => TitleHasSeasonSignal(alt, seasonToken, romanTokens));
             if (!hasSeasonMarker)
                 return false;
         }
 
+        var epCandidate = !string.IsNullOrWhiteSpace(parsed.Episode) ? parsed.Episode : torrent.Episode;
         if (!UseCustomQuery &&
-            int.TryParse(torrent.Episode, out int epNum) &&
+            HasSearchQuery &&
+            int.TryParse(epCandidate, out int epNum) &&
             selected.TotalEpisodes > 1 &&
-            epNum > selected.TotalEpisodes)
+            epNum > selected.TotalEpisodes &&
+            !string.Equals(SearchQuery, selected.Title, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(SearchQuery, selected.EnglishTitle, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(SearchQuery, selected.RussianTitle, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

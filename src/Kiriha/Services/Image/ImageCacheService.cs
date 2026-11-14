@@ -17,7 +17,7 @@ public class ImageCacheService : IImageCacheService, IDisposable
     private readonly ImageCacheCleanup _cleanup;
 
     private readonly SemaphoreSlim _decodeSemaphore = new(12, 12);
-    private readonly ConcurrentDictionary<string, string> _urlToPathMap = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, string> _urlToPathMap = new(StringComparer.Ordinal);
 
     private readonly BitmapMemoryCache _memCache = new(
         encodedBudgetBytes: 48L * 1024 * 1024,
