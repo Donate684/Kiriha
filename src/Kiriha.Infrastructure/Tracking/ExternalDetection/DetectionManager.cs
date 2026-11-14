@@ -186,7 +186,7 @@ public class DetectionManager
                 {
                     if (!hWndEvaluated)
                     {
-                        hWnd = Win32Api.FindMainWindow(pid);
+                        hWnd = Win32Api.FindMainWindow(pid, player.WindowClasses);
                         hWndEvaluated = true;
                     }
 

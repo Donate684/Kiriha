@@ -198,7 +198,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                         Dispatcher.UIThread.Post(() => item.Franchise = resolvedCtx);
                     }
                 }
-                else
+                else if (data != null)
                 {
                     // Standalone or not found: record empty relations to avoid repeated queries
                     await _relationRepo.ReplaceAsync(item.Id, [], ct).ConfigureAwait(false);
@@ -222,15 +222,44 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         await RebuildIndexAsync(ct).ConfigureAwait(false);
     }
 
+    private static bool IsAnimeNode(ShikiFranchiseNode node)
+    {
+        if (!string.IsNullOrEmpty(node.Url))
+        {
+            if (node.Url.Contains("/animes/", StringComparison.OrdinalIgnoreCase)) return true;
+            if (node.Url.Contains("/mangas/", StringComparison.OrdinalIgnoreCase) ||
+                node.Url.Contains("/ranobe/", StringComparison.OrdinalIgnoreCase)) return false;
+        }
+
+        if (string.IsNullOrEmpty(node.Kind)) return true;
+
+        return !string.Equals(node.Kind, "manga", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "ranobe", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "novel", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "light_novel", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "doujin", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "manhwa", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "manhua", StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(node.Kind, "one_shot", StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task IngestFranchiseResponseAsync(int requestedId, ShikiFranchiseResponse data, CancellationToken ct)
     {
-        var nodeNames = data.Nodes?.ToDictionary(n => n.Id, n => n.Name) ?? new Dictionary<int, string>();
+        var animeNodes = data.Nodes != null
+            ? data.Nodes.Where(IsAnimeNode).ToList()
+            : new List<ShikiFranchiseNode>();
+
+        var animeNodeIds = animeNodes.Select(n => n.Id).ToHashSet();
+        var nodeNames = animeNodes.ToDictionary(n => n.Id, n => n.Name);
         var allRelations = new List<AnimeRelation>();
 
         if (data.Links != null)
         {
             foreach (var link in data.Links)
             {
+                if (!animeNodeIds.Contains(link.SourceId) || !animeNodeIds.Contains(link.TargetId))
+                    continue;
+
                 allRelations.Add(new AnimeRelation
                 {
                     SourceMalId = link.SourceId,
@@ -255,18 +284,15 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
             await _relationRepo.ReplaceAsync(srcId, rels, ct).ConfigureAwait(false);
         }
 
-        // Also ensure any other nodes in this franchise graph without outgoing links get their meta marked
-        if (data.Nodes != null)
+        // Also ensure any other anime nodes in this franchise graph without outgoing links get their meta marked
+        foreach (var node in animeNodes)
         {
-            foreach (var node in data.Nodes)
+            if (!groups.ContainsKey(node.Id))
             {
-                if (!groups.ContainsKey(node.Id))
+                var metaFetched = await _relationRepo.GetFetchedAtAsync(node.Id, ct).ConfigureAwait(false);
+                if (metaFetched == null)
                 {
-                    var metaFetched = await _relationRepo.GetFetchedAtAsync(node.Id, ct).ConfigureAwait(false);
-                    if (metaFetched == null)
-                    {
-                        await _relationRepo.ReplaceAsync(node.Id, [], ct).ConfigureAwait(false);
-                    }
+                    await _relationRepo.ReplaceAsync(node.Id, [], ct).ConfigureAwait(false);
                 }
             }
         }

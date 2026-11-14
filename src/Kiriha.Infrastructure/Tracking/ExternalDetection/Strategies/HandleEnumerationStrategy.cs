@@ -23,6 +23,12 @@ public static unsafe partial class HandleEnumerationStrategy
     private const uint DUPLICATE_SAME_ACCESS = 0x00000002;
     private const uint FILE_TYPE_DISK = 0x0001;
 
+    private const uint FILE_READ_DATA = 0x0001;
+    private const uint FILE_WRITE_DATA = 0x0002;
+    private const uint FILE_APPEND_DATA = 0x0004;
+    private const uint ACCESS_MASK_PIPE_GENERIC = 0x0012019f;
+    private const uint ACCESS_MASK_PIPE_READ = 0x00120189;
+
     private static int s_lastBufferSize = 4 * 1024 * 1024;
     private static volatile int s_fileObjectTypeIndex = -1;
 
@@ -79,6 +85,71 @@ public static unsafe partial class HandleEnumerationStrategy
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool CloseHandle(IntPtr hObject);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CancelSynchronousIo(IntPtr hThread);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr GetCurrentThread();
+
+    private static string? QueryDiskFilePathWithTimeout(IntPtr dupHandle, int timeoutMs = 100)
+    {
+        string? resolvedPath = null;
+        IntPtr workerThreadHandle = IntPtr.Zero;
+        using var doneEvent = new ManualResetEventSlim(false);
+
+        var thread = new Thread(() =>
+        {
+            if (DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), out workerThreadHandle, 0, false, DUPLICATE_SAME_ACCESS))
+            {
+                try
+                {
+                    if (GetFileType(dupHandle) == FILE_TYPE_DISK)
+                    {
+                        char* pathBuffer = stackalloc char[1024];
+                        uint pathLen = GetFinalPathNameByHandleW(dupHandle, pathBuffer, 1024, 0);
+                        if (pathLen > 0 && pathLen < 1024)
+                        {
+                            resolvedPath = FormatNormalizedPath(pathBuffer, pathLen);
+                        }
+                    }
+                }
+                catch { }
+                finally
+                {
+                    doneEvent.Set();
+                }
+            }
+            else
+            {
+                doneEvent.Set();
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "HandleQueryWorker"
+        };
+
+        thread.Start();
+
+        if (!doneEvent.Wait(timeoutMs))
+        {
+            if (workerThreadHandle != IntPtr.Zero)
+            {
+                CancelSynchronousIo(workerThreadHandle);
+            }
+            thread.Join(25);
+            Log.Debug("Handle query timed out on handle 0x{Handle:X}, cancelled synchronous I/O", dupHandle);
+        }
+
+        if (workerThreadHandle != IntPtr.Zero)
+        {
+            CloseHandle(workerThreadHandle);
+        }
+
+        return resolvedPath;
+    }
 
     private static string FormatNormalizedPath(char* pathBuffer, uint pathLen)
     {
@@ -140,8 +211,6 @@ public static unsafe partial class HandleEnumerationStrategy
                 IntPtr currentPtr = buffer + IntPtr.Size * 2;
                 IntPtr currentProcess = GetCurrentProcess();
 
-                char* pathBuffer = stackalloc char[1024];
-
                 for (nuint i = 0; i < handleCount; i++)
                 {
                     SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX* entry = (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX*)currentPtr;
@@ -152,28 +221,26 @@ public static unsafe partial class HandleEnumerationStrategy
                     int knownFileType = s_fileObjectTypeIndex;
                     if (knownFileType >= 0 && entry->ObjectTypeIndex != (ushort)knownFileType) continue;
 
-                    if ((entry->GrantedAccess & 0x0001) == 0) continue;
+                    if ((entry->GrantedAccess & FILE_READ_DATA) == 0) continue;
+                    if ((entry->GrantedAccess & (FILE_WRITE_DATA | FILE_APPEND_DATA)) != 0) continue;
+                    if (entry->GrantedAccess == ACCESS_MASK_PIPE_GENERIC || entry->GrantedAccess == ACCESS_MASK_PIPE_READ) continue;
 
                     if (DuplicateHandle(processHandle, entry->HandleValue, currentProcess, out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
                     {
                         try
                         {
-                            if (GetFileType(dupHandle) == FILE_TYPE_DISK)
+                            string? filePath = QueryDiskFilePathWithTimeout(dupHandle);
+                            if (filePath != null)
                             {
                                 if (knownFileType < 0)
                                 {
                                     s_fileObjectTypeIndex = entry->ObjectTypeIndex;
                                 }
 
-                                uint pathLen = GetFinalPathNameByHandleW(dupHandle, pathBuffer, 1024, 0);
-                                if (pathLen > 0 && pathLen < 1024)
+                                ReadOnlySpan<char> extSpan = Path.GetExtension(filePath.AsSpan());
+                                if (!extSpan.IsEmpty && _videoExtensionsLookup.Contains(extSpan))
                                 {
-                                    ReadOnlySpan<char> rawSpan = new(pathBuffer, (int)pathLen);
-                                    ReadOnlySpan<char> extSpan = Path.GetExtension(rawSpan);
-                                    if (!extSpan.IsEmpty && _videoExtensionsLookup.Contains(extSpan))
-                                    {
-                                        return FormatNormalizedPath(pathBuffer, pathLen);
-                                    }
+                                    return filePath;
                                 }
                             }
                         }
@@ -222,8 +289,6 @@ public static unsafe partial class HandleEnumerationStrategy
                 IntPtr currentPtr = buffer + IntPtr.Size * 2;
                 IntPtr currentProcess = GetCurrentProcess();
 
-                char* pathBuffer = stackalloc char[1024];
-
                 for (nuint i = 0; i < handleCount; i++)
                 {
                     SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX* entry = (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX*)currentPtr;
@@ -234,27 +299,25 @@ public static unsafe partial class HandleEnumerationStrategy
                     int knownFileType = s_fileObjectTypeIndex;
                     if (knownFileType >= 0 && entry->ObjectTypeIndex != (ushort)knownFileType) continue;
 
-                    if ((entry->GrantedAccess & 0x0001) == 0) continue;
+                    if ((entry->GrantedAccess & FILE_READ_DATA) == 0) continue;
+                    if ((entry->GrantedAccess & (FILE_WRITE_DATA | FILE_APPEND_DATA)) != 0) continue;
+                    if (entry->GrantedAccess == ACCESS_MASK_PIPE_GENERIC || entry->GrantedAccess == ACCESS_MASK_PIPE_READ) continue;
 
                     if (DuplicateHandle(processHandle, entry->HandleValue, currentProcess, out IntPtr dupHandle, 0, false, DUPLICATE_SAME_ACCESS))
                     {
                         try
                         {
-                            if (GetFileType(dupHandle) == FILE_TYPE_DISK)
+                            string? filePath = QueryDiskFilePathWithTimeout(dupHandle);
+                            if (filePath != null)
                             {
                                 if (knownFileType < 0)
                                 {
                                     s_fileObjectTypeIndex = entry->ObjectTypeIndex;
                                 }
 
-                                uint pathLen = GetFinalPathNameByHandleW(dupHandle, pathBuffer, 1024, 0);
-                                if (pathLen > 0 && pathLen < 1024)
+                                if (seenFiles.Add(filePath))
                                 {
-                                    string path = FormatNormalizedPath(pathBuffer, pathLen);
-                                    if (seenFiles.Add(path))
-                                    {
-                                        files.Add(path);
-                                    }
+                                    files.Add(filePath);
                                 }
                             }
                         }

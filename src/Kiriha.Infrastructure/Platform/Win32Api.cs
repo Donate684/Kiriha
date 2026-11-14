@@ -12,7 +12,9 @@ public static unsafe partial class Win32Api
     {
         public uint TargetPid;
         public IntPtr FoundHwnd;
+        public IntPtr ClassMatchedHwnd;
         public IntPtr FallbackHwnd;
+        public IntPtr ClassesGCHandle;
     }
 
     [LibraryImport("user32.dll")]
@@ -24,6 +26,9 @@ public static unsafe partial class Win32Api
 
     [LibraryImport("user32.dll", SetLastError = true)]
     private static partial int GetWindowTextLengthW(IntPtr hWnd);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial int GetClassNameW(IntPtr hWnd, char* lpClassName, int nMaxCount);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     private static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -42,13 +47,62 @@ public static unsafe partial class Win32Api
         GetWindowThreadProcessId(hWnd, out uint pid);
         if (pid == ctx->TargetPid && IsWindowVisible(hWnd) && GetWindowTextLengthW(hWnd) > 0)
         {
-            if (GetWindow(hWnd, GW_OWNER) == IntPtr.Zero)
+            bool isOwnerless = GetWindow(hWnd, GW_OWNER) == IntPtr.Zero;
+            bool classMatched = false;
+
+            if (ctx->ClassesGCHandle != IntPtr.Zero)
             {
-                ctx->FoundHwnd = hWnd;
-                return 0;
+                try
+                {
+                    var gch = GCHandle.FromIntPtr(ctx->ClassesGCHandle);
+                    if (gch.Target is IReadOnlyList<string> allowedClasses && allowedClasses.Count > 0)
+                    {
+                        char* classNameBuffer = stackalloc char[256];
+                        int classLen = GetClassNameW(hWnd, classNameBuffer, 256);
+                        if (classLen > 0)
+                        {
+                            string className = new string(classNameBuffer, 0, classLen);
+                            foreach (var pattern in allowedClasses)
+                            {
+                                if (pattern.StartsWith('^'))
+                                {
+                                    if (System.Text.RegularExpressions.Regex.IsMatch(className, pattern))
+                                    {
+                                        classMatched = true;
+                                        break;
+                                    }
+                                }
+                                else if (string.Equals(className, pattern, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    classMatched = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
             }
 
-            if (ctx->FallbackHwnd == IntPtr.Zero)
+            if (classMatched)
+            {
+                if (isOwnerless)
+                {
+                    ctx->ClassMatchedHwnd = hWnd;
+                    ctx->FoundHwnd = hWnd;
+                    return 0; // Preferred exact ownerless match
+                }
+
+                if (ctx->ClassMatchedHwnd == IntPtr.Zero)
+                {
+                    ctx->ClassMatchedHwnd = hWnd;
+                }
+            }
+            else if (isOwnerless)
+            {
+                if (ctx->FoundHwnd == IntPtr.Zero) ctx->FoundHwnd = hWnd;
+            }
+            else if (ctx->FallbackHwnd == IntPtr.Zero)
             {
                 ctx->FallbackHwnd = hWnd;
             }
@@ -86,18 +140,43 @@ public static unsafe partial class Win32Api
         }
     }
 
-    public static IntPtr FindMainWindow(uint targetPid)
+    public static IntPtr FindMainWindow(uint targetPid, IReadOnlyList<string>? allowedClasses = null)
     {
         if (!OperatingSystem.IsWindows() || targetPid == 0) return IntPtr.Zero;
 
-        FindWindowContext context = new()
+        GCHandle gcHandle = default;
+        bool hasClasses = allowedClasses is { Count: > 0 };
+        if (hasClasses)
         {
-            TargetPid = targetPid,
-            FoundHwnd = IntPtr.Zero,
-            FallbackHwnd = IntPtr.Zero
-        };
+            gcHandle = GCHandle.Alloc(allowedClasses);
+        }
 
-        EnumWindows(&EnumWindowsCallback, (IntPtr)(&context));
-        return context.FoundHwnd != IntPtr.Zero ? context.FoundHwnd : context.FallbackHwnd;
+        try
+        {
+            FindWindowContext context = new()
+            {
+                TargetPid = targetPid,
+                FoundHwnd = IntPtr.Zero,
+                ClassMatchedHwnd = IntPtr.Zero,
+                FallbackHwnd = IntPtr.Zero,
+                ClassesGCHandle = hasClasses ? GCHandle.ToIntPtr(gcHandle) : IntPtr.Zero
+            };
+
+            EnumWindows(&EnumWindowsCallback, (IntPtr)(&context));
+
+            if (hasClasses && context.ClassMatchedHwnd != IntPtr.Zero)
+            {
+                return context.ClassMatchedHwnd;
+            }
+
+            return context.FoundHwnd != IntPtr.Zero ? context.FoundHwnd : context.FallbackHwnd;
+        }
+        finally
+        {
+            if (gcHandle.IsAllocated)
+            {
+                gcHandle.Free();
+            }
+        }
     }
 }

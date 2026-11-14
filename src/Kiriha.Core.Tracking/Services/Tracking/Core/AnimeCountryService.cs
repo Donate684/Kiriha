@@ -33,11 +33,26 @@ public sealed class AnimeCountryService : IAnimeCountryService
 
             if (cached.TryGetValue(item.Id, out var dbCountry))
             {
-                // Self-healing: if DB was previously saved as "JP", but local detector firmly identifies "CN" or "KR", heal!
-                if (localDetected != null && dbCountry == "JP")
+                // Self-healing 1: DB has "JP", but authoritative API or detector proves "CN" or "KR"
+                var firmForeign = !string.IsNullOrEmpty(item.CountryOfOrigin) && item.CountryOfOrigin != "JP"
+                    ? item.CountryOfOrigin
+                    : localDetected;
+
+                if (firmForeign != null && dbCountry == "JP")
                 {
-                    item.CountryOfOrigin = localDetected;
-                    newlyResolved[item.Id] = localDetected;
+                    item.CountryOfOrigin = firmForeign;
+                    newlyResolved[item.Id] = firmForeign;
+                    updatedAny = true;
+                    continue;
+                }
+
+                // Self-healing 2: DB has false "CN" (or "KR"), but API is "JP" OR (detector is null and JapaneseTitle has Kana)
+                if (dbCountry != "JP" &&
+                    (item.CountryOfOrigin == "JP" ||
+                     (localDetected == null && !string.IsNullOrEmpty(item.JapaneseTitle) && DonghuaDetector.ContainsKana(item.JapaneseTitle))))
+                {
+                    item.CountryOfOrigin = "JP";
+                    newlyResolved[item.Id] = "JP";
                     updatedAny = true;
                     continue;
                 }
@@ -50,8 +65,10 @@ public sealed class AnimeCountryService : IAnimeCountryService
                 continue;
             }
 
-            // 2. Not in DB -> evaluate via local detector
-            string country = localDetected ?? "JP";
+            // 2. Not in DB -> prioritize authoritative API country, then local detector, fallback "JP"
+            string country = !string.IsNullOrWhiteSpace(item.CountryOfOrigin)
+                ? item.CountryOfOrigin
+                : (localDetected ?? "JP");
             item.CountryOfOrigin = country;
             newlyResolved[item.Id] = country;
             updatedAny = true;

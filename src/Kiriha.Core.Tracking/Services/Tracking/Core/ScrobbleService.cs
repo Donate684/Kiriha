@@ -64,8 +64,14 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
     {
-        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
-        var epStr = !string.IsNullOrEmpty(parsed.Episode) ? parsed.Episode : media.Episode;
+        if (!_settingsService.Current.System.Scrobbler.Enabled)
+        {
+            return;
+        }
+
+        var epStr = !string.IsNullOrWhiteSpace(media.Episode)
+            ? media.Episode
+            : Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle).Episode;
 
         if (!int.TryParse(epStr, out int ep))
         {

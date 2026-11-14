@@ -136,6 +136,14 @@ public static class AnimeSearchQueryParser
             }
             if (handledPrefix) continue;
 
+            // In multi-token queries (tokens.Count > 1), bare tokens are never extracted as genres or formats.
+            // They are preserved as title search keywords unless explicitly prefixed (#, genre:, type:, etc.).
+            if (tokens.Count > 1)
+            {
+                titleTokens.Add(text);
+                continue;
+            }
+
             // Check if token matches format (e.g. "фильм", "ova", "ona", "movie")
             if (FormatCatalog.TryFindFormat(text, out var directFormat) && directFormat != null)
             {

@@ -46,6 +46,7 @@ public partial class AnimeEntity
         target.Nsfw = Nsfw;
         target.EnglishTitle = EnglishTitle;
         target.JapaneseTitle = JapaneseTitle;
+        if (!string.IsNullOrEmpty(CountryOfOrigin)) target.CountryOfOrigin = CountryOfOrigin;
         target.StatusDetailed = StatusDetailed;
         target.MeanScore = MeanScore;
         target.Popularity = Popularity;
@@ -124,6 +125,9 @@ public partial class AnimeEntity
 
         if (!string.IsNullOrEmpty(source.JapaneseTitle) && string.IsNullOrEmpty(JapaneseTitle))
             JapaneseTitle = source.JapaneseTitle;
+
+        if (!string.IsNullOrEmpty(source.CountryOfOrigin) && string.IsNullOrEmpty(CountryOfOrigin))
+            CountryOfOrigin = source.CountryOfOrigin;
 
         if (!string.IsNullOrEmpty(source.MainPictureUrl) && !IsMissingPosterUrl(source.MainPictureUrl) && (string.IsNullOrEmpty(MainPictureUrl) || IsMissingPosterUrl(MainPictureUrl)))
             MainPictureUrl = source.MainPictureUrl;

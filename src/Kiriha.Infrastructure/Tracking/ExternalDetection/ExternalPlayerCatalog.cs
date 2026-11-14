@@ -15,7 +15,7 @@ public static class ExternalPlayerCatalog
             WindowClasses = ["MediaPlayerClassicW"],
             Executables = ["mpc-hc", "mpc-hc64", "^mpc-hc.+", "iris", "shoukaku"],
             Strategies = [StrategyType.OpenFiles, StrategyType.WindowTitle],
-            WindowTitleFormat = @"^Media Player Classic Home Cinema$|^MPC-HC$|^(.+) - MPC-HC.*|(.+)",
+            WindowTitleFormat = @"^MPC-HC.*|^Media Player Classic.*|^(?:\[\d+/\d+\] )?(.+) - MPC-HC.*|(.+)",
             Type = PlayerType.Default
         },
         new()

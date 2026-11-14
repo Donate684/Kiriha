@@ -25,7 +25,7 @@ public static partial class AnimeReleaseParser
         // Quality / Source
         "4k", "uhd", "2160p", "1440p", "1080p", "1080i", "720p", "576p", "480p", "360p",
         "1920x1080", "1280x720", "3840x2160", "848x480", "720x480", "640x480",
-        "web-dl", "webdl", "web-rip", "webrip", "web", "bd", "bluray", "blu-ray", "bdrip", "brrip",
+        "web-dl", "webdl", "web-rip", "webrip", "bd", "bluray", "blu-ray", "bdrip", "brrip",
         "dvd", "dvdrip", "hdtv", "tvrip", "raw", "vostfr",
 
         // Codecs / Formats
@@ -48,7 +48,7 @@ public static partial class AnimeReleaseParser
         "dual-audio", "dual audio", "multi-audio", "multiaudio", "softsub", "softsubs", "hardsub", "hardsubs",
 
         // Editions & Versions
-        "batch", "complete", "all", "pack", "uncensored", "censored", "repack", "proper", "v2", "v3", "v4"
+        "batch", "complete", "pack", "uncensored", "censored", "repack", "proper", "v2", "v3", "v4"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     private static readonly FrozenSet<string>.AlternateLookup<ReadOnlySpan<char>> TechLookup =
@@ -119,12 +119,22 @@ public static partial class AnimeReleaseParser
             int lastSlash = text.LastIndexOf('/');
             if (lastSlash >= 0)
                 text = text[(lastSlash + 1)..];
+
+            int qIdx = text.IndexOf('?');
+            if (qIdx >= 0) text = text[..qIdx];
+            int hashIdx = text.IndexOf('#');
+            if (hashIdx >= 0) text = text[..hashIdx];
         }
         else if (text.StartsWith('/') && !text.Contains(" / "))
         {
             int lastSlash = text.LastIndexOf('/');
             if (lastSlash >= 0)
                 text = text[(lastSlash + 1)..];
+
+            int qIdx = text.IndexOf('?');
+            if (qIdx >= 0) text = text[..qIdx];
+            int hashIdx = text.IndexOf('#');
+            if (hashIdx >= 0) text = text[..hashIdx];
         }
 
         // Удаление суффикса плеера, если он есть
@@ -489,12 +499,26 @@ public static partial class AnimeReleaseParser
                     {
                         var leftPart = inner[..hyphenIdx].Trim();
                         var rightPart = inner[(hyphenIdx + 1)..].Trim();
-                        if (int.TryParse(leftPart, out _) && int.TryParse(rightPart, out _))
+                        if (int.TryParse(leftPart, out int startVal) && int.TryParse(rightPart, out int endVal))
                         {
-                            episode = $"{leftPart}-{rightPart}";
-                            isBatch = true;
-                            shouldRemove = true;
+                            if (startVal >= 1960 && endVal >= 1960 && startVal <= 2099 && endVal <= 2099)
+                            {
+                                // Multi-year range like (2023-2024): remove bracket without assigning episode/batch
+                                shouldRemove = true;
+                            }
+                            else
+                            {
+                                episode = $"{leftPart}-{rightPart}";
+                                isBatch = true;
+                                shouldRemove = true;
+                            }
                         }
+                    }
+
+                    // Single year like (2023)
+                    if (!shouldRemove && int.TryParse(inner, out int singleYear) && singleYear >= 1960 && singleYear <= 2099)
+                    {
+                        shouldRemove = true;
                     }
 
                     // Прогресс [05 из 12]
@@ -652,7 +676,6 @@ public static partial class AnimeReleaseParser
         return span.Equals("batch", StringComparison.OrdinalIgnoreCase) ||
                span.Equals("complete", StringComparison.OrdinalIgnoreCase) ||
                span.Equals("complete series", StringComparison.OrdinalIgnoreCase) ||
-               span.Equals("all", StringComparison.OrdinalIgnoreCase) ||
                span.Equals("pack", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -699,7 +722,10 @@ public static partial class AnimeReleaseParser
             span.StartsWith("truehd", StringComparison.OrdinalIgnoreCase) ||
             span.StartsWith("atmos", StringComparison.OrdinalIgnoreCase) ||
             span.StartsWith("web-", StringComparison.OrdinalIgnoreCase) ||
-            span.StartsWith("web", StringComparison.OrdinalIgnoreCase) ||
+            span.StartsWith("webdl", StringComparison.OrdinalIgnoreCase) ||
+            span.StartsWith("webrip", StringComparison.OrdinalIgnoreCase) ||
+            span.StartsWith("web-dl", StringComparison.OrdinalIgnoreCase) ||
+            span.StartsWith("web-rip", StringComparison.OrdinalIgnoreCase) ||
             span.StartsWith("h26", StringComparison.OrdinalIgnoreCase) ||
             span.StartsWith("x26", StringComparison.OrdinalIgnoreCase) ||
             span.StartsWith("h_26", StringComparison.OrdinalIgnoreCase) ||
@@ -844,11 +870,18 @@ public static partial class AnimeReleaseParser
     private static bool IsValidIsolatedEpisode(string text, Match candidate)
     {
         string epCandidate = candidate.Groups["ep"].Value;
-        if (!int.TryParse(epCandidate, out int epNum) || epNum <= 0 || epNum >= 1960)
+        if (!double.TryParse(epCandidate, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out double epNum) || epNum < 0 || epNum >= 1960)
+            return false;
+
+        var beforeSpan = text.AsSpan(0, candidate.Index).TrimEnd();
+
+        // Защита от "Mob Psycho 100", "Area 88"
+        if (beforeSpan.EndsWith("Mob Psycho", StringComparison.OrdinalIgnoreCase) && epCandidate == "100")
+            return false;
+        if (beforeSpan.EndsWith("Area", StringComparison.OrdinalIgnoreCase) && epCandidate == "88")
             return false;
 
         // Защита от "Kaiju No. 8", "No. 6"
-        var beforeSpan = text.AsSpan(0, candidate.Index).TrimEnd();
         if (beforeSpan.EndsWith("No.", StringComparison.OrdinalIgnoreCase) ||
             beforeSpan.EndsWith("No", StringComparison.OrdinalIgnoreCase) ||
             beforeSpan.EndsWith("#", StringComparison.Ordinal) ||
@@ -857,7 +890,7 @@ public static partial class AnimeReleaseParser
             return false;
         }
 
-        // Если число записано с ведущим нулем ("01", "08"), это явно номер серии
+        // Если число записано с ведущим нулем ("00", "01", "08", "05.5"), это явно номер серии
         if (epCandidate.StartsWith('0'))
             return true;
 

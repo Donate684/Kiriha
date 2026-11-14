@@ -178,7 +178,7 @@ public sealed class HttpConditionalCache
             }
 
             var body = await response.Content.ReadAsByteArrayAsync(ct);
-            var etag = response.Headers.ETag?.Tag;
+            var etag = response.Headers.ETag?.ToString();
             var lmHeader = response.Content.Headers.LastModified?.ToString("R");
 
             // Persist asynchronously: caller doesn't need to wait. A failure here

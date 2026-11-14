@@ -67,6 +67,7 @@ public static class ShikiMapper
         string title;
         string? russianTitle = null;
         string? englishTitle = null;
+        string? japaneseTitle = null;
         string? coverUrl = null;
         string? synopsis = null;
         int totalEpisodes = 0;
@@ -82,6 +83,31 @@ public static class ShikiMapper
         {
             englishTitle = mediaNode.GetOptionalString("name");
             russianTitle = mediaNode.GetOptionalString("russian");
+
+            if (mediaNode.TryGetProperty("japanese", out var jaProp))
+            {
+                if (jaProp.ValueKind == JsonValueKind.String)
+                {
+                    japaneseTitle = jaProp.GetString();
+                }
+                else if (jaProp.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var el in jaProp.EnumerateArray())
+                    {
+                        var s = el.GetString();
+                        if (!string.IsNullOrWhiteSpace(s))
+                        {
+                            japaneseTitle = s;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (string.IsNullOrWhiteSpace(japaneseTitle))
+            {
+                japaneseTitle = mediaNode.GetOptionalString("japanese_name") ?? mediaNode.GetOptionalString("japanese_title");
+            }
+
             title = !string.IsNullOrWhiteSpace(englishTitle)
                 ? englishTitle
                 : (!string.IsNullOrWhiteSpace(russianTitle) ? russianTitle : $"ID {primaryId}");
@@ -129,6 +155,7 @@ public static class ShikiMapper
             Title = title,
             RussianTitle = russianTitle,
             EnglishTitle = englishTitle,
+            JapaneseTitle = japaneseTitle,
             MainPictureUrl = coverUrl,
             Synopsis = synopsis,
             TotalEpisodes = totalEpisodes,
@@ -154,8 +181,24 @@ public static class ShikiMapper
             item.MediaKind = MediaKind.Anime;
         }
 
-        if (!string.IsNullOrEmpty(englishTitle)) item.AlternativeTitles.Add(englishTitle);
-        if (!string.IsNullOrEmpty(russianTitle)) item.AlternativeTitles.Add(russianTitle);
+        if (!string.IsNullOrEmpty(englishTitle) && !item.AlternativeTitles.Contains(englishTitle, StringComparer.OrdinalIgnoreCase))
+            item.AlternativeTitles.Add(englishTitle);
+        if (!string.IsNullOrEmpty(russianTitle) && !item.AlternativeTitles.Contains(russianTitle, StringComparer.OrdinalIgnoreCase))
+            item.AlternativeTitles.Add(russianTitle);
+        if (!string.IsNullOrEmpty(japaneseTitle) && !item.AlternativeTitles.Contains(japaneseTitle, StringComparer.OrdinalIgnoreCase))
+            item.AlternativeTitles.Add(japaneseTitle);
+
+        if (hasMedia && mediaNode.TryGetProperty("synonyms", out var synsProp) && synsProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var el in synsProp.EnumerateArray())
+            {
+                var syn = el.GetString();
+                if (!string.IsNullOrWhiteSpace(syn) && !item.AlternativeTitles.Contains(syn, StringComparer.OrdinalIgnoreCase))
+                {
+                    item.AlternativeTitles.Add(syn);
+                }
+            }
+        }
 
         MapUserRateStatus(rateElement, item);
 

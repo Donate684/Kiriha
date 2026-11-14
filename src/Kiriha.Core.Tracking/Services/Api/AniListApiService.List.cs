@@ -54,6 +54,8 @@ public partial class AniListApiService
                   popularity
                   startDate { year month day }
                   genres
+                  synonyms
+                  countryOfOrigin
                 }
               }
             }
@@ -309,6 +311,8 @@ public partial class AniListApiService
                   status
                   averageScore
                   genres
+                  synonyms
+                  countryOfOrigin
                 }
               }
             }

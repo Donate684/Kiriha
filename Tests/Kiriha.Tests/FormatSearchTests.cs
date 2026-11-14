@@ -132,20 +132,20 @@ public sealed class FormatSearchTests
     {
         var items = CreateTestCollection();
 
-        // "фильм драма" -> format Movie (Id 1) + genre Drama -> Id 1 (Clannad is TV, so excluded)
-        var movieDrama = items.ApplySearch("фильм драма").Select(x => x.Id).ToArray();
+        // "#фильм #драма" -> format Movie (Id 1) + genre Drama -> Id 1 (Clannad is TV, so excluded)
+        var movieDrama = items.ApplySearch("#фильм #драма").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 1 }, movieDrama);
 
-        // "тв драма" -> format TV (Id 2) + genre Drama -> Id 2
-        var tvDrama = items.ApplySearch("тв драма").Select(x => x.Id).ToArray();
+        // "#тв #драма" -> format TV (Id 2) + genre Drama -> Id 2
+        var tvDrama = items.ApplySearch("#тв #драма").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 2 }, tvDrama);
 
-        // "ova кэнсин" -> format OVA (Id 3) + title "кэнсин" -> Id 3
-        var ovaTitle = items.ApplySearch("ova кэнсин").Select(x => x.Id).ToArray();
+        // "#ova кэнсин" -> format OVA (Id 3) + title "кэнсин" -> Id 3
+        var ovaTitle = items.ApplySearch("#ova кэнсин").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 3 }, ovaTitle);
 
-        // "ona киберпанк" -> format ONA (Id 4) + title "киберпанк" -> Id 4
-        var onaTitle = items.ApplySearch("ona киберпанк").Select(x => x.Id).ToArray();
+        // "#ona киберпанк" -> format ONA (Id 4) + title "киберпанк" -> Id 4
+        var onaTitle = items.ApplySearch("#ona киберпанк").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 4 }, onaTitle);
     }
 

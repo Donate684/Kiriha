@@ -62,9 +62,20 @@ public static class DonghuaDetector
         "Daewon", "SamG", "SAMG", "Studio EEK", "Locus", "Studio Bazooka", "Studio N"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
+    private static readonly FrozenSet<string> ChineseTitlePhrases = new[]
+    {
+        "xian ni", "douluo dalu", "doupo cangqiong", "tunshi xingkong", "shiguang dailiren",
+        "tian guan ci fu", "tianguan cifu", "mo dao zu shi", "modao zushi",
+        "da wang rao ming", "dawang raoming", "shixiong a shixiong", "fanren xiu xian",
+        "bai lian cheng shen", "bailian chengshen", "yi nian yong heng", "yinian yongheng",
+        "wan jie shen zhu", "wanjie shenzhu", "shan he jian xin", "shanhe jianxin",
+        "wu shan wu xing", "wushan wuxing", "chuan shu zijiu zhinan", "mengqi shishen",
+        "wu dong qian kun", "cang yuan tu", "ling jian shan", "quanzhi fashi", "quanzhi gaoshou"
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
     private static readonly FrozenSet<string> ChineseTitleKeywords = new[]
     {
-        "xian", "ni", "shixiong", "zuizhong", "changan", "douluo", "dalu", "doupo", "cangqiong",
+        "xian", "shixiong", "zuizhong", "changan", "douluo", "dalu", "doupo", "cangqiong",
         "tunshi", "xingkong", "xianxia", "wuxia", "xuanhuan", "quanzhi", "wushen", "zhuzai",
         "bailian", "chengshen", "yinian", "yongheng", "wanjie", "shenzhu", "shiguang", "dailiren",
         "huoyuan", "feiren", "wangzuo", "xiuzhen", "xiuxian", "guoman", "donghua", "tianguan",
@@ -207,8 +218,9 @@ public static class DonghuaDetector
         return false;
     }
 
-    private static bool ContainsKana(string text)
+    public static bool ContainsKana(string? text)
     {
+        if (string.IsNullOrEmpty(text)) return false;
         foreach (char c in text)
         {
             if ((c >= 0x3040 && c <= 0x309F) || (c >= 0x30A0 && c <= 0x30FF))
@@ -222,6 +234,15 @@ public static class DonghuaDetector
     private static bool ContainsChineseTitleKeywords(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return false;
+
+        foreach (var phrase in ChineseTitlePhrases)
+        {
+            if (text.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
         var words = text.Split(TitleSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         foreach (var word in words)
         {
@@ -250,8 +271,6 @@ public static class DonghuaDetector
                text.Contains("Source: Manhua", StringComparison.OrdinalIgnoreCase) ||
                text.Contains("Source: Chinese", StringComparison.OrdinalIgnoreCase) ||
                text.Contains("Source: Donghua", StringComparison.OrdinalIgnoreCase) ||
-               text.Contains("Source: Bangumi", StringComparison.OrdinalIgnoreCase) ||
-               text.Contains("Bangumi", StringComparison.OrdinalIgnoreCase) ||
                text.Contains("Chang'an", StringComparison.OrdinalIgnoreCase) ||
                text.Contains("Chinese animated", StringComparison.OrdinalIgnoreCase) ||
                text.Contains("Chinese animation", StringComparison.OrdinalIgnoreCase) ||

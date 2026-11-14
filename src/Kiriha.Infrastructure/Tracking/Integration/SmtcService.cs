@@ -50,7 +50,28 @@ public class SmtcService : IDisposable
                 var timeline = session.GetTimelineProperties();
                 if (timeline != null && timeline.EndTime > TimeSpan.Zero)
                 {
-                    return (timeline.Position, timeline.EndTime - timeline.StartTime, timeline.LastUpdatedTime);
+                    var position = timeline.Position;
+                    var duration = timeline.EndTime - timeline.StartTime;
+
+                    var playbackInfo = session.GetPlaybackInfo();
+                    if (playbackInfo != null &&
+                        playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing &&
+                        timeline.LastUpdatedTime > DateTimeOffset.MinValue)
+                    {
+                        var elapsed = DateTimeOffset.UtcNow - timeline.LastUpdatedTime;
+                        if (elapsed > TimeSpan.Zero)
+                        {
+                            double rate = playbackInfo.PlaybackRate ?? 1.0;
+                            if (rate <= 0) rate = 1.0;
+
+                            var extrapolated = position + TimeSpan.FromTicks((long)(elapsed.Ticks * rate));
+                            if (extrapolated > timeline.EndTime) extrapolated = timeline.EndTime;
+                            else if (extrapolated < timeline.StartTime) extrapolated = timeline.StartTime;
+                            position = extrapolated;
+                        }
+                    }
+
+                    return (position, duration, timeline.LastUpdatedTime);
                 }
             }
         }

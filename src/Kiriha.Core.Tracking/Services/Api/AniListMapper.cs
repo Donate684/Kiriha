@@ -19,12 +19,15 @@ public static class AniListMapper
         // Otherwise fallback to AniList ID.
         var primaryId = idMal > 0 ? idMal : aniListId;
 
+        string? english = null;
+        string? romaji = null;
+        string? native = null;
         string title = string.Empty;
         if (media.TryGetProperty("title", out var titleObj) && titleObj.ValueKind == JsonValueKind.Object)
         {
-            var english = titleObj.TryGetProperty("english", out var en) && en.ValueKind == JsonValueKind.String ? en.GetString() : null;
-            var romaji = titleObj.TryGetProperty("romaji", out var ro) && ro.ValueKind == JsonValueKind.String ? ro.GetString() : null;
-            var native = titleObj.TryGetProperty("native", out var na) && na.ValueKind == JsonValueKind.String ? na.GetString() : null;
+            english = titleObj.TryGetProperty("english", out var en) && en.ValueKind == JsonValueKind.String ? en.GetString() : null;
+            romaji = titleObj.TryGetProperty("romaji", out var ro) && ro.ValueKind == JsonValueKind.String ? ro.GetString() : null;
+            native = titleObj.TryGetProperty("native", out var na) && na.ValueKind == JsonValueKind.String ? na.GetString() : null;
 
             title = !string.IsNullOrEmpty(english) ? english : (!string.IsNullOrEmpty(romaji) ? romaji : native ?? string.Empty);
         }
@@ -95,6 +98,8 @@ public static class AniListMapper
         {
             Id = primaryId,
             Title = title,
+            EnglishTitle = english,
+            JapaneseTitle = native,
             MainPictureUrl = coverUrl,
             Synopsis = synopsis,
             TotalEpisodes = totalEpisodes,
@@ -106,6 +111,33 @@ public static class AniListMapper
             StatusDetailed = status,
             Type = format
         };
+
+        if (media.TryGetProperty("countryOfOrigin", out var countryProp) && countryProp.ValueKind == JsonValueKind.String)
+        {
+            var country = countryProp.GetString();
+            if (!string.IsNullOrWhiteSpace(country))
+            {
+                item.CountryOfOrigin = country;
+            }
+        }
+
+        var altTitles = new List<string>();
+        if (!string.IsNullOrWhiteSpace(romaji) && !altTitles.Contains(romaji, StringComparer.OrdinalIgnoreCase))
+            altTitles.Add(romaji);
+        if (!string.IsNullOrWhiteSpace(english) && !altTitles.Contains(english, StringComparer.OrdinalIgnoreCase))
+            altTitles.Add(english);
+        if (!string.IsNullOrWhiteSpace(native) && !altTitles.Contains(native, StringComparer.OrdinalIgnoreCase))
+            altTitles.Add(native);
+        if (media.TryGetProperty("synonyms", out var synsProp) && synsProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var syn in synsProp.EnumerateArray())
+            {
+                var s = syn.GetString();
+                if (!string.IsNullOrWhiteSpace(s) && !altTitles.Contains(s, StringComparer.OrdinalIgnoreCase))
+                    altTitles.Add(s);
+            }
+        }
+        item.AlternativeTitles = altTitles;
 
         if (format is "MANGA" or "ONE_SHOT")
         {

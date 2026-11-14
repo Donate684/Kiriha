@@ -201,7 +201,7 @@ public static class AppConstants
 
         public static readonly Models.Genres.GenreDefinition[] Definitions =
         [
-            new("ecchi", "Ecchi", "Эччи", ["этти", "етти", "echhi", "эти"]),
+            new("ecchi", "Ecchi", "Эччи", ["этти", "етти", "echhi"]),
             new("drama", "Drama", "Драма", ["драматическое", "dram"]),
             new("comedy", "Comedy", "Комедия", ["юмор", "комедии"]),
             new("action", "Action", "Экшен", ["экшн", "боевик"]),

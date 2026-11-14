@@ -80,7 +80,7 @@ public partial class TrackingService
                 LocalizeAndNotifyAsync(effectiveMedia, matched).SafeFireAndForget("TrackingService.LocalizeMatchedMedia");
             }
 
-            if (matched.Status != UserAnimeStatus.None)
+            if (matched.Status != UserAnimeStatus.None && _settingsService.Current.System.Scrobbler.Enabled)
                 _scrobbleService.StartScrobble(effectiveMedia, matched);
         }
         else
@@ -248,7 +248,7 @@ public partial class TrackingService
             NotifyPlayerMetadata(effectiveMedia, matched);
             UpdateDiscordPresence(effectiveMedia, matched);
 
-            if (matched.Status != UserAnimeStatus.None)
+            if (matched.Status != UserAnimeStatus.None && _settingsService.Current.System.Scrobbler.Enabled)
                 _scrobbleService.StartScrobble(effectiveMedia, matched);
         }
     }

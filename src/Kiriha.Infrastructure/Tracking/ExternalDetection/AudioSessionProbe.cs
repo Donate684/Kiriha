@@ -82,6 +82,10 @@ internal static unsafe partial class AudioSessionProbe
             if (hr != 0 || sessions is null) return AudioState.Unknown;
 
             sessions.GetCount(out int count);
+            bool foundAny = false;
+            bool anyInactive = false;
+            bool anyExpired = false;
+
             for (int i = 0; i < count; i++)
             {
                 IAudioSessionControl? ctl = null;
@@ -92,20 +96,32 @@ internal static unsafe partial class AudioSessionProbe
                     if (ctl2.GetProcessId(out uint sessionPid) != 0) continue;
                     if (sessionPid != pid) continue;
 
-                    if (ctl.GetState(out int rawState) != 0) return AudioState.Unknown;
-                    return rawState switch
+                    if (ctl.GetState(out int rawState) != 0) continue;
+
+                    foundAny = true;
+                    if (rawState == 1) // AudioSessionStateActive
                     {
-                        0 => AudioState.Inactive,
-                        1 => AudioState.Active,
-                        2 => AudioState.Expired,
-                        _ => AudioState.Unknown,
-                    };
+                        return AudioState.Active;
+                    }
+
+                    if (rawState == 0) // AudioSessionStateInactive
+                    {
+                        anyInactive = true;
+                    }
+                    else if (rawState == 2) // AudioSessionStateExpired
+                    {
+                        anyExpired = true;
+                    }
                 }
                 finally
                 {
                     if (ctl != null) Marshal.ReleaseComObject(ctl);
                 }
             }
+
+            if (!foundAny) return AudioState.Unknown;
+            if (anyInactive) return AudioState.Inactive;
+            if (anyExpired) return AudioState.Expired;
             return AudioState.Unknown;
         }
         catch (Exception ex)

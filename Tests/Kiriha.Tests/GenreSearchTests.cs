@@ -75,16 +75,16 @@ public sealed class GenreSearchTests
     {
         var items = CreateTestCollection();
 
-        // "эччи sword" -> genre Ecchi + title "sword" -> only SAO (Id 1), not Highschool DxD (Id 3)
-        var resultsRu = items.ApplySearch("эччи sword").Select(x => x.Id).ToArray();
+        // "#эччи sword" -> genre Ecchi + title "sword" -> only SAO (Id 1), not Highschool DxD (Id 3)
+        var resultsRu = items.ApplySearch("#эччи sword").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 1 }, resultsRu);
 
-        // "драма кланнад" -> genre Drama + title "кланнад" -> only Clannad (Id 2)
-        var resultsDrama = items.ApplySearch("драма кланнад").Select(x => x.Id).ToArray();
+        // "#драма кланнад" -> genre Drama + title "кланнад" -> only Clannad (Id 2)
+        var resultsDrama = items.ApplySearch("#драма кланнад").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 2 }, resultsDrama);
 
-        // "эччи демоны" -> only Highschool DxD (Id 3)
-        var resultsDxD = items.ApplySearch("эччи демоны").Select(x => x.Id).ToArray();
+        // "#эччи демоны" -> only Highschool DxD (Id 3)
+        var resultsDxD = items.ApplySearch("#эччи демоны").Select(x => x.Id).ToArray();
         Assert.Equal(new[] { 3 }, resultsDxD);
     }
 
