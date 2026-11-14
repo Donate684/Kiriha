@@ -115,7 +115,7 @@ Write-Host "Target libmpv version: $latestVersion"
 # Check if current installed version matches target
 $currentVersion = ""
 if (Test-Path $versionFile) {
-    $currentVersion = (Get-Content $versionFile -Raw).Trim()
+    $currentVersion = ("" + (Get-Content $versionFile -Raw)).Trim()
 }
 
 if ($dllExists -and ($currentVersion -eq $latestVersion)) {

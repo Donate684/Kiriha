@@ -21,7 +21,7 @@ $fallbackUrl = "https://github.com/YouROK/TorrServer/releases/download/MatriX.15
 
 $currentVersion = ""
 if (Test-Path $versionFile) {
-    $currentVersion = (Get-Content $versionFile -Raw).Trim()
+    $currentVersion = ("" + (Get-Content $versionFile -Raw)).Trim()
 }
 $hasValidLocalMatriX = $exeExists -and ($currentVersion -match '^MatriX\.')
 
@@ -137,12 +137,41 @@ function Download-AndValidateMatriX([string]$url, [string]$destFile) {
         throw "Downloaded file is suspiciously small ($downloadedSize bytes). Download likely failed."
     }
 
-    # Verify CLI compatibility (--version must succeed and report MatriX)
-    $versionOut = (& $destFile --version 2>&1 | Out-String).Trim()
-    if ($LASTEXITCODE -ne 0 -or $versionOut -notmatch 'MatriX') {
-        throw "Downloaded TorrServer binary failed MatriX CLI check (exit=$LASTEXITCODE, output='$versionOut')."
+    # Verify CLI compatibility (--version must succeed and report MatriX).
+    # Use ProcessStartInfo instead of PowerShell `2>&1` because TorrServer logs
+    # "ffprobe and avprobe not found in $PATH" to stderr on clean CI runners, which
+    # triggers a terminating NativeCommandError in Windows PowerShell 5.1 when $ErrorActionPreference = "Stop".
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $destFile
+    $psi.Arguments = "--version"
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.CreateNoWindow = $true
+
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    if ($null -eq $proc) {
+        throw "Failed to start downloaded TorrServer binary for verification."
     }
-    Write-Host "Verified binary: $versionOut"
+    try {
+        $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+        $stderrTask = $proc.StandardError.ReadToEndAsync()
+        if (-not $proc.WaitForExit(10000)) {
+            try { $proc.Kill() } catch {}
+            throw "Downloaded TorrServer binary timed out on --version check."
+        }
+        $stdout = $stdoutTask.GetAwaiter().GetResult().Trim()
+        $stderr = $stderrTask.GetAwaiter().GetResult().Trim()
+        $exitCode = $proc.ExitCode
+    }
+    finally {
+        $proc.Dispose()
+    }
+
+    if ($exitCode -ne 0 -or $stdout -notmatch 'MatriX') {
+        throw "Downloaded TorrServer binary failed MatriX CLI check (exit=$exitCode, stdout='$stdout', stderr='$stderr')."
+    }
+    Write-Host "Verified binary: $stdout"
 }
 
 $tempDir = Join-Path $env:TEMP "torrserver_download_$(Get-Random)"
