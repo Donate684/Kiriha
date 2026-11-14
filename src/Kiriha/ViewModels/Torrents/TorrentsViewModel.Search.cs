@@ -23,37 +23,57 @@ public partial class TorrentsViewModel
 
         if (value != null)
         {
-            if (UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery))
-            {
-                SearchQuery = CustomQuery;
-            }
-            else
-            {
-                SearchQuery = IsOnlineMode && !string.IsNullOrWhiteSpace(value.RussianTitle)
-                    ? value.RussianTitle
-                    : value.Title;
-            }
+            var nextQuery = !IsOnlineMode && UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery)
+                ? CustomQuery
+                : GetAnimeDefaultQuery(value);
+            SetSearchQueryFromContext(nextQuery);
             PerformSearchCommand.Execute(null);
         }
     }
 
     partial void OnSearchQueryChanged(string value)
     {
+        if (_updatingSearchQueryFromContext) return;
+
         if (SelectedAnime != null)
         {
-            bool isSameAsAnime = string.Equals(value, SelectedAnime.Title, System.StringComparison.OrdinalIgnoreCase)
-                || (!string.IsNullOrEmpty(SelectedAnime.EnglishTitle) && string.Equals(value, SelectedAnime.EnglishTitle, System.StringComparison.OrdinalIgnoreCase))
-                || (!string.IsNullOrEmpty(SelectedAnime.RussianTitle) && string.Equals(value, SelectedAnime.RussianTitle, System.StringComparison.OrdinalIgnoreCase))
-                || (UseCustomQuery && !string.IsNullOrEmpty(CustomQuery) && string.Equals(value, CustomQuery, System.StringComparison.OrdinalIgnoreCase));
+            bool isSameAsAnime = string.Equals(value, SelectedAnime.Title, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrEmpty(SelectedAnime.EnglishTitle) && string.Equals(value, SelectedAnime.EnglishTitle, StringComparison.OrdinalIgnoreCase))
+                || (!string.IsNullOrEmpty(SelectedAnime.RussianTitle) && string.Equals(value, SelectedAnime.RussianTitle, StringComparison.OrdinalIgnoreCase))
+                || (UseCustomQuery && !string.IsNullOrEmpty(CustomQuery) && string.Equals(value, CustomQuery, StringComparison.OrdinalIgnoreCase));
 
             if (!isSameAsAnime)
             {
                 _selectedAnime = null;
                 OnPropertyChanged(nameof(SelectedAnime));
+                OnPropertyChanged(nameof(HasSelectedAnime));
                 foreach (var item in HideMenuItems)
                 {
                     item.IsSelected = false;
                 }
+
+                _suppressFilterPersist = true;
+                try
+                {
+                    UseCustomQuery = false;
+                }
+                finally
+                {
+                    _suppressFilterPersist = false;
+                }
+
+                var matched = ResolveAnimeForQuery(value);
+                if (matched != null)
+                {
+                    _selectedAnime = matched;
+                    OnPropertyChanged(nameof(SelectedAnime));
+                    OnPropertyChanged(nameof(HasSelectedAnime));
+                    foreach (var item in HideMenuItems)
+                    {
+                        item.IsSelected = item.Anime.Id == matched.Id;
+                    }
+                }
+
                 ReloadFiltersForCurrentContext();
             }
         }
@@ -64,12 +84,39 @@ public partial class TorrentsViewModel
             {
                 _selectedAnime = matched;
                 OnPropertyChanged(nameof(SelectedAnime));
+                OnPropertyChanged(nameof(HasSelectedAnime));
                 foreach (var item in HideMenuItems)
                 {
                     item.IsSelected = item.Anime.Id == matched.Id;
                 }
                 ReloadFiltersForCurrentContext();
             }
+            else if (UseCustomQuery && !string.Equals(value, CustomQuery, StringComparison.OrdinalIgnoreCase))
+            {
+                _suppressFilterPersist = true;
+                try
+                {
+                    UseCustomQuery = false;
+                }
+                finally
+                {
+                    _suppressFilterPersist = false;
+                }
+                ReloadFiltersForCurrentContext();
+            }
+        }
+        else if (_currentFilterContextId != 0)
+        {
+            _suppressFilterPersist = true;
+            try
+            {
+                UseCustomQuery = false;
+            }
+            finally
+            {
+                _suppressFilterPersist = false;
+            }
+            ReloadFiltersForCurrentContext();
         }
     }
 
@@ -89,7 +136,11 @@ public partial class TorrentsViewModel
 
         SyncFilterContext();
 
-        string query = TorrentQueryBuilder.Build(SearchQuery, new TorrentQueryFilters(
+        var baseQuery = UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery)
+            ? CustomQuery
+            : SearchQuery;
+
+        string query = TorrentQueryBuilder.Build(baseQuery, new TorrentQueryFilters(
             FilterVaryg,
             FilterEraiRaws,
             FilterToonsHub,
@@ -116,6 +167,8 @@ public partial class TorrentsViewModel
             var results = await _rssService.SearchTorrentsAsync(query, ct);
             if (ct.IsCancellationRequested) return;
 
+            ApplySelectedAnimeMatches(results);
+
             Log.Information("Torrents: Search returned {Count} items", results.Count);
 
             Torrents.Reset(results);
@@ -140,14 +193,44 @@ public partial class TorrentsViewModel
         }
     }
 
+    private void ApplySelectedAnimeMatches(List<TorrentEntity> results)
+    {
+        if (SelectedAnime is not { Status: UserAnimeStatus.Watching or UserAnimeStatus.PlanToWatch } selected)
+            return;
+
+        if (!UseCustomQuery || string.IsNullOrWhiteSpace(CustomQuery))
+            return;
+
+        var normCustom = NormalizeTitle(CustomQuery);
+        if (string.IsNullOrEmpty(normCustom))
+            return;
+
+        foreach (var torrent in results)
+        {
+            if (torrent.IsMatched || torrent.IsBatch)
+                continue;
+
+            if (!int.TryParse(torrent.Episode, out var epNum) || epNum <= selected.Progress)
+                continue;
+
+            var normTorrent = NormalizeTitle(torrent.AnimeTitle);
+            if (!string.IsNullOrEmpty(normTorrent) &&
+                (normTorrent.StartsWith(normCustom, StringComparison.Ordinal) ||
+                 normCustom.StartsWith(normTorrent, StringComparison.Ordinal)))
+            {
+                torrent.IsMatched = true;
+            }
+        }
+    }
+
     [RelayCommand]
     public void ClearSearch()
     {
-        SearchQuery = string.Empty;
-        if (SelectedAnime != null)
-        {
-            SelectedAnime = null;
-        }
+        SelectedAnime = null;
+        _currentFilterContextId = 0;
+        _customFilterAnchorQuery = string.Empty;
+        SetSearchQueryFromContext(string.Empty);
+        ReloadFiltersForCurrentContext();
     }
 
     [RelayCommand]
@@ -155,9 +238,10 @@ public partial class TorrentsViewModel
     {
         if (SelectedAnime == anime && anime != null)
         {
-            SearchQuery = UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery)
+            var nextQuery = !IsOnlineMode && UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery)
                 ? CustomQuery
-                : anime.Title;
+                : GetAnimeDefaultQuery(anime);
+            SetSearchQueryFromContext(nextQuery);
             PerformSearchCommand.Execute(null);
             return;
         }
@@ -493,7 +577,10 @@ public partial class TorrentsViewModel
     public void ClearSelectedAnime()
     {
         SelectedAnime = null;
-        SearchQuery = string.Empty;
+        _currentFilterContextId = 0;
+        _customFilterAnchorQuery = string.Empty;
+        SetSearchQueryFromContext(string.Empty);
+        ReloadFiltersForCurrentContext();
         Torrents.Clear();
         OnlineResults.Clear();
         RebuildGroupedTorrents();

@@ -81,6 +81,7 @@ public partial class TorrentsViewModel
     partial void OnFilter1080pChanged(bool value) => PersistFilter(nameof(Filter1080p), value);
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
     [NotifyPropertyChangedFor(nameof(PreviewQuery))]
     private bool _useCustomQuery;
 
@@ -90,22 +91,61 @@ public partial class TorrentsViewModel
 
         if (value)
         {
+            if (SelectedAnime == null && _currentFilterContextId == 0 && !string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                _customFilterAnchorQuery = SearchQuery.Trim();
+                _currentFilterContextId = ResolveTitleIdFromQuery(_customFilterAnchorQuery);
+            }
+
             if (string.IsNullOrWhiteSpace(CustomQuery))
             {
-                CustomQuery = GetCurrentTitleDefaultQuery();
+                _suppressFilterPersist = true;
+                try
+                {
+                    CustomQuery = GetCurrentTitleDefaultQuery();
+                }
+                finally
+                {
+                    _suppressFilterPersist = false;
+                }
             }
+
             if (!string.IsNullOrWhiteSpace(CustomQuery))
             {
-                SearchQuery = CustomQuery;
+                SetSearchQueryFromContext(CustomQuery);
             }
         }
         else
         {
-            var defaultQuery = GetCurrentTitleDefaultQuery();
-            if (!string.IsNullOrWhiteSpace(defaultQuery))
+            string restoredQuery;
+            if (SelectedAnime != null)
             {
-                SearchQuery = defaultQuery;
+                restoredQuery = GetAnimeDefaultQuery(SelectedAnime);
             }
+            else if (_currentFilterContextId == 0)
+            {
+                restoredQuery = string.Empty;
+            }
+            else if (!string.IsNullOrWhiteSpace(_customFilterAnchorQuery))
+            {
+                restoredQuery = _customFilterAnchorQuery;
+            }
+            else
+            {
+                restoredQuery = SearchQuery?.Trim() ?? string.Empty;
+            }
+
+            _suppressFilterPersist = true;
+            try
+            {
+                CustomQuery = SelectedAnime != null ? SelectedAnime.Title : restoredQuery;
+            }
+            finally
+            {
+                _suppressFilterPersist = false;
+            }
+
+            SetSearchQueryFromContext(restoredQuery);
         }
 
         PersistCustomQuerySettings();
@@ -122,13 +162,13 @@ public partial class TorrentsViewModel
 
         if (UseCustomQuery)
         {
-            SearchQuery = value;
+            SetSearchQueryFromContext(value);
             PersistCustomQuerySettings();
         }
     }
 
     public string PreviewQuery => TorrentQueryBuilder.Build(
-        SearchQuery,
+        UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery) ? CustomQuery : SearchQuery,
         new TorrentQueryFilters(
             FilterVaryg,
             FilterEraiRaws,
@@ -142,16 +182,37 @@ public partial class TorrentsViewModel
             FilterHidive));
 
     [ObservableProperty]
-    private bool _filtersPerTitle;
+    private bool _filtersPerTitle = true;
 
     /// <summary>Set during bulk-load of filter values so partial change handlers don't persist back.</summary>
     private bool _suppressFilterPersist;
+    private bool _updatingSearchQueryFromContext;
     private int _currentFilterContextId;
+    private string _customFilterAnchorQuery = string.Empty;
+
+    private void SetSearchQueryFromContext(string query)
+    {
+        _updatingSearchQueryFromContext = true;
+        try
+        {
+            SearchQuery = query;
+        }
+        finally
+        {
+            _updatingSearchQueryFromContext = false;
+        }
+    }
+
+    private string GetAnimeDefaultQuery(AnimeEntity anime) =>
+        IsOnlineMode && !string.IsNullOrWhiteSpace(anime.RussianTitle)
+            ? anime.RussianTitle
+            : anime.Title;
 
     public bool HasActiveFilters =>
         FilterVaryg || FilterEraiRaws || FilterToonsHub || FilterJudas || Filter1080p || FilterHevc
         || OnlyCrunchyroll || FilterNetflix || FilterAmazon || FilterHidive
-        || FilterOnlyNew || FilterOnlyBatches;
+        || FilterOnlyNew || FilterOnlyBatches
+        || UseCustomQuery;
 
     partial void OnFiltersPerTitleChanged(bool value)
     {
@@ -161,13 +222,34 @@ public partial class TorrentsViewModel
 
     private void LoadFilterSettings()
     {
-        _filtersPerTitle = _settingsService.Current.Torrents.FiltersPerTitle;
+        if (!_settingsService.Current.Torrents.FiltersPerTitle)
+        {
+            // Self-heal legacy pre-v1.3.35 configs where FiltersPerTitle=false had no UI toggle
+            // and caused a stuck global CustomQuery to override per-title filters across all anime.
+            _settingsService.Update(settings =>
+            {
+                settings.Torrents.FiltersPerTitle = true;
+                settings.Torrents.UseCustomQuery = false;
+                settings.Torrents.CustomQuery = null;
+            }, SettingsSection.Torrents);
+        }
+
+        _filtersPerTitle = true;
         ReloadFiltersForCurrentContext();
     }
 
     public void SyncFilterContext()
     {
         var titleId = ResolveCurrentTitleId();
+        if (titleId < 0 && !UseCustomQuery && !string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            _customFilterAnchorQuery = SearchQuery.Trim();
+        }
+        else if (titleId >= 0)
+        {
+            _customFilterAnchorQuery = string.Empty;
+        }
+
         if (titleId != _currentFilterContextId)
         {
             ReloadFiltersForCurrentContext();
@@ -181,7 +263,17 @@ public partial class TorrentsViewModel
             return SelectedAnime.Id;
         }
 
-        var query = SearchQuery?.Trim();
+        if (UseCustomQuery)
+        {
+            return _currentFilterContextId;
+        }
+
+        return ResolveTitleIdFromQuery(SearchQuery);
+    }
+
+    private int ResolveTitleIdFromQuery(string? rawQuery)
+    {
+        var query = rawQuery?.Trim();
         if (string.IsNullOrEmpty(query))
         {
             return 0;
@@ -234,9 +326,10 @@ public partial class TorrentsViewModel
         var titleId = ResolveCurrentTitleId();
         _currentFilterContextId = titleId;
 
-        if (FiltersPerTitle && titleId != 0)
+        if (titleId != 0)
         {
-            var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents);
+            var target = _torrentFilterRepo.TryGetCachedFilter(titleId)
+                ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents, includeCustomQuery: false);
             ApplyFilterValue(target, name, value);
             _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
         }
@@ -258,16 +351,21 @@ public partial class TorrentsViewModel
     {
         var titleId = ResolveCurrentTitleId();
         _currentFilterContextId = titleId;
+        if (titleId >= 0)
+        {
+            _customFilterAnchorQuery = string.Empty;
+        }
 
         var globalCfg = _settingsService.Current.Torrents;
         AppSettings.TorrentFilterSet src;
-        if (FiltersPerTitle && titleId != 0)
+        if (titleId != 0)
         {
-            src = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(globalCfg);
+            src = _torrentFilterRepo.TryGetCachedFilter(titleId)
+                ?? CreateFilterSetFromGlobal(globalCfg, includeCustomQuery: false);
         }
         else
         {
-            src = CreateFilterSetFromGlobal(globalCfg);
+            src = CreateFilterSetFromGlobal(globalCfg, includeCustomQuery: true);
         }
 
         _suppressFilterPersist = true;
@@ -286,7 +384,7 @@ public partial class TorrentsViewModel
             FilterOnlyNew = src.FilterOnlyNew;
             FilterOnlyBatches = src.FilterOnlyBatches;
             UseCustomQuery = src.UseCustomQuery;
-            CustomQuery = !string.IsNullOrWhiteSpace(src.CustomQuery)
+            CustomQuery = src.UseCustomQuery && !string.IsNullOrWhiteSpace(src.CustomQuery)
                 ? src.CustomQuery
                 : GetCurrentTitleDefaultQuery();
         }
@@ -300,14 +398,16 @@ public partial class TorrentsViewModel
     {
         if (_suppressFilterPersist) return;
 
-        var titleId = SelectedAnime?.Id ?? 0;
+        var titleId = SelectedAnime?.Id ?? _currentFilterContextId;
         _currentFilterContextId = titleId;
+        var persistedCustomQuery = UseCustomQuery ? CustomQuery : null;
 
         if (titleId != 0)
         {
-            var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents);
+            var target = _torrentFilterRepo.TryGetCachedFilter(titleId)
+                ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents, includeCustomQuery: false);
             target.UseCustomQuery = UseCustomQuery;
-            target.CustomQuery = CustomQuery;
+            target.CustomQuery = persistedCustomQuery;
             _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
         }
         else
@@ -315,7 +415,7 @@ public partial class TorrentsViewModel
             _settingsService.Update(settings =>
             {
                 settings.Torrents.UseCustomQuery = UseCustomQuery;
-                settings.Torrents.CustomQuery = CustomQuery;
+                settings.Torrents.CustomQuery = persistedCustomQuery;
             }, SettingsSection.Torrents);
         }
     }
@@ -358,7 +458,9 @@ public partial class TorrentsViewModel
         }
     }
 
-    private static AppSettings.TorrentFilterSet CreateFilterSetFromGlobal(AppSettings.TorrentConfig cfg) => new()
+    private static AppSettings.TorrentFilterSet CreateFilterSetFromGlobal(
+        AppSettings.TorrentConfig cfg,
+        bool includeCustomQuery = false) => new()
     {
         OnlyCrunchyroll = cfg.OnlyCrunchyroll,
         FilterNetflix = cfg.FilterNetflix,
@@ -372,13 +474,25 @@ public partial class TorrentsViewModel
         Filter1080p = cfg.Filter1080p,
         FilterOnlyNew = cfg.FilterOnlyNew,
         FilterOnlyBatches = cfg.FilterOnlyBatches,
-        UseCustomQuery = cfg.UseCustomQuery,
-        CustomQuery = cfg.CustomQuery,
+        UseCustomQuery = includeCustomQuery && cfg.UseCustomQuery,
+        CustomQuery = includeCustomQuery ? cfg.CustomQuery : null,
     };
 
     [RelayCommand]
     public void ClearFilters()
     {
+        var titleId = ResolveCurrentTitleId();
+        var wasUsingCustomQuery = UseCustomQuery;
+        _currentFilterContextId = titleId;
+
+        var defaultQuery = SelectedAnime != null
+            ? GetAnimeDefaultQuery(SelectedAnime)
+            : (titleId == 0
+                ? string.Empty
+                : (!string.IsNullOrWhiteSpace(_customFilterAnchorQuery)
+                    ? _customFilterAnchorQuery
+                    : (SearchQuery?.Trim() ?? string.Empty)));
+
         _suppressFilterPersist = true;
         try
         {
@@ -395,15 +509,17 @@ public partial class TorrentsViewModel
             FilterOnlyNew = false;
             FilterOnlyBatches = false;
             UseCustomQuery = false;
-            CustomQuery = GetCurrentTitleDefaultQuery();
+            CustomQuery = SelectedAnime != null ? SelectedAnime.Title : defaultQuery;
         }
         finally
         {
             _suppressFilterPersist = false;
         }
 
-        var titleId = ResolveCurrentTitleId();
-        _currentFilterContextId = titleId;
+        if (wasUsingCustomQuery)
+        {
+            SetSearchQueryFromContext(defaultQuery);
+        }
 
         if (titleId != 0)
         {

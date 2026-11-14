@@ -17,6 +17,18 @@ public partial class TorrentsViewModel
 
     public void RefreshWatchingList()
     {
+        if (SelectedAnime != null)
+        {
+            var refreshedSelected = _animeRepo.Collection.FirstOrDefault(a => a.Id == SelectedAnime.Id);
+            if (refreshedSelected != null && !ReferenceEquals(SelectedAnime, refreshedSelected))
+            {
+#pragma warning disable MVVMTK0034
+                _selectedAnime = refreshedSelected;
+#pragma warning restore MVVMTK0034
+                OnPropertyChanged(nameof(SelectedAnime));
+            }
+        }
+
         var hidden = new HashSet<int>(_torrentFilterRepo.GetHiddenAnimeIds());
         var watching = _animeRepo.Collection
             .Where(x => x.Status == UserAnimeStatus.Watching && x.MediaKind == MediaKind.Anime)

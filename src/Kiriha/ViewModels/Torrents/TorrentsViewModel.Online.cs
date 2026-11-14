@@ -344,9 +344,12 @@ public partial class TorrentsViewModel
 
         if (SelectedAnime != null)
         {
-            SearchQuery = value && !string.IsNullOrWhiteSpace(SelectedAnime.RussianTitle)
+            var nextQuery = value && !string.IsNullOrWhiteSpace(SelectedAnime.RussianTitle)
                 ? SelectedAnime.RussianTitle
-                : SelectedAnime.Title;
+                : (!value && UseCustomQuery && !string.IsNullOrWhiteSpace(CustomQuery)
+                    ? CustomQuery
+                    : SelectedAnime.Title);
+            SetSearchQueryFromContext(nextQuery);
         }
 
         if (!string.IsNullOrWhiteSpace(SearchQuery) || SelectedAnime != null)

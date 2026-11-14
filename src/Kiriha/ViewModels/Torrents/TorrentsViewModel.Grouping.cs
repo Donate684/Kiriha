@@ -15,11 +15,22 @@ public partial class TorrentsViewModel
     public IReadOnlyList<TorrentSortOption> SortModes => AvailableSortModes;
 
     [ObservableProperty]
-    private TorrentSortOption _selectedSortOption = AvailableSortModes[0];
+    private TorrentSortOption? _selectedSortOption = AvailableSortModes[0];
 
-    partial void OnSelectedSortOptionChanged(TorrentSortOption value)
+    partial void OnSelectedSortOptionChanged(TorrentSortOption? value)
     {
-        if (value is not null && SortMode != value.Mode)
+        if (value is null)
+        {
+            var restored = AvailableSortModes.FirstOrDefault(x => x.Mode == SortMode) ?? AvailableSortModes[0];
+            if (_selectedSortOption != restored)
+            {
+                _selectedSortOption = restored;
+                OnPropertyChanged(nameof(SelectedSortOption));
+            }
+            return;
+        }
+
+        if (SortMode != value.Mode)
         {
             SortMode = value.Mode;
         }
