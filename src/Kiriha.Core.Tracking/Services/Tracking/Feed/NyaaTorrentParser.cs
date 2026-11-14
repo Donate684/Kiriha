@@ -29,13 +29,20 @@ internal static class NyaaTorrentParser
         int.TryParse(leechersStr, out var leechers);
         int.TryParse(downloadsStr, out var downloads);
 
+        bool isMovieOrSpecial = !string.IsNullOrEmpty(parsed.ReleaseType)
+            || title.Contains("Movie", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Film", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("OVA", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("OAV", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("ONA", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Special", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Specials", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Gekijouban", StringComparison.OrdinalIgnoreCase);
+
         bool isBatch = parsed.IsBatch
             || title.Contains("Batch", StringComparison.OrdinalIgnoreCase)
-            || title.Contains("Season", StringComparison.OrdinalIgnoreCase)
             || title.Contains("Complete", StringComparison.OrdinalIgnoreCase)
-            || (string.IsNullOrEmpty(episodeStr)
-                && !title.Contains("Movie", StringComparison.OrdinalIgnoreCase)
-                && !title.Contains("Film", StringComparison.OrdinalIgnoreCase));
+            || (string.IsNullOrEmpty(episodeStr) && !isMovieOrSpecial);
 
         return new TorrentEntity
         {

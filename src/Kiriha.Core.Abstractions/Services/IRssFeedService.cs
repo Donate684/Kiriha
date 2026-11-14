@@ -4,5 +4,5 @@ namespace Kiriha.Core.Abstractions.Services;
 
 public interface IRssFeedService
 {
-    Task<List<TorrentEntity>> SearchTorrentsAsync(string query);
+    Task<List<TorrentEntity>> SearchTorrentsAsync(string query, CancellationToken ct = default);
 }

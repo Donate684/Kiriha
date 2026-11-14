@@ -6,14 +6,14 @@ namespace Kiriha.Mpv;
 
 public sealed partial class MpvThumbnailer
 {
-    private MpvThumbnailFrame? CaptureThumbnail(string videoPath, int bucket, CancellationToken cancellationToken)
+    private MpvThumbnailFrame? CaptureThumbnail(string videoPath, int bucket, CancellationToken cancellationToken, IReadOnlyDictionary<string, string>? headers = null)
     {
         if (!TryEnterActiveCall(out var handle))
             return null;
 
         try
         {
-            EnsureLoaded(handle, videoPath, cancellationToken);
+            EnsureLoaded(handle, videoPath, cancellationToken, headers);
             cancellationToken.ThrowIfCancellationRequested();
 
             var seconds = (bucket * CacheStepSeconds).ToString("0.###", CultureInfo.InvariantCulture);
@@ -151,7 +151,7 @@ public sealed partial class MpvThumbnailer
         }
     }
 
-    private void EnsureLoaded(IntPtr handle, string videoPath, CancellationToken cancellationToken)
+    private void EnsureLoaded(IntPtr handle, string videoPath, CancellationToken cancellationToken, IReadOnlyDictionary<string, string>? headers = null)
     {
         bool needsLoad = false;
         lock (_gate)
@@ -167,7 +167,64 @@ public sealed partial class MpvThumbnailer
         if (!needsLoad)
             return;
 
-        Check(LibMpvNative.mpv_command_string(handle, "loadfile", videoPath, "replace"), "load thumbnail source");
+        var targetUrl = videoPath;
+        if (targetUrl.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
+        {
+            targetUrl = targetUrl.Replace("video2.anilib.me", "video2.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                 .Replace("video3.anilib.me", "video3.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                 .Replace("anilib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase);
+        }
+
+        string? customReferer = null;
+        string? customUserAgent = null;
+        var extraHeaders = new List<string>();
+
+        if (headers != null)
+        {
+            foreach (var kvp in headers)
+            {
+                if (string.Equals(kvp.Key, "Referer", StringComparison.OrdinalIgnoreCase))
+                    customReferer = kvp.Value;
+                else if (string.Equals(kvp.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                    customUserAgent = kvp.Value;
+                else if (!string.IsNullOrWhiteSpace(kvp.Key) && !string.IsNullOrWhiteSpace(kvp.Value))
+                    extraHeaders.Add($"{kvp.Key}: {kvp.Value}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(customReferer))
+        {
+            LibMpvNative.mpv_set_property_string(handle, "referrer", customReferer);
+        }
+        else if (targetUrl.Contains("cdnlibs.org", StringComparison.OrdinalIgnoreCase) ||
+                 targetUrl.Contains("animelib.org", StringComparison.OrdinalIgnoreCase))
+        {
+            LibMpvNative.mpv_set_property_string(handle, "referrer", Constants.MpvConstants.AnimeLibReferer);
+        }
+        else
+        {
+            LibMpvNative.mpv_set_property_string(handle, "referrer", string.Empty);
+        }
+
+        if (!string.IsNullOrEmpty(customUserAgent))
+        {
+            LibMpvNative.mpv_set_property_string(handle, "user-agent", customUserAgent);
+        }
+        else
+        {
+            LibMpvNative.mpv_set_property_string(handle, "user-agent", Constants.MpvConstants.UserAgent);
+        }
+
+        if (extraHeaders.Count > 0)
+        {
+            LibMpvNative.mpv_set_property_string(handle, "http-header-fields", string.Join(",", extraHeaders));
+        }
+        else
+        {
+            LibMpvNative.mpv_set_property_string(handle, "http-header-fields", string.Empty);
+        }
+
+        Check(LibMpvNative.mpv_command_string(handle, "loadfile", targetUrl, "replace"), "load thumbnail source");
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
         bool loaded = false;

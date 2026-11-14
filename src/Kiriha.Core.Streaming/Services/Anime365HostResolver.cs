@@ -154,9 +154,12 @@ public sealed partial class Anime365HostResolver : IImageUrlRewriter
         using var firstAttempt = CloneRequest(request, initialUri, contentBytes);
         triedHosts.Add(initialUri.Host);
 
+        using var firstAttemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        firstAttemptCts.CancelAfter(TimeSpan.FromSeconds(StreamingConstants.Timeouts.MirrorProbeTimeoutSeconds));
+
         try
         {
-            var response = await client.SendAsync(firstAttempt, ct).ConfigureAwait(false);
+            var response = await client.SendAsync(firstAttempt, firstAttemptCts.Token).ConfigureAwait(false);
             if (IsSuccessfulOrGenuineApi(response.StatusCode))
             {
                 RememberActiveMirror(initialUri.Host);
@@ -178,10 +181,13 @@ public sealed partial class Anime365HostResolver : IImageUrlRewriter
             var targetUri = new UriBuilder(initialUri) { Host = candidateHost }.Uri;
             Log.Information("[Anime365] Probing fallback mirror: {Host}", candidateHost);
 
+            using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            probeCts.CancelAfter(TimeSpan.FromSeconds(StreamingConstants.Timeouts.MirrorProbeTimeoutSeconds));
+
             try
             {
                 using var probeRequest = CloneRequest(request, targetUri, contentBytes);
-                var probeResponse = await client.SendAsync(probeRequest, ct).ConfigureAwait(false);
+                var probeResponse = await client.SendAsync(probeRequest, probeCts.Token).ConfigureAwait(false);
 
                 if (IsSuccessfulOrGenuineApi(probeResponse.StatusCode))
                 {

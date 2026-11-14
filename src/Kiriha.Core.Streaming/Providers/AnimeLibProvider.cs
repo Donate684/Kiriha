@@ -258,13 +258,7 @@ public sealed class AnimeLibProvider : IStreamingProvider
                             continue;
 
                         var quality = q.TryGetProperty("quality", out var qProp) ? qProp.GetInt32() : 1080;
-                        var directUrl = baseServerUrl.TrimEnd('/') + "/" + href.TrimStart('/');
-                        if (directUrl.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
-                        {
-                            directUrl = directUrl.Replace("video2.anilib.me", "video1.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
-                                                 .Replace("video3.anilib.me", "video1.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
-                                                 .Replace("anilib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase);
-                        }
+                        var directUrl = RewriteLegacyDomains(baseServerUrl.TrimEnd('/') + "/" + href.TrimStart('/'));
                         var dubberName = !string.IsNullOrWhiteSpace(teamName) ? teamName : "AnimeLib";
                         var sourceTitle = !string.IsNullOrWhiteSpace(teamName)
                             ? $"{teamName} [AnimeLib MP4 {quality}p]"
@@ -359,7 +353,19 @@ public sealed class AnimeLibProvider : IStreamingProvider
         return int.TryParse(digits, out var val) ? val : 0;
     }
 
-    private static string ResolveVideoServerUrl(string? domainId) => domainId switch
+    internal static string RewriteLegacyDomains(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return url;
+        if (url.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
+        {
+            return url.Replace("video2.anilib.me", "video2.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                      .Replace("video3.anilib.me", "video3.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                      .Replace("anilib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase);
+        }
+        return url;
+    }
+
+    internal static string ResolveVideoServerUrl(string? domainId) => domainId switch
     {
         "secondary_1" => StreamingConstants.AnimeLib.VideoServerSecondary1,
         "secondary_2" => StreamingConstants.AnimeLib.VideoServerSecondary2,

@@ -13,7 +13,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
-    
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Kiriha.Tests" />
   </ItemGroup>
 
 </Project>

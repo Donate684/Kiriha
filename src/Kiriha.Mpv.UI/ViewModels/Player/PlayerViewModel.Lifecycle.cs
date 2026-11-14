@@ -52,7 +52,18 @@ public partial class PlayerViewModel
         _playback.SubtitleDelayChanged -= OnPlayerSubtitleDelayChanged;
         _playback.EofReachedChanged -= OnPlayerEofReachedChanged;
         _playback.BufferingChanged -= OnPlayerBufferingChanged;
+
+        if (!string.IsNullOrEmpty(TorrentHash) && _torrServer != null)
+        {
+            var hashToDrop = TorrentHash;
+            _ = Task.Run(async () =>
+            {
+                try { await _torrServer.DropTorrentAsync(hashToDrop).ConfigureAwait(false); }
+                catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop torrent {Hash} on dispose", hashToDrop); }
+            });
+        }
         DisposeTorrentMonitor();
+        ResetTorrentOverlayState();
 
         try { _statePublisher.PublishClosed(); } catch (Exception ex) { Log.Debug(ex, "Error publishing closed state"); }
 

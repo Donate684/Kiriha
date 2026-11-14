@@ -27,9 +27,19 @@ public sealed class TorrServerService : ITorrServerService
         get
         {
             var url = _settingsService.Current.Torrents.Streaming.ServerUrl;
+            var port = _settingsService.Current.Torrents.Streaming.ServerPort;
             if (string.IsNullOrWhiteSpace(url))
-                return $"{Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.LoopbackScheme}{Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.DefaultHost}:{_settingsService.Current.Torrents.Streaming.ServerPort}";
-            return url.TrimEnd('/');
+                return $"{Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.LoopbackScheme}{Kiriha.Core.Domain.Constants.AppConstants.Api.TorrServer.DefaultHost}:{port}";
+
+            url = url.TrimEnd('/');
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+                (uri.Host == "127.0.0.1" || string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase)) &&
+                uri.Port != port && port > 0)
+            {
+                var builder = new UriBuilder(uri) { Port = port };
+                return builder.Uri.ToString().TrimEnd('/');
+            }
+            return url;
         }
     }
 
@@ -99,11 +109,24 @@ public sealed class TorrServerService : ITorrServerService
 
             Logger.Information("TorrServerService: Launching local TorrServer on port {Port} from {Path}", port, exePath);
             _process = Process.Start(psi);
+            if (_process == null)
+            {
+                Logger.Error("TorrServerService: Failed to start TorrServer process");
+                return false;
+            }
 
             // Wait up to 6 seconds for the server to become responsive
             var deadline = DateTime.UtcNow.AddSeconds(6);
             while (DateTime.UtcNow < deadline && !ct.IsCancellationRequested)
             {
+                if (_process.HasExited)
+                {
+                    Logger.Error("TorrServerService: TorrServer process exited prematurely with code {Code}", _process.ExitCode);
+                    _process.Dispose();
+                    _process = null;
+                    return false;
+                }
+
                 if (await PingServerAsync(ct).ConfigureAwait(false))
                 {
                     IsRunning = true;
@@ -115,12 +138,14 @@ public sealed class TorrServerService : ITorrServerService
                 await Task.Delay(150, ct).ConfigureAwait(false);
             }
 
-            Logger.Error("TorrServerService: Timed out waiting for TorrServer to respond on {Url}", ServerUrl);
+            Logger.Error("TorrServerService: Timed out or canceled waiting for TorrServer to respond on {Url}", ServerUrl);
+            Stop();
             return false;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
             Logger.Error(ex, "TorrServerService: Failed to ensure TorrServer is running");
+            Stop();
             return false;
         }
         finally
@@ -129,14 +154,18 @@ public sealed class TorrServerService : ITorrServerService
         }
     }
 
-    private async Task<bool> PingServerAsync(CancellationToken ct)
+    internal async Task<bool> PingServerAsync(CancellationToken ct)
     {
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromMilliseconds(500));
             var response = await _httpClient.GetAsync($"{ServerUrl}/echo", cts.Token).ConfigureAwait(false);
-            return response.IsSuccessStatusCode;
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            var body = await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
+            return body.Contains("MatriX", StringComparison.OrdinalIgnoreCase);
         }
         catch
         {

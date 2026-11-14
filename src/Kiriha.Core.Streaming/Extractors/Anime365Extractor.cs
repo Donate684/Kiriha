@@ -127,6 +127,29 @@ public sealed partial class Anime365Extractor : IVideoExtractor
                 return videos;
             }
 
+            if (dataProp.TryGetProperty("embedUrl", out var embedProp) && embedProp.GetString() is { } embedUrl && !string.IsNullOrWhiteSpace(embedUrl))
+            {
+                var kodik = new KodikVideoExtractor(_httpClient);
+                if (kodik.CanExtract(embedUrl))
+                {
+                    var extVideos = await kodik.ExtractVideosAsync(embedUrl, ct).ConfigureAwait(false);
+                    if (extVideos.Count > 0)
+                    {
+                        return extVideos.Select(v => v with { SubtitleUrl = subtitlesUrl ?? v.SubtitleUrl }).ToList();
+                    }
+                }
+
+                var sibnet = new SibnetVideoExtractor(_httpClient);
+                if (sibnet.CanExtract(embedUrl))
+                {
+                    var extVideos = await sibnet.ExtractVideosAsync(embedUrl, ct).ConfigureAwait(false);
+                    if (extVideos.Count > 0)
+                    {
+                        return extVideos.Select(v => v with { SubtitleUrl = subtitlesUrl ?? v.SubtitleUrl }).ToList();
+                    }
+                }
+            }
+
             Log.Warning("[Anime365Extractor] No direct video streams found in embed data for translation {Id}", transId);
             return [];
         }

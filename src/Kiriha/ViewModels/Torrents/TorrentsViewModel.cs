@@ -126,7 +126,10 @@ public partial class TorrentsViewModel : ViewModelBase
     public bool HasOnlineResults => IsOnlineMode && OnlineResults.Count > 0;
 
     private string? _currentStreamingHash;
-    private CancellationTokenSource? _streamingCts;
+    private CancellationTokenSource? _searchCts;
+    private CancellationTokenSource? _modalCts;
+    private CancellationTokenSource? _launchCts;
+    private readonly IProgressUpdateService? _progressService;
 
     public TorrentsViewModel(
         IRssFeedService rssService,
@@ -136,7 +139,8 @@ public partial class TorrentsViewModel : ViewModelBase
         ITorrServerService torrServer,
         ILocalizer localizer,
         IStreamingService? streamingService = null,
-        IInternalPlayerServer? internalPlayerServer = null)
+        IInternalPlayerServer? internalPlayerServer = null,
+        IProgressUpdateService? progressService = null)
     {
         _rssService = rssService;
         _animeRepo = animeRepo;
@@ -146,6 +150,7 @@ public partial class TorrentsViewModel : ViewModelBase
         _localizer = localizer;
         _streamingService = streamingService;
         _internalPlayerServer = internalPlayerServer;
+        _progressService = progressService;
 
         LoadFilterSettings();
         LoadOnlineFilterSettings();

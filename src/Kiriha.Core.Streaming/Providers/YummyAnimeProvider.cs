@@ -117,8 +117,8 @@ public sealed class YummyAnimeProvider : IStreamingProvider
             if (!doc.RootElement.TryGetProperty("response", out var respProp) || respProp.ValueKind != JsonValueKind.Array)
                 return null;
 
-            // Group videos by episode number
-            var episodesMap = new Dictionary<int, List<StreamingSource>>();
+            // Group videos by episode number/tag
+            var episodesMap = new Dictionary<string, List<StreamingSource>>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var v in respProp.EnumerateArray())
             {
@@ -128,7 +128,7 @@ public sealed class YummyAnimeProvider : IStreamingProvider
                 if (string.IsNullOrWhiteSpace(iframeUrl))
                     continue;
 
-                var epNum = int.TryParse(numStr, out var parsedNum) ? parsedNum : 1;
+                var epKey = !string.IsNullOrWhiteSpace(numStr) ? numStr.Trim() : "1";
 
                 string? dubber = null;
                 string? player = null;
@@ -153,22 +153,28 @@ public sealed class YummyAnimeProvider : IStreamingProvider
                     Provider = ProviderName
                 };
 
-                if (!episodesMap.TryGetValue(epNum, out var list))
+                if (!episodesMap.TryGetValue(epKey, out var list))
                 {
                     list = [];
-                    episodesMap[epNum] = list;
+                    episodesMap[epKey] = list;
                 }
                 list.Add(source);
             }
 
             var episodes = episodesMap
-                .OrderBy(kv => kv.Key)
-                .Select(kv => new StreamingEpisode
+                .OrderBy(kv => double.TryParse(kv.Key, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : 9999)
+                .Select(kv =>
                 {
-                    EpisodeId = kv.Key.ToString(),
-                    EpisodeNumber = kv.Key,
-                    Title = $"Episode {kv.Key}",
-                    Sources = kv.Value
+                    var isNum = double.TryParse(kv.Key, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d);
+                    var epInt = isNum ? (int)Math.Floor(d) : 1;
+                    var title = isNum ? $"Episode {kv.Key}" : kv.Key;
+                    return new StreamingEpisode
+                    {
+                        EpisodeId = kv.Key,
+                        EpisodeNumber = epInt,
+                        Title = title,
+                        Sources = kv.Value
+                    };
                 })
                 .ToList();
 

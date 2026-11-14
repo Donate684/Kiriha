@@ -14,26 +14,66 @@ public class MpvPlaybackController
         _player = player;
     }
 
-    public void Load(string url)
+    public void Load(string url, IReadOnlyDictionary<string, string>? headers = null)
     {
         _player.Enqueue(handle =>
         {
             var targetUrl = url;
             if (targetUrl.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
             {
-                targetUrl = targetUrl.Replace("video2.anilib.me", "video1.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
-                                     .Replace("video3.anilib.me", "video1.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                targetUrl = targetUrl.Replace("video2.anilib.me", "video2.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
+                                     .Replace("video3.anilib.me", "video3.cdnlibs.org", StringComparison.OrdinalIgnoreCase)
                                      .Replace("anilib.me", "cdnlibs.org", StringComparison.OrdinalIgnoreCase);
             }
 
-            if (targetUrl.Contains("cdnlibs.org", StringComparison.OrdinalIgnoreCase) ||
-                targetUrl.Contains("animelib.org", StringComparison.OrdinalIgnoreCase))
+            string? customReferer = null;
+            string? customUserAgent = null;
+            var extraHeaders = new List<string>();
+
+            if (headers != null)
+            {
+                foreach (var kvp in headers)
+                {
+                    if (string.Equals(kvp.Key, "Referer", StringComparison.OrdinalIgnoreCase))
+                        customReferer = kvp.Value;
+                    else if (string.Equals(kvp.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                        customUserAgent = kvp.Value;
+                    else if (!string.IsNullOrWhiteSpace(kvp.Key) && !string.IsNullOrWhiteSpace(kvp.Value))
+                        extraHeaders.Add($"{kvp.Key}: {kvp.Value}");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(customReferer))
+            {
+                LibMpvNative.mpv_set_property_string(handle, "referrer", customReferer);
+            }
+            else if (targetUrl.Contains("cdnlibs.org", StringComparison.OrdinalIgnoreCase) ||
+                     targetUrl.Contains("animelib.org", StringComparison.OrdinalIgnoreCase))
             {
                 LibMpvNative.mpv_set_property_string(handle, "referrer", Constants.MpvConstants.AnimeLibReferer);
             }
             else
             {
                 LibMpvNative.mpv_set_property_string(handle, "referrer", string.Empty);
+            }
+
+            if (!string.IsNullOrEmpty(customUserAgent))
+            {
+                LibMpvNative.mpv_set_property_string(handle, "user-agent", customUserAgent);
+            }
+            else
+            {
+                LibMpvNative.mpv_set_property_string(handle, "user-agent", Constants.MpvConstants.UserAgent);
+            }
+
+            if (extraHeaders.Count > 0)
+            {
+                var headerFieldsValue = string.Join(",", extraHeaders);
+                LibMpvNative.mpv_set_property_string(handle, "http-header-fields", headerFieldsValue);
+            }
+            else
+            {
+                LibMpvNative.mpv_set_property_string(handle, "http-header-fields", string.Empty);
             }
 
             MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "loadfile", targetUrl), "load file");

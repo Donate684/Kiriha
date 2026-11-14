@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Kiriha.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AngleSharp" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Serilog" />

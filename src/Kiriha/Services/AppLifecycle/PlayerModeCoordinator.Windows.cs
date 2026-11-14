@@ -21,8 +21,9 @@ public sealed partial class PlayerModeCoordinator
 
         var cliMetadata = ExtractMetadataFromArgs(args);
         var initialMetadata = cliMetadata ?? metadataResolver.Resolve(videoUrl);
+        var headers = ExtractHeadersFromArgs(args);
 
-        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl);
+        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl, headers);
         if (cliMetadata != null)
         {
             playerVm.ApplyExternalMetadata(cliMetadata);
@@ -46,7 +47,8 @@ public sealed partial class PlayerModeCoordinator
 
         var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
         var cliMetadata = ExtractMetadataFromArgs(args);
-        vm.LoadVideo(videoUrl, subtitleUrl, cliMetadata);
+        var headers = ExtractHeadersFromArgs(args);
+        vm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
         if (cliMetadata != null)
         {
             vm.ApplyExternalMetadata(cliMetadata);

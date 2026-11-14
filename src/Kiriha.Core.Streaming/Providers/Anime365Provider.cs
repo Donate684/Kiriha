@@ -146,7 +146,7 @@ public sealed partial class Anime365Provider : IStreamingProvider
 
                     var epId = SafeGetId(ep);
                     var epInt = SafeGetInt(ep, "episodeInt", ordinal);
-                    if (epInt <= 0) epInt = ordinal;
+                    if (epInt < 0) epInt = ordinal;
 
                     var epTitle = SafeGetString(ep, "episodeTitle");
                     if (string.IsNullOrWhiteSpace(epTitle))
@@ -198,14 +198,7 @@ public sealed partial class Anime365Provider : IStreamingProvider
             if (string.IsNullOrWhiteSpace(cleanId) || !int.TryParse(cleanId, out var parsedId))
                 return [];
 
-            // 1. Direct path: if animeId passed is already the episodeId, query translations directly
-            var directSources = await FetchTranslationsForEpisodeAsync(parsedId, ct).ConfigureAwait(false);
-            if (directSources.Count > 0)
-            {
-                return directSources;
-            }
-
-            // 2. Fallback path: animeId was a seriesId. Fetch series details to locate target episodeId
+            // 1. Primary path: animeId is seriesId. Fetch series details to locate target episodeId for episodeNumber
             var detailUrl = $"{StreamingConstants.Anime365.SeriesEndpoint}/{cleanId}";
             var token = _settingsService?.Current.Torrents.OnlineStreaming.Anime365Token;
             if (!string.IsNullOrWhiteSpace(token))
@@ -217,46 +210,47 @@ public sealed partial class Anime365Provider : IStreamingProvider
             AddDefaultHeaders(detailRequest);
 
             using var detailResponse = await _hostResolver.SendWithFailoverAsync(_httpClient, detailRequest, ct).ConfigureAwait(false);
-            if (!detailResponse.IsSuccessStatusCode)
-                return [];
-
-            var detailContent = await detailResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            using var detailDoc = JsonDocument.Parse(detailContent);
-            if (!detailDoc.RootElement.TryGetProperty("data", out var seriesData) || seriesData.ValueKind != JsonValueKind.Object)
-                return [];
-
-            int? targetEpisodeId = null;
-            if (seriesData.TryGetProperty("episodes", out var epArray) && epArray.ValueKind == JsonValueKind.Array)
+            if (detailResponse.IsSuccessStatusCode)
             {
-                var index = 1;
-                foreach (var ep in epArray.EnumerateArray())
+                var detailContent = await detailResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+                using var detailDoc = JsonDocument.Parse(detailContent);
+                if (detailDoc.RootElement.TryGetProperty("data", out var seriesData) && seriesData.ValueKind == JsonValueKind.Object)
                 {
-                    if (ep.ValueKind != JsonValueKind.Object)
-                        continue;
-
-                    if (!SafeIsActive(ep))
-                        continue;
-
-                    var epInt = SafeGetInt(ep, "episodeInt", index);
-                    if (epInt <= 0) epInt = index;
-
-                    if (epInt == episodeNumber)
+                    int? targetEpisodeId = null;
+                    if (seriesData.TryGetProperty("episodes", out var epArray) && epArray.ValueKind == JsonValueKind.Array)
                     {
-                        var epIdStr = SafeGetId(ep);
-                        if (!string.IsNullOrWhiteSpace(epIdStr) && int.TryParse(epIdStr, out var epIdVal))
+                        var index = 1;
+                        foreach (var ep in epArray.EnumerateArray())
                         {
-                            targetEpisodeId = epIdVal;
-                            break;
+                            if (ep.ValueKind != JsonValueKind.Object || !SafeIsActive(ep))
+                                continue;
+
+                            var epInt = SafeGetInt(ep, "episodeInt", index);
+                            if (epInt < 0) epInt = index;
+
+                            if (epInt == episodeNumber)
+                            {
+                                var epIdStr = SafeGetId(ep);
+                                if (!string.IsNullOrWhiteSpace(epIdStr) && int.TryParse(epIdStr, out var epIdVal))
+                                {
+                                    targetEpisodeId = epIdVal;
+                                    break;
+                                }
+                            }
+                            index++;
                         }
                     }
-                    index++;
+
+                    if (targetEpisodeId.HasValue)
+                    {
+                        return await FetchTranslationsForEpisodeAsync(targetEpisodeId.Value, ct).ConfigureAwait(false);
+                    }
                 }
             }
 
-            if (!targetEpisodeId.HasValue)
-                return [];
-
-            return await FetchTranslationsForEpisodeAsync(targetEpisodeId.Value, ct).ConfigureAwait(false);
+            // 2. Fallback path: animeId was directly the episodeId
+            var directSources = await FetchTranslationsForEpisodeAsync(parsedId, ct).ConfigureAwait(false);
+            return directSources;
         }
         catch (Exception ex)
         {

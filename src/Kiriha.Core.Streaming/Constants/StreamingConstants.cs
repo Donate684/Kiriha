@@ -69,8 +69,8 @@ public static class StreamingConstants
         public const string RefererUrl = "https://animelib.org/";
         public const string LoginUrl = "https://animelib.org/ru/front/auth";
         public const string VideoServerMain = "https://video1.cdnlibs.org/.%D0%B0s/";
-        public const string VideoServerSecondary1 = "https://video1.cdnlibs.org/.%D0%B0s/";
-        public const string VideoServerSecondary2 = "https://video1.cdnlibs.org/.%D0%B0s/";
+        public const string VideoServerSecondary1 = "https://video2.cdnlibs.org/.%D0%B0s/";
+        public const string VideoServerSecondary2 = "https://video3.cdnlibs.org/.%D0%B0s/";
         public const string SubtitlesServer = "https://api.cdnlibs.org";
         public const string SubtitlesPathPrefix = "/uploads/subtitles/";
     }
@@ -90,7 +90,8 @@ public static class StreamingConstants
     public static class Timeouts
     {
         public const int HttpClientTimeoutSeconds = 5;
-        public const int ProviderSearchTimeoutSeconds = 4;
+        public const int ProviderSearchTimeoutSeconds = 8;
+        public const int MirrorProbeTimeoutSeconds = 2;
     }
 
     public static class Aniboom

@@ -29,6 +29,7 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
 
     private readonly HttpClient _httpClient;
     private static string? _cachedApiPath;
+    private static readonly SemaphoreSlim ApiPathLock = new(1, 1);
 
     public string Name => "Kodik";
 
@@ -54,6 +55,7 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
             var netloc = uri.Host;
 
             using var pageRequest = new HttpRequestMessage(HttpMethod.Get, playerUrl);
+            pageRequest.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Referer, $"{StreamingConstants.HttpsPrefix}{netloc}/");
             pageRequest.Headers.TryAddWithoutValidation(StreamingConstants.Headers.UserAgent, StreamingConstants.Headers.DefaultUserAgent);
 
             using var pageResponse = await _httpClient.SendAsync(pageRequest, ct).ConfigureAwait(false);
@@ -141,6 +143,16 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
 
         var result = new List<StreamingVideo>();
 
+        if (linksProp.TryGetProperty("1080", out var p1080) && p1080.GetArrayLength() > 0)
+        {
+            var raw = p1080[0].GetProperty("src").GetString();
+            if (!string.IsNullOrEmpty(raw))
+            {
+                var decoded = DecodeUrl(raw).Replace("/480.mp4:", "/1080.mp4:").Replace("/720.mp4:", "/1080.mp4:");
+                result.Add(new StreamingVideo { Url = decoded, Quality = 1080, VideoType = "m3u8", Headers = headers });
+            }
+        }
+
         if (linksProp.TryGetProperty("720", out var p720) && p720.GetArrayLength() > 0)
         {
             var raw = p720[0].GetProperty("src").GetString();
@@ -176,6 +188,7 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
 
     private async Task UpdateCachedApiPathAsync(string playerJsUrl, CancellationToken ct)
     {
+        await ApiPathLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             using var req = new HttpRequestMessage(HttpMethod.Get, playerJsUrl);
@@ -195,6 +208,10 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
         catch (Exception ex)
         {
             Log.Warning(ex, "[Kodik] Could not update API path from JS {JsUrl}", playerJsUrl);
+        }
+        finally
+        {
+            ApiPathLock.Release();
         }
     }
 
@@ -237,11 +254,10 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
     {
         ArgumentNullException.ThrowIfNull(encodedUrl);
 
-        if (encodedUrl.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+        var pathPart = encodedUrl.Split('?')[0];
+        if (pathPart.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
         {
-            return encodedUrl.StartsWith("https", StringComparison.OrdinalIgnoreCase)
-                ? encodedUrl
-                : $"https:{encodedUrl}";
+            return NormalizeScheme(encodedUrl);
         }
 
         var decryptedRot = DecryptRot18(encodedUrl);
@@ -250,9 +266,18 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
         var bytes = Convert.FromBase64String(base64Padded);
         var decoded = Encoding.UTF8.GetString(bytes);
 
-        return decoded.StartsWith("https", StringComparison.OrdinalIgnoreCase)
-            ? decoded
-            : $"https:{decoded}";
+        return NormalizeScheme(decoded);
+    }
+
+    internal static string NormalizeScheme(string url)
+    {
+        if (url.StartsWith("//")) return $"{Uri.UriSchemeHttps}:{url}";
+        if (url.StartsWith(Uri.UriSchemeHttp + "://", StringComparison.OrdinalIgnoreCase) ||
+            url.StartsWith(Uri.UriSchemeHttps + "://", StringComparison.OrdinalIgnoreCase))
+        {
+            return url;
+        }
+        return $"{Uri.UriSchemeHttps}://{url.TrimStart(':', '/')}";
     }
 
     /// <summary>

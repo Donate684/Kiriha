@@ -46,8 +46,9 @@ public partial class PlayerViewModel
         _playback.AddSubtitle(path, select);
     }
 
-    public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null)
+    public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null, IReadOnlyDictionary<string, string>? headers = null)
     {
+        if (headers != null) StreamHeaders = headers;
         if (subtitleUrl != null)
         {
             _pendingSubtitleUrl = subtitleUrl;
@@ -137,7 +138,7 @@ public partial class PlayerViewModel
         if (!PlayerAutoPlay)
             _playback.Pause();
 
-        _playback.Load(videoUrl);
+        _playback.Load(videoUrl, StreamHeaders);
 
         if (PlayerAutoPlay)
             _playback.Play();

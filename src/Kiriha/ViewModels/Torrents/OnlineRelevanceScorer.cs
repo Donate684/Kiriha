@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.ViewModels.Torrents;
 
@@ -8,6 +9,28 @@ namespace Kiriha.ViewModels.Torrents;
 /// </summary>
 public static class OnlineRelevanceScorer
 {
+    private static readonly string[] SequelTokens = AppConstants.Parsing.SequelTokens;
+
+    internal static bool HasUnpromptedSequelTokens(string query, string candidate)
+    {
+        var remainder = candidate.Length > query.Length ? candidate[query.Length..] : string.Empty;
+        var remainderWords = remainder.Split([' ', ':', '-', '_', '(', ')', '[', ']', '.'], StringSplitOptions.RemoveEmptyEntries);
+        var queryWords = query.Split([' ', ':', '-', '_', '(', ')', '[', ']', '.'], StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var rw in remainderWords)
+        {
+            foreach (var token in SequelTokens)
+            {
+                if (string.Equals(rw, token, StringComparison.OrdinalIgnoreCase) &&
+                    !queryWords.Any(qw => string.Equals(qw, token, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /// <summary>
     /// Computes the maximum relevance score among multiple target queries (e.g. user input, Russian title, Romaji title).
     /// </summary>
@@ -61,7 +84,13 @@ public static class OnlineRelevanceScorer
 
         // 2. Candidate starts with query (e.g. "Title: Subtitle" when user searched "Title")
         if (c.StartsWith(q + " ", StringComparison.Ordinal) || c.StartsWith(q + ":", StringComparison.Ordinal))
+        {
+            if (HasUnpromptedSequelTokens(q, c))
+            {
+                return 5000;
+            }
             return 8500 - Math.Min(500, (c.Length - q.Length) * 5);
+        }
 
         // 3. Query starts with candidate
         if (q.StartsWith(c + " ", StringComparison.Ordinal))
@@ -71,6 +100,10 @@ public static class OnlineRelevanceScorer
         var phraseIndex = c.IndexOf(q, StringComparison.Ordinal);
         if (phraseIndex >= 0)
         {
+            if (HasUnpromptedSequelTokens(q, c))
+            {
+                return 5000;
+            }
             var posBonus = Math.Max(0, 200 - phraseIndex * 10);
             var lenPenalty = Math.Min(500, (c.Length - q.Length) * 5);
             return 7000 + posBonus - lenPenalty;

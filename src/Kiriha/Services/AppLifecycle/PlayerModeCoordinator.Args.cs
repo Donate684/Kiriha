@@ -45,4 +45,31 @@ public sealed partial class PlayerModeCoordinator
             TitleRomaji: string.IsNullOrEmpty(titleEn) ? titleRu : titleEn,
             TorrentHash: torrentHash);
     }
+
+    internal static IReadOnlyDictionary<string, string>? ExtractHeadersFromArgs(string[] args)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i].Equals("--http-header", StringComparison.OrdinalIgnoreCase))
+            {
+                var val = args[i + 1];
+                if (!val.StartsWith("--", StringComparison.Ordinal))
+                {
+                    var splitIdx = val.IndexOf('=');
+                    if (splitIdx < 0) splitIdx = val.IndexOf(':');
+                    if (splitIdx > 0)
+                    {
+                        var key = val[..splitIdx].Trim();
+                        var headerVal = val[(splitIdx + 1)..].Trim();
+                        if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(headerVal))
+                        {
+                            headers[key] = headerVal;
+                        }
+                    }
+                }
+            }
+        }
+        return headers.Count > 0 ? headers : null;
+    }
 }

@@ -186,6 +186,13 @@ public static class AppConstants
     {
         public const string BlockedByRoskomnadzor = "Заблокировано по требованию Роскомнадзора";
         public const string CyrillicChe = "Ч";
+        public static readonly string[] SequelTokens =
+        [
+            "2", "3", "4", "5", "6", "7", "8", "9",
+            "2nd", "3rd", "4th", "5th",
+            "season", "сезон", "part", "часть",
+            "movie", "фильм", "ova", "oav", "ona", "special", "specials", "0"
+        ];
     }
 
     public static class Genres

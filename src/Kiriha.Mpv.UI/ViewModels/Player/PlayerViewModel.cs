@@ -54,6 +54,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private string? _pendingSubtitleUrl;
 
     public string? PendingSubtitleUrl => _pendingSubtitleUrl;
+    public IReadOnlyDictionary<string, string>? StreamHeaders { get; private set; }
 
     public PlayerViewModel(
         string videoUrl,
@@ -62,7 +63,8 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         ISettingsService? settingsService,
         ILocalizer localizer,
         ITorrServerService? torrServer = null,
-        string? subtitleUrl = null)
+        string? subtitleUrl = null,
+        IReadOnlyDictionary<string, string>? headers = null)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;
@@ -70,6 +72,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _localizer = localizer;
         _torrServer = torrServer;
         _pendingSubtitleUrl = subtitleUrl;
+        StreamHeaders = headers;
         InitializeOptions();
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
         _statePublisher.MetadataReceived += OnExternalMetadataReceived;

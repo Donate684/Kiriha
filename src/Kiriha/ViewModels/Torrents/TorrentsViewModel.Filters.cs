@@ -234,7 +234,7 @@ public partial class TorrentsViewModel
         var titleId = ResolveCurrentTitleId();
         _currentFilterContextId = titleId;
 
-        if (titleId != 0)
+        if (FiltersPerTitle && titleId != 0)
         {
             var target = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents);
             ApplyFilterValue(target, name, value);
@@ -261,7 +261,7 @@ public partial class TorrentsViewModel
 
         var globalCfg = _settingsService.Current.Torrents;
         AppSettings.TorrentFilterSet src;
-        if (titleId != 0)
+        if (FiltersPerTitle && titleId != 0)
         {
             src = _torrentFilterRepo.TryGetCachedFilter(titleId) ?? CreateFilterSetFromGlobal(globalCfg);
         }

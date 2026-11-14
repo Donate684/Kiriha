@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.TorrServer;
+using Serilog;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
 
@@ -56,6 +57,22 @@ public partial class PlayerViewModel
                (!string.IsNullOrEmpty(VideoUrl) && VideoUrl.Contains(hash, StringComparison.OrdinalIgnoreCase));
     }
 
+    public void ResetTorrentOverlayState()
+    {
+        IsTorrentStream = false;
+        TorrentHash = string.Empty;
+        TorrentDownloadSpeedText = string.Empty;
+        TorrentUploadSpeedText = string.Empty;
+        TorrentPeersText = string.Empty;
+        TorrentPeersBadgeText = string.Empty;
+        TorrentBufferText = string.Empty;
+        TorrentBufferPercent = 0;
+        IsTorrentBufferIndeterminate = true;
+        TorrentStatusText = string.Empty;
+        TorrentDetailsTooltip = string.Empty;
+        UpdateRebufferingState();
+    }
+
     private void InitializeTorrentStream(string videoUrl, PlayerMediaMetadata? metadata)
     {
         _torrentMonitorCts?.Cancel();
@@ -77,6 +94,20 @@ public partial class PlayerViewModel
                             (videoUrl.Contains(AppConstants.Api.TorrServer.DefaultHost, StringComparison.OrdinalIgnoreCase) ||
                              videoUrl.Contains("127.0.0.1:8090", StringComparison.OrdinalIgnoreCase)));
 
+        // If switching away from an active torrent or switching to a different torrent:
+        if (!string.IsNullOrEmpty(TorrentHash) && (!isTorrServer || !string.Equals(TorrentHash, hash, StringComparison.OrdinalIgnoreCase)))
+        {
+            var oldHash = TorrentHash;
+            if (_torrServer != null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try { await _torrServer.DropTorrentAsync(oldHash).ConfigureAwait(false); }
+                    catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop previous torrent {Hash}", oldHash); }
+                });
+            }
+        }
+
         IsTorrentStream = isTorrServer;
         TorrentHash = hash;
 
@@ -84,6 +115,10 @@ public partial class PlayerViewModel
         {
             TorrentStatusText = _localizer.GetLoc("player.streaming.connecting_peers");
             StartTorrentMonitor(TorrentHash);
+        }
+        else
+        {
+            ResetTorrentOverlayState();
         }
     }
 

@@ -69,7 +69,7 @@ public partial class MpvPlayer : IDisposable
 
     public void RenderOpenGl(int framebuffer, int width, int height) => OpenGlRenderer.RenderOpenGl(framebuffer, width, height);
 
-    public void Load(string url) => PlaybackController.Load(url);
+    public void Load(string url, IReadOnlyDictionary<string, string>? headers = null) => PlaybackController.Load(url, headers);
 
     public void AddSubtitle(string path, bool select = true) => TrackManager.AddSubtitle(path, select);
 

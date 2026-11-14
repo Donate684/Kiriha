@@ -73,12 +73,17 @@ public partial class TorrentsViewModel
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task PerformSearch()
     {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var ct = _searchCts.Token;
+
         if (IsOnlineMode)
         {
-            await PerformOnlineSearchAsync(SearchQuery);
+            await PerformOnlineSearchAsync(SearchQuery, ct);
             return;
         }
 
@@ -108,7 +113,9 @@ public partial class TorrentsViewModel
             IsLoading = true;
             Log.Information("Torrents: Starting search for: {Query}", query);
 
-            var results = await _rssService.SearchTorrentsAsync(query);
+            var results = await _rssService.SearchTorrentsAsync(query, ct);
+            if (ct.IsCancellationRequested) return;
+
             Log.Information("Torrents: Search returned {Count} items", results.Count);
 
             Torrents.Reset(results);
@@ -118,14 +125,18 @@ public partial class TorrentsViewModel
                 Log.Warning("Torrents: No results found for: {Query}", query);
             }
         }
+        catch (OperationCanceledException) { }
         catch (System.Exception ex)
         {
             Log.Error(ex, "Torrents: Search failed for: {Query}", query);
         }
         finally
         {
-            IsLoading = false;
-            Log.Debug("Torrents: Search process completed (loading set to false)");
+            if (!ct.IsCancellationRequested)
+            {
+                IsLoading = false;
+                Log.Debug("Torrents: Search process completed (loading set to false)");
+            }
         }
     }
 
@@ -174,15 +185,15 @@ public partial class TorrentsViewModel
         var link = !string.IsNullOrWhiteSpace(torrent.MagnetLink) ? torrent.MagnetLink : torrent.DownloadLink;
         if (string.IsNullOrWhiteSpace(link)) return;
 
-        _streamingCts?.Cancel();
-        _streamingCts?.Dispose();
-        _streamingCts = new CancellationTokenSource();
-        var ct = _streamingCts.Token;
-
         try
         {
             if (torrent.IsBatch)
             {
+                _modalCts?.Cancel();
+                _modalCts?.Dispose();
+                _modalCts = new CancellationTokenSource();
+                var ct = _modalCts.Token;
+
                 ActiveStreamingTorrent = torrent;
                 EpisodeFiles.Clear();
                 IsEpisodeSelectorVisible = true;
@@ -215,6 +226,16 @@ public partial class TorrentsViewModel
                 {
                     EpisodeSelectorError = _localizer.GetLoc("torrents.streaming.no_video");
                     IsEpisodeSelectorLoading = false;
+                    if (!string.IsNullOrEmpty(_currentStreamingHash))
+                    {
+                        var hash = _currentStreamingHash;
+                        _currentStreamingHash = null;
+                        _ = Task.Run(async () =>
+                        {
+                            try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
+                            catch (Exception ex) { Log.Warning(ex, "Failed to drop empty batch torrent {Hash}", hash); }
+                        });
+                    }
                     return;
                 }
 
@@ -227,6 +248,11 @@ public partial class TorrentsViewModel
             }
             else
             {
+                _launchCts?.Cancel();
+                _launchCts?.Dispose();
+                _launchCts = new CancellationTokenSource();
+                var ct = _launchCts.Token;
+
                 IsPlayerLaunching = true;
                 PlayerLaunchingTitle = torrent.Title;
 
@@ -251,8 +277,17 @@ public partial class TorrentsViewModel
                 // Wait up to 15 seconds for TorrServer to connect to peers and resolve torrent metadata
                 var files = await _torrServer.WaitForFilesAsync(status.Hash, TimeSpan.FromSeconds(15), ct);
                 var videoFiles = files.Where(f => f.IsVideo).ToList();
-                var targetFile = videoFiles.OrderByDescending(f => f.Length).FirstOrDefault();
+                if (videoFiles.Count == 0)
+                {
+                    Log.Warning("TorrentsViewModel: No video files found in torrent {Hash} (0 seeds or dead magnet)", status.Hash);
+                    await _torrServer.DropTorrentAsync(status.Hash, ct).ConfigureAwait(false);
+                    _currentStreamingHash = null;
+                    IsPlayerLaunching = false;
+                    EpisodeSelectorError = _localizer.GetLoc("torrents.streaming.no_video");
+                    return;
+                }
 
+                var targetFile = videoFiles.OrderByDescending(f => f.Length).FirstOrDefault();
                 var fileId = targetFile?.Id ?? -1;
                 var fileName = targetFile?.FileName ?? (torrent.Title + ".mkv");
 
@@ -292,12 +327,12 @@ public partial class TorrentsViewModel
 
         var torrent = ActiveStreamingTorrent;
         var streamUrl = _torrServer.GetStreamUrl(_currentStreamingHash, file.Id, file.FileName);
-        CloseEpisodeSelector();
+        CloseEpisodeSelector(dropTorrent: false);
 
-        _streamingCts?.Cancel();
-        _streamingCts?.Dispose();
-        _streamingCts = new CancellationTokenSource();
-        var ct = _streamingCts.Token;
+        _launchCts?.Cancel();
+        _launchCts?.Dispose();
+        _launchCts = new CancellationTokenSource();
+        var ct = _launchCts.Token;
 
         IsPlayerLaunching = true;
         PlayerLaunchingTitle = $"{torrent.Title} - {file.FileName}";
@@ -318,15 +353,28 @@ public partial class TorrentsViewModel
     }
 
     [RelayCommand]
-    public void CloseEpisodeSelector()
+    public void CloseEpisodeSelector() => CloseEpisodeSelector(dropTorrent: true);
+
+    public void CloseEpisodeSelector(bool dropTorrent)
     {
-        _streamingCts?.Cancel();
+        _modalCts?.Cancel();
         IsEpisodeSelectorVisible = false;
         IsEpisodeSelectorLoading = false;
         EpisodeSelectorError = null;
         EpisodeFiles.Clear();
         EpisodeSelectorCountText = string.Empty;
         ActiveStreamingTorrent = null;
+
+        if (dropTorrent && !string.IsNullOrEmpty(_currentStreamingHash))
+        {
+            var hash = _currentStreamingHash;
+            _currentStreamingHash = null;
+            _ = Task.Run(async () =>
+            {
+                try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
+                catch (Exception ex) { Log.Warning(ex, "Failed to drop cancelled batch torrent {Hash}", hash); }
+            });
+        }
     }
 
     [RelayCommand]
@@ -338,8 +386,18 @@ public partial class TorrentsViewModel
     [RelayCommand]
     public void CancelPlayerLaunching()
     {
-        _streamingCts?.Cancel();
+        _launchCts?.Cancel();
         IsPlayerLaunching = false;
+        if (!string.IsNullOrEmpty(_currentStreamingHash))
+        {
+            var hash = _currentStreamingHash;
+            _currentStreamingHash = null;
+            _ = Task.Run(async () =>
+            {
+                try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
+                catch (Exception ex) { Log.Warning(ex, "Failed to drop cancelled launch torrent {Hash}", hash); }
+            });
+        }
     }
 
     private async Task WaitForPlayerWakeupAsync(string torrentHash, string torrentTitle, CancellationToken ct)

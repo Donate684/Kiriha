@@ -70,7 +70,8 @@ public sealed partial class AniboomVideoExtractor : IVideoExtractor
         if (!dataParamMatch.Success)
             return [];
 
-        var rawJson = WebUtility.HtmlDecode(dataParamMatch.Groups[1].Value);
+        var rawVal = dataParamMatch.Groups[1].Success ? dataParamMatch.Groups[1].Value : dataParamMatch.Groups[2].Value;
+        var rawJson = WebUtility.HtmlDecode(rawVal);
 
         string? hlsUrl = null;
         string? dashUrl = null;
@@ -180,8 +181,8 @@ public sealed partial class AniboomVideoExtractor : IVideoExtractor
     [GeneratedRegex(@"https?://(?:www\.)?aniboom\.one/", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
     private static partial Regex GenerateUrlRegex();
 
-    [GeneratedRegex(@"data-parameters\s*=\s*[""']([^""']+)[""']", RegexOptions.Compiled)]
-    private static partial Regex GenerateDataParametersRegex();
+    [GeneratedRegex(@"data-parameters\s*=\s*(?:'([^']*)'|""([^""]*)"")", RegexOptions.Compiled)]
+    internal static partial Regex GenerateDataParametersRegex();
 
     [GeneratedRegex(@"""hls""\s*:\s*""?\{\s*\\?""src\\?""\s*:\s*\\?""([^""\\]+)""", RegexOptions.Compiled)]
     private static partial Regex GenerateHlsSrcRegex();

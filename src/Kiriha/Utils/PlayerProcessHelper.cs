@@ -16,7 +16,8 @@ public static class PlayerProcessHelper
         int? animeId = null,
         string? torrentHash = null,
         string? originalTitle = null,
-        string? subtitleUrl = null)
+        string? subtitleUrl = null,
+        IReadOnlyDictionary<string, string>? headers = null)
     {
         var canonicalOriginal = !string.IsNullOrWhiteSpace(originalTitle)
             ? originalTitle
@@ -62,6 +63,14 @@ public static class PlayerProcessHelper
             {
                 forwardArgs.Add("--torrent-hash");
                 forwardArgs.Add(torrentHash);
+            }
+            if (headers != null)
+            {
+                foreach (var kvp in headers)
+                {
+                    forwardArgs.Add("--http-header");
+                    forwardArgs.Add($"{kvp.Key}={kvp.Value}");
+                }
             }
         }
 
@@ -126,6 +135,13 @@ public static class PlayerProcessHelper
         if (!string.IsNullOrWhiteSpace(torrentHash))
         {
             argsBuilder.Append($" --torrent-hash \"{torrentHash}\"");
+        }
+        if (headers != null)
+        {
+            foreach (var kvp in headers)
+            {
+                argsBuilder.Append($" --http-header \"{kvp.Key}={kvp.Value}\"");
+            }
         }
 
         var startInfo = new ProcessStartInfo

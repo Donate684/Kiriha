@@ -45,7 +45,7 @@ public sealed class PlayerPlaybackController
 
     private void OnBufferingChanged(bool isBuffering) => BufferingChanged?.Invoke(isBuffering);
 
-    public void Load(string videoUrl) => _player?.Load(videoUrl);
+    public void Load(string videoUrl, IReadOnlyDictionary<string, string>? headers = null) => _player?.Load(videoUrl, headers);
     public void WriteWatchLaterConfig() => _player?.WriteWatchLaterConfig();
     public void DeleteWatchLaterConfig() => _player?.DeleteWatchLaterConfig();
     public void SetSavePositionOnQuit(bool enabled) => _player?.SetSavePositionOnQuit(enabled);

@@ -23,15 +23,16 @@ public class RssFeedService : IRssFeedService
         _uiDispatcher = uiDispatcher;
     }
 
-    public async Task<List<TorrentEntity>> SearchTorrentsAsync(string query)
+    public async Task<List<TorrentEntity>> SearchTorrentsAsync(string query, CancellationToken ct = default)
     {
         try
         {
             Log.Information("Torrents: Fetching RSS search for: {Query}", query);
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-            var doc = await _nyaaClient.FetchSearchAsync(query, cts.Token);
-            if (doc is null) return [];
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+            var doc = await _nyaaClient.FetchSearchAsync(query, linkedCts.Token);
+            if (doc is null || linkedCts.Token.IsCancellationRequested) return [];
 
             Log.Information("Torrents: Parsing XML response...");
             var items = doc.Descendants("item").ToList();

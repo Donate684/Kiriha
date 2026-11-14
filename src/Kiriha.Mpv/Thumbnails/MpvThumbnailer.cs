@@ -61,9 +61,17 @@ public sealed partial class MpvThumbnailer : IDisposable
 
     private CancellationTokenSource? _currentCaptureCts;
 
-    public async Task<MpvThumbnailFrame?> GetThumbnailAsync(string videoPath, double timeSeconds, CancellationToken externalCancellationToken)
+    internal static bool IsValidVideoSource(string? path)
     {
-        if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        if (File.Exists(path)) return true;
+        return Uri.TryCreate(path, UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+    }
+
+    public async Task<MpvThumbnailFrame?> GetThumbnailAsync(string videoPath, double timeSeconds, CancellationToken externalCancellationToken, IReadOnlyDictionary<string, string>? headers = null)
+    {
+        if (!IsValidVideoSource(videoPath))
             return null;
 
         var bucket = ToBucket(timeSeconds);
@@ -101,7 +109,7 @@ public sealed partial class MpvThumbnailer : IDisposable
                     }
                 }
 
-                return await Task.Run(() => CaptureThumbnail(videoPath, bucket, ct), ct);
+                return await Task.Run(() => CaptureThumbnail(videoPath, bucket, ct, headers), ct);
             }
             finally
             {
@@ -114,9 +122,9 @@ public sealed partial class MpvThumbnailer : IDisposable
         }
     }
 
-    public Task WarmUpAsync(string videoPath, CancellationToken cancellationToken = default)
+    public Task WarmUpAsync(string videoPath, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? headers = null)
     {
-        if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
+        if (!IsValidVideoSource(videoPath))
             return Task.CompletedTask;
 
         return Task.Run(async () =>
@@ -129,7 +137,7 @@ public sealed partial class MpvThumbnailer : IDisposable
 
                 try
                 {
-                    EnsureLoaded(handle, videoPath, cancellationToken);
+                    EnsureLoaded(handle, videoPath, cancellationToken, headers);
                 }
                 finally
                 {

@@ -127,8 +127,7 @@ public sealed class OnlineSourceItem : ObservableObject
         || PlayerUrl.Contains(".mp4?", StringComparison.OrdinalIgnoreCase)
         || Title.Contains("[AnimeLib MP4", StringComparison.OrdinalIgnoreCase)
         || Title.Contains(" MP4", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(Provider, "AniLibria", StringComparison.OrdinalIgnoreCase)
-        || PlayerUrl.Contains(".m3u8", StringComparison.OrdinalIgnoreCase);
+        || string.Equals(Provider, "AniLibria", StringComparison.OrdinalIgnoreCase);
 
     public bool IsSubtitles =>
         !string.IsNullOrWhiteSpace(SubtitleUrl)

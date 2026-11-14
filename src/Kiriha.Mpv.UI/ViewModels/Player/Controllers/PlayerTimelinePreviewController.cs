@@ -159,7 +159,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
 
         _ = Task.Run(() =>
         {
-            if (token.IsCancellationRequested || !File.Exists(videoUrl))
+            if (token.IsCancellationRequested || !IsValidVideoSource(videoUrl))
                 return Task.CompletedTask;
 
             return thumbnailer.WarmUpAsync(videoUrl, token)
@@ -196,5 +196,13 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             Serilog.Log.Debug(ex, "Timeline thumbnailer is unavailable");
             return null;
         }
+    }
+
+    private static bool IsValidVideoSource(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        if (File.Exists(path)) return true;
+        return Uri.TryCreate(path, UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 }

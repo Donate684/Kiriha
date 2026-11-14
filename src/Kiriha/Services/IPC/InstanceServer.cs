@@ -111,13 +111,21 @@ public class InstanceServer : BackgroundService
                 var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
                 var settingsService = _serviceProvider.GetService<SettingsService>();
                 var cliMetadata = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractMetadataFromArgs(args);
+                var headers = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractHeadersFromArgs(args);
+                string? subtitleUrl = null;
+                var subIndex = Array.FindIndex(args, a => a.Equals("--sub-file", StringComparison.OrdinalIgnoreCase) || a.Equals("--subtitle", StringComparison.OrdinalIgnoreCase));
+                if (subIndex >= 0 && subIndex + 1 < args.Length && !args[subIndex + 1].StartsWith("--"))
+                {
+                    subtitleUrl = args[subIndex + 1];
+                }
+
                 if (settingsService?.Current.Player.SingleWindow == true
                     && Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     var existingWindow = desktop.Windows.OfType<PlayerWindow>().LastOrDefault();
                     if (existingWindow?.DataContext is PlayerViewModel existingVm)
                     {
-                        existingVm.LoadVideo(videoUrl, null, cliMetadata);
+                        existingVm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
                         if (cliMetadata != null)
                         {
                             existingVm.ApplyExternalMetadata(cliMetadata);
@@ -128,7 +136,7 @@ public class InstanceServer : BackgroundService
                     }
                 }
                 var initialMeta = cliMetadata ?? metadataResolver.Resolve(videoUrl);
-                var playerVm = new PlayerViewModel(videoUrl, initialMeta, metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>());
+                var playerVm = new PlayerViewModel(videoUrl, initialMeta, metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>(), _serviceProvider.GetService<ITorrServerService>(), subtitleUrl, headers);
                 if (cliMetadata != null)
                 {
                     playerVm.ApplyExternalMetadata(cliMetadata);
