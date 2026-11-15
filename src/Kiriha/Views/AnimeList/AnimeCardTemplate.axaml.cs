@@ -1,5 +1,7 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.ViewModels.AnimeList;
@@ -15,6 +17,18 @@ namespace Kiriha.Views.AnimeList
 
         private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
+        private static AnimeListViewModel? FindAnimeListViewModel(Control control)
+        {
+            var parent = control.Parent;
+            while (parent != null)
+            {
+                if (parent.DataContext is AnimeListViewModel parentVm)
+                    return parentVm;
+                parent = parent.Parent;
+            }
+            return null;
+        }
+
         private async void Poster_DoubleTapped(object? sender, TappedEventArgs e)
         {
             try
@@ -22,17 +36,7 @@ namespace Kiriha.Views.AnimeList
                 if (sender is Control c && c.DataContext is AnimeEntity item)
                 {
                     var topLevel = TopLevel.GetTopLevel(c);
-                    var parent = c.Parent;
-                    AnimeListViewModel? vm = null;
-                    while (parent != null)
-                    {
-                        if (parent.DataContext is AnimeListViewModel parentVm)
-                        {
-                            vm = parentVm;
-                            break;
-                        }
-                        parent = parent.Parent;
-                    }
+                    var vm = FindAnimeListViewModel(c);
 
                     if (vm != null && topLevel != null)
                     {
@@ -49,28 +53,35 @@ namespace Kiriha.Views.AnimeList
             }
         }
 
-        private void ScoreMenu_Opened(object? sender, EventArgs e)
+        private void ScoreButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (sender is MenuFlyout flyout && flyout.Target is Control target && target.DataContext is AnimeEntity item)
-            {
-                var parent = target.Parent;
-                AnimeListViewModel? vm = null;
-                while (parent != null)
-                {
-                    if (parent.DataContext is AnimeListViewModel parentVm)
-                    {
-                        vm = parentVm;
-                        break;
-                    }
-                    parent = parent.Parent;
-                }
+            if (sender is not Button button || button.DataContext is not AnimeEntity item)
+                return;
 
-                if (vm != null)
-                {
-                    flyout.ItemsSource = vm.AvailableScores;
-                    vm.OpenScoreMenuCommand.Execute(item);
-                }
+            var vm = FindAnimeListViewModel(button);
+            if (vm is null)
+                return;
+
+            var flyout = FlyoutBase.GetAttachedFlyout(button) as MenuFlyout;
+            if (flyout is null)
+                return;
+
+            var scores = vm.AvailableScores;
+            if (flyout.ItemsSource is null)
+            {
+                flyout.ItemsSource = scores;
             }
+            else if (!ReferenceEquals(flyout.ItemsSource, scores))
+            {
+                // MenuFlyout caches its MenuFlyoutPresenter after the first open, so
+                // replace the flyout if AvailableScores was rebuilt (e.g. locale change).
+                flyout = new MenuFlyout { ItemsSource = scores };
+                flyout.FlyoutPresenterClasses.Add("ScoreFlyout");
+                FlyoutBase.SetAttachedFlyout(button, flyout);
+            }
+
+            vm.OpenScoreMenuCommand.Execute(item);
+            FlyoutBase.ShowAttachedFlyout(button);
         }
     }
 }

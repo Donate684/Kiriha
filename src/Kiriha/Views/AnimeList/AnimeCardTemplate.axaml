@@ -104,12 +104,10 @@
                             Margin="9" CornerRadius="8" BoxShadow="0 2 6 0 #55000000"
                             IsVisible="{Binding Score, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                         <Button Classes="ScoreBadgeButton" BorderThickness="0"
-                                Command="{Binding $parent[UserControl].((vmAnimeList:AnimeListViewModel)DataContext).OpenScoreMenuCommand}"
-                                CommandParameter="{Binding}">
-                            <Button.Flyout>
-                                <MenuFlyout FlyoutPresenterClasses="ScoreFlyout"
-                                            Opening="ScoreMenu_Opened"/>
-                            </Button.Flyout>
+                                Click="ScoreButton_Click">
+                            <FlyoutBase.AttachedFlyout>
+                                <MenuFlyout FlyoutPresenterClasses="ScoreFlyout"/>
+                            </FlyoutBase.AttachedFlyout>
                             <StackPanel Orientation="Horizontal" Spacing="3">
                                 <material:MaterialIcon Kind="Star" Width="11" Height="11" Foreground="{DynamicResource AnimeCardStarForeground}" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding Score}" FontSize="10" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
