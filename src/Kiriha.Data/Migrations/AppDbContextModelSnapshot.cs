@@ -15,12 +15,12 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261114000000_UserAnimeCompositeKey";
+    public override string LastMigrationId => "20261116075147_SyncTaskMediaKind";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.1.26425.128");
+        modelBuilder.HasAnnotation("ProductVersion", "11.0.0");
 
         modelBuilder.Entity("Kiriha.Core.Domain.Models.Api.ShikiMetadata", b =>
             {
@@ -95,6 +95,12 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<int>("Id")
                     .HasColumnType("INTEGER")
                     .HasColumnName("id");
+
+                b.Property<string>("MediaKind")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasDefaultValue("Anime")
+                    .HasColumnName("media_kind");
 
                 b.Property<int>("AiredSourcePriority")
                     .HasColumnType("INTEGER")
@@ -173,13 +179,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<string>("MeanScore")
                     .HasColumnType("TEXT")
                     .HasColumnName("mean_score");
-
-                b.Property<string>("MediaKind")
-                    .IsRequired()
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("TEXT")
-                    .HasDefaultValue("Anime")
-                    .HasColumnName("media_kind");
 
                 b.Property<DateTime?>("NextEpisodeAt")
                     .HasColumnType("TEXT")
@@ -500,6 +499,13 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<int>("AnimeId")
                     .HasColumnType("INTEGER")
                     .HasColumnName("anime_id");
+
+                b.Property<string>("MediaKind")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasDefaultValue("Anime")
+                    .HasColumnName("media_kind");
 
                 b.Property<string>("Payload")
                     .HasColumnType("TEXT")

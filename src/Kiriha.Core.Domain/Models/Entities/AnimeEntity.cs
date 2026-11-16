@@ -7,6 +7,10 @@ public partial class AnimeEntity : DomainObservableObject
     public int Id { get; set; }
     private MediaKind _mediaKind = MediaKind.Anime;
     public MediaKind MediaKind { get => _mediaKind; set { if (SetProperty(ref _mediaKind, value)) OnPropertyChanged("Presentation"); } }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [System.Text.Json.Serialization.JsonIgnore]
+    public MediaKey Key => new(Id, _mediaKind);
     public int Chapters { get; set; }
     public int Volumes { get; set; }
     public int ChaptersRead { get; set; }
@@ -57,20 +61,56 @@ public partial class AnimeEntity : DomainObservableObject
         }
     }
 
+    public static Func<string, bool> LocalPosterValidator { get; set; } = DefaultValidateLocalPoster;
+
+    private static bool DefaultValidateLocalPoster(string path)
+    {
+        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            return false;
+
+        try { return new FileInfo(path).Length > 0; }
+        catch { return false; }
+    }
+
     private string? _localPosterPath;
+    private bool? _cachedLocalPosterValid;
+
     public string? LocalPosterPath
     {
         get => _localPosterPath;
         set
         {
-            if (SetProperty(ref _localPosterPath, value))
+            bool wasInvalid = _cachedLocalPosterValid == false;
+            _cachedLocalPosterValid = null;
+            if (SetProperty(ref _localPosterPath, value) || (wasInvalid && !string.IsNullOrEmpty(value)))
                 OnPropertyChanged(nameof(PosterSource));
         }
     }
 
     /// <summary>
+    /// Pre-evaluates local poster validity off the UI thread so subsequent binding reads of
+    /// <see cref="PosterSource"/> during virtualized scrolling perform zero synchronous disk I/O.
+    /// </summary>
+    public void WarmPosterCache()
+    {
+        if (string.IsNullOrEmpty(_localPosterPath))
+        {
+            _cachedLocalPosterValid = false;
+            return;
+        }
+
+        _cachedLocalPosterValid ??= LocalPosterValidator(_localPosterPath);
+    }
+
+    public void InvalidatePosterCache()
+    {
+        _cachedLocalPosterValid = null;
+        OnPropertyChanged(nameof(PosterSource));
+    }
+
+    /// <summary>
     /// Returns the best available poster source: the local cached file path if it exists and is non-empty,
-    /// otherwise falls back to the remote URL. Used by UI bindings to avoid unnecessary network requests.
+    /// otherwise falls back to the remote URL. Validation is memoized per path assignment to avoid UI-thread disk I/O.
     /// </summary>
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     [System.Text.Json.Serialization.JsonIgnore]
@@ -78,10 +118,10 @@ public partial class AnimeEntity : DomainObservableObject
     {
         get
         {
-            if (!string.IsNullOrEmpty(_localPosterPath) && File.Exists(_localPosterPath))
+            if (!string.IsNullOrEmpty(_localPosterPath))
             {
-                try { if (new FileInfo(_localPosterPath).Length > 0) return _localPosterPath; }
-                catch { /* fall through to URL */ }
+                bool isValid = _cachedLocalPosterValid ??= LocalPosterValidator(_localPosterPath);
+                if (isValid) return _localPosterPath;
             }
             return IsMissingPosterUrl(_mainPictureUrl) ? null : _mainPictureUrl;
         }

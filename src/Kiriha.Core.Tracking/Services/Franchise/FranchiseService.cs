@@ -1,6 +1,6 @@
 using System.Collections.Specialized;
 using System.Threading.Channels;
-using Avalonia.Threading;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
@@ -16,6 +16,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
     private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeRelationRepository _relationRepo;
     private readonly IShikiApiService _shikiApi;
+    private readonly IUiDispatcher? _uiDispatcher;
     private readonly Debouncer _rebuildDebouncer;
     private readonly CancellationTokenSource _cts = new();
 
@@ -38,11 +39,13 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         IAnimeRepository animeRepo,
         IAnimeRelationRepository relationRepo,
         IShikiApiService shikiApi,
-        IBackgroundTaskSupervisor? backgroundTasks = null)
+        IBackgroundTaskSupervisor? backgroundTasks = null,
+        IUiDispatcher? uiDispatcher = null)
     {
         _animeRepo = animeRepo;
         _relationRepo = relationRepo;
         _shikiApi = shikiApi;
+        _uiDispatcher = uiDispatcher;
 
         _rebuildDebouncer = new Debouncer(TimeSpan.FromMilliseconds(500), () =>
         {
@@ -129,6 +132,14 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         }
     }
 
+    private void PostToUi(Action action)
+    {
+        if (_uiDispatcher != null)
+            _uiDispatcher.Post(action);
+        else
+            action();
+    }
+
     public void EnqueueForResolution(AnimeEntity item)
     {
         if (_isDisposed || item == null || item.MediaKind != MediaKind.Anime) return;
@@ -139,7 +150,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         {
             if (item.Franchise != existing)
             {
-                Dispatcher.UIThread.Post(() => item.Franchise = existing);
+                PostToUi(() => item.Franchise = existing);
             }
             return;
         }
@@ -165,7 +176,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                 // Re-check index in case it was resolved by a prior franchise response
                 if (_index.TryGetValue(item.Id, out var existing))
                 {
-                    Dispatcher.UIThread.Post(() => item.Franchise = existing);
+                    PostToUi(() => item.Franchise = existing);
                     continue;
                 }
 
@@ -175,7 +186,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                 {
                     if (_index.TryGetValue(item.Id, out var cachedCtx))
                     {
-                        Dispatcher.UIThread.Post(() => item.Franchise = cachedCtx);
+                        PostToUi(() => item.Franchise = cachedCtx);
                     }
                     continue;
                 }
@@ -187,7 +198,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                     await RebuildIndexAsync(ct).ConfigureAwait(false);
                     if (_index.TryGetValue(item.Id, out var localCtx))
                     {
-                        Dispatcher.UIThread.Post(() => item.Franchise = localCtx);
+                        PostToUi(() => item.Franchise = localCtx);
                     }
                     continue;
                 }
@@ -200,7 +211,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
 
                     if (_index.TryGetValue(item.Id, out var resolvedCtx))
                     {
-                        Dispatcher.UIThread.Post(() => item.Franchise = resolvedCtx);
+                        PostToUi(() => item.Franchise = resolvedCtx);
                     }
                 }
                 else if (data != null)

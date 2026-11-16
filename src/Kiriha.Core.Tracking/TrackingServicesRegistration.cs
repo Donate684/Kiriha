@@ -10,6 +10,9 @@ using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Infrastructure.Extensions;
+using Kiriha.Services.Data.Mapping;
+using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Franchise;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiriha.Core.Tracking;
@@ -75,6 +78,7 @@ public static class TrackingServicesRegistration
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
         services.AddSingleton<ShikiRateLimiter>();
+        services.AddSingleton<ShikiStateCache>();
 
         services.AddSingleton<ShikiAuthService>(sp =>
             new ShikiAuthService(
@@ -91,7 +95,8 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ShikiTokenService>(),
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>(),
-                sp.GetRequiredService<ShikiRateLimiter>()));
+                sp.GetRequiredService<ShikiRateLimiter>(),
+                stateCache: sp.GetRequiredService<ShikiStateCache>()));
 
         services.AddSingleton<ITrackerService>(sp =>
             new ShikiApiService(
@@ -101,7 +106,8 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>(),
                 sp.GetRequiredService<ShikiRateLimiter>(),
-                fixedMirror: ShikiMirror.One));
+                fixedMirror: ShikiMirror.One,
+                stateCache: sp.GetRequiredService<ShikiStateCache>()));
 
         services.AddSingleton<ITrackerService>(sp =>
             new ShikiApiService(
@@ -111,7 +117,8 @@ public static class TrackingServicesRegistration
                 sp.GetRequiredService<ShikiHostResolver>(),
                 sp.GetRequiredService<IHttpCacheRepository>(),
                 sp.GetRequiredService<ShikiRateLimiter>(),
-                fixedMirror: ShikiMirror.Net));
+                fixedMirror: ShikiMirror.Net,
+                stateCache: sp.GetRequiredService<ShikiStateCache>()));
 
         // --- AniList ---
         services.AddHttpClient("AniListClient")
@@ -135,7 +142,19 @@ public static class TrackingServicesRegistration
         services.AddSingleton<RssFeedService>();
         services.AddForwardedSingleton<RssFeedService, IRssFeedService>();
 
+        // --- Metadata, Franchise & Title Mapping ---
+        services.AddSingleton<ShikiMetadataService>();
+        services.AddForwardedSingleton<ShikiMetadataService, IShikiMetadataService>();
+        services.AddSingleton<FranchiseService>();
+        services.AddForwardedSingleton<FranchiseService, IFranchiseService>();
+        services.AddSingleton<ManualMappingService>();
+        services.AddSingleton<RecognitionCache>();
+        services.AddForwardedSingleton<RecognitionCache, IRecognitionCache>();
+        services.AddSingleton<MappingService>();
+        services.AddForwardedSingleton<MappingService, IMappingService>();
+
         // --- Cross-tracker orchestration ---
+        services.AddSingleton<LibrarySyncGate>();
         services.AddSingleton<IScrobbleProgressStore, ScrobbleProgressStore>();
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();

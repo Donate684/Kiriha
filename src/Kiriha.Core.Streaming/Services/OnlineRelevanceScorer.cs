@@ -1,8 +1,7 @@
 using System.Text;
-using System.Text.RegularExpressions;
 using Kiriha.Core.Domain.Constants;
 
-namespace Kiriha.ViewModels.Torrents;
+namespace Kiriha.Core.Streaming.Services;
 
 /// <summary>
 /// Calculates semantic and textual relevance between online anime search candidates and target search queries.
@@ -10,12 +9,12 @@ namespace Kiriha.ViewModels.Torrents;
 public static class OnlineRelevanceScorer
 {
     private static readonly string[] SequelTokens = AppConstants.Parsing.SequelTokens;
+    private static readonly char[] WordSeparators = [' ', ':', '-', '_', '(', ')', '[', ']', '.'];
 
     internal static bool HasUnpromptedSequelTokens(string query, string candidate)
     {
-        char[] separators = [' ', ':', '-', '_', '(', ')', '[', ']', '.'];
-        var candidateWords = candidate.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-        var queryWords = query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+        var candidateWords = candidate.Split(WordSeparators, StringSplitOptions.RemoveEmptyEntries);
+        var queryWords = query.Split(WordSeparators, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var cw in candidateWords)
         {
@@ -165,18 +164,27 @@ public static class OnlineRelevanceScorer
 
         var span = input.AsSpan().Trim();
         var sb = new StringBuilder(span.Length);
+        bool lastWasSpace = true;
+
         foreach (var ch in span)
         {
             if (char.IsLetterOrDigit(ch))
             {
                 sb.Append(char.ToLowerInvariant(ch));
+                lastWasSpace = false;
             }
-            else
+            else if (!lastWasSpace)
             {
                 sb.Append(' ');
+                lastWasSpace = true;
             }
         }
 
-        return Regex.Replace(sb.ToString(), @"\s+", " ").Trim();
+        if (sb.Length > 0 && lastWasSpace)
+        {
+            sb.Length--;
+        }
+
+        return sb.ToString();
     }
 }

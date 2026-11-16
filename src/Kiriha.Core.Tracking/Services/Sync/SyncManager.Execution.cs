@@ -117,14 +117,22 @@ public partial class SyncManager
             {
                 SyncOutcome outcome = task.Type switch
                 {
-                    SyncTaskType.UpdateProgress => await tracker.UpdateProgressAsync(
-                        task.AnimeId,
-                        task.Progress ?? 0,
-                        task.Status,
-                        task.Score,
-                        task.FullItem?.IsRewatching,
-                        task.FullItem?.RewatchCount,
-                        ct),
+                    SyncTaskType.UpdateProgress => task.MediaKind != MediaKind.Anime
+                        ? await tracker.UpdateMangaProgressAsync(
+                            task.AnimeId,
+                            task.Progress ?? 0,
+                            task.FullItem?.VolumesRead,
+                            task.Status,
+                            task.Score,
+                            ct)
+                        : await tracker.UpdateProgressAsync(
+                            task.AnimeId,
+                            task.Progress ?? 0,
+                            task.Status,
+                            task.Score,
+                            task.FullItem?.IsRewatching,
+                            task.FullItem?.RewatchCount,
+                            ct),
                     SyncTaskType.FullUpdate => task.FullItem != null
                         ? await tracker.SaveFullListStatusAsync(task.FullItem, ct)
                         : SyncOutcome.PermanentFailure,

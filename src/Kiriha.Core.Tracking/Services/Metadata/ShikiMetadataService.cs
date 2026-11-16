@@ -26,6 +26,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     private readonly IUiDispatcher _uiDispatcher;
 
     private readonly ShikiRateLimiter _rateLimiter;
+    private readonly ShikiStateCache? _stateCache;
     private readonly SemaphoreSlim _concurrentFetches = new(2, 2);
     private readonly ConcurrentDictionary<int, byte> _activeFetches = new();
 
@@ -37,7 +38,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
         IHttpCacheRepository httpCacheRepo,
         ShikiHostResolver hostResolver,
         IUiDispatcher uiDispatcher,
-        ShikiRateLimiter rateLimiter)
+        ShikiRateLimiter rateLimiter,
+        ShikiStateCache? stateCache = null)
     {
         _httpClient = httpClientFactory.CreateClient("ShikiClient");
         _settingsService = settingsService;
@@ -46,6 +48,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
         _hostResolver = hostResolver;
         _uiDispatcher = uiDispatcher;
         _rateLimiter = rateLimiter;
+        _stateCache = stateCache;
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,
@@ -218,6 +221,15 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     public async Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct)
     {
         string entityType = mediaKind == MediaKind.Manga ? "mangas" : "animes";
+        var memKey = $"{entityType}_{animeId}";
+        if (_stateCache != null &&
+            _stateCache.PosterMemoryCache.TryGetValue(memKey, out var sharedMemUrl) &&
+            !string.IsNullOrEmpty(sharedMemUrl) &&
+            !AnimeEntity.IsMissingPosterUrl(sharedMemUrl))
+        {
+            return sharedMemUrl;
+        }
+
         var dbKey = $"shiki_poster_{entityType}_{animeId}";
 
         var cachedBytes = await _httpCache.GetCachedBodyAsync(dbKey, ct);
@@ -226,6 +238,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
             var cachedUrl = Encoding.UTF8.GetString(cachedBytes);
             if (!string.IsNullOrEmpty(cachedUrl) && !AnimeEntity.IsMissingPosterUrl(cachedUrl))
             {
+                if (_stateCache != null) _stateCache.PosterMemoryCache[memKey] = cachedUrl;
                 return cachedUrl;
             }
         }
@@ -266,6 +279,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
                                 var baseUri = new Uri(ShikiEndpoints.BaseUrl(ShikiMirror.One));
                                 url = $"{baseUri.Scheme}{Uri.SchemeDelimiter}{baseUri.Authority}" + (url.StartsWith('/') ? url : "/" + url);
                             }
+                            if (_stateCache != null) _stateCache.PosterMemoryCache[memKey] = url;
                             _ = _httpCache.SetCachedBodyAsync(dbKey, Encoding.UTF8.GetBytes(url), CancellationToken.None);
                             return url;
                         }

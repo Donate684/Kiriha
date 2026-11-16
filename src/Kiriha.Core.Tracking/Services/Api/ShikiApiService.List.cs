@@ -143,10 +143,11 @@ public partial class ShikiApiService
                         if (element.TryGetProperty("id", out var rateIdProp) && rateIdProp.TryGetInt32(out var rateId))
                         {
                             var typeKey = targetType.Equals("Manga", StringComparison.OrdinalIgnoreCase) ? "Manga" : "Anime";
-                            _userRateMap[$"{typeKey}_{anime.Id}"] = rateId;
+                            var mirror = EffectiveMirror;
+                            _stateCache.SetUserRateId(mirror, typeKey, anime.Id, rateId);
                             if (element.TryGetProperty("target_id", out var tidProp) && tidProp.TryGetInt32(out var tid))
                             {
-                                _userRateMap[$"{typeKey}_{tid}"] = rateId;
+                                _stateCache.SetUserRateId(mirror, typeKey, tid, rateId);
                             }
                         }
                     }
@@ -289,10 +290,11 @@ public partial class ShikiApiService
 
         var targetId = ResolveShikiTargetId(primaryId, targetType);
 
-        // 1. Check in-memory user_rate map (strictly "{targetType}_")
+        // 1. Check shared mirror-scoped user_rate map
+        var mirror = EffectiveMirror;
         int? userRateId = null;
-        if (_userRateMap.TryGetValue($"{targetType}_{targetId}", out var cachedRateId) ||
-            _userRateMap.TryGetValue($"{targetType}_{primaryId}", out cachedRateId))
+        if (_stateCache.TryGetUserRateId(mirror, targetType, targetId, out var cachedRateId) ||
+            _stateCache.TryGetUserRateId(mirror, targetType, primaryId, out cachedRateId))
         {
             userRateId = cachedRateId;
         }
@@ -322,8 +324,8 @@ public partial class ShikiApiService
         var outcome = await DeleteAsync($"v2/user_rates/{userRateId.Value}", ct);
         if (outcome == SyncOutcome.Success)
         {
-            _userRateMap.TryRemove($"{targetType}_{targetId}", out _);
-            _userRateMap.TryRemove($"{targetType}_{primaryId}", out _);
+            _stateCache.RemoveUserRateId(mirror, targetType, targetId);
+            _stateCache.RemoveUserRateId(mirror, targetType, primaryId);
         }
 
         return outcome;

@@ -22,6 +22,16 @@ public partial class AnimeRepository
 
             stage.Restart();
             var cached = await _userAnimeRepo.GetAllAsync();
+            if (cached != null && cached.Count > 0)
+            {
+                await Task.Run(() =>
+                {
+                    for (int i = 0; i < cached.Count; i++)
+                    {
+                        cached[i].WarmPosterCache();
+                    }
+                });
+            }
             Log.Information(
                 "StartupTiming: cached anime loaded count={Count} elapsedMs={ElapsedMs}",
                 cached?.Count ?? 0,

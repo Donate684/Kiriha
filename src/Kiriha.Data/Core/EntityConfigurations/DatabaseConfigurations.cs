@@ -112,6 +112,9 @@ public class SyncTaskEntityConfiguration : IEntityTypeConfiguration<SyncTaskEnti
     {
         builder.ToTable("sync_tasks");
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.MediaKind)
+               .HasConversion<string>()
+               .HasDefaultValue(MediaKind.Anime);
         builder.HasIndex(e => e.AnimeId).HasDatabaseName("idx_sync_tasks_anime_id");
     }
 }

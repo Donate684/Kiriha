@@ -52,9 +52,9 @@ public partial class ShikiApiService : IShikiApiService
     private ShikiMirror EffectiveMirror => _fixedMirror ?? _settingsService.Current.Api.ShikiMirror;
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(EffectiveMirror);
 
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<(int PrimaryId, string TargetType), int> _malToShikiMap = new();
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _posterMemoryCache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _userRateMap = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ShikiStateCache _stateCache;
+    private System.Collections.Concurrent.ConcurrentDictionary<(int PrimaryId, string TargetType), int> _malToShikiMap => _stateCache.MalToShikiMap;
+    private System.Collections.Concurrent.ConcurrentDictionary<string, string> _posterMemoryCache => _stateCache.PosterMemoryCache;
 
     private string ShikiWebsiteRoot
     {
@@ -91,7 +91,8 @@ public partial class ShikiApiService : IShikiApiService
         ShikiHostResolver hostResolver,
         IHttpCacheRepository httpCacheRepo,
         ShikiRateLimiter? rateLimiter = null,
-        ShikiMirror? fixedMirror = null)
+        ShikiMirror? fixedMirror = null,
+        ShikiStateCache? stateCache = null)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
@@ -99,6 +100,7 @@ public partial class ShikiApiService : IShikiApiService
         _hostResolver = hostResolver;
         _rateLimiter = rateLimiter ?? new ShikiRateLimiter();
         _fixedMirror = fixedMirror;
+        _stateCache = stateCache ?? new ShikiStateCache();
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,
@@ -136,7 +138,7 @@ public partial class ShikiApiService : IShikiApiService
                         var targetType = doc.RootElement.TryGetProperty("target_type", out var typeProp) ? typeProp.GetString() : "Anime";
                         if (targetId.HasValue && !string.IsNullOrEmpty(targetType))
                         {
-                            _userRateMap[$"{targetType}_{targetId.Value}"] = rateId;
+                            _stateCache.SetUserRateId(EffectiveMirror, targetType, targetId.Value, rateId);
                         }
                     }
                 }

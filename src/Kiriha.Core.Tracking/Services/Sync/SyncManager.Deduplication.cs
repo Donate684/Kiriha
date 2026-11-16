@@ -34,12 +34,15 @@ public partial class SyncManager
         return MediaKind.Anime;
     }
 
+    private static MediaKind ResolveEntityMediaKind(SyncTaskEntity entity) =>
+        entity.MediaKind != MediaKind.Anime ? entity.MediaKind : ExtractPayloadMediaKind(entity.Payload);
+
     private List<SyncTaskEntity> DeduplicateStartupTasks(List<SyncTaskEntity> pendingTasks)
     {
         // Deduplicate: take the LATEST task of each type per (AnimeId, MediaKind) to avoid redundant work.
         // If a 'Remove' task exists, it supersedes all prior tasks for that (AnimeId, MediaKind).
         return pendingTasks
-            .GroupBy(t => (t.AnimeId, Kind: ExtractPayloadMediaKind(t.Payload)))
+            .GroupBy(t => (t.AnimeId, Kind: ResolveEntityMediaKind(t)))
             .SelectMany(g =>
             {
                 var tasks = g.OrderBy(x => x.Id).ToList();
@@ -62,11 +65,15 @@ public partial class SyncManager
             .ToList();
     }
 
-    public async Task EnqueueUpdateAsync(int animeId, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
+    public Task EnqueueUpdateAsync(int animeId, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
+        => EnqueueUpdateAsync(animeId, MediaKind.Anime, progress, status, score, targetTracker);
+
+    public async Task EnqueueUpdateAsync(int animeId, MediaKind mediaKind, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
     {
         var task = new SyncTask
         {
             AnimeId = animeId,
+            MediaKind = mediaKind,
             Type = SyncTaskType.UpdateProgress,
             Progress = progress,
             Status = status,
@@ -87,7 +94,7 @@ public partial class SyncManager
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity);
 
-        _latestTaskIds[(animeId, MediaKind.Anime)] = (task.Id, task.Type);
+        _latestTaskIds[(animeId, mediaKind)] = (task.Id, task.Type);
         try
         {
             var pendingTrackers = !string.IsNullOrEmpty(targetTracker)
@@ -101,8 +108,8 @@ public partial class SyncManager
 
             _highPriorityQueue.Enqueue(task);
             _queueSignal.Release();
-            Log.Information("Sync task enqueued (DB ID: {Id}): UpdateProgress for {AnimeId} to {Progress} (Target: {Target})",
-                task.Id, animeId, progress, targetTracker ?? "All");
+            Log.Information("Sync task enqueued (DB ID: {Id}): UpdateProgress for {AnimeId} ({MediaKind}) to {Progress} (Target: {Target})",
+                task.Id, animeId, mediaKind, progress, targetTracker ?? "All");
         }
         catch (Exception ex)
         {

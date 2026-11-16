@@ -27,7 +27,7 @@ public sealed partial class AppStartupCoordinator
         var provider = services.BuildServiceProvider(new ServiceProviderOptions
         {
 #if DEBUG
-            ValidateOnBuild = !isPlayerMode,
+            ValidateOnBuild = true,
 #endif
             ValidateScopes = true,
         });
@@ -63,7 +63,11 @@ public sealed partial class AppStartupCoordinator
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.FilenamePlayerMediaMetadataResolver>();
-        services.AddSingleton<ITorrServerService, Kiriha.Infrastructure.TorrServer.TorrServerService>();
+        services.AddHttpClient("TorrServerClient", c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddSingleton<ITorrServerService>(sp =>
+            new Kiriha.Infrastructure.TorrServer.TorrServerService(
+                sp.GetRequiredService<ISettingsService>(),
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("TorrServerClient")));
         services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.TorrServerShutdownHandler>();
     }
 }

@@ -17,6 +17,7 @@ public sealed class TorrServerService : ITorrServerService
 
     private readonly ISettingsService _settingsService;
     private readonly HttpClient _httpClient;
+    private readonly bool _ownsHttpClient;
     private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
 
     private Process? _process;
@@ -48,6 +49,7 @@ public sealed class TorrServerService : ITorrServerService
     public TorrServerService(ISettingsService settingsService, HttpClient? httpClient = null)
     {
         _settingsService = settingsService;
+        _ownsHttpClient = httpClient is null;
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
     }
 
@@ -476,7 +478,10 @@ public sealed class TorrServerService : ITorrServerService
         _isDisposed = true;
         Stop();
         _lifecycleLock.Dispose();
-        _httpClient.Dispose();
+        if (_ownsHttpClient)
+        {
+            _httpClient.Dispose();
+        }
     }
 
     internal static string? LocateExecutable()

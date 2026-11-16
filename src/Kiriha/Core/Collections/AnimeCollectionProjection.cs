@@ -14,7 +14,7 @@ public readonly record struct AnimeStatusCounts(
 public sealed partial class AnimeCollectionProjection : IDisposable
 {
     private readonly Lock _syncLock = new();
-    private readonly Dictionary<int, Entry> _entriesById = new();
+    private readonly Dictionary<MediaKey, Entry> _entriesById = new();
     private readonly Dictionary<(UserAnimeStatus Status, MediaKind Kind), Dictionary<int, Entry>> _buckets = new();
 
     public AnimeCollectionProjection()

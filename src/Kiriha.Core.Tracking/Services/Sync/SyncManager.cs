@@ -108,10 +108,15 @@ public partial class SyncManager : ISyncManager, IHostedService
                         continue;
                     }
 
+                    var resolvedKind = entity.MediaKind != MediaKind.Anime
+                        ? entity.MediaKind
+                        : ExtractPayloadMediaKind(entity.Payload);
+
                     var task = new SyncTask
                     {
                         Id = entity.Id,
                         AnimeId = entity.AnimeId,
+                        MediaKind = resolvedKind,
                         Type = type,
                         Progress = entity.Progress,
                         Status = entity.Status != null ? StatusMapper.FromDbString(entity.Status) : null,
@@ -126,7 +131,7 @@ public partial class SyncManager : ISyncManager, IHostedService
                     if (!string.IsNullOrEmpty(entity.Payload))
                     {
                         task.FullItem = JsonSerializer.Deserialize<AnimeEntity>(entity.Payload);
-                        if (task.FullItem != null)
+                        if (task.FullItem != null && entity.MediaKind == MediaKind.Anime)
                         {
                             task.MediaKind = task.FullItem.MediaKind;
                         }
@@ -170,6 +175,7 @@ public partial class SyncManager : ISyncManager, IHostedService
         {
             Id = task.Id,
             AnimeId = task.AnimeId,
+            MediaKind = task.MediaKind,
             Type = task.Type.ToString(),
             Progress = task.Progress,
             Status = task.Status != null ? StatusMapper.ToDbString(task.Status.Value) : null,

@@ -8,11 +8,9 @@ using Kiriha.Infrastructure.Extensions;
 using Kiriha.Services.AppLifecycle;
 using Kiriha.Services.Data.Core;
 using Kiriha.Services.Data.Image;
-using Kiriha.Services.Data.Mapping;
 using Kiriha.Services.Data.Metadata;
 using Kiriha.Services.Data.Repository;
 using Kiriha.Services.Data.Settings;
-using Kiriha.Services.Franchise;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -70,8 +68,6 @@ internal static class DataServicesRegistration
         services.AddSingleton<IHttpCacheRepository, HttpCacheRepository>();
         services.AddSingleton<IEpisodeReleaseRepository, EpisodeReleaseRepository>();
         services.AddSingleton<IAnimeRelationRepository, AnimeRelationRepository>();
-        services.AddSingleton<FranchiseService>();
-        services.AddForwardedSingleton<FranchiseService, IFranchiseService>();
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
         services.AddSingleton<ISeasonalHiddenRepository, SeasonalHiddenRepository>();
@@ -79,8 +75,6 @@ internal static class DataServicesRegistration
         services.AddSingleton<IAnimeCountryRepository, AnimeCountryRepository>();
         services.AddSingleton<LocalizationService>();
         services.AddForwardedSingleton<LocalizationService, ILocalizer>();
-        services.AddSingleton<ShikiMetadataService>();
-        services.AddForwardedSingleton<ShikiMetadataService, IShikiMetadataService>();
         services.AddHttpClient("ImageClient", c =>
         {
             c.Timeout = TimeSpan.FromSeconds(30);
@@ -106,11 +100,6 @@ internal static class DataServicesRegistration
         services.AddSingleton<SeasonalCacheStore>();
         services.AddSingleton<HistoryService>();
         services.AddForwardedSingleton<HistoryService, IHistoryService>();
-        services.AddSingleton<ManualMappingService>();
-        services.AddSingleton<RecognitionCache>();
-        services.AddForwardedSingleton<RecognitionCache, IRecognitionCache>();
-        services.AddSingleton<MappingService>();
-        services.AddForwardedSingleton<MappingService, IMappingService>();
 
         return services;
     }

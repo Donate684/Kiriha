@@ -53,7 +53,11 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<MaintenanceService>();
 
         // TorrServer streaming engine
-        services.AddSingleton<Kiriha.Infrastructure.TorrServer.TorrServerService>();
+        services.AddHttpClient("TorrServerClient", c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddSingleton<Kiriha.Infrastructure.TorrServer.TorrServerService>(sp =>
+            new Kiriha.Infrastructure.TorrServer.TorrServerService(
+                sp.GetRequiredService<ISettingsService>(),
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("TorrServerClient")));
         services.AddForwardedSingleton<Kiriha.Infrastructure.TorrServer.TorrServerService, ITorrServerService>();
 
         // Shutdown Handlers

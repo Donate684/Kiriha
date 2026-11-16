@@ -14,7 +14,6 @@
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
     <ProjectReference Include="..\Kiriha.Mpv\Kiriha.Mpv.csproj" />
-    <ProjectReference Include="..\Kiriha.Data\Kiriha.Data.csproj" />
     <ProjectReference Include="..\Kiriha.Infrastructure\Kiriha.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -4,6 +4,7 @@ public class SyncTaskEntity
 {
     public int Id { get; set; }
     public int AnimeId { get; set; }
+    public MediaKind MediaKind { get; set; } = MediaKind.Anime;
     public string Type { get; set; } = string.Empty; // "UpdateProgress", "FullUpdate"
     public int? Progress { get; set; }
     public string? Status { get; set; } // DbString format

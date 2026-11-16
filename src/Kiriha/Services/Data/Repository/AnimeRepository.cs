@@ -58,6 +58,30 @@ public partial class AnimeRepository : IAnimeRepository
         };
     }
 
+    public IReadOnlyList<AnimeEntity>? TryGetSnapshot()
+    {
+        if (!_initTcs.Task.IsCompleted)
+            return null;
+
+        lock (_snapshotLock)
+        {
+            if (_cachedSnapshot != null)
+                return _cachedSnapshot;
+        }
+
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            var snap = Collection.ToList();
+            lock (_snapshotLock)
+            {
+                _cachedSnapshot ??= snap;
+                return _cachedSnapshot;
+            }
+        }
+
+        return null;
+    }
+
     public async Task<IReadOnlyList<AnimeEntity>> GetSnapshotAsync()
     {
         lock (_snapshotLock)

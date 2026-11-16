@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Kiriha.Tests" />
+    <InternalsVisibleTo Include="Kiriha.Benchmarks" />
   </ItemGroup>
 
   <ItemGroup>

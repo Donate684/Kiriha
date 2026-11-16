@@ -73,15 +73,8 @@ public partial class MappingService : IMappingService
         }
     }
 
-    internal static int GetStatusPriority(UserAnimeStatus status) => status switch
-    {
-        UserAnimeStatus.Watching => 5,
-        UserAnimeStatus.PlanToWatch => 4,
-        UserAnimeStatus.OnHold => 3,
-        UserAnimeStatus.Completed => 2,
-        UserAnimeStatus.Dropped => 1,
-        _ => 0
-    };
+    internal static int GetStatusPriority(UserAnimeStatus status) =>
+        AnimeLibraryMatcher.GetStatusPriority(status);
 
     public virtual async Task<int?> GetIdFromTitleAsync(string title, IEnumerable<AnimeEntity> userList)
     {
@@ -222,14 +215,7 @@ public partial class MappingService : IMappingService
                 continue;
             }
 
-            int yearBonus = 0;
-            if (parsedYear.HasValue && anime != null)
-            {
-                int? my = anime.StartYear ?? anime.AiringDate?.Year;
-                if (my.HasValue)
-                    yearBonus = my.Value == parsedYear.Value ? 2 : (Math.Abs(my.Value - parsedYear.Value) == 1 ? 1 : 0);
-            }
-
+            int yearBonus = anime != null ? AnimeLibraryMatcher.ComputeYearBonus(anime, parsedYear) : 0;
             int statusPriority = anime != null ? GetStatusPriority(anime.Status) : 0;
 
             bool isBetter = match.Weight > bestWeight ||
@@ -371,14 +357,7 @@ public partial class MappingService : IMappingService
                 if (!isValidMatch(candidate, episodeNumber, parsedYear))
                     continue;
 
-                int yearBonus = 0;
-                if (parsedYear.HasValue)
-                {
-                    int? cy = candidate.StartYear ?? candidate.AiringDate?.Year;
-                    if (cy.HasValue)
-                        yearBonus = cy.Value == parsedYear.Value ? 2 : (Math.Abs(cy.Value - parsedYear.Value) == 1 ? 1 : 0);
-                }
-
+                int yearBonus = AnimeLibraryMatcher.ComputeYearBonus(candidate, parsedYear);
                 int priority = GetStatusPriority(candidate.Status);
                 if (best is null || yearBonus > bestYearBonus || (yearBonus == bestYearBonus && priority > bestPriority))
                 {

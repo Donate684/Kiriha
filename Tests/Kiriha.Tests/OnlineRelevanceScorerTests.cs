@@ -1,4 +1,4 @@
-using Kiriha.ViewModels.Torrents;
+using Kiriha.Core.Streaming.Services;
 
 namespace Kiriha.Tests;
 

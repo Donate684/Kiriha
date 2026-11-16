@@ -31,30 +31,19 @@ public class HistoryService : IHistoryService
         }
     }
 
+    public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, HistoryActionType actionType, object? detail = null, string? posterUrl = null, CancellationToken ct = default)
+        => AddEntryInternalAsync(animeId, title, russianTitle, episode, (int)actionType, detail, posterUrl, ct);
+
     public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
         => AddEntryAsync(animeId, title, russianTitle, episode, actionType, detail, posterUrl: null, ct);
 
-    public virtual async Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl, CancellationToken ct = default)
+    public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl, CancellationToken ct = default)
+        => AddEntryInternalAsync(animeId, title, russianTitle, episode, (int)HistoryActionTypeExtensions.ParseActionType(actionType), detail, posterUrl, ct);
+
+    private async Task AddEntryInternalAsync(int animeId, string title, string? russianTitle, int episode, int typeId, object? detail, string? posterUrl, CancellationToken ct)
     {
         try
         {
-            int typeId = actionType switch
-            {
-                "Watched" or "Watching" or "Read" or "Reading" => 1,
-                "Reverted" => 2,
-                "SyncFailed" => 3,
-                "Scrobbled" => 4,
-                "ScoreSet" => 5,
-                "Completed" => 6,
-                "Dropped" => 7,
-                "Deleted" or "Removed" => 8,
-                "PlanToWatch" or "Plan_To_Watch" => 9,
-                "OnHold" or "On_Hold" => 10,
-                "Rewatching" => 11,
-                "AddedToList" or "Added" => 12,
-                _ => 1
-            };
-
             var entry = new HistoryItem
             {
                 AnimeId = animeId,

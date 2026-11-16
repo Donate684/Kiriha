@@ -21,10 +21,18 @@ public sealed partial class AnimeCollectionProjection
 
     private void Add(AnimeEntity item)
     {
-        Remove(item);
+        var key = item.Key;
+        if (_entriesById.Remove(key, out var oldEntry))
+        {
+            if (_buckets.TryGetValue((oldEntry.ListStatus, oldEntry.Kind), out var oldBucket))
+            {
+                oldBucket.Remove(item.Id);
+            }
+            oldEntry.Item.PropertyChanged -= OnItemPropertyChanged;
+        }
 
         var entry = Entry.From(item);
-        _entriesById[item.Id] = entry;
+        _entriesById[key] = entry;
 
         if (!_buckets.TryGetValue((entry.ListStatus, entry.Kind), out var bucket))
         {
@@ -38,14 +46,15 @@ public sealed partial class AnimeCollectionProjection
 
     private void Remove(AnimeEntity item)
     {
-        if (!_entriesById.Remove(item.Id, out var entry)) return;
+        var key = item.Key;
+        if (!_entriesById.Remove(key, out var entry)) return;
 
         if (_buckets.TryGetValue((entry.ListStatus, entry.Kind), out var bucket))
         {
             bucket.Remove(item.Id);
         }
 
-        item.PropertyChanged -= OnItemPropertyChanged;
+        entry.Item.PropertyChanged -= OnItemPropertyChanged;
     }
 
     private void Clear()
@@ -70,8 +79,34 @@ public sealed partial class AnimeCollectionProjection
         {
             lock (_syncLock)
             {
+                if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(AnimeEntity.MediaKind))
+                {
+                    RemoveStaleReferenceIfKindChanged(item);
+                }
                 Add(item);
             }
+        }
+    }
+
+    private void RemoveStaleReferenceIfKindChanged(AnimeEntity item)
+    {
+        MediaKey? staleKey = null;
+        foreach (var (key, entry) in _entriesById)
+        {
+            if (ReferenceEquals(entry.Item, item) && key != item.Key)
+            {
+                staleKey = key;
+                break;
+            }
+        }
+
+        if (staleKey.HasValue && _entriesById.Remove(staleKey.Value, out var oldEntry))
+        {
+            if (_buckets.TryGetValue((oldEntry.ListStatus, oldEntry.Kind), out var oldBucket))
+            {
+                oldBucket.Remove(oldEntry.Item.Id);
+            }
+            oldEntry.Item.PropertyChanged -= OnItemPropertyChanged;
         }
     }
 

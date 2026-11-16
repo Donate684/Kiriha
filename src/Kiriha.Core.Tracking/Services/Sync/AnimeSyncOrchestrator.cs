@@ -17,6 +17,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly IRecognitionCache _recognitionCache;
     private readonly ISettingsService? _settingsService;
+    private readonly ILocalizer? _localizer;
+    private readonly LibrarySyncGate? _syncGate;
 
     private int _syncing;
     public bool IsSyncing => Volatile.Read(ref _syncing) == 1;
@@ -26,14 +28,21 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         IUserAnimeRepository userAnimeRepo,
         IEnumerable<ITrackerService> trackers,
         IRecognitionCache recognitionCache,
-        ISettingsService? settingsService = null)
+        ISettingsService? settingsService = null,
+        ILocalizer? localizer = null,
+        LibrarySyncGate? syncGate = null)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
         _trackers = trackers;
         _recognitionCache = recognitionCache;
         _settingsService = settingsService;
+        _localizer = localizer;
+        _syncGate = syncGate;
     }
+
+    private string FormatLoc(string key, params object?[] args) =>
+        _localizer != null ? _localizer.GetLoc(key, args) : TrackingLoc.GetLoc(key, args);
 
     private ITrackerService? GetPrimaryTracker()
     {
@@ -65,7 +74,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
         try
         {
-            status?.Report(TrackingLoc.GetLoc("sync.syncing.with", primaryTracker.Name));
+            using var gateScope = _syncGate != null ? await _syncGate.AcquireFullSyncAsync(ct) : null;
+            status?.Report(FormatLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserAnimeListAsync(ct);
             if (apiList is null) return false;
 
@@ -126,7 +136,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
         try
         {
-            status?.Report(TrackingLoc.GetLoc("sync.syncing.with", primaryTracker.Name));
+            using var gateScope = _syncGate != null ? await _syncGate.AcquireFullSyncAsync(ct) : null;
+            status?.Report(FormatLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserMangaListAsync(ct);
             if (apiList is null) return false;
 

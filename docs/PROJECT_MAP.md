@@ -67,7 +67,6 @@ graph TD
     MpvUI --> Domain
     MpvUI --> Abstractions
     MpvUI --> Infrastructure
-    MpvUI --> Data
     MpvUI --> Mpv
 
     App --> Domain
@@ -117,20 +116,21 @@ graph TD
   - `Repository/`: конкретные реализации интерфейсов репозиториев (например, `UserAnimeRepository.cs` разбит на части `Progress` и `Sync`).
 
 ### 3.5. `Kiriha.Core.Tracking`
-* **Роль:** Вся интеграция с внешними аниме-сервисами и синхронизация.
+* **Роль:** Вся интеграция с внешними аниме-сервисами, синхронизация, метаданные, граф франшиз и распознавание тайтлов.
 * **Ключевые компоненты:**
-  - `Services/Api/`: клиенты `MalApiService`, `ShikiApiService`, `AniListApiService`.
+  - `Services/Api/`: клиенты `MalApiService`, `ShikiApiService` (с единым разделяемым `ShikiStateCache`), `AniListApiService`.
   - `Services/Auth/`: OAuth-аутентификация (PKCE, токены, рефреш).
-  - `Services/Sync/`: `SyncManager` (очередь фонового синка с дедупликацией и ретраями), `AnimeSyncOrchestrator` (двустороннее слияние локальной библиотеки и облачных списков), `AnimeListActionService` (быстрые операции со статусом и сериями).
+  - `Services/Sync/`: `SyncManager` (очередь фонового синка с поддержкой `MediaKind`, дедупликацией и ретраями), `AnimeSyncOrchestrator` + `LibrarySyncGate` (координация двустороннего слияния и фоновых обновлений), `AnimeListActionService`.
   - `Services/Tracking/Core/`: `TrackingService` (пайплайн матчинга медиа и скробблинга), `AiringInfoService` (кеш и таймеры выхода серий).
+  - `Services/Mapping/`, `Services/Franchise/`, `Services/Metadata/`: `MappingService`, `RecognitionCache`, `ManualMappingService`, `FranchiseService`, `ShikiMetadataService`.
   - `Services/Feed/`: `RssFeedService`, `NyaaFeedClient`, `NyaaTorrentParser` (торрент-лента Nyaa.si).
 
 ### 3.6. `Kiriha.Core.Streaming`
-* **Роль:** Интеграция с каталогами онлайн-просмотра аниме и резолвинг видеопотоков (HLS, MP4, DASH).
+* **Роль:** Интеграция с каталогами онлайн-просмотра аниме, ранжирование выдачи и резолвинг видеопотоков (HLS, MP4, DASH).
 * **Ключевые компоненты:**
   - `Providers/`: `AniLibriaProvider` (REST API Aniliberty, прямое HLS 1080p/720p/480p), `AnimeLibProvider` (каталог и эпизоды AnimeLib), `DreamCastProvider` (каталог студии DreamCast), `YummyAnimeProvider` (агрегатор плееров и озвучек), `Anime365Provider` (каталог с поддержкой зеркал и авторизации по токену), `AnimeGoProvider` (каталог AnimeGo).
   - `Extractors/`: `KodikVideoExtractor` (дешифрование ROT-18 + Base64, динамический API-путь плеера), `AniboomVideoExtractor` (извлечение HLS/DASH с корректными заголовками Origin/Referer), `SibnetVideoExtractor` (извлечение MP4).
-  - `Services/StreamingService`: фасад асинхронного поиска по всем провайдерам, дедупликация и авто-резолвинг стримов для плеера.
+  - `Services/`: `StreamingService` (фасад асинхронного поиска по всем провайдерам, дедупликация и авто-резолвинг стримов для плеера), `OnlineRelevanceScorer` (многофакторный скоринг релевантности).
 
 ### 3.7. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
 * **Роль:** Видеоплеер.
