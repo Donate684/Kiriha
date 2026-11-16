@@ -68,7 +68,7 @@ public class ScoreMenuTests
 
         Assert.Equal("-", anime.Score);
         userAnimeRepoMock.Verify(r => r.UpdateScoreAsync(anime, "-"), Times.Once);
-        syncManagerMock.Verify(s => s.EnqueueUpdateAsync(123, anime.Progress, null, 0, null), Times.Once);
+        syncManagerMock.Verify(s => s.EnqueueUpdateAsync(123, MediaKind.Anime, anime.Progress, null, 0, null), Times.Once);
     }
 
     [Fact]
@@ -103,6 +103,6 @@ public class ScoreMenuTests
 
         Assert.Equal("9", anime.Score);
         userAnimeRepoMock.Verify(r => r.UpdateScoreAsync(anime, "9"), Times.Once);
-        syncManagerMock.Verify(s => s.EnqueueUpdateAsync(456, anime.Progress, null, 9, null), Times.Once);
+        syncManagerMock.Verify(s => s.EnqueueUpdateAsync(456, MediaKind.Anime, anime.Progress, null, 9, null), Times.Once);
     }
 }

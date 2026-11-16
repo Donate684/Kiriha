@@ -51,6 +51,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private string? _previousVideoUrlForMetadata;
 
     private readonly ITorrServerService? _torrServer;
+    private readonly IPlaybackResumeStore? _resumeStore;
     private string? _pendingSubtitleUrl;
 
     public string? PendingSubtitleUrl => _pendingSubtitleUrl;
@@ -64,13 +65,15 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         ILocalizer localizer,
         ITorrServerService? torrServer = null,
         string? subtitleUrl = null,
-        IReadOnlyDictionary<string, string>? headers = null)
+        IReadOnlyDictionary<string, string>? headers = null,
+        IPlaybackResumeStore? resumeStore = null)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;
         _settingsService = settingsService;
         _localizer = localizer;
         _torrServer = torrServer;
+        _resumeStore = resumeStore;
         _pendingSubtitleUrl = subtitleUrl;
         StreamHeaders = headers;
         InitializeOptions();

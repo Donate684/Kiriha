@@ -6,19 +6,11 @@ namespace Kiriha.Core.Domain.Models.Api;
 
 public class ShikiMetadata
 {
-    public const int MangaIdMask = 0x40000000;
-    public const int LightNovelIdMask = 0x20000000;
-
-    public static int GetCacheId(int malId, MediaKind mediaKind) =>
-        mediaKind switch
-        {
-            MediaKind.Manga => malId | MangaIdMask,
-            MediaKind.LightNovel => malId | LightNovelIdMask,
-            _ => malId
-        };
-
     [JsonPropertyName("id")]
     public int Id { get; set; }
+
+    [JsonIgnore]
+    public MediaKind MediaKind { get; set; } = MediaKind.Anime;
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }

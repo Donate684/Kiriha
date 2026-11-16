@@ -150,10 +150,10 @@ public sealed class CoreAuditWaveFixesTests
                 new AnimeEntity { Id = 30, MediaKind = MediaKind.LightNovel, Title = "Novel 30", Status = UserAnimeStatus.Watching });
 
             setup.Metadata.AddRange(
-                new ShikiMetadata { Id = ShikiMetadata.GetCacheId(10, MediaKind.Anime), Russian = "Anime Ru", PosterUrl = "https://cdn.example/a.jpg" },
-                new ShikiMetadata { Id = ShikiMetadata.GetCacheId(20, MediaKind.Manga), Russian = "Manga Ru", PosterUrl = "" },
-                new ShikiMetadata { Id = ShikiMetadata.GetCacheId(30, MediaKind.LightNovel), Russian = "Novel Ru", PosterUrl = "" },
-                new ShikiMetadata { Id = ShikiMetadata.GetCacheId(999, MediaKind.Manga), Russian = "Orphaned Manga" });
+                new ShikiMetadata { Id = 10, MediaKind = MediaKind.Anime, Russian = "Anime Ru", PosterUrl = "https://cdn.example/a.jpg" },
+                new ShikiMetadata { Id = 20, MediaKind = MediaKind.Manga, Russian = "Manga Ru", PosterUrl = "" },
+                new ShikiMetadata { Id = 30, MediaKind = MediaKind.LightNovel, Russian = "Novel Ru", PosterUrl = "" },
+                new ShikiMetadata { Id = 999, MediaKind = MediaKind.Manga, Russian = "Orphaned Manga" });
             await setup.SaveChangesAsync();
         }
 
@@ -161,14 +161,14 @@ public sealed class CoreAuditWaveFixesTests
         await maintenance.PerformAsync();
 
         await using var verify = new AppDbContext(options);
-        var survivingIds = await verify.Metadata.Select(m => m.Id).ToListAsync();
+        var survivingKeys = await verify.Metadata.Select(m => new MediaKey(m.Id, m.MediaKind)).ToListAsync();
 
-        Assert.Contains(ShikiMetadata.GetCacheId(10, MediaKind.Anime), survivingIds);
-        Assert.Contains(ShikiMetadata.GetCacheId(20, MediaKind.Manga), survivingIds);
-        Assert.Contains(ShikiMetadata.GetCacheId(30, MediaKind.LightNovel), survivingIds);
-        Assert.DoesNotContain(ShikiMetadata.GetCacheId(999, MediaKind.Manga), survivingIds);
+        Assert.Contains(new MediaKey(10, MediaKind.Anime), survivingKeys);
+        Assert.Contains(new MediaKey(20, MediaKind.Manga), survivingKeys);
+        Assert.Contains(new MediaKey(30, MediaKind.LightNovel), survivingKeys);
+        Assert.DoesNotContain(new MediaKey(999, MediaKind.Manga), survivingKeys);
 
-        var persistedAnimeMeta = await verify.Metadata.AsNoTracking().SingleAsync(m => m.Id == 10);
+        var persistedAnimeMeta = await verify.Metadata.AsNoTracking().SingleAsync(m => m.Id == 10 && m.MediaKind == MediaKind.Anime);
         Assert.Equal("https://cdn.example/a.jpg", persistedAnimeMeta.PosterUrl);
     }
 

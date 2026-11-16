@@ -32,13 +32,18 @@ public sealed class DatabaseInitializerTests
             Assert.True(await TableExistsAsync(context, "hidden_torrent_anime"));
             Assert.True(await TableExistsAsync(context, "torrent_title_filters"));
             Assert.True(await TableExistsAsync(context, "anime_country_origin"));
+            Assert.True(await TableExistsAsync(context, "title_mappings"));
+            Assert.True(await TableExistsAsync(context, "scrobble_progress"));
+            Assert.True(await TableExistsAsync(context, "playback_resume"));
+            Assert.True(await TableExistsAsync(context, "anilist_media_map"));
             Assert.True(await TableExistsAsync(context, "__EFMigrationsHistory"));
 
             // Verify history table has tracker_status_json and poster_url columns
             Assert.True(await ColumnExistsAsync(context, "history", "tracker_status_json"));
             Assert.True(await ColumnExistsAsync(context, "history", "poster_url"));
+            Assert.True(await ColumnExistsAsync(context, "metadata", "media_kind"));
 
-            // Verify PRAGMA user_version is stamped with v1.8+ marker (1800)
+            // Verify PRAGMA user_version is stamped with current schema version marker
             Assert.Equal(DatabaseInitializer.CurrentSchemaVersion, await GetUserVersionAsync(context));
         }
         finally

@@ -274,8 +274,8 @@ public sealed class CoreRefactoringWave1Tests
         mockSettings.SetupGet(s => s.Current).Returns(settings);
 
         var mockMetaRepo = new Mock<IMetadataRepository>();
-        mockMetaRepo.Setup(r => r.GetBatchAsync(It.IsAny<IEnumerable<int>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Dictionary<int, ShikiMetadata>());
+        mockMetaRepo.Setup(r => r.GetBatchAsync(It.IsAny<IEnumerable<MediaKey>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<MediaKey, ShikiMetadata>());
 
         var mockUserRepo = new Mock<IUserAnimeRepository>();
         var mockHttpCache = new Mock<IHttpCacheRepository>();

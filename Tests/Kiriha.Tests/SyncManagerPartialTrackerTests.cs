@@ -82,11 +82,11 @@ public class SyncManagerPartialTrackerTests
         Assert.True(didExecute);
 
         // Verify Shikimori is marked as Success
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(500, 10, "Shikimori", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(500, MediaKind.Anime, 10, "Shikimori", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
         Assert.Contains("Shikimori", task.SuccessfulTrackers);
 
         // Verify MAL is marked as Retrying
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(500, 10, "MyAnimeList", TrackerSyncState.Retrying, It.IsAny<string?>()), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(500, MediaKind.Anime, 10, "MyAnimeList", TrackerSyncState.Retrying, It.IsAny<string?>()), Times.Once);
         Assert.DoesNotContain("MyAnimeList", task.SuccessfulTrackers);
 
         // Verify early notification only sent for MAL
@@ -116,7 +116,7 @@ public class SyncManagerPartialTrackerTests
 
         // MAL was called and now succeeded
         _mockMal.Verify(t => t.UpdateProgressAsync(500, 10, null, null, null, null, It.IsAny<CancellationToken>()), Times.Once);
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(500, 10, "MyAnimeList", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(500, MediaKind.Anime, 10, "MyAnimeList", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
         Assert.Contains("MyAnimeList", task.SuccessfulTrackers);
     }
 }

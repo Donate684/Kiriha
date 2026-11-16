@@ -1,6 +1,8 @@
 using Kiriha.Core.Abstractions.Extensions;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Data.Core;
 using Kiriha.Data.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +55,30 @@ public static class DataLayerRegistration
         services.AddSingleton<ISeasonalHiddenRepository, SeasonalHiddenRepository>();
         services.AddSingleton<ITorrentFilterRepository, TorrentFilterRepository>();
         services.AddSingleton<IAnimeCountryRepository, AnimeCountryRepository>();
+        services.AddSingleton<ITitleMappingRepository, TitleMappingRepository>();
+        services.AddSingleton<IAniListMediaMapRepository, AniListMediaMapRepository>();
+
+        services.AddSingleton<IScrobbleProgressStore>(sp =>
+        {
+            var settingsDir = sp.GetService<IAppPaths>()?.GetSettingsDirPath();
+            var legacyPath = settingsDir != null
+                ? Path.Combine(settingsDir, AppConstants.System.FileNames.ScrobbleProgress)
+                : null;
+            return new SqliteScrobbleProgressStore(
+                sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+                legacyPath);
+        });
+
+        services.AddSingleton<IPlaybackResumeStore>(sp =>
+        {
+            var settingsDir = sp.GetService<IAppPaths>()?.GetSettingsDirPath();
+            var legacyPath = settingsDir != null
+                ? Path.Combine(settingsDir, AppConstants.System.FileNames.PlaybackResume)
+                : null;
+            return new SqlitePlaybackResumeStore(
+                sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+                legacyPath);
+        });
 
         return services;
     }

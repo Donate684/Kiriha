@@ -58,7 +58,15 @@ public class ScrobbleService : IScrobbleService, IDisposable
         _backgroundTasks = backgroundTasks;
         _uiDispatcher = uiDispatcher;
         _localizer = localizer;
-        _progressStore = progressStore ?? new ScrobbleProgressStore();
+        _progressStore = progressStore ?? new InMemoryScrobbleProgressStore();
+    }
+
+    private sealed class InMemoryScrobbleProgressStore : IScrobbleProgressStore
+    {
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _entries = new(StringComparer.Ordinal);
+        public int GetElapsed(string key) => !string.IsNullOrWhiteSpace(key) && _entries.TryGetValue(key, out var val) ? Math.Max(0, val) : 0;
+        public void SaveElapsed(string key, int elapsed) { if (!string.IsNullOrWhiteSpace(key)) _entries[key] = Math.Max(0, elapsed); }
+        public void Clear(string key) { if (!string.IsNullOrWhiteSpace(key)) _entries.TryRemove(key, out _); }
     }
 
     private const double DefaultEpisodeDurationSeconds = 24 * 60; // 1440s (24 min)
@@ -262,11 +270,15 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
             // Write history BEFORE UpdateProgressAsync (which enqueues sync / fires SetPendingTrackers)
             // so the DB row exists when SetPendingTrackers tries to mark it as Pending.
-            using (HistoryContext.UseMediaKind(match.MediaKind))
-            {
-                await _historyService.AddEntryAsync(match.Id, match.Title, match.RussianTitle, targetEp,
-                    nextStatus == UserAnimeStatus.Completed ? "Completed" : "Scrobbled", null, match.MainPictureUrl);
-            }
+            await _historyService.AddEntryAsync(
+                match.Id,
+                match.MediaKind,
+                match.Title,
+                match.RussianTitle,
+                targetEp,
+                nextStatus == UserAnimeStatus.Completed ? HistoryActionType.Completed : HistoryActionType.Scrobbled,
+                null,
+                match.MainPictureUrl);
             await _progressService.UpdateProgressAsync(match, targetEp, nextStatus);
 
             // Auto-Complete & Quick Rating notification

@@ -5,7 +5,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
+using Kiriha.Services.Metadata;
 using Kiriha.Utils.Graphs;
 using Serilog;
 
@@ -17,6 +17,7 @@ public partial class FranchiseGraphViewModel : ViewModelBase
     private readonly IMalApiService _malApi;
     private readonly IDialogService _dialogs;
     private readonly IAnimeRepository _animeRepo;
+    private readonly ILocalizer _localizer;
     private readonly int _baseAnimeId;
     private ShikiFranchiseResponse? _rawFranchiseData;
 
@@ -59,13 +60,15 @@ public partial class FranchiseGraphViewModel : ViewModelBase
         IShikiApiService shikiApi,
         IMalApiService malApi,
         IDialogService dialogs,
-        IAnimeRepository animeRepo)
+        IAnimeRepository animeRepo,
+        ILocalizer? localizer = null)
     {
         _baseAnimeId = animeId;
         _shikiApi = shikiApi;
         _malApi = malApi;
         _dialogs = dialogs;
         _animeRepo = animeRepo;
+        _localizer = localizer ?? LocalizationService.Active;
     }
 
     partial void OnHideSpecialsChanged(bool value) => RecomputeLayout();
@@ -148,13 +151,13 @@ public partial class FranchiseGraphViewModel : ViewModelBase
             }
             else
             {
-                ErrorMessage = LocalizationStore.Translate("common.errors.franchise_load_failed");
+                ErrorMessage = _localizer.GetLoc("common.errors.franchise_load_failed");
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to load franchise graph for {AnimeId}", _baseAnimeId);
-            ErrorMessage = LocalizationStore.Translate("common.errors.franchise_error");
+            ErrorMessage = _localizer.GetLoc("common.errors.franchise_error");
         }
         finally
         {

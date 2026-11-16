@@ -15,7 +15,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261116105000_CoreSchemaCleanup";
+    public override string LastMigrationId => "20261116120101_Wave3StorageUnification";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -25,10 +25,15 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Kiriha.Core.Domain.Models.Api.ShikiMetadata", b =>
             {
                 b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
                     .HasColumnType("INTEGER")
                     .HasColumnName("id")
                     .HasJsonPropertyName("id");
+
+                b.Property<string>("MediaKind")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasDefaultValue("Anime")
+                    .HasColumnName("media_kind");
 
                 b.Property<string>("Description")
                     .HasColumnType("TEXT")
@@ -68,9 +73,32 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnName("russian")
                     .HasJsonPropertyName("russian");
 
-                b.HasKey("Id");
+                b.HasKey("Id", "MediaKind");
 
                 b.ToTable("metadata");
+            });
+
+        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.AniListMediaMapEntity", b =>
+            {
+                b.Property<int>("PrimaryId")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("primary_id");
+
+                b.Property<string>("MediaType")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("media_type");
+
+                b.Property<int>("AniListId")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("ani_list_id");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.HasKey("PrimaryId", "MediaType");
+
+                b.ToTable("anilist_media_map");
             });
 
         modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.AnimeCountryOrigin", b =>
@@ -427,6 +455,48 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("mal_search_cache");
             });
 
+        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.PlaybackResumeEntryEntity", b =>
+            {
+                b.Property<string>("VideoUrl")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("video_url");
+
+                b.Property<double>("DurationSeconds")
+                    .HasColumnType("REAL")
+                    .HasColumnName("duration_seconds");
+
+                b.Property<double>("PositionSeconds")
+                    .HasColumnType("REAL")
+                    .HasColumnName("position_seconds");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.HasKey("VideoUrl");
+
+                b.ToTable("playback_resume");
+            });
+
+        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.ScrobbleProgressEntity", b =>
+            {
+                b.Property<string>("Key")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("key");
+
+                b.Property<int>("ElapsedSeconds")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("elapsed_seconds");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.HasKey("Key");
+
+                b.ToTable("scrobble_progress");
+            });
+
         modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.SyncTaskEntity", b =>
             {
                 b.Property<int>("Id")
@@ -480,6 +550,32 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasDatabaseName("idx_sync_tasks_anime_id");
 
                 b.ToTable("sync_tasks");
+            });
+
+        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.TitleMappingEntity", b =>
+            {
+                b.Property<string>("NormalizedTitle")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("normalized_title");
+
+                b.Property<string>("MediaKind")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasDefaultValue("Anime")
+                    .HasColumnName("media_kind");
+
+                b.Property<int>("TargetId")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("target_id");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.HasKey("NormalizedTitle");
+
+                b.ToTable("title_mappings");
             });
 
         modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.TorrentTitleFilter", b =>

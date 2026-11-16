@@ -4,7 +4,6 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -15,7 +14,7 @@ public class AiringInfoService : IAiringInfoService
     private readonly IAnimeSyncOrchestrator _syncOrchestrator;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly ISettingsService _settingsService;
-    private readonly ILocalizer? _localizer;
+    private readonly ILocalizer _localizer;
     private readonly Sync.LibrarySyncGate? _syncGate;
     private readonly AiringInfoFetcher _fetcher;
     private readonly AiringInfoCache _cache;
@@ -35,15 +34,14 @@ public class AiringInfoService : IAiringInfoService
         _syncOrchestrator = syncOrchestrator;
         _uiDispatcher = uiDispatcher;
         _settingsService = settingsService;
-        _localizer = localizer;
+        _localizer = localizer ?? ILocalizer.Passthrough;
         _syncGate = syncGate;
 
         _fetcher = new AiringInfoFetcher(aniListApi, shikiApi, settingsService);
         _cache = new AiringInfoCache(animeRepo, notificationService, uiDispatcher);
     }
 
-    private string FormatLoc(string key, params object?[] args) =>
-        _localizer != null ? _localizer.GetLoc(key, args) : TrackingLoc.GetLoc(key, args);
+    private string FormatLoc(string key, params object?[] args) => _localizer.GetLoc(key, args);
 
     public static bool IsTrackableOngoingAnime(AnimeEntity anime, bool includeUnknownTotal = true)
     {

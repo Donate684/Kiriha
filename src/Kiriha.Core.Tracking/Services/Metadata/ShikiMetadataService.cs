@@ -26,7 +26,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     private readonly ShikiRateLimiter _rateLimiter;
     private readonly ShikiStateCache? _stateCache;
     private readonly SemaphoreSlim _concurrentFetches = new(2, 2);
-    private readonly ConcurrentDictionary<int, byte> _activeFetches = new();
+    private readonly ConcurrentDictionary<MediaKey, byte> _activeFetches = new();
 
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
@@ -58,23 +58,10 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     // "ShikiClient" has no HttpClient.BaseAddress, so we must always send absolute URLs.
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    private static int GetCacheId(int malId, MediaKind mediaKind) => ShikiMetadata.GetCacheId(malId, mediaKind);
-
-    /// <summary>
-    /// Returns Shikimori metadata for <paramref name="animeId"/>, fetching from
-    /// the API on miss. <paramref name="maxAge"/> bounds the cache freshness:
-    /// when the persisted entry is older, we re-fetch (the conditional GET via
-    /// <see cref="HttpConditionalCache"/> makes this cheap — usually 304).
-    /// Pass <c>null</c> to accept any age (default for completed shows).
-    ///
-    /// <paramref name="onFetched"/> is invoked on every successful return —
-    /// cache hit or fresh fetch — so periodic syncs (e.g. AiringInfoService's
-    /// Shiki fallback) keep applying current values to the UI.
-    /// </summary>
     public async Task<ShikiMetadata?> GetOrFetchMetadataAsync(int animeId, TimeSpan? maxAge = null, Func<ShikiMetadata, Task>? onFetched = null, MediaKind mediaKind = MediaKind.Anime)
     {
-        int cacheId = GetCacheId(animeId, mediaKind);
-        var cached = await _metadataRepo.GetAsync(cacheId);
+        var cacheKey = new MediaKey(animeId, mediaKind);
+        var cached = await _metadataRepo.GetAsync(animeId, mediaKind);
         // When a TTL is requested, treat both genuinely-old entries and pre-TTL
         // legacy rows (FetchedAt == default after the schema migration) as stale —
         // otherwise a user's existing metadata would skip the airing refresh
@@ -98,7 +85,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
             return cached;
         }
 
-        if (!_activeFetches.TryAdd(cacheId, 0))
+        if (!_activeFetches.TryAdd(cacheKey, 0))
         {
             // Another fetch is already in flight; serve whatever we have
             // (possibly stale) rather than spinning a duplicate request.
@@ -131,7 +118,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
         }
         finally
         {
-            _activeFetches.TryRemove(cacheId, out _);
+            _activeFetches.TryRemove(cacheKey, out _);
         }
     }
 
@@ -159,7 +146,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
             // of the manual retry loop).
             if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return new ShikiMetadata { Id = GetCacheId(animeId, mediaKind), Russian = "", Description = "", PosterUrl = "" };
+                return new ShikiMetadata { Id = animeId, MediaKind = mediaKind, Russian = "", Description = "", PosterUrl = "" };
             }
 
             if (result.Body is null) return null; // transient failure — retry next tick
@@ -167,7 +154,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
             var metadata = System.Text.Json.JsonSerializer.Deserialize<ShikiMetadata>(result.Body);
             if (metadata != null)
             {
-                metadata.Id = GetCacheId(animeId, mediaKind);
+                metadata.Id = animeId;
+                metadata.MediaKind = mediaKind;
 
                 try
                 {

@@ -39,7 +39,7 @@ public class TrackingServiceTests : IDisposable
         _mockUiDispatcher.Setup(x => x.InvokeAsync(It.IsAny<Func<List<AnimeEntity>>>()))
             .Returns<Func<List<AnimeEntity>>>(f => Task.FromResult(f()));
 
-        _mockMappingService = new Mock<MappingService>(null!, new ManualMappingService(_tempMappingPath), null!, new RecognitionCache());
+        _mockMappingService = new Mock<MappingService>(null!, new ManualMappingService(repository: null, legacyMappingFilePath: _tempMappingPath), null!, new RecognitionCache());
         _mockDiscordService = new Mock<IDiscordService>();
         _mockExternalMediaDetector = new Mock<IExternalMediaDetector>();
 

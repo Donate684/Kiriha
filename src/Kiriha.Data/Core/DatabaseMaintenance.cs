@@ -51,21 +51,13 @@ public sealed class DatabaseMaintenance
         var orphanedMetadataCount = await context.Database.ExecuteSqlRawAsync("""
             DELETE FROM metadata
             WHERE fetched_at < date('now', '-30 days')
-            AND id NOT IN (
-                SELECT CASE media_kind
-                    WHEN 'Manga' THEN (id | 1073741824)
-                    WHEN 'LightNovel' THEN (id | 536870912)
-                    ELSE id
-                END
-                FROM user_anime
+            AND NOT EXISTS (
+                SELECT 1 FROM user_anime u
+                WHERE u.id = metadata.id AND u.media_kind = metadata.media_kind
             )
-            AND id NOT IN (
-                SELECT CASE media_kind
-                    WHEN 'Manga' THEN (anime_id | 1073741824)
-                    WHEN 'LightNovel' THEN (anime_id | 536870912)
-                    ELSE anime_id
-                END
-                FROM history
+            AND NOT EXISTS (
+                SELECT 1 FROM history h
+                WHERE h.anime_id = metadata.id AND h.media_kind = metadata.media_kind
             )
             """);
         if (orphanedMetadataCount > 0)
@@ -120,6 +112,16 @@ public sealed class DatabaseMaintenance
             "DELETE FROM http_response_cache WHERE created_at < date('now', '-30 days')");
         if (httpCacheCount > 0)
             Log.Information("DatabaseMaintenance: Removed {Count} expired HTTP cache entries", httpCacheCount);
+
+        var scrobbleCleanupCount = await context.Database.ExecuteSqlRawAsync(
+            "DELETE FROM scrobble_progress WHERE updated_at < date('now', '-30 days')");
+        if (scrobbleCleanupCount > 0)
+            Log.Information("DatabaseMaintenance: Removed {Count} expired scrobble progress entries", scrobbleCleanupCount);
+
+        var resumeCleanupCount = await context.Database.ExecuteSqlRawAsync(
+            "DELETE FROM playback_resume WHERE updated_at < date('now', '-90 days')");
+        if (resumeCleanupCount > 0)
+            Log.Information("DatabaseMaintenance: Removed {Count} expired playback resume entries", resumeCleanupCount);
     }
 
     private async Task OptimizeDatabaseAsync(AppDbContext context)

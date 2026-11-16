@@ -1,7 +1,6 @@
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync.Models;
-using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
@@ -43,11 +42,8 @@ public partial class SyncManager
                 _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", trackerName, "Max retries exceeded", willRetry: false);
             }
 
-            var detail = TrackingLoc.GetLoc("sync.syncing.failed");
-            if (task.MediaKind == MediaKind.Anime)
-                _historyService.AddEntry(task.AnimeId, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, HistoryActionType.SyncFailed, detail);
-            else
-                _historyService.AddEntry(task.AnimeId, task.MediaKind, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, HistoryActionType.SyncFailed, detail);
+            var detail = _localizer.GetLoc("sync.syncing.failed");
+            _historyService.AddEntry(task.AnimeId, task.MediaKind, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, HistoryActionType.SyncFailed, detail);
         }
     }
 }

@@ -3,21 +3,18 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
 public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 {
-
-
     private readonly IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly IRecognitionCache _recognitionCache;
     private readonly ISettingsService? _settingsService;
-    private readonly ILocalizer? _localizer;
+    private readonly ILocalizer _localizer;
     private readonly LibrarySyncGate? _syncGate;
     private readonly ISyncTaskRepository? _syncTaskRepo;
 
@@ -39,13 +36,12 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         _trackers = trackers;
         _recognitionCache = recognitionCache;
         _settingsService = settingsService;
-        _localizer = localizer;
+        _localizer = localizer ?? ILocalizer.Passthrough;
         _syncGate = syncGate;
         _syncTaskRepo = syncTaskRepo;
     }
 
-    private string FormatLoc(string key, params object?[] args) =>
-        _localizer != null ? _localizer.GetLoc(key, args) : TrackingLoc.GetLoc(key, args);
+    private string FormatLoc(string key, params object?[] args) => _localizer.GetLoc(key, args);
 
     private ITrackerService? GetPrimaryTracker()
     {

@@ -48,7 +48,9 @@ public static class TrackingServicesRegistration
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
         services.AddSingleton<MalAuthService>(sp =>
-            new MalAuthService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient")));
+            new MalAuthService(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("MalClient"),
+                sp.GetService<ILocalizer>()));
 
         services.AddSingleton<MalTokenManager>();
 
@@ -92,7 +94,8 @@ public static class TrackingServicesRegistration
             new ShikiAuthService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShikiClient"),
                 sp.GetRequiredService<ISettingsService>(),
-                sp.GetRequiredService<ShikiHostResolver>()));
+                sp.GetRequiredService<ShikiHostResolver>(),
+                sp.GetService<ILocalizer>()));
 
         services.AddSingleton<ShikiTokenService>();
 
@@ -138,13 +141,16 @@ public static class TrackingServicesRegistration
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
         services.AddSingleton<AniListAuthService>(sp =>
-            new AniListAuthService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient")));
+            new AniListAuthService(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
+                sp.GetService<ILocalizer>()));
 
         services.AddSingleton<AniListApiService>(sp =>
             new AniListApiService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AniListClient"),
                 sp.GetRequiredService<IHttpCacheRepository>(),
-                sp.GetRequiredService<ISettingsService>()));
+                sp.GetRequiredService<ISettingsService>(),
+                sp.GetService<IAniListMediaMapRepository>()));
         services.AddForwardedSingleton<AniListApiService, IAniListApiService>();
         services.AddForwardedSingleton<AniListApiService, ITrackerService>();
         services.AddSingleton<IAnimeCountryService, Kiriha.Core.Tracking.Services.AnimeCountryService>();
@@ -167,6 +173,7 @@ public static class TrackingServicesRegistration
         services.AddForwardedSingleton<FranchiseService, IFranchiseService>();
         services.AddSingleton<ManualMappingService>(sp =>
             new ManualMappingService(
+                sp.GetService<ITitleMappingRepository>(),
                 sp.GetService<Kiriha.Core.Abstractions.Infrastructure.IAppPaths>()?.GetMappingFilePath()));
         services.AddSingleton<RecognitionCache>();
         services.AddForwardedSingleton<RecognitionCache, IRecognitionCache>();
@@ -183,11 +190,6 @@ public static class TrackingServicesRegistration
 
         // --- Cross-tracker orchestration ---
         services.AddSingleton<LibrarySyncGate>();
-        services.AddSingleton<IScrobbleProgressStore>(sp =>
-            new ScrobbleProgressStore(
-                sp.GetService<Kiriha.Core.Abstractions.Infrastructure.IAppPaths>() is { } paths
-                    ? Path.Combine(paths.GetSettingsDirPath(), AppConstants.System.FileNames.ScrobbleProgress)
-                    : null));
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();

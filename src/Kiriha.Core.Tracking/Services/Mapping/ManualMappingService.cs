@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Kiriha.Core.Domain.Constants;
-using Kiriha.Core.Domain.Utils.Async;
+using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Utils.Parsing;
 using Serilog;
 
@@ -18,34 +18,27 @@ public class ManualMappingService
     /// </summary>
     public const int NegativeMappingId = -1;
 
-    private readonly string _mappingFilePath;
-    // ConcurrentDictionary so reads from the matching path don't race with writes from
-    // UI commands. Snapshotted (ToArray) on serialization to avoid "Collection was modified".
-    private readonly ConcurrentDictionary<string, int> _manualMappings = new();
-    private readonly Debouncer _saveDebouncer;
-    private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private readonly ITitleMappingRepository? _repository;
+    private readonly string? _legacyMappingFilePath;
+    private readonly ConcurrentDictionary<string, int> _manualMappings = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<Task, byte> _pendingWrites = new();
+    private readonly Lock _initLock = new();
+    private bool _initialized;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        WriteIndented = true,
         PropertyNameCaseInsensitive = true
     };
 
-    public ManualMappingService(string? mappingFilePath = null)
+    public ManualMappingService(ITitleMappingRepository? repository = null, string? legacyMappingFilePath = null)
     {
-        _mappingFilePath = mappingFilePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            AppConstants.System.AppName,
-            AppConstants.System.FileNames.Mappings);
-        _saveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(500), async (ct) =>
-        {
-            if (!ct.IsCancellationRequested) await SaveMappingsAsync();
-        });
-
-        LoadMappings();
+        _repository = repository;
+        _legacyMappingFilePath = legacyMappingFilePath;
     }
 
     public bool TryGetMapping(string normalizedTitle, out int malId)
     {
+        EnsureInitialized();
         var key = AnimeStringHelper.Normalize(normalizedTitle);
         if (_manualMappings.TryGetValue(key, out malId) && malId > 0)
             return true;
@@ -55,6 +48,7 @@ public class ManualMappingService
 
     public bool IsNegativelyMapped(string normalizedTitle)
     {
+        EnsureInitialized();
         var key = AnimeStringHelper.Normalize(normalizedTitle);
         return _manualMappings.TryGetValue(key, out int id) && id == NegativeMappingId;
     }
@@ -65,8 +59,17 @@ public class ManualMappingService
         string normalized = AnimeStringHelper.Normalize(title);
         if (string.IsNullOrEmpty(normalized)) return;
 
+        EnsureInitialized();
         _manualMappings[normalized] = malId;
-        _saveDebouncer.Invoke();
+        if (_repository != null)
+        {
+            TrackWrite(_repository.UpsertAsync(new TitleMappingEntity
+            {
+                NormalizedTitle = normalized,
+                TargetId = malId,
+                MediaKind = MediaKind.Anime
+            }));
+        }
         Log.Information("ManualMappingService: Added manual mapping: {Title} ({Normalized}) -> {Id}", title, normalized, malId);
     }
 
@@ -76,8 +79,17 @@ public class ManualMappingService
         string normalized = AnimeStringHelper.Normalize(title);
         if (string.IsNullOrEmpty(normalized)) return;
 
+        EnsureInitialized();
         _manualMappings[normalized] = NegativeMappingId;
-        _saveDebouncer.Invoke();
+        if (_repository != null)
+        {
+            TrackWrite(_repository.UpsertAsync(new TitleMappingEntity
+            {
+                NormalizedTitle = normalized,
+                TargetId = NegativeMappingId,
+                MediaKind = MediaKind.Anime
+            }));
+        }
         Log.Information("ManualMappingService: Added negative mapping for: {Title} ({Normalized})", title, normalized);
     }
 
@@ -87,119 +99,146 @@ public class ManualMappingService
         string normalized = AnimeStringHelper.Normalize(title);
         if (string.IsNullOrEmpty(normalized)) return false;
 
+        EnsureInitialized();
         if (_manualMappings.TryRemove(normalized, out _))
         {
-            _saveDebouncer.Invoke();
+            if (_repository != null)
+            {
+                TrackWrite(_repository.DeleteAsync(normalized));
+            }
             Log.Information("ManualMappingService: Removed manual mapping for: {Title} ({Normalized})", title, normalized);
             return true;
         }
         return false;
     }
 
-    private void LoadMappings()
+    public async Task FlushAsync()
     {
-        if (!File.Exists(_mappingFilePath)) return;
+        EnsureInitialized();
+        var pending = _pendingWrites.Keys.ToArray();
+        if (pending.Length == 0)
+            return;
+
         try
         {
-            var json = File.ReadAllText(_mappingFilePath);
-            var doc = JsonSerializer.Deserialize<TitleMappingsDocument>(json, JsonOptions);
-            if (doc is null || doc.Version != CurrentSchemaVersion || doc.Mappings is null)
-            {
-                Log.Information(
-                    "ManualMappingService: Outdated title mappings schema (v{LoadedVersion} != v{CurrentVersion}), resetting file.",
-                    doc?.Version ?? 0,
-                    CurrentSchemaVersion);
-                _manualMappings.Clear();
-                TryDeleteMappingFile();
+            await Task.WhenAll(pending);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "ManualMappingService: error while flushing pending SQLite writes");
+        }
+    }
+
+    private void EnsureInitialized()
+    {
+        if (_initialized)
+            return;
+
+        lock (_initLock)
+        {
+            if (_initialized)
                 return;
-            }
 
-            foreach (var kv in doc.Mappings)
+            try
             {
-                _manualMappings[kv.Key] = kv.Value;
+                if (_repository != null)
+                {
+                    var stored = Task.Run(() => _repository.GetAllAsync()).GetAwaiter().GetResult();
+                    foreach (var row in stored)
+                    {
+                        _manualMappings[row.NormalizedTitle] = row.TargetId;
+                    }
+                }
+
+                MigrateLegacyJsonIfNeeded();
+                _initialized = true;
             }
-        }
-        catch (JsonException ex)
-        {
-            Log.Warning(ex, "ManualMappingService: Corrupt or incompatible title mappings JSON, resetting file: {Path}", _mappingFilePath);
-            _manualMappings.Clear();
-            TryDeleteMappingFile();
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "ManualMappingService: Failed to load title mappings from {Path}", _mappingFilePath);
+            catch (Exception ex)
+            {
+                Log.Error(ex, "ManualMappingService: failed initial hydration");
+            }
         }
     }
 
-    private void TryDeleteMappingFile()
+    private void MigrateLegacyJsonIfNeeded()
     {
+        if (string.IsNullOrWhiteSpace(_legacyMappingFilePath) || !File.Exists(_legacyMappingFilePath))
+            return;
+
         try
         {
-            if (File.Exists(_mappingFilePath))
+            var json = File.ReadAllText(_legacyMappingFilePath);
+            var doc = JsonSerializer.Deserialize<TitleMappingsDocument>(json, JsonOptions);
+            if (doc is { Version: CurrentSchemaVersion, Mappings.Count: > 0 })
             {
-                File.Delete(_mappingFilePath);
+                var toPersist = new List<TitleMappingEntity>();
+                foreach (var (key, targetId) in doc.Mappings)
+                {
+                    if (string.IsNullOrWhiteSpace(key))
+                        continue;
+
+                    if (_manualMappings.TryAdd(key, targetId))
+                    {
+                        toPersist.Add(new TitleMappingEntity
+                        {
+                            NormalizedTitle = key,
+                            TargetId = targetId,
+                            MediaKind = MediaKind.Anime
+                        });
+                    }
+                }
+
+                if (toPersist.Count > 0 && _repository != null)
+                {
+                    Task.Run(() => _repository.UpsertBatchAsync(toPersist)).GetAwaiter().GetResult();
+                }
             }
-            var tmp = _mappingFilePath + ".tmp";
-            if (File.Exists(tmp))
-            {
-                File.Delete(tmp);
-            }
+
+            Log.Information("ManualMappingService: migrated and deleted legacy {Path}", _legacyMappingFilePath);
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "ManualMappingService: Failed to delete mapping file: {Path}", _mappingFilePath);
-        }
-    }
-
-    private async Task SaveMappingsAsync()
-    {
-        await _saveLock.WaitAsync();
-        try
-        {
-            var directory = Path.GetDirectoryName(_mappingFilePath);
-            if (directory != null && !Directory.Exists(directory)) Directory.CreateDirectory(directory);
-
-            // Snapshot the dictionary into a regular Dictionary before serialization. Serializing
-            // a ConcurrentDictionary directly is safe but iterates lock-free; taking a snapshot
-            // first guarantees a consistent view and is cheap for our small cardinality.
-            var snapshot = _manualMappings.ToArray().ToDictionary(kv => kv.Key, kv => kv.Value);
-            var document = new TitleMappingsDocument
-            {
-                Version = CurrentSchemaVersion,
-                Mappings = snapshot
-            };
-            var json = JsonSerializer.Serialize(document, JsonOptions);
-
-            // Atomic write: write to temp + rename so a process kill mid-write
-            // never produces a corrupt mappings file (which would be silently
-            // discarded on next launch, losing all manual mappings).
-            var tmp = _mappingFilePath + ".tmp";
-            await File.WriteAllTextAsync(tmp, json);
-            if (File.Exists(_mappingFilePath)) File.Replace(tmp, _mappingFilePath, null);
-            else File.Move(tmp, _mappingFilePath);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "ManualMappingService: Failed to save title mappings");
+            Log.Warning(ex, "ManualMappingService: failed migrating legacy mappings from {Path}", _legacyMappingFilePath);
         }
         finally
         {
-            _saveLock.Release();
+            TryDeleteLegacyFile(_legacyMappingFilePath);
         }
     }
 
-    public async Task FlushAsync()
-    {
-        _saveDebouncer.CancelPending();
-        await SaveMappingsAsync();
-    }
-
-    private sealed record TitleMappingsDocument
+    private readonly record struct TitleMappingsDocument
     {
         [JsonPropertyName("version")]
         public int Version { get; init; }
 
         [JsonPropertyName("mappings")]
         public Dictionary<string, int>? Mappings { get; init; }
+    }
+
+    private static void TryDeleteLegacyFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path)) File.Delete(path);
+            var tmp = path + ".tmp";
+            if (File.Exists(tmp)) File.Delete(tmp);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "ManualMappingService: failed to delete legacy mapping file {Path}", path);
+        }
+    }
+
+    private void TrackWrite(Task task)
+    {
+        if (task.IsCompleted)
+            return;
+
+        _pendingWrites.TryAdd(task, 0);
+        task.ContinueWith(
+            t => _pendingWrites.TryRemove(t, out _),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 }

@@ -87,10 +87,10 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         Log.Information("MetadataFetchMaintenanceTask: Found {Count} items needing metadata or poster download. This may take ~{EstMinutes} minutes.",
             itemsToProcess.Count, (int)Math.Ceiling(itemsToProcess.Count * NetworkThrottleDelayMs / 60000.0));
 
-        var batchCacheIds = itemsToProcess
-            .Select(i => Kiriha.Core.Domain.Models.Api.ShikiMetadata.GetCacheId(i.Id, i.MediaKind))
+        var batchCacheKeys = itemsToProcess
+            .Select(i => new MediaKey(i.Id, i.MediaKind))
             .Distinct();
-        var prefetchedMetadata = await _metadataRepo.GetBatchAsync(batchCacheIds, ct);
+        var prefetchedMetadata = await _metadataRepo.GetBatchAsync(batchCacheKeys, ct);
 
         int processed = 0;
         foreach (var item in itemsToProcess)
@@ -108,7 +108,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
             try
             {
-                int cacheId = Kiriha.Core.Domain.Models.Api.ShikiMetadata.GetCacheId(item.Id, item.MediaKind);
+                var cacheKey = new MediaKey(item.Id, item.MediaKind);
 
                 // 1. Fetch or apply metadata (Russian title, synopsis, and poster if missing)
                 bool needsMeta = string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis);
@@ -117,8 +117,8 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                 if (needsMeta || needsPoster)
                 {
                     var meta = prefetchedMetadata != null
-                        ? prefetchedMetadata.GetValueOrDefault(cacheId)
-                        : await _metadataRepo.GetAsync(cacheId);
+                        ? prefetchedMetadata.GetValueOrDefault(cacheKey)
+                        : await _metadataRepo.GetAsync(item.Id, item.MediaKind, ct);
 
                     // Only fetch from Shikimori API when metadata row does not exist yet or PosterUrl was never probed (null).
                     // An empty string ("") means Shikimori was already queried and had no valid poster, avoiding 20-min infinite retries.

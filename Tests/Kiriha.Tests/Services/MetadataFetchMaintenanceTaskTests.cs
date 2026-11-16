@@ -82,7 +82,7 @@ public sealed class MetadataFetchMaintenanceTaskTests
         _animeRepoMock.Setup(r => r.GetSnapshotAsync(It.IsAny<MediaKind[]>()))
             .ReturnsAsync(new List<AnimeEntity> { item });
 
-        _metadataRepoMock.Setup(m => m.GetAsync(100))
+        _metadataRepoMock.Setup(m => m.GetAsync(100, MediaKind.Anime, It.IsAny<CancellationToken>()))
             .ReturnsAsync((ShikiMetadata?)null);
 
         _shikiMetadataMock.Setup(s => s.GetOrFetchMetadataAsync(100, null, null, MediaKind.Anime))
@@ -133,7 +133,7 @@ public sealed class MetadataFetchMaintenanceTaskTests
         _animeRepoMock.Setup(r => r.GetSnapshotAsync(It.IsAny<MediaKind[]>()))
             .ReturnsAsync(new List<AnimeEntity> { item });
 
-        _metadataRepoMock.Setup(m => m.GetAsync(101))
+        _metadataRepoMock.Setup(m => m.GetAsync(101, MediaKind.Anime, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ShikiMetadata
             {
                 Id = 101,
@@ -195,7 +195,7 @@ public sealed class MetadataFetchMaintenanceTaskTests
 
             await task.ExecuteAsync(CancellationToken.None);
 
-            _metadataRepoMock.Verify(m => m.GetAsync(It.IsAny<int>()), Times.Never);
+            _metadataRepoMock.Verify(m => m.GetAsync(It.IsAny<int>(), It.IsAny<MediaKind>(), It.IsAny<CancellationToken>()), Times.Never);
             _shikiMetadataMock.Verify(s => s.GetOrFetchMetadataAsync(It.IsAny<int>(), It.IsAny<TimeSpan?>(), It.IsAny<Func<ShikiMetadata, Task>?>(), It.IsAny<MediaKind>()), Times.Never);
             _imageCacheMock.Verify(c => c.GetLocalPathOrDownload(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -224,7 +224,7 @@ public sealed class MetadataFetchMaintenanceTaskTests
         _animeRepoMock.Setup(r => r.GetSnapshotAsync(It.IsAny<MediaKind[]>()))
             .ReturnsAsync(new List<AnimeEntity> { item });
 
-        _metadataRepoMock.Setup(m => m.GetAsync(62485))
+        _metadataRepoMock.Setup(m => m.GetAsync(62485, MediaKind.Anime, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ShikiMetadata
             {
                 Id = 62485,

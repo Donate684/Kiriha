@@ -117,7 +117,7 @@ public class ScrobbleServiceTests : IDisposable
         // Assert
         _mockBackgroundTasks.Verify(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()), Times.Once);
         _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 6, It.IsAny<UserAnimeStatus?>()), Times.Once);
-        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 6, "Scrobbled", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.MediaKind, match.Title, match.RussianTitle, 6, HistoryActionType.Scrobbled, null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class ScrobbleServiceTests : IDisposable
 
         // Assert
         _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 12, UserAnimeStatus.Completed), Times.Once);
-        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 12, "Completed", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.MediaKind, match.Title, match.RussianTitle, 12, HistoryActionType.Completed, null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class ScrobbleServiceTests : IDisposable
 
         // Assert - automatically transitions from PlanToWatch to Watching with Progress = 1
         _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 1, UserAnimeStatus.Watching), Times.Once);
-        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 1, "Scrobbled", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.MediaKind, match.Title, match.RussianTitle, 1, HistoryActionType.Scrobbled, null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class ScrobbleServiceTests : IDisposable
 
         // Assert - automatically transitions from Dropped to Watching with Progress = 2
         _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 2, UserAnimeStatus.Watching), Times.Once);
-        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 2, "Scrobbled", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.MediaKind, match.Title, match.RussianTitle, 2, HistoryActionType.Scrobbled, null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public class ScrobbleServiceTests : IDisposable
 
         // Assert - automatically transitions from OnHold to Watching with Progress = 3
         _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 3, UserAnimeStatus.Watching), Times.Once);
-        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.Title, match.RussianTitle, 3, "Scrobbled", null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
+        _mockHistoryService.Verify(x => x.AddEntryAsync(match.Id, match.MediaKind, match.Title, match.RussianTitle, 3, HistoryActionType.Scrobbled, null, match.MainPictureUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

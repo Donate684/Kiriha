@@ -13,6 +13,9 @@ public class HistoryService : IHistoryService
     // Tracks in-flight fire-and-forget writes so FlushAsync awaits all of them before shutdown.
     private readonly ConcurrentDictionary<Task, byte> _pendingWrites = new();
 
+    public event Action<HistoryItem>? EntryAdded;
+    public event Action<int, MediaKind, int?, string, TrackerSyncState, string?>? TrackerStatusUpdated;
+
     public HistoryService(IHistoryRepository repo)
     {
         _repo = repo;
@@ -31,33 +34,16 @@ public class HistoryService : IHistoryService
         }
     }
 
-    public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, HistoryActionType actionType, object? detail = null, string? posterUrl = null, CancellationToken ct = default)
-        => AddEntryAsync(animeId, title, russianTitle, episode, actionType.ToActionString(), detail, posterUrl, ct);
-
-    public virtual Task AddEntryAsync(int animeId, MediaKind mediaKind, string title, string? russianTitle, int episode, HistoryActionType actionType, object? detail = null, string? posterUrl = null, CancellationToken ct = default)
-    {
-        if (mediaKind == MediaKind.Anime)
-            return AddEntryAsync(animeId, title, russianTitle, episode, actionType.ToActionString(), detail, posterUrl, ct);
-
-        return AddEntryInternalAsync(animeId, mediaKind, title, russianTitle, episode, (int)actionType, detail, posterUrl, ct);
-    }
-
-    public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null, CancellationToken ct = default)
-        => AddEntryAsync(animeId, title, russianTitle, episode, actionType, detail, posterUrl: null, ct);
-
-    public virtual Task AddEntryAsync(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl, CancellationToken ct = default)
-        => AddEntryInternalAsync(
-            animeId,
-            HistoryContext.CurrentMediaKind ?? MediaKind.Anime,
-            title,
-            russianTitle,
-            episode,
-            (int)HistoryActionTypeExtensions.ParseActionType(actionType),
-            detail,
-            posterUrl,
-            ct);
-
-    private async Task AddEntryInternalAsync(int animeId, MediaKind mediaKind, string title, string? russianTitle, int episode, int typeId, object? detail, string? posterUrl, CancellationToken ct)
+    public virtual async Task AddEntryAsync(
+        int animeId,
+        MediaKind mediaKind,
+        string title,
+        string? russianTitle,
+        int episode,
+        HistoryActionType actionType,
+        object? detail = null,
+        string? posterUrl = null,
+        CancellationToken ct = default)
     {
         try
         {
@@ -69,8 +55,8 @@ public class HistoryService : IHistoryService
                 RussianTitle = russianTitle,
                 Episode = episode,
                 Timestamp = DateTime.UtcNow,
-                ActionType = typeId,
-                Detail = detail?.ToString() ?? "",
+                ActionType = (int)actionType,
+                Detail = detail?.ToString() ?? string.Empty,
                 PosterUrl = posterUrl
             };
 
@@ -84,57 +70,43 @@ public class HistoryService : IHistoryService
         }
     }
 
-    public virtual void AddEntry(int animeId, string title, string? russianTitle, int episode, string actionType = "Watched", object? detail = null)
-        => AddEntry(animeId, title, russianTitle, episode, actionType, detail, posterUrl: null);
-
-    public virtual void AddEntry(int animeId, string title, string? russianTitle, int episode, string actionType, object? detail, string? posterUrl)
+    public virtual void AddEntry(
+        int animeId,
+        MediaKind mediaKind,
+        string title,
+        string? russianTitle,
+        int episode,
+        HistoryActionType actionType,
+        object? detail = null,
+        string? posterUrl = null)
     {
-        TrackPendingWrite(AddEntryAsync(animeId, title, russianTitle, episode, actionType, detail, posterUrl));
-    }
-
-    public virtual void AddEntry(int animeId, MediaKind mediaKind, string title, string? russianTitle, int episode, HistoryActionType actionType, object? detail = null, string? posterUrl = null)
-    {
-        if (mediaKind == MediaKind.Anime)
-        {
-            AddEntry(animeId, title, russianTitle, episode, actionType.ToActionString(), detail, posterUrl);
-            return;
-        }
-
         TrackPendingWrite(AddEntryAsync(animeId, mediaKind, title, russianTitle, episode, actionType, detail, posterUrl));
     }
 
-    public virtual void UpdateTrackerStatus(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null)
+    public virtual void UpdateTrackerStatus(
+        int animeId,
+        MediaKind mediaKind,
+        int? episode,
+        string trackerName,
+        TrackerSyncState state,
+        string? error = null)
     {
-        TrackPendingWrite(UpdateTrackerStatusAsync(animeId, episode, trackerName, state, error));
-    }
-
-    public virtual void UpdateTrackerStatus(int animeId, MediaKind mediaKind, int? episode, string trackerName, TrackerSyncState state, string? error = null)
-    {
-        if (mediaKind == MediaKind.Anime)
-        {
-            UpdateTrackerStatus(animeId, episode, trackerName, state, error);
-            return;
-        }
-
         TrackPendingWrite(UpdateTrackerStatusAsync(animeId, mediaKind, episode, trackerName, state, error));
     }
 
-    public event Action<HistoryItem>? EntryAdded;
-    public event Action<int, int?, string, TrackerSyncState, string?>? TrackerStatusUpdated;
-
-    public virtual Task UpdateTrackerStatusAsync(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default)
-        => UpdateTrackerStatusAsync(animeId, MediaKind.Anime, episode, trackerName, state, error, ct);
-
-    public virtual async Task UpdateTrackerStatusAsync(int animeId, MediaKind mediaKind, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default)
+    public virtual async Task UpdateTrackerStatusAsync(
+        int animeId,
+        MediaKind mediaKind,
+        int? episode,
+        string trackerName,
+        TrackerSyncState state,
+        string? error = null,
+        CancellationToken ct = default)
     {
         try
         {
-            if (mediaKind == MediaKind.Anime)
-                await _repo.UpdateTrackerStatusAsync(animeId, episode, trackerName, state, error, ct);
-            else
-                await _repo.UpdateTrackerStatusAsync(animeId, mediaKind, episode, trackerName, state, error, ct);
-
-            TrackerStatusUpdated?.Invoke(animeId, episode, trackerName, state, error);
+            await _repo.UpdateTrackerStatusAsync(animeId, mediaKind, episode, trackerName, state, error, ct);
+            TrackerStatusUpdated?.Invoke(animeId, mediaKind, episode, trackerName, state, error);
             Log.Debug("HistoryService: Updated tracker status for {Id} ({MediaKind}, Ep {Ep}) {Tracker}: {State}", animeId, mediaKind, episode, trackerName, state);
         }
         catch (Exception ex)
@@ -143,38 +115,30 @@ public class HistoryService : IHistoryService
         }
     }
 
-    public virtual void SetPendingTrackers(int animeId, int? episode, IEnumerable<string> trackerNames)
+    public virtual void SetPendingTrackers(
+        int animeId,
+        MediaKind mediaKind,
+        int? episode,
+        IEnumerable<string> trackerNames)
     {
-        TrackPendingWrite(SetPendingTrackersAsync(animeId, episode, trackerNames));
-    }
-
-    public virtual void SetPendingTrackers(int animeId, MediaKind mediaKind, int? episode, IEnumerable<string> trackerNames)
-    {
-        if (mediaKind == MediaKind.Anime)
-        {
-            SetPendingTrackers(animeId, episode, trackerNames);
-            return;
-        }
-
         TrackPendingWrite(SetPendingTrackersAsync(animeId, mediaKind, episode, trackerNames));
     }
 
-    public virtual Task SetPendingTrackersAsync(int animeId, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default)
-        => SetPendingTrackersAsync(animeId, MediaKind.Anime, episode, trackerNames, ct);
-
-    public virtual async Task SetPendingTrackersAsync(int animeId, MediaKind mediaKind, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default)
+    public virtual async Task SetPendingTrackersAsync(
+        int animeId,
+        MediaKind mediaKind,
+        int? episode,
+        IEnumerable<string> trackerNames,
+        CancellationToken ct = default)
     {
         try
         {
             var trackers = trackerNames.ToList();
-            if (mediaKind == MediaKind.Anime)
-                await _repo.SetPendingTrackersAsync(animeId, episode, trackers, ct);
-            else
-                await _repo.SetPendingTrackersAsync(animeId, mediaKind, episode, trackers, ct);
+            await _repo.SetPendingTrackersAsync(animeId, mediaKind, episode, trackers, ct);
 
             foreach (var tracker in trackers)
             {
-                TrackerStatusUpdated?.Invoke(animeId, episode, tracker, TrackerSyncState.Pending, null);
+                TrackerStatusUpdated?.Invoke(animeId, mediaKind, episode, tracker, TrackerSyncState.Pending, null);
             }
         }
         catch (Exception ex)

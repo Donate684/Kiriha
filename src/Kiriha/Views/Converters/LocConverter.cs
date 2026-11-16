@@ -5,9 +5,9 @@ using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Services.Metadata;
 
 namespace Kiriha.Views.Converters;
 
@@ -46,13 +46,13 @@ public class LocConverter : IValueConverter
             }
 
             if (string.Equals(keyStr, "settings.theme.light", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(keyStr, UIUtils.GetLoc("settings.theme.light"), StringComparison.OrdinalIgnoreCase))
+                string.Equals(keyStr, LocalizationService.Active.GetLoc("settings.theme.light"), StringComparison.OrdinalIgnoreCase))
             {
                 return "Sun";
             }
 
             if (string.Equals(keyStr, "settings.theme.dark", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(keyStr, UIUtils.GetLoc("settings.theme.dark"), StringComparison.OrdinalIgnoreCase))
+                string.Equals(keyStr, LocalizationService.Active.GetLoc("settings.theme.dark"), StringComparison.OrdinalIgnoreCase))
             {
                 return "Moon";
             }
@@ -65,7 +65,7 @@ public class LocConverter : IValueConverter
         if (param == "btn_text")
         {
             bool isLast = value is true;
-            return UIUtils.GetLoc(isLast ? "wizard.finish" : "wizard.next");
+            return LocalizationService.Active.GetLoc(isLast ? "wizard.finish" : "wizard.next");
         }
         if (param == "show_arrow") return value is not true;
         if (param == "eye_logic") return value is true ? "EyeOffOutline" : "EyeOutline";
@@ -111,7 +111,7 @@ public class LocConverter : IValueConverter
             if (keyToUse.StartsWith("l.", StringComparison.OrdinalIgnoreCase))
                 keyToUse = keyToUse[2..];
 
-            return Kiriha.Localization.LocalizationStore.Translate(keyToUse);
+            return LocalizationService.Translate(keyToUse);
         }
 
         if (value is Avalonia.Styling.ThemeVariant t)

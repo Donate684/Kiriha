@@ -26,8 +26,9 @@ public sealed partial class PlayerModeCoordinator
         var cliMetadata = ExtractMetadataFromArgs(args);
         var initialMetadata = cliMetadata ?? metadataResolver.Resolve(videoUrl);
         var headers = ExtractHeadersFromArgs(args);
+        var resumeStore = _serviceProvider.GetService<IPlaybackResumeStore>();
 
-        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl, headers);
+        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl, headers, resumeStore);
         return new PlayerWindow(settingsService) { DataContext = playerVm };
     }
 

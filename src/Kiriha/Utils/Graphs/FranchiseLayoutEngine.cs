@@ -2,7 +2,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
+using Kiriha.Services.Metadata;
 
 namespace Kiriha.Utils.Graphs;
 
@@ -57,12 +57,12 @@ public partial class FranchiseGraphVisualNode : ObservableObject
     public string KindBadge => Node.Kind?.ToLowerInvariant() switch
     {
         "tv" => "TV",
-        "movie" => LocalizationStore.Translate("anime.labels.franchise_role_movie"),
+        "movie" => LocalizationService.Active.GetLoc("anime.labels.franchise_role_movie"),
         "ova" => "OVA",
         "ona" => "ONA",
-        "special" => LocalizationStore.Translate("anime.labels.franchise_role_special"),
-        "manga" => LocalizationStore.Translate("anime.labels.franchise_role_manga"),
-        "light_novel" or "novel" => LocalizationStore.Translate("anime.labels.franchise_role_novel"),
+        "special" => LocalizationService.Active.GetLoc("anime.labels.franchise_role_special"),
+        "manga" => LocalizationService.Active.GetLoc("anime.labels.franchise_role_manga"),
+        "light_novel" or "novel" => LocalizationService.Active.GetLoc("anime.labels.franchise_role_novel"),
         _ => !string.IsNullOrEmpty(Node.Kind) ? char.ToUpper(Node.Kind[0], CultureInfo.InvariantCulture) + Node.Kind[1..] : "Anime"
     };
 
@@ -77,21 +77,21 @@ public partial class FranchiseGraphVisualNode : ObservableObject
         get
         {
             if (UserStatus == UserAnimeStatus.Completed)
-                return LocalizationStore.Translate("anime.status.completed");
+                return LocalizationService.Active.GetLoc("anime.status.completed");
             if (UserStatus == UserAnimeStatus.Watching)
             {
-                var epAbbr = LocalizationStore.Translate("anime.labels.ep_abbr");
+                var epAbbr = LocalizationService.Active.GetLoc("anime.labels.ep_abbr");
                 return TotalEpisodes.HasValue && TotalEpisodes.Value > 0
                     ? $"{UserProgress ?? 0} / {TotalEpisodes.Value} {epAbbr}"
                     : $"{UserProgress ?? 0} {epAbbr}";
             }
             if (UserStatus == UserAnimeStatus.PlanToWatch)
-                return LocalizationStore.Translate("anime.status.plan_to_watch");
+                return LocalizationService.Active.GetLoc("anime.status.plan_to_watch");
             if (UserStatus == UserAnimeStatus.OnHold)
-                return LocalizationStore.Translate("anime.status.on_hold");
+                return LocalizationService.Active.GetLoc("anime.status.on_hold");
             if (UserStatus == UserAnimeStatus.Dropped)
-                return LocalizationStore.Translate("anime.status.dropped");
-            return LocalizationStore.Translate("anime.labels.franchise_not_in_list");
+                return LocalizationService.Active.GetLoc("anime.status.dropped");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_not_in_list");
         }
     }
 
@@ -556,36 +556,36 @@ public static class FranchiseLayoutEngine
     private static string GetRoleBadge(ShikiFranchiseNode node, bool isMainSpine)
     {
         if (IsMangaOrNovelKind(node.Kind))
-            return LocalizationStore.Translate("anime.labels.franchise_role_manga");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_role_manga");
 
         if (isMainSpine)
-            return LocalizationStore.Translate("anime.labels.franchise_role_main");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_role_main");
 
         if (string.Equals(node.Kind, "movie", StringComparison.OrdinalIgnoreCase))
-            return LocalizationStore.Translate("anime.labels.franchise_role_movie");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_role_movie");
 
         if (IsSpecialOrShortNode(node))
-            return LocalizationStore.Translate("anime.labels.franchise_role_special");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_role_special");
 
         if (string.Equals(node.Kind, "ova", StringComparison.OrdinalIgnoreCase))
-            return LocalizationStore.Translate("anime.labels.franchise_role_sidestory");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_role_sidestory");
 
-        return LocalizationStore.Translate("anime.labels.franchise_role_spinoff");
+        return LocalizationService.Active.GetLoc("anime.labels.franchise_role_spinoff");
     }
 
     private static string GetRelationLabel(string relation, string targetKind)
     {
         if (string.Equals(targetKind, "movie", StringComparison.OrdinalIgnoreCase))
-            return LocalizationStore.Translate("anime.labels.franchise_role_movie");
+            return LocalizationService.Active.GetLoc("anime.labels.franchise_role_movie");
 
         return relation.ToLowerInvariant() switch
         {
-            "sequel" => LocalizationStore.Translate("anime.labels.franchise_sequel"),
-            "prequel" => LocalizationStore.Translate("anime.labels.franchise_prequel"),
-            "side_story" => LocalizationStore.Translate("anime.labels.franchise_sidestory"),
-            "spin_off" => LocalizationStore.Translate("anime.labels.franchise_spinoff"),
-            "summary" => LocalizationStore.Translate("anime.labels.franchise_summary"),
-            "parent_story" or "full_story" => LocalizationStore.Translate("anime.labels.franchise_parent"),
+            "sequel" => LocalizationService.Active.GetLoc("anime.labels.franchise_sequel"),
+            "prequel" => LocalizationService.Active.GetLoc("anime.labels.franchise_prequel"),
+            "side_story" => LocalizationService.Active.GetLoc("anime.labels.franchise_sidestory"),
+            "spin_off" => LocalizationService.Active.GetLoc("anime.labels.franchise_spinoff"),
+            "summary" => LocalizationService.Active.GetLoc("anime.labels.franchise_summary"),
+            "parent_story" or "full_story" => LocalizationService.Active.GetLoc("anime.labels.franchise_parent"),
             _ => string.Empty
         };
     }

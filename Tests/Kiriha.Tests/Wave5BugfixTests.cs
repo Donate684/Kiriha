@@ -11,7 +11,6 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Navigation;
 using Kiriha.Infrastructure.Platform;
-using Kiriha.Localization;
 using Kiriha.Services.Image;
 using Kiriha.Services.Metadata;
 using Kiriha.Infrastructure.Settings;
@@ -307,7 +306,7 @@ public class Wave5BugfixTests
         {
             var svc = new LocalizationService();
             var a = svc.GetLoc("analytics.tabs.history");
-            var b = LocalizationStore.Translate("l.anime.types.tv");
+            var b = LocalizationService.Translate("l.anime.types.tv");
             return (a, b);
         });
 

@@ -6,6 +6,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Data.Core;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Domain.Utils.Async;
@@ -81,13 +82,13 @@ public partial class HistoryViewModel : ViewModelBase, IDisposable
         RefreshHistory().SafeFireAndForget("HistoryInit");
     }
 
-    private void OnTrackerStatusUpdated(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error)
+    private void OnTrackerStatusUpdated(int animeId, MediaKind mediaKind, int? episode, string trackerName, TrackerSyncState state, string? error)
     {
         RunOnUi(() =>
         {
             try
             {
-                var rawMatches = _rawItems.Where(h => h.AnimeId == animeId);
+                var rawMatches = _rawItems.Where(h => h.AnimeId == animeId && h.MediaKind == mediaKind);
                 if (episode.HasValue && episode.Value > 0)
                     rawMatches = rawMatches.Where(h => h.Episode == episode.Value);
                 foreach (var raw in rawMatches)
@@ -98,7 +99,7 @@ public partial class HistoryViewModel : ViewModelBase, IDisposable
                 bool updatedAny = false;
                 foreach (var timelineItem in TimelineItems)
                 {
-                    if (timelineItem is HistoryEntryVm entry && entry.AnimeId == animeId)
+                    if (timelineItem is HistoryEntryVm entry && entry.AnimeId == animeId && entry.MediaKind == mediaKind)
                     {
                         bool matchesEpisode = (episode.HasValue && episode.Value > 0)
                             ? (entry.EpisodeFrom <= episode.Value && episode.Value <= entry.EpisodeTo)

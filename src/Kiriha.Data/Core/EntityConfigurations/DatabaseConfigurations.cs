@@ -1,6 +1,7 @@
 using System.Text.Json;
 
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -156,5 +157,58 @@ public class AnimeCountryOriginConfiguration : IEntityTypeConfiguration<AnimeCou
         builder.Property(e => e.MalId).ValueGeneratedNever();
         builder.Property(e => e.CountryCode).IsRequired();
         builder.Property(e => e.FetchedAt).IsRequired();
+    }
+}
+
+public class ShikiMetadataConfiguration : IEntityTypeConfiguration<ShikiMetadata>
+{
+    public void Configure(EntityTypeBuilder<ShikiMetadata> builder)
+    {
+        builder.ToTable("metadata");
+        builder.HasKey(e => new { e.Id, e.MediaKind });
+        builder.Property(e => e.Id).ValueGeneratedNever();
+        builder.Property(e => e.MediaKind)
+               .HasConversion<string>()
+               .HasDefaultValue(MediaKind.Anime);
+    }
+}
+
+public class TitleMappingEntityConfiguration : IEntityTypeConfiguration<TitleMappingEntity>
+{
+    public void Configure(EntityTypeBuilder<TitleMappingEntity> builder)
+    {
+        builder.ToTable("title_mappings");
+        builder.HasKey(e => e.NormalizedTitle);
+        builder.Property(e => e.MediaKind)
+               .HasConversion<string>()
+               .HasDefaultValue(MediaKind.Anime);
+    }
+}
+
+public class ScrobbleProgressEntityConfiguration : IEntityTypeConfiguration<ScrobbleProgressEntity>
+{
+    public void Configure(EntityTypeBuilder<ScrobbleProgressEntity> builder)
+    {
+        builder.ToTable("scrobble_progress");
+        builder.HasKey(e => e.Key);
+    }
+}
+
+public class PlaybackResumeEntryEntityConfiguration : IEntityTypeConfiguration<PlaybackResumeEntryEntity>
+{
+    public void Configure(EntityTypeBuilder<PlaybackResumeEntryEntity> builder)
+    {
+        builder.ToTable("playback_resume");
+        builder.HasKey(e => e.VideoUrl);
+    }
+}
+
+public class AniListMediaMapEntityConfiguration : IEntityTypeConfiguration<AniListMediaMapEntity>
+{
+    public void Configure(EntityTypeBuilder<AniListMediaMapEntity> builder)
+    {
+        builder.ToTable("anilist_media_map");
+        builder.HasKey(e => new { e.PrimaryId, e.MediaType });
+        builder.Property(e => e.PrimaryId).ValueGeneratedNever();
     }
 }

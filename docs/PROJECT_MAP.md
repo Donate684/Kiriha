@@ -88,7 +88,9 @@ graph TD
   - `AnimeEntity` (частичный класс): главная доменная модель тайтла (аниме, манга, ранобэ по составному ключу `(Id, MediaKind)`).
   - `AnimeEntityPresentation`: проекция данных для биндингов Avalonia UI (бейджи выхода серий, прогресс, связи франшизы, переключение русских/оригинальных названий и описаний).
   - `AppSettings`: типизированная конфигурация (`UI`, `System`, `Player`, `Torrents`, `Api`).
-  - `HistoryItem`, `HistoryActionType`, `HistoryContext`: запись истории действий с `MediaKind` и JSON-состоянием синка по трекерам.
+  - `HistoryItem`, `HistoryActionType`: запись истории действий с явным `MediaKind` и JSON-состоянием синка по трекерам (`HistoryContext` удалён).
+  - `TitleMappingEntity`, `ScrobbleProgressEntity`, `PlaybackResumeEntryEntity`, `AniListMediaMapEntity`: сущности локальных состояний и маппингов в SQLite; `ShikiMetadata` использует составной ключ `(Id, MediaKind)` без битовых масок.
+  - `ILocalizer` (включая `ILocalizer.Passthrough`): единый базовый контракт локализации ядра и UI.
   - `Collections/`: чистые доменные коллекции и проекции (`BulkObservableCollection`, `AnimeFilterEngine`, `AnimeCollectionProjection`).
   - `Utils/Parsing/`, `Utils/Async/`, `Utils/Classification/`: чистые детерминированные парсеры, асинхронные примитивы и классификаторы без I/O (`AnimeReleaseParser`, `AnimeParseCache`, `AnimeStringHelper`, `AnimeLibraryMatcher`, `CustomLinkResolver`, `BearerTokenHelper`, `LruStringMemoizer`, `Debouncer`, `TaskExtensions`, `DonghuaDetector`).
   - `CollectionReconciliation`, `FormatCatalog`, `GenreCatalog`, `AnimeSearchQueryParser`.
@@ -96,16 +98,17 @@ graph TD
 ### 3.2. `Kiriha.Core.Abstractions`
 * **Роль:** Узкие интерфейсы, DI-хелперы (`AddForwardedSingleton`) и контракты между слоями.
 * **Группы контрактов:**
-  - `Repositories/`: `IUserAnimeRepository`, `IMetadataRepository`, `IAnimeRepository` (включая потокобезопасный O(1) `FindById`), `IHistoryRepository`, `ISyncTaskRepository`, `IMalSearchCacheRepository`, `IAnimeRelationRepository`, `IHttpCacheRepository`, `ITorrentFilterRepository`, `ISeasonalHiddenRepository`, `IAnimeCountryRepository`.
-  - `Services/`: `IMalApiService`, `IShikiApiService`, `IAniListApiService` (`: ITrackerService`), `ITrackerService`, `ISyncManager`, `IAnimeSyncOrchestrator`, `IAiringInfoService`, `IFranchiseService`, `IHistoryService`, `ISettingsService`, `IDatabaseInitializer`, `IRecognitionCache`, `IMappingService`, `INotificationService`, `IDiscordService`, `ILocalizer`, `ITorrServerService`, `IInternalPlayerServer`.
+  - `Repositories/`: `IUserAnimeRepository`, `IMetadataRepository`, `IAnimeRepository` (включая потокобезопасный O(1) `FindById`), `IHistoryRepository`, `ISyncTaskRepository`, `ITitleMappingRepository`, `IAniListMediaMapRepository`, `IMalSearchCacheRepository`, `IAnimeRelationRepository`, `IHttpCacheRepository`, `ITorrentFilterRepository`, `ISeasonalHiddenRepository`, `IAnimeCountryRepository`.
+  - `Services/`: `IMalApiService`, `IShikiApiService`, `IAniListApiService` (`: ITrackerService`), `ITrackerService`, `ISyncManager`, `IAnimeSyncOrchestrator`, `IAiringInfoService`, `IFranchiseService`, `IHistoryService`, `IScrobbleProgressStore`, `IPlaybackResumeStore`, `ISettingsService`, `IDatabaseInitializer`, `IRecognitionCache`, `IMappingService`, `INotificationService`, `IDiscordService`, `ILocalizer`, `ITorrServerService`, `IInternalPlayerServer`.
+  - Контракты `IHistoryService`, `IHistoryRepository` и `ISyncManager` не содержат Default Interface Methods или строковых перегрузок `actionType` — все вызовы требуют явного `MediaKind` и `HistoryActionType`.
   - `Infrastructure/`: `IUiDispatcher` (включая `CheckAccess()`), `IBackgroundTaskSupervisor`, `IAppPaths`, `IBrowserLauncher`.
 
 ### 3.3. `Kiriha.Data`
 * **Роль:** Изолированное хранилище данных на SQLite + EF Core (не зависит от `Kiriha.Infrastructure`).
 * **Ключевые компоненты:**
   - `DataLayerRegistration`: модульная DI-регистрация `AddKirihaPersistence(...)` всего слоя персистентности.
-  - `Core/`: `AppDbContext` (`QueryTrackingBehavior.NoTracking`, WAL через `SqlitePragmaConnectionInterceptor`), `DatabaseInitializer` (базовая схема от `v1.8+`), `DatabaseMaintenance`, `CacheCleanupService`.
-  - `Repository/`: реализации репозиториев (`UserAnimeRepository`, `MetadataRepository`, `HistoryRepository` с сериализацией RMW-обновлений `tracker_status_json`, `SyncTaskRepository` и др.).
+  - `Core/`: `AppDbContext` (`QueryTrackingBehavior.NoTracking`, WAL через `SqlitePragmaConnectionInterceptor`), `DatabaseInitializer` (базовая схема от `v1.8+`, `CurrentSchemaVersion = 1810`, миграция `Wave3StorageUnification`), `DatabaseMaintenance`, `CacheCleanupService`.
+  - `Repository/`: реализации репозиториев (`UserAnimeRepository`, `MetadataRepository` по составному ключу `(Id, MediaKind)`, `HistoryRepository` с сериализацией RMW-обновлений `tracker_status_json`, `SyncTaskRepository`, `TitleMappingRepository`, `AniListMediaMapRepository`, `SqliteScrobbleProgressStore`, `SqlitePlaybackResumeStore` с автоматическим однократным импортом и удалением устаревших JSON-файлов).
 
 ### 3.4. `Kiriha.Infrastructure`
 * **Роль:** Интеграция с ОС, реестром, процессами, файловой системой, настройками и дисковым кешированием.
@@ -138,7 +141,7 @@ graph TD
 ### 3.7. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
 * **Роль:** Видеоплеер.
 * `Kiriha.Mpv`: низкоуровневая обертка P/Invoke `libmpv-2.dll`, OpenGL контекст, событийный цикл плеера.
-* `Kiriha.Mpv.UI`: `PlayerViewModel`, `PlayerMediaMetadataResolver`, `FilenamePlayerMediaMetadataResolver`, контроллеры воспроизведения, субтитров и хоткеев, оверлей торрент-стриминга (`PlayerViewModel.TorrentStreaming.cs`). Не имеет зависимостей от `Kiriha.Data` или EF Core.
+* `Kiriha.Mpv.UI`: `PlayerViewModel`, `PlayerMediaMetadataResolver`, `FilenamePlayerMediaMetadataResolver`, `FilePlaybackResumeStore` (лёгкая файловая реализация `IPlaybackResumeStore` исключительно для автономного CLI-режима `--player`), контроллеры воспроизведения, субтитров и хоткеев, оверлей торрент-стриминга (`PlayerViewModel.TorrentStreaming.cs`). Не имеет зависимостей от `Kiriha.Data` или EF Core.
 
 ### 3.8. `Kiriha` (Основное приложение)
 * **Роль:** UI на Avalonia UI, композиция DI, точка входа (`Program.cs`, `App.axaml.cs`).
@@ -171,6 +174,8 @@ graph TD
 * **Выровнены границы слоёв:** `Kiriha.Data` полностью отвязан от `Kiriha.Infrastructure`; чистые парсеры перенесены в `Kiriha.Core.Domain`; `HistoryService` вынесен в `Kiriha.Core.Tracking`.
 * **Устранены скрытые рантайм-дефекты:** исправлено форматирование скорости/объёма торрентов (`:0.#` / `:0.##`), сохранение `ShikiMetadata.PosterUrl` в SQLite и защита метаданных `Manga`/`LightNovel` с битовыми масками от авто-очистки, сериализация обновлений `tracker_status_json` в `HistoryRepository`, отображение `LightNovel` во вкладке манги, проброс `MediaKind` в историю и синхронизацию, устранено удержание `LibrarySyncGate` во время HTTP-запросов `AiringInfoService`.
 
+* **Унифицированы контракты, локализация и хранилища (Волна 3):** удалён неявный `AsyncLocal`-контекст `HistoryContext`, убраны все Default Interface Methods и строковые перегрузки из `IHistoryService`/`IHistoryRepository`/`ISyncManager`; 5 разрозненных механизмов локализации (`TrackingLoc`, `LocalizationStore`, `UIUtils.GetLoc` и др.) сведены к единому DI-контракту `ILocalizer` (`LocalizationService`); битовые маски `ShikiMetadata` (`0x40000000` / `0x20000000`), россыпь JSON-файлов (`title_mappings.json`, `scrobble_progress.json`, `playback_resume.json`) и хранение маппингов AniList в `http_response_cache` заменены нормализованными таблицами SQLite с автоматической миграцией данных (`Wave3StorageUnification`).
+
 ---
 
 ## 6. Архитектурные инварианты (проверяются автотестами)
@@ -180,4 +185,5 @@ graph TD
 * `Kiriha.Core.Tracking` не ссылается на `Kiriha.Infrastructure`, `Kiriha.Data` или UI-проекты.
 * `Kiriha.Mpv.UI` не ссылается на `Kiriha.Data` или `Microsoft.EntityFrameworkCore`.
 * Все публичные типы в библиотечных проектах (`Kiriha.Core.Abstractions`, `Kiriha.Data`, `Kiriha.Core.Tracking`, `Kiriha.Core.Streaming`, `Kiriha.Infrastructure`, `Kiriha.Mpv.UI`) строго соответствуют корневому пространству имён своей сборки.
+* Контракты `IHistoryService`, `IHistoryRepository` и `ISyncManager` не содержат Default Interface Methods, а `ShikiMetadata` не использует битовые маски ID.
 * Любые изменения в `/src` обязаны проходить статический анализатор `HardcodeAnalysisTests` с нулём предупреждений компилятора.

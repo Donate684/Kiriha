@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -33,10 +32,10 @@ public partial class OverviewSectionViewModel : ViewModelBase
         var meanScore = scored.Count > 0 ? scored.Average() : 0;
         var completionRate = items.Count > 0 ? completed.Count * 100.0 / items.Count : 0;
 
-        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.total_titles"), Value = items.Count.ToString("N0"), Hint = LocalizationStore.Translate("analytics.overview.in_local_library") });
-        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.completed"), Value = completed.Count.ToString("N0"), Hint = $"{completionRate:0.#}{LocalizationStore.Translate("analytics.overview.percent_of_list")}" });
-        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.mean_score"), Value = scored.Count > 0 ? meanScore.ToString("0.00") : "-", Hint = $"{scored.Count:N0} {LocalizationStore.Translate("analytics.overview.scores_count")}" });
-        Metrics.Add(new AnalyticsMetric { Label = LocalizationStore.Translate("analytics.overview.episodes"), Value = totalEpisodes.ToString("N0"), Hint = string.Format(LocalizationStore.Translate("analytics.overview.approx_hours"), approximateHours.ToString("N0")) });
+        Metrics.Add(new AnalyticsMetric { Label = _localizer.GetLoc("analytics.overview.total_titles"), Value = items.Count.ToString("N0"), Hint = _localizer.GetLoc("analytics.overview.in_local_library") });
+        Metrics.Add(new AnalyticsMetric { Label = _localizer.GetLoc("analytics.overview.completed"), Value = completed.Count.ToString("N0"), Hint = $"{completionRate:0.#}{_localizer.GetLoc("analytics.overview.percent_of_list")}" });
+        Metrics.Add(new AnalyticsMetric { Label = _localizer.GetLoc("analytics.overview.mean_score"), Value = scored.Count > 0 ? meanScore.ToString("0.00") : "-", Hint = $"{scored.Count:N0} {_localizer.GetLoc("analytics.overview.scores_count")}" });
+        Metrics.Add(new AnalyticsMetric { Label = _localizer.GetLoc("analytics.overview.episodes"), Value = totalEpisodes.ToString("N0"), Hint = _localizer.GetLoc("analytics.overview.approx_hours", approximateHours.ToString("N0")) });
 
         AddStatusDistribution(items);
         AddScoreDistribution(scored);
@@ -63,7 +62,7 @@ public partial class OverviewSectionViewModel : ViewModelBase
                 Value = group.Count.ToString("N0"),
                 Count = group.Count,
                 Percent = AnalyticsHelpers.Percent(group.Count, items.Count),
-                ShareText = $"{percent:0.#}{LocalizationStore.Translate("analytics.overview.percent_of_list")}",
+                ShareText = $"{percent:0.#}{_localizer.GetLoc("analytics.overview.percent_of_list")}",
                 Accent = AnalyticsHelpers.GetStatusAccent(group.Status)
             });
         }

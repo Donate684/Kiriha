@@ -17,11 +17,11 @@ public partial class App : Application
     private TrayService? _trayService;
     public override void OnFrameworkInitializationCompleted()
     {
-        AnimeEntityPresentation.SetDefaultGetLoc((k, args) => Kiriha.Core.UIUtils.GetLoc(k, args));
         AppStartupCoordinator.InstallUnhandledExceptionHandler();
         var args = Environment.GetCommandLineArgs();
         var isPlayerMode = PlayerModeCoordinator.IsPlayerMode(args);
         ServiceProvider = AppStartupCoordinator.BuildServiceProvider(isPlayerMode);
+        AnimeEntityPresentation.DefaultLocalizer = ServiceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ILocalizer>();
         var appSettingsService = ServiceProvider.GetService<Kiriha.Infrastructure.Settings.SettingsService>();
         if (appSettingsService != null)
         {

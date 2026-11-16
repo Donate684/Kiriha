@@ -6,9 +6,13 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
+using Kiriha.Data.Core;
+using Kiriha.Data.Repository;
 using Kiriha.Mpv.UI.Services.Player;
 using Kiriha.Services;
 using Kiriha.Infrastructure.Settings;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 
@@ -129,23 +133,55 @@ public class ScrobbleTimerAndResumeTests : IDisposable
     }
 
     [Fact]
-    public void ScrobbleProgressStore_SavesRetrievesAndClears()
+    public async Task ScrobbleProgressStore_SavesRetrievesAndClears()
     {
-        var tempFile = Path.GetTempFileName();
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        await using (var initCtx = new AppDbContext(options))
+        {
+            await initCtx.Database.EnsureCreatedAsync();
+        }
+
+        var factory = new SimpleDbContextFactory(options);
+        var store = new SqliteScrobbleProgressStore(factory);
+        Assert.Equal(0, store.GetElapsed("test_key"));
+
+        store.SaveElapsed("test_key", 125);
+        Assert.Equal(125, store.GetElapsed("test_key"));
+        await store.FlushAsync();
+
+        // New instance reading same SQLite database
+        var store2 = new SqliteScrobbleProgressStore(factory);
+        Assert.Equal(125, store2.GetElapsed("test_key"));
+
+        store2.Clear("test_key");
+        Assert.Equal(0, store2.GetElapsed("test_key"));
+        await store2.FlushAsync();
+
+        var store3 = new SqliteScrobbleProgressStore(factory);
+        Assert.Equal(0, store3.GetElapsed("test_key"));
+    }
+
+    [Fact]
+    public void PlaybackResumeStore_SavesAndRetrievesPosition()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"playback_resume_{Guid.NewGuid():N}.json");
         try
         {
-            var store = new ScrobbleProgressStore(tempFile);
-            Assert.Equal(0, store.GetElapsed("test_key"));
+            var store = new FilePlaybackResumeStore(tempFile);
+            string testUrl = "http://example.com/test_video.mkv";
+            store.SavePosition(testUrl, 142.5, 300.0);
 
-            store.SaveElapsed("test_key", 125);
-            Assert.Equal(125, store.GetElapsed("test_key"));
+            var pos = store.TryGetResumePosition(testUrl, Path.GetTempPath());
+            Assert.NotNull(pos);
+            Assert.Equal(142.5, pos.Value, 1);
 
-            // New instance reading same file
-            var store2 = new ScrobbleProgressStore(tempFile);
-            Assert.Equal(125, store2.GetElapsed("test_key"));
-
-            store2.Clear("test_key");
-            Assert.Equal(0, store2.GetElapsed("test_key"));
+            store.Remove(testUrl);
+            var posAfterRemove = store.TryGetResumePosition(testUrl, Path.GetTempPath());
+            Assert.Null(posAfterRemove);
         }
         finally
         {
@@ -153,19 +189,9 @@ public class ScrobbleTimerAndResumeTests : IDisposable
         }
     }
 
-    [Fact]
-    public void PlaybackResumeStore_SavesAndRetrievesPosition()
+    private sealed class SimpleDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {
-        string testUrl = "http://example.com/test_video.mkv";
-        PlaybackResumeStore.SavePosition(testUrl, 142.5, 300.0);
-
-        var pos = PlaybackResumeStore.TryGetResumePosition(testUrl, Path.GetTempPath());
-        Assert.NotNull(pos);
-        Assert.Equal(142.5, pos.Value, 1);
-
-        PlaybackResumeStore.Remove(testUrl);
-        var posAfterRemove = PlaybackResumeStore.TryGetResumePosition(testUrl, Path.GetTempPath());
-        Assert.Null(posAfterRemove);
+        public AppDbContext CreateDbContext() => new(options);
     }
 
     public void Dispose()

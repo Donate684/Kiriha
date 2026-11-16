@@ -3,7 +3,6 @@ using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Api;
-using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -13,14 +12,20 @@ public partial class ShikiAuthService
     private readonly HttpClient _httpClient;
     private readonly ISettingsService _settingsService;
     private readonly ShikiHostResolver _hostResolver;
+    private readonly ILocalizer _localizer;
 
     private ShikiMirror ActiveMirror => _settingsService.Current.Api.ShikiMirror;
 
-    public ShikiAuthService(HttpClient httpClient, ISettingsService settingsService, ShikiHostResolver hostResolver)
+    public ShikiAuthService(
+        HttpClient httpClient,
+        ISettingsService settingsService,
+        ShikiHostResolver hostResolver,
+        ILocalizer? localizer = null)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
         _hostResolver = hostResolver;
+        _localizer = localizer ?? ILocalizer.Passthrough;
     }
 
     public string GetAuthUrl(ShikiMirror? mirror = null)
@@ -40,8 +45,8 @@ public partial class ShikiAuthService
         }
 
         var authUrl = GetAuthUrl(targetMirror);
-        string successMessage = TrackingLoc.GetLoc("auth.success", "Shikimori");
-        string closeMessage = TrackingLoc.GetLoc("auth.close_window");
+        string successMessage = _localizer.GetLoc("auth.success", "Shikimori");
+        string closeMessage = _localizer.GetLoc("auth.close_window");
         var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage, cancellationToken);
 
         if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;

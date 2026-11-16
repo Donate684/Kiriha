@@ -81,9 +81,6 @@ public partial class SyncManager
             .ToList();
     }
 
-    public Task EnqueueUpdateAsync(int animeId, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
-        => EnqueueUpdateAsync(animeId, MediaKind.Anime, progress, status, score, targetTracker);
-
     public async Task EnqueueUpdateAsync(int animeId, MediaKind mediaKind, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
     {
         var task = new SyncTask
@@ -121,10 +118,7 @@ public partial class SyncManager
 
             if (pendingTrackers.Count > 0)
             {
-                if (mediaKind == MediaKind.Anime)
-                    _historyService.SetPendingTrackers(animeId, progress, pendingTrackers);
-                else
-                    _historyService.SetPendingTrackers(animeId, mediaKind, progress, pendingTrackers);
+                _historyService.SetPendingTrackers(animeId, mediaKind, progress, pendingTrackers);
             }
 
             _highPriorityQueue.Enqueue(task);
@@ -137,8 +131,6 @@ public partial class SyncManager
             Log.Error(ex, "Failed to enqueue task (DB ID: {Id})", task.Id);
         }
     }
-
-    public Task EnqueueRemoveAsync(int animeId) => EnqueueRemoveAsync(animeId, MediaKind.Anime);
 
     public async Task EnqueueRemoveAsync(int animeId, MediaKind mediaKind)
     {
@@ -186,10 +178,7 @@ public partial class SyncManager
             var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();
             if (destinationTrackers.Count > 0)
             {
-                if (item.MediaKind == MediaKind.Anime)
-                    _historyService.SetPendingTrackers(item.Id, effectiveProgress, destinationTrackers);
-                else
-                    _historyService.SetPendingTrackers(item.Id, item.MediaKind, effectiveProgress, destinationTrackers);
+                _historyService.SetPendingTrackers(item.Id, item.MediaKind, effectiveProgress, destinationTrackers);
             }
 
             _highPriorityQueue.Enqueue(task);

@@ -30,7 +30,7 @@ public partial class AnimeDetailsViewModel
     [RelayCommand]
     private void ShowFranchiseGraph()
     {
-        var vm = new FranchiseGraphViewModel(Anime.Id, _shikiApiService, _malApiService, _dialogs, _animeRepo);
+        var vm = new FranchiseGraphViewModel(Anime.Id, _shikiApiService, _malApiService, _dialogs, _animeRepo, _localizer);
         var window = new Kiriha.Views.FranchiseGraphWindow
         {
             DataContext = vm

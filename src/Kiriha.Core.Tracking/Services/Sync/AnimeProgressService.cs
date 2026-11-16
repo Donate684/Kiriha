@@ -63,17 +63,15 @@ public class AnimeProgressService : IProgressUpdateService
         if (item != null)
         {
             int historyProgress = isManga ? item.ChaptersRead : item.Progress;
-            using (HistoryContext.UseMediaKind(item.MediaKind))
-            {
-                await _historyService.AddEntryAsync(
-                    item.Id,
-                    item.Title,
-                    item.RussianTitle,
-                    historyProgress,
-                    "Deleted",
-                    detail: null,
-                    posterUrl: item.MainPictureUrl);
-            }
+            await _historyService.AddEntryAsync(
+                item.Id,
+                item.MediaKind,
+                item.Title,
+                item.RussianTitle,
+                historyProgress,
+                HistoryActionType.Deleted,
+                detail: null,
+                posterUrl: item.MainPictureUrl);
         }
 
         // Remove locally first so the UI is responsive even when offline.
@@ -85,10 +83,7 @@ public class AnimeProgressService : IProgressUpdateService
         // Persist a Remove sync task so the deletion is replayed against trackers
         try
         {
-            if (isManga)
-                await _syncManager.EnqueueRemoveAsync(animeId, mediaKind);
-            else
-                await _syncManager.EnqueueRemoveAsync(animeId);
+            await _syncManager.EnqueueRemoveAsync(animeId, mediaKind);
         }
         catch (Exception ex)
         {
@@ -106,8 +101,6 @@ public class AnimeProgressService : IProgressUpdateService
 
         if (nextStatus.HasValue)
             await _syncManager.EnqueueFullUpdateAsync(item);
-        else if (item.MediaKind == MediaKind.Anime)
-            await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress, nextStatus);
         else
             await _syncManager.EnqueueUpdateAsync(item.Id, item.MediaKind, nextProgress, nextStatus);
 
@@ -136,18 +129,15 @@ public class AnimeProgressService : IProgressUpdateService
         }
 
         // Write history BEFORE sync so the DB row exists when SetPendingTrackers fires.
-        using (HistoryContext.UseMediaKind(item.MediaKind))
-        {
-            var actionName = nextStatus == UserAnimeStatus.Completed
-                ? "Completed"
-                : (isManga ? "Read" : "Watched");
-            await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, actionName, null, item.MainPictureUrl);
-        }
+        var actionType = nextStatus == UserAnimeStatus.Completed
+            ? HistoryActionType.Completed
+            : HistoryActionType.Watched;
+        await _historyService.AddEntryAsync(item.Id, item.MediaKind, item.Title, item.RussianTitle, nextProgress, actionType, null, item.MainPictureUrl);
 
         if (isManga || nextStatus.HasValue)
             await _syncManager.EnqueueFullUpdateAsync(item);
         else
-            await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress);
+            await _syncManager.EnqueueUpdateAsync(item.Id, item.MediaKind, nextProgress);
 
         if (nextStatus.HasValue)
         {
@@ -167,15 +157,12 @@ public class AnimeProgressService : IProgressUpdateService
         if (!await ApplyLocalProgressAsync(item, nextProgress))
             return;
 
-        using (HistoryContext.UseMediaKind(item.MediaKind))
-        {
-            await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, nextProgress, "Reverted", null, item.MainPictureUrl);
-        }
+        await _historyService.AddEntryAsync(item.Id, item.MediaKind, item.Title, item.RussianTitle, nextProgress, HistoryActionType.Reverted, null, item.MainPictureUrl);
 
         if (isManga)
             await _syncManager.EnqueueFullUpdateAsync(item);
         else
-            await _syncManager.EnqueueUpdateAsync(item.Id, nextProgress);
+            await _syncManager.EnqueueUpdateAsync(item.Id, item.MediaKind, nextProgress);
     }
 
     public async Task SetScoreAsync(AnimeEntity item, int score)
@@ -190,15 +177,12 @@ public class AnimeProgressService : IProgressUpdateService
         int displayProgress = isManga ? item.ChaptersRead : item.Progress;
 
         // Write history BEFORE sync.
-        using (HistoryContext.UseMediaKind(item.MediaKind))
-        {
-            await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, displayProgress, "ScoreSet", score.ToString(), item.MainPictureUrl);
-        }
+        await _historyService.AddEntryAsync(item.Id, item.MediaKind, item.Title, item.RussianTitle, displayProgress, HistoryActionType.ScoreSet, score.ToString(), item.MainPictureUrl);
 
         if (isManga)
             await _syncManager.EnqueueFullUpdateAsync(item);
         else
-            await _syncManager.EnqueueUpdateAsync(item.Id, item.Progress, score: score);
+            await _syncManager.EnqueueUpdateAsync(item.Id, item.MediaKind, item.Progress, score: score);
     }
 
     public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)
@@ -215,10 +199,7 @@ public class AnimeProgressService : IProgressUpdateService
         });
 
         await _userAnimeRepo.UpdateProgressAsync(item, episode, UserAnimeStatus.Watching);
-        using (HistoryContext.UseMediaKind(item.MediaKind))
-        {
-            await _historyService.AddEntryAsync(item.Id, item.Title, item.RussianTitle, episode, "Rewatching", null, item.MainPictureUrl);
-        }
+        await _historyService.AddEntryAsync(item.Id, item.MediaKind, item.Title, item.RussianTitle, episode, HistoryActionType.Rewatching, null, item.MainPictureUrl);
         await _syncManager.EnqueueFullUpdateAsync(item);
     }
 

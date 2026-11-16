@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using System.Globalization;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
+using Kiriha.Services.Metadata;
 
 namespace Kiriha.ViewModels.AnimeList;
 
@@ -54,7 +54,7 @@ public class ReleaseMapViewModel
 
     public static string GetLoc(string key)
     {
-        var val = LocalizationStore.Translate(key);
+        var val = LocalizationService.Active.GetLoc(key);
         if ((string.IsNullOrWhiteSpace(val) || string.Equals(val, key, StringComparison.OrdinalIgnoreCase))
             && FallbackStrings.TryGetValue(key, out var fallback))
         {

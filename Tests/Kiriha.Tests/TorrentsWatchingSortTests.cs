@@ -108,7 +108,7 @@ public class TorrentsWatchingSortTests
     public void LocalizationStore_Translate_StripsLPrefixBeforeFallback(string inputKey, string expectedFallback)
     {
         // When Application.Current is null (in unit test headless runner), it returns key without "l."
-        var result = Kiriha.Localization.LocalizationStore.Translate(inputKey);
+        var result = Kiriha.Services.Metadata.LocalizationService.Translate(inputKey);
         Assert.Equal(expectedFallback, result);
     }
 

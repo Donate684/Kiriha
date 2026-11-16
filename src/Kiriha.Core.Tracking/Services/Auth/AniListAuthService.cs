@@ -1,9 +1,9 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -11,10 +11,12 @@ namespace Kiriha.Core.Tracking.Auth;
 public class AniListAuthService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILocalizer _localizer;
 
-    public AniListAuthService(HttpClient httpClient)
+    public AniListAuthService(HttpClient httpClient, ILocalizer? localizer = null)
     {
         _httpClient = httpClient;
+        _localizer = localizer ?? ILocalizer.Passthrough;
     }
 
     public string GetAuthUrl()
@@ -25,8 +27,8 @@ public class AniListAuthService
     public async Task<AniListTokens?> LoginAsync(CancellationToken cancellationToken = default)
     {
         var authUrl = GetAuthUrl();
-        string successMessage = TrackingLoc.GetLoc("auth.success", "AniList");
-        string closeMessage = TrackingLoc.GetLoc("auth.close_window");
+        string successMessage = _localizer.GetLoc("auth.success", "AniList");
+        string closeMessage = _localizer.GetLoc("auth.close_window");
 
         var code = await OAuthHelper.AuthorizeViaLoopbackAsync(authUrl, AppConstants.Api.RedirectUri, successMessage, closeMessage, cancellationToken);
         if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;

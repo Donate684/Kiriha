@@ -1,5 +1,9 @@
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Mapping;
+using Kiriha.Data.Core;
+using Kiriha.Data.Repository;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Tests;
 
@@ -29,7 +33,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -53,7 +57,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -77,7 +81,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -101,7 +105,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -124,7 +128,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -147,7 +151,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             const string dirtyFilename = "[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p][D47E347C].mkv";
@@ -203,7 +207,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -226,7 +230,7 @@ public sealed class MappingServiceTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var service = new MappingService(null!, manualMapping, null!, new RecognitionCache());
 
             var userList = new List<AnimeEntity>
@@ -252,7 +256,7 @@ public sealed class MappingServiceTests
         {
             File.WriteAllText(path, """{"tensei shitara ken deshita ii": 49891}""");
 
-            var service = new ManualMappingService(path);
+            var service = new ManualMappingService(repository: null, legacyMappingFilePath: path);
 
             Assert.False(service.TryGetMapping("tensei shitara ken deshita ii", out _));
             Assert.False(File.Exists(path));
@@ -271,7 +275,7 @@ public sealed class MappingServiceTests
         {
             File.WriteAllText(path, """{"version": 1, "mappings": {"sousou no frieren": 123}}""");
 
-            var service = new ManualMappingService(path);
+            var service = new ManualMappingService(repository: null, legacyMappingFilePath: path);
 
             Assert.False(service.TryGetMapping("sousou no frieren", out _));
             Assert.False(File.Exists(path));
@@ -285,15 +289,30 @@ public sealed class MappingServiceTests
     [Fact]
     public async Task ManualMappingService_CurrentVersionJson_PersistsAndReloadsCorrectly()
     {
+        await using var conn = new SqliteConnection("Data Source=:memory:");
+        await conn.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(conn)
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            .Options;
+        await using (var setup = new AppDbContext(options))
+        {
+            await setup.Database.EnsureCreatedAsync();
+        }
+        var repo = new TitleMappingRepository(new SimpleFactory(options));
+
         var path = CreateTempMappingPath();
         try
         {
-            var service = new ManualMappingService(path);
-            service.AddMapping("Sousou no Frieren", 52991);
+            await File.WriteAllTextAsync(path, """{"version": 2, "mappings": {"sousou no frieren": 52991}}""");
+
+            var service = new ManualMappingService(repo, legacyMappingFilePath: path);
+            Assert.True(service.TryGetMapping("sousou no frieren", out int importedId));
+            Assert.Equal(52991, importedId);
             await service.FlushAsync();
+            Assert.False(File.Exists(path));
 
-            var reloaded = new ManualMappingService(path);
-
+            var reloaded = new ManualMappingService(repo);
             Assert.True(reloaded.TryGetMapping("sousou no frieren", out int id));
             Assert.Equal(52991, id);
         }
@@ -311,7 +330,7 @@ public sealed class MappingServiceTests
         {
             File.WriteAllText(path, "{ corrupt json !!!");
 
-            var service = new ManualMappingService(path);
+            var service = new ManualMappingService(repository: null, legacyMappingFilePath: path);
 
             Assert.False(service.TryGetMapping("test", out _));
             Assert.False(File.Exists(path));
@@ -320,5 +339,10 @@ public sealed class MappingServiceTests
         {
             DeleteQuietly(path);
         }
+    }
+
+    private sealed class SimpleFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
+    {
+        public AppDbContext CreateDbContext() => new(options);
     }
 }

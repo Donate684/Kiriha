@@ -33,10 +33,14 @@ public sealed class HistoryRepository : IHistoryRepository
             .ToListAsync(ct);
     }
 
-    public Task UpdateTrackerStatusAsync(int animeId, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default)
-        => UpdateTrackerStatusAsync(animeId, MediaKind.Anime, episode, trackerName, state, error, ct);
-
-    public async Task UpdateTrackerStatusAsync(int animeId, MediaKind mediaKind, int? episode, string trackerName, TrackerSyncState state, string? error = null, CancellationToken ct = default)
+    public async Task UpdateTrackerStatusAsync(
+        int animeId,
+        MediaKind mediaKind,
+        int? episode,
+        string trackerName,
+        TrackerSyncState state,
+        string? error = null,
+        CancellationToken ct = default)
     {
         await _statusLock.WaitAsync(ct);
         try
@@ -62,10 +66,12 @@ public sealed class HistoryRepository : IHistoryRepository
         }
     }
 
-    public Task SetPendingTrackersAsync(int animeId, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default)
-        => SetPendingTrackersAsync(animeId, MediaKind.Anime, episode, trackerNames, ct);
-
-    public async Task SetPendingTrackersAsync(int animeId, MediaKind mediaKind, int? episode, IEnumerable<string> trackerNames, CancellationToken ct = default)
+    public async Task SetPendingTrackersAsync(
+        int animeId,
+        MediaKind mediaKind,
+        int? episode,
+        IEnumerable<string> trackerNames,
+        CancellationToken ct = default)
     {
         var trackers = trackerNames.ToList();
         if (trackers.Count == 0) return;

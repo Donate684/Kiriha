@@ -72,7 +72,7 @@ public partial class AnalyticsViewModel : ViewModelBase
         Tastes = new(localizer);
         WatchNext = new(localizer);
         ReadNext = new(localizer);
-        History = new();
+        History = new(localizer);
     }
 
     partial void OnSelectedSectionChanged(int value)

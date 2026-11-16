@@ -94,6 +94,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
     private readonly IAnimeRepository _animeRepo;
     private readonly IMalApiService _malApiService;
     private readonly IFranchiseService _franchiseService;
+    private readonly ILocalizer _localizer;
 
     public ISettingsService Settings => _settingsService;
 
@@ -108,7 +109,8 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         IAnimeRepository animeRepo,
         IMalApiService malApiService,
         IFranchiseService franchiseService,
-        IAnimeListActionService listActionService)
+        IAnimeListActionService listActionService,
+        ILocalizer? localizer = null)
     {
         _anime = cloneAnime;
         _originalAnime = originalAnime;
@@ -121,6 +123,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         _malApiService = malApiService;
         _franchiseService = franchiseService;
         _listActionService = listActionService;
+        _localizer = localizer ?? Kiriha.Services.Metadata.LocalizationService.Active;
 
         BuildCustomShareLinks();
 

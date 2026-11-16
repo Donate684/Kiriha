@@ -12,7 +12,7 @@ namespace Kiriha.Data.Core;
 /// </summary>
 public sealed class DatabaseInitializer : IDatabaseInitializer
 {
-    public const int CurrentSchemaVersion = 1800;
+    public const int CurrentSchemaVersion = 1810;
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);

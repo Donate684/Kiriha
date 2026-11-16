@@ -1,13 +1,13 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Streaming.Abstractions;
 using Kiriha.Core.Streaming.Constants;
 using Kiriha.Core.Streaming.Helpers;
 using Kiriha.Core.Streaming.Services;
+using Kiriha.Services.Metadata;
 using Kiriha.Views.Settings;
 using Serilog;
 
@@ -18,16 +18,9 @@ public partial class SettingsStreamingViewModel : ObservableObject
     private readonly ISettingsService _settingsService;
     private readonly Anime365HostResolver? _hostResolver;
     private readonly IAnime365AuthService? _anime365AuthService;
+    private readonly ILocalizer _localizer;
 
-    public IReadOnlyList<Anime365MirrorOption> Anime365Mirrors { get; } =
-    [
-        new("", UIUtils.GetLoc("settings.streaming.anime365_mirror_auto")),
-        new(StreamingConstants.Anime365.MirrorApp, UIUtils.GetLoc("settings.streaming.anime365_mirror_app")),
-        new(StreamingConstants.Anime365.MirrorCo, UIUtils.GetLoc("settings.streaming.anime365_mirror_co")),
-        new(StreamingConstants.Anime365.MirrorSmotretAnimeCo, UIUtils.GetLoc("settings.streaming.anime365_mirror_smotretanime_co")),
-        new(StreamingConstants.Anime365.MirrorCom, UIUtils.GetLoc("settings.streaming.anime365_mirror_com")),
-        new(StreamingConstants.Anime365.MirrorOrg, UIUtils.GetLoc("settings.streaming.anime365_mirror_org")),
-    ];
+    public IReadOnlyList<Anime365MirrorOption> Anime365Mirrors { get; }
 
     [ObservableProperty]
     private Anime365MirrorOption _selectedAnime365Mirror;
@@ -104,12 +97,24 @@ public partial class SettingsStreamingViewModel : ObservableObject
     public SettingsStreamingViewModel(
         ISettingsService settingsService,
         Anime365HostResolver? hostResolver = null,
-        IAnime365AuthService? anime365AuthService = null)
+        IAnime365AuthService? anime365AuthService = null,
+        ILocalizer? localizer = null)
     {
         ArgumentNullException.ThrowIfNull(settingsService);
         _settingsService = settingsService;
         _hostResolver = hostResolver;
         _anime365AuthService = anime365AuthService;
+        _localizer = localizer ?? LocalizationService.Active;
+
+        Anime365Mirrors =
+        [
+            new("", _localizer.GetLoc("settings.streaming.anime365_mirror_auto")),
+            new(StreamingConstants.Anime365.MirrorApp, _localizer.GetLoc("settings.streaming.anime365_mirror_app")),
+            new(StreamingConstants.Anime365.MirrorCo, _localizer.GetLoc("settings.streaming.anime365_mirror_co")),
+            new(StreamingConstants.Anime365.MirrorSmotretAnimeCo, _localizer.GetLoc("settings.streaming.anime365_mirror_smotretanime_co")),
+            new(StreamingConstants.Anime365.MirrorCom, _localizer.GetLoc("settings.streaming.anime365_mirror_com")),
+            new(StreamingConstants.Anime365.MirrorOrg, _localizer.GetLoc("settings.streaming.anime365_mirror_org")),
+        ];
 
         var streaming = _settingsService.Current.Torrents.OnlineStreaming;
         var savedMirror = streaming.Anime365Mirror ?? string.Empty;
@@ -155,7 +160,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
             var lifetime = App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
             var mainWindow = lifetime?.MainWindow;
 
-            var dlg = new AnimeLibLoginWindow();
+            var dlg = new AnimeLibLoginWindow(_localizer);
             string? token;
 
             if (mainWindow != null)
@@ -182,7 +187,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
                 IsAnimeLibLoggedIn = true;
                 AnimeLibUsername = username;
                 IsManualTokenExpanded = false;
-                StatusMessage = UIUtils.GetLoc("settings.streaming.success_login");
+                StatusMessage = _localizer.GetLoc("settings.streaming.success_login");
                 Log.Information("[SettingsStreaming] AnimeLib token saved for user {User}", username);
             }
             else
@@ -193,7 +198,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         catch (Exception ex)
         {
             Log.Error(ex, "[SettingsStreaming] Error opening AnimeLib login dialog");
-            StatusMessage = string.Format(UIUtils.GetLoc("settings.streaming.error_prefix"), ex.Message);
+            StatusMessage = _localizer.GetLoc("settings.streaming.error_prefix", ex.Message);
         }
         finally
         {
@@ -213,7 +218,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         IsAnimeLibLoggedIn = false;
         AnimeLibUsername = string.Empty;
         ManualToken = string.Empty;
-        StatusMessage = UIUtils.GetLoc("settings.streaming.success_logout");
+        StatusMessage = _localizer.GetLoc("settings.streaming.success_logout");
         Log.Information("[SettingsStreaming] Logged out from AnimeLib");
     }
 
@@ -222,14 +227,14 @@ public partial class SettingsStreamingViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(ManualToken))
         {
-            StatusMessage = UIUtils.GetLoc("settings.streaming.token_empty_error");
+            StatusMessage = _localizer.GetLoc("settings.streaming.token_empty_error");
             return;
         }
 
         var cleanToken = AnimeLibTokenHelper.CleanToken(ManualToken);
         if (string.IsNullOrWhiteSpace(cleanToken))
         {
-            StatusMessage = UIUtils.GetLoc("settings.streaming.token_empty_error");
+            StatusMessage = _localizer.GetLoc("settings.streaming.token_empty_error");
             return;
         }
 
@@ -245,7 +250,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         AnimeLibUsername = username;
         ManualToken = string.Empty;
         IsManualTokenExpanded = false;
-        StatusMessage = UIUtils.GetLoc("settings.streaming.token_saved");
+        StatusMessage = _localizer.GetLoc("settings.streaming.token_saved");
     }
 
     [RelayCommand]
@@ -305,7 +310,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         if (value && !IsAnime365LoggedIn)
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() => EnableAnime365 = false);
-            StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_account_required");
+            StatusMessage = _localizer.GetLoc("settings.streaming.anime365_account_required");
             return;
         }
 
@@ -328,7 +333,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(Anime365Email) || string.IsNullOrWhiteSpace(Anime365Password))
         {
-            StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_credentials_required");
+            StatusMessage = _localizer.GetLoc("settings.streaming.anime365_credentials_required");
             return;
         }
 
@@ -346,19 +351,19 @@ public partial class SettingsStreamingViewModel : ObservableObject
             if (!result.IsSuccess)
             {
                 StatusMessage = result.TokenMissing
-                    ? UIUtils.GetLoc("settings.streaming.anime365_token_not_returned")
-                    : string.Format(UIUtils.GetLoc("settings.streaming.error_prefix"), result.ErrorMessage);
+                    ? _localizer.GetLoc("settings.streaming.anime365_token_not_returned")
+                    : _localizer.GetLoc("settings.streaming.error_prefix", result.ErrorMessage);
                 return;
             }
 
             Anime365Password = string.Empty;
             await ApplyAnime365TokenInternalAsync(result.AccessToken!);
-            StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_success_login");
+            StatusMessage = _localizer.GetLoc("settings.streaming.anime365_success_login");
         }
         catch (Exception ex)
         {
             Log.Error(ex, "[SettingsStreaming] Error logging in to Anime365");
-            StatusMessage = string.Format(UIUtils.GetLoc("settings.streaming.error_prefix"), ex.Message);
+            StatusMessage = _localizer.GetLoc("settings.streaming.error_prefix", ex.Message);
         }
         finally
         {
@@ -371,7 +376,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(Anime365ManualToken))
         {
-            StatusMessage = UIUtils.GetLoc("settings.streaming.token_empty_error");
+            StatusMessage = _localizer.GetLoc("settings.streaming.token_empty_error");
             return;
         }
 
@@ -381,11 +386,11 @@ public partial class SettingsStreamingViewModel : ObservableObject
         {
             Anime365ManualToken = string.Empty;
             IsAnime365ManualTokenExpanded = false;
-            StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_token_saved");
+            StatusMessage = _localizer.GetLoc("settings.streaming.anime365_token_saved");
         }
         else
         {
-            StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_invalid_token");
+            StatusMessage = _localizer.GetLoc("settings.streaming.anime365_invalid_token");
         }
     }
 
@@ -444,15 +449,15 @@ public partial class SettingsStreamingViewModel : ObservableObject
         }
     }
 
-    private static string FormatPremiumStatus(bool isPremium, string? premiumUntil)
+    private string FormatPremiumStatus(bool isPremium, string? premiumUntil)
     {
         if (isPremium)
         {
             return !string.IsNullOrWhiteSpace(premiumUntil)
-                ? string.Format(UIUtils.GetLoc("settings.streaming.anime365_premium_until"), premiumUntil)
-                : UIUtils.GetLoc("settings.streaming.anime365_premium_active");
+                ? _localizer.GetLoc("settings.streaming.anime365_premium_until", premiumUntil)
+                : _localizer.GetLoc("settings.streaming.anime365_premium_active");
         }
-        return UIUtils.GetLoc("settings.streaming.anime365_no_premium");
+        return _localizer.GetLoc("settings.streaming.anime365_no_premium");
     }
 
     [RelayCommand]
@@ -471,7 +476,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         Anime365Username = string.Empty;
         Anime365StatusText = string.Empty;
         Anime365ManualToken = string.Empty;
-        StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_success_logout");
+        StatusMessage = _localizer.GetLoc("settings.streaming.anime365_success_logout");
         Log.Information("[SettingsStreaming] Logged out from Anime365");
     }
 

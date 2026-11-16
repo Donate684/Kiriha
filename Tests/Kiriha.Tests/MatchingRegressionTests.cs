@@ -58,7 +58,7 @@ public sealed class MatchingRegressionTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var recognitionCache = new RecognitionCache();
             var service = new MappingService(null!, manualMapping, null!, recognitionCache);
 
@@ -109,7 +109,7 @@ public sealed class MatchingRegressionTests
         var path = CreateTempMappingPath();
         try
         {
-            var manualMapping = new ManualMappingService(path);
+            var manualMapping = new ManualMappingService(repository: null, legacyMappingFilePath: path);
             var recognitionCache = new RecognitionCache();
             var service = new MappingService(null!, manualMapping, null!, recognitionCache);
 
@@ -176,7 +176,7 @@ public sealed class MatchingRegressionTests
             var recognitionCache = new RecognitionCache();
             recognitionCache.BuildIndex([rayearth1994]);
 
-            var service = new MappingService(mockMal.Object, new ManualMappingService(path), mockCache.Object, recognitionCache);
+            var service = new MappingService(mockMal.Object, new ManualMappingService(repository: null, legacyMappingFilePath: path), mockCache.Object, recognitionCache);
 
             const string release = "[Erai-raws] Magic Knight Rayearth (2026) - 06 [1080p CR WEB-DL AVC AAC][MultiSub][3329235B]";
 
@@ -211,7 +211,7 @@ public sealed class MatchingRegressionTests
                     new AnimeEntity { Id = 435, MediaKind = MediaKind.Anime, Title = "Magic Knight Rayearth", StartYear = 1994, TotalEpisodes = 20 }
                 ]);
 
-            var service = new MappingService(mockMal.Object, new ManualMappingService(path), mockCache.Object, new RecognitionCache());
+            var service = new MappingService(mockMal.Object, new ManualMappingService(repository: null, legacyMappingFilePath: path), mockCache.Object, new RecognitionCache());
             var wrongYearResult = await service.SearchOnMalAsync("[Erai-raws] Magic Knight Rayearth (2026) - 06 [1080p]");
             Assert.Null(wrongYearResult);
 
@@ -245,7 +245,7 @@ public sealed class MatchingRegressionTests
             };
             recognitionCache.BuildIndex(mixedCollection);
 
-            var service = new MappingService(null!, new ManualMappingService(path), null!, recognitionCache);
+            var service = new MappingService(null!, new ManualMappingService(repository: null, legacyMappingFilePath: path), null!, recognitionCache);
 
             Assert.Null(await service.GetIdFromTitleAsync("[Erai-raws] Magic Knight Rayearth (2026) - 06.mkv", mixedCollection));
             Assert.Null(await service.GetIdFromTitleAsync("[SubsPlease] Sousou no Frieren - 01.mkv", mixedCollection));
@@ -303,7 +303,7 @@ public sealed class MatchingRegressionTests
             };
             recognitionCache.BuildIndex(userList);
 
-            var service = new MappingService(null!, new ManualMappingService(path), null!, recognitionCache);
+            var service = new MappingService(null!, new ManualMappingService(repository: null, legacyMappingFilePath: path), null!, recognitionCache);
 
             // 1. Play 1994 first (populates _sessionCache for bare title)
             var id1994 = await service.GetIdFromTitleAsync("[Group] Magic Knight Rayearth - 01 [1080p].mkv", userList);

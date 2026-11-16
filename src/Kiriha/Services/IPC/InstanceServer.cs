@@ -155,7 +155,16 @@ public class InstanceServer : BackgroundService
                     }
                 }
                 var initialMeta = cliMetadata ?? metadataResolver.Resolve(videoUrl);
-                var playerVm = new PlayerViewModel(videoUrl, initialMeta, metadataResolver, settingsService, _serviceProvider.GetRequiredService<ILocalizer>(), _serviceProvider.GetService<ITorrServerService>(), subtitleUrl, headers);
+                var playerVm = new PlayerViewModel(
+                    videoUrl,
+                    initialMeta,
+                    metadataResolver,
+                    settingsService,
+                    _serviceProvider.GetRequiredService<ILocalizer>(),
+                    _serviceProvider.GetService<ITorrServerService>(),
+                    subtitleUrl,
+                    headers,
+                    _serviceProvider.GetService<IPlaybackResumeStore>());
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
                 window.Activate();

@@ -60,14 +60,14 @@ public partial class SettingsViewModel : ViewModelBase
     {
         Playback = new SettingsPlaybackViewModel(settingsService, systemIntegrationService, externalMediaDetector, localizationService);
         Ui = new SettingsUiViewModel(settingsService, animeListViewModel, localizationService, seasonalViewModel);
-        System = new SettingsSystemViewModel(settingsService, discordService, startupManager);
+        System = new SettingsSystemViewModel(settingsService, discordService, startupManager, localizationService);
 
-        Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver, aniListAuthService, refreshService);
+        Auth = new SettingsAuthViewModel(settingsService, authService, shikiAuthService, shikiHostResolver, aniListAuthService, refreshService, localizationService);
         Update = new SettingsUpdateViewModel(updateService);
         Cache = new SettingsCacheViewModel(cacheCleanupService, imageCacheService, mappingService, seasonalViewModel, localizationService);
 
         CustomLinks = new SettingsCustomLinksViewModel(settingsService, faviconService);
-        Streaming = new SettingsStreamingViewModel(settingsService, anime365HostResolver, anime365AuthService);
+        Streaming = new SettingsStreamingViewModel(settingsService, anime365HostResolver, anime365AuthService, localizationService);
     }
 }
 

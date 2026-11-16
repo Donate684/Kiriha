@@ -3,9 +3,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Streaming.Constants;
 using Kiriha.Core.Streaming.Helpers;
 using Kiriha.Infrastructure.Platform;
+using Kiriha.Services.Metadata;
 using Microsoft.Web.WebView2.Core;
 using Serilog;
 
@@ -13,13 +15,19 @@ namespace Kiriha.Views.Settings;
 
 public partial class AnimeLibLoginWindow : Window
 {
+    private readonly ILocalizer _localizer;
     private CoreWebView2Controller? _controller;
     private DispatcherTimer? _pollTimer;
     private bool _authCompleted;
     private bool _isDisposed;
 
-    public AnimeLibLoginWindow()
+    public AnimeLibLoginWindow() : this(null)
     {
+    }
+
+    public AnimeLibLoginWindow(ILocalizer? localizer)
+    {
+        _localizer = localizer ?? LocalizationService.Active;
         InitializeComponent();
     }
 
@@ -29,7 +37,7 @@ public partial class AnimeLibLoginWindow : Window
 
         if (!OperatingSystem.IsWindows())
         {
-            StatusTextBlock.Text = Kiriha.Core.UIUtils.GetLoc("settings.streaming.error_windows_only");
+            StatusTextBlock.Text = _localizer.GetLoc("settings.streaming.error_windows_only");
             LoadingIndicator.IsVisible = false;
             return;
         }
@@ -53,7 +61,7 @@ public partial class AnimeLibLoginWindow : Window
             var platformHandle = TryGetPlatformHandle();
             if (platformHandle == null)
             {
-                StatusTextBlock.Text = Kiriha.Core.UIUtils.GetLoc("settings.streaming.error_no_handle");
+                StatusTextBlock.Text = _localizer.GetLoc("settings.streaming.error_no_handle");
                 LoadingIndicator.IsVisible = false;
                 return;
             }
@@ -106,7 +114,7 @@ public partial class AnimeLibLoginWindow : Window
         }
         catch (WebView2RuntimeNotFoundException)
         {
-            StatusTextBlock.Text = Kiriha.Core.UIUtils.GetLoc("settings.streaming.error_webview_missing");
+            StatusTextBlock.Text = _localizer.GetLoc("settings.streaming.error_webview_missing");
             LoadingIndicator.IsVisible = false;
         }
         catch (Exception ex)

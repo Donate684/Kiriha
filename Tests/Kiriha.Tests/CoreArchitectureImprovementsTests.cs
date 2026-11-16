@@ -242,7 +242,7 @@ public sealed class CoreArchitectureImprovementsTests
             .Returns(Task.CompletedTask);
 
         IHistoryService service = new HistoryService(mockRepo.Object);
-        await service.AddEntryAsync(52991, "Sousou no Frieren", null, 28, HistoryActionType.ScoreSet, "10", "https://poster");
+        await service.AddEntryAsync(52991, MediaKind.Anime, "Sousou no Frieren", null, 28, HistoryActionType.ScoreSet, "10", "https://poster");
 
         Assert.NotNull(added);
         Assert.Equal((int)HistoryActionType.ScoreSet, added!.ActionType);

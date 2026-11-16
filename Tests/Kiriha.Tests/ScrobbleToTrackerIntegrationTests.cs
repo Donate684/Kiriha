@@ -129,7 +129,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
 
         // Assert 2: SyncTask was enqueued and pending status marked
         _mockSyncTaskRepo.Verify(r => r.AddAsync(It.Is<SyncTaskEntity>(e => e.AnimeId == 777 && e.Progress == 8), It.IsAny<CancellationToken>()), Times.Once);
-        _mockHistoryService.Verify(h => h.SetPendingTrackers(777, 8, It.Is<IEnumerable<string>>(t => t.Contains("Shikimori"))), Times.Once);
+        _mockHistoryService.Verify(h => h.SetPendingTrackers(777, MediaKind.Anime, 8, It.Is<IEnumerable<string>>(t => t.Contains("Shikimori"))), Times.Once);
 
         // Act 2: SyncManager processes the enqueued task
         Assert.NotNull(enqueuedTask);
@@ -143,7 +143,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         Assert.True(success);
         Assert.True(didExecute);
         _mockTracker.Verify(t => t.UpdateProgressAsync(777, 8, null, null, null, null, It.IsAny<CancellationToken>()), Times.Once);
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(777, 8, "Shikimori", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(777, MediaKind.Anime, 8, "Shikimori", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
     }
 
     [Fact]

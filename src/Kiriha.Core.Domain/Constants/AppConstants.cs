@@ -176,6 +176,7 @@ public static class AppConstants
             public const string SettingsWindow = "window.json";
             public const string Mappings = "title_mappings.json";
             public const string ScrobbleProgress = "scrobble_progress.json";
+            public const string PlaybackResume = "playback_resume.json";
             public const string LogsDir = "logs";
             public const string CacheDir = "cacheimg";
             public const string MpvWatchLaterDir = "watch_later";

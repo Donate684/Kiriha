@@ -164,9 +164,6 @@ public partial class HistoryViewModel
         }
 
         var targetName = tracker?.Name ?? trackerName;
-        if (entry.MediaKind == Kiriha.Core.Domain.Models.Entities.MediaKind.Anime)
-            await _syncManager.EnqueueUpdateAsync(entry.AnimeId, progress, status, score, targetName);
-        else
-            await _syncManager.EnqueueUpdateAsync(entry.AnimeId, entry.MediaKind, progress, status, score, targetName);
+        await _syncManager.EnqueueUpdateAsync(entry.AnimeId, entry.MediaKind, progress, status, score, targetName);
     }
 }

@@ -50,16 +50,17 @@ public class HistoryDeletionTests
         // Assert
         mockHistoryService.Verify(h => h.AddEntryAsync(
             anime.Id,
+            anime.MediaKind,
             anime.Title,
             anime.RussianTitle,
             anime.Progress,
-            "Deleted",
+            HistoryActionType.Deleted,
             null,
             anime.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
 
         mockAnimeRepo.Verify(r => r.RemoveAnimeLocalAsync(anime.Id), Times.Once);
-        mockSyncManager.Verify(s => s.EnqueueRemoveAsync(anime.Id), Times.Once);
+        mockSyncManager.Verify(s => s.EnqueueRemoveAsync(anime.Id, MediaKind.Anime), Times.Once);
     }
 
     [Fact]
@@ -117,12 +118,13 @@ public class HistoryDeletionTests
         mockAnimeRepo.Setup(r => r.Collection).Returns(new ObservableCollection<AnimeEntity>()); // Empty collection, anime was deleted!
 
         var mockMetadataRepo = new Mock<IMetadataRepository>();
-        mockMetadataRepo.Setup(m => m.GetBatchAsync(It.IsAny<IReadOnlyList<int>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Dictionary<int, ShikiMetadata>
+        mockMetadataRepo.Setup(m => m.GetBatchAsync(It.IsAny<IEnumerable<MediaKey>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<MediaKey, ShikiMetadata>
             {
-                [62485] = new ShikiMetadata
+                [new MediaKey(62485, MediaKind.Anime)] = new ShikiMetadata
                 {
                     Id = 62485,
+                    MediaKind = MediaKind.Anime,
                     PosterUrl = "https://shikimori.io/system/animes/original/62485.jpg"
                 }
             });

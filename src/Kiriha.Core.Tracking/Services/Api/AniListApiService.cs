@@ -22,6 +22,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
     private readonly HttpClient _httpClient;
     private readonly IHttpCacheRepository _cache;
     private readonly ISettingsService _settingsService;
+    private readonly IAniListMediaMapRepository? _mediaMapRepo;
     private readonly ConcurrentDictionary<(int MalId, string MediaType), int> _malToAniListMap = new();
 
     private readonly RateLimiter _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
@@ -45,11 +46,16 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
     }
 
-    public AniListApiService(HttpClient httpClient, IHttpCacheRepository cache, ISettingsService settingsService)
+    public AniListApiService(
+        HttpClient httpClient,
+        IHttpCacheRepository cache,
+        ISettingsService settingsService,
+        IAniListMediaMapRepository? mediaMapRepo = null)
     {
         _httpClient = httpClient;
         _cache = cache;
         _settingsService = settingsService;
+        _mediaMapRepo = mediaMapRepo;
     }
 
     private async Task<JsonDocument?> ExecuteGraphQlAsync(string query, object? variables = null, CancellationToken ct = default)
@@ -102,13 +108,12 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
     internal async Task CacheMediaMappingAsync(int primaryId, string mediaType, int aniListId, bool isAniListNativeId)
     {
         _malToAniListMap[(primaryId, mediaType)] = aniListId;
-        if (!isAniListNativeId || primaryId <= 0 || aniListId <= 0)
+        if (!isAniListNativeId || primaryId <= 0 || aniListId <= 0 || _mediaMapRepo is null)
             return;
 
         try
         {
-            var bytes = Encoding.UTF8.GetBytes(aniListId.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            await _cache.UpsertAsync(IdMapCacheKey(primaryId, mediaType), etag: null, lastModified: null, bytes);
+            await _mediaMapRepo.UpsertAsync(primaryId, mediaType, aniListId);
         }
         catch (Exception ex)
         {
@@ -318,14 +323,13 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
 
     private async Task<int?> TryReadMappedMediaIdAsync(int primaryId, string mediaType)
     {
+        if (_mediaMapRepo is null)
+            return null;
+
         try
         {
-            var entry = await _cache.GetAsync(IdMapCacheKey(primaryId, mediaType));
-            if (entry is null || entry.Body.Length == 0) return null;
-            var str = Encoding.UTF8.GetString(entry.Body);
-            return int.TryParse(str, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed) && parsed > 0
-                ? parsed
-                : null;
+            var mapped = await _mediaMapRepo.GetAniListIdAsync(primaryId, mediaType);
+            return mapped is > 0 ? mapped : null;
         }
         catch
         {
@@ -374,14 +378,6 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
 
         return null;
-    }
-
-    private static string IdMapCacheKey(int primaryId, string mediaType)
-    {
-        var raw = $"AniList:idMap:{mediaType}:{primaryId}";
-        Span<byte> hash = stackalloc byte[32];
-        SHA256.HashData(Encoding.UTF8.GetBytes(raw), hash);
-        return Convert.ToHexString(hash);
     }
 
     private static string CacheKey(int malId)

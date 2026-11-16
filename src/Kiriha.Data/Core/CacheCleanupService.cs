@@ -52,7 +52,8 @@ public sealed class CacheCleanupService
             await context.Metadata.CountAsync() +
             await context.HttpResponseCache.CountAsync() +
             await context.AnimeRelations.CountAsync() +
-            await context.AnimeCountryOrigin.CountAsync();
+            await context.AnimeCountryOrigin.CountAsync() +
+            await context.AniListMediaMap.CountAsync();
         var httpBytes = await context.HttpResponseCache
             .AsNoTracking()
             .SumAsync(x => (long)x.Body.Length);
@@ -90,6 +91,7 @@ public sealed class CacheCleanupService
             await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_relations;");
             await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_relation_meta;");
             await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_country_origin;");
+            await context.Database.ExecuteSqlRawAsync("DELETE FROM anilist_media_map;");
         }
 
         if (requested.Contains(CacheCleanupTarget.RecognitionCache))

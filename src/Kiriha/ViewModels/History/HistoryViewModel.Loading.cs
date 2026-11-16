@@ -39,15 +39,15 @@ public partial class HistoryViewModel
 
             if (missingPosterItems.Count > 0 && _metadataRepo != null)
             {
-                var missingIds = missingPosterItems
-                    .Select(x => ShikiMetadata.GetCacheId(x.AnimeId, x.MediaKind))
+                var missingKeys = missingPosterItems
+                    .Select(x => new Kiriha.Core.Domain.Models.Entities.MediaKey(x.AnimeId, x.MediaKind))
                     .Distinct()
                     .ToList();
-                var metas = await _metadataRepo.GetBatchAsync(missingIds);
+                var metas = await _metadataRepo.GetBatchAsync(missingKeys);
                 foreach (var item in missingPosterItems)
                 {
-                    int cacheId = ShikiMetadata.GetCacheId(item.AnimeId, item.MediaKind);
-                    if (metas.TryGetValue(cacheId, out var meta) && !string.IsNullOrEmpty(meta.PosterUrl))
+                    var key = new Kiriha.Core.Domain.Models.Entities.MediaKey(item.AnimeId, item.MediaKind);
+                    if (metas != null && metas.TryGetValue(key, out var meta) && !string.IsNullOrEmpty(meta.PosterUrl))
                     {
                         item.PosterUrl = meta.PosterUrl;
                     }

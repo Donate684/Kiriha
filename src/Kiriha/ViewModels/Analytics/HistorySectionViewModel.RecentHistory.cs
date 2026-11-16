@@ -1,7 +1,6 @@
 using System.Globalization;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -43,7 +42,7 @@ public partial class HistorySectionViewModel
                 Alpha = count == 0 ? 0.16 : 0.35 + percent * 0.65,
                 CountLabel = count > 0 ? count.ToString(CultureInfo.InvariantCulture) : string.Empty,
                 ShowCountInBar = percent >= 0.32,
-                Tooltip = string.Format(LocalizationStore.Translate("analytics.history.episodes_format"), $"{date:dd.MM}: {count}")
+                Tooltip = _localizer.GetLoc("analytics.history.episodes_format", $"{date:dd.MM}: {count}")
             };
 
             if (entries != null)
@@ -56,7 +55,7 @@ public partial class HistorySectionViewModel
                         Title = entry.RussianTitle ?? entry.AnimeTitle,
                         Subtitle = entry.RussianTitle != null ? entry.AnimeTitle : null,
                         Detail = entry.Episode > 0
-                            ? string.Format(LocalizationStore.Translate("analytics.history.episode_format_2"), entry.Episode, entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture))
+                            ? _localizer.GetLoc("analytics.history.episode_format_2", entry.Episode, entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture))
                             : entry.Timestamp.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture),
                         PosterUrl = posterUrl
                     });

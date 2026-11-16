@@ -79,7 +79,8 @@ public partial class PlayerViewModel
             return;
 
         var watchLaterDir = Kiriha.Infrastructure.Platform.PathHelper.GetMpvWatchLaterPath();
-        var savedPos = PlaybackResumeStore.TryGetResumePosition(VideoUrl, watchLaterDir);
+        var savedPos = _resumeStore?.TryGetResumePosition(VideoUrl, watchLaterDir)
+                       ?? WatchLaterHelper.TryGetSavedPosition(watchLaterDir, VideoUrl);
 
         if (savedPos.HasValue && savedPos.Value >= 5)
         {
@@ -105,7 +106,7 @@ public partial class PlayerViewModel
             Overlay.DismissSkipPrompt(smooth: false);
             if (RememberPlaybackPosition)
             {
-                PlaybackResumeStore.Remove(VideoUrl);
+                _resumeStore?.Remove(VideoUrl);
                 _playback.DeleteWatchLaterConfig();
                 _playback.SetSavePositionOnQuit(false);
             }
@@ -136,7 +137,7 @@ public partial class PlayerViewModel
                 Overlay.DismissSkipPrompt(smooth: false);
                 if (RememberPlaybackPosition)
                 {
-                    PlaybackResumeStore.Remove(VideoUrl);
+                    _resumeStore?.Remove(VideoUrl);
                     _playback.DeleteWatchLaterConfig();
                     _playback.SetSavePositionOnQuit(false);
                 }

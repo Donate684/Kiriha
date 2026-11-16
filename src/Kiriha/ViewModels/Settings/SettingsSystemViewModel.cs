@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Tracking.Integration;
+using Kiriha.Services.Metadata;
 
 namespace Kiriha.ViewModels.Settings;
 
@@ -10,6 +11,7 @@ public partial class SettingsSystemViewModel : ObservableObject
     private readonly ISettingsService _settingsService;
     private readonly DiscordService _discordService;
     private readonly IStartupManager _startupManager;
+    private readonly ILocalizer _localizer;
 
     [ObservableProperty] private bool _autoLaunch;
     [ObservableProperty] private bool _launchMinimized;
@@ -37,42 +39,53 @@ public partial class SettingsSystemViewModel : ObservableObject
 
     [ObservableProperty] private AiringSourceOption _selectedAiringSource;
 
-    public List<ScrobbleModeOption> AvailableScrobbleModes { get; } = new()
-    {
-        new ScrobbleModeOption(Core.UIUtils.GetLoc("scrobbler.delay.mode_time"), ScrobbleDelayMode.Time),
-        new ScrobbleModeOption(Core.UIUtils.GetLoc("scrobbler.delay.mode_percent"), ScrobbleDelayMode.Percentage)
-    };
+    public List<ScrobbleModeOption> AvailableScrobbleModes { get; }
 
     [ObservableProperty] private ScrobbleModeOption _selectedScrobbleMode;
 
-    public List<ScrobbleDelayOption> AvailableScrobbleDelays { get; } = new()
-    {
-        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.1_min"), 60),
-        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.3_min"), 180),
-        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.5_min"), 300),
-        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.10_min"), 600),
-        new ScrobbleDelayOption(Core.UIUtils.GetLoc("scrobbler.delay.20_min"), 1200),
-    };
+    public List<ScrobbleDelayOption> AvailableScrobbleDelays { get; }
 
     [ObservableProperty] private ScrobbleDelayOption _selectedScrobbleDelay;
 
-    public List<ScrobblePercentOption> AvailableScrobblePercentages { get; } = new()
-    {
-        new ScrobblePercentOption(Core.UIUtils.GetLoc("scrobbler.delay.25_percent"), 25),
-        new ScrobblePercentOption(Core.UIUtils.GetLoc("scrobbler.delay.50_percent"), 50),
-        new ScrobblePercentOption(Core.UIUtils.GetLoc("scrobbler.delay.75_percent"), 75),
-    };
+    public List<ScrobblePercentOption> AvailableScrobblePercentages { get; }
 
     [ObservableProperty] private ScrobblePercentOption _selectedScrobblePercentage;
 
     public bool IsScrobbleTimeMode => ScrobbleMode == ScrobbleDelayMode.Time;
     public bool IsScrobblePercentMode => ScrobbleMode == ScrobbleDelayMode.Percentage;
 
-    public SettingsSystemViewModel(ISettingsService settingsService, DiscordService discordService, IStartupManager startupManager)
+    public SettingsSystemViewModel(
+        ISettingsService settingsService,
+        DiscordService discordService,
+        IStartupManager startupManager,
+        ILocalizer? localizer = null)
     {
         _settingsService = settingsService;
         _discordService = discordService;
         _startupManager = startupManager;
+        _localizer = localizer ?? LocalizationService.Active;
+
+        AvailableScrobbleModes =
+        [
+            new ScrobbleModeOption(_localizer.GetLoc("scrobbler.delay.mode_time"), ScrobbleDelayMode.Time),
+            new ScrobbleModeOption(_localizer.GetLoc("scrobbler.delay.mode_percent"), ScrobbleDelayMode.Percentage)
+        ];
+
+        AvailableScrobbleDelays =
+        [
+            new ScrobbleDelayOption(_localizer.GetLoc("scrobbler.delay.1_min"), 60),
+            new ScrobbleDelayOption(_localizer.GetLoc("scrobbler.delay.3_min"), 180),
+            new ScrobbleDelayOption(_localizer.GetLoc("scrobbler.delay.5_min"), 300),
+            new ScrobbleDelayOption(_localizer.GetLoc("scrobbler.delay.10_min"), 600),
+            new ScrobbleDelayOption(_localizer.GetLoc("scrobbler.delay.20_min"), 1200),
+        ];
+
+        AvailableScrobblePercentages =
+        [
+            new ScrobblePercentOption(_localizer.GetLoc("scrobbler.delay.25_percent"), 25),
+            new ScrobblePercentOption(_localizer.GetLoc("scrobbler.delay.50_percent"), 50),
+            new ScrobblePercentOption(_localizer.GetLoc("scrobbler.delay.75_percent"), 75),
+        ];
 
         AutoLaunch = _settingsService.Current.System.AutoLaunch;
         LaunchMinimized = _settingsService.Current.System.LaunchMinimized;

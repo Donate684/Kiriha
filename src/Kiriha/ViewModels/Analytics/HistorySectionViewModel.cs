@@ -1,23 +1,31 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
+using Kiriha.Services.Metadata;
 
 namespace Kiriha.ViewModels.Analytics;
 
 public partial class HistorySectionViewModel : ViewModelBase
 {
     private const int RecentHistoryDays = 14;
+    private readonly ILocalizer _localizer;
+
+    public HistorySectionViewModel(ILocalizer? localizer = null)
+    {
+        _localizer = localizer ?? LocalizationService.Active;
+        _monthHeaders = GetLocalizedMonthHeaders(_localizer);
+    }
 
     public ObservableCollection<AnalyticsDailyHistoryPoint> RecentHistory { get; } = new();
     public ObservableCollection<AnalyticsMonthlyHistoryRow> MonthlyHistory { get; } = new();
     public ObservableCollection<AnalyticsBar> YearDistribution { get; } = new();
     public ObservableCollection<AnalyticsBar> ReleaseYearCompletions { get; } = new();
-    
+
     [ObservableProperty]
-    private IReadOnlyList<string> _monthHeaders = GetLocalizedMonthHeaders();
+    private IReadOnlyList<string> _monthHeaders;
 
     [ObservableProperty] private int _recentHistoryEpisodes;
     [ObservableProperty] private int _recentHistoryTitles;
@@ -29,9 +37,10 @@ public partial class HistorySectionViewModel : ViewModelBase
 
     public ObservableCollection<AnalyticsHistoryEntry> HistoryPopupEntries { get; } = new();
 
-    public static IReadOnlyList<string> GetLocalizedMonthHeaders()
+    public static IReadOnlyList<string> GetLocalizedMonthHeaders(ILocalizer? localizer = null)
     {
-        var raw = LocalizationStore.Translate("analytics.history.months_short");
+        var loc = localizer ?? LocalizationService.Active;
+        var raw = loc.GetLoc("analytics.history.months_short");
         if (!string.IsNullOrEmpty(raw) && raw.Contains(','))
         {
             var parts = raw.Split(',');
@@ -46,7 +55,7 @@ public partial class HistorySectionViewModel : ViewModelBase
 
     public void Refresh(IReadOnlyCollection<HistoryItem> history, IReadOnlyCollection<AnimeEntity> items, IReadOnlyCollection<AnimeEntity> completed)
     {
-        MonthHeaders = GetLocalizedMonthHeaders();
+        MonthHeaders = GetLocalizedMonthHeaders(_localizer);
         RecentHistory.Clear();
         MonthlyHistory.Clear();
         YearDistribution.Clear();
@@ -66,7 +75,7 @@ public partial class HistorySectionViewModel : ViewModelBase
         if (row is null || row.Entries.Count == 0) return;
 
         HistoryPopupTitle = row.Name;
-        HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_favorite_subtitle"), row.Count, row.MeanScore, row.WeightedScore);
+        HistoryPopupSubtitle = _localizer.GetLoc("analytics.history.popup_favorite_subtitle", row.Count, row.MeanScore, row.WeightedScore);
         ShowHistoryPopup(row.Entries);
     }
 
@@ -77,11 +86,11 @@ public partial class HistorySectionViewModel : ViewModelBase
 
         HistoryPopupTitle = point.DaysAgo switch
         {
-            0 => LocalizationStore.Translate("analytics.history.today"),
-            1 => LocalizationStore.Translate("analytics.history.yesterday"),
-            _ => string.Format(LocalizationStore.Translate("analytics.history.days_ago_format"), point.DaysAgo)
+            0 => _localizer.GetLoc("analytics.history.today"),
+            1 => _localizer.GetLoc("analytics.history.yesterday"),
+            _ => _localizer.GetLoc("analytics.history.days_ago_format", point.DaysAgo)
         };
-        HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_daily_subtitle"), point.DateLabel, point.Count, point.Entries.Select(x => x.Title).Distinct().Count());
+        HistoryPopupSubtitle = _localizer.GetLoc("analytics.history.popup_daily_subtitle", point.DateLabel, point.Count, point.Entries.Select(x => x.Title).Distinct().Count());
         ShowHistoryPopup(point.Entries);
     }
 
@@ -90,8 +99,8 @@ public partial class HistorySectionViewModel : ViewModelBase
     {
         if (cell is null || cell.Count == 0) return;
 
-        HistoryPopupTitle = string.Format(LocalizationStore.Translate("analytics.history.popup_monthly_title"), cell.MonthName);
-        HistoryPopupSubtitle = string.Format(LocalizationStore.Translate("analytics.history.popup_monthly_subtitle"), cell.Count);
+        HistoryPopupTitle = _localizer.GetLoc("analytics.history.popup_monthly_title", cell.MonthName);
+        HistoryPopupSubtitle = _localizer.GetLoc("analytics.history.popup_monthly_subtitle", cell.Count);
         ShowHistoryPopup(cell.Entries);
     }
 

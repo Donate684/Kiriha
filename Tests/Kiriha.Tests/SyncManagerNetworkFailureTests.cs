@@ -58,10 +58,10 @@ public class SyncManagerNetworkFailureTests
             .ReturnsAsync(1);
 
         // Act: Enqueue an update
-        await _syncManager.EnqueueUpdateAsync(100, 5);
+        await _syncManager.EnqueueUpdateAsync(100, MediaKind.Anime, 5);
 
         // Assert pending was marked initially
-        _mockHistoryService.Verify(h => h.SetPendingTrackers(100, 5, It.Is<IEnumerable<string>>(names => names.Contains("Shikimori"))), Times.Once);
+        _mockHistoryService.Verify(h => h.SetPendingTrackers(100, MediaKind.Anime, 5, It.Is<IEnumerable<string>>(names => names.Contains("Shikimori"))), Times.Once);
 
         // Process queue directly using private method ExecuteTaskAsync
         var executeMethod = typeof(SyncManager).GetMethod("ExecuteTaskAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -83,7 +83,7 @@ public class SyncManagerNetworkFailureTests
         Assert.True(didExecute);
 
         // Verify history updated with Retrying status
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(100, 5, "Shikimori", TrackerSyncState.Retrying, It.IsAny<string?>()), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(100, MediaKind.Anime, 5, "Shikimori", TrackerSyncState.Retrying, It.IsAny<string?>()), Times.Once);
 
         // Verify early failure notification was sent with willRetry = true
         _mockNotificationService.Verify(n => n.NotifySyncFailed(It.IsAny<string>(), "Shikimori", It.IsAny<string>(), true), Times.Once);
@@ -116,7 +116,7 @@ public class SyncManagerNetworkFailureTests
         Assert.True(didExecute);
 
         // Verify history marked as Failed
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(200, 3, "Shikimori", TrackerSyncState.Failed, It.IsAny<string?>()), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(200, MediaKind.Anime, 3, "Shikimori", TrackerSyncState.Failed, It.IsAny<string?>()), Times.Once);
 
         // Verify notification sent with willRetry = false
         _mockNotificationService.Verify(n => n.NotifySyncFailed(It.IsAny<string>(), "Shikimori", It.IsAny<string>(), false), Times.Once);
@@ -152,7 +152,7 @@ public class SyncManagerNetworkFailureTests
         Assert.DoesNotContain("Shikimori", task.SuccessfulTrackers);
 
         // Verify history was marked as Retrying (NOT Success)
-        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(300, 1, "Shikimori", TrackerSyncState.Retrying, "Internal serialization or network glitch"), Times.Once);
+        _mockHistoryService.Verify(h => h.UpdateTrackerStatus(300, MediaKind.Anime, 1, "Shikimori", TrackerSyncState.Retrying, "Internal serialization or network glitch"), Times.Once);
 
         // Verify notification sent
         _mockNotificationService.Verify(n => n.NotifySyncFailed(It.IsAny<string>(), "Shikimori", "Internal serialization or network glitch", true), Times.Once);

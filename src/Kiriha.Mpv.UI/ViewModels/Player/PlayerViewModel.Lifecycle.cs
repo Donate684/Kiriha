@@ -33,12 +33,12 @@ public partial class PlayerViewModel
             {
                 if (CurrentTime < Duration * 0.95 && CurrentTime >= 5)
                 {
-                    PlaybackResumeStore.SavePosition(VideoUrl, CurrentTime, Duration);
+                    _resumeStore?.SavePosition(VideoUrl, CurrentTime, Duration);
                     _playback.WriteWatchLaterConfig();
                 }
                 else
                 {
-                    PlaybackResumeStore.Remove(VideoUrl);
+                    _resumeStore?.Remove(VideoUrl);
                     _playback.DeleteWatchLaterConfig();
                     _playback.SetSavePositionOnQuit(false);
                 }

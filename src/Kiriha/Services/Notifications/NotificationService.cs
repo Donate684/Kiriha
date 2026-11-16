@@ -1,8 +1,7 @@
 using System.Collections.Concurrent;
-using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Services.Metadata;
 using Kiriha.Services.Notifications;
 using Serilog;
 
@@ -16,6 +15,7 @@ namespace Kiriha.Services;
 public class NotificationService : INotificationService
 {
     private readonly ISettingsService _settingsService;
+    private readonly ILocalizer _localizer;
 
     // De-dup: don't fire the same "new episode N for anime X" toast twice in a row.
     // Keyed by anime id, value = the last EpisodesAired count we notified for.
@@ -24,9 +24,10 @@ public class NotificationService : INotificationService
     // De-dup: don't fire the same "new app version" toast twice in a row.
     private string? _lastNotifiedVersion;
 
-    public NotificationService(ISettingsService settingsService)
+    public NotificationService(ISettingsService settingsService, ILocalizer? localizer = null)
     {
         _settingsService = settingsService;
+        _localizer = localizer ?? LocalizationService.Active;
     }
 
     public virtual void NotifyNewEpisode(AnimeEntity anime, int episodeNumber)
@@ -40,15 +41,11 @@ public class NotificationService : INotificationService
             return;
         _lastNotifiedEpisode[anime.Id] = episodeNumber;
 
-        // Build a 2- or 3-line toast: bold original title, optional Russian title, then
-        // the episode availability line. "Original" is whichever non-Russian title we have
-        // (Title is the user's preferred MAL display title — usually English/romaji).
         var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
         var ru = anime.RussianTitle;
-        var episodeLine = UIUtils.GetLoc("notifications.new_episode.body", episodeNumber);
+        var episodeLine = _localizer.GetLoc("notifications.new_episode.body", episodeNumber);
 
-        // Order: episode line on top (bold by template), then English title, then Russian.
-        var lines = new System.Collections.Generic.List<string> { episodeLine, orig };
+        var lines = new List<string> { episodeLine, orig };
         if (!string.IsNullOrEmpty(ru) && !string.Equals(ru, orig, StringComparison.Ordinal))
             lines.Add(ru!);
 
@@ -56,11 +53,6 @@ public class NotificationService : INotificationService
         ToastRenderer.Show(lines, anime.PosterSource);
     }
 
-    /// <summary>
-    /// Fired by the scrobbler when the playing episode is ahead of the user's
-    /// progress by more than one episode and <c>NotifyOnSkippedEpisode</c> is on.
-    /// Surfaces a toast so the user knows progress was NOT updated.
-    /// </summary>
     public virtual void NotifyScrobbleSkipped(AnimeEntity anime, int detectedEp)
     {
         if (anime is null) return;
@@ -69,10 +61,10 @@ public class NotificationService : INotificationService
             ? anime.Presentation.DisplayTitle
             : "Anime";
 
-        var title = UIUtils.GetLoc("scrobbler.skip_notify.title");
-        var body = UIUtils.GetLoc("scrobbler.skip_notify.body", detectedEp, anime.Progress + 1);
+        var title = _localizer.GetLoc("scrobbler.skip_notify.title");
+        var body = _localizer.GetLoc("scrobbler.skip_notify.body", detectedEp, anime.Progress + 1);
 
-        var lines = new System.Collections.Generic.List<string> { title, displayTitle, body };
+        var lines = new List<string> { title, displayTitle, body };
 
         Log.Information("NotificationService: Scrobble-skip toast for {Title} ep {Ep} (expected {Expected})",
             displayTitle, detectedEp, anime.Progress + 1);
@@ -87,10 +79,10 @@ public class NotificationService : INotificationService
             ? anime.Presentation.DisplayTitle
             : "Anime";
 
-        var title = UIUtils.GetLoc("scrobbler.quick_rating.title");
-        var body = UIUtils.GetLoc("scrobbler.quick_rating.subtitle");
+        var title = _localizer.GetLoc("scrobbler.quick_rating.title");
+        var body = _localizer.GetLoc("scrobbler.quick_rating.subtitle");
 
-        var lines = new System.Collections.Generic.List<string> { title, displayTitle, body };
+        var lines = new List<string> { title, displayTitle, body };
 
         Log.Information("NotificationService: Anime completed toast for {Title}", displayTitle);
         ToastRenderer.Show(lines, anime.LocalPosterPath ?? anime.PosterSource);
@@ -103,25 +95,24 @@ public class NotificationService : INotificationService
         if (_lastNotifiedVersion == newVersion) return;
         _lastNotifiedVersion = newVersion;
 
-        var title = UIUtils.GetLoc("notifications.app_update.title");
-        var body = UIUtils.GetLoc("notifications.app_update.body", newVersion);
+        var title = _localizer.GetLoc("notifications.app_update.title");
+        var body = _localizer.GetLoc("notifications.app_update.body", newVersion);
 
         Log.Information("NotificationService: Update toast for version {Version}", newVersion);
-        ToastRenderer.Show(new System.Collections.Generic.List<string> { title, body });
+        ToastRenderer.Show([title, body]);
     }
 
     public virtual void NotifySyncFailed(string animeTitle, string trackerName, string errorMessage, bool willRetry)
     {
-        var title = UIUtils.GetLoc("notifications.sync_failed.title", trackerName);
+        var title = _localizer.GetLoc("notifications.sync_failed.title", trackerName);
         var body = willRetry
-            ? UIUtils.GetLoc("notifications.sync_failed.retry_body", trackerName, animeTitle)
-            : UIUtils.GetLoc("notifications.sync_failed.permanent_body", trackerName, animeTitle);
+            ? _localizer.GetLoc("notifications.sync_failed.retry_body", trackerName, animeTitle)
+            : _localizer.GetLoc("notifications.sync_failed.permanent_body", trackerName, animeTitle);
 
-        var lines = new System.Collections.Generic.List<string> { title, body, animeTitle };
+        var lines = new List<string> { title, body, animeTitle };
 
         Log.Warning("NotificationService: Sync failed toast for {Anime} on {Tracker} (willRetry={WillRetry}): {Error}",
             animeTitle, trackerName, willRetry, errorMessage);
         ToastRenderer.Show(lines);
     }
 }
-

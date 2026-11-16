@@ -76,10 +76,11 @@ public class AnimeListActionServiceTests
         _animeRepoMock.Verify(r => r.AddOrUpdateAnimeAsync(item), Times.Once);
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             item.Id,
+            item.MediaKind,
             item.Title,
             item.RussianTitle,
             It.IsAny<int>(),
-            "AddedToList",
+            HistoryActionType.AddedToList,
             null,
             item.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -104,10 +105,11 @@ public class AnimeListActionServiceTests
         Assert.Equal(3, item.Progress);
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             item.Id,
+            item.MediaKind,
             item.Title,
             item.RussianTitle,
             3,
-            "Watched",
+            HistoryActionType.Watched,
             null,
             item.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -201,10 +203,11 @@ public class AnimeListActionServiceTests
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            original.MediaKind,
             original.Title,
             original.RussianTitle,
             It.IsAny<int>(),
-            "Completed",
+            HistoryActionType.Completed,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -235,10 +238,11 @@ public class AnimeListActionServiceTests
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            original.MediaKind,
             original.Title,
             original.RussianTitle,
             1,
-            "Watched",
+            HistoryActionType.Watched,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -266,10 +270,11 @@ public class AnimeListActionServiceTests
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            original.MediaKind,
             original.Title,
             original.RussianTitle,
             2,
-            "Reverted",
+            HistoryActionType.Reverted,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -297,10 +302,11 @@ public class AnimeListActionServiceTests
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            MediaKind.Manga,
             original.Title,
             original.RussianTitle,
             6,
-            "Read",
+            HistoryActionType.Watched,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -329,20 +335,22 @@ public class AnimeListActionServiceTests
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            original.MediaKind,
             original.Title,
             original.RussianTitle,
             2,
-            "Watched",
+            HistoryActionType.Watched,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            original.MediaKind,
             original.Title,
             original.RussianTitle,
             2,
-            "Dropped",
+            HistoryActionType.Dropped,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -371,10 +379,11 @@ public class AnimeListActionServiceTests
 
         _historyServiceMock.Verify(h => h.AddEntryAsync(
             original.Id,
+            original.MediaKind,
             original.Title,
             original.RussianTitle,
             1,
-            "Watched",
+            HistoryActionType.Watched,
             null,
             original.MainPictureUrl,
             It.IsAny<CancellationToken>()), Times.Once);

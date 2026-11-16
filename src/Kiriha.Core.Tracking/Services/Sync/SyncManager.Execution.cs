@@ -219,10 +219,7 @@ public partial class SyncManager
 
     private void UpdateHistoryTrackerStatus(SyncTask task, string trackerName, TrackerSyncState state, string? error = null)
     {
-        if (task.MediaKind == MediaKind.Anime)
-            _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, trackerName, state, error);
-        else
-            _historyService.UpdateTrackerStatus(task.AnimeId, task.MediaKind, task.Progress, trackerName, state, error);
+        _historyService.UpdateTrackerStatus(task.AnimeId, task.MediaKind, task.Progress, trackerName, state, error);
     }
 
     private List<ITrackerService> GetTaskTrackers(SyncTask task)

@@ -179,22 +179,22 @@ public partial class SeasonalViewModel
     private async Task HydrateMetadataAsync(IReadOnlyList<AnimeEntity> items, int year, string season, CancellationToken ct)
     {
         if (items is null || items.Count == 0 || ct.IsCancellationRequested) return;
-        var missingIds = items
+        var missingKeys = items
             .Where(x => string.IsNullOrEmpty(x.RussianTitle) || string.IsNullOrEmpty(x.RussianSynopsis))
-            .Select(x => x.Id)
+            .Select(x => new MediaKey(x.Id, MediaKind.Anime))
             .ToList();
 
-        if (missingIds.Count == 0) return;
+        if (missingKeys.Count == 0) return;
 
         try
         {
-            var metaDict = await _metadataRepo.GetBatchAsync(missingIds, ct);
-            if (metaDict.Count == 0 || ct.IsCancellationRequested) return;
+            var metaDict = await _metadataRepo.GetBatchAsync(missingKeys, ct);
+            if (metaDict is null || metaDict.Count == 0 || ct.IsCancellationRequested) return;
 
             bool updatedAny = false;
             foreach (var item in items)
             {
-                if (metaDict.TryGetValue(item.Id, out var meta))
+                if (metaDict.TryGetValue(new MediaKey(item.Id, MediaKind.Anime), out var meta))
                 {
                     if (string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(meta.Russian))
                     {

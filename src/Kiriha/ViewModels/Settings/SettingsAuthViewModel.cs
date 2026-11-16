@@ -6,6 +6,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
+using Kiriha.Services.Metadata;
 using Serilog;
 
 namespace Kiriha.ViewModels.Settings;
@@ -18,6 +19,7 @@ public partial class SettingsAuthViewModel : ObservableObject
     private readonly ShikiHostResolver _shikiHostResolver;
     private readonly AniListAuthService _aniListAuthService;
     private readonly IAnimeRefreshService? _refreshService;
+    private readonly ILocalizer _localizer;
 
     public SettingsAuthViewModel(
         ISettingsService settingsService,
@@ -25,7 +27,8 @@ public partial class SettingsAuthViewModel : ObservableObject
         ShikiAuthService shikiAuthService,
         ShikiHostResolver shikiHostResolver,
         AniListAuthService aniListAuthService,
-        IAnimeRefreshService? refreshService = null)
+        IAnimeRefreshService? refreshService = null,
+        ILocalizer? localizer = null)
     {
         _settingsService = settingsService;
         _authService = authService;
@@ -33,6 +36,7 @@ public partial class SettingsAuthViewModel : ObservableObject
         _shikiHostResolver = shikiHostResolver;
         _aniListAuthService = aniListAuthService;
         _refreshService = refreshService;
+        _localizer = localizer ?? LocalizationService.Active;
 
         var isFork = _settingsService.Current.Api.ShikiMirror == ShikiMirror.Net
                      || _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.ShikiFork) != null;
@@ -65,8 +69,8 @@ public partial class SettingsAuthViewModel : ObservableObject
     public bool IsSwitchFailed => SwitchStep == PrimarySwitchStep.Failed;
 
     public string SyncStatusDisplay => !string.IsNullOrWhiteSpace(SyncStatusText)
-        ? (SyncStatusText.StartsWith("sync.") ? Core.UIUtils.GetLoc(SyncStatusText) : SyncStatusText)
-        : Core.UIUtils.GetLoc("settings.accounts_hub.switch_sync_desc");
+        ? (SyncStatusText.StartsWith("sync.") ? _localizer.GetLoc(SyncStatusText) : SyncStatusText)
+        : _localizer.GetLoc("settings.accounts_hub.switch_sync_desc");
 
     partial void OnSwitchStepChanged(PrimarySwitchStep value)
     {
@@ -341,8 +345,8 @@ public partial class SettingsAuthViewModel : ObservableObject
     public bool IsShikiActiveMirror => IsShikiActiveConnected && !IsShikiActivePrimary;
     public string ShikiActiveDomain => IsShikiForkSelected ? TrackerConstants.Domains.ShikiFork : TrackerConstants.Domains.ShikiOrig;
     public string ShikiActiveDescription => IsShikiForkSelected
-        ? Core.UIUtils.GetLoc("settings.accounts_hub.shikimori_fork_sub")
-        : Core.UIUtils.GetLoc("settings.accounts_hub.shikimori_orig_sub");
+        ? _localizer.GetLoc("settings.accounts_hub.shikimori_fork_sub")
+        : _localizer.GetLoc("settings.accounts_hub.shikimori_orig_sub");
     public string? ShikiActiveUsername => IsShikiForkSelected ? ShikiForkUsername : ShikiOrigUsername;
     public IRelayCommand ShikiActiveLoginCommand => IsShikiForkSelected ? ShikiForkLoginCommand : ShikiOrigLoginCommand;
     public IRelayCommand ShikiActiveLogoutCommand => IsShikiForkSelected ? ShikiForkLogoutCommand : ShikiOrigLogoutCommand;
@@ -561,7 +565,7 @@ public partial class SettingsAuthViewModel : ObservableObject
         ActiveAuthBadgeBackground = badgeBackground;
         IsAuthFailed = false;
         AuthErrorMessage = null;
-        ActiveAuthStatusText = Core.UIUtils.GetLoc("settings.accounts_hub.auth_dialog_waiting");
+        ActiveAuthStatusText = _localizer.GetLoc("settings.accounts_hub.auth_dialog_waiting");
         IsAuthDialogOpen = true;
 
         try
@@ -580,7 +584,7 @@ public partial class SettingsAuthViewModel : ObservableObject
             }
 
             IsAuthFailed = true;
-            AuthErrorMessage = Core.UIUtils.GetLoc("settings.accounts_hub.auth_dialog_failed");
+            AuthErrorMessage = _localizer.GetLoc("settings.accounts_hub.auth_dialog_failed");
             return false;
         }
         catch (OperationCanceledException)
@@ -592,7 +596,7 @@ public partial class SettingsAuthViewModel : ObservableObject
         {
             Log.Error(ex, "Unexpected error during authorization for {TrackerId}", trackerId);
             IsAuthFailed = true;
-            AuthErrorMessage = Core.UIUtils.GetLoc("settings.accounts_hub.auth_dialog_failed");
+            AuthErrorMessage = _localizer.GetLoc("settings.accounts_hub.auth_dialog_failed");
             return false;
         }
         finally
@@ -927,7 +931,7 @@ public partial class SettingsAuthViewModel : ObservableObject
 
     public void UpdatePrimaryTrackerOptionsAvailability()
     {
-        var disabledHint = Core.UIUtils.GetLoc("settings.accounts_hub.mirror_inactive_hint");
+        var disabledHint = _localizer.GetLoc("settings.accounts_hub.mirror_inactive_hint");
 
         foreach (var option in AvailablePrimaryTrackers)
         {

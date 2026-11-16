@@ -21,15 +21,15 @@ public partial class ShikiMetadataService
         int localizedCount = 0;
         var uncached = new List<AnimeEntity>();
 
-        var cacheIds = itemList.Select(i => GetCacheId(i.Id, i.MediaKind)).Distinct();
-        var cachedMap = await _metadataRepo.GetBatchAsync(cacheIds, ct);
+        var cacheKeys = itemList.Select(i => new MediaKey(i.Id, i.MediaKind)).Distinct();
+        var cachedMap = await _metadataRepo.GetBatchAsync(cacheKeys, ct);
 
         foreach (var item in itemList)
         {
-            int cacheId = GetCacheId(item.Id, item.MediaKind);
+            var cacheKey = new MediaKey(item.Id, item.MediaKind);
             var meta = cachedMap != null
-                ? cachedMap.GetValueOrDefault(cacheId)
-                : await _metadataRepo.GetAsync(cacheId);
+                ? cachedMap.GetValueOrDefault(cacheKey)
+                : await _metadataRepo.GetAsync(item.Id, item.MediaKind, ct);
             if (meta != null)
             {
                 // ApplyMetadata mutates ObservableObject properties — dispatch to UI thread.
@@ -50,8 +50,8 @@ public partial class ShikiMetadataService
             var tasks = new List<Task>();
             foreach (var item in uncached)
             {
-                int cacheId = GetCacheId(item.Id, item.MediaKind);
-                if (!_activeFetches.TryAdd(cacheId, 0)) continue;
+                var cacheKey = new MediaKey(item.Id, item.MediaKind);
+                if (!_activeFetches.TryAdd(cacheKey, 0)) continue;
 
                 tasks.Add(Task.Run(async () =>
                 {
@@ -75,7 +75,7 @@ public partial class ShikiMetadataService
                     {
                         if (acquired)
                             _concurrentFetches.Release();
-                        _activeFetches.TryRemove(cacheId, out _);
+                        _activeFetches.TryRemove(cacheKey, out _);
                     }
                 }, ct));
             }

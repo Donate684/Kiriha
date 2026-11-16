@@ -1,6 +1,6 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Kiriha.Core;
+using Kiriha.Services.Metadata;
 using Kiriha.ViewModels.History;
 
 namespace Kiriha.Views.Converters;
@@ -56,7 +56,7 @@ public class HistoryActionConverter : IValueConverter
         // If progress is 0 for watched/watching/unclassified, show "Added to list"
         if (isZeroProgress && (typeId == 1 || typeId == 0 || typeId == 12))
         {
-            return UIUtils.GetLoc("history.actions.added_to_list");
+            return LocalizationService.Active.GetLoc("history.actions.added_to_list");
         }
 
         // Text localization
@@ -77,7 +77,7 @@ public class HistoryActionConverter : IValueConverter
             _ => "history.actions.watched"
         };
 
-        return UIUtils.GetLoc(key);
+        return LocalizationService.Active.GetLoc(key);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

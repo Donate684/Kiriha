@@ -22,6 +22,10 @@ public partial class AppDbContext : DbContext
     public DbSet<HiddenTorrentAnime> HiddenTorrentAnime { get; set; } = null!;
     public DbSet<TorrentTitleFilter> TorrentTitleFilters { get; set; } = null!;
     public DbSet<AnimeCountryOrigin> AnimeCountryOrigin { get; set; } = null!;
+    public DbSet<TitleMappingEntity> TitleMappings { get; set; } = null!;
+    public DbSet<ScrobbleProgressEntity> ScrobbleProgress { get; set; } = null!;
+    public DbSet<PlaybackResumeEntryEntity> PlaybackResume { get; set; } = null!;
+    public DbSet<AniListMediaMapEntity> AniListMediaMap { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

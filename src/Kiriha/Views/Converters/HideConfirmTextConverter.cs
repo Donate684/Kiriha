@@ -1,6 +1,6 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Kiriha.Core;
+using Kiriha.Services.Metadata;
 
 namespace Kiriha.Views.Converters;
 
@@ -16,7 +16,7 @@ public class HideConfirmTextConverter : IMultiValueConverter
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isHidden = values is { Count: > 0 } && values[0] is bool b && b;
-        return UIUtils.GetLoc(isHidden
+        return LocalizationService.Active.GetLoc(isHidden
             ? "filters.options.unhide_confirm"
             : "filters.options.hide_confirm");
     }

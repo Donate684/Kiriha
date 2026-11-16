@@ -1,6 +1,5 @@
 using System.Globalization;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Localization;
 
 namespace Kiriha.ViewModels.Analytics;
 
@@ -59,8 +58,8 @@ public partial class HistorySectionViewModel
                         : (isLightTheme ? "#FF1F2937" : "#FFE5E7EB"),
                     IsCurrentMonth = year == now.Year && month == now.Month,
                     Tooltip = mean > 0
-                        ? $"{monthLabel} {year} — {string.Format(LocalizationStore.Translate("analytics.history.completed_avg"), count, mean.ToString("0.00"))}"
-                        : $"{monthLabel} {year} — {string.Format(LocalizationStore.Translate("analytics.history.completed_count"), count)}"
+                        ? $"{monthLabel} {year} — {_localizer.GetLoc("analytics.history.completed_avg", count, mean.ToString("0.00"))}"
+                        : $"{monthLabel} {year} — {_localizer.GetLoc("analytics.history.completed_count", count)}"
                 };
 
                 if (entries != null)
@@ -72,8 +71,8 @@ public partial class HistorySectionViewModel
                             Title = entry.Presentation.DisplayTitle,
                             Subtitle = entry.RussianTitle != null ? entry.Title : null,
                             Detail = int.TryParse(entry.Score, out var score) && score > 0
-                                ? string.Format(LocalizationStore.Translate("analytics.history.score_format"), score)
-                                : LocalizationStore.Translate("analytics.history.no_score"),
+                                ? _localizer.GetLoc("analytics.history.score_format", score)
+                                : _localizer.GetLoc("analytics.history.no_score"),
                             PosterUrl = entry.PosterSource ?? entry.MainPictureUrl
                         });
                     }

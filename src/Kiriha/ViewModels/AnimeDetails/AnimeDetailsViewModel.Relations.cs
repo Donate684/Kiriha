@@ -387,6 +387,6 @@ public partial class AnimeDetailsViewModel
         FranchiseCompletionPercentage = percent;
         FranchiseProgressSummary = $"{completed} / {total}";
         FranchiseCompletionPercentText = $"{percent}%";
-        FranchiseProgressTooltip = string.Format(Localization.LocalizationStore.Translate("anime.labels.franchise_progress_tooltip"), completed, total, percent);
+        FranchiseProgressTooltip = _localizer.GetLoc("anime.labels.franchise_progress_tooltip", completed, total, percent);
     }
 }
