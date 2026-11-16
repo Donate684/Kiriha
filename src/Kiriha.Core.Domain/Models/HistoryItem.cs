@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models;
 
@@ -7,6 +8,7 @@ public class HistoryItem
 {
     public int Id { get; set; }
     public int AnimeId { get; set; }
+    public MediaKind MediaKind { get; set; } = MediaKind.Anime;
     public string AnimeTitle { get; set; } = string.Empty;
     public string? RussianTitle { get; set; }
     public int Episode { get; set; }

@@ -33,7 +33,6 @@ public sealed class DatabaseMaintenance
             using var context = await _contextFactory.CreateDbContextAsync();
 
             await CleanOrphanedMetadataAsync(context);
-            await CleanOrphanedEpisodeReleasesAsync(context);
             await CleanFailedSyncTasksAsync(context);
             await CleanOldHistoryAsync(context);
             await CleanCacheTablesAsync(context);
@@ -49,20 +48,27 @@ public sealed class DatabaseMaintenance
 
     private async Task CleanOrphanedMetadataAsync(AppDbContext context)
     {
-        var orphanedMetadataCount = await context.Database.ExecuteSqlRawAsync(
-            "DELETE FROM metadata WHERE id NOT IN (SELECT id FROM user_anime) AND id NOT IN (SELECT anime_id FROM history)");
+        var orphanedMetadataCount = await context.Database.ExecuteSqlRawAsync("""
+            DELETE FROM metadata
+            WHERE id NOT IN (
+                SELECT CASE media_kind
+                    WHEN 'Manga' THEN (id | 1073741824)
+                    WHEN 'LightNovel' THEN (id | 536870912)
+                    ELSE id
+                END
+                FROM user_anime
+            )
+            AND id NOT IN (
+                SELECT CASE media_kind
+                    WHEN 'Manga' THEN (anime_id | 1073741824)
+                    WHEN 'LightNovel' THEN (anime_id | 536870912)
+                    ELSE anime_id
+                END
+                FROM history
+            )
+            """);
         if (orphanedMetadataCount > 0)
             Log.Information("DatabaseMaintenance: Removed {Count} orphaned metadata entries", orphanedMetadataCount);
-    }
-
-    private async Task CleanOrphanedEpisodeReleasesAsync(AppDbContext context)
-    {
-        var oldEpisodesCount = await context.Database.ExecuteSqlRawAsync(@"
-            DELETE FROM episode_releases 
-            WHERE mal_id NOT IN (SELECT id FROM user_anime)
-            OR mal_id IN (SELECT id FROM user_anime WHERE status_detailed = 'finished_airing' AND airing_date < date('now', '-30 days'))");
-        if (oldEpisodesCount > 0)
-            Log.Information("DatabaseMaintenance: Removed {Count} outdated or orphaned episode release entries", oldEpisodesCount);
     }
 
     private async Task CleanFailedSyncTasksAsync(AppDbContext context)
@@ -77,11 +83,12 @@ public sealed class DatabaseMaintenance
                 context.History.Add(new HistoryItem
                 {
                     AnimeId = t.AnimeId,
+                    MediaKind = t.MediaKind,
                     AnimeTitle = $"ID {t.AnimeId}",
                     RussianTitle = null,
                     Episode = t.Progress ?? 0,
                     Timestamp = DateTime.UtcNow,
-                    ActionType = 3,
+                    ActionType = (int)HistoryActionType.SyncFailed,
                     Detail = "SyncFailed (max retries exceeded)"
                 });
             }
@@ -101,11 +108,6 @@ public sealed class DatabaseMaintenance
 
     private async Task CleanCacheTablesAsync(AppDbContext context)
     {
-        var fileCacheCount = await context.Database.ExecuteSqlRawAsync(
-            "DELETE FROM file_recognition_cache WHERE last_used != '' AND last_used < date('now', '-90 days')");
-        if (fileCacheCount > 0)
-            Log.Information("DatabaseMaintenance: Removed {Count} stale file recognition cache entries", fileCacheCount);
-
         var malCacheCount = await context.Database.ExecuteSqlRawAsync(@"
             DELETE FROM mal_search_cache
             WHERE (anime_id <> 0 AND created_at < date('now', '-30 days'))
@@ -127,9 +129,7 @@ public sealed class DatabaseMaintenance
         {
             Log.Information("DatabaseMaintenance: Running VACUUM (db is fragmented or weekly cadence reached)...");
             await context.Database.ExecuteSqlRawAsync("VACUUM;");
-            await context.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;");
-            await context.Database.ExecuteSqlRawAsync("PRAGMA synchronous=NORMAL;");
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_autocheckpoint=200;");
+            await context.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000;");
             _lastVacuum = DateTime.UtcNow;
         }
     }

@@ -56,10 +56,4 @@ public sealed class SyncTaskRepository : ISyncTaskRepository
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         await context.SyncTasks.Where(t => ids.Contains(t.Id)).ExecuteDeleteAsync(ct);
     }
-
-    public async Task RemoveForAnimeAsync(int animeId, CancellationToken ct = default)
-    {
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
-        await context.SyncTasks.Where(t => t.AnimeId == animeId).ExecuteDeleteAsync(ct);
-    }
 }

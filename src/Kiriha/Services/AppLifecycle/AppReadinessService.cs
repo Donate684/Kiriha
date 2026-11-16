@@ -14,13 +14,12 @@ namespace Kiriha.Services.AppLifecycle;
 
 public sealed class AppReadinessService
 {
-    private readonly DatabaseInitializer _databaseInitializer;
-    private readonly AnimeRepository _animeRepo;
+    private readonly IDatabaseInitializer _databaseInitializer;
+    private readonly IAnimeRepository _animeRepo;
     private readonly IAnimeRefreshService _refreshService;
-    private readonly DiscordService _discordService;
-    private readonly SmtcService _smtcService;
+    private readonly IDiscordService _discordService;
     private readonly MaintenanceService _maintenanceService;
-    private readonly SettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly ISeasonalHiddenRepository _seasonalHiddenRepo;
     private readonly ITorrentFilterRepository _torrentFilterRepo;
     private readonly IEnumerable<IHostedService> _hostedServices;
@@ -31,13 +30,12 @@ public sealed class AppReadinessService
     private AppReadinessState _state = AppReadinessState.NotStarted;
 
     public AppReadinessService(
-        DatabaseInitializer databaseInitializer,
-        AnimeRepository animeRepo,
+        IDatabaseInitializer databaseInitializer,
+        IAnimeRepository animeRepo,
         IAnimeRefreshService refreshService,
-        DiscordService discordService,
-        SmtcService smtcService,
+        IDiscordService discordService,
         MaintenanceService maintenanceService,
-        SettingsService settingsService,
+        ISettingsService settingsService,
         ISeasonalHiddenRepository seasonalHiddenRepo,
         ITorrentFilterRepository torrentFilterRepo,
         IEnumerable<IHostedService> hostedServices)
@@ -46,7 +44,6 @@ public sealed class AppReadinessService
         _animeRepo = animeRepo;
         _refreshService = refreshService;
         _discordService = discordService;
-        _smtcService = smtcService;
         _maintenanceService = maintenanceService;
         _settingsService = settingsService;
         _seasonalHiddenRepo = seasonalHiddenRepo;
@@ -84,14 +81,12 @@ public sealed class AppReadinessService
         {
             var stage = Stopwatch.StartNew();
             await _databaseInitializer.InitializeAsync();
-            await _databaseInitializer.InitializationTask;
             await _seasonalHiddenRepo.InitializeAsync();
             await _torrentFilterRepo.InitializeAsync();
             Log.Information("StartupTiming: readiness database stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
             stage.Restart();
             await _animeRepo.InitializeAsync();
-            await _animeRepo.InitializationTask;
 
             if (_animeRepo.Collection.Count == 0)
             {
@@ -101,7 +96,6 @@ public sealed class AppReadinessService
 
             stage.Restart();
             _discordService.Initialize();
-            await _smtcService.StartAsync();
             _maintenanceService.Start();
             Log.Information("StartupTiming: readiness foreground services stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 

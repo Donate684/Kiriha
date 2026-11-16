@@ -27,7 +27,6 @@ public partial class ShikiApiService
         {
             var result = await _httpCache.SendForResultAsync(
                 requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, ShikiBaseUrl + $"animes/{malId}")),
-                throttle: innerCt => _rateLimiter.ThrottleAsync(innerCt),
                 ct: ct,
                 localTtl: force ? TimeSpan.Zero : TimeSpan.FromHours(6));
 

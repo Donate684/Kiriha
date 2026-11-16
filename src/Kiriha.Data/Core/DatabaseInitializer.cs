@@ -18,14 +18,16 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
     public const int CurrentSchemaVersion = 1600;
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly string? _legacySettingsPath;
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted; // 0 = not started, 1 = started (Interlocked guard)
 
     public Task InitializationTask => _initTcs.Task;
 
-    public DatabaseInitializer(IDbContextFactory<AppDbContext> contextFactory)
+    public DatabaseInitializer(IDbContextFactory<AppDbContext> contextFactory, string? legacySettingsPath = null)
     {
         _contextFactory = contextFactory;
+        _legacySettingsPath = legacySettingsPath;
     }
 
     public async Task InitializeAsync()
@@ -56,7 +58,7 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
                 $"PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000; PRAGMA user_version = {CurrentSchemaVersion};");
             Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
-            await LegacyUserStateMigration.MigrateAsync(context);
+            await LegacyUserStateMigration.MigrateAsync(context, _legacySettingsPath);
 
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
 

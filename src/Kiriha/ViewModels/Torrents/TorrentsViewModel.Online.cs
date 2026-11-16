@@ -468,8 +468,6 @@ public partial class TorrentsViewModel
     }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsFilterAllSelected))]
-    [NotifyPropertyChangedFor(nameof(IsFilterDirectSelected))]
     [NotifyPropertyChangedFor(nameof(IsFilterDubSelected))]
     [NotifyPropertyChangedFor(nameof(IsFilterSubSelected))]
     private string _onlineSourceFilter = "dub";
@@ -479,17 +477,12 @@ public partial class TorrentsViewModel
         ApplyOnlineSourceFilter();
     }
 
-    public bool IsFilterAllSelected => OnlineSourceFilter == "all";
-    public bool IsFilterDirectSelected => OnlineSourceFilter == "direct";
     public bool IsFilterDubSelected => OnlineSourceFilter == "dub";
     public bool IsFilterSubSelected => OnlineSourceFilter == "sub";
 
-    public int DirectSourcesCount => OnlineSources.Count(s => s.IsDirectMp4 && (!Hide480pSources || !s.Is480pOrLower) && (!Hide720pSources || !s.Is720p) && (!HideNonRussianSources || !s.IsNonRussian));
     public int DubSourcesCount => OnlineSources.Count(s => !s.IsSubtitles && (!Hide480pSources || !s.Is480pOrLower) && (!Hide720pSources || !s.Is720p) && (!HideNonRussianSources || !s.IsNonRussian));
     public int SubSourcesCount => OnlineSources.Count(s => s.IsSubtitles && (!Hide480pSources || !s.Is480pOrLower) && (!Hide720pSources || !s.Is720p) && (!HideNonRussianSources || !s.IsNonRussian));
-    public int AllSourcesCount => OnlineSources.Count(s => (!Hide480pSources || !s.Is480pOrLower) && (!Hide720pSources || !s.Is720p) && (!HideNonRussianSources || !s.IsNonRussian));
 
-    public bool HasDirectSources => DirectSourcesCount > 0;
     public bool HasDubSources => DubSourcesCount > 0;
     public bool HasSubSources => SubSourcesCount > 0;
     public bool HasNoDisplayedSources => DisplayedOnlineSources.Count == 0 && !IsOnlineSourcesLoading && OnlineSources.Count > 0;
@@ -538,11 +531,8 @@ public partial class TorrentsViewModel
 
     private void NotifySourceCounts()
     {
-        OnPropertyChanged(nameof(AllSourcesCount));
-        OnPropertyChanged(nameof(DirectSourcesCount));
         OnPropertyChanged(nameof(DubSourcesCount));
         OnPropertyChanged(nameof(SubSourcesCount));
-        OnPropertyChanged(nameof(HasDirectSources));
         OnPropertyChanged(nameof(HasDubSources));
         OnPropertyChanged(nameof(HasSubSources));
     }
@@ -834,7 +824,7 @@ public partial class TorrentsViewModel
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "[Torrents.Online] Failed to resolve video for '{Url}'", sourceItem.PlayerUrl);
+            Log.Error(ex, "[Torrents.Online] Failed to resolve video for '{Url}'", Kiriha.Core.Streaming.Helpers.UrlRedactor.Redact(sourceItem.PlayerUrl));
             Dispatcher.UIThread.Post(() =>
             {
                 OnlineEpisodeSelectorError = string.Format(_localizer.GetLoc(PlaybackErrorLocKey), ex.Message);

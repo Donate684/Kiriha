@@ -100,6 +100,23 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         return doc;
     }
 
+    internal async Task CacheMediaMappingAsync(int primaryId, string mediaType, int aniListId, bool isAniListNativeId)
+    {
+        _malToAniListMap[(primaryId, mediaType)] = aniListId;
+        if (!isAniListNativeId || primaryId <= 0 || aniListId <= 0)
+            return;
+
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes(aniListId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            await _cache.UpsertAsync(IdMapCacheKey(primaryId, mediaType), etag: null, lastModified: null, bytes);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "AniList: failed to persist native media ID mapping for {Id}", primaryId);
+        }
+    }
+
     internal async Task<(int? MediaId, SyncOutcome Outcome)> ResolveAniListMediaIdAsync(
         int malId,
         string mediaType = "ANIME",
@@ -107,6 +124,13 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
     {
         if (_malToAniListMap.TryGetValue((malId, mediaType), out var cachedId))
             return (cachedId, SyncOutcome.Success);
+
+        var persistedNativeId = await TryReadMappedMediaIdAsync(malId, mediaType);
+        if (persistedNativeId.HasValue)
+        {
+            _malToAniListMap[(malId, mediaType)] = persistedNativeId.Value;
+            return (persistedNativeId.Value, SyncOutcome.Success);
+        }
 
         const string query = """
         query ($malId: Int, $type: MediaType) {
@@ -135,6 +159,13 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
             using var response = await _httpClient.SendAsync(request, ct);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
+                var nativeFallback = await TryResolveNativeAniListIdFallbackAsync(malId, mediaType, token, ct);
+                if (nativeFallback.HasValue)
+                {
+                    await CacheMediaMappingAsync(malId, mediaType, nativeFallback.Value, isAniListNativeId: true);
+                    return (nativeFallback.Value, SyncOutcome.Success);
+                }
+
                 Log.Warning("AniList: Media not found for MAL {MalId} (404)", malId);
                 return (null, SyncOutcome.PermanentFailure);
             }
@@ -286,73 +317,72 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
 
 
 
-    public async Task<Dictionary<int, string>> GetCountriesBatchAsync(IReadOnlyList<int> malIds, CancellationToken ct = default)
+    private async Task<int?> TryReadMappedMediaIdAsync(int primaryId, string mediaType)
     {
-        var result = new Dictionary<int, string>();
-        if (malIds == null || malIds.Count == 0) return result;
-
-        const string query = """
-            query ($ids: [Int]) {
-              Page(page: 1, perPage: 50) {
-                media(idMal_in: $ids, type: ANIME) {
-                  idMal
-                  countryOfOrigin
-                }
-              }
-            }
-            """;
-
-        foreach (var chunk in malIds.Distinct().Chunk(25))
+        try
         {
-            using var lease = await _rateLimiter.AcquireAsync(1, ct);
-            var payload = new AniListBatchRequest(
-                Query: query,
-                Variables: new AniListBatchVariables(chunk));
+            var entry = await _cache.GetAsync(IdMapCacheKey(primaryId, mediaType));
+            if (entry is null || entry.Body.Length == 0) return null;
+            var str = Encoding.UTF8.GetString(entry.Body);
+            return int.TryParse(str, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed) && parsed > 0
+                ? parsed
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            try
-            {
-                using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
-                };
-                request.Headers.Add("User-Agent", AppInfo.UserAgent);
+    private async Task<int?> TryResolveNativeAniListIdFallbackAsync(int candidateAniListId, string mediaType, string? token, CancellationToken ct)
+    {
+        const string nativeQuery = """
+        query ($id: Int, $type: MediaType) {
+          Media(id: $id, type: $type) {
+            id
+            idMal
+          }
+        }
+        """;
 
-                using var response = await _httpClient.SendAsync(request, ct);
-                if (!response.IsSuccessStatusCode)
-                {
-                    Log.Warning("AniList: GetCountriesBatchAsync returned {Status}", response.StatusCode);
-                    continue;
-                }
+        using var lease = await _rateLimiter.AcquireAsync(1, ct);
+        var payload = new { query = nativeQuery, variables = new { id = candidateAniListId, type = mediaType } };
+        using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Add("User-Agent", AppInfo.UserAgent);
+        if (!string.IsNullOrEmpty(token))
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-                if (doc.RootElement.TryGetProperty("data", out var data) &&
-                    data.TryGetProperty("Page", out var page) &&
-                    page.TryGetProperty("media", out var mediaArr) &&
-                    mediaArr.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var media in mediaArr.EnumerateArray())
-                    {
-                        if (media.TryGetProperty("idMal", out var idProp) && idProp.TryGetInt32(out var id) &&
-                            media.TryGetProperty("countryOfOrigin", out var countryProp) &&
-                            countryProp.ValueKind == JsonValueKind.String)
-                        {
-                            var country = countryProp.GetString();
-                            if (!string.IsNullOrEmpty(country))
-                            {
-                                result[id] = country;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException) { throw; }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "AniList: GetCountriesBatchAsync failed for chunk of {Count} items", chunk.Length);
-            }
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) return null;
+
+        using var stream = await response.Content.ReadAsStreamAsync(ct);
+        using var doc = await JsonDocument.ParseAsync(stream, default, ct);
+        if (doc.RootElement.TryGetProperty("data", out var data) &&
+            data.TryGetProperty("Media", out var media) &&
+            media.ValueKind == JsonValueKind.Object &&
+            media.TryGetProperty("id", out var idProp) &&
+            idProp.TryGetInt32(out var resolvedId))
+        {
+            bool hasMalId = media.TryGetProperty("idMal", out var malProp)
+                            && malProp.ValueKind == JsonValueKind.Number
+                            && malProp.TryGetInt32(out var existingMal)
+                            && existingMal > 0;
+            if (!hasMalId)
+                return resolvedId;
         }
 
-        return result;
+        return null;
+    }
+
+    private static string IdMapCacheKey(int primaryId, string mediaType)
+    {
+        var raw = $"AniList:idMap:{mediaType}:{primaryId}";
+        Span<byte> hash = stackalloc byte[32];
+        SHA256.HashData(Encoding.UTF8.GetBytes(raw), hash);
+        return Convert.ToHexString(hash);
     }
 
     private static string CacheKey(int malId)
@@ -365,8 +395,6 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
 
     private sealed record AniListGraphQlRequest(string Query, AniListVariables Variables);
     private sealed record AniListVariables(int MalId);
-    private sealed record AniListBatchRequest(string Query, AniListBatchVariables Variables);
-    private sealed record AniListBatchVariables(int[] Ids);
     private sealed record AniListAiringCacheEntry(AniListAiringInfo? Value);
 
     public void Dispose()

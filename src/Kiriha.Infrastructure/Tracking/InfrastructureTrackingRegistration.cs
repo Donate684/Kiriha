@@ -12,7 +12,6 @@ public static class InfrastructureTrackingRegistration
     {
         services.AddSingleton<IReadOnlyList<ExternalPlayerDefinition>>(_ =>
             Kiriha.Infrastructure.Tracking.ExternalDetection.ExternalPlayerCatalog.Load());
-        services.AddSingleton<SmtcService>();
         services.AddSingleton<DiscordService>();
         services.AddForwardedSingleton<DiscordService, IDiscordService>();
         services.AddSingleton<ExternalMediaDetectorService>();

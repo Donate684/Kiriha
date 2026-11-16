@@ -44,7 +44,12 @@ public partial class AnimeRepository
 
         var existing = await _uiDispatcher.InvokeAsync(() =>
         {
-            _idIndex.TryGetValue(key, out var found);
+            AnimeEntity? found;
+            lock (_indexLock)
+            {
+                _idIndex.TryGetValue(key, out found);
+            }
+
             if (found != null)
             {
                 if (!ReferenceEquals(item, found))
@@ -55,12 +60,18 @@ public partial class AnimeRepository
             else
             {
                 Collection.Add(item);
-                _idIndex[key] = item;
+                lock (_indexLock)
+                {
+                    _idIndex[key] = item;
+                }
             }
             return found;
         });
 
-        await _userAnimeRepo.UpdateAsync(existing ?? item);
+        if (existing != null)
+            await _userAnimeRepo.UpdateAsync(existing);
+        else
+            await _userAnimeRepo.UpsertAsync(item);
     }
 
     public Task RemoveAnimeLocalAsync(int animeId) => RemoveAnimeLocalAsync(animeId, MediaKind.Anime);
@@ -101,10 +112,17 @@ public partial class AnimeRepository
 
         await _uiDispatcher.InvokeAsync(() =>
         {
-            if (_idIndex.TryGetValue(key, out var item))
+            AnimeEntity? item;
+            lock (_indexLock)
+            {
+                if (_idIndex.TryGetValue(key, out item))
+                {
+                    _idIndex.Remove(key);
+                }
+            }
+            if (item != null)
             {
                 Collection.Remove(item);
-                _idIndex.Remove(key);
             }
         });
 

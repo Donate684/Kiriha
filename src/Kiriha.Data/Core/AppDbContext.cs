@@ -14,11 +14,8 @@ public partial class AppDbContext : DbContext
     public DbSet<HistoryItem> History { get; set; } = null!;
     public DbSet<ShikiMetadata> Metadata { get; set; } = null!;
     public DbSet<SyncTaskEntity> SyncTasks { get; set; } = null!;
-    public DbSet<FileRecognitionCache> FileRecognitionCache { get; set; } = null!;
-    public DbSet<EpisodeRelease> EpisodeReleases { get; set; } = null!;
     public DbSet<MalSearchCache> MalSearchCache { get; set; } = null!;
     public DbSet<HttpCacheEntry> HttpResponseCache { get; set; } = null!;
-    public DbSet<EpisodeListMeta> EpisodeListMeta { get; set; } = null!;
     public DbSet<AnimeRelation> AnimeRelations { get; set; } = null!;
     public DbSet<AnimeRelationMeta> AnimeRelationMeta { get; set; } = null!;
     public DbSet<HiddenSeasonalAnime> HiddenSeasonalAnime { get; set; } = null!;

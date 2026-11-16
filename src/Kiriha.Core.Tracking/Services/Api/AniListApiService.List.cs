@@ -100,7 +100,8 @@ public partial class AniListApiService
 
                                 if (media.TryGetProperty("id", out var aniIdProp) && aniIdProp.TryGetInt32(out var aniId))
                                 {
-                                    _malToAniListMap[(anime.Id, "ANIME")] = aniId;
+                                    bool isNativeId = !(media.TryGetProperty("idMal", out var malProp) && malProp.ValueKind == JsonValueKind.Number && malProp.TryGetInt32(out var malVal) && malVal > 0);
+                                    await CacheMediaMappingAsync(anime.Id, "ANIME", aniId, isNativeId);
                                     if (!seenMediaIds.Add(aniId)) continue;
                                 }
 
@@ -363,7 +364,8 @@ public partial class AniListApiService
 
                                 if (media.TryGetProperty("id", out var aniIdProp) && aniIdProp.TryGetInt32(out var aniId))
                                 {
-                                    _malToAniListMap[(manga.Id, "MANGA")] = aniId;
+                                    bool isNativeId = !(media.TryGetProperty("idMal", out var malProp) && malProp.ValueKind == JsonValueKind.Number && malProp.TryGetInt32(out var malVal) && malVal > 0);
+                                    await CacheMediaMappingAsync(manga.Id, "MANGA", aniId, isNativeId);
                                     if (!seenMediaIds.Add(aniId)) continue;
                                 }
 

@@ -60,13 +60,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     // "ShikiClient" has no HttpClient.BaseAddress, so we must always send absolute URLs.
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(_settingsService.Current.Api.ShikiMirror);
 
-    private static int GetCacheId(int malId, MediaKind mediaKind) =>
-        mediaKind switch
-        {
-            MediaKind.Manga => malId | 0x40000000,
-            MediaKind.LightNovel => malId | 0x20000000,
-            _ => malId
-        };
+    private static int GetCacheId(int malId, MediaKind mediaKind) => ShikiMetadata.GetCacheId(malId, mediaKind);
 
     /// <summary>
     /// Returns Shikimori metadata for <paramref name="animeId"/>, fetching from
@@ -95,14 +89,11 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
 
         if (cached != null && !stale)
         {
-            if (string.IsNullOrEmpty(cached.PosterUrl) && _settingsService.Current.Api.ShikiMirror == ShikiMirror.One)
+            if (cached.PosterUrl is null && _settingsService.Current.Api.ShikiMirror == ShikiMirror.One)
             {
                 var poster = await FetchPosterFromGraphQlAsync(animeId, mediaKind, CancellationToken.None);
-                if (!string.IsNullOrEmpty(poster))
-                {
-                    cached.PosterUrl = poster;
-                    await _metadataRepo.UpsertAsync(cached);
-                }
+                cached.PosterUrl = poster ?? string.Empty;
+                await _metadataRepo.UpsertAsync(cached);
             }
 
             if (onFetched != null) await onFetched(cached);
@@ -170,7 +161,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
             // of the manual retry loop).
             if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return new ShikiMetadata { Id = GetCacheId(animeId, mediaKind), Russian = "", Description = "" };
+                return new ShikiMetadata { Id = GetCacheId(animeId, mediaKind), Russian = "", Description = "", PosterUrl = "" };
             }
 
             if (result.Body is null) return null; // transient failure — retry next tick
@@ -207,6 +198,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
                 {
                     metadata.PosterUrl = await FetchPosterFromGraphQlAsync(animeId, mediaKind, ct);
                 }
+
+                metadata.PosterUrl ??= string.Empty;
             }
             return metadata;
         }
@@ -220,79 +213,21 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
 
     public async Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct)
     {
-        string entityType = mediaKind == MediaKind.Manga ? "mangas" : "animes";
-        var memKey = $"{entityType}_{animeId}";
-        if (_stateCache != null &&
-            _stateCache.PosterMemoryCache.TryGetValue(memKey, out var sharedMemUrl) &&
-            !string.IsNullOrEmpty(sharedMemUrl) &&
-            !AnimeEntity.IsMissingPosterUrl(sharedMemUrl))
-        {
-            return sharedMemUrl;
-        }
-
-        var dbKey = $"shiki_poster_{entityType}_{animeId}";
-
-        var cachedBytes = await _httpCache.GetCachedBodyAsync(dbKey, ct);
-        if (cachedBytes != null && cachedBytes.Length > 0)
-        {
-            var cachedUrl = Encoding.UTF8.GetString(cachedBytes);
-            if (!string.IsNullOrEmpty(cachedUrl) && !AnimeEntity.IsMissingPosterUrl(cachedUrl))
+        var map = await ShikiGraphQlPosterFetcher.FetchPostersAsync(
+            [animeId],
+            isManga: mediaKind != MediaKind.Anime,
+            ShikiBaseUrl,
+            _httpCache,
+            _stateCache?.PosterMemoryCache,
+            async (req, innerCt) =>
             {
-                if (_stateCache != null) _stateCache.PosterMemoryCache[memKey] = cachedUrl;
-                return cachedUrl;
-            }
-        }
+                await _rateLimiter.ThrottleAsync(innerCt);
+                req.Headers.Add("User-Agent", AppInfo.UserAgent);
+                return await ShikiHttp.SendShikiAsync(_httpClient, req, _hostResolver, innerCt);
+            },
+            ct);
 
-        try
-        {
-            await _rateLimiter.ThrottleAsync(ct);
-
-            var query = $"{{\"query\":\"{{ {entityType}(ids: \\\"{animeId}\\\", limit: 1) {{ id poster {{ originalUrl }} }} }}\"}}";
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{ShikiBaseUrl}graphql")
-            {
-                Content = new StringContent(query, Encoding.UTF8, "application/json")
-            };
-            request.Headers.Add("User-Agent", AppInfo.UserAgent);
-
-            using var response = await ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct);
-            if (!response.IsSuccessStatusCode) return null;
-
-            var body = await response.Content.ReadAsStringAsync(ct);
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("data", out var data) &&
-                data.TryGetProperty(entityType, out var list) &&
-                list.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in list.EnumerateArray())
-                {
-                    if (item.TryGetProperty("poster", out var poster) &&
-                        poster.ValueKind == JsonValueKind.Object &&
-                        poster.TryGetProperty("originalUrl", out var origProp) &&
-                        origProp.ValueKind == JsonValueKind.String)
-                    {
-                        var url = origProp.GetString();
-                        if (!string.IsNullOrEmpty(url) && !AnimeEntity.IsMissingPosterUrl(url))
-                        {
-                            if (!Uri.TryCreate(url, UriKind.Absolute, out var absUri) ||
-                                (absUri.Scheme != Uri.UriSchemeHttp && absUri.Scheme != Uri.UriSchemeHttps))
-                            {
-                                var baseUri = new Uri(ShikiEndpoints.BaseUrl(ShikiMirror.One));
-                                url = $"{baseUri.Scheme}{Uri.SchemeDelimiter}{baseUri.Authority}" + (url.StartsWith('/') ? url : "/" + url);
-                            }
-                            if (_stateCache != null) _stateCache.PosterMemoryCache[memKey] = url;
-                            _ = _httpCache.SetCachedBodyAsync(dbKey, Encoding.UTF8.GetBytes(url), CancellationToken.None);
-                            return url;
-                        }
-                    }
-                }
-            }
-        }
-        catch (OperationCanceledException) { throw; }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "Failed to fetch poster from Shikimori GraphQL for {Id}", animeId);
-        }
-        return null;
+        return map.TryGetValue(animeId, out var url) ? url : null;
     }
 
     public void Dispose()

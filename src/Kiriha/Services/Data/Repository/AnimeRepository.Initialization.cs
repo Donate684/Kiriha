@@ -43,18 +43,24 @@ public partial class AnimeRepository
                 if (cached != null && cached.Count > 0)
                 {
                     Collection.Reset(cached);
-                    _idIndex.Clear();
-                    _idIndex.EnsureCapacity(cached.Count);
-                    for (int i = 0; i < cached.Count; i++)
+                    lock (_indexLock)
                     {
-                        var item = cached[i];
-                        _idIndex[(item.Id, item.MediaKind)] = item;
+                        _idIndex.Clear();
+                        _idIndex.EnsureCapacity(cached.Count);
+                        for (int i = 0; i < cached.Count; i++)
+                        {
+                            var item = cached[i];
+                            _idIndex[(item.Id, item.MediaKind)] = item;
+                        }
                     }
                 }
                 else
                 {
                     Collection.Clear();
-                    _idIndex.Clear();
+                    lock (_indexLock)
+                    {
+                        _idIndex.Clear();
+                    }
                 }
             });
 

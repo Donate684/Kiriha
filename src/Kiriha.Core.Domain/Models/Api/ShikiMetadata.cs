@@ -1,10 +1,22 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Domain.Models.Api;
 
 public class ShikiMetadata
 {
+    public const int MangaIdMask = 0x40000000;
+    public const int LightNovelIdMask = 0x20000000;
+
+    public static int GetCacheId(int malId, MediaKind mediaKind) =>
+        mediaKind switch
+        {
+            MediaKind.Manga => malId | MangaIdMask,
+            MediaKind.LightNovel => malId | LightNovelIdMask,
+            _ => malId
+        };
+
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
@@ -26,8 +38,8 @@ public class ShikiMetadata
     [JsonPropertyName("next_episode_at")]
     public DateTime? NextEpisodeAt { get; set; }
 
-    [NotMapped]
     [JsonIgnore]
+    [Column("poster_url")]
     public string? PosterUrl { get; set; }
 
     /// <summary>

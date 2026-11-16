@@ -1,13 +1,13 @@
-using Kiriha.Services.Data.Core;
+using Kiriha.Core.Abstractions.Services;
 using Serilog;
 
 namespace Kiriha.Services.AppLifecycle.Shutdown;
 
 public sealed class DatabaseShutdownHandler : IShutdownHandler
 {
-    private readonly DatabaseInitializer _databaseInitializer;
+    private readonly IDatabaseInitializer _databaseInitializer;
 
-    public DatabaseShutdownHandler(DatabaseInitializer databaseInitializer)
+    public DatabaseShutdownHandler(IDatabaseInitializer databaseInitializer)
     {
         _databaseInitializer = databaseInitializer;
     }
@@ -18,25 +18,12 @@ public sealed class DatabaseShutdownHandler : IShutdownHandler
         try
         {
             var operation = _databaseInitializer.FlushAsync();
-            if (!await WaitForAsync(operation, timeoutMs))
+            if (!await ShutdownTimeout.WaitForAsync(operation, timeoutMs))
                 Log.Warning("Shutdown flush: DatabaseInitializer.FlushAsync exceeded {Ms}ms timeout", timeoutMs);
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Shutdown flush: DatabaseInitializer.FlushAsync failed");
-        }
-    }
-
-    private static async Task<bool> WaitForAsync(Task operation, int timeoutMs)
-    {
-        try
-        {
-            await operation.WaitAsync(TimeSpan.FromMilliseconds(timeoutMs));
-            return true;
-        }
-        catch (TimeoutException)
-        {
-            return false;
         }
     }
 }

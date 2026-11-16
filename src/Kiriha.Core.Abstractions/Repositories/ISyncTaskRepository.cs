@@ -23,6 +23,4 @@ public interface ISyncTaskRepository
     Task RemoveAsync(int id, CancellationToken ct = default);
 
     Task RemoveManyAsync(IEnumerable<int> ids, CancellationToken ct = default);
-
-    Task RemoveForAnimeAsync(int animeId, CancellationToken ct = default);
 }

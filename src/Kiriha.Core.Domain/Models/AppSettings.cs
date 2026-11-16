@@ -48,14 +48,6 @@ public partial class AppSettings
         /// Range: 0.25–3.0.
         /// </summary>
         public double UiScale { get; set; } = 1.0;
-
-        /// <summary>
-        /// Client-only: ids of seasonal anime the user marked as "not interested".
-        /// Hidden from the seasonal grid by default; toggle <c>SeasonalShowHidden</c>
-        /// to bring them back for un-hiding.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonIgnore]
-        public List<int> HiddenSeasonalIds { get; set; } = new();
         public bool SeasonalShowHidden { get; set; } = false;
 
         /// <summary>
@@ -107,7 +99,6 @@ public partial class AppSettings
         public int DelaySeconds { get; set; } = 300;
         public int DelayPercent { get; set; } = 50;
         public List<string> AllowedProcesses { get; set; } = new();
-        public bool AutoMatchConfidence { get; set; } = true;
 
         /// <summary>
         /// When true and the detected episode number skips ahead beyond the next

@@ -55,17 +55,11 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
             int? parsedYear = parsed.Year;
 
             string originalTitle = filename;
-            bool isEmber = videoPath.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(videoPath);
-            if (isEmber)
+            if (EmberTitleResolver.TryResolveDirectoryMetadata(videoPath, out string emberTitle, out string meaningfulDir, out int? dirYear, out _))
             {
-                string meaningfulDir = EmberTitleResolver.GetMeaningfulDirectoryName(videoPath);
-                if (!string.IsNullOrEmpty(meaningfulDir))
-                {
-                    var dirParsed = AnimeParseCache.Parse(meaningfulDir);
-                    title = !string.IsNullOrEmpty(dirParsed.Title) ? dirParsed.Title : meaningfulDir;
-                    parsedYear ??= dirParsed.Year;
-                    originalTitle = meaningfulDir;
-                }
+                title = emberTitle;
+                parsedYear ??= dirYear;
+                originalTitle = meaningfulDir;
             }
 
             var resolvedTitle = string.IsNullOrWhiteSpace(title) ? filename : title;

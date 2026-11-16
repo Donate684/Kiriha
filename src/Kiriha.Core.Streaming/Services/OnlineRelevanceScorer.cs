@@ -81,8 +81,8 @@ public static class OnlineRelevanceScorer
         if (string.Equals(q, c, StringComparison.Ordinal))
             return 10000;
 
-        // 2. Candidate starts with query (e.g. "Title: Subtitle" when user searched "Title")
-        if (c.StartsWith(q + " ", StringComparison.Ordinal) || c.StartsWith(q + ":", StringComparison.Ordinal))
+        // 2. Candidate starts with query (e.g. "Title: Subtitle" -> "title subtitle" when user searched "Title")
+        if (c.StartsWith(q + " ", StringComparison.Ordinal))
         {
             if (HasUnpromptedSequelTokens(q, c))
             {

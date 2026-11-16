@@ -17,7 +17,6 @@ namespace Kiriha.Core.Abstractions.Repositories;
 public interface IUserAnimeRepository
 {
     Task<List<AnimeEntity>> GetAllAsync(CancellationToken ct = default);
-    Task<List<AnimeEntity>> GetByMediaKindAsync(MediaKind kind, CancellationToken ct = default);
     Task UpsertAsync(AnimeEntity item, CancellationToken ct = default);
     Task UpdateAsync(AnimeEntity item, CancellationToken ct = default);
     Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null, CancellationToken ct = default);

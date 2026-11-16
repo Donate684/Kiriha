@@ -31,6 +31,8 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
 
     public static TimeProvider DefaultClock { get; set; } = TimeProvider.System;
     public static Func<bool> DefaultGetUseRussianTitles { get; set; } = () => false;
+    public static Func<bool> DefaultGetPreferRussianDisplayTitle { get; set; } = () => true;
+    public static Func<bool> DefaultGetUseRussianDescriptions { get; set; } = () => true;
 
     public static void SetDefaultGetLoc(GetLocDelegate getLoc)
     {
@@ -43,21 +45,35 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
         set => DefaultGetUseRussianTitles = value ?? (() => false);
     }
 
+    public static Func<bool> GetPreferRussianDisplayTitle
+    {
+        get => DefaultGetPreferRussianDisplayTitle;
+        set => DefaultGetPreferRussianDisplayTitle = value ?? (() => true);
+    }
+
+    public static Func<bool> GetUseRussianDescriptions
+    {
+        get => DefaultGetUseRussianDescriptions;
+        set => DefaultGetUseRussianDescriptions = value ?? (() => true);
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private readonly AnimeEntity _item;
     private readonly ILocalizer? _localizer;
     private readonly TimeProvider? _clock;
     private readonly Func<bool>? _getUseRussianTitles;
+    private readonly Func<bool>? _getPreferRussianDisplayTitle;
+    private readonly Func<bool>? _getUseRussianDescriptions;
     private DateTime _now;
 
     public AnimeEntityPresentation(AnimeEntity item)
-        : this(item, null, null, null)
+        : this(item, null, null, null, null, null)
     {
     }
 
     public AnimeEntityPresentation(AnimeEntity item, DateTime now)
-        : this(item, null, null, null)
+        : this(item, null, null, null, null, null)
     {
         _now = now;
     }
@@ -67,17 +83,32 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
         ILocalizer? localizer = null,
         TimeProvider? clock = null,
         Func<bool>? getUseRussianTitles = null)
+        : this(item, localizer, clock, getUseRussianTitles, null, null)
+    {
+    }
+
+    public AnimeEntityPresentation(
+        AnimeEntity item,
+        ILocalizer? localizer,
+        TimeProvider? clock,
+        Func<bool>? getUseRussianTitles,
+        Func<bool>? getPreferRussianDisplayTitle,
+        Func<bool>? getUseRussianDescriptions)
     {
         _item = item;
         _localizer = localizer;
         _clock = clock;
         _getUseRussianTitles = getUseRussianTitles;
+        _getPreferRussianDisplayTitle = getPreferRussianDisplayTitle;
+        _getUseRussianDescriptions = getUseRussianDescriptions;
         _now = EffectiveClock.GetUtcNow().UtcDateTime;
     }
 
     public ILocalizer EffectiveLocalizer => _localizer ?? DefaultLocalizer;
     public TimeProvider EffectiveClock => _clock ?? DefaultClock;
     public bool EffectiveUseRussianTitles => (_getUseRussianTitles ?? DefaultGetUseRussianTitles)();
+    public bool EffectivePreferRussianDisplayTitle => (_getPreferRussianDisplayTitle ?? DefaultGetPreferRussianDisplayTitle)();
+    public bool EffectiveUseRussianDescriptions => (_getUseRussianDescriptions ?? DefaultGetUseRussianDescriptions)();
     public CultureInfo EffectiveCulture => EffectiveLocalizer.CurrentCulture;
 
     private string GetLoc(string key, params object?[] args) => EffectiveLocalizer.GetLoc(key, args);
@@ -93,7 +124,9 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
 
-    public string DisplayTitle => !string.IsNullOrEmpty(_item.RussianTitle) ? _item.RussianTitle : _item.Title;
+    public string DisplayTitle => EffectivePreferRussianDisplayTitle
+        ? (!string.IsNullOrEmpty(_item.RussianTitle) ? _item.RussianTitle : _item.Title)
+        : (!string.IsNullOrEmpty(_item.Title) ? _item.Title : (_item.RussianTitle ?? string.Empty));
 
     public string? SecondaryTitle
     {
@@ -157,7 +190,9 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
 
     public bool HasSecondaryTitle => !string.IsNullOrWhiteSpace(SecondaryTitle);
 
-    public string? DisplaySynopsis => !string.IsNullOrEmpty(_item.RussianSynopsis) ? _item.RussianSynopsis : _item.Synopsis;
+    public string? DisplaySynopsis => EffectiveUseRussianDescriptions
+        ? (!string.IsNullOrEmpty(_item.RussianSynopsis) ? _item.RussianSynopsis : _item.Synopsis)
+        : (!string.IsNullOrEmpty(_item.Synopsis) ? _item.Synopsis : _item.RussianSynopsis);
 
     public bool IsAnime => _item.MediaKind == MediaKind.Anime;
     public bool IsManga => _item.MediaKind != MediaKind.Anime;

@@ -20,7 +20,7 @@ public sealed class HostedServicesShutdownHandler : IShutdownHandler
             var operation = Task.Run(async () =>
             {
                 using var stopCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMs));
-                foreach (var hosted in _hostedServices)
+                foreach (var hosted in _hostedServices.Reverse())
                 {
                     try
                     {
@@ -33,25 +33,12 @@ public sealed class HostedServicesShutdownHandler : IShutdownHandler
                 }
             });
 
-            if (!await WaitForAsync(operation, timeoutMs + 500))
+            if (!await ShutdownTimeout.WaitForAsync(operation, timeoutMs + 500))
                 Log.Warning("Shutdown flush: hosted services exceeded {Ms}ms timeout", timeoutMs);
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Shutdown flush: hosted services stop failed");
-        }
-    }
-
-    private static async Task<bool> WaitForAsync(Task operation, int timeoutMs)
-    {
-        try
-        {
-            await operation.WaitAsync(TimeSpan.FromMilliseconds(timeoutMs));
-            return true;
-        }
-        catch (TimeoutException)
-        {
-            return false;
         }
     }
 }

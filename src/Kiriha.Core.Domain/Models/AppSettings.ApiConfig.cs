@@ -32,8 +32,14 @@ public partial class AppSettings
         [JsonIgnore]
         public MalTokens? Mal
         {
-            get => Accounts.FirstOrDefault(a => a.TrackerId == TrackerConstants.Ids.Mal && a.IsEnabled)?.Tokens as MalTokens
-                   ?? LegacyMal;
+            get
+            {
+                var acc = GetAccount(TrackerConstants.Ids.Mal);
+                if (acc != null)
+                    return acc.IsEnabled ? acc.Tokens as MalTokens : null;
+
+                return LegacyMal;
+            }
             set
             {
                 LegacyMal = value;
@@ -68,8 +74,11 @@ public partial class AppSettings
             get
             {
                 var mirrorTrackerId = ShikiMirror == ShikiMirror.Net ? TrackerConstants.Ids.ShikiFork : TrackerConstants.Ids.ShikiOrig;
-                return (Accounts.FirstOrDefault(a => a.TrackerId == mirrorTrackerId && a.IsEnabled)?.Tokens as ShikiTokens)
-                    ?? LegacyShiki;
+                var acc = GetAccount(mirrorTrackerId);
+                if (acc != null)
+                    return acc.IsEnabled ? acc.Tokens as ShikiTokens : null;
+
+                return LegacyShiki;
             }
             set
             {
@@ -199,11 +208,15 @@ public partial class AppSettings
 
         public void SyncLegacyFromAccounts()
         {
-            LegacyMal = Accounts.FirstOrDefault(a => a.TrackerId == TrackerConstants.Ids.Mal)?.Tokens as MalTokens;
+            var malAcc = GetAccount(TrackerConstants.Ids.Mal);
+            if (malAcc != null)
+                LegacyMal = malAcc.IsEnabled ? malAcc.Tokens as MalTokens : null;
 
             var mirrorTrackerId = ShikiMirror == ShikiMirror.Net ? TrackerConstants.Ids.ShikiFork : TrackerConstants.Ids.ShikiOrig;
-            LegacyShiki = (Accounts.FirstOrDefault(a => a.TrackerId == mirrorTrackerId)?.Tokens as ShikiTokens)
-                       ?? (Accounts.FirstOrDefault(a => a.TrackerId == TrackerConstants.Ids.ShikiOrig || a.TrackerId == TrackerConstants.Ids.ShikiFork)?.Tokens as ShikiTokens);
+            var shikiAcc = GetAccount(mirrorTrackerId)
+                        ?? Accounts.FirstOrDefault(a => a.TrackerId == TrackerConstants.Ids.ShikiOrig || a.TrackerId == TrackerConstants.Ids.ShikiFork);
+            if (shikiAcc != null)
+                LegacyShiki = shikiAcc.IsEnabled ? shikiAcc.Tokens as ShikiTokens : null;
         }
 
         public ApiConfig Clone() => new()

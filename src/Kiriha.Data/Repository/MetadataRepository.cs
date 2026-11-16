@@ -33,13 +33,6 @@ public sealed class MetadataRepository : IMetadataRepository
         await context.SaveChangesAsync(ct);
     }
 
-    public async Task<HashSet<int>> GetAllIdsAsync(CancellationToken ct = default)
-    {
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var ids = await context.Metadata.Select(m => m.Id).ToListAsync(ct);
-        return new HashSet<int>(ids);
-    }
-
     public async Task<Dictionary<int, ShikiMetadata>> GetBatchAsync(IEnumerable<int> ids, CancellationToken ct = default)
     {
         var idList = ids.Distinct().ToList();

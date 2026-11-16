@@ -72,7 +72,7 @@ public class AnimeListActionService : IAnimeListActionService
         }
 
         // Check if this anime already exists in local collection or DB to preserve user tracking data
-        var existing = _animeRepository.Collection?.FirstOrDefault(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
+        var existing = await FindExistingInMemoryAsync(item.Id, item.MediaKind)
                        ?? (_userAnimeRepo != null ? await _userAnimeRepo.GetByIdAsync(item.Id, item.MediaKind, ct) : null);
         if (existing != null)
         {
@@ -136,15 +136,18 @@ public class AnimeListActionService : IAnimeListActionService
 
         try
         {
-            await _historyService.AddEntryAsync(
-                item.Id,
-                item.Title,
-                item.RussianTitle,
-                displayProgress,
-                actionType,
-                detail: null,
-                posterUrl: item.MainPictureUrl,
-                ct: ct);
+            using (HistoryContext.UseMediaKind(item.MediaKind))
+            {
+                await _historyService.AddEntryAsync(
+                    item.Id,
+                    item.Title,
+                    item.RussianTitle,
+                    displayProgress,
+                    actionType,
+                    detail: null,
+                    posterUrl: item.MainPictureUrl,
+                    ct: ct);
+            }
         }
         catch (Exception ex)
         {
@@ -219,6 +222,14 @@ public class AnimeListActionService : IAnimeListActionService
         bool markedAsCompleted = originalItem.Status != UserAnimeStatus.Completed && updatedItem.Status == UserAnimeStatus.Completed;
         bool statusChanged = originalItem.Status != updatedItem.Status;
 
+        if (statusChanged &&
+            (updatedItem.Status == UserAnimeStatus.Watching || updatedItem.Status == UserAnimeStatus.Completed) &&
+            AppConstants.AiringStatus.IsNotYetAired(updatedItem.StatusDetailed))
+        {
+            Log.Warning("AnimeListActionService: Cannot set {Title} to {Status} - it has not aired yet.", updatedItem.Title, updatedItem.Status);
+            return ListActionResult.Fail($"Cannot set '{updatedItem.Title}' to {updatedItem.Status} because it has not aired yet.");
+        }
+
         string rawScore = updatedItem.Score;
         if (rawScore != "-" && rawScore.Contains(' '))
         {
@@ -233,6 +244,7 @@ public class AnimeListActionService : IAnimeListActionService
             {
                 updatedItem.DateCompleted ??= DateTime.Today;
                 updatedItem.DateStarted ??= DateTime.Today;
+                updatedItem.IsRewatching = false;
             }
             else if (updatedItem.Status == UserAnimeStatus.Watching && !updatedItem.DateStarted.HasValue)
             {
@@ -252,50 +264,53 @@ public class AnimeListActionService : IAnimeListActionService
 
         try
         {
-            if (markedAsCompleted)
+            using (HistoryContext.UseMediaKind(originalItem.MediaKind))
             {
-                await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Completed", null, originalItem.MainPictureUrl, ct);
-            }
-            else
-            {
-                if (progressChanged)
+                if (markedAsCompleted)
                 {
-                    if (newProgress > oldProgress)
-                    {
-                        string progressAction = isManga ? "Read" : "Watched";
-                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, progressAction, null, originalItem.MainPictureUrl, ct);
-                    }
-                    else
-                    {
-                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Reverted", null, originalItem.MainPictureUrl, ct);
-                    }
+                    await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Completed", null, originalItem.MainPictureUrl, ct);
                 }
-
-                if (markedAsDropped)
+                else
                 {
-                    await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Dropped", null, originalItem.MainPictureUrl, ct);
-                }
-                else if (statusChanged)
-                {
-                    bool alreadyRecordedProgress = progressChanged && newProgress > oldProgress && updatedItem.Status == UserAnimeStatus.Watching;
-                    if (!alreadyRecordedProgress)
+                    if (progressChanged)
                     {
-                        string statusAction = updatedItem.Status switch
+                        if (newProgress > oldProgress)
                         {
-                            UserAnimeStatus.Watching => displayProgress == 0 ? "AddedToList" : (isManga ? "Read" : "Watched"),
-                            UserAnimeStatus.PlanToWatch => "PlanToWatch",
-                            UserAnimeStatus.OnHold => "OnHold",
-                            _ => "AddedToList"
-                        };
+                            string progressAction = isManga ? "Read" : "Watched";
+                            await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, progressAction, null, originalItem.MainPictureUrl, ct);
+                        }
+                        else
+                        {
+                            await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Reverted", null, originalItem.MainPictureUrl, ct);
+                        }
+                    }
 
-                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, statusAction, null, originalItem.MainPictureUrl, ct);
+                    if (markedAsDropped)
+                    {
+                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "Dropped", null, originalItem.MainPictureUrl, ct);
+                    }
+                    else if (statusChanged)
+                    {
+                        bool alreadyRecordedProgress = progressChanged && newProgress > oldProgress && updatedItem.Status == UserAnimeStatus.Watching;
+                        if (!alreadyRecordedProgress)
+                        {
+                            string statusAction = updatedItem.Status switch
+                            {
+                                UserAnimeStatus.Watching => displayProgress == 0 ? "AddedToList" : (isManga ? "Read" : "Watched"),
+                                UserAnimeStatus.PlanToWatch => "PlanToWatch",
+                                UserAnimeStatus.OnHold => "OnHold",
+                                _ => "AddedToList"
+                            };
+
+                            await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, statusAction, null, originalItem.MainPictureUrl, ct);
+                        }
                     }
                 }
-            }
 
-            if (scoreChanged)
-            {
-                await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "ScoreSet", originalItem.Score, originalItem.MainPictureUrl, ct);
+                if (scoreChanged)
+                {
+                    await _historyService.AddEntryAsync(originalItem.Id, originalItem.Title, originalItem.RussianTitle, displayProgress, "ScoreSet", originalItem.Score, originalItem.MainPictureUrl, ct);
+                }
             }
         }
         catch (Exception ex)
@@ -330,32 +345,31 @@ public class AnimeListActionService : IAnimeListActionService
             message: hasActiveTrackers ? null : "Saved locally: no active tracker accounts connected");
     }
 
+    private async Task<AnimeEntity?> FindExistingInMemoryAsync(int animeId, MediaKind kind)
+    {
+        var indexed = _animeRepository.FindById(animeId, kind);
+        if (indexed != null || _animeRepository.TryGetSnapshot() != null)
+            return indexed;
+
+        if (!_uiDispatcher.HasThreadAffinity || _uiDispatcher.CheckAccess())
+            return _animeRepository.Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == kind);
+
+        AnimeEntity? matched = null;
+        await _uiDispatcher.InvokeAsync(() =>
+        {
+            matched = _animeRepository.Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == kind);
+        });
+        return matched;
+    }
+
     private void TriggerAiringSyncIfOngoing(AnimeEntity item)
     {
-        if (_airingInfoService == null || item.MediaKind != MediaKind.Anime) return;
-        if (item.Status != UserAnimeStatus.Watching) return;
+        if (_airingInfoService == null || item.Status != UserAnimeStatus.Watching) return;
+        if (!Core.AiringInfoService.IsTrackableOngoingAnime(item, includeUnknownTotal: true)) return;
 
-        var statusDetailed = item.StatusDetailed?.ToLowerInvariant();
-        bool isOngoing = item.TotalEpisodes <= 0
-            || statusDetailed is "currently_airing" or "currently airing" or "ongoing" or "releasing"
-            || AppConstants.AiringStatus.IsCurrentlyAiring(statusDetailed)
-            || (!AppConstants.AiringStatus.IsFinishedAiring(statusDetailed) && item.EpisodesAired < item.TotalEpisodes)
-            || item.NextEpisodeAt.HasValue;
-
-        if (isOngoing)
-        {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _airingInfoService.SyncEpisodesForAnimeAsync(item);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "AnimeListActionService: Immediate airing sync failed for {Title} ({Id})", item.Title, item.Id);
-                }
-            });
-        }
+        Kiriha.Utils.Async.TaskExtensions.SafeFireAndForget(
+            _airingInfoService.SyncEpisodesForAnimeAsync(item),
+            "AnimeListActionService.TriggerAiringSync");
     }
 
     public Task<ListActionResult> RemoveFromListAsync(

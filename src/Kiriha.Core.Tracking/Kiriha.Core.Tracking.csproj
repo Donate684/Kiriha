@@ -24,9 +24,5 @@
     <InternalsVisibleTo Include="Kiriha.Benchmarks" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\**\*" />
-  </ItemGroup>
-
 </Project>
 

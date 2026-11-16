@@ -25,6 +25,7 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
     }
 
     public int AnimeId { get; set; }
+    public Kiriha.Core.Domain.Models.Entities.MediaKind MediaKind { get; set; } = Kiriha.Core.Domain.Models.Entities.MediaKind.Anime;
     public string AnimeTitle { get; set; } = string.Empty;
     public string? RussianTitle { get; set; }
     public string? PosterUrl { get; set; }
@@ -38,13 +39,18 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
 
     public bool IsRange => EpisodeFrom != EpisodeTo;
     public string EpisodeLabel =>
-        (ActionType == 1 || ActionType == 4 || ActionType == 6 || ActionType == 12 || ActionType == 0 || ActionType == 2)
+        (ActionType == (int)HistoryActionType.Watched ||
+         ActionType == (int)HistoryActionType.Scrobbled ||
+         ActionType == (int)HistoryActionType.Completed ||
+         ActionType == (int)HistoryActionType.AddedToList ||
+         ActionType == 0 ||
+         ActionType == (int)HistoryActionType.Reverted)
             ? (IsRange
                 ? _localizer.GetLoc("history.episode_range", EpisodeFrom, EpisodeTo)
                 : _localizer.GetLoc("history.episode_single", EpisodeFrom))
             : string.Empty;
 
-    public bool CanTrack => AnimeId > 0 && ActionType != 3;
+    public bool CanTrack => AnimeId > 0 && ActionType != (int)HistoryActionType.SyncFailed;
 
     public ObservableCollection<TrackerStatusBadgeVm> TrackerBadges { get; } = new();
     public bool HasTrackerBadges => CanTrack && TrackerBadges.Count > 0;

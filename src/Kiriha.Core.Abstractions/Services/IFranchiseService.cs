@@ -26,19 +26,9 @@ public interface IFranchiseService
     Task RebuildIndexAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// Enriches the given collection of AnimeEntity instances in-place with their franchise context.
-    /// </summary>
-    void Enrich(IEnumerable<AnimeEntity> items);
-
-    /// <summary>
     /// Enqueues an anime to resolve its franchise in background (e.g. from viewport).
     /// </summary>
     void EnqueueForResolution(AnimeEntity item);
-
-    /// <summary>
-    /// Ingests relations for a source anime and updates the in-memory franchise index.
-    /// </summary>
-    Task IngestRelationsAsync(int sourceMalId, IEnumerable<AnimeRelation> relations, CancellationToken ct = default);
 
     /// <summary>
     /// Ingests a full Shikimori franchise graph response and updates the in-memory franchise index.

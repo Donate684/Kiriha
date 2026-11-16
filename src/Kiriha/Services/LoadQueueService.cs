@@ -66,18 +66,6 @@ public class LoadQueueService : ILoadQueueService, IDisposable
         }
     }
 
-    public void ClearQueues()
-    {
-        while (_imageQueue.Reader.TryRead(out _)) { }
-        while (_shikiQueue.Reader.TryRead(out _)) { }
-
-        lock (_dedupeLock)
-        {
-            _queuedForImage.Clear();
-            _queuedForShiki.Clear();
-        }
-    }
-
     private static Channel<AnimeEntity> CreateQueue(int capacity)
     {
         return Channel.CreateBounded<AnimeEntity>(new BoundedChannelOptions(capacity)

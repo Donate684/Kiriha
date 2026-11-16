@@ -74,7 +74,7 @@ public sealed partial class Anime365Extractor : IVideoExtractor
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                Log.Warning("[Anime365Extractor] No access token configured for {Url}", playerUrl);
+                Log.Warning("[Anime365Extractor] No access token configured for {Url}", Helpers.UrlRedactor.Redact(playerUrl));
                 return [new StreamingVideo { Url = webEmbedUrl, Quality = 1080, VideoType = "embed" }];
             }
 
@@ -170,7 +170,7 @@ public sealed partial class Anime365Extractor : IVideoExtractor
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "[Anime365Extractor] Failed to extract video from {Url}", playerUrl);
+            Log.Warning(ex, "[Anime365Extractor] Failed to extract video from {Url}", Helpers.UrlRedactor.Redact(playerUrl));
             return [];
         }
     }

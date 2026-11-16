@@ -26,6 +26,8 @@ public partial class App : Application
         if (appSettingsService != null)
         {
             AnimeEntityPresentation.GetUseRussianTitles = () => appSettingsService.Current.UI.UseRussianTitles;
+            AnimeEntityPresentation.GetPreferRussianDisplayTitle = () => appSettingsService.Current.UI.UseRussianTitles;
+            AnimeEntityPresentation.GetUseRussianDescriptions = () => appSettingsService.Current.UI.UseRussianDescriptions;
         }
         _shutdownCoordinator = new ShutdownCoordinator(ServiceProvider, ServiceProvider.GetServices<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler>());
         _trayService = new TrayService(this, ServiceProvider, _shutdownCoordinator);

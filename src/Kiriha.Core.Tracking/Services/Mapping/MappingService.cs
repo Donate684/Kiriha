@@ -14,7 +14,6 @@ public partial class MappingService : IMappingService
     private readonly IMalSearchCacheRepository _malSearchCache;
     private readonly RecognitionCache _recognitionCache;
     private readonly ConcurrentDictionary<string, int> _sessionCache = new();
-    private readonly ConcurrentDictionary<int, (string t, string e, string r)> _normalizedItemCache = new();
 
     private readonly Lock _indexLock = new();
     private WeakReference<IEnumerable<AnimeEntity>>? _cachedListRef;
@@ -33,7 +32,6 @@ public partial class MappingService : IMappingService
     {
         _sessionCache.Clear();
         _recognitionCache.ClearLearnedMatches();
-        _normalizedItemCache.Clear();
         lock (_indexLock)
         {
             _cachedListRef = null;

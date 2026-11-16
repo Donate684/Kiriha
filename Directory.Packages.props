@@ -5,16 +5,16 @@
     a hard guarantee against version drift if (when) more projects are added
     to the solution.
 
-    Avalonia versions are still parameterised per-project via $(AvaloniaVersion)
-    / $(AvaloniaSubpackagesVersion) so a future Avalonia bump remains a one-line
-    change in Kiriha.csproj rather than touching every PackageVersion below.
+    Avalonia versions are parameterised via $(AvaloniaVersion)
+    / $(AvaloniaSubpackagesVersion) in Directory.Build.props so a future Avalonia
+    bump remains a one-line change rather than touching every PackageVersion below.
   -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Avalonia core stack, version controlled by $(AvaloniaVersion) in Kiriha.csproj -->
+    <!-- Avalonia core stack, version controlled by $(AvaloniaVersion) in Directory.Build.props -->
     <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
@@ -24,7 +24,6 @@
     <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="$(AvaloniaSubpackagesVersion)" />
     <!-- 3rd-party UI -->
     <PackageVersion Include="AsyncImageLoader.Avalonia" Version="4.0.0" />
-    <PackageVersion Include="AngleSharp" Version="1.10.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
     <!-- MVVM / messaging -->
@@ -60,7 +59,6 @@
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.analyzers" Version="2.2.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
   </ItemGroup>
 </Project>

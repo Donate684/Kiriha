@@ -8,7 +8,7 @@ namespace Kiriha.Utils.Collections;
 /// other; in the rare case where two callers race on the same fresh key, both
 /// compute and the second result is dropped.
 /// </summary>
-internal sealed class LruStringMemoizer<TVal> where TVal : class
+public sealed class LruStringMemoizer<TVal>
 {
     private readonly int _capacity;
     private readonly Dictionary<string, LinkedListNode<Entry>> _map;
@@ -58,6 +58,15 @@ internal sealed class LruStringMemoizer<TVal> where TVal : class
                 _order.RemoveLast();
             }
             return value;
+        }
+    }
+
+    public void Clear()
+    {
+        lock (_gate)
+        {
+            _map.Clear();
+            _order.Clear();
         }
     }
 

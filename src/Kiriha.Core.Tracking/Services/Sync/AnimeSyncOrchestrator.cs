@@ -96,7 +96,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
             await ProcessSyncResults(apiList, currentItems, status, ct);
 
-            status?.Report("sync.saving.to_db");
+            status?.Report(FormatLoc("sync.saving.to_db"));
             Log.Information("AnimeSyncOrchestrator: getting anime snapshot for DB sync");
             var snapshot = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
             Log.Information("AnimeSyncOrchestrator: got {Count} items for DB sync", snapshot.Count);
@@ -159,7 +159,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
             await ProcessSyncResults(apiList, currentItems, status, ct);
 
-            status?.Report("sync.saving.to_db");
+            status?.Report(FormatLoc("sync.saving.to_db"));
             var snapshot = await _animeRepository.GetSnapshotAsync(kinds);
             await _userAnimeRepo.SyncFromRemoteAsync(snapshot, kinds, ct);
 

@@ -91,7 +91,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
             try
             {
-                int cacheId = GetCacheId(item.Id, item.MediaKind);
+                int cacheId = Kiriha.Core.Domain.Models.Api.ShikiMetadata.GetCacheId(item.Id, item.MediaKind);
 
                 // 1. Fetch or apply metadata (Russian title, synopsis, and poster if missing)
                 bool needsMeta = string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis);
@@ -101,8 +101,9 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                 {
                     var meta = await _metadataRepo.GetAsync(cacheId);
 
-                    // If not in database metadata cache or needs poster, fetch from Shikimori API
-                    if (meta is null || (needsPoster && string.IsNullOrEmpty(meta.PosterUrl)))
+                    // Only fetch from Shikimori API when metadata row does not exist yet or PosterUrl was never probed (null).
+                    // An empty string ("") means Shikimori was already queried and had no valid poster, avoiding 20-min infinite retries.
+                    if (meta is null || (needsPoster && meta.PosterUrl is null))
                     {
                         performedNetworkCall = true;
                         var fetched = await _shikiMetadata.GetOrFetchMetadataAsync(item.Id, null, null, item.MediaKind);
@@ -235,12 +236,4 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
             return true;
         }
     }
-
-    private static int GetCacheId(int malId, MediaKind mediaKind) =>
-        mediaKind switch
-        {
-            MediaKind.Manga => malId | 0x40000000,
-            MediaKind.LightNovel => malId | 0x20000000,
-            _ => malId
-        };
 }

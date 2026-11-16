@@ -17,8 +17,8 @@ public partial class HistoryViewModel
         };
 
         // Action
-        if (SelectedAction == 1)
-            filtered = filtered.Where(x => x.ActionType == 1 || x.ActionType == 4);
+        if (SelectedAction == (int)Kiriha.Core.Domain.Models.HistoryActionType.Watched)
+            filtered = filtered.Where(x => x.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Watched || x.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Scrobbled);
         else if (SelectedAction != 0)
             filtered = filtered.Where(x => x.ActionType == SelectedAction);
 
@@ -49,8 +49,11 @@ public partial class HistoryViewModel
                 bool canMerge =
                     run != null &&
                     run.AnimeId == item.AnimeId &&
+                    run.MediaKind == item.MediaKind &&
                     run.ActionType == item.ActionType &&
-                    (item.ActionType == 1 || item.ActionType == 4 || item.ActionType == 6) &&
+                    (item.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Watched ||
+                     item.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Scrobbled ||
+                     item.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Completed) &&
                     item.Episode > 0 &&
                     item.Episode == run.EpisodeFrom - 1;
 
@@ -68,6 +71,7 @@ public partial class HistoryViewModel
                     run = new HistoryEntryVm(_localizer)
                     {
                         AnimeId = item.AnimeId,
+                        MediaKind = item.MediaKind,
                         AnimeTitle = item.AnimeTitle,
                         RussianTitle = item.RussianTitle,
                         PosterUrl = item.PosterUrl,
@@ -149,16 +153,20 @@ public partial class HistoryViewModel
         int progress = Math.Max(0, entry.EpisodeTo);
         Kiriha.Core.Domain.Models.Entities.UserAnimeStatus? status = entry.ActionType switch
         {
-            6 => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Completed,
-            7 => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Dropped,
+            (int)Kiriha.Core.Domain.Models.HistoryActionType.Completed => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Completed,
+            (int)Kiriha.Core.Domain.Models.HistoryActionType.Dropped => Kiriha.Core.Domain.Models.Entities.UserAnimeStatus.Dropped,
             _ => null
         };
         int? score = null;
-        if (entry.ActionType == 5 && int.TryParse(entry.Detail, out int parsedScore))
+        if (entry.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.ScoreSet && int.TryParse(entry.Detail, out int parsedScore))
         {
             score = parsedScore;
         }
 
-        await _syncManager.EnqueueUpdateAsync(entry.AnimeId, progress, status, score, tracker?.Name ?? trackerName);
+        var targetName = tracker?.Name ?? trackerName;
+        if (entry.MediaKind == Kiriha.Core.Domain.Models.Entities.MediaKind.Anime)
+            await _syncManager.EnqueueUpdateAsync(entry.AnimeId, progress, status, score, targetName);
+        else
+            await _syncManager.EnqueueUpdateAsync(entry.AnimeId, entry.MediaKind, progress, status, score, targetName);
     }
 }

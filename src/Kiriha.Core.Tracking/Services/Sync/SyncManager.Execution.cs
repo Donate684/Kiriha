@@ -77,9 +77,9 @@ public partial class SyncManager
                 Log.Information("SyncManager: Skipping outdated task {TaskId} for Anime {AnimeId} because newer task {LatestId} is pending.", task.Id, task.AnimeId, latest.Id);
                 if (task.Progress.HasValue)
                 {
-                    foreach (var tracker in _trackers.Where(t => t.IsEnabled))
+                    foreach (var tracker in GetTaskTrackers(task))
                     {
-                        _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, tracker.Name, TrackerSyncState.Success);
+                        UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Success);
                     }
                 }
                 return (true, false);
@@ -87,7 +87,7 @@ public partial class SyncManager
         }
 
         bool overallSuccess = true;
-        var activeTrackers = GetDestinationTrackers();
+        var activeTrackers = GetTaskTrackers(task);
 
         if (activeTrackers.Count == 0)
         {
@@ -150,19 +150,19 @@ public partial class SyncManager
                 if (outcome == SyncOutcome.Success)
                 {
                     task.SuccessfulTrackers.Add(tracker.Name);
-                    _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, tracker.Name, TrackerSyncState.Success);
+                    UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Success);
                 }
                 else if (outcome == SyncOutcome.PermanentFailure)
                 {
                     task.SuccessfulTrackers.Add(tracker.Name);
-                    _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, tracker.Name, TrackerSyncState.Failed, "Permanent failure");
+                    UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Failed, "Permanent failure");
                     _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, "Permanent failure", willRetry: false);
                 }
                 else
                 {
                     // TransientFailure - leave out of SuccessfulTrackers, mark task for retry.
                     overallSuccess = false;
-                    _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, tracker.Name, TrackerSyncState.Retrying, "Transient failure (will retry)");
+                    UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Retrying, "Transient failure (will retry)");
                     if (task.RetryCount == 0)
                     {
                         _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, "Network error", willRetry: true);
@@ -179,7 +179,7 @@ public partial class SyncManager
             {
                 Log.Error(ex, "Error syncing with {Tracker}", tracker.Name);
                 overallSuccess = false;
-                _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, tracker.Name, TrackerSyncState.Retrying, ex.Message);
+                UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Retrying, ex.Message);
                 if (task.RetryCount == 0)
                 {
                     _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, ex.Message, willRetry: true);
@@ -189,6 +189,27 @@ public partial class SyncManager
 
 
         return (overallSuccess, executedAny);
+    }
+
+    private void UpdateHistoryTrackerStatus(SyncTask task, string trackerName, TrackerSyncState state, string? error = null)
+    {
+        if (task.MediaKind == MediaKind.Anime)
+            _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, trackerName, state, error);
+        else
+            _historyService.UpdateTrackerStatus(task.AnimeId, task.MediaKind, task.Progress, trackerName, state, error);
+    }
+
+    private List<ITrackerService> GetTaskTrackers(SyncTask task)
+    {
+        if (!string.IsNullOrEmpty(task.TargetTracker))
+        {
+            var targeted = _trackers
+                .Where(t => t.IsEnabled && string.Equals(t.Name, task.TargetTracker, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (targeted.Count > 0) return targeted;
+        }
+
+        return GetDestinationTrackers();
     }
 
     private List<ITrackerService> GetDestinationTrackers()

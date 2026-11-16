@@ -55,7 +55,7 @@ public partial class AnimeSyncOrchestrator
                 uiBatch.Clear();
                 await _animeRepository.ApplySyncBatchAsync(new List<AnimeEntity>(), currentBatch);
 
-                status?.Report($"{"sync.updating.metadata"}: {i + 1}/{total}");
+                status?.Report($"{FormatLoc("sync.updating.metadata")}: {i + 1}/{total}");
                 await Task.Delay(1, ct);
             }
         }

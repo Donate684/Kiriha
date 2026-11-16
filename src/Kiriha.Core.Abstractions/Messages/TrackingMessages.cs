@@ -1,29 +1,14 @@
-using System.Text.Json.Serialization;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Abstractions.Messages;
 
-/// <summary>
-/// Closed hierarchy of tracking messages published across the application.
-/// </summary>
-[JsonPolymorphic(InferClosedTypePolymorphism = true)]
-public closed record class TrackingMessage;
+public sealed record MediaChangedMessage(ParsedMedia? Media);
 
-public record MediaChangedMessage(ParsedMedia? Media) : TrackingMessage;
+public sealed record AnimeMatchedMessage(AnimeEntity? Anime);
 
-public record AnimeMatchedMessage(AnimeEntity? Anime) : TrackingMessage;
+public sealed record AnimeProgressChangedMessage(AnimeEntity Anime, int Progress);
 
-public record AnimeProgressChangedMessage(AnimeEntity Anime, int Progress) : TrackingMessage;
+public sealed record TrackingCountdownMessage(string Countdown);
 
-public record TrackingCountdownMessage(string Countdown) : TrackingMessage;
-
-public record TrackingStatusMessage(string Status) : TrackingMessage;
-
-public record HistoryTrackerStatusUpdatedMessage(
-    int AnimeId,
-    int? Episode,
-    string TrackerName,
-    TrackerSyncState State,
-    string? ErrorMessage = null) : TrackingMessage;
-
+public sealed record TrackingStatusMessage(string Status);

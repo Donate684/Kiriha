@@ -38,6 +38,17 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
     private PlayerMediaMetadata? _latestMetadata;
     private InternalPlayerState? _latestState;
 
+    public bool HasConnectedClients
+    {
+        get
+        {
+            lock (_clientsGate)
+            {
+                return _clients.Count > 0;
+            }
+        }
+    }
+
     public InternalPlayerState? LatestState
     {
         get

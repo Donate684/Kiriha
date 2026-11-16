@@ -79,7 +79,7 @@ public partial class SettingsService : IDisposable, ISettingsService
                 var fullDir = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                 if (string.Equals(fullDir, tempRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    dir = Path.Combine(dir, "Kiriha.Tests", Path.GetFileNameWithoutExtension(settingsPathOrDir));
+                    dir = Path.Combine(dir, "Kiriha.IsolatedSettings", Path.GetFileNameWithoutExtension(settingsPathOrDir));
                     Directory.CreateDirectory(dir);
                 }
 
@@ -189,9 +189,8 @@ public partial class SettingsService : IDisposable, ISettingsService
     {
         var bytes = JsonSerializer.SerializeToUtf8Bytes(settings, AppSettingsJsonContext.Default.AppSettings);
         var clone = JsonSerializer.Deserialize(bytes, AppSettingsJsonContext.Default.AppSettings)!;
-        if (settings.UI?.HiddenSeasonalIds != null)
-            clone.UI.HiddenSeasonalIds = new List<int>(settings.UI.HiddenSeasonalIds);
         if (settings.UI?.Window != null)
+        {
             clone.UI.Window = new AppSettings.WindowPlacement
             {
                 Width = settings.UI.Window.Width,
@@ -199,20 +198,6 @@ public partial class SettingsService : IDisposable, ISettingsService
                 X = settings.UI.Window.X,
                 Y = settings.UI.Window.Y,
                 Maximized = settings.UI.Window.Maximized
-            };
-        if (settings.Torrents?.HiddenAnimeIds != null)
-            clone.Torrents.HiddenAnimeIds = new List<int>(settings.Torrents.HiddenAnimeIds);
-        if (settings.Torrents?.PerTitleFilters != null)
-            clone.Torrents.PerTitleFilters = new Dictionary<int, AppSettings.TorrentFilterSet>(settings.Torrents.PerTitleFilters);
-        if (settings.Torrents?.Streaming != null)
-        {
-            clone.Torrents.Streaming = new AppSettings.TorrentStreamingConfig
-            {
-                Enabled = settings.Torrents.Streaming.Enabled,
-                ServerUrl = settings.Torrents.Streaming.ServerUrl,
-                RamCacheMb = settings.Torrents.Streaming.RamCacheMb,
-                AutoStartServer = settings.Torrents.Streaming.AutoStartServer,
-                ServerPort = settings.Torrents.Streaming.ServerPort
             };
         }
         return clone;

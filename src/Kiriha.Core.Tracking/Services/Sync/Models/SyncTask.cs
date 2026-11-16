@@ -20,5 +20,6 @@ public class SyncTask
     public int? Score { get; set; }
     public AnimeEntity? FullItem { get; set; }
     public int RetryCount { get; set; } = 0;
+    public string? TargetTracker { get; set; }
     public HashSet<string> SuccessfulTrackers { get; set; } = new();
 }

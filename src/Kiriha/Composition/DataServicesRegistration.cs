@@ -51,10 +51,16 @@ internal static class DataServicesRegistration
         services.AddSingleton<SettingsService>();
         services.AddForwardedSingleton<SettingsService, ISettingsService>();
         services.AddSingleton<AppReadinessService>();
-        services.AddSingleton<DatabaseInitializer>();
+        services.AddSingleton<DatabaseInitializer>(sp => new DatabaseInitializer(
+            sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+            Kiriha.Infrastructure.Platform.PathHelper.GetLegacySettingsPath()));
         services.AddForwardedSingleton<DatabaseInitializer, IDatabaseInitializer>();
         services.AddSingleton<DatabaseMaintenance>();
-        services.AddSingleton<CacheCleanupService>();
+        services.AddSingleton<CacheCleanupService>(sp => new CacheCleanupService(
+            sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+            sp.GetRequiredService<IHistoryService>(),
+            Kiriha.Infrastructure.Platform.PathHelper.GetImageCachePath(),
+            Kiriha.Infrastructure.Platform.PathHelper.GetSeasonalCachePath()));
 
         // Per-aggregate repositories. Replaces the monolithic DatabaseService —
         // every consumer now depends on the narrowest interface that covers its
@@ -66,7 +72,6 @@ internal static class DataServicesRegistration
         services.AddSingleton<IMetadataRepository, MetadataRepository>();
         services.AddSingleton<IMalSearchCacheRepository, MalSearchCacheRepository>();
         services.AddSingleton<IHttpCacheRepository, HttpCacheRepository>();
-        services.AddSingleton<IEpisodeReleaseRepository, EpisodeReleaseRepository>();
         services.AddSingleton<IAnimeRelationRepository, AnimeRelationRepository>();
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();

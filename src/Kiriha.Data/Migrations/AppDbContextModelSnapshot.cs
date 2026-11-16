@@ -15,7 +15,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261116075147_SyncTaskMediaKind";
+    public override string LastMigrationId => "20261116105000_CoreSchemaCleanup";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -58,6 +58,10 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("next_episode_at")
                     .HasJsonPropertyName("next_episode_at");
+
+                b.Property<string>("PosterUrl")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("poster_url");
 
                 b.Property<string>("Russian")
                     .HasColumnType("TEXT")
@@ -342,72 +346,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("anime_relation_meta");
             });
 
-        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.EpisodeListMeta", b =>
-            {
-                b.Property<int>("MalId")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("mal_id");
-
-                b.Property<DateTime>("FetchedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("fetched_at");
-
-                b.HasKey("MalId");
-
-                b.ToTable("episode_list_meta");
-            });
-
-        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.EpisodeRelease", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("id");
-
-                b.Property<DateTime?>("AirDate")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("air_date");
-
-                b.Property<int>("EpisodeNumber")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("episode_number");
-
-                b.Property<int>("MalId")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("mal_id");
-
-                b.Property<string>("Title")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("title");
-
-                b.HasKey("Id");
-
-                b.HasIndex("MalId")
-                    .HasDatabaseName("idx_episode_releases_mal_id");
-
-                b.ToTable("episode_releases");
-            });
-
-        modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.FileRecognitionCache", b =>
-            {
-                b.Property<string>("FileHash")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("file_hash");
-
-                b.Property<int>("AnimeId")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("anime_id");
-
-                b.Property<string>("LastUsed")
-                    .IsRequired()
-                    .HasColumnType("TEXT")
-                    .HasColumnName("last_used");
-
-                b.HasKey("FileHash");
-
-                b.ToTable("file_recognition_cache");
-            });
-
         modelBuilder.Entity("Kiriha.Core.Domain.Models.Entities.HiddenSeasonalAnime", b =>
             {
                 b.Property<int>("AnimeId")
@@ -643,6 +581,13 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<int>("Episode")
                     .HasColumnType("INTEGER")
                     .HasColumnName("episode");
+
+                b.Property<string>("MediaKind")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasDefaultValue("Anime")
+                    .HasColumnName("media_kind");
 
                 b.Property<string>("PosterUrl")
                     .HasColumnType("TEXT")

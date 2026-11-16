@@ -5,6 +5,11 @@ namespace Kiriha.Infrastructure;
 
 public sealed class AvaloniaUiDispatcher : IUiDispatcher
 {
+    public bool HasThreadAffinity => true;
+
+    public bool CheckAccess()
+        => Dispatcher.UIThread.CheckAccess();
+
     public async Task InvokeAsync(Action action)
         => await Dispatcher.UIThread.InvokeAsync(action);
 

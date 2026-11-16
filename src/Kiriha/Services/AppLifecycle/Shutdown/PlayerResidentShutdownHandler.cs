@@ -7,28 +7,16 @@ public sealed class PlayerResidentShutdownHandler : IShutdownHandler
 {
     public async Task FlushAsync()
     {
+        const int timeoutMs = 700;
         try
         {
             var task = PlayerProcessBridge.StopResidentAsync();
-            if (!await WaitForAsync(task, 700))
-                Log.Warning("Shutdown: stopping player resident process exceeded {Ms}ms timeout", 700);
+            if (!await ShutdownTimeout.WaitForAsync(task, timeoutMs))
+                Log.Warning("Shutdown: stopping player resident process exceeded {Ms}ms timeout", timeoutMs);
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Shutdown: failed to stop player resident process");
-        }
-    }
-
-    private static async Task<bool> WaitForAsync(Task operation, int timeoutMs)
-    {
-        try
-        {
-            await operation.WaitAsync(TimeSpan.FromMilliseconds(timeoutMs));
-            return true;
-        }
-        catch (TimeoutException)
-        {
-            return false;
         }
     }
 }

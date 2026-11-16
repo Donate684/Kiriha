@@ -1,5 +1,4 @@
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Infrastructure.Platform;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -18,13 +17,22 @@ public sealed record CacheCleanupStats(CacheCleanupTarget Target, int ItemCount,
 
 public sealed class CacheCleanupService
 {
+    private static readonly TimeSpan HistoryFlushTimeout = TimeSpan.FromSeconds(5);
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly IHistoryService _historyService;
+    private readonly string? _imageCachePath;
+    private readonly string? _seasonalCachePath;
 
-    public CacheCleanupService(IDbContextFactory<AppDbContext> contextFactory, IHistoryService historyService)
+    public CacheCleanupService(
+        IDbContextFactory<AppDbContext> contextFactory,
+        IHistoryService historyService,
+        string? imageCachePath = null,
+        string? seasonalCachePath = null)
     {
         _contextFactory = contextFactory;
         _historyService = historyService;
+        _imageCachePath = imageCachePath;
+        _seasonalCachePath = seasonalCachePath;
     }
 
     public async Task<IReadOnlyList<CacheCleanupStats>> GetStatsAsync()
@@ -38,13 +46,13 @@ public sealed class CacheCleanupService
             await context.History.CountAsync(),
             0));
 
-        stats.Add(GetDirectoryStats(CacheCleanupTarget.ImageFiles, PathHelper.GetImageCachePath()));
+        stats.Add(GetDirectoryStats(CacheCleanupTarget.ImageFiles, _imageCachePath));
 
         var apiCount =
             await context.Metadata.CountAsync() +
             await context.HttpResponseCache.CountAsync() +
-            await context.EpisodeReleases.CountAsync() +
-            await context.EpisodeListMeta.CountAsync();
+            await context.AnimeRelations.CountAsync() +
+            await context.AnimeCountryOrigin.CountAsync();
         var httpBytes = await context.HttpResponseCache
             .AsNoTracking()
             .SumAsync(x => (long)x.Body.Length);
@@ -55,10 +63,10 @@ public sealed class CacheCleanupService
 
         stats.Add(new CacheCleanupStats(
             CacheCleanupTarget.RecognitionCache,
-            await context.FileRecognitionCache.CountAsync() + await context.MalSearchCache.CountAsync(),
+            await context.MalSearchCache.CountAsync(),
             0));
 
-        stats.Add(GetDirectoryStats(CacheCleanupTarget.SeasonalCache, PathHelper.GetSeasonalCachePath()));
+        stats.Add(GetDirectoryStats(CacheCleanupTarget.SeasonalCache, _seasonalCachePath));
 
         return stats;
     }
@@ -68,7 +76,7 @@ public sealed class CacheCleanupService
         var requested = targets.Distinct().ToHashSet();
         if (requested.Count == 0) return;
 
-        await _historyService.FlushAsync(TimeSpan.FromSeconds(5));
+        await _historyService.FlushAsync(HistoryFlushTimeout);
 
         using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -79,28 +87,29 @@ public sealed class CacheCleanupService
         {
             await context.Database.ExecuteSqlRawAsync("DELETE FROM metadata;");
             await context.Database.ExecuteSqlRawAsync("DELETE FROM http_response_cache;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM episode_releases;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM episode_list_meta;");
+            await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_relations;");
+            await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_relation_meta;");
+            await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_country_origin;");
         }
 
         if (requested.Contains(CacheCleanupTarget.RecognitionCache))
         {
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM file_recognition_cache;");
             await context.Database.ExecuteSqlRawAsync("DELETE FROM mal_search_cache;");
         }
 
         await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(PASSIVE);");
 
         if (requested.Contains(CacheCleanupTarget.ImageFiles))
-            DeleteDirectoryContents(PathHelper.GetImageCachePath());
+            DeleteDirectoryContents(_imageCachePath);
 
         if (requested.Contains(CacheCleanupTarget.SeasonalCache))
-            DeleteDirectoryContents(PathHelper.GetSeasonalCachePath());
+            DeleteDirectoryContents(_seasonalCachePath);
     }
 
-    private static CacheCleanupStats GetDirectoryStats(CacheCleanupTarget target, string path)
+    private static CacheCleanupStats GetDirectoryStats(CacheCleanupTarget target, string? path)
     {
-        if (!Directory.Exists(path)) return new CacheCleanupStats(target, 0, 0);
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            return new CacheCleanupStats(target, 0, 0);
 
         try
         {
@@ -122,9 +131,10 @@ public sealed class CacheCleanupService
         }
     }
 
-    private static void DeleteDirectoryContents(string path)
+    private static void DeleteDirectoryContents(string? path)
     {
-        if (!Directory.Exists(path)) return;
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            return;
 
         foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).ToList())
         {

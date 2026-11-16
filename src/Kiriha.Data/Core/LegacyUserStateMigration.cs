@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure.Platform;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -10,9 +9,10 @@ public static class LegacyUserStateMigration
 {
     public static async Task MigrateAsync(AppDbContext context, string? legacyConfigPath = null, CancellationToken ct = default)
     {
-        var configPath = legacyConfigPath ?? PathHelper.GetLegacySettingsPath();
-        if (!File.Exists(configPath))
+        if (string.IsNullOrWhiteSpace(legacyConfigPath) || !File.Exists(legacyConfigPath))
             return;
+
+        var configPath = legacyConfigPath;
 
         try
         {
@@ -97,6 +97,18 @@ public static class LegacyUserStateMigration
             {
                 await context.SaveChangesAsync(ct);
                 Log.Information("Legacy user state migrated successfully to SQLite from {Path}", configPath);
+            }
+
+            // Archive the legacy monolithic config file once SQLite state migration completes so
+            // subsequent startups never re-insert items that the user later unhides or deletes.
+            try
+            {
+                var migratedPath = configPath + ".migrated";
+                File.Move(configPath, migratedPath, overwrite: true);
+            }
+            catch (Exception moveEx)
+            {
+                Log.Debug(moveEx, "Could not archive legacy config file {Path}", configPath);
             }
         }
         catch (Exception ex)

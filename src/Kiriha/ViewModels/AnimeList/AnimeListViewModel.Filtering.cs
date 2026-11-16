@@ -637,7 +637,7 @@ public partial class AnimeListViewModel
         }
 
         var status = SelectedStatus;
-        var kind = SelectedMediaKind;
+        var kinds = GetEffectiveMediaKinds(SelectedMediaKind);
         var nsfw = FilterNsfw;
 
         TagSuggestions.Clear();
@@ -646,13 +646,13 @@ public partial class AnimeListViewModel
         {
             foreach (var f in FormatCatalog.All)
             {
-                int count = _listProjection.CountFormat(status, kind, f.Key, nsfw);
+                int count = _listProjection.CountFormat(status, kinds, f.Key, nsfw);
                 bool isSelected = SelectedFormats.Any(x => string.Equals(x.Key, f.Key, StringComparison.OrdinalIgnoreCase));
                 TagSuggestions.Add(new SearchTagSuggestionItem(SearchTagKind.Format, null, f, f.RussianName, f.EnglishName, count, isSelected));
             }
             foreach (var g in GenreCatalog.All.Take(6))
             {
-                int count = _listProjection.CountGenre(status, kind, g.Key, nsfw);
+                int count = _listProjection.CountGenre(status, kinds, g.Key, nsfw);
                 bool isSelected = SelectedGenres.Any(x => string.Equals(x.Key, g.Key, StringComparison.OrdinalIgnoreCase));
                 TagSuggestions.Add(new SearchTagSuggestionItem(SearchTagKind.Genre, g, null, g.RussianName, g.EnglishName, count, isSelected));
             }
@@ -663,7 +663,7 @@ public partial class AnimeListViewModel
         var matchedFormats = FormatCatalog.SearchFormats(clean, 4);
         foreach (var f in matchedFormats)
         {
-            int count = _listProjection.CountFormat(status, kind, f.Key, nsfw);
+            int count = _listProjection.CountFormat(status, kinds, f.Key, nsfw);
             bool isSelected = SelectedFormats.Any(x => string.Equals(x.Key, f.Key, StringComparison.OrdinalIgnoreCase));
             TagSuggestions.Add(new SearchTagSuggestionItem(SearchTagKind.Format, null, f, f.RussianName, f.EnglishName, count, isSelected));
         }
@@ -672,7 +672,7 @@ public partial class AnimeListViewModel
         var matchedGenres = GenreCatalog.SearchGenres(clean, remainingSlots);
         foreach (var g in matchedGenres)
         {
-            int count = _listProjection.CountGenre(status, kind, g.Key, nsfw);
+            int count = _listProjection.CountGenre(status, kinds, g.Key, nsfw);
             bool isSelected = SelectedGenres.Any(x => string.Equals(x.Key, g.Key, StringComparison.OrdinalIgnoreCase));
             TagSuggestions.Add(new SearchTagSuggestionItem(SearchTagKind.Genre, g, null, g.RussianName, g.EnglishName, count, isSelected));
         }
@@ -720,6 +720,12 @@ public partial class AnimeListViewModel
         _filterRefreshDebouncer?.Invoke();
     }
 
+    private static readonly MediaKind[] AnimeTabKinds = [MediaKind.Anime];
+    private static readonly MediaKind[] MangaTabKinds = [MediaKind.Manga, MediaKind.LightNovel];
+
+    private static MediaKind[] GetEffectiveMediaKinds(MediaKind kind) =>
+        kind == MediaKind.Manga ? MangaTabKinds : AnimeTabKinds;
+
     private async Task ApplyCurrentFiltersAsync(CancellationToken cancellationToken = default)
     {
         var version = Interlocked.Increment(ref _filterRefreshVersion);
@@ -730,13 +736,14 @@ public partial class AnimeListViewModel
         var nsfw = FilterNsfw;
         var sort = SortBy;
         var kind = SelectedMediaKind;
+        var kinds = GetEffectiveMediaKinds(kind);
         var prioritizeNewEpisodes = PrioritizeNewEpisodes;
         var prioritizeUnwatched = PrioritizeUnwatched;
 
         var (filtered, counts) = await Task.Run(() =>
         {
-            var items = _listProjection.Query(status, query, activeGenreKeys, activeFormatKeys, nsfw, sort, kind, prioritizeNewEpisodes, prioritizeUnwatched);
-            var statusCounts = _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kind);
+            var items = _listProjection.Query(status, query, activeGenreKeys, activeFormatKeys, nsfw, sort, kinds, prioritizeNewEpisodes, prioritizeUnwatched);
+            var statusCounts = _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kinds);
             return (items, statusCounts);
         }, cancellationToken);
 
@@ -767,13 +774,14 @@ public partial class AnimeListViewModel
     private async Task UpdateCountsAsync()
     {
         var kind = SelectedMediaKind;
+        var kinds = GetEffectiveMediaKinds(kind);
         var query = SearchQuery;
         var activeGenreKeys = SelectedGenres.Select(g => g.Key).ToList();
         var activeFormatKeys = SelectedFormats.Select(f => f.Key).ToList();
         var nsfw = FilterNsfw;
 
         var counts = await Task.Run(() =>
-            _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kind));
+            _listProjection.CountAllStatuses(query, activeGenreKeys, activeFormatKeys, nsfw, kinds));
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {

@@ -54,18 +54,13 @@ public class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
     {
         builder.ToTable("history");
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(e => e.MediaKind)
+               .HasConversion<string>()
+               .HasDefaultValue(MediaKind.Anime);
         builder.Property(e => e.TrackerStatusJson).HasColumnName("tracker_status_json");
         builder.Property(e => e.PosterUrl).HasColumnName("poster_url");
         builder.HasIndex(e => e.Timestamp).HasDatabaseName("idx_history_timestamp");
         builder.HasIndex(e => e.AnimeId).HasDatabaseName("idx_history_anime_id");
-    }
-}
-
-public class FileRecognitionCacheConfiguration : IEntityTypeConfiguration<FileRecognitionCache>
-{
-    public void Configure(EntityTypeBuilder<FileRecognitionCache> builder)
-    {
-        builder.HasKey(e => e.FileHash);
     }
 }
 
@@ -84,25 +79,6 @@ public class HttpCacheEntryConfiguration : IEntityTypeConfiguration<HttpCacheEnt
     {
         builder.ToTable("http_response_cache");
         builder.HasKey(e => e.UrlHash);
-    }
-}
-
-public class EpisodeListMetaConfiguration : IEntityTypeConfiguration<EpisodeListMeta>
-{
-    public void Configure(EntityTypeBuilder<EpisodeListMeta> builder)
-    {
-        builder.ToTable("episode_list_meta");
-        builder.HasKey(e => e.MalId);
-        builder.Property(e => e.MalId).ValueGeneratedNever();
-    }
-}
-
-public class EpisodeReleaseConfiguration : IEntityTypeConfiguration<EpisodeRelease>
-{
-    public void Configure(EntityTypeBuilder<EpisodeRelease> builder)
-    {
-        builder.ToTable("episode_releases");
-        builder.HasIndex(e => e.MalId).HasDatabaseName("idx_episode_releases_mal_id");
     }
 }
 

@@ -89,10 +89,11 @@ public partial class PlayerViewModel
             }
         }
 
+        var configuredServerUrl = _torrServer?.ServerUrl;
         var isTorrServer = !string.IsNullOrEmpty(hash) ||
                            (!string.IsNullOrWhiteSpace(videoUrl) &&
                             (videoUrl.Contains(AppConstants.Api.TorrServer.DefaultHost, StringComparison.OrdinalIgnoreCase) ||
-                             videoUrl.Contains("127.0.0.1:8090", StringComparison.OrdinalIgnoreCase)));
+                             (!string.IsNullOrWhiteSpace(configuredServerUrl) && videoUrl.Contains(configuredServerUrl, StringComparison.OrdinalIgnoreCase))));
 
         // If switching away from an active torrent or switching to a different torrent:
         if (!string.IsNullOrEmpty(TorrentHash) && (!isTorrServer || !string.Equals(TorrentHash, hash, StringComparison.OrdinalIgnoreCase)))
@@ -242,26 +243,26 @@ public partial class PlayerViewModel
         });
     }
 
-    private static string FormatSpeed(double bytesPerSec)
+    public static string FormatSpeed(double bytesPerSec)
     {
         if (bytesPerSec <= 0)
             return "0 KB/s";
 
         if (bytesPerSec < 1024 * 1024)
-            return $"{bytesPerSec / 1024:0.#} KB/s";
+            return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{bytesPerSec / 1024:0.#} KB/s");
 
-        return $"{bytesPerSec / (1024 * 1024):0.1} MB/s";
+        return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{bytesPerSec / (1024 * 1024):0.#} MB/s");
     }
 
-    private static string FormatBytes(long bytes)
+    public static string FormatBytes(long bytes)
     {
         if (bytes <= 0)
             return "0 MB";
 
         if (bytes < 1024 * 1024 * 1024)
-            return $"{bytes / (1024.0 * 1024.0):0.#} MB";
+            return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{bytes / (1024.0 * 1024.0):0.#} MB");
 
-        return $"{bytes / (1024.0 * 1024.0 * 1024.0):0.2} GB";
+        return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{bytes / (1024.0 * 1024.0 * 1024.0):0.##} GB");
     }
 
     private void DisposeTorrentMonitor()

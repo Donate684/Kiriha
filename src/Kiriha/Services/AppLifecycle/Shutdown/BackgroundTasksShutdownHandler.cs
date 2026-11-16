@@ -23,25 +23,12 @@ public sealed class BackgroundTasksShutdownHandler : IShutdownHandler
                 await _supervisor.StopAsync(stopCts.Token);
             });
 
-            if (!await WaitForAsync(operation, timeoutMs + 500))
+            if (!await ShutdownTimeout.WaitForAsync(operation, timeoutMs + 500))
                 Log.Warning("Shutdown flush: background tasks exceeded {Ms}ms timeout", timeoutMs);
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Shutdown flush: background task stop failed");
-        }
-    }
-
-    private static async Task<bool> WaitForAsync(Task operation, int timeoutMs)
-    {
-        try
-        {
-            await operation.WaitAsync(TimeSpan.FromMilliseconds(timeoutMs));
-            return true;
-        }
-        catch (TimeoutException)
-        {
-            return false;
         }
     }
 }

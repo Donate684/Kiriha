@@ -5,6 +5,7 @@ namespace Kiriha.Core.Abstractions.Services;
 
 public interface IInternalPlayerServer
 {
+    bool HasConnectedClients => false;
     InternalPlayerState? LatestState { get; }
     event EventHandler<InternalPlayerState>? PlayerStateChanged;
     Task SendMetadataAsync(PlayerMediaMetadata metadata, CancellationToken cancellationToken = default);

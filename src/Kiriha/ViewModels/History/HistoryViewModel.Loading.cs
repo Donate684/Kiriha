@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Domain.Models.Api;
 
 namespace Kiriha.ViewModels.History;
 
@@ -14,25 +15,20 @@ public partial class HistoryViewModel
 
         // Resolve posters:
         // 1. If item.PosterUrl is already stored in DB, keep it.
-        // 2. If missing, look up in current collection (cheap in-memory map).
-        // 3. If still missing (e.g. anime was deleted from collection), look up in IMetadataRepository.
+        // 2. If missing, look up in current collection via thread-safe FindById.
+        // 3. If still missing (e.g. item was deleted from collection), look up in IMetadataRepository.
         try
         {
-            var collection = _animeRepo.Collection;
-            var posterMap = collection
-                .Where(x => !string.IsNullOrEmpty(x.MainPictureUrl))
-                .DistinctBy(x => x.Id)
-                .ToDictionary(x => x.Id, x => x.MainPictureUrl!);
-
             var missingPosterItems = new List<Kiriha.Core.Domain.Models.HistoryItem>();
 
             foreach (var item in _rawItems)
             {
                 if (string.IsNullOrEmpty(item.PosterUrl))
                 {
-                    if (posterMap.TryGetValue(item.AnimeId, out var url))
+                    var match = _animeRepo.FindById(item.AnimeId, item.MediaKind);
+                    if (!string.IsNullOrEmpty(match?.MainPictureUrl))
                     {
-                        item.PosterUrl = url;
+                        item.PosterUrl = match.MainPictureUrl;
                     }
                     else if (item.AnimeId > 0)
                     {
@@ -43,11 +39,15 @@ public partial class HistoryViewModel
 
             if (missingPosterItems.Count > 0 && _metadataRepo != null)
             {
-                var missingIds = missingPosterItems.Select(x => x.AnimeId).Distinct().ToList();
+                var missingIds = missingPosterItems
+                    .Select(x => ShikiMetadata.GetCacheId(x.AnimeId, x.MediaKind))
+                    .Distinct()
+                    .ToList();
                 var metas = await _metadataRepo.GetBatchAsync(missingIds);
                 foreach (var item in missingPosterItems)
                 {
-                    if (metas.TryGetValue(item.AnimeId, out var meta) && !string.IsNullOrEmpty(meta.PosterUrl))
+                    int cacheId = ShikiMetadata.GetCacheId(item.AnimeId, item.MediaKind);
+                    if (metas.TryGetValue(cacheId, out var meta) && !string.IsNullOrEmpty(meta.PosterUrl))
                     {
                         item.PosterUrl = meta.PosterUrl;
                     }

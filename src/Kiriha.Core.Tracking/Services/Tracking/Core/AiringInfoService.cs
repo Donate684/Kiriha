@@ -20,7 +20,6 @@ public class AiringInfoService : IAiringInfoService
     private readonly AiringInfoFetcher _fetcher;
     private readonly AiringInfoCache _cache;
 
-
     public AiringInfoService(
         IAniListApiService aniListApi,
         IShikiApiService shikiApi,
@@ -46,19 +45,28 @@ public class AiringInfoService : IAiringInfoService
     private string FormatLoc(string key, params object?[] args) =>
         _localizer != null ? _localizer.GetLoc(key, args) : TrackingLoc.GetLoc(key, args);
 
+    public static bool IsTrackableOngoingAnime(AnimeEntity anime, bool includeUnknownTotal = true)
+    {
+        if (anime.MediaKind != MediaKind.Anime) return false;
+
+        var status = anime.StatusDetailed?.ToLowerInvariant();
+        if (status is "currently_airing" or "currently airing" or "ongoing" or "releasing"
+            || AppConstants.AiringStatus.IsCurrentlyAiring(status)
+            || anime.NextEpisodeAt.HasValue)
+        {
+            return true;
+        }
+
+        return includeUnknownTotal &&
+               (anime.TotalEpisodes <= 0 ||
+                (!AppConstants.AiringStatus.IsFinishedAiring(status) && anime.EpisodesAired < anime.TotalEpisodes));
+    }
+
     public async Task SyncEpisodesForAnimeAsync(AnimeEntity anime, CancellationToken ct = default)
     {
         if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
-        if (anime.MediaKind != MediaKind.Anime) return;
         if (anime.Status != UserAnimeStatus.Watching) return;
-
-        var status = anime.StatusDetailed?.ToLowerInvariant();
-        bool isTrackableStatus = anime.TotalEpisodes <= 0
-            || status is "currently_airing" or "currently airing" or "ongoing" or "releasing"
-            || AppConstants.AiringStatus.IsCurrentlyAiring(status)
-            || (!AppConstants.AiringStatus.IsFinishedAiring(status) && anime.EpisodesAired < anime.TotalEpisodes);
-
-        if (!isTrackableStatus && !anime.NextEpisodeAt.HasValue) return;
+        if (!IsTrackableOngoingAnime(anime, includeUnknownTotal: true)) return;
 
         var source = _settingsService.Current.System.AiringSource;
         Log.Information("AiringInfoService: Immediate {Source} sync requested for {Title} (ID: {Id})", source, anime.Title, anime.Id);
@@ -87,13 +95,6 @@ public class AiringInfoService : IAiringInfoService
             return;
         }
 
-        using var gateScope = _syncGate != null ? await _syncGate.TryAcquireBackgroundUpdateAsync(ct) : null;
-        if (_syncGate != null && gateScope is null)
-        {
-            Log.Information("AiringInfoService: Library sync gate busy, skipping episode sync.");
-            return;
-        }
-
         var source = _settingsService.Current.System.AiringSource;
         Log.Information("AiringInfoService: Checking {Source} airing info (Force: {Force})...", source, force);
 
@@ -102,17 +103,9 @@ public class AiringInfoService : IAiringInfoService
         var toSync = await _uiDispatcher.InvokeAsync(() =>
             _animeRepo.GetCollection()
                 .Where(x =>
-                {
-                    if (x.MediaKind != MediaKind.Anime) return false;
-                    var s = x.StatusDetailed?.ToLowerInvariant();
-                    bool isAiring = s is "currently_airing" or "currently airing" or "ongoing" or "releasing"
-                        || AppConstants.AiringStatus.IsCurrentlyAiring(s)
-                        || x.NextEpisodeAt.HasValue;
-
-                    return isAiring &&
-                           x.Status == UserAnimeStatus.Watching &&
-                           (force || x.LastEpisodesSync is null || x.LastEpisodesSync < threshold);
-                })
+                    x.Status == UserAnimeStatus.Watching &&
+                    IsTrackableOngoingAnime(x, includeUnknownTotal: false) &&
+                    (force || x.LastEpisodesSync is null || x.LastEpisodesSync < threshold))
                 .ToList());
 
         if (toSync.Count == 0)
@@ -123,11 +116,11 @@ public class AiringInfoService : IAiringInfoService
 
         Log.Information("AiringInfoService: Found {Count} anime to sync from {Source}.", toSync.Count, source);
 
-        var semaphore = new SemaphoreSlim(4);
+        using var semaphore = new SemaphoreSlim(4);
         int completed = 0;
         var total = toSync.Count;
 
-        var tasks = toSync.Select(async (anime, i) =>
+        var tasks = toSync.Select(async anime =>
         {
             if (ct.IsCancellationRequested) return;
             if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
@@ -136,6 +129,7 @@ public class AiringInfoService : IAiringInfoService
             try
             {
                 if (ct.IsCancellationRequested || _animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
+                if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
 
                 int currentCompleted = Interlocked.Increment(ref completed);
                 var progressMsg = FormatLoc("sync.syncing.episodes_progress", currentCompleted.ToString(), total.ToString(), anime.Title);
@@ -144,8 +138,13 @@ public class AiringInfoService : IAiringInfoService
                 Log.Information("AiringInfoService: Syncing {Source} airing info for {Title} (ID: {Id})...", source, anime.Title, anime.Id);
 
                 var now = DateTime.UtcNow;
+                // Perform network I/O outside LibrarySyncGate so slow upstream responses never starve full library sync.
                 var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
                 if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
+                if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
+
+                using var gateScope = _syncGate != null ? await _syncGate.TryAcquireBackgroundUpdateAsync(ct) : null;
+                if (_syncGate != null && gateScope is null) return;
 
                 if (airing is null)
                 {

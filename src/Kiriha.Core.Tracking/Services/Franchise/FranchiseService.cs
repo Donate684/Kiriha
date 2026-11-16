@@ -17,6 +17,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
     private readonly IAnimeRelationRepository _relationRepo;
     private readonly IShikiApiService _shikiApi;
     private readonly IUiDispatcher? _uiDispatcher;
+    private readonly ISettingsService? _settingsService;
     private readonly Debouncer _rebuildDebouncer;
     private readonly CancellationTokenSource _cts = new();
 
@@ -40,12 +41,14 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
         IAnimeRelationRepository relationRepo,
         IShikiApiService shikiApi,
         IBackgroundTaskSupervisor? backgroundTasks = null,
-        IUiDispatcher? uiDispatcher = null)
+        IUiDispatcher? uiDispatcher = null,
+        ISettingsService? settingsService = null)
     {
         _animeRepo = animeRepo;
         _relationRepo = relationRepo;
         _shikiApi = shikiApi;
         _uiDispatcher = uiDispatcher;
+        _settingsService = settingsService;
 
         _rebuildDebouncer = new Debouncer(TimeSpan.FromMilliseconds(500), () =>
         {
@@ -116,21 +119,6 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
     }
 
     public IReadOnlyDictionary<int, FranchiseContext> GetIndex() => _index;
-
-    public void Enrich(IEnumerable<AnimeEntity> items)
-    {
-        if (items == null) return;
-        var index = _index;
-        foreach (var item in items)
-        {
-            if (item.MediaKind != MediaKind.Anime)
-            {
-                item.Franchise = null;
-                continue;
-            }
-            item.Franchise = index.TryGetValue(item.Id, out var ctx) ? ctx : null;
-        }
-    }
 
     private void PostToUi(Action action)
     {
@@ -229,13 +217,6 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                 Log.Debug(ex, "FranchiseService: resolution loop step encountered an error");
             }
         }
-    }
-
-    public async Task IngestRelationsAsync(int sourceMalId, IEnumerable<AnimeRelation> relations, CancellationToken ct = default)
-    {
-        var relationList = relations as List<AnimeRelation> ?? relations.ToList();
-        await _relationRepo.ReplaceAsync(sourceMalId, relationList, ct).ConfigureAwait(false);
-        await RebuildIndexAsync(ct).ConfigureAwait(false);
     }
 
     private static bool IsAnimeNode(ShikiFranchiseNode node)
@@ -500,17 +481,10 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                                 ? primary.Relation
                                 : (closestComp.Value.Relation != FranchiseRelationKind.None ? closestComp.Value.Relation : FranchiseRelationKind.Sequel);
 
-                            var dropTitle = !string.IsNullOrWhiteSpace(closestDrop.Value.Anime.RussianTitle)
-                                ? closestDrop.Value.Anime.RussianTitle
-                                : closestDrop.Value.Anime.Title;
-
-                            var compTitle = !string.IsNullOrWhiteSpace(closestComp.Value.Anime.RussianTitle)
-                                ? closestComp.Value.Anime.RussianTitle
-                                : closestComp.Value.Anime.Title;
-
-                            var primTitle = !string.IsNullOrWhiteSpace(primary.Anime.RussianTitle)
-                                ? primary.Anime.RussianTitle
-                                : primary.Anime.Title;
+                            bool useRussian = _settingsService?.Current.UI.UseRussianTitles ?? true;
+                            var dropTitle = ResolveDisplayTitle(closestDrop.Value.Anime, useRussian);
+                            var compTitle = ResolveDisplayTitle(closestComp.Value.Anime, useRussian);
+                            var primTitle = ResolveDisplayTitle(primary.Anime, useRussian);
 
                             newIndex[targetId] = new FranchiseContext
                             {
@@ -540,9 +514,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                                 ? closestDrop.Value.Relation
                                 : FranchiseRelationKind.Sequel;
 
-                            var title = !string.IsNullOrWhiteSpace(closestDrop.Value.Anime.RussianTitle)
-                                ? closestDrop.Value.Anime.RussianTitle
-                                : closestDrop.Value.Anime.Title;
+                            var title = ResolveDisplayTitle(closestDrop.Value.Anime, _settingsService?.Current.UI.UseRussianTitles ?? true);
 
                             newIndex[targetId] = new FranchiseContext
                             {
@@ -570,9 +542,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                                 ? closestComp.Value.Relation
                                 : FranchiseRelationKind.Sequel;
 
-                            var title = !string.IsNullOrWhiteSpace(closestComp.Value.Anime.RussianTitle)
-                                ? closestComp.Value.Anime.RussianTitle
-                                : closestComp.Value.Anime.Title;
+                            var title = ResolveDisplayTitle(closestComp.Value.Anime, _settingsService?.Current.UI.UseRussianTitles ?? true);
 
                             newIndex[targetId] = new FranchiseContext
                             {
@@ -600,9 +570,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                                 ? closestWatch.Value.Relation
                                 : FranchiseRelationKind.Sequel;
 
-                            var title = !string.IsNullOrWhiteSpace(closestWatch.Value.Anime.RussianTitle)
-                                ? closestWatch.Value.Anime.RussianTitle
-                                : closestWatch.Value.Anime.Title;
+                            var title = ResolveDisplayTitle(closestWatch.Value.Anime, _settingsService?.Current.UI.UseRussianTitles ?? true);
 
                             newIndex[targetId] = new FranchiseContext
                             {
@@ -628,9 +596,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                                 ? closestPlan.Value.Relation
                                 : FranchiseRelationKind.Sequel;
 
-                            var title = !string.IsNullOrWhiteSpace(closestPlan.Value.Anime.RussianTitle)
-                                ? closestPlan.Value.Anime.RussianTitle
-                                : closestPlan.Value.Anime.Title;
+                            var title = ResolveDisplayTitle(closestPlan.Value.Anime, _settingsService?.Current.UI.UseRussianTitles ?? true);
 
                             newIndex[targetId] = new FranchiseContext
                             {
@@ -656,9 +622,7 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
                                 ? closestHold.Value.Relation
                                 : FranchiseRelationKind.Sequel;
 
-                            var title = !string.IsNullOrWhiteSpace(closestHold.Value.Anime.RussianTitle)
-                                ? closestHold.Value.Anime.RussianTitle
-                                : closestHold.Value.Anime.Title;
+                            var title = ResolveDisplayTitle(closestHold.Value.Anime, _settingsService?.Current.UI.UseRussianTitles ?? true);
 
                             newIndex[targetId] = new FranchiseContext
                             {
@@ -686,6 +650,11 @@ public sealed class FranchiseService : IFranchiseService, IDisposable
             Log.Warning(ex, "FranchiseService: failed to rebuild index");
         }
     }
+
+    private static string ResolveDisplayTitle(AnimeEntity anime, bool useRussian) =>
+        useRussian
+            ? (!string.IsNullOrWhiteSpace(anime.RussianTitle) ? anime.RussianTitle : anime.Title)
+            : (!string.IsNullOrWhiteSpace(anime.Title) ? anime.Title : (anime.RussianTitle ?? string.Empty));
 
     private static FranchiseRelationKind MapDirectRelation(string? relationType)
     {

@@ -37,7 +37,6 @@ public static class AboutCredits
         new CreditEntry("Entity Framework Core (SQLite)", "MIT · Microsoft",                           "https://learn.microsoft.com/ef/core/"),
         new CreditEntry("Serilog",                        "Apache 2.0 · Structured logging",           "https://serilog.net"),
         new CreditEntry("Velopack",                       "MIT · Auto-update framework",               "https://velopack.io"),
-        new CreditEntry("AngleSharp",                     "MIT · HTML5 DOM parsing engine",            "https://anglesharp.github.io/"),
         new CreditEntry("WebView2",                       "BSD · Embedded Chromium browser",           "https://developer.microsoft.com/microsoft-edge/webview2/"),
         new CreditEntry("DiscordRichPresence",            "MIT · Lachee",                              "https://github.com/Lachee/discord-rpc-csharp"),
         new CreditEntry("Lato Font",                      "OFL 1.1 · Subtitle typography · Lukasz Dziedzic", "https://www.latofonts.com/"),

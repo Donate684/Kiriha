@@ -85,30 +85,42 @@ public sealed partial class AnimeCollectionProjection : IDisposable
     }
 
     public int CountGenre(UserAnimeStatus status, MediaKind kind, string genreKey, bool filterNsfw = false)
+        => CountGenre(status, [kind], genreKey, filterNsfw);
+
+    public int CountGenre(UserAnimeStatus status, IReadOnlyList<MediaKind> kinds, string genreKey, bool filterNsfw = false)
     {
         lock (_syncLock)
         {
-            if (!_buckets.TryGetValue((status, kind), out var bucket) || bucket.Count == 0) return 0;
             int count = 0;
-            foreach (var entry in bucket.Values)
+            for (int i = 0; i < kinds.Count; i++)
             {
-                if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw) continue;
-                if (entry.GenreKeys.Contains(genreKey)) count++;
+                if (!_buckets.TryGetValue((status, kinds[i]), out var bucket) || bucket.Count == 0) continue;
+                foreach (var entry in bucket.Values)
+                {
+                    if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw) continue;
+                    if (entry.GenreKeys.Contains(genreKey)) count++;
+                }
             }
             return count;
         }
     }
 
     public int CountFormat(UserAnimeStatus status, MediaKind kind, string formatKey, bool filterNsfw = false)
+        => CountFormat(status, [kind], formatKey, filterNsfw);
+
+    public int CountFormat(UserAnimeStatus status, IReadOnlyList<MediaKind> kinds, string formatKey, bool filterNsfw = false)
     {
         lock (_syncLock)
         {
-            if (!_buckets.TryGetValue((status, kind), out var bucket) || bucket.Count == 0) return 0;
             int count = 0;
-            foreach (var entry in bucket.Values)
+            for (int i = 0; i < kinds.Count; i++)
             {
-                if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw) continue;
-                if (Kiriha.Core.Domain.Models.Formats.FormatCatalog.MatchesFormat(entry.Item.Type, formatKey)) count++;
+                if (!_buckets.TryGetValue((status, kinds[i]), out var bucket) || bucket.Count == 0) continue;
+                foreach (var entry in bucket.Values)
+                {
+                    if (filterNsfw ? !entry.IsNsfw : entry.IsNsfw) continue;
+                    if (Kiriha.Core.Domain.Models.Formats.FormatCatalog.MatchesFormat(entry.Item.Type, formatKey)) count++;
+                }
             }
             return count;
         }
@@ -140,6 +152,14 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         IReadOnlyCollection<string>? activeFormatKeys,
         bool filterNsfw,
         MediaKind kind)
+        => CountAllStatuses(searchQuery, activeGenreKeys, activeFormatKeys, filterNsfw, [kind]);
+
+    public AnimeStatusCounts CountAllStatuses(
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys,
+        IReadOnlyCollection<string>? activeFormatKeys,
+        bool filterNsfw,
+        IReadOnlyList<MediaKind> kinds)
     {
         lock (_syncLock)
         {
@@ -155,15 +175,21 @@ public sealed partial class AnimeCollectionProjection : IDisposable
 
             int GetBucketCount(UserAnimeStatus status)
             {
-                return _buckets.TryGetValue((status, kind), out var bucket) && bucket.Count > 0
-                    ? CountBucket(bucket, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw)
-                    : 0;
+                int total = 0;
+                for (int i = 0; i < kinds.Count; i++)
+                {
+                    if (_buckets.TryGetValue((status, kinds[i]), out var bucket) && bucket.Count > 0)
+                    {
+                        total += CountBucket(bucket, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw);
+                    }
+                }
+                return total;
             }
         }
     }
 
     public List<AnimeEntity> Query(UserAnimeStatus status, string? searchQuery, bool filterNsfw, string? sortBy, MediaKind kind, bool prioritizeNewEpisodes = false, bool prioritizeUnwatched = false)
-        => Query(status, searchQuery, null, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes, prioritizeUnwatched);
+        => Query(status, searchQuery, null, null, filterNsfw, sortBy, [kind], prioritizeNewEpisodes, prioritizeUnwatched);
 
     public List<AnimeEntity> Query(
         UserAnimeStatus status,
@@ -174,7 +200,7 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         MediaKind kind,
         bool prioritizeNewEpisodes = false,
         bool prioritizeUnwatched = false)
-        => Query(status, searchQuery, activeGenreKeys, null, filterNsfw, sortBy, kind, prioritizeNewEpisodes, prioritizeUnwatched);
+        => Query(status, searchQuery, activeGenreKeys, null, filterNsfw, sortBy, [kind], prioritizeNewEpisodes, prioritizeUnwatched);
 
     public List<AnimeEntity> Query(
         UserAnimeStatus status,
@@ -186,10 +212,31 @@ public sealed partial class AnimeCollectionProjection : IDisposable
         MediaKind kind,
         bool prioritizeNewEpisodes = false,
         bool prioritizeUnwatched = false)
+        => Query(status, searchQuery, activeGenreKeys, activeFormatKeys, filterNsfw, sortBy, [kind], prioritizeNewEpisodes, prioritizeUnwatched);
+
+    public List<AnimeEntity> Query(
+        UserAnimeStatus status,
+        string? searchQuery,
+        IReadOnlyCollection<string>? activeGenreKeys,
+        IReadOnlyCollection<string>? activeFormatKeys,
+        bool filterNsfw,
+        string? sortBy,
+        IReadOnlyList<MediaKind> kinds,
+        bool prioritizeNewEpisodes = false,
+        bool prioritizeUnwatched = false)
     {
         lock (_syncLock)
         {
-            if (!_buckets.TryGetValue((status, kind), out var bucket) || bucket.Count == 0)
+            int totalBucketCount = 0;
+            for (int i = 0; i < kinds.Count; i++)
+            {
+                if (_buckets.TryGetValue((status, kinds[i]), out var b))
+                {
+                    totalBucketCount += b.Count;
+                }
+            }
+
+            if (totalBucketCount == 0)
             {
                 return [];
             }
@@ -197,15 +244,21 @@ public sealed partial class AnimeCollectionProjection : IDisposable
             var (requiredGenreKeys, requiredFormatKeys, normalizedSearch) = PrepareFilterCriteria(searchQuery, activeGenreKeys, activeFormatKeys);
 
             int initialCapacity = (normalizedSearch.Length > 0 || requiredGenreKeys != null || requiredFormatKeys != null)
-                ? Math.Min(bucket.Count, 32)
-                : bucket.Count;
+                ? Math.Min(totalBucketCount, 32)
+                : totalBucketCount;
             var result = new List<AnimeEntity>(initialCapacity);
 
-            foreach (var entry in bucket.Values)
+            for (int i = 0; i < kinds.Count; i++)
             {
-                if (MatchesEntry(entry, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw))
+                if (!_buckets.TryGetValue((status, kinds[i]), out var bucket) || bucket.Count == 0)
+                    continue;
+
+                foreach (var entry in bucket.Values)
                 {
-                    result.Add(entry.Item);
+                    if (MatchesEntry(entry, requiredGenreKeys, requiredFormatKeys, normalizedSearch, filterNsfw))
+                    {
+                        result.Add(entry.Item);
+                    }
                 }
             }
 

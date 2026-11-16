@@ -10,7 +10,6 @@ namespace Kiriha.Infrastructure.Tracking.Integration;
 public class ExternalMediaDetectorService : IHostedService, IDisposable, IExternalMediaDetector
 {
     private readonly ISettingsService _settingsService;
-    private readonly SmtcService _smtcService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly DetectionManager _detectionManager;
     private readonly PauseDetector _pauseDetector = new();
@@ -28,12 +27,10 @@ public class ExternalMediaDetectorService : IHostedService, IDisposable, IExtern
 
     public ExternalMediaDetectorService(
         ISettingsService settingsService,
-        SmtcService smtcService,
         IBackgroundTaskSupervisor backgroundTasks,
         IReadOnlyList<ExternalPlayerDefinition> players)
     {
         _settingsService = settingsService;
-        _smtcService = smtcService;
         _backgroundTasks = backgroundTasks;
 
         _availablePlayers = new List<ExternalPlayerDefinition>(players);
@@ -76,8 +73,6 @@ public class ExternalMediaDetectorService : IHostedService, IDisposable, IExtern
     {
         Log.Information("External media detector polling service started.");
 
-        await _smtcService.StartAsync();
-
         ParsedMedia? lastDetected = null;
 
         while (!ct.IsCancellationRequested)
@@ -95,13 +90,6 @@ public class ExternalMediaDetectorService : IHostedService, IDisposable, IExtern
 
                 if (detected != null)
                 {
-                    var timeline = _smtcService.GetTimeline(detected.ProcessName);
-                    if (timeline.HasValue)
-                    {
-                        detected.Position = timeline.Value.Position;
-                        detected.Duration = timeline.Value.Duration;
-                    }
-
                     // Reconcile the strategy's optimistic IsPlaying=true against
                     // the audio session state. WindowTitleStrategy and HandleEnumerationStrategy
                     // can't tell pause from play on their own — the player process

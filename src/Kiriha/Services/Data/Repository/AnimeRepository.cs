@@ -1,9 +1,8 @@
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Mapping;
 using Kiriha.Utils.Collections;
 
 namespace Kiriha.Services.Data.Repository;
@@ -11,16 +10,17 @@ namespace Kiriha.Services.Data.Repository;
 public partial class AnimeRepository : IAnimeRepository
 {
     private readonly IUserAnimeRepository _userAnimeRepo;
-    private readonly DatabaseInitializer _dbInit;
+    private readonly IDatabaseInitializer _dbInit;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly IUiDispatcher _uiDispatcher;
-    private readonly RecognitionCache _recognitionCache;
+    private readonly IRecognitionCache _recognitionCache;
 
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted;
     private readonly Dictionary<(int Id, MediaKind Kind), CancellationTokenSource> _recentlyDeletedIds = new();
     private readonly Lock _recentlyDeletedLock = new();
     private readonly Dictionary<(int Id, MediaKind Kind), AnimeEntity> _idIndex = new();
+    private readonly Lock _indexLock = new();
 
     public Task InitializationTask => _initTcs.Task;
     public bool IsInitializing => Volatile.Read(ref _initStarted) == 1 && !_initTcs.Task.IsCompleted;
@@ -36,12 +36,20 @@ public partial class AnimeRepository : IAnimeRepository
         return Collection;
     }
 
+    public AnimeEntity? FindById(int animeId, MediaKind kind = MediaKind.Anime)
+    {
+        lock (_indexLock)
+        {
+            return _idIndex.GetValueOrDefault((animeId, kind));
+        }
+    }
+
     public AnimeRepository(
         IUserAnimeRepository userAnimeRepo,
-        DatabaseInitializer dbInit,
+        IDatabaseInitializer dbInit,
         IBackgroundTaskSupervisor backgroundTasks,
         IUiDispatcher uiDispatcher,
-        RecognitionCache recognitionCache)
+        IRecognitionCache recognitionCache)
     {
         _userAnimeRepo = userAnimeRepo;
         _dbInit = dbInit;
@@ -54,6 +62,36 @@ public partial class AnimeRepository : IAnimeRepository
             lock (_snapshotLock)
             {
                 _cachedSnapshot = null;
+            }
+
+            lock (_indexLock)
+            {
+                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+                {
+                    _idIndex.Clear();
+                    foreach (var item in Collection)
+                    {
+                        _idIndex[(item.Id, item.MediaKind)] = item;
+                    }
+                }
+                else
+                {
+                    if (e.OldItems != null)
+                    {
+                        foreach (AnimeEntity oldItem in e.OldItems)
+                        {
+                            _idIndex.Remove((oldItem.Id, oldItem.MediaKind));
+                        }
+                    }
+
+                    if (e.NewItems != null)
+                    {
+                        foreach (AnimeEntity newItem in e.NewItems)
+                        {
+                            _idIndex[(newItem.Id, newItem.MediaKind)] = newItem;
+                        }
+                    }
+                }
             }
         };
     }
@@ -69,7 +107,7 @@ public partial class AnimeRepository : IAnimeRepository
                 return _cachedSnapshot;
         }
 
-        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        if (_uiDispatcher.CheckAccess())
         {
             var snap = Collection.ToList();
             lock (_snapshotLock)
@@ -103,10 +141,13 @@ public partial class AnimeRepository : IAnimeRepository
         {
             await _uiDispatcher.InvokeAsync(() =>
             {
-                foreach (var item in toRemove)
+                lock (_indexLock)
                 {
-                    Collection.Remove(item);
-                    _idIndex.Remove((item.Id, item.MediaKind));
+                    foreach (var item in toRemove)
+                    {
+                        Collection.Remove(item);
+                        _idIndex.Remove((item.Id, item.MediaKind));
+                    }
                 }
             });
         }
@@ -128,13 +169,34 @@ public partial class AnimeRepository : IAnimeRepository
 
     public void AddToCollection(AnimeEntity item)
     {
-        if (_idIndex.TryGetValue((item.Id, item.MediaKind), out var existing))
+        if (_uiDispatcher.CheckAccess())
+        {
+            AddToCollectionOnUiThread(item);
+        }
+        else
+        {
+            _uiDispatcher.InvokeAsync(() => AddToCollectionOnUiThread(item)).GetAwaiter().GetResult();
+        }
+    }
+
+    private void AddToCollectionOnUiThread(AnimeEntity item)
+    {
+        AnimeEntity? existing;
+        lock (_indexLock)
+        {
+            _idIndex.TryGetValue((item.Id, item.MediaKind), out existing);
+        }
+
+        if (existing != null)
         {
             item.CopyTo(existing);
             return;
         }
 
         Collection.Add(item);
-        _idIndex[(item.Id, item.MediaKind)] = item;
+        lock (_indexLock)
+        {
+            _idIndex[(item.Id, item.MediaKind)] = item;
+        }
     }
 }

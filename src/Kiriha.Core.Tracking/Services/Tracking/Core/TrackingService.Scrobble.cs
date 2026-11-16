@@ -165,8 +165,15 @@ public partial class TrackingService
             const int repoInitTimeoutMs = 5000;
             try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(repoInitTimeoutMs)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
 
-            var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.GetCollection()));
-            var matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId && x.MediaKind == Kiriha.Core.Domain.Models.Entities.MediaKind.Anime);
+            var matched = _animeRepo.FindById(animeId, Kiriha.Core.Domain.Models.Entities.MediaKind.Anime);
+            if (matched is null)
+            {
+                var userList = await _uiDispatcher.InvokeAsync(() => System.Linq.Enumerable.ToList(_animeRepo.GetCollection()));
+                if (userList != null)
+                {
+                    matched = System.Linq.Enumerable.FirstOrDefault(userList, x => x.Id == animeId && x.MediaKind == Kiriha.Core.Domain.Models.Entities.MediaKind.Anime);
+                }
+            }
 
             if (matched is null && existingMatched != null && existingMatched.Id == animeId)
             {
@@ -269,14 +276,17 @@ public partial class TrackingService
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
 
-        PlayerProcessBridge.ForwardMetadata(
-            media.OriginalTitle,
-            matched.Id,
-            matched.RussianTitle,
-            matched.EnglishTitle,
-            matched.Title,
-            media.Episode,
-            media.TorrentHash);
+        if (!_internalPlayerServer.HasConnectedClients)
+        {
+            PlayerProcessBridge.ForwardMetadata(
+                media.OriginalTitle,
+                matched.Id,
+                matched.RussianTitle,
+                matched.EnglishTitle,
+                matched.Title,
+                media.Episode,
+                media.TorrentHash);
+        }
     }
 
     private void ClearPlayerMetadata(ParsedMedia media)
@@ -295,14 +305,17 @@ public partial class TrackingService
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
 
-        PlayerProcessBridge.ForwardMetadata(
-            media.OriginalTitle,
-            0,
-            string.Empty,
-            string.Empty,
-            media.AnimeTitle,
-            media.Episode,
-            media.TorrentHash);
+        if (!_internalPlayerServer.HasConnectedClients)
+        {
+            PlayerProcessBridge.ForwardMetadata(
+                media.OriginalTitle,
+                0,
+                string.Empty,
+                string.Empty,
+                media.AnimeTitle,
+                media.Episode,
+                media.TorrentHash);
+        }
     }
 
     private void UpdateDiscordPresence(ParsedMedia media, AnimeEntity matched)

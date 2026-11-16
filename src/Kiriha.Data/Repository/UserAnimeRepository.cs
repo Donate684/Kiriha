@@ -23,14 +23,6 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         return entities;
     }
 
-    public async Task<List<AnimeEntity>> GetByMediaKindAsync(MediaKind kind, CancellationToken ct = default)
-    {
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var entities = await context.UserAnime.AsNoTracking().Where(x => x.MediaKind == kind).ToListAsync(ct);
-        Log.Information("Loaded {Count} {Kind} items from database", entities.Count, kind);
-        return entities;
-    }
-
     public async Task UpsertAsync(AnimeEntity item, CancellationToken ct = default)
     {
         if (item.Id <= 0 || string.IsNullOrWhiteSpace(item.Title))

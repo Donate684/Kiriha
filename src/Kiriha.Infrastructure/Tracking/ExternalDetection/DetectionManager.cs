@@ -214,17 +214,6 @@ public class DetectionManager
         return null;
     }
 
-    public async Task<ParsedMedia?> DetectAsync()
-    {
-        var session = await DetectSessionAsync();
-        return session.Media;
-    }
-
-    public HashSet<string> GetRunningPlayerNames()
-    {
-        return DetectSession().RunningPlayers;
-    }
-
     private static bool IsJunk(string title, ExternalPlayerDefinition player)
     {
         if (string.IsNullOrWhiteSpace(title)) return true;

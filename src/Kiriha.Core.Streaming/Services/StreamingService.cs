@@ -132,7 +132,7 @@ public sealed class StreamingService : IStreamingService
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning(ex, "[StreamingService] Extractor {Extractor} failed for {Url}", extractor.Name, playerUrl);
+                    Log.Warning(ex, "[StreamingService] Extractor {Extractor} failed for {Url}", extractor.Name, Helpers.UrlRedactor.Redact(playerUrl));
                 }
             }
         }
@@ -166,7 +166,7 @@ public sealed class StreamingService : IStreamingService
             ];
         }
 
-        Log.Warning("[StreamingService] No suitable extractor found to resolve {Url}", playerUrl);
+        Log.Warning("[StreamingService] No suitable extractor found to resolve {Url}", Helpers.UrlRedactor.Redact(playerUrl));
         return [];
     }
 }

@@ -1,5 +1,7 @@
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync.Models;
+using Kiriha.Core.Tracking.Utils;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
@@ -18,9 +20,10 @@ public partial class SyncManager
             await _syncTaskRepo.UpdateAsync(MapToEntity(task));
 
             // Fire and forget a delayed re-enqueue to not block the main queue
+            var retryDelay = TimeSpan.FromMinutes(delayMin);
             _ = _backgroundTasks.Run("SyncManager.DelayedRetry", async retryCt =>
             {
-                await Task.Delay(TimeSpan.FromMinutes(delayMin), retryCt);
+                await Task.Delay(retryDelay, retryCt);
                 _lowPriorityQueue.Enqueue(task);
                 try { _queueSignal.Release(); } catch (ObjectDisposedException) { }
             }, _cts.Token);
@@ -30,16 +33,21 @@ public partial class SyncManager
             Log.Warning("Task {TaskId} permanently failed after {MaxRetries} retries", task.Id, MaxRetries);
             await _syncTaskRepo.RemoveAsync(task.Id);
 
-            var failedTrackers = _trackers.Where(t => t.IsEnabled && !task.SuccessfulTrackers.Contains(t.Name)).Select(t => t.Name).ToList();
+            var failedTrackers = GetTaskTrackers(task)
+                .Where(t => !task.SuccessfulTrackers.Contains(t.Name))
+                .Select(t => t.Name)
+                .ToList();
             foreach (var trackerName in failedTrackers)
             {
-                _historyService.UpdateTrackerStatus(task.AnimeId, task.Progress, trackerName, TrackerSyncState.Failed, "Max retries exceeded");
+                UpdateHistoryTrackerStatus(task, trackerName, TrackerSyncState.Failed, "Max retries exceeded");
                 _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", trackerName, "Max retries exceeded", willRetry: false);
             }
 
-
-            _historyService.AddEntry(task.AnimeId, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, "SyncFailed", string.Format("sync.syncing.failed"));
+            var detail = TrackingLoc.GetLoc("sync.syncing.failed");
+            if (task.MediaKind == MediaKind.Anime)
+                _historyService.AddEntry(task.AnimeId, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, HistoryActionType.SyncFailed, detail);
+            else
+                _historyService.AddEntry(task.AnimeId, task.MediaKind, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, HistoryActionType.SyncFailed, detail);
         }
     }
 }
-

@@ -77,15 +77,17 @@ public partial class SyncManager
             Type = SyncTaskType.UpdateProgress,
             Progress = progress,
             Status = status,
-            Score = score
+            Score = score,
+            TargetTracker = targetTracker
         };
 
-        var activeTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
+        var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();
+        var allEnabledTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
 
         // If a specific tracker is targeted, skip all other active trackers for this task
         if (!string.IsNullOrEmpty(targetTracker))
         {
-            foreach (var other in activeTrackers.Where(name => !string.Equals(name, targetTracker, StringComparison.OrdinalIgnoreCase)))
+            foreach (var other in allEnabledTrackers.Where(name => !string.Equals(name, targetTracker, StringComparison.OrdinalIgnoreCase)))
             {
                 task.SuccessfulTrackers.Add(other);
             }
@@ -99,11 +101,14 @@ public partial class SyncManager
         {
             var pendingTrackers = !string.IsNullOrEmpty(targetTracker)
                 ? new List<string> { targetTracker }
-                : activeTrackers;
+                : destinationTrackers;
 
             if (pendingTrackers.Count > 0)
             {
-                _historyService.SetPendingTrackers(animeId, progress, pendingTrackers);
+                if (mediaKind == MediaKind.Anime)
+                    _historyService.SetPendingTrackers(animeId, progress, pendingTrackers);
+                else
+                    _historyService.SetPendingTrackers(animeId, mediaKind, progress, pendingTrackers);
             }
 
             _highPriorityQueue.Enqueue(task);
@@ -162,10 +167,13 @@ public partial class SyncManager
         _latestTaskIds[(item.Id, item.MediaKind)] = (task.Id, task.Type);
         try
         {
-            var activeTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
-            if (activeTrackers.Count > 0)
+            var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();
+            if (destinationTrackers.Count > 0)
             {
-                _historyService.SetPendingTrackers(item.Id, effectiveProgress, activeTrackers);
+                if (item.MediaKind == MediaKind.Anime)
+                    _historyService.SetPendingTrackers(item.Id, effectiveProgress, destinationTrackers);
+                else
+                    _historyService.SetPendingTrackers(item.Id, item.MediaKind, effectiveProgress, destinationTrackers);
             }
 
             _highPriorityQueue.Enqueue(task);

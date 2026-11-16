@@ -198,7 +198,19 @@ public sealed partial class Anime365Provider : IStreamingProvider
             if (string.IsNullOrWhiteSpace(cleanId) || !int.TryParse(cleanId, out var parsedId))
                 return [];
 
-            // 1. Primary path: animeId is seriesId. Fetch series details to locate target episodeId for episodeNumber
+            bool looksLikeSeriesUrl = animeId.Contains("/catalog/", StringComparison.OrdinalIgnoreCase)
+                                   || animeId.Contains("/series/", StringComparison.OrdinalIgnoreCase);
+
+            // 1. Primary path when an EpisodeId (bare integer) is passed directly: fetch translations in a single request
+            //    without risking collision with an unrelated seriesId of the same integer value.
+            if (!looksLikeSeriesUrl)
+            {
+                var directSources = await FetchTranslationsForEpisodeAsync(parsedId, ct).ConfigureAwait(false);
+                if (directSources.Count > 0)
+                    return directSources;
+            }
+
+            // 2. Series lookup path: animeId is a series URL or seriesId; locate target episodeId for episodeNumber.
             var detailUrl = $"{StreamingConstants.Anime365.SeriesEndpoint}/{cleanId}";
             var token = _settingsService?.Current.Torrents.OnlineStreaming.Anime365Token;
             if (!string.IsNullOrWhiteSpace(token))
@@ -248,9 +260,7 @@ public sealed partial class Anime365Provider : IStreamingProvider
                 }
             }
 
-            // 2. Fallback path: animeId was directly the episodeId
-            var directSources = await FetchTranslationsForEpisodeAsync(parsedId, ct).ConfigureAwait(false);
-            return directSources;
+            return [];
         }
         catch (Exception ex)
         {

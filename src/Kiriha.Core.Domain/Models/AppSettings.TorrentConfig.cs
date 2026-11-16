@@ -18,17 +18,12 @@ public partial class AppSettings
         public bool FilterOnlyBatches { get; set; } = false;
         public bool UseCustomQuery { get; set; } = false;
         public string? CustomQuery { get; set; } = null;
-        [System.Text.Json.Serialization.JsonIgnore]
-        public System.Collections.Generic.List<int> HiddenAnimeIds { get; set; } = new();
 
         /// <summary>When true, filter toggles are remembered per anime title.</summary>
         public bool FiltersPerTitle { get; set; } = true;
 
         /// <summary>When true, online streaming search mode is selected instead of torrents mode.</summary>
         public bool IsOnlineMode { get; set; } = false;
-
-        [System.Text.Json.Serialization.JsonIgnore]
-        public System.Collections.Generic.Dictionary<int, TorrentFilterSet> PerTitleFilters { get; set; } = new();
 
         public TorrentStreamingConfig Streaming { get; set; } = new();
         public OnlineStreamingConfig OnlineStreaming { get; set; } = new();

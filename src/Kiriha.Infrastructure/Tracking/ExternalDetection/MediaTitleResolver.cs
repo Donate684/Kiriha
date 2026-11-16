@@ -14,9 +14,11 @@ public static class MediaTitleResolver
         var parsed = AnimeParseCache.Parse(filename);
 
         string animeTitle;
-        bool isEmber = filePath.Contains("EMBER", StringComparison.OrdinalIgnoreCase) || EmberTitleResolver.ScanFileForEmber(filePath);
-
-        if (!string.IsNullOrEmpty(parsed.Title) && !isEmber)
+        if (EmberTitleResolver.TryResolveDirectoryMetadata(filePath, out string emberTitle, out _, out _, out _))
+        {
+            animeTitle = emberTitle;
+        }
+        else if (!string.IsNullOrEmpty(parsed.Title))
         {
             animeTitle = parsed.Title;
         }
@@ -30,7 +32,7 @@ public static class MediaTitleResolver
             }
             else
             {
-                animeTitle = !string.IsNullOrEmpty(parsed.Title) ? parsed.Title : Path.GetFileNameWithoutExtension(filename);
+                animeTitle = Path.GetFileNameWithoutExtension(filename);
             }
         }
 

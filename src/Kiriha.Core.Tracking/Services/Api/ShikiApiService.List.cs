@@ -368,114 +368,14 @@ public partial class ShikiApiService
 
     public async Task<Dictionary<int, string>> FetchPostersFromGraphQlAsync(IEnumerable<int> ids, bool isManga, CancellationToken ct = default)
     {
-        var posterMap = new Dictionary<int, string>();
-        var idList = ids.Where(id => id > 0).Distinct().ToList();
-        if (idList.Count == 0) return posterMap;
-
-        string entityType = isManga ? "mangas" : "animes";
-        var neededIds = new List<int>();
-
-        // 1. Check in-memory fast cache
-        foreach (var id in idList)
-        {
-            var memKey = $"{entityType}_{id}";
-            if (_posterMemoryCache.TryGetValue(memKey, out var memUrl) && !string.IsNullOrEmpty(memUrl))
-            {
-                posterMap[id] = memUrl;
-            }
-            else
-            {
-                neededIds.Add(id);
-            }
-        }
-
-        if (neededIds.Count == 0) return posterMap;
-
-        // 2. Check SQLite persistent cache (http_response_cache table)
-        var toQueryFromNetwork = new List<int>();
-        foreach (var id in neededIds)
-        {
-            if (ct.IsCancellationRequested) break;
-            var dbKey = $"shiki_poster_{entityType}_{id}";
-            var cachedBytes = await _httpCache.GetCachedBodyAsync(dbKey, ct);
-            if (cachedBytes != null && cachedBytes.Length > 0)
-            {
-                var cachedUrl = Encoding.UTF8.GetString(cachedBytes);
-                if (!string.IsNullOrEmpty(cachedUrl) && !AnimeEntity.IsMissingPosterUrl(cachedUrl))
-                {
-                    _posterMemoryCache[$"{entityType}_{id}"] = cachedUrl;
-                    posterMap[id] = cachedUrl;
-                    continue;
-                }
-            }
-            toQueryFromNetwork.Add(id);
-        }
-
-        if (toQueryFromNetwork.Count == 0) return posterMap;
-
-        // 3. Query network via GraphQL only for truly missing posters
-        foreach (var chunk in toQueryFromNetwork.Chunk(50))
-        {
-            if (ct.IsCancellationRequested) break;
-
-            try
-            {
-                var idsStr = string.Join(",", chunk);
-                var query = $"{{\"query\":\"{{ {entityType}(ids: \\\"{idsStr}\\\", limit: 50) {{ id poster {{ originalUrl }} }} }}\"}}";
-                using var request = new HttpRequestMessage(HttpMethod.Post, ShikiBaseUrl + "graphql")
-                {
-                    Content = new StringContent(query, Encoding.UTF8, "application/json")
-                };
-
-                using var response = await SendRequestAsync(request, ct);
-                if (!response.IsSuccessStatusCode)
-                {
-                    Log.Warning("ShikiApiService ({Tracker}): GraphQL poster fetch failed with HTTP {Status}", Name, response.StatusCode);
-                    continue;
-                }
-
-                using var stream = await response.Content.ReadAsStreamAsync(ct);
-                using var doc = await JsonDocument.ParseAsync(stream, default, ct);
-                if (doc.RootElement.TryGetProperty("data", out var data) &&
-                    data.TryGetProperty(entityType, out var itemsArray) &&
-                    itemsArray.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var entry in itemsArray.EnumerateArray())
-                    {
-                        if (!entry.TryGetProperty("id", out var idProp)) continue;
-                        var idStr = idProp.GetString();
-                        if (!int.TryParse(idStr, out var id)) continue;
-
-                        if (entry.TryGetProperty("poster", out var poster) &&
-                            poster.ValueKind == JsonValueKind.Object &&
-                            poster.TryGetProperty("originalUrl", out var origProp) &&
-                            origProp.ValueKind == JsonValueKind.String)
-                        {
-                            var url = origProp.GetString();
-                            if (!string.IsNullOrEmpty(url) && !AnimeEntity.IsMissingPosterUrl(url))
-                            {
-                                if (!Uri.TryCreate(url, UriKind.Absolute, out var absUri) ||
-                                    (absUri.Scheme != Uri.UriSchemeHttp && absUri.Scheme != Uri.UriSchemeHttps))
-                                {
-                                    var baseUri = new Uri(ShikiEndpoints.BaseUrl(ShikiMirror.One));
-                                    url = $"{baseUri.Scheme}{Uri.SchemeDelimiter}{baseUri.Authority}" + (url.StartsWith('/') ? url : "/" + url);
-                                }
-                                posterMap[id] = url;
-                                _posterMemoryCache[$"{entityType}_{id}"] = url;
-                                _ = _httpCache.SetCachedBodyAsync($"shiki_poster_{entityType}_{id}", Encoding.UTF8.GetBytes(url), CancellationToken.None);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException) { throw; }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "ShikiApiService ({Tracker}): Exception during GraphQL poster fetch chunk", Name);
-            }
-        }
-
-        return posterMap;
+        return await ShikiGraphQlPosterFetcher.FetchPostersAsync(
+            ids,
+            isManga,
+            ShikiBaseUrl,
+            _httpCache,
+            _posterMemoryCache,
+            SendRequestAsync,
+            ct);
     }
 
     public async Task EnrichMissingPostersFromGraphQlAsync(List<AnimeEntity> list, bool isManga, CancellationToken ct)
