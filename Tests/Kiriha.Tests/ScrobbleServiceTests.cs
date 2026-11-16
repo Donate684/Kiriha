@@ -1,5 +1,5 @@
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models;
@@ -16,13 +16,14 @@ public class ScrobbleServiceTests : IDisposable
 {
     private readonly string _tempSettingsPath;
     private readonly SettingsService _settingsService;
-    private readonly Mock<AnimeProgressService> _mockProgressService;
+    private readonly Mock<IProgressUpdateService> _mockProgressService;
     private readonly Mock<HistoryService> _mockHistoryService;
     private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
     private readonly Mock<ILocalizer> _mockLocalizer;
     private readonly Mock<IScrobbleProgressStore> _mockProgressStore;
+    private readonly CoreEventBus _eventBus;
     private readonly ScrobbleService _scrobbleService;
 
     public ScrobbleServiceTests()
@@ -38,13 +39,14 @@ public class ScrobbleServiceTests : IDisposable
             s.System.Scrobbler.NotifyOnSkippedEpisode = true;
         }, save: false);
 
-        _mockProgressService = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
+        _mockProgressService = new Mock<IProgressUpdateService>();
         _mockHistoryService = new Mock<HistoryService>(null!);
         _mockNotificationService = new Mock<INotificationService>();
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
         _mockUiDispatcher = new Mock<IUiDispatcher>();
         _mockLocalizer = new Mock<ILocalizer>();
         _mockProgressStore = new Mock<IScrobbleProgressStore>();
+        _eventBus = new CoreEventBus();
 
         // When background task is queued, run it synchronously for testing
         _mockBackgroundTasks
@@ -62,7 +64,8 @@ public class ScrobbleServiceTests : IDisposable
             _mockBackgroundTasks.Object,
             _mockUiDispatcher.Object,
             _mockLocalizer.Object,
-            _mockProgressStore.Object);
+            _mockProgressStore.Object,
+            eventBus: _eventBus);
     }
 
     [Fact]
@@ -203,11 +206,8 @@ public class ScrobbleServiceTests : IDisposable
         var media = new ParsedMedia { Episode = "1", IsPlaying = true };
         var match = new AnimeEntity { Status = UserAnimeStatus.Completed, Progress = 12, TotalEpisodes = 12, Id = 20, Title = "Completed Anime", IsRewatching = false };
 
-        Kiriha.Core.Abstractions.Messages.AnimeRewatchPromptMessage? receivedPrompt = null;
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Kiriha.Core.Abstractions.Messages.AnimeRewatchPromptMessage>(
-            this, (r, m) => receivedPrompt = m);
-
-        try
+        AnimeRewatchPromptMessage? receivedPrompt = null;
+        using (_eventBus.Subscribe<AnimeRewatchPromptMessage>(m => receivedPrompt = m))
         {
             // Act
             _scrobbleService.StartScrobble(media, match);
@@ -219,10 +219,6 @@ public class ScrobbleServiceTests : IDisposable
             // Must NOT auto-update progress before user confirms
             _mockProgressService.Verify(x => x.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()), Times.Never);
         }
-        finally
-        {
-            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Unregister<Kiriha.Core.Abstractions.Messages.AnimeRewatchPromptMessage>(this);
-        }
     }
 
     [Fact]
@@ -232,11 +228,8 @@ public class ScrobbleServiceTests : IDisposable
         var media = new ParsedMedia { Episode = "12", IsPlaying = true };
         var match = new AnimeEntity { Status = UserAnimeStatus.Watching, Progress = 11, TotalEpisodes = 12, Id = 30, Title = "Finale Anime" };
 
-        Kiriha.Core.Abstractions.Messages.AnimeCompletedRatingPromptMessage? receivedRatingPrompt = null;
-        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<Kiriha.Core.Abstractions.Messages.AnimeCompletedRatingPromptMessage>(
-            this, (r, m) => receivedRatingPrompt = m);
-
-        try
+        AnimeCompletedRatingPromptMessage? receivedRatingPrompt = null;
+        using (_eventBus.Subscribe<AnimeCompletedRatingPromptMessage>(m => receivedRatingPrompt = m))
         {
             // Act
             _scrobbleService.StartScrobble(media, match);
@@ -245,10 +238,6 @@ public class ScrobbleServiceTests : IDisposable
             Assert.NotNull(receivedRatingPrompt);
             Assert.Equal(match.Id, receivedRatingPrompt.Anime.Id);
             _mockNotificationService.Verify(x => x.NotifyAnimeCompleted(match), Times.Once);
-        }
-        finally
-        {
-            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Unregister<Kiriha.Core.Abstractions.Messages.AnimeCompletedRatingPromptMessage>(this);
         }
     }
 

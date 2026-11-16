@@ -190,6 +190,14 @@ public static class TrackingServicesRegistration
 
         // --- Cross-tracker orchestration ---
         services.AddSingleton<LibrarySyncGate>();
+        services.AddSingleton<LibraryMutationService>(sp =>
+            new LibraryMutationService(
+                sp.GetRequiredService<IAnimeRepository>(),
+                sp.GetRequiredService<IUserAnimeRepository>(),
+                sp.GetRequiredService<ISyncManager>(),
+                sp.GetRequiredService<Kiriha.Core.Abstractions.Infrastructure.IUiDispatcher>(),
+                sp.GetService<ICoreEventBus>()));
+        services.AddForwardedSingleton<LibraryMutationService, ILibraryMutationService>();
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();

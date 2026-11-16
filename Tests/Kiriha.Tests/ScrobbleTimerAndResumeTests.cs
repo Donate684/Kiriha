@@ -22,7 +22,7 @@ public class ScrobbleTimerAndResumeTests : IDisposable
 {
     private readonly string _tempSettingsPath;
     private readonly SettingsService _settingsService;
-    private readonly Mock<AnimeProgressService> _mockProgressService;
+    private readonly Mock<IProgressUpdateService> _mockProgressService;
     private readonly Mock<HistoryService> _mockHistoryService;
     private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
@@ -34,7 +34,7 @@ public class ScrobbleTimerAndResumeTests : IDisposable
         _tempSettingsPath = Path.GetTempFileName();
         _settingsService = new SettingsService(_tempSettingsPath);
 
-        _mockProgressService = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
+        _mockProgressService = new Mock<IProgressUpdateService>();
         _mockHistoryService = new Mock<HistoryService>(null!);
         _mockNotificationService = new Mock<INotificationService>();
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();

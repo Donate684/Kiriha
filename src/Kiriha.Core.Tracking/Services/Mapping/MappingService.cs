@@ -117,7 +117,24 @@ public partial class MappingService : IMappingService
                 return id;
         }
 
-        // 2. Recognition Cache
+        // 2. User List Exact Match (O(1) case-insensitive lookup without normalization allocations)
+        var localMatch = index.FindExact(searchTitle, parsedEpisode, parsedYear, IsValidMatch);
+
+        // Don't fall back to the bare title when a higher season was explicitly
+        // parsed from the filename ("2nd Season", "S02", etc.), and when a year
+        // was parsed ("(2026)"), only accept bare-title candidates whose year matches.
+        if (localMatch is null && searchTitle != cleanTitle && parsedSeason <= 1)
+        {
+            localMatch = index.FindExact(cleanTitle, parsedEpisode, parsedYear, IsValidBareTitleFallback);
+        }
+
+        if (localMatch != null && IsValidMatch(localMatch, parsedEpisode, parsedYear))
+        {
+            _sessionCache[normSearch] = localMatch.Id;
+            return localMatch.Id;
+        }
+
+        // 3. Unified Normalized & Learned Recognition Cache (single normalized index across library + synonyms + learned matches)
         var cachedMatches = _recognitionCache.Search(normSearch);
         if (cachedMatches != null)
         {
@@ -151,37 +168,6 @@ public partial class MappingService : IMappingService
                     return bestFallbackId.Value;
                 }
             }
-        }
-
-        // 3. User List Exact Match
-        var localMatch = index.FindExact(searchTitle, parsedEpisode, parsedYear, IsValidMatch);
-
-        // Don't fall back to the bare title when a higher season was explicitly
-        // parsed from the filename ("2nd Season", "S02", etc.), and when a year
-        // was parsed ("(2026)"), only accept bare-title candidates whose year matches.
-        if (localMatch is null && searchTitle != cleanTitle && parsedSeason <= 1)
-        {
-            localMatch = index.FindExact(cleanTitle, parsedEpisode, parsedYear, IsValidBareTitleFallback);
-        }
-
-        if (localMatch != null && IsValidMatch(localMatch, parsedEpisode, parsedYear))
-        {
-            _sessionCache[normSearch] = localMatch.Id;
-            return localMatch.Id;
-        }
-
-        // 4. User List Normalized Match
-        localMatch = index.FindNormalized(normSearch, parsedEpisode, parsedYear, IsValidMatch);
-
-        if (localMatch is null && normSearch != normClean && parsedSeason <= 1)
-        {
-            localMatch = index.FindNormalized(normClean, parsedEpisode, parsedYear, IsValidBareTitleFallback);
-        }
-
-        if (localMatch != null && IsValidMatch(localMatch, parsedEpisode, parsedYear))
-        {
-            _sessionCache[normSearch] = localMatch.Id;
-            return localMatch.Id;
         }
 
         return null;
@@ -237,7 +223,6 @@ public partial class MappingService : IMappingService
     {
         private readonly Dictionary<int, AnimeEntity> _byId = new();
         private readonly Dictionary<string, List<AnimeEntity>> _exact = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, List<AnimeEntity>> _normalized = new(StringComparer.OrdinalIgnoreCase);
 
         public int Count => _byId.Count;
         public int Fingerprint { get; private set; }
@@ -254,6 +239,9 @@ public partial class MappingService : IMappingService
                 index.Add(item);
                 hash.Add(item.Id);
                 hash.Add(item.Title);
+                hash.Add(item.RussianTitle);
+                hash.Add(item.EnglishTitle);
+                hash.Add(item.AlternativeTitles?.Count ?? 0);
                 hash.Add(item.StartYear ?? item.AiringDate?.Year ?? 0);
                 hash.Add((int)item.Status);
             }
@@ -265,24 +253,24 @@ public partial class MappingService : IMappingService
         {
             _byId.TryAdd(item.Id, item);
 
-            AddExactAndNorm(item.Title, item);
-            AddExactAndNorm(item.EnglishTitle, item);
-            AddExactAndNorm(item.RussianTitle, item);
+            AddExact(item.Title, item);
+            AddExact(item.EnglishTitle, item);
+            AddExact(item.RussianTitle, item);
 
             int? year = item.StartYear ?? item.AiringDate?.Year;
             if (year.HasValue)
             {
                 string yearStr = year.Value.ToString();
                 if (!string.IsNullOrWhiteSpace(item.Title) && !item.Title.Contains(yearStr, StringComparison.Ordinal))
-                    AddExactAndNorm($"{item.Title} ({year.Value})", item);
+                    AddExact($"{item.Title} ({year.Value})", item);
                 if (!string.IsNullOrWhiteSpace(item.EnglishTitle) && !item.EnglishTitle.Contains(yearStr, StringComparison.Ordinal))
-                    AddExactAndNorm($"{item.EnglishTitle} ({year.Value})", item);
+                    AddExact($"{item.EnglishTitle} ({year.Value})", item);
                 if (!string.IsNullOrWhiteSpace(item.RussianTitle) && !item.RussianTitle.Contains(yearStr, StringComparison.Ordinal))
-                    AddExactAndNorm($"{item.RussianTitle} ({year.Value})", item);
+                    AddExact($"{item.RussianTitle} ({year.Value})", item);
             }
         }
 
-        private void AddExactAndNorm(string? title, AnimeEntity item)
+        private void AddExact(string? title, AnimeEntity item)
         {
             if (string.IsNullOrWhiteSpace(title)) return;
 
@@ -292,17 +280,6 @@ public partial class MappingService : IMappingService
                 _exact[title] = list;
             }
             list.Add(item);
-
-            string norm = AnimeStringHelper.Normalize(title);
-            if (!string.IsNullOrEmpty(norm))
-            {
-                if (!_normalized.TryGetValue(norm, out var normList))
-                {
-                    normList = new List<AnimeEntity>(1);
-                    _normalized[norm] = normList;
-                }
-                normList.Add(item);
-            }
         }
 
         public AnimeEntity? FindById(int id)
@@ -321,20 +298,6 @@ public partial class MappingService : IMappingService
             Func<AnimeEntity, int?, int?, bool> isValidMatch)
         {
             return _exact.TryGetValue(title, out var list)
-                ? SelectBestCandidate(list, episodeNumber, parsedYear, isValidMatch)
-                : null;
-        }
-
-        public AnimeEntity? FindNormalized(string normTitle, int? episodeNumber, Func<AnimeEntity, int?, bool> isValidMatch)
-            => FindNormalized(normTitle, episodeNumber, parsedYear: null, (a, ep, _) => isValidMatch(a, ep));
-
-        public AnimeEntity? FindNormalized(
-            string normTitle,
-            int? episodeNumber,
-            int? parsedYear,
-            Func<AnimeEntity, int?, int?, bool> isValidMatch)
-        {
-            return _normalized.TryGetValue(normTitle, out var list)
                 ? SelectBestCandidate(list, episodeNumber, parsedYear, isValidMatch)
                 : null;
         }

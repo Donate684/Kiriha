@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Serilog;
@@ -119,9 +118,9 @@ public partial class TrackingService
 
         _uiDispatcher.Post(() =>
         {
-            WeakReferenceMessenger.Default.Send(new MediaChangedMessage(media));
-            WeakReferenceMessenger.Default.Send(new AnimeMatchedMessage(null)); // Clear previous match UI immediately
-            WeakReferenceMessenger.Default.Send(new TrackingStatusMessage("scrobbler.status.matching"));
+            _eventBus.Publish(new MediaChangedMessage(media));
+            _eventBus.Publish(new AnimeMatchedMessage(null)); // Clear previous match UI immediately
+            _eventBus.Publish(new TrackingStatusMessage("scrobbler.status.matching"));
         });
 
         try
@@ -168,7 +167,7 @@ public partial class TrackingService
             lock (_state) cur = _currentMedia;
             if (IsSameMedia(cur, media))
             {
-                _uiDispatcher.Post(() => WeakReferenceMessenger.Default.Send(new TrackingStatusMessage(string.Empty)));
+                _uiDispatcher.Post(() => _eventBus.Publish(new TrackingStatusMessage(string.Empty)));
             }
         }
     }

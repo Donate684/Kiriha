@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
@@ -33,7 +33,7 @@ public partial class TrackingService
             return true;
         }
 
-        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.MediaChangedMessage(media)));
+        _uiDispatcher.Post(() => _eventBus.Publish(new MediaChangedMessage(media)));
         _scrobbleService.UpdatePlayingState(media.IsPlaying);
 
         AnimeEntity? currentMatched;
@@ -63,7 +63,7 @@ public partial class TrackingService
 
         if (!isValid) return;
 
-        _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(matched)));
+        _uiDispatcher.Post(() => _eventBus.Publish(new AnimeMatchedMessage(matched)));
 
         if (matched != null)
         {
@@ -113,8 +113,7 @@ public partial class TrackingService
                 }
                 NotifyPlayerMetadata(media, matched);
                 UpdateDiscordPresence(media, matched);
-                _uiDispatcher.Post(() => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
-                    new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(matched)));
+                _uiDispatcher.Post(() => _eventBus.Publish(new AnimeMatchedMessage(matched)));
             }
         }
         catch (Exception ex)
@@ -157,8 +156,8 @@ public partial class TrackingService
 
             _uiDispatcher.Post(() =>
             {
-                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.MediaChangedMessage(media));
-                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Kiriha.Core.Abstractions.Messages.AnimeMatchedMessage(null));
+                _eventBus.Publish(new MediaChangedMessage(media));
+                _eventBus.Publish(new AnimeMatchedMessage(null));
             });
 
             const int repoInitTimeoutMs = 5000;

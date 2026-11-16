@@ -35,7 +35,7 @@ public partial class HistorySectionViewModel
                 monthGroups.TryGetValue((year, month), out var entries);
                 var count = entries?.Count ?? 0;
                 var mean = entries?
-                    .Select(x => int.TryParse(x.Score, out var score) ? score : 0)
+                    .Select(x => x.UserScore ?? 0)
                     .Where(x => x > 0)
                     .DefaultIfEmpty()
                     .Average() ?? 0;
@@ -70,7 +70,7 @@ public partial class HistorySectionViewModel
                         {
                             Title = entry.Presentation.DisplayTitle,
                             Subtitle = entry.RussianTitle != null ? entry.Title : null,
-                            Detail = int.TryParse(entry.Score, out var score) && score > 0
+                            Detail = entry.UserScore is int score and > 0
                                 ? _localizer.GetLoc("analytics.history.score_format", score)
                                 : _localizer.GetLoc("analytics.history.no_score"),
                             PosterUrl = entry.PosterSource ?? entry.MainPictureUrl

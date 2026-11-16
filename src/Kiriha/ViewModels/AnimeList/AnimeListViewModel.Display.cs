@@ -96,7 +96,6 @@ public partial class AnimeListViewModel
     public async Task SetScore(AnimeEntity item)
     {
         if (item is null) return;
-        int.TryParse(item.Score, out int score);
-        await _progressService.SetScoreAsync(item, score);
+        await _progressService.SetScoreAsync(item, item.UserScore ?? 0);
     }
 }

@@ -31,8 +31,7 @@ public class AiringInfoFetcher
         }
         else
         {
-            var aniAiring = await _aniListApi.GetNextAiringAsync(anime.Id, force, ct);
-            airing = aniAiring?.ToEpisodeAiringInfo();
+            airing = await _aniListApi.GetNextAiringAsync(anime.Id, force, ct);
         }
 
         if (airing is null) return (null, anime.EpisodesAired, anime.NextEpisodeAt);
@@ -40,9 +39,6 @@ public class AiringInfoFetcher
         var (aired, nextSlot) = ResolveAired(anime, airing);
         return (airing, aired, nextSlot);
     }
-
-    public static (int aired, DateTime? nextSlot) ResolveAired(AnimeEntity anime, AniListAiringInfo airing) =>
-        ResolveAired(anime, airing.ToEpisodeAiringInfo());
 
     public static (int aired, DateTime? nextSlot) ResolveAired(AnimeEntity anime, EpisodeAiringInfo airing)
     {

@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -17,6 +16,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
     private readonly ILocalizer _localizer;
     private readonly LibrarySyncGate? _syncGate;
     private readonly ISyncTaskRepository? _syncTaskRepo;
+    private readonly ICoreEventBus _eventBus;
 
     private int _syncing;
     public bool IsSyncing => Volatile.Read(ref _syncing) == 1;
@@ -29,7 +29,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         ISettingsService? settingsService = null,
         ILocalizer? localizer = null,
         LibrarySyncGate? syncGate = null,
-        ISyncTaskRepository? syncTaskRepo = null)
+        ISyncTaskRepository? syncTaskRepo = null,
+        ICoreEventBus? eventBus = null)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
@@ -39,6 +40,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         _localizer = localizer ?? ILocalizer.Passthrough;
         _syncGate = syncGate;
         _syncTaskRepo = syncTaskRepo;
+        _eventBus = eventBus ?? CoreEventBus.Default;
     }
 
     private string FormatLoc(string key, params object?[] args) => _localizer.GetLoc(key, args);
@@ -107,8 +109,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             await Task.Run(() => _recognitionCache.BuildIndex(snapshot));
             Log.Information("AnimeSyncOrchestrator: recognition cache built");
 
-            Log.Information("AnimeSyncOrchestrator: sending AnimeListRefreshMessage");
-            WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+            Log.Information("AnimeSyncOrchestrator: publishing AnimeListRefreshMessage");
+            _eventBus.Publish(new AnimeListRefreshMessage());
             Log.Information("AnimeSyncOrchestrator: anime sync completed successfully");
             return true;
         }
@@ -166,7 +168,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             var snapshot = await _animeRepository.GetSnapshotAsync(kinds);
             await _userAnimeRepo.SyncFromRemoteAsync(snapshot, kinds, ct);
 
-            WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+            _eventBus.Publish(new AnimeListRefreshMessage());
             return true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

@@ -120,7 +120,7 @@ public class Wave4BugfixTests
                 s.System.Scrobbler.DelaySeconds = 0;
             }, save: false);
 
-            var mockProgress = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
+            var mockProgress = new Mock<IProgressUpdateService>();
             var mockHistory = new Mock<HistoryService>(null!);
             var mockNotification = new Mock<INotificationService>();
             var mockBackground = new Mock<IBackgroundTaskSupervisor>();
@@ -192,7 +192,7 @@ public class Wave4BugfixTests
             var settings = new SettingsService(tempSettings);
             settings.Update(s => s.System.Scrobbler.Enabled = false, save: false);
 
-            var mockProgress = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
+            var mockProgress = new Mock<IProgressUpdateService>();
             var mockHistory = new Mock<HistoryService>(null!);
             var mockNotification = new Mock<INotificationService>();
             var mockBackground = new Mock<IBackgroundTaskSupervisor>();

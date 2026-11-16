@@ -216,7 +216,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
     }
 
-    public async Task<AniListAiringInfo?> GetNextAiringAsync(int malId, bool force = false, CancellationToken ct = default)
+    public async Task<EpisodeAiringInfo?> GetNextAiringAsync(int malId, bool force = false, CancellationToken ct = default)
     {
         if (malId <= 0) return null;
 
@@ -284,7 +284,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
     }
 
-    private async Task<(bool Fresh, AniListAiringInfo? Value)> TryReadCacheAsync(string cacheKey, bool allowStale = false)
+    private async Task<(bool Fresh, EpisodeAiringInfo? Value)> TryReadCacheAsync(string cacheKey, bool allowStale = false)
     {
         try
         {
@@ -306,7 +306,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
         }
     }
 
-    private async Task WriteCacheAsync(string cacheKey, AniListAiringInfo? value)
+    private async Task WriteCacheAsync(string cacheKey, EpisodeAiringInfo? value)
     {
         try
         {
@@ -390,7 +390,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService, ITrack
 
     private sealed record AniListGraphQlRequest(string Query, AniListVariables Variables);
     private sealed record AniListVariables(int MalId);
-    private sealed record AniListAiringCacheEntry(AniListAiringInfo? Value);
+    private sealed record AniListAiringCacheEntry(EpisodeAiringInfo? Value);
 
     public void Dispose()
     {

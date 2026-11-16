@@ -481,7 +481,7 @@ public sealed class PostRefactorRegressionTests
                 s.System.Scrobbler.NotifyOnSkippedEpisode = true;
             }, save: false);
 
-            var progressMock = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
+            var progressMock = new Mock<IProgressUpdateService>();
             var historyMock = new Mock<HistoryService>(null!);
             var notificationMock = new Mock<INotificationService>();
             var bgMock = new Mock<IBackgroundTaskSupervisor>();

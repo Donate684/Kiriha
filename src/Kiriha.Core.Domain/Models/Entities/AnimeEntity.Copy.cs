@@ -7,6 +7,7 @@ public partial class AnimeEntity
     public AnimeEntity Clone()
     {
         var clone = (AnimeEntity)this.MemberwiseClone();
+        clone.ClearPropertyChangedSubscribers();
         clone._presentation = null;
         clone.AlternativeTitles = new List<string>(AlternativeTitles);
         clone.Genres = new List<string>(Genres);
@@ -173,8 +174,8 @@ public partial class AnimeEntity
     {
         if (existing is null || ReferenceEquals(this, existing)) return;
 
-        // Score: keep existing if current is empty or '-'
-        if ((string.IsNullOrWhiteSpace(Score) || Score == "-") && !string.IsNullOrWhiteSpace(existing.Score) && existing.Score != "-")
+        // Score: keep existing if current is unrated
+        if (UserScore is null && existing.UserScore is > 0)
         {
             Score = existing.Score;
         }
@@ -223,6 +224,40 @@ public partial class AnimeEntity
         if (string.IsNullOrEmpty(LocalPosterPath) && !string.IsNullOrEmpty(existing.LocalPosterPath))
         {
             LocalPosterPath = existing.LocalPosterPath;
+        }
+    }
+
+    /// <summary>
+    /// Restores locally enriched cache/airing/localization fields from a prior local DB snapshot
+    /// when a remote tracker list sync supplies sparser metadata.
+    /// </summary>
+    public void PreserveEnrichedLocalFieldsFrom(AnimeEntity previousLocal)
+    {
+        if (previousLocal is null || ReferenceEquals(this, previousLocal)) return;
+
+        if (string.IsNullOrEmpty(LocalPosterPath) && !string.IsNullOrEmpty(previousLocal.LocalPosterPath))
+            LocalPosterPath = previousLocal.LocalPosterPath;
+        if (string.IsNullOrEmpty(RussianTitle) && !string.IsNullOrEmpty(previousLocal.RussianTitle))
+            RussianTitle = previousLocal.RussianTitle;
+        if (string.IsNullOrEmpty(RussianSynopsis) && !string.IsNullOrEmpty(previousLocal.RussianSynopsis))
+            RussianSynopsis = previousLocal.RussianSynopsis;
+        if (TotalEpisodes <= 0 && previousLocal.TotalEpisodes > 0)
+            TotalEpisodes = previousLocal.TotalEpisodes;
+        if (!LastEpisodesSync.HasValue && previousLocal.LastEpisodesSync.HasValue)
+            LastEpisodesSync = previousLocal.LastEpisodesSync;
+
+        if (AppConstants.AiringStatus.IsFinishedAiring(StatusDetailed))
+            NextEpisodeAt = null;
+        else if (!NextEpisodeAt.HasValue && previousLocal.NextEpisodeAt.HasValue)
+            NextEpisodeAt = previousLocal.NextEpisodeAt;
+
+        if (previousLocal.AiredSourcePriority > AiredSourcePriority ||
+            (previousLocal.AiredSourcePriority == AiredSourcePriority && previousLocal.EpisodesAired > EpisodesAired))
+        {
+            EpisodesAired = previousLocal.EpisodesAired;
+            AiredSourcePriority = previousLocal.AiredSourcePriority;
+            if (!LastEpisodeAt.HasValue && previousLocal.LastEpisodeAt.HasValue)
+                LastEpisodeAt = previousLocal.LastEpisodeAt;
         }
     }
 }

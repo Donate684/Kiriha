@@ -5,7 +5,7 @@ namespace Kiriha.Core.Tracking.Api;
 
 public static class AniListParser
 {
-    public static AniListAiringInfo? ParseAiringInfo(JsonElement root, int requestedMalId)
+    public static EpisodeAiringInfo? ParseAiringInfo(JsonElement root, int requestedMalId)
     {
         if (!root.TryGetProperty("data", out var data)
             || !data.TryGetProperty("Media", out var media)
@@ -36,6 +36,6 @@ public static class AniListParser
             ? eps
             : (int?)null;
 
-        return new AniListAiringInfo(aniListId, malId, status, episode, nextAt, totalEpisodes);
+        return new EpisodeAiringInfo(aniListId, malId, status, episode, nextAt, totalEpisodes);
     }
 }

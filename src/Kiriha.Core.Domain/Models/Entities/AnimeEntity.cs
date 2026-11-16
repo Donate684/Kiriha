@@ -11,10 +11,14 @@ public partial class AnimeEntity : DomainObservableObject
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     [System.Text.Json.Serialization.JsonIgnore]
     public MediaKey Key => new(Id, _mediaKind);
-    public int Chapters { get; set; }
-    public int Volumes { get; set; }
-    public int ChaptersRead { get; set; }
-    public int VolumesRead { get; set; }
+    private int _chapters;
+    public int Chapters { get => _chapters; set { if (SetProperty(ref _chapters, value)) OnPropertyChanged("Presentation"); } }
+    private int _volumes;
+    public int Volumes { get => _volumes; set { if (SetProperty(ref _volumes, value)) OnPropertyChanged("Presentation"); } }
+    private int _chaptersRead;
+    public int ChaptersRead { get => _chaptersRead; set { if (SetProperty(ref _chaptersRead, value)) OnPropertyChanged("Presentation"); } }
+    private int _volumesRead;
+    public int VolumesRead { get => _volumesRead; set { if (SetProperty(ref _volumesRead, value)) OnPropertyChanged("Presentation"); } }
     public int AiredSourcePriority { get; set; }
     private string _title = string.Empty;
     public string Title { get => _title; set { if (SetProperty(ref _title, value)) OnPropertyChanged("Presentation"); } }
@@ -33,12 +37,43 @@ public partial class AnimeEntity : DomainObservableObject
         get => _score;
         set
         {
-            if (SetProperty(ref _score, value))
+            var normalized = NormalizeScoreString(value);
+            if (SetProperty(ref _score, normalized))
             {
                 _cachedScoreValue = null;
+                OnPropertyChanged(nameof(UserScore));
                 OnPropertyChanged("Presentation");
             }
         }
+    }
+
+    /// <summary>
+    /// Typed integer user rating (1..10), or <c>null</c> when unrated.
+    /// Synchronized bidirectionally with <see cref="Score"/>.
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int? UserScore
+    {
+        get => ScoreValue > 0 ? (int)Math.Round(ScoreValue, MidpointRounding.AwayFromZero) : null;
+        set => Score = value is > 0 ? value.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "-";
+    }
+
+    private static string NormalizeScoreString(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return "-";
+
+        ReadOnlySpan<char> span = raw.AsSpan().Trim();
+        int spaceIdx = span.IndexOf(' ');
+        if (spaceIdx >= 0)
+            span = span[..spaceIdx];
+
+        if (span.IsEmpty || span is "-" || span is "0")
+            return "-";
+
+        double parsed = ParseScoreToDouble(span.ToString());
+        return parsed <= 0 ? "-" : span.ToString();
     }
 
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
@@ -48,8 +83,10 @@ public partial class AnimeEntity : DomainObservableObject
     public string Type { get; set; } = AppConstants.AnimeTypes.Tv;
     private int _episodesAired;
     public int EpisodesAired { get => _episodesAired; set { if (SetProperty(ref _episodesAired, value)) OnPropertyChanged("Presentation"); } }
-    public string? Synopsis { get; set; } = string.Empty;
-    public string? RussianSynopsis { get; set; } = string.Empty;
+    private string? _synopsis = string.Empty;
+    public string? Synopsis { get => _synopsis; set { if (SetProperty(ref _synopsis, value)) OnPropertyChanged("Presentation"); } }
+    private string? _russianSynopsis = string.Empty;
+    public string? RussianSynopsis { get => _russianSynopsis; set { if (SetProperty(ref _russianSynopsis, value)) OnPropertyChanged("Presentation"); } }
     private string? _mainPictureUrl;
     public string? MainPictureUrl
     {
@@ -63,14 +100,7 @@ public partial class AnimeEntity : DomainObservableObject
 
     public static Func<string, bool> LocalPosterValidator { get; set; } = DefaultValidateLocalPoster;
 
-    private static bool DefaultValidateLocalPoster(string path)
-    {
-        if (string.IsNullOrEmpty(path) || !File.Exists(path))
-            return false;
-
-        try { return new FileInfo(path).Length > 0; }
-        catch { return false; }
-    }
+    private static bool DefaultValidateLocalPoster(string path) => !string.IsNullOrWhiteSpace(path);
 
     private string? _localPosterPath;
     private bool? _cachedLocalPosterValid;
@@ -152,7 +182,8 @@ public partial class AnimeEntity : DomainObservableObject
         }
     }
     public List<string> Studios { get; set; } = new();
-    public string? StatusDetailed { get; set; }
+    private string? _statusDetailed;
+    public string? StatusDetailed { get => _statusDetailed; set { if (SetProperty(ref _statusDetailed, value)) OnPropertyChanged("Presentation"); } }
     private string? _meanScore;
     private double? _cachedMeanScoreValue;
     public string? MeanScore
@@ -250,9 +281,11 @@ public partial class AnimeEntity : DomainObservableObject
     public DateTime? DateCompleted { get => _dateCompleted; set => SetProperty(ref _dateCompleted, value); }
     public string? BroadcastDay { get; set; }
     public string? BroadcastTime { get; set; }
-    public DateTime? LastEpisodeAt { get; set; }
+    private DateTime? _lastEpisodeAt;
+    public DateTime? LastEpisodeAt { get => _lastEpisodeAt; set { if (SetProperty(ref _lastEpisodeAt, value)) OnPropertyChanged("Presentation"); } }
     public DateTime? LastEpisodesSync { get; set; }
-    public DateTime? NextEpisodeAt { get; set; }
+    private DateTime? _nextEpisodeAt;
+    public DateTime? NextEpisodeAt { get => _nextEpisodeAt; set { if (SetProperty(ref _nextEpisodeAt, value)) OnPropertyChanged("Presentation"); } }
 
     public static bool IsMissingPosterUrl(string? url)
     {

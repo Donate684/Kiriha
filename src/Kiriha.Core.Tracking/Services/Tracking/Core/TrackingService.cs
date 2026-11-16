@@ -4,7 +4,6 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Hosting;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -22,6 +21,8 @@ public partial class TrackingService : ITrackingService, IHostedService
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly MediaMatchingPipeline _pipeline;
     private readonly IShikiMetadataService? _shikiMetadataService;
+    private readonly ICoreEventBus _eventBus;
+    private readonly IDisposable _refreshSubscription;
 
     // _state guards _currentMedia and _matchedAnime which are read/written from the
     // External media detector background thread (MediaDetected/MediaCleared) and from UI command handlers.
@@ -43,7 +44,8 @@ public partial class TrackingService : ITrackingService, IHostedService
         IUiDispatcher uiDispatcher,
         IEnumerable<ITrackerService> trackers,
         MediaMatchingPipeline pipeline,
-        IShikiMetadataService? shikiMetadataService = null)
+        IShikiMetadataService? shikiMetadataService = null,
+        ICoreEventBus? eventBus = null)
     {
         _externalMediaDetector = externalMediaDetector;
         _internalPlayerServer = internalPlayerServer;
@@ -57,11 +59,12 @@ public partial class TrackingService : ITrackingService, IHostedService
         _trackers = trackers;
         _pipeline = pipeline;
         _shikiMetadataService = shikiMetadataService;
+        _eventBus = eventBus ?? CoreEventBus.Default;
 
         _externalMediaDetector.MediaDetected += OnMediaDetected;
         _externalMediaDetector.MediaCleared += OnMediaCleared;
         _scrobbleService.CountdownUpdated += OnScrobbleCountdownUpdated;
-        WeakReferenceMessenger.Default.Register<AnimeListRefreshMessage>(this, (_, _) => OnAnimeListRefreshed());
+        _refreshSubscription = _eventBus.Subscribe<AnimeListRefreshMessage>(_ => OnAnimeListRefreshed());
     }
 
     private void OnAnimeListRefreshed()
@@ -126,7 +129,7 @@ public partial class TrackingService : ITrackingService, IHostedService
         _externalMediaDetector.MediaCleared -= OnMediaCleared;
         _scrobbleService.CountdownUpdated -= OnScrobbleCountdownUpdated;
         _scrobbleService.CancelScrobble();
-        WeakReferenceMessenger.Default.Unregister<AnimeListRefreshMessage>(this);
+        _refreshSubscription.Dispose();
     }
 }
 

@@ -59,27 +59,9 @@ public sealed partial class UserAnimeRepository
 
             foreach (var (existing, item) in reconciliation.Matched)
             {
-                var localPoster = existing.LocalPosterPath;
-                var russianTitle = existing.RussianTitle;
-                var russianSynopsis = existing.RussianSynopsis;
-                var nextEpisodeAt = existing.NextEpisodeAt;
-                var lastEpisodesSync = existing.LastEpisodesSync;
-                var totalEpisodes = existing.TotalEpisodes;
-
+                var priorSnapshot = existing.Clone();
                 context.Entry(existing).CurrentValues.SetValues(item);
-
-                if (string.IsNullOrEmpty(item.LocalPosterPath) && !string.IsNullOrEmpty(localPoster))
-                    existing.LocalPosterPath = localPoster;
-                if (string.IsNullOrEmpty(item.RussianTitle) && !string.IsNullOrEmpty(russianTitle))
-                    existing.RussianTitle = russianTitle;
-                if (string.IsNullOrEmpty(item.RussianSynopsis) && !string.IsNullOrEmpty(russianSynopsis))
-                    existing.RussianSynopsis = russianSynopsis;
-                if (!item.NextEpisodeAt.HasValue && nextEpisodeAt.HasValue)
-                    existing.NextEpisodeAt = nextEpisodeAt;
-                if (!item.LastEpisodesSync.HasValue && lastEpisodesSync.HasValue)
-                    existing.LastEpisodesSync = lastEpisodesSync;
-                if (item.TotalEpisodes <= 0 && totalEpisodes > 0)
-                    existing.TotalEpisodes = totalEpisodes;
+                existing.PreserveEnrichedLocalFieldsFrom(priorSnapshot);
             }
 
             if (reconciliation.RemoteOnly.Count > 0)

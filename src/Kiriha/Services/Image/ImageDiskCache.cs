@@ -13,6 +13,15 @@ public class ImageDiskCache
         _downloader = downloader;
     }
 
+    public static bool IsValidCachedFile(string path)
+    {
+        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            return false;
+
+        try { return new FileInfo(path).Length > 0; }
+        catch { return false; }
+    }
+
     public async Task<string> ResolveLocalPathAsync(string url, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(url)) return string.Empty;

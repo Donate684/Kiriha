@@ -1,5 +1,4 @@
 using Kiriha.Core.Domain.Utils.Async;
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
@@ -18,11 +17,12 @@ public class AnimeListActionService : IAnimeListActionService
     private readonly IProgressUpdateService _progressService;
     private readonly IHistoryService _historyService;
     private readonly IUiDispatcher _uiDispatcher;
-    private readonly IUserAnimeRepository? _userAnimeRepo;
     private readonly ISettingsService? _settingsService;
     private readonly INotificationService? _notificationService;
     private readonly IEnumerable<ITrackerService> _trackers;
     private readonly IAiringInfoService? _airingInfoService;
+    private readonly ILibraryMutationService _mutations;
+    private readonly ICoreEventBus _eventBus;
 
     public AnimeListActionService(
         IAnimeRepository animeRepository,
@@ -34,7 +34,10 @@ public class AnimeListActionService : IAnimeListActionService
         IUserAnimeRepository? userAnimeRepo = null,
         ISettingsService? settingsService = null,
         INotificationService? notificationService = null,
-        IAiringInfoService? airingInfoService = null)
+        IAiringInfoService? airingInfoService = null,
+        ILibraryMutationService? mutations = null,
+        ICoreEventBus? eventBus = null,
+        TimeProvider? clock = null)
     {
         _animeRepository = animeRepository;
         _syncManager = syncManager;
@@ -42,10 +45,17 @@ public class AnimeListActionService : IAnimeListActionService
         _historyService = historyService;
         _uiDispatcher = uiDispatcher;
         _trackers = trackers;
-        _userAnimeRepo = userAnimeRepo;
         _settingsService = settingsService;
         _notificationService = notificationService;
         _airingInfoService = airingInfoService;
+        _eventBus = eventBus ?? CoreEventBus.Default;
+        _mutations = mutations ?? new LibraryMutationService(
+            animeRepository,
+            userAnimeRepo,
+            syncManager,
+            uiDispatcher,
+            _eventBus,
+            clock);
     }
 
     public async Task<ListActionResult> AddToListAsync(
@@ -73,8 +83,7 @@ public class AnimeListActionService : IAnimeListActionService
         }
 
         // Check if this anime already exists in local collection or DB to preserve user tracking data
-        var existing = await FindExistingInMemoryAsync(item.Id, item.MediaKind)
-                       ?? (_userAnimeRepo != null ? await _userAnimeRepo.GetByIdAsync(item.Id, item.MediaKind, ct) : null);
+        var existing = await _mutations.FindExistingAsync(item.Id, item.MediaKind, ct);
         if (existing != null)
         {
             item.PreserveUserFieldsFrom(existing);
@@ -101,14 +110,9 @@ public class AnimeListActionService : IAnimeListActionService
                 else if (item.Progress == 0 && existing != null && existing.Progress > 0) item.Progress = existing.Progress;
             }
 
-            if (status == UserAnimeStatus.Watching && !item.DateStarted.HasValue)
+            _mutations.StampStatusDates(item, status, isStarting: status == UserAnimeStatus.Watching, existing);
+            if (status == UserAnimeStatus.Completed)
             {
-                item.DateStarted = existing?.DateStarted ?? DateTime.Today;
-            }
-            else if (status == UserAnimeStatus.Completed)
-            {
-                item.DateStarted ??= existing?.DateStarted ?? DateTime.Today;
-                item.DateCompleted ??= existing?.DateCompleted ?? DateTime.Today;
                 if (!isManga && item.TotalEpisodes > 0 && item.Progress < item.TotalEpisodes)
                 {
                     item.Progress = item.TotalEpisodes;
@@ -154,7 +158,7 @@ public class AnimeListActionService : IAnimeListActionService
         }
 
         // Notify UI immediately (optimistic UI)
-        WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+        _eventBus.Publish(new AnimeListRefreshMessage());
 
         // Check trackers and enqueue sync
         bool hasActiveTrackers = CheckHasActiveTrackers();
@@ -229,31 +233,19 @@ public class AnimeListActionService : IAnimeListActionService
             return ListActionResult.Fail($"Cannot set '{updatedItem.Title}' to {updatedItem.Status} because it has not aired yet.");
         }
 
-        string rawScore = updatedItem.Score;
-        if (rawScore != "-" && rawScore.Contains(' '))
-        {
-            updatedItem.Score = rawScore[..rawScore.IndexOf(' ')];
-        }
-
-        bool scoreChanged = originalItem.Score != updatedItem.Score && updatedItem.Score != "-" && !string.IsNullOrEmpty(updatedItem.Score);
+        bool scoreChanged = originalItem.UserScore != updatedItem.UserScore && updatedItem.UserScore is > 0;
 
         await _uiDispatcher.InvokeAsync(() =>
         {
-            if (markedAsCompleted)
-            {
-                updatedItem.DateCompleted ??= DateTime.Today;
-                updatedItem.DateStarted ??= DateTime.Today;
-                updatedItem.IsRewatching = false;
-            }
-            else if (updatedItem.Status == UserAnimeStatus.Watching && !updatedItem.DateStarted.HasValue)
-            {
-                updatedItem.DateStarted = DateTime.Today;
-            }
+            _mutations.StampStatusDates(
+                updatedItem,
+                markedAsCompleted ? UserAnimeStatus.Completed : null,
+                isStarting: updatedItem.Status == UserAnimeStatus.Watching);
 
             updatedItem.CopyTo(originalItem);
             if (progressChanged)
             {
-                WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(originalItem, newProgress));
+                _eventBus.Publish(new AnimeProgressChangedMessage(originalItem, newProgress));
             }
         });
 
@@ -309,7 +301,7 @@ public class AnimeListActionService : IAnimeListActionService
             Log.Error(ex, "AnimeListActionService: Failed to record history during SaveAnimeAsync for {Id}", originalItem.Id);
         }
 
-        WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+        _eventBus.Publish(new AnimeListRefreshMessage());
 
         bool hasActiveTrackers = CheckHasActiveTrackers();
         if (hasActiveTrackers)
@@ -334,23 +326,6 @@ public class AnimeListActionService : IAnimeListActionService
         return ListActionResult.Ok(
             hasActiveTrackers: hasActiveTrackers,
             message: hasActiveTrackers ? null : "Saved locally: no active tracker accounts connected");
-    }
-
-    private async Task<AnimeEntity?> FindExistingInMemoryAsync(int animeId, MediaKind kind)
-    {
-        var indexed = _animeRepository.FindById(animeId, kind);
-        if (indexed != null || _animeRepository.TryGetSnapshot() != null)
-            return indexed;
-
-        if (!_uiDispatcher.HasThreadAffinity || _uiDispatcher.CheckAccess())
-            return _animeRepository.Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == kind);
-
-        AnimeEntity? matched = null;
-        await _uiDispatcher.InvokeAsync(() =>
-        {
-            matched = _animeRepository.Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == kind);
-        });
-        return matched;
     }
 
     private void TriggerAiringSyncIfOngoing(AnimeEntity item)
@@ -380,7 +355,7 @@ public class AnimeListActionService : IAnimeListActionService
         else
             await _progressService.RemoveAnimeAsync(animeId, mediaKind);
 
-        WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+        _eventBus.Publish(new AnimeListRefreshMessage());
 
         bool hasActiveTrackers = CheckHasActiveTrackers();
         return ListActionResult.Ok(hasActiveTrackers);

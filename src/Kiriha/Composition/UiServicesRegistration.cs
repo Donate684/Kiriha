@@ -31,6 +31,7 @@ internal static class UiServicesRegistration
 {
     public static IServiceCollection AddKirihaUi(this IServiceCollection services)
     {
+        services.AddSingleton<Kiriha.Core.Abstractions.Services.ICoreEventBus, Kiriha.Services.Messaging.MessengerCoreEventBus>();
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
 
         services.AddSingleton<NowPlayingViewModel>();

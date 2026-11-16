@@ -63,7 +63,7 @@ public partial class TastesSectionViewModel
             {
                 var entries = group.Select(x => x.Item).DistinctBy(x => x.Id).ToList();
                 var scores = entries
-                    .Select(x => int.TryParse(x.Score, out var score) ? score : 0)
+                    .Select(x => x.UserScore ?? 0)
                     .Where(x => x > 0)
                     .ToList();
                 var mean = scores.Count > 0 ? scores.Average() : 0;
@@ -114,13 +114,13 @@ public partial class TastesSectionViewModel
             };
 
             foreach (var entry in group.Entries
-                         .OrderByDescending(x => int.TryParse(x.Score, out var score) ? score : 0)
+                         .OrderByDescending(x => x.UserScore ?? 0)
                          .ThenBy(x => x.Presentation.DisplayTitle)
                          .Select(x => new AnalyticsHistoryEntry
                          {
                              Title = x.Presentation.DisplayTitle,
                              Subtitle = x.RussianTitle != null ? x.Title : null,
-                             Detail = int.TryParse(x.Score, out var score) && score > 0
+                             Detail = x.UserScore is int score and > 0
                                  ? _localizer.GetLoc("analytics.tastes.score_format", score)
                                  : (x.TotalEpisodes > 0 ? x.TotalEpisodes.ToString() : "?"),
                              PosterUrl = x.MainPictureUrl

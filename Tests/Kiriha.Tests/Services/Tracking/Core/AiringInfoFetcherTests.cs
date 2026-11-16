@@ -12,7 +12,7 @@ public class AiringInfoFetcherTests
     public void ResolveAired_NextEpisodeInFuture_DoesNotIncrementAired()
     {
         var anime = new AnimeEntity { EpisodesAired = 5 };
-        var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(1), null);
+        var airing = new EpisodeAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
@@ -24,7 +24,7 @@ public class AiringInfoFetcherTests
     public void ResolveAired_NextEpisodeInPast_IncrementsAired()
     {
         var anime = new AnimeEntity { EpisodesAired = 5 };
-        var airing = new AniListAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(-1), null);
+        var airing = new EpisodeAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(-1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
@@ -36,7 +36,7 @@ public class AiringInfoFetcherTests
     public void ResolveAired_FinishedStatus_SetsTotalEpisodes()
     {
         var anime = new AnimeEntity { EpisodesAired = 5 };
-        var airing = new AniListAiringInfo(1, 1, "FINISHED", null, null, 12);
+        var airing = new EpisodeAiringInfo(1, 1, "FINISHED", null, null, 12);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
@@ -52,7 +52,7 @@ public class AiringInfoFetcherTests
             EpisodesAired = 5,
             NextEpisodeAt = DateTime.UtcNow.AddDays(-1)
         };
-        var airing = new AniListAiringInfo(1, 1, null, null, null, null);
+        var airing = new EpisodeAiringInfo(1, 1, null, null, null, null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
@@ -97,7 +97,7 @@ public class AiringInfoFetcherTests
         settingsMock.Setup(s => s.Current).Returns(settings);
 
         aniListMock.Setup(s => s.GetNextAiringAsync(123, false, default))
-            .ReturnsAsync(new AniListAiringInfo(1, 123, null, 8, DateTime.UtcNow.AddDays(1), 12));
+            .ReturnsAsync(new EpisodeAiringInfo(1, 123, null, 8, DateTime.UtcNow.AddDays(1), 12));
 
         var fetcher = new AiringInfoFetcher(aniListMock.Object, shikiMock.Object, settingsMock.Object);
         var anime = new AnimeEntity { Id = 123, EpisodesAired = 7 };

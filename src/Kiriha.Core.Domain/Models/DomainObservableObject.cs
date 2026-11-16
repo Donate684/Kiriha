@@ -27,4 +27,6 @@ public abstract class DomainObservableObject : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
+
+    protected void ClearPropertyChangedSubscribers() => PropertyChanged = null;
 }

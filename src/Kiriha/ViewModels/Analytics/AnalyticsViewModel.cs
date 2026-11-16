@@ -111,7 +111,7 @@ public partial class AnalyticsViewModel : ViewModelBase
             var nonPlanned = items.Where(x => x.Status != UserAnimeStatus.PlanToWatch && x.Status != UserAnimeStatus.None && x.Status != UserAnimeStatus.Dropped).ToList();
             var completed = items.Where(x => x.Status == UserAnimeStatus.Completed).ToList();
             var scored = nonPlanned
-                .Select(x => int.TryParse(x.Score, out var score) ? score : 0)
+                .Select(x => x.UserScore ?? 0)
                 .Where(x => x > 0)
                 .ToList();
 

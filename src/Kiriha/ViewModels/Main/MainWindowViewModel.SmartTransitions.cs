@@ -39,14 +39,9 @@ public partial class MainWindowViewModel :
         Dispatcher.UIThread.Post(() =>
         {
             QuickRatingAnime = message.Anime;
-            if (int.TryParse(message.Anime.Score, out var s) && s >= 1 && s <= 10)
-            {
-                SelectedRatingScore = s;
-            }
-            else
-            {
-                SelectedRatingScore = 0;
-            }
+            SelectedRatingScore = message.Anime.UserScore is >= 1 and <= 10
+                ? message.Anime.UserScore.Value
+                : 0;
             IsQuickRatingVisible = true;
         });
     }

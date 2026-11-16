@@ -625,69 +625,14 @@ public partial class TorrentsViewModel
             originalTitle: originalTitle);
     }
 
-    private bool IsSelectedAnimeCompatibleWithTorrent(AnimeEntity? selected, TorrentEntity torrent, string originalTitle)
-    {
-        if (selected is null || selected.MediaKind != MediaKind.Anime)
-            return false;
-
-        var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(originalTitle));
-        if (string.IsNullOrWhiteSpace(parsed.Title))
-            parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
-
-        if (parsed.Year.HasValue)
-        {
-            int? sy = selected.StartYear ?? selected.AiringDate?.Year;
-            if (sy.HasValue && System.Math.Abs(sy.Value - parsed.Year.Value) > 1)
-                return false;
-        }
-
-        if (!UseCustomQuery && parsed.Season is > 1)
-        {
-            int s = parsed.Season.Value;
-            string seasonToken = s.ToString();
-            string[] romanTokens = s switch
-            {
-                2 => ["ii", "2nd", "second"],
-                3 => ["iii", "3rd", "third"],
-                4 => ["iv", "4th", "fourth"],
-                _ => []
-            };
-
-            static bool TitleHasSeasonSignal(string? raw, string seasonToken, string[] romanTokens)
-            {
-                if (string.IsNullOrWhiteSpace(raw)) return false;
-                var words = Kiriha.Core.Domain.Utils.Parsing.AnimeStringHelper.Normalize(raw).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (words.Contains(seasonToken)) return true;
-                foreach (var r in romanTokens)
-                {
-                    if (words.Contains(r)) return true;
-                }
-                return raw.Contains(':', StringComparison.Ordinal) || raw.Contains(" - ", StringComparison.Ordinal);
-            }
-
-            bool hasSeasonMarker = TitleHasSeasonSignal(selected.Title, seasonToken, romanTokens) ||
-                                   TitleHasSeasonSignal(selected.EnglishTitle, seasonToken, romanTokens) ||
-                                   TitleHasSeasonSignal(selected.RussianTitle, seasonToken, romanTokens) ||
-                                   selected.AlternativeTitles.Any(alt => TitleHasSeasonSignal(alt, seasonToken, romanTokens));
-            if (!hasSeasonMarker)
-                return false;
-        }
-
-        var epCandidate = !string.IsNullOrWhiteSpace(parsed.Episode) ? parsed.Episode : torrent.Episode;
-        if (!UseCustomQuery &&
-            HasSearchQuery &&
-            int.TryParse(epCandidate, out int epNum) &&
-            selected.TotalEpisodes > 1 &&
-            epNum > selected.TotalEpisodes &&
-            !string.Equals(SearchQuery, selected.Title, StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(SearchQuery, selected.EnglishTitle, StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(SearchQuery, selected.RussianTitle, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return true;
-    }
+    private bool IsSelectedAnimeCompatibleWithTorrent(AnimeEntity? selected, TorrentEntity torrent, string originalTitle) =>
+        Kiriha.Core.Domain.Utils.Parsing.AnimeLibraryMatcher.IsReleaseCompatibleWithAnime(
+            selected,
+            primaryReleaseTitle: originalTitle,
+            fallbackReleaseTitle: torrent.Title,
+            fallbackEpisode: torrent.Episode,
+            enforceSeasonAndEpisode: !UseCustomQuery,
+            activeSearchQuery: HasSearchQuery ? SearchQuery : null);
 
     [RelayCommand]
     public void ClearSelectedAnime()

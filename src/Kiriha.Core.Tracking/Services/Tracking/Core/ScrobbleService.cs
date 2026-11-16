@@ -1,10 +1,8 @@
 using Kiriha.Core.Domain.Utils.Parsing;
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
-using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync;
@@ -23,7 +21,7 @@ public interface IScrobbleService
 
 public class ScrobbleService : IScrobbleService, IDisposable
 {
-    private readonly AnimeProgressService _progressService;
+    private readonly IProgressUpdateService _progressService;
     private readonly IHistoryService _historyService;
     private readonly ISettingsService _settingsService;
     private readonly INotificationService _notificationService;
@@ -31,6 +29,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private readonly IUiDispatcher _uiDispatcher;
     private readonly ILocalizer _localizer;
     private readonly IScrobbleProgressStore _progressStore;
+    private readonly ILibraryMutationService _mutations;
+    private readonly ICoreEventBus _eventBus;
 
     public event EventHandler<string>? CountdownUpdated;
 
@@ -42,14 +42,16 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private int _currentElapsed;
 
     public ScrobbleService(
-        AnimeProgressService progressService,
+        IProgressUpdateService progressService,
         IHistoryService historyService,
         ISettingsService settingsService,
         INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
         IUiDispatcher uiDispatcher,
         ILocalizer localizer,
-        IScrobbleProgressStore? progressStore = null)
+        IScrobbleProgressStore? progressStore = null,
+        ILibraryMutationService? mutations = null,
+        ICoreEventBus? eventBus = null)
     {
         _progressService = progressService;
         _historyService = historyService;
@@ -59,6 +61,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
         _uiDispatcher = uiDispatcher;
         _localizer = localizer;
         _progressStore = progressStore ?? new InMemoryScrobbleProgressStore();
+        _eventBus = eventBus ?? CoreEventBus.Default;
+        _mutations = mutations ?? new LibraryMutationService(null, null, null, uiDispatcher, _eventBus);
     }
 
     private sealed class InMemoryScrobbleProgressStore : IScrobbleProgressStore
@@ -103,7 +107,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
         if (isRewatchCandidate)
         {
-            WeakReferenceMessenger.Default.Send(new AnimeRewatchPromptMessage(match, ep));
+            _eventBus.Publish(new AnimeRewatchPromptMessage(match, ep));
             CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.rewatch_prompt.title"));
             return;
         }
@@ -247,19 +251,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 _currentElapsed = 0;
             }
 
-            UserAnimeStatus? nextStatus = null;
-            if (match.TotalEpisodes > 0 && targetEp >= match.TotalEpisodes)
-            {
-                nextStatus = UserAnimeStatus.Completed;
-            }
-            else if (match.Status == UserAnimeStatus.PlanToWatch ||
-                     match.Status == UserAnimeStatus.OnHold ||
-                     match.Status == UserAnimeStatus.Dropped ||
-                     match.Status == UserAnimeStatus.None)
-            {
-                // Auto-Start: user started watching an anime that was in PlanToWatch, OnHold, Dropped or not in list
-                nextStatus = UserAnimeStatus.Watching;
-            }
+            var nextStatus = _mutations.ComputeSmartNextStatus(match, targetEp);
 
             bool alreadyScrobbled = await _uiDispatcher.InvokeAsync(() => match.Progress >= targetEp);
             if (alreadyScrobbled)
@@ -284,13 +276,13 @@ public class ScrobbleService : IScrobbleService, IDisposable
             // Auto-Complete & Quick Rating notification
             if (nextStatus == UserAnimeStatus.Completed)
             {
-                WeakReferenceMessenger.Default.Send(new AnimeCompletedRatingPromptMessage(match));
+                _eventBus.Publish(new AnimeCompletedRatingPromptMessage(match));
                 _notificationService.NotifyAnimeCompleted(match);
             }
 
             if (nextStatus.HasValue)
             {
-                WeakReferenceMessenger.Default.Send(new AnimeListRefreshMessage());
+                _eventBus.Publish(new AnimeListRefreshMessage());
             }
 
             CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.updated"));

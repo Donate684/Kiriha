@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
@@ -11,7 +10,7 @@ public partial class TrackingService
 {
     private void OnScrobbleCountdownUpdated(object? sender, string e)
     {
-        _uiDispatcher.Post(() => WeakReferenceMessenger.Default.Send(new TrackingCountdownMessage(e)));
+        _uiDispatcher.Post(() => _eventBus.Publish(new TrackingCountdownMessage(e)));
     }
 
     private void OnMediaCleared(object? sender, EventArgs e)
@@ -34,8 +33,8 @@ public partial class TrackingService
 
         _uiDispatcher.Post(() =>
         {
-            WeakReferenceMessenger.Default.Send(new MediaChangedMessage(null));
-            WeakReferenceMessenger.Default.Send(new AnimeMatchedMessage(null));
+            _eventBus.Publish(new MediaChangedMessage(null));
+            _eventBus.Publish(new AnimeMatchedMessage(null));
         });
         _discordService.ClearPresence();
     }

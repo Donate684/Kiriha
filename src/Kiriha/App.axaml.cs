@@ -21,6 +21,7 @@ public partial class App : Application
         var args = Environment.GetCommandLineArgs();
         var isPlayerMode = PlayerModeCoordinator.IsPlayerMode(args);
         ServiceProvider = AppStartupCoordinator.BuildServiceProvider(isPlayerMode);
+        AnimeEntity.LocalPosterValidator = Kiriha.Services.Image.ImageDiskCache.IsValidCachedFile;
         AnimeEntityPresentation.DefaultLocalizer = ServiceProvider.GetRequiredService<Kiriha.Core.Abstractions.Services.ILocalizer>();
         var appSettingsService = ServiceProvider.GetService<Kiriha.Infrastructure.Settings.SettingsService>();
         if (appSettingsService != null)

@@ -8,7 +8,7 @@ public partial class AnimeEntity
     private bool _isHiddenInSeasons;
 
     /// <summary>
-    /// Client-only flag mirrored from AppSettings.UI.HiddenSeasonalIds.
+    /// Client-only flag mirrored from <c>ISeasonalHiddenRepository</c> (SQLite <c>hidden_seasonal_anime</c>).
     /// </summary>
     [NotMapped]
     [JsonIgnore]
