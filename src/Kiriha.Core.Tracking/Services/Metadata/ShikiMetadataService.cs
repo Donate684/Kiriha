@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Abstractions.Infrastructure;
@@ -8,12 +8,10 @@ using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Shared;
 using Kiriha.Core.Tracking.Api;
-using Kiriha.Infrastructure.Http;
 using Serilog;
 
-namespace Kiriha.Services.Data.Metadata;
+namespace Kiriha.Core.Tracking.Metadata;
 
 public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
 {

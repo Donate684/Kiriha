@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.ViewModels.Settings;
 using Serilog;

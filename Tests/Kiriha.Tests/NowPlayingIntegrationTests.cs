@@ -1,7 +1,7 @@
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Mapping;
+using Kiriha.Data.Core;
+using Kiriha.Core.Tracking.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 

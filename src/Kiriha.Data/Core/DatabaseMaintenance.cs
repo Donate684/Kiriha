@@ -3,7 +3,7 @@ using Kiriha.Core.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Data.Core;
 
 /// <summary>
 /// Periodic database hygiene: orphan/expired-row pruning, ANALYZE, conditional

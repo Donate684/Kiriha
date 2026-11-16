@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;

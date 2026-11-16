@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
@@ -5,7 +6,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Utils;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.Torrents;
@@ -582,7 +583,7 @@ public partial class TorrentsViewModel
         string? episode = null;
         if (!string.IsNullOrWhiteSpace(fileName))
         {
-            var parsedFromFile = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(fileName)).Episode;
+            var parsedFromFile = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(fileName)).Episode;
             if (int.TryParse(parsedFromFile, out _))
             {
                 episode = parsedFromFile;
@@ -629,9 +630,9 @@ public partial class TorrentsViewModel
         if (selected is null || selected.MediaKind != MediaKind.Anime)
             return false;
 
-        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(originalTitle));
+        var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(originalTitle));
         if (string.IsNullOrWhiteSpace(parsed.Title))
-            parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
+            parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
 
         if (parsed.Year.HasValue)
         {
@@ -655,7 +656,7 @@ public partial class TorrentsViewModel
             static bool TitleHasSeasonSignal(string? raw, string seasonToken, string[] romanTokens)
             {
                 if (string.IsNullOrWhiteSpace(raw)) return false;
-                var words = Kiriha.Utils.Parsing.AnimeStringHelper.Normalize(raw).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var words = Kiriha.Core.Domain.Utils.Parsing.AnimeStringHelper.Normalize(raw).Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (words.Contains(seasonToken)) return true;
                 foreach (var r in romanTokens)
                 {

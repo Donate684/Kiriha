@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Infrastructure.Extensions;
+using Kiriha.Core.Abstractions.Extensions;
 using Kiriha.Infrastructure.Tracking.Integration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +10,8 @@ public static class InfrastructureTrackingRegistration
 {
     public static IServiceCollection AddKirihaTrackingInfrastructure(this IServiceCollection services)
     {
+        services.AddSingleton<Kiriha.Core.Abstractions.Infrastructure.IAppPaths, Platform.AppPathsService>();
+        services.AddSingleton<Kiriha.Core.Abstractions.Infrastructure.IBrowserLauncher, Platform.ShellBrowserLauncher>();
         services.AddSingleton<IReadOnlyList<ExternalPlayerDefinition>>(_ =>
             Kiriha.Infrastructure.Tracking.ExternalDetection.ExternalPlayerCatalog.Load());
         services.AddSingleton<DiscordService>();

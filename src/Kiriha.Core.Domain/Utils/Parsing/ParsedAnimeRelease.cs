@@ -1,4 +1,4 @@
-namespace Kiriha.Utils.Parsing;
+namespace Kiriha.Core.Domain.Utils.Parsing;
 
 /// <summary>
 /// Результат структурного разбора имени файла, торрент-релиза или заголовка окна плеера.

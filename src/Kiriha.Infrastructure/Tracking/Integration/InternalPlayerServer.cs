@@ -80,6 +80,19 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
             clientsCopy = [.. _clients];
         }
 
+        if (clientsCopy.Count == 0)
+        {
+            PlayerProcessBridge.ForwardMetadata(
+                metadata.OriginalTitle,
+                metadata.AnimeId ?? 0,
+                metadata.TitleRu,
+                metadata.TitleEn,
+                metadata.TitleRomaji,
+                metadata.EpisodeText,
+                metadata.TorrentHash);
+            return;
+        }
+
         foreach (var client in clientsCopy)
         {
             if (cancellationToken.IsCancellationRequested) break;

@@ -20,6 +20,7 @@ public static class StreamingConstants
     public static class Anime365
     {
         public const string DefaultAppId = "app-f77050293d1e92794d78fc1e";
+        public const string DefaultUsername = "Anime365 User";
 
         public const string MirrorCo = "smotret-anime.co";
         public const string MirrorOrg = "smotret-anime.org";
@@ -115,6 +116,7 @@ public static class StreamingConstants
 
         public const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
         public const string RuRuLanguage = "ru-RU";
+        public const string JsonMediaType = "application/json";
         public const string JsonAccept = "application/json, text/javascript, */*; q=0.01";
         public const string Authorization = "Authorization";
         public const string SiteId = "Site-Id";

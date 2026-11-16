@@ -3,9 +3,9 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Kiriha.Core.Domain.Constants;
-using Kiriha.Utils.Collections;
+using Kiriha.Core.Domain.Utils.Collections;
 
-namespace Kiriha.Utils.Parsing;
+namespace Kiriha.Core.Domain.Utils.Parsing;
 
 public static class AnimeStringHelper
 {

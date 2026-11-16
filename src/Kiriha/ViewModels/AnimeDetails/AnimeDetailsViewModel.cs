@@ -1,10 +1,11 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.ViewModels.Settings;
 
 namespace Kiriha.ViewModels.AnimeDetails;
@@ -252,7 +253,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         foreach (var link in _settingsService.Current.CustomLinks)
         {
             if (string.IsNullOrWhiteSpace(link.UrlTemplate)) continue;
-            var url = Kiriha.Core.CustomLinkResolver.Resolve(link.UrlTemplate, Anime);
+            var url = CustomLinkResolver.Resolve(link.UrlTemplate, Anime);
             CustomShareLinks.Add(new CustomShareLinkRuntime(link.Name, link.IconKind, url, link.IconPath));
         }
     }

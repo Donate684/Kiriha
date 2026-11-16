@@ -56,7 +56,6 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Material.Icons.Avalonia" />
 
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Threading.RateLimiting" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />

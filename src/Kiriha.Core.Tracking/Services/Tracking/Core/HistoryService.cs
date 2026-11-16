@@ -5,7 +5,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Core.Tracking.Core;
 
 public class HistoryService : IHistoryService
 {

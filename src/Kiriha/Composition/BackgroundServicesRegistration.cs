@@ -1,8 +1,8 @@
+using Kiriha.Core.Abstractions.Extensions;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Infrastructure.Extensions;
+using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services;
-using Kiriha.Services.Data.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,9 +11,9 @@ namespace Kiriha.Composition;
 /// <summary>
 /// DI registrations for background/infrastructure services that don't
 /// belong to a specific tracker: IPC server, internal player HTTP server,
-/// load queue, update checks, notifications, airing info, and maintenance tasks.
+/// load queue, update checks, notifications, and maintenance tasks.
 ///
-/// These are separated from <see cref="TrackingServicesRegistration"/> because
+/// These are separated from <c>TrackingServicesRegistration</c> because
 /// they are not tracker-specific — they run in the background as
 /// <see cref="IHostedService"/> instances or support cross-cutting concerns.
 /// </summary>
@@ -34,7 +34,7 @@ internal static class BackgroundServicesRegistration
         services.AddForwardedSingleton<InstanceServer, IHostedService>();
 
         // SyncManager needs to start with the app lifecycle
-        services.AddSingleton<IHostedService>(sp => (IHostedService)sp.GetRequiredService<ISyncManager>());
+        services.AddForwardedSingleton<SyncManager, IHostedService>();
 
         // Background utilities
         services.AddSingleton<LoadQueueService>();
@@ -42,8 +42,6 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<UpdateService>();
         services.AddSingleton<NotificationService>();
         services.AddForwardedSingleton<NotificationService, INotificationService>();
-        services.AddSingleton<AiringInfoService>();
-        services.AddForwardedSingleton<AiringInfoService, IAiringInfoService>();
 
         // ExternalMediaDetectorService also runs as IHostedService
         services.AddForwardedSingleton<Kiriha.Infrastructure.Tracking.Integration.ExternalMediaDetectorService, IHostedService>();
@@ -80,4 +78,3 @@ internal static class BackgroundServicesRegistration
         return services;
     }
 }
-

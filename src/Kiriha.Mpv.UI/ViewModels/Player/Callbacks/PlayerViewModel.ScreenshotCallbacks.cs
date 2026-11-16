@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;

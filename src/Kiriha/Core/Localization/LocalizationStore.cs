@@ -12,7 +12,7 @@ public static class LocalizationStore
         if (keyToUse.StartsWith("l.", StringComparison.OrdinalIgnoreCase))
             keyToUse = keyToUse[2..];
 
-        var snapshot = Kiriha.Services.Data.Metadata.LocalizationService.ActiveResources;
+        var snapshot = Kiriha.Services.Metadata.LocalizationService.ActiveResources;
         if (snapshot.Count > 0)
         {
             if (snapshot.TryGetValue(keyToUse, out var directSnap))

@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Mpv.UI.ViewModels.Player.Settings;
 

@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Infrastructure.Http;
+using Kiriha.Core.Tracking.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Feed;

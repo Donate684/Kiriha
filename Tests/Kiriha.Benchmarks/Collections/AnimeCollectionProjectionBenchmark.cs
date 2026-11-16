@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Collections;
 using BenchmarkDotNet.Attributes;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Constants;

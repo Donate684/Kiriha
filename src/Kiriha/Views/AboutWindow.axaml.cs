@@ -3,7 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Infrastructure;
 using Kiriha.Models;
 

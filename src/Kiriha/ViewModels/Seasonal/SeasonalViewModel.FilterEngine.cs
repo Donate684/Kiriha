@@ -1,8 +1,10 @@
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Collections;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Extensions;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Utils.Classification;
 
 namespace Kiriha.ViewModels.Seasonal;
 
@@ -125,7 +127,7 @@ internal sealed class SeasonalCategoryBuckets
             var country = item.CountryOfOrigin?.ToUpperInvariant();
             if (string.IsNullOrEmpty(country) || country == "JP")
             {
-                var detected = Kiriha.Core.Tracking.Api.DonghuaDetector.Detect(item);
+                var detected = DonghuaDetector.Detect(item);
                 if (detected != null)
                 {
                     item.CountryOfOrigin = detected;

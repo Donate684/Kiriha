@@ -4,9 +4,8 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Infrastructure.Tracking.Integration;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Data.Core;
+using Kiriha.Infrastructure.Settings;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

@@ -1,3 +1,5 @@
+using Kiriha.Infrastructure.Diagnostics;
+using Kiriha.Infrastructure.Platform;
 using Avalonia;
 using Serilog;
 using Velopack;
@@ -13,7 +15,7 @@ sealed partial class Program
     public static void Main(string[] args)
     {
         Kiriha.Infrastructure.Platform.PathHelper.EnsureDirectoriesExist();
-        Kiriha.Services.Notifications.AppUserModelIdRegistrar.Register();
+        Kiriha.Infrastructure.Platform.AppUserModelIdRegistrar.Register();
 
         bool isPlayer = Array.Exists(args, arg => arg.Equals("--player", StringComparison.OrdinalIgnoreCase));
 
@@ -45,7 +47,7 @@ sealed partial class Program
                 Log.Fatal(ex, "Critical Error (UnhandledException)! Terminating={Terminating}", eventArgs.IsTerminating);
 
                 if (eventArgs.IsTerminating)
-                    Kiriha.Infrastructure.CrashReporter.WriteCrash(ex, "AppDomain.UnhandledException");
+                    CrashReporter.WriteCrash(ex, "AppDomain.UnhandledException");
             };
 
             TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
@@ -61,7 +63,7 @@ sealed partial class Program
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Critical Error during application startup or execution!");
-                Kiriha.Infrastructure.CrashReporter.WriteCrash(ex, "Program.Main");
+                CrashReporter.WriteCrash(ex, "Program.Main");
                 throw;
             }
         }

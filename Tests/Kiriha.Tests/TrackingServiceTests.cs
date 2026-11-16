@@ -4,9 +4,9 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Core;
-using Kiriha.Services.Data.Mapping;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Core.Tracking.Mapping;
+using Kiriha.Core.Tracking.Library;
+using Kiriha.Infrastructure.Settings;
 using Moq;
 
 namespace Kiriha.Tests;

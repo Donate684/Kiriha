@@ -30,6 +30,10 @@ public static class StreamingServicesRegistration
         // Host resolvers & mirror rewriters
         services.AddSingleton<Anime365HostResolver>();
         services.AddSingleton<Kiriha.Core.Abstractions.Services.IImageUrlRewriter>(sp => sp.GetRequiredService<Anime365HostResolver>());
+        services.AddSingleton<IAnime365AuthService>(sp =>
+            new Anime365AuthService(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("StreamingClient"),
+                sp.GetRequiredService<Anime365HostResolver>()));
 
         // Extractors
         services.AddSingleton<IVideoExtractor>(sp =>

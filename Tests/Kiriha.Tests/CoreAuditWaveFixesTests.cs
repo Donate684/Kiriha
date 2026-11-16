@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Collections;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Constants;
@@ -6,9 +7,10 @@ using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Streaming.Helpers;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Utils.Parsing;
+using Kiriha.Data.Core;
+using Kiriha.Data.Repository;
+using Kiriha.Core.Domain.Utils.Parsing;
+using Kiriha.Infrastructure.Utils.Parsing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Moq;

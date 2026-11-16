@@ -1,7 +1,7 @@
 using System.Reflection;
 using Kiriha.Core.Domain.Constants;
 
-namespace Kiriha.Core.Shared;
+namespace Kiriha.Core.Domain.Constants;
 
 /// <summary>
 /// Single source of truth for the runtime application identity (assembly version,

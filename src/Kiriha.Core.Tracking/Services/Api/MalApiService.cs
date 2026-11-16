@@ -2,7 +2,7 @@ using System.Threading.RateLimiting;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
-using Kiriha.Infrastructure.Http;
+using Kiriha.Core.Tracking.Api;
 
 namespace Kiriha.Core.Tracking.Api;
 

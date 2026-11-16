@@ -5,7 +5,7 @@ using System.Text.Json;
 using Avalonia;
 using Kiriha.Core.Abstractions.Services;
 using Serilog;
-namespace Kiriha.Services.Data.Metadata;
+namespace Kiriha.Services.Metadata;
 public class LocalizationService : ILocalizer
 {
     private static volatile IReadOnlyDictionary<string, string> _activeSnapshot =

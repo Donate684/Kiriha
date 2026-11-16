@@ -1,7 +1,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Infrastructure.Settings;
 using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,6 +1,5 @@
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Shared;
 
 namespace Kiriha.Core.Domain.Models.Api;
 

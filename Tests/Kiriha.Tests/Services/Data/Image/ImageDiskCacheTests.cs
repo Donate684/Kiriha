@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Image;
+using Kiriha.Services.Image;
 using Moq;
 
 namespace Kiriha.Tests.Services.Data.Image;

@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Kiriha.ViewModels.NowPlaying;
@@ -9,7 +10,7 @@ public partial class NowPlayingViewModel
         if (media is null) return string.Empty;
         if (!string.IsNullOrWhiteSpace(media.OriginalTitle))
         {
-            var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
+            var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle);
             if (!string.IsNullOrWhiteSpace(parsed.Title))
             {
                 if (parsed.Season is > 1)

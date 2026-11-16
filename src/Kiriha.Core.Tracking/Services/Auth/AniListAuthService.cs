@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Core.Shared;
 using Kiriha.Core.Tracking.Utils;
 using Serilog;
 

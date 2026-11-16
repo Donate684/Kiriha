@@ -1,9 +1,10 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Shared;
+using Kiriha.Core.Domain.Constants;
 using Serilog;
 
-namespace Kiriha.Services.Data.Metadata;
+namespace Kiriha.Core.Tracking.Metadata;
 
 public partial class ShikiMetadataService
 {
@@ -125,7 +126,7 @@ public partial class ShikiMetadataService
 
         if (_settingsService.Current.UI.UseRussianDescriptions && !string.IsNullOrEmpty(meta.Description))
         {
-            var cleaned = Kiriha.Utils.Parsing.AnimeStringHelper.CleanShikiDescription(meta.Description);
+            var cleaned = Kiriha.Core.Domain.Utils.Parsing.AnimeStringHelper.CleanShikiDescription(meta.Description);
             if (item.RussianSynopsis != cleaned) { item.RussianSynopsis = cleaned; changed = true; }
         }
 

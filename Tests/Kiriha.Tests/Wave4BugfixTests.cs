@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Classification;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -17,10 +18,9 @@ using Kiriha.Core.Tracking.Sync;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Infrastructure.Tracking.ExternalDetection;
 using Kiriha.Services;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Settings;
-using Kiriha.Services.Franchise;
-using Kiriha.Utils.Parsing;
+using Kiriha.Infrastructure.Settings;
+using Kiriha.Core.Tracking.Franchise;
+using Kiriha.Core.Domain.Utils.Parsing;
 using Moq;
 using Xunit;
 

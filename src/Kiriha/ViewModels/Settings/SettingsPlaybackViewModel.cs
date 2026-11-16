@@ -1,3 +1,4 @@
+using Kiriha.Infrastructure.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

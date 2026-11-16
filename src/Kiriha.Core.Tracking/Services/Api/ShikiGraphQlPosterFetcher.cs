@@ -4,7 +4,7 @@ using System.Text.Json;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure.Http;
+using Kiriha.Core.Tracking.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

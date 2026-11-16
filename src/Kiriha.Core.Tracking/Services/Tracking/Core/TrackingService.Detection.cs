@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;

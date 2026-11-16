@@ -41,6 +41,8 @@ partial class Program
         }
 
         Log.Logger = loggerConfig.CreateLogger();
+        Kiriha.Core.Domain.Utils.Async.TaskExtensions.UnhandledExceptionLogger = static (ex, context) =>
+            Log.Error(ex, "Unhandled exception in fire-and-forget: {Context}", context);
 
         Log.Information(Kiriha.Core.Domain.Constants.AppConstants.System.AppStartedLog);
         // Mask OAuth callback parameters (code, token, refresh) before logging command-line args.

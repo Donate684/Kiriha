@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
+using Kiriha.Infrastructure.Diagnostics;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Infrastructure;

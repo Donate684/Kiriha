@@ -7,8 +7,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Services;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Infrastructure.Settings;
 using Moq;
 
 namespace Kiriha.Tests;

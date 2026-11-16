@@ -1,6 +1,6 @@
 using Avalonia.Media.Imaging;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 public sealed class BitmapPixelCache
 {

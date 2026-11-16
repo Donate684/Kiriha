@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Collections;
 using System.Reflection;
 using Kiriha.Core;
 using Kiriha.Core.Abstractions.Repositories;
@@ -10,7 +11,8 @@ using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Mpv.UI.Services.Player;
 using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data.Core;
+using Kiriha.Data.Core;
+using Kiriha.Core.Tracking.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

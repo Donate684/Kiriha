@@ -1,8 +1,10 @@
+using Kiriha.Core.Domain.Utils.Async;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core;
+using Kiriha.Core.Domain.Collections;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.Formats;
@@ -110,8 +112,8 @@ public partial class AnimeListViewModel
         }
     }
 
-    private Kiriha.Utils.Async.Debouncer? _searchDebouncer;
-    private Kiriha.Utils.Async.Debouncer? _filterRefreshDebouncer;
+    private Debouncer? _searchDebouncer;
+    private Debouncer? _filterRefreshDebouncer;
     private int _filterRefreshVersion;
 
     // Discord-like Tag System

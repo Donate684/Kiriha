@@ -3,7 +3,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 public class PosterBatchDownloader
 {

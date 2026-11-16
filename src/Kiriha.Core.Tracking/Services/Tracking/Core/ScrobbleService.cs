@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
@@ -71,7 +72,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
         if (!int.TryParse(media.Episode, out int ep))
         {
-            var fallbackEp = Kiriha.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle).Episode;
+            var fallbackEp = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle).Episode;
             if (!int.TryParse(fallbackEp, out ep))
             {
                 return;

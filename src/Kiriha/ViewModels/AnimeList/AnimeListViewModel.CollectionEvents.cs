@@ -1,5 +1,5 @@
 using System.Collections.Specialized;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.AnimeList;

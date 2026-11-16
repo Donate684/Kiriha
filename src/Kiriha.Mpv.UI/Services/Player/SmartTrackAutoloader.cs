@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using System.Collections.Frozen;
 
 namespace Kiriha.Mpv.UI.Services.Player;
@@ -63,7 +64,7 @@ public static class SmartTrackAutoloader
         if (subFiles.Count == 0 && audioFiles.Count == 0)
             return SmartTrackMatches.Empty;
 
-        var videoParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(videoFileName);
+        var videoParsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(videoFileName);
         string videoTitle = videoParsed.Title;
         string videoEpisode = videoParsed.Episode;
 
@@ -109,7 +110,7 @@ public static class SmartTrackAutoloader
             return true;
 
         // 2. Parser Match
-        var trackParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(trackBareFileName);
+        var trackParsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(trackBareFileName);
         string trackTitle = trackParsed.Title;
         string trackEpisode = trackParsed.Episode;
 

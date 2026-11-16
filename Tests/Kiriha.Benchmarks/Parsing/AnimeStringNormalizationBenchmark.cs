@@ -1,5 +1,5 @@
 using BenchmarkDotNet.Attributes;
-using Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Utils.Parsing;
 
 namespace Kiriha.Benchmarks.Parsing;
 

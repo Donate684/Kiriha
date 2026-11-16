@@ -1,10 +1,9 @@
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Mpv.UI.Services.Player;
-using Kiriha.Services.Data.Core;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Tests;
 
@@ -309,64 +308,36 @@ public sealed class PlayerMediaMetadataTests
     [Fact]
     public void PlayerMediaMetadataResolver_RomanNumeralSequel_MatchesNormalizedSeason2InDb()
     {
-        var dbPath = Path.Combine(Path.GetTempPath(), $"Kiriha_Test_Player_{Guid.NewGuid():N}.db");
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite($"Data Source={dbPath}")
-            .Options;
-        var factory = new TestDbContextFactory(options);
-
-        try
+        var candidates = new List<AnimeEntity>
         {
-            using (var db = new AppDbContext(options))
-            {
-                db.Database.EnsureCreated();
-                db.UserAnime.Add(new AnimeEntity { Id = 49891, Title = "Tensei shitara Ken deshita" });
-                db.UserAnime.Add(new AnimeEntity { Id = 53913, Title = "Tensei shitara Ken deshita 2nd Season" });
-                db.SaveChanges();
-            }
+            new() { Id = 49891, Title = "Tensei shitara Ken deshita" },
+            new() { Id = 53913, Title = "Tensei shitara Ken deshita 2nd Season" }
+        };
+        var mockRepo = new Moq.Mock<IAnimeRepository>();
+        mockRepo.Setup(r => r.TryGetSnapshot()).Returns(candidates);
 
-            var resolver = new PlayerMediaMetadataResolver(factory);
-            var meta = resolver.Resolve(@"C:\Anime\[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p].mkv");
+        var resolver = new PlayerMediaMetadataResolver(mockRepo.Object);
+        var meta = resolver.Resolve(@"C:\Anime\[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p].mkv");
 
-            Assert.Equal(53913, meta.AnimeId);
-            Assert.Equal("04", meta.EpisodeText);
-        }
-        finally
-        {
-            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
-            try { if (File.Exists(dbPath)) File.Delete(dbPath); } catch { }
-        }
+        Assert.Equal(53913, meta.AnimeId);
+        Assert.Equal("04", meta.EpisodeText);
     }
 
     [Fact]
     public void PlayerMediaMetadataResolver_RomanNumeralSequel_DoesNotFallbackToSeason1InDb()
     {
-        var dbPath = Path.Combine(Path.GetTempPath(), $"Kiriha_Test_Player_{Guid.NewGuid():N}.db");
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite($"Data Source={dbPath}")
-            .Options;
-        var factory = new TestDbContextFactory(options);
-
-        try
+        var candidates = new List<AnimeEntity>
         {
-            using (var db = new AppDbContext(options))
-            {
-                db.Database.EnsureCreated();
-                db.UserAnime.Add(new AnimeEntity { Id = 49891, Title = "Tensei shitara Ken deshita" });
-                db.SaveChanges();
-            }
+            new() { Id = 49891, Title = "Tensei shitara Ken deshita" }
+        };
+        var mockRepo = new Moq.Mock<IAnimeRepository>();
+        mockRepo.Setup(r => r.TryGetSnapshot()).Returns(candidates);
 
-            var resolver = new PlayerMediaMetadataResolver(factory);
-            var meta = resolver.Resolve(@"C:\Anime\[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p].mkv");
+        var resolver = new PlayerMediaMetadataResolver(mockRepo.Object);
+        var meta = resolver.Resolve(@"C:\Anime\[Erai-raws] Tensei Shitara Ken Deshita II - 04 [1080p].mkv");
 
-            Assert.Null(meta.AnimeId);
-            Assert.Equal("04", meta.EpisodeText);
-        }
-        finally
-        {
-            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
-            try { if (File.Exists(dbPath)) File.Delete(dbPath); } catch { }
-        }
+        Assert.Null(meta.AnimeId);
+        Assert.Equal("04", meta.EpisodeText);
     }
 
     [Fact]
@@ -471,17 +442,5 @@ public sealed class PlayerMediaMetadataTests
         Assert.Equal("Tensei shitara Ken Deshita", vm.BottomTitle);
         Assert.Equal("О моём перерождении в меч", vm.AnimeTitleRu);
         Assert.Equal("Reincarnated as a Sword", vm.AnimeTitleEn);
-    }
-
-    private sealed class TestDbContextFactory : IDbContextFactory<AppDbContext>
-    {
-        private readonly DbContextOptions<AppDbContext> _options;
-
-        public TestDbContextFactory(DbContextOptions<AppDbContext> options)
-        {
-            _options = options;
-        }
-
-        public AppDbContext CreateDbContext() => new(_options);
     }
 }

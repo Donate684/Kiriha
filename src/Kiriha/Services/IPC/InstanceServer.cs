@@ -3,7 +3,7 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Infrastructure.Settings;
 using Kiriha.Views.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

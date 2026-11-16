@@ -2,11 +2,10 @@ using System.Threading.Channels;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Image;
-using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Image;
 using Serilog;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Services;
 
 public class LoadQueueService : ILoadQueueService, IDisposable
 {

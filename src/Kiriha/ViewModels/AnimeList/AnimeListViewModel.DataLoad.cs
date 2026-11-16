@@ -1,5 +1,5 @@
 using Kiriha.Models;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 
 namespace Kiriha.ViewModels.AnimeList;
 

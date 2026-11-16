@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Core.Domain.Models;
 

@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Collections;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
@@ -8,8 +9,8 @@ using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Services.AppLifecycle;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Tracking.Metadata;
+using Kiriha.Core.Domain.Utils.Async;
 
 namespace Kiriha.ViewModels.AnimeList;
 
@@ -64,11 +65,11 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         InitializeGenreFilterItems();
         InitializeFormatFilterItems();
 
-        _filterRefreshDebouncer = new Kiriha.Utils.Async.Debouncer(
+        _filterRefreshDebouncer = new Debouncer(
             TimeSpan.FromMilliseconds(180),
             ApplyCurrentFiltersAsync);
 
-        _searchDebouncer = new Kiriha.Utils.Async.Debouncer(
+        _searchDebouncer = new Debouncer(
             TimeSpan.FromMilliseconds(300),
             _ =>
             {
@@ -76,7 +77,7 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
                 return Task.CompletedTask;
             });
 
-        _collectionChangeDebouncer = new Kiriha.Utils.Async.Debouncer(TimeSpan.FromMilliseconds(200), async ct =>
+        _collectionChangeDebouncer = new Debouncer(TimeSpan.FromMilliseconds(200), async ct =>
         {
             await UpdateCountsAsync();
             await ApplyCurrentFiltersAsync(ct);

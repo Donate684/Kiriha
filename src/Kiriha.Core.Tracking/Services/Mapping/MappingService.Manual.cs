@@ -1,4 +1,4 @@
-namespace Kiriha.Services.Data.Mapping;
+namespace Kiriha.Core.Tracking.Mapping;
 
 public partial class MappingService
 {

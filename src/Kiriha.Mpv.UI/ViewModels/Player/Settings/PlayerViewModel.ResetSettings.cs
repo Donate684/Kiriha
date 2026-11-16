@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;

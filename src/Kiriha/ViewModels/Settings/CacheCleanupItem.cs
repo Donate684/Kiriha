@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Services.Data.Core;
+using Kiriha.Data.Core;
 
 namespace Kiriha.ViewModels.Settings;
 

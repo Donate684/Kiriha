@@ -3,7 +3,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Kiriha.Services.Data.Repository;
+namespace Kiriha.Data.Repository;
 
 public sealed partial class UserAnimeRepository
 {

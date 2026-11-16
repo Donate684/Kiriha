@@ -3,9 +3,9 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Utils.Parsing;
 
-namespace Kiriha.Services.Data.Mapping;
+namespace Kiriha.Core.Tracking.Mapping;
 
 public partial class MappingService : IMappingService
 {

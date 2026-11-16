@@ -5,7 +5,7 @@ using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Kiriha.Services.Data.Core.EntityConfigurations;
+namespace Kiriha.Data.Core.EntityConfigurations;
 
 public static class ConfigurationHelpers
 {

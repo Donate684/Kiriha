@@ -4,7 +4,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Serilog;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 public class ImageCacheService : IImageCacheService, IDisposable
 {

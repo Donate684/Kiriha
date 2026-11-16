@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Serilog;
 
 namespace Kiriha.Services.AppLifecycle.Shutdown;

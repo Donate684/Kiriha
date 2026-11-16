@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 namespace Kiriha.Core.Domain.Models;
 
 /// <summary>

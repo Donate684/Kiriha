@@ -6,9 +6,9 @@ using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Mpv.UI.Services.Player;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Mapping;
-using Kiriha.Utils.Parsing;
+using Kiriha.Data.Core;
+using Kiriha.Core.Tracking.Mapping;
+using Kiriha.Core.Domain.Utils.Parsing;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -331,77 +331,64 @@ public sealed class MatchingRegressionTests
     [Fact]
     public void PlayerMediaMetadataResolver_And_PlayerViewModel_DoNotMatch2026RemakeTo1994OrMangaInDb()
     {
-        var dbPath = Path.Combine(Path.GetTempPath(), $"Kiriha_Test_Player_Remake_{Guid.NewGuid():N}.db");
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite($"Data Source={dbPath}")
-            .Options;
-        var factory = new TestDbContextFactory(options);
-
-        try
+        var candidates = new List<AnimeEntity>
         {
-            using (var db = new AppDbContext(options))
+            new()
             {
-                db.Database.EnsureCreated();
-                db.UserAnime.Add(new AnimeEntity
-                {
-                    Id = 435,
-                    MediaKind = MediaKind.Anime,
-                    Title = "Magic Knight Rayearth",
-                    RussianTitle = "Рыцари магии",
-                    StartYear = 1994,
-                    TotalEpisodes = 20,
-                    Status = UserAnimeStatus.OnHold
-                });
-                db.UserAnime.Add(new AnimeEntity
-                {
-                    Id = 119,
-                    MediaKind = MediaKind.Manga,
-                    Title = "Magic Knight Rayearth (2026)",
-                    RussianTitle = "Рыцари магии (2026)",
-                    StartYear = 2026,
-                    Status = UserAnimeStatus.Watching
-                });
-                db.SaveChanges();
+                Id = 435,
+                MediaKind = MediaKind.Anime,
+                Title = "Magic Knight Rayearth",
+                RussianTitle = "Рыцари магии",
+                StartYear = 1994,
+                TotalEpisodes = 20,
+                Status = UserAnimeStatus.OnHold
+            },
+            new()
+            {
+                Id = 119,
+                MediaKind = MediaKind.Manga,
+                Title = "Magic Knight Rayearth (2026)",
+                RussianTitle = "Рыцари магии (2026)",
+                StartYear = 2026,
+                Status = UserAnimeStatus.Watching
             }
+        };
 
-            var resolver = new PlayerMediaMetadataResolver(factory);
-            const string releaseName = "[Erai-raws] Magic Knight Rayearth (2026) - 06 [1080p CR WEB-DL AVC AAC][MultiSub][3329235B]";
+        var mockRepo = new Mock<IAnimeRepository>();
+        mockRepo.Setup(r => r.TryGetSnapshot()).Returns(candidates);
 
-            // 1. Direct file resolution must NOT resolve to 435 (1994) or 119 (Manga)
-            var resolved = resolver.Resolve($@"C:\Anime\{releaseName}.mkv");
-            Assert.Null(resolved.AnimeId);
-            Assert.Equal("Magic Knight Rayearth (2026)", resolved.TitleRomaji);
+        var resolver = new PlayerMediaMetadataResolver(mockRepo.Object);
+        const string releaseName = "[Erai-raws] Magic Knight Rayearth (2026) - 06 [1080p CR WEB-DL AVC AAC][MultiSub][3329235B]";
 
-            // 2. PlayerViewModel constructed with TorrServer stream + stripped TitleRu (exact Torrents LaunchStream scenario)
-            //    must inspect OriginalTitle and NOT resolve to 435 via ResolveByTitle
-            var settings = new AppSettings();
-            var mockSettings = new Mock<ISettingsService>();
-            mockSettings.SetupGet(s => s.Current).Returns(settings);
-            var mockLocalizer = new Mock<ILocalizer>();
+        // 1. Direct file resolution must NOT resolve to 435 (1994) or 119 (Manga)
+        var resolved = resolver.Resolve($@"C:\Anime\{releaseName}.mkv");
+        Assert.Null(resolved.AnimeId);
+        Assert.Equal("Magic Knight Rayearth (2026)", resolved.TitleRomaji);
 
-            var streamMetadata = new PlayerMediaMetadata(
-                OriginalTitle: releaseName,
-                TitleRu: "Magic Knight Rayearth",
-                TitleEn: releaseName,
-                EpisodeText: "06",
-                AnimeId: null,
-                TitleRomaji: releaseName,
-                TorrentHash: "abcd1234");
+        // 2. PlayerViewModel constructed with TorrServer stream + stripped TitleRu (exact Torrents LaunchStream scenario)
+        //    must inspect OriginalTitle and NOT resolve to 435 via ResolveByTitle
+        var settings = new AppSettings();
+        var mockSettings = new Mock<ISettingsService>();
+        mockSettings.SetupGet(s => s.Current).Returns(settings);
+        var mockLocalizer = new Mock<ILocalizer>();
 
-            using var vm = new PlayerViewModel(
-                "http://127.0.0.1:8090/stream/fname.mkv?link=abcd1234&index=1&play",
-                streamMetadata,
-                resolver,
-                mockSettings.Object,
-                mockLocalizer.Object);
+        var streamMetadata = new PlayerMediaMetadata(
+            OriginalTitle: releaseName,
+            TitleRu: "Magic Knight Rayearth",
+            TitleEn: releaseName,
+            EpisodeText: "06",
+            AnimeId: null,
+            TitleRomaji: releaseName,
+            TorrentHash: "abcd1234");
 
-            Assert.Null(vm.AnimeId);
-        }
-        finally
-        {
-            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
-            try { if (File.Exists(dbPath)) File.Delete(dbPath); } catch { }
-        }
+        using var vm = new PlayerViewModel(
+            "http://127.0.0.1:8090/stream/fname.mkv?link=abcd1234&index=1&play",
+            streamMetadata,
+            resolver,
+            mockSettings.Object,
+            mockLocalizer.Object);
+
+        Assert.Null(vm.AnimeId);
     }
 
     [Fact]
@@ -438,10 +425,5 @@ public sealed class MatchingRegressionTests
         // Both 1994 and 2026 in active list -> 2026 torrent matches 2026 entry
         var matched = RssFeedService.MatchActiveAnime([rayearth1994, rayearth2026], "Magic Knight Rayearth", parsedSeason: null, parsedYear: 2026);
         Assert.Same(rayearth2026, matched);
-    }
-
-    private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
-    {
-        public AppDbContext CreateDbContext() => new(options);
     }
 }

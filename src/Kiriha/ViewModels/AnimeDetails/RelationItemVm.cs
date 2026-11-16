@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.ViewModels.AnimeDetails;

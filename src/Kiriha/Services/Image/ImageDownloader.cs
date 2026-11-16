@@ -5,7 +5,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Streaming.Constants;
 using Serilog;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 public class ImageDownloader : IDisposable
 {

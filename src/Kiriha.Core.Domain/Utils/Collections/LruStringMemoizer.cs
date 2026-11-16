@@ -1,4 +1,5 @@
-namespace Kiriha.Utils.Collections;
+using Kiriha.Core.Domain.Utils.Parsing;
+namespace Kiriha.Core.Domain.Utils.Collections;
 
 /// <summary>
 /// Tiny thread-safe LRU memoizer keyed by string, capped by entry count.

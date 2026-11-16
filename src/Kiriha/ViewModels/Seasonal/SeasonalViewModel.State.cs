@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Async;
 using System.Collections.Concurrent;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,8 +18,8 @@ public partial class SeasonalViewModel
 
     private CancellationTokenSource? _loadCts;
     private bool _isDisposed;
-    private readonly Kiriha.Utils.Async.Debouncer _filterDebouncer;
-    private readonly Kiriha.Utils.Async.Debouncer _applyFilterDebouncer;
+    private readonly Debouncer _filterDebouncer;
+    private readonly Debouncer _applyFilterDebouncer;
     private int _applyFiltersRequestCount;
     private int _initialLoadStarted;
 

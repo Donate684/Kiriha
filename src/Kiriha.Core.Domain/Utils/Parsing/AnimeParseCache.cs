@@ -1,6 +1,7 @@
-using Kiriha.Utils.Collections;
 
-namespace Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Utils.Collections;
+
+namespace Kiriha.Core.Domain.Utils.Parsing;
 
 /// <summary>
 /// Memoizing wrapper around <see cref="AnimeReleaseParser.Parse(string)"/>.

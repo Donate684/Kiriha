@@ -1,4 +1,5 @@
-﻿using Kiriha.Core.Dialogs;
+using Kiriha.Infrastructure.Platform;
+using Kiriha.Core.Dialogs;
 using Kiriha.Core.Navigation;
 using Kiriha.ViewModels.Analytics;
 using Kiriha.ViewModels.AnimeList;
@@ -52,7 +53,7 @@ internal static class UiServicesRegistration
         services.AddSingleton<IViewModelFactory>(sp => new ViewModelFactory(sp, transientTypes));
 
         // Client UI Support Services
-        services.AddSingleton<Kiriha.Services.SystemIntegrationService>();
+        services.AddSingleton<Kiriha.Infrastructure.Platform.SystemIntegrationService>();
         services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.PlayerMediaMetadataResolver>();
         services.AddSingleton<Kiriha.Core.FaviconService>();
 

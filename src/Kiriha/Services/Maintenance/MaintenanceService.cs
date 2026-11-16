@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Services.Maintenance;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.Services;

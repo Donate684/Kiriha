@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Mapping;
+using Kiriha.Core.Tracking.Mapping;
 
 namespace Kiriha.Tests;
 

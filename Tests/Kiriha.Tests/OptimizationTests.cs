@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Image;
-using Kiriha.Services.Data.Mapping;
+using Kiriha.Infrastructure.Caching;
+using Kiriha.Services.Image;
+using Kiriha.Core.Tracking.Mapping;
 
 namespace Kiriha.Tests;
 

@@ -1,6 +1,6 @@
 using Avalonia.Media.Imaging;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 /// <summary>
 /// Two-tier in-memory cache layered on top of the disk image cache used by

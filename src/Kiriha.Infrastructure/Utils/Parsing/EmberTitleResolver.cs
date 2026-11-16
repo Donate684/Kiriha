@@ -1,8 +1,9 @@
 using System.Buffers;
 using System.Text.RegularExpressions;
-using Kiriha.Utils.Collections;
+using Kiriha.Core.Domain.Utils.Collections;
+using Kiriha.Core.Domain.Utils.Parsing;
 
-namespace Kiriha.Utils.Parsing;
+namespace Kiriha.Infrastructure.Utils.Parsing;
 
 public static partial class EmberTitleResolver
 {

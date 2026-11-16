@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Franchise;
+using Kiriha.Core.Tracking.Franchise;
 using Moq;
 
 namespace Kiriha.Tests;

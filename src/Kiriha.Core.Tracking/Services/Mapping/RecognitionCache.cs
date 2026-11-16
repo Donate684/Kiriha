@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Utils.Parsing;
 
-namespace Kiriha.Services.Data.Mapping;
+namespace Kiriha.Core.Tracking.Mapping;
 
 public class RecognitionCache : IRecognitionCache
 {

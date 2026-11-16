@@ -1,5 +1,5 @@
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
+using Kiriha.Data.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Tests;

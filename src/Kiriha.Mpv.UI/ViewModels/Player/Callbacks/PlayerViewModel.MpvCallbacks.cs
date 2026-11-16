@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;

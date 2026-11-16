@@ -1,7 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Kiriha.Core.Tracking.Utils;
-using Kiriha.Infrastructure.Platform;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Auth;
@@ -9,6 +9,30 @@ namespace Kiriha.Core.Tracking.Auth;
 public static class OAuthHelper
 {
     private static readonly TimeSpan AuthTimeout = TimeSpan.FromMinutes(5);
+
+    public static Action<string> UrlLauncher { get; set; } = OpenHttpsUrlSafe;
+
+    private static void OpenHttpsUrlSafe(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        var trimmed = url.Trim();
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) ||
+            (!uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+             !uri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)))
+        {
+            Log.Warning("OAuthHelper: blocked disallowed auth URL scheme for {Url}", url);
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(trimmed) { UseShellExecute = true })?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "OAuthHelper: failed to open authorization URL {Url}", url);
+        }
+    }
 
     public static async Task<string?> AuthorizeViaLoopbackAsync(
         string authUrl,
@@ -30,7 +54,7 @@ public static class OAuthHelper
         }
 
         Log.Information("Opening browser for authorization...");
-        ShellLauncher.OpenUrl(authUrl);
+        UrlLauncher(authUrl);
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         linkedCts.CancelAfter(AuthTimeout);

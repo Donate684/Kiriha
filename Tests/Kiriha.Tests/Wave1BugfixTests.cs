@@ -13,8 +13,9 @@ using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Sync;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Data.Core;
+using Kiriha.Core.Tracking.Library;
+using Kiriha.Data.Repository;
 using Kiriha.ViewModels.AnimeDetails;
 
 namespace Kiriha.Tests;

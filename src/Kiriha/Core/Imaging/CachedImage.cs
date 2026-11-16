@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Image;
+using Kiriha.Services.Image;
 using Serilog;
 
 namespace Kiriha.Core;

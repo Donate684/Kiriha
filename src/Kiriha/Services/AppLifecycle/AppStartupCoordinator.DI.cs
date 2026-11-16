@@ -6,8 +6,8 @@ using Kiriha.Core.Tracking;
 using Kiriha.Core.Streaming;
 using Kiriha.Infrastructure.Platform;
 using Kiriha.Infrastructure.Tracking;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Metadata;
+using Kiriha.Infrastructure.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

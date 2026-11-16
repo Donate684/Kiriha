@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Core;
+using Kiriha.Data.Core;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

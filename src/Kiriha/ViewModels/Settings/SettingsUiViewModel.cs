@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Services.Data.Metadata;
+using Kiriha.Services.Metadata;
 using Kiriha.ViewModels.AnimeList;
 using Kiriha.ViewModels.Seasonal;
 

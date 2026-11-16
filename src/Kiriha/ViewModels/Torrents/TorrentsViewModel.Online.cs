@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,7 +11,7 @@ using Kiriha.Core.Streaming.Constants;
 using Kiriha.Core.Streaming.Services;
 using Kiriha.Models;
 using Kiriha.Utils;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.ViewModels.Settings;
 using Serilog;
 
@@ -1008,7 +1009,7 @@ public partial class TorrentsViewModel
     {
         if (string.IsNullOrWhiteSpace(title)) return null;
 
-        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
+        var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(title);
         int? parsedYear = parsed.Year;
 
         if (SelectedAnime is { MediaKind: MediaKind.Anime } &&

@@ -6,7 +6,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync;
-using Kiriha.Services.Data.Core;
+using Kiriha.Core.Tracking.Core;
 using Kiriha.ViewModels.History;
 using Kiriha.Views.Converters;
 using Moq;

@@ -6,9 +6,9 @@ using Avalonia.Styling;
 using Kiriha.Core;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Image;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Services.Image;
+using Kiriha.Services.Metadata;
+using Kiriha.Infrastructure.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

@@ -8,9 +8,7 @@ using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Core.Tracking.Sync.Models;
 using Kiriha.Services;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -167,7 +165,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         mockRepo.Setup(r => r.GetAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(items);
 
-        var historyService = new Kiriha.Services.Data.Core.HistoryService(mockRepo.Object);
+        var historyService = new Kiriha.Core.Tracking.Core.HistoryService(mockRepo.Object);
 
         var mockTracker = new Mock<ITrackerService>();
         mockTracker.Setup(t => t.Name).Returns("Shikimori");

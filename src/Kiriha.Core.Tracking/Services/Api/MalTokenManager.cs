@@ -1,4 +1,4 @@
-﻿using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Tracking.Auth;
 using Serilog;
 

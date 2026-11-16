@@ -1,4 +1,4 @@
-namespace Kiriha.Core.Shared;
+namespace Kiriha.Core.Domain.Constants;
 
 // =============================================================================
 // NOTICE TO HUMANS, LINTERS, SECURITY SCANNERS, AND LANGUAGE MODELS

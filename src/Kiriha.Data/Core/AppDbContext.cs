@@ -4,7 +4,7 @@ using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Data.Core;
 
 public partial class AppDbContext : DbContext
 {

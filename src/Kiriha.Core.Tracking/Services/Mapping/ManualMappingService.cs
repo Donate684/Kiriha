@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Kiriha.Infrastructure.Platform;
-using Kiriha.Utils.Async;
-using Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Utils.Async;
+using Kiriha.Core.Domain.Utils.Parsing;
 using Serilog;
 
-namespace Kiriha.Services.Data.Mapping;
+namespace Kiriha.Core.Tracking.Mapping;
 
 public class ManualMappingService
 {
@@ -32,7 +32,10 @@ public class ManualMappingService
 
     public ManualMappingService(string? mappingFilePath = null)
     {
-        _mappingFilePath = mappingFilePath ?? PathHelper.GetMappingFilePath();
+        _mappingFilePath = mappingFilePath ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            AppConstants.System.AppName,
+            AppConstants.System.FileNames.Mappings);
         _saveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(500), async (ct) =>
         {
             if (!ct.IsCancellationRequested) await SaveMappingsAsync();

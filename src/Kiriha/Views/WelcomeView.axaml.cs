@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Kiriha.Core.Shared;
+using Kiriha.Core.Domain.Constants;
 
 namespace Kiriha.Views;
 

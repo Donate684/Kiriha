@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 /// <summary>
 /// Composite image URL rewriter that applies multiple rewriters in sequence

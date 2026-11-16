@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Text.Json;
-using Kiriha.Infrastructure.Platform;
+using Kiriha.Core.Domain.Constants;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
@@ -13,7 +13,11 @@ public class ScrobbleProgressStore : IScrobbleProgressStore
 
     public ScrobbleProgressStore(string? filePath = null)
     {
-        _filePath = filePath ?? Path.Combine(PathHelper.GetSettingsDirPath(), "scrobble_progress.json");
+        _filePath = filePath ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            AppConstants.System.AppName,
+            AppConstants.System.FileNames.SettingsDir,
+            AppConstants.System.FileNames.ScrobbleProgress);
         Load();
     }
 

@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
 
-namespace Kiriha.Utils.Parsing;
+namespace Kiriha.Core.Domain.Utils.Parsing;
 
 /// <summary>
 /// Высокопроизводительный детерминированный парсер имен релизов, файлов и заголовков окон аниме.

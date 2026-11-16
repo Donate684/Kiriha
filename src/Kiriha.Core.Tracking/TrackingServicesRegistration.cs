@@ -1,18 +1,18 @@
 using System.Net;
+using Kiriha.Core.Abstractions.Extensions;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Core.Shared;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Core;
 using Kiriha.Core.Tracking.Feed;
 using Kiriha.Core.Tracking.Sync;
-using Kiriha.Infrastructure.Extensions;
-using Kiriha.Services.Data.Mapping;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Services.Franchise;
+using Kiriha.Core.Tracking.Mapping;
+using Kiriha.Core.Tracking.Metadata;
+using Kiriha.Core.Tracking.Library;
+using Kiriha.Core.Tracking.Franchise;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiriha.Core.Tracking;
@@ -165,15 +165,29 @@ public static class TrackingServicesRegistration
         services.AddForwardedSingleton<ShikiMetadataService, IShikiMetadataService>();
         services.AddSingleton<FranchiseService>();
         services.AddForwardedSingleton<FranchiseService, IFranchiseService>();
-        services.AddSingleton<ManualMappingService>();
+        services.AddSingleton<ManualMappingService>(sp =>
+            new ManualMappingService(
+                sp.GetService<Kiriha.Core.Abstractions.Infrastructure.IAppPaths>()?.GetMappingFilePath()));
         services.AddSingleton<RecognitionCache>();
         services.AddForwardedSingleton<RecognitionCache, IRecognitionCache>();
         services.AddSingleton<MappingService>();
         services.AddForwardedSingleton<MappingService, IMappingService>();
 
+        // --- In-memory library, history & airing state ---
+        services.AddSingleton<AnimeRepository>();
+        services.AddForwardedSingleton<AnimeRepository, IAnimeRepository>();
+        services.AddSingleton<HistoryService>();
+        services.AddForwardedSingleton<HistoryService, IHistoryService>();
+        services.AddSingleton<AiringInfoService>();
+        services.AddForwardedSingleton<AiringInfoService, IAiringInfoService>();
+
         // --- Cross-tracker orchestration ---
         services.AddSingleton<LibrarySyncGate>();
-        services.AddSingleton<IScrobbleProgressStore, ScrobbleProgressStore>();
+        services.AddSingleton<IScrobbleProgressStore>(sp =>
+            new ScrobbleProgressStore(
+                sp.GetService<Kiriha.Core.Abstractions.Infrastructure.IAppPaths>() is { } paths
+                    ? Path.Combine(paths.GetSettingsDirPath(), AppConstants.System.FileNames.ScrobbleProgress)
+                    : null));
         services.AddSingleton<IScrobbleService, ScrobbleService>();
         services.AddSingleton<MediaMatchingPipeline>();
         services.AddSingleton<TrackingService>();
@@ -186,7 +200,8 @@ public static class TrackingServicesRegistration
         services.AddForwardedSingleton<AnimeProgressService, IProgressUpdateService>();
         services.AddSingleton<AnimeListActionService>();
         services.AddForwardedSingleton<AnimeListActionService, IAnimeListActionService>();
-        services.AddSingleton<ISyncManager, SyncManager>();
+        services.AddSingleton<SyncManager>();
+        services.AddForwardedSingleton<SyncManager, ISyncManager>();
 
         return services;
     }

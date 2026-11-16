@@ -1,5 +1,6 @@
 using Kiriha.Core.Domain.Models;
-using Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Utils.Parsing;
+using Kiriha.Infrastructure.Utils.Parsing;
 
 namespace Kiriha.Infrastructure.Tracking.ExternalDetection;
 

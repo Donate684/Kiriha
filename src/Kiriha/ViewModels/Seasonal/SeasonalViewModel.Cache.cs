@@ -1,8 +1,9 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Avalonia.Collections;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.Seasonal;
@@ -202,7 +203,7 @@ public partial class SeasonalViewModel
                     }
                     if (string.IsNullOrEmpty(item.RussianSynopsis) && !string.IsNullOrEmpty(meta.Description))
                     {
-                        item.RussianSynopsis = Kiriha.Utils.Parsing.AnimeStringHelper.CleanShikiDescription(meta.Description);
+                        item.RussianSynopsis = Kiriha.Core.Domain.Utils.Parsing.AnimeStringHelper.CleanShikiDescription(meta.Description);
                         updatedAny = true;
                     }
                 }

@@ -1,11 +1,11 @@
 using System.Data;
 using System.Data.Common;
 using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Core;
+using Kiriha.Data.Core;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Kiriha.Services.Data.Repository;
+namespace Kiriha.Data.Repository;
 
 public sealed class AnimeCountryRepository : IAnimeCountryRepository
 {

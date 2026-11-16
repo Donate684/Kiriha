@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Models;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.ViewModels.Search;
 using Kiriha.ViewModels.Startup;
 

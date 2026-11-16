@@ -2,7 +2,7 @@ using Kiriha.Core.Abstractions.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Data.Core;
 
 public enum CacheCleanupTarget
 {

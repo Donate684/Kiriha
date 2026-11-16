@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Infrastructure.Platform;
@@ -211,7 +212,7 @@ public class ExternalPlayerDetectionTests
             if (match.Groups[i].Success && !string.IsNullOrEmpty(match.Groups[i].Value))
             {
                 string extracted = match.Groups[i].Value;
-                var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(extracted);
+                var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(extracted);
 
                 return new ParsedMedia
                 {

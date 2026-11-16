@@ -2,7 +2,7 @@ using System.Collections.Frozen;
 using BenchmarkDotNet.Attributes;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Parsing;
+using Kiriha.Core.Domain.Utils.Parsing;
 
 namespace Kiriha.Benchmarks.Mapping;
 

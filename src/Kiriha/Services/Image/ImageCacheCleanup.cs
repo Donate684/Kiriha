@@ -1,7 +1,7 @@
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Serilog;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 public class ImageCacheCleanup
 {

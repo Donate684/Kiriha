@@ -27,7 +27,7 @@ public class HistoryTrackerBadgeOrderingTests
     private HistoryViewModel CreateViewModel(IEnumerable<ITrackerService>? trackers = null)
     {
         return new HistoryViewModel(
-            new Mock<Kiriha.Services.Data.Core.HistoryService>(Mock.Of<Kiriha.Core.Abstractions.Repositories.IHistoryRepository>()).Object,
+            new Mock<Kiriha.Core.Tracking.Core.HistoryService>(Mock.Of<Kiriha.Core.Abstractions.Repositories.IHistoryRepository>()).Object,
             null!,
             Mock.Of<Kiriha.Core.Abstractions.Repositories.IAnimeRepository>(),
             null!,

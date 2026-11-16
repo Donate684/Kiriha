@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Repositories;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Image;
+using Kiriha.Data.Core;
+using Kiriha.Services.Image;
 using Serilog;
 
 namespace Kiriha.Services.Maintenance;

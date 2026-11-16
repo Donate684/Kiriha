@@ -2,9 +2,8 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Image;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Utils.Parsing;
+using Kiriha.Services.Image;
+using Kiriha.Core.Domain.Utils.Parsing;
 using Serilog;
 
 namespace Kiriha.Services.Maintenance;

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Kiriha.Core.Domain.Models.Entities;
 
-namespace Kiriha.Utils.Parsing;
+namespace Kiriha.Core.Domain.Utils.Parsing;
 
 /// <summary>
 /// Shared deterministic release-title parsing, season/year disambiguation, and library candidate scoring

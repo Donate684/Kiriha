@@ -1,3 +1,4 @@
+using Kiriha.Infrastructure.Diagnostics;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Input.Platform;

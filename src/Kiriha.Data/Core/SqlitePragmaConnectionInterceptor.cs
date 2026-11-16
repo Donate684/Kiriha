@@ -1,7 +1,7 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Data.Core;
 
 /// <summary>
 /// Enforces connection-level SQLite pragmas on every connection opened by EF Core.

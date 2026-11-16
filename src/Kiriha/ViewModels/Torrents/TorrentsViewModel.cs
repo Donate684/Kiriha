@@ -9,7 +9,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.TorrServer;
 using Kiriha.Core.Streaming.Abstractions;
-using Kiriha.Utils.Collections;
+using Kiriha.Core.Domain.Collections;
 
 namespace Kiriha.ViewModels.Torrents;
 

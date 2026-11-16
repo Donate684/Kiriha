@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
@@ -54,7 +55,7 @@ public class RssFeedService : IRssFeedService
                 // Match only if this torrent contains an episode the user hasn't watched yet
                 if (!string.IsNullOrEmpty(torrent.AnimeTitle))
                 {
-                    var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
+                    var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(torrent.Title);
                     var baseTitle = !string.IsNullOrWhiteSpace(parsed.Title) ? parsed.Title : torrent.AnimeTitle;
                     var matchedAnime = MatchActiveAnime(activeAnime, baseTitle, parsed.Season, parsed.Year);
 
@@ -86,7 +87,7 @@ public class RssFeedService : IRssFeedService
         if (activeAnime.Count == 0 || string.IsNullOrWhiteSpace(animeTitle))
             return null;
 
-        var parsedInput = Kiriha.Utils.Parsing.AnimeParseCache.Parse(animeTitle);
+        var parsedInput = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(animeTitle);
         int? effectiveYear = parsedYear ?? parsedInput.Year;
         var cleanBaseTitle = effectiveYear.HasValue && !string.IsNullOrWhiteSpace(parsedInput.Title)
             ? parsedInput.Title

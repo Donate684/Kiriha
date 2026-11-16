@@ -1,7 +1,7 @@
-﻿using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.Services.Maintenance;

@@ -6,9 +6,8 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
-using Kiriha.Core.Shared;
 using Kiriha.Core.Tracking.Auth;
-using Kiriha.Infrastructure.Http;
+using Kiriha.Core.Tracking.Api;
 using Serilog;
 
 

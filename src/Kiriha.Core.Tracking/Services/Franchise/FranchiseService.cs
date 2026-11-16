@@ -6,10 +6,10 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
-namespace Kiriha.Services.Franchise;
+namespace Kiriha.Core.Tracking.Franchise;
 
 public sealed class FranchiseService : IFranchiseService, IDisposable
 {

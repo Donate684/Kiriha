@@ -4,8 +4,8 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Models;
-using Kiriha.Services.Data.Core;
-using Kiriha.Utils.Async;
+using Kiriha.Infrastructure.Caching;
+using Kiriha.Core.Domain.Utils.Async;
 
 namespace Kiriha.ViewModels.Seasonal;
 
@@ -58,7 +58,7 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         SetCurrentSeasonFromClock();
 
         _filterDebouncer = CreateSettingsDebouncer();
-        _applyFilterDebouncer = new Kiriha.Utils.Async.Debouncer(TimeSpan.FromMilliseconds(300), () =>
+        _applyFilterDebouncer = new Debouncer(TimeSpan.FromMilliseconds(300), () =>
         {
             ApplyFiltersAsync().SafeFireAndForget("ApplyFiltersAsync");
         });

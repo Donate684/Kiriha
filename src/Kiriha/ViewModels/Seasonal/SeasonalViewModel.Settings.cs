@@ -1,5 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Utils.Async;
 
 namespace Kiriha.ViewModels.Seasonal;
 
@@ -38,7 +39,7 @@ public partial class SeasonalViewModel
         };
     }
 
-    private Kiriha.Utils.Async.Debouncer CreateSettingsDebouncer() =>
+    private Debouncer CreateSettingsDebouncer() =>
         new(TimeSpan.FromMilliseconds(500), async (ct) =>
         {
             _settingsService.Update(settings =>

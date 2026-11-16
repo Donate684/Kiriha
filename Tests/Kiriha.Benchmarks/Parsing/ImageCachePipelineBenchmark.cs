@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using BenchmarkDotNet.Attributes;
-using Kiriha.Services.Data.Image;
+using Kiriha.Services.Image;
 
 namespace Kiriha.Benchmarks.Parsing;
 

@@ -7,7 +7,7 @@ using Kiriha.Infrastructure.Utils.Sorting;
 using Kiriha.Mpv;
 using Kiriha.Mpv.UI.Services.Player;
 using Kiriha.Mpv.UI.ViewModels.Player;
-using Kiriha.Services.Data.Settings;
+using Kiriha.Infrastructure.Settings;
 using Kiriha.Utils;
 using Xunit;
 

@@ -1,4 +1,4 @@
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 /// <summary>
 /// Generic byte-sized LRU. Single-mutex; lookups are O(1) and keep the cache

@@ -1,8 +1,8 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Extensions;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Repository;
+using Kiriha.Data.Core;
+using Kiriha.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 

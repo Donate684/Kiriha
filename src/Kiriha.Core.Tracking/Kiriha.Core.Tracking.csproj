@@ -2,14 +2,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kiriha.Core.Abstractions\Kiriha.Core.Abstractions.csproj" />
-    <ProjectReference Include="..\Kiriha.Infrastructure\Kiriha.Infrastructure.csproj" />
     <ProjectReference Include="..\Kiriha.Core.Domain\Kiriha.Core.Domain.csproj" />
-    
   </ItemGroup>
 
   <ItemGroup>
-    
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="System.Threading.RateLimiting" />

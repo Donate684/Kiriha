@@ -1,3 +1,4 @@
+using Kiriha.Infrastructure.Diagnostics;
 using Kiriha.Infrastructure;
 
 namespace Kiriha.Tests.Core.Infrastructure;

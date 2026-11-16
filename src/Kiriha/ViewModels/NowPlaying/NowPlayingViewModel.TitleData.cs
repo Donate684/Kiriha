@@ -1,6 +1,7 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using System.Collections.Concurrent;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.ViewModels.Settings;
 using Serilog;
 
@@ -131,7 +132,7 @@ public partial class NowPlayingViewModel
         foreach (var link in _settingsService.Current.CustomLinks)
         {
             if (string.IsNullOrWhiteSpace(link.UrlTemplate)) continue;
-            var url = Kiriha.Core.CustomLinkResolver.Resolve(link.UrlTemplate, value);
+            var url = CustomLinkResolver.Resolve(link.UrlTemplate, value);
             CustomShareLinks.Add(new CustomShareLinkRuntime(link.Name, link.IconKind, url, link.IconPath));
         }
     }

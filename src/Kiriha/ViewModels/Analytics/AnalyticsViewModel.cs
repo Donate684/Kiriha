@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
+using Kiriha.Core.Tracking.Core;
 
 namespace Kiriha.ViewModels.Analytics;
 

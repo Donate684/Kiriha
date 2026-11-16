@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using System.Xml.Linq;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
@@ -11,7 +12,7 @@ internal static class NyaaTorrentParser
         string? title = item.Element("title")?.Value;
         if (string.IsNullOrEmpty(title)) return null;
 
-        var parsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(title);
+        var parsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(title);
         var animeTitle = parsed.Title;
         if (parsed.Year.HasValue &&
             !string.IsNullOrWhiteSpace(animeTitle) &&

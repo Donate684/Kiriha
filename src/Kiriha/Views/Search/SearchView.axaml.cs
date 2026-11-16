@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.ViewModels.Search;
 

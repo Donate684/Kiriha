@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Async;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -5,9 +6,8 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
-using Kiriha.Services.Data.Metadata;
-using Kiriha.Utils.Collections;
+using Kiriha.Core.Tracking.Metadata;
+using Kiriha.Core.Domain.Collections;
 
 namespace Kiriha.ViewModels.Search;
 
@@ -53,7 +53,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
 
     private CancellationTokenSource? _searchCts;
     private bool _isDisposed;
-    private readonly Kiriha.Utils.Async.Debouncer _searchDebouncer;
+    private readonly Debouncer _searchDebouncer;
 
     public SearchViewModel(IMalApiService apiService, IShikiMetadataService shikiMetadataService,
         ILoadQueueService queueService,
@@ -67,7 +67,7 @@ public partial class SearchViewModel : ViewModelBase, IDisposable
         _dialogService = dialogService;
         _localizer = localizer;
 
-        _searchDebouncer = new Kiriha.Utils.Async.Debouncer(TimeSpan.FromMilliseconds(800), _ =>
+        _searchDebouncer = new Debouncer(TimeSpan.FromMilliseconds(800), _ =>
         {
             return Dispatcher.UIThread.InvokeAsync(() => PerformSearch());
         });

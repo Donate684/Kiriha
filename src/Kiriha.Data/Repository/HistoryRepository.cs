@@ -1,10 +1,10 @@
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Services.Data.Core;
+using Kiriha.Data.Core;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiriha.Services.Data.Repository;
+namespace Kiriha.Data.Repository;
 
 public sealed class HistoryRepository : IHistoryRepository
 {

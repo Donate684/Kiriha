@@ -59,7 +59,6 @@ graph TD
 
     Tracking --> Domain
     Tracking --> Abstractions
-    Tracking --> Infrastructure
 
     Streaming --> Domain
     Streaming --> Abstractions
@@ -90,52 +89,56 @@ graph TD
   - `AnimeEntityPresentation`: проекция данных для биндингов Avalonia UI (бейджи выхода серий, прогресс, связи франшизы, переключение русских/оригинальных названий и описаний).
   - `AppSettings`: типизированная конфигурация (`UI`, `System`, `Player`, `Torrents`, `Api`).
   - `HistoryItem`, `HistoryActionType`, `HistoryContext`: запись истории действий с `MediaKind` и JSON-состоянием синка по трекерам.
-  - `Utils/Parsing/`: чистые детерминированные парсеры и матчеры без I/O (`AnimeReleaseParser`, `AnimeParseCache`, `AnimeStringHelper`, `AnimeLibraryMatcher`, `LruStringMemoizer`).
+  - `Collections/`: чистые доменные коллекции и проекции (`BulkObservableCollection`, `AnimeFilterEngine`, `AnimeCollectionProjection`).
+  - `Utils/Parsing/`, `Utils/Async/`, `Utils/Classification/`: чистые детерминированные парсеры, асинхронные примитивы и классификаторы без I/O (`AnimeReleaseParser`, `AnimeParseCache`, `AnimeStringHelper`, `AnimeLibraryMatcher`, `CustomLinkResolver`, `BearerTokenHelper`, `LruStringMemoizer`, `Debouncer`, `TaskExtensions`, `DonghuaDetector`).
   - `CollectionReconciliation`, `FormatCatalog`, `GenreCatalog`, `AnimeSearchQueryParser`.
 
 ### 3.2. `Kiriha.Core.Abstractions`
-* **Роль:** Узкие интерфейсы и контракты между слоями.
+* **Роль:** Узкие интерфейсы, DI-хелперы (`AddForwardedSingleton`) и контракты между слоями.
 * **Группы контрактов:**
   - `Repositories/`: `IUserAnimeRepository`, `IMetadataRepository`, `IAnimeRepository` (включая потокобезопасный O(1) `FindById`), `IHistoryRepository`, `ISyncTaskRepository`, `IMalSearchCacheRepository`, `IAnimeRelationRepository`, `IHttpCacheRepository`, `ITorrentFilterRepository`, `ISeasonalHiddenRepository`, `IAnimeCountryRepository`.
   - `Services/`: `IMalApiService`, `IShikiApiService`, `IAniListApiService` (`: ITrackerService`), `ITrackerService`, `ISyncManager`, `IAnimeSyncOrchestrator`, `IAiringInfoService`, `IFranchiseService`, `IHistoryService`, `ISettingsService`, `IDatabaseInitializer`, `IRecognitionCache`, `IMappingService`, `INotificationService`, `IDiscordService`, `ILocalizer`, `ITorrServerService`, `IInternalPlayerServer`.
-  - `Infrastructure/`: `IUiDispatcher` (включая `CheckAccess()`), `IBackgroundTaskSupervisor`.
+  - `Infrastructure/`: `IUiDispatcher` (включая `CheckAccess()`), `IBackgroundTaskSupervisor`, `IAppPaths`, `IBrowserLauncher`.
 
 ### 3.3. `Kiriha.Data`
 * **Роль:** Изолированное хранилище данных на SQLite + EF Core (не зависит от `Kiriha.Infrastructure`).
 * **Ключевые компоненты:**
-  - `AppDbContext`: контекст БД с `QueryTrackingBehavior.NoTracking` и WAL-режимом через `SqlitePragmaConnectionInterceptor`.
-  - `DatabaseInitializer` (базовая схема от `v1.8+`), `DatabaseMaintenance`, `CacheCleanupService`.
+  - `DataLayerRegistration`: модульная DI-регистрация `AddKirihaPersistence(...)` всего слоя персистентности.
+  - `Core/`: `AppDbContext` (`QueryTrackingBehavior.NoTracking`, WAL через `SqlitePragmaConnectionInterceptor`), `DatabaseInitializer` (базовая схема от `v1.8+`), `DatabaseMaintenance`, `CacheCleanupService`.
   - `Repository/`: реализации репозиториев (`UserAnimeRepository`, `MetadataRepository`, `HistoryRepository` с сериализацией RMW-обновлений `tracker_status_json`, `SyncTaskRepository` и др.).
 
 ### 3.4. `Kiriha.Infrastructure`
-* **Роль:** Интеграция с ОС, процессами, файловой системой и сетевым кешированием.
+* **Роль:** Интеграция с ОС, реестром, процессами, файловой системой, настройками и дисковым кешированием.
 * **Ключевые компоненты:**
+  - `Settings/`: `SettingsService` (секционное хранение JSON-конфигураций с DPAPI-защитой токенов).
+  - `Caching/`: `SeasonalCacheStore` — атомарный дисковый кеш сезонного каталога.
+  - `Diagnostics/`: `CrashReporter`, `CrashReportBuilder`, `CrashReportReader`.
   - `TorrServer/`: `TorrServerService` — запуск/подключение к `torrserver.exe`, RAM-кеш (0 байт на диске), опрос прогресса и авто-дроп.
   - `Tracking/ExternalDetection/` и `Tracking/Integration/`: обнаружение внешних плееров (MPC-HC, mpv, VLC, PotPlayer) через Win32 хэндлы окон и WASAPI, `DiscordService`, дуплексный пайп-сервер `InternalPlayerServer`.
   - `Utils/Parsing/EmberTitleResolver.cs`: резолвинг названий релизов `[Ember]` по метаданным родительской директории с мемоизацией заголовка MKV.
-  - `Http/HttpConditionalCache.cs`: поддержка условных HTTP GET (`ETag` / `304 Not Modified`).
-  - `Platform/`: `PathHelper`, `ShellLauncher`, `WindowsStartupManager`.
+  - `Platform/`: `PathHelper`, `AppPathsService`, `ShellLauncher` / `ShellBrowserLauncher`, `WindowsStartupManager`, `WindowsRegistryHelper`, `SystemIntegrationService`, `AppUserModelIdRegistrar`.
 
 ### 3.5. `Kiriha.Core.Tracking`
-* **Роль:** Интеграция с внешними аниме-трекерами, синхронизация, история, метаданные, граф франшиз и распознавание тайтлов.
+* **Роль:** Интеграция с внешними аниме-трекерами, in-memory библиотека, синхронизация, история, метаданные, граф франшиз и распознавание тайтлов (не зависит от `Kiriha.Infrastructure` и `Kiriha.Data`).
 * **Ключевые компоненты:**
-  - `Services/Api/`: `MalApiService`, `ShikiApiService` (с общим `ShikiStateCache` и `ShikiGraphQlPosterFetcher`), `AniListApiService` (с персистентным кешем нативных AniList ID без MAL ID).
+  - `Services/Library/`: `AnimeRepository` — потокобезопасное in-memory хранилище библиотеки и синхронизация с UI-коллекцией.
+  - `Services/Api/`: `MalApiService`, `ShikiApiService` (с общим `ShikiStateCache` и `ShikiGraphQlPosterFetcher`), `AniListApiService`, `HttpConditionalCache` (`ETag` / `304 Not Modified`).
   - `Services/Sync/`: `SyncManager`, `AnimeSyncOrchestrator` + `LibrarySyncGate`, `AnimeListActionService`, `AnimeProgressService`.
   - `Services/Tracking/Core/`: `TrackingService`, `ScrobbleService`, `HistoryService`, `AiringInfoService`.
   - `Services/Mapping/`, `Services/Franchise/`, `Services/Metadata/`: `MappingService`, `RecognitionCache`, `ManualMappingService`, `FranchiseService`, `ShikiMetadataService`.
   - `Services/Feed/`: `RssFeedService`, `NyaaFeedClient`, `NyaaTorrentParser`.
 
 ### 3.6. `Kiriha.Core.Streaming`
-* **Роль:** Каталоги онлайн-просмотра аниме, ранжирование выдачи и извлечение видеопотоков (HLS, MP4, DASH).
+* **Роль:** Каталоги онлайн-просмотра аниме, авторизация провайдеров, ранжирование выдачи и извлечение видеопотоков (HLS, MP4, DASH).
 * **Ключевые компоненты:**
   - `Providers/`: `AniLibriaProvider`, `AnimeLibProvider`, `DreamCastProvider`, `YummyAnimeProvider`, `Anime365Provider`.
   - `Extractors/`: `KodikVideoExtractor`, `AniboomVideoExtractor`, `SibnetVideoExtractor`, `Anime365Extractor`.
-  - `Services/` и `Helpers/`: `StreamingService`, `OnlineRelevanceScorer`, `UrlRedactor` (редакция токенов в логах).
+  - `Services/` и `Helpers/`: `StreamingService`, `Anime365AuthService`, `Anime365HostResolver`, `OnlineRelevanceScorer`, `UrlRedactor` (редакция токенов в логах).
 
 ### 3.7. `Kiriha.Mpv` и `Kiriha.Mpv.UI`
 * **Роль:** Видеоплеер.
 * `Kiriha.Mpv`: низкоуровневая обертка P/Invoke `libmpv-2.dll`, OpenGL контекст, событийный цикл плеера.
-* `Kiriha.Mpv.UI`: `PlayerViewModel`, контроллеры воспроизведения, субтитров и хоткеев, оверлей торрент-стриминга (`PlayerViewModel.TorrentStreaming.cs`). Не имеет зависимостей от `Kiriha.Data` или EF Core.
+* `Kiriha.Mpv.UI`: `PlayerViewModel`, `PlayerMediaMetadataResolver`, `FilenamePlayerMediaMetadataResolver`, контроллеры воспроизведения, субтитров и хоткеев, оверлей торрент-стриминга (`PlayerViewModel.TorrentStreaming.cs`). Не имеет зависимостей от `Kiriha.Data` или EF Core.
 
 ### 3.8. `Kiriha` (Основное приложение)
 * **Роль:** UI на Avalonia UI, композиция DI, точка входа (`Program.cs`, `App.axaml.cs`).
@@ -174,5 +177,7 @@ graph TD
 
 * `Kiriha.Core.Domain` не имеет внешних зависимостей.
 * `Kiriha.Data` не ссылается на `Kiriha.Infrastructure`, `Kiriha.Core.Tracking` или UI-проекты.
+* `Kiriha.Core.Tracking` не ссылается на `Kiriha.Infrastructure`, `Kiriha.Data` или UI-проекты.
 * `Kiriha.Mpv.UI` не ссылается на `Kiriha.Data` или `Microsoft.EntityFrameworkCore`.
+* Все публичные типы в библиотечных проектах (`Kiriha.Core.Abstractions`, `Kiriha.Data`, `Kiriha.Core.Tracking`, `Kiriha.Core.Streaming`, `Kiriha.Infrastructure`, `Kiriha.Mpv.UI`) строго соответствуют корневому пространству имён своей сборки.
 * Любые изменения в `/src` обязаны проходить статический анализатор `HardcodeAnalysisTests` с нулём предупреждений компилятора.

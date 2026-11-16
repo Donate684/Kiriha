@@ -1,4 +1,4 @@
-using Kiriha.Services.Data.Image;
+using Kiriha.Services.Image;
 
 namespace Kiriha.Tests.Services.Data.Image;
 

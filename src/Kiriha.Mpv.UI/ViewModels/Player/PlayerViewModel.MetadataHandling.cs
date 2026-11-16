@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Parsing;
 using Kiriha.Core.Domain.Models;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -61,8 +62,8 @@ public partial class PlayerViewModel
         if (string.IsNullOrEmpty(prevDir) || !string.Equals(prevDir, newDir, StringComparison.OrdinalIgnoreCase))
             return false;
 
-        var prevParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(_previousVideoUrlForMetadata));
-        var newParsed = Kiriha.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(newVideoUrl));
+        var prevParsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(_previousVideoUrlForMetadata));
+        var newParsed = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(System.IO.Path.GetFileNameWithoutExtension(newVideoUrl));
         if ((prevParsed.Season ?? 1) != (newParsed.Season ?? 1) || prevParsed.Year != newParsed.Year)
             return false;
 

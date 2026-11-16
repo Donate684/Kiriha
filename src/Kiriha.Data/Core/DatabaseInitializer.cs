@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Kiriha.Services.Data.Core;
+namespace Kiriha.Data.Core;
 
 /// <summary>
 /// Owns the schema lifecycle of the SQLite database (minimum supported baseline: v1.8+).

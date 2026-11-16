@@ -1,4 +1,4 @@
-﻿namespace Kiriha.Core.Tracking.Core;
+namespace Kiriha.Core.Tracking.Core;
 
 public interface IScrobbleProgressStore
 {

@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Utils.Async;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
@@ -367,7 +368,7 @@ public class AnimeListActionService : IAnimeListActionService
         if (_airingInfoService == null || item.Status != UserAnimeStatus.Watching) return;
         if (!Core.AiringInfoService.IsTrackableOngoingAnime(item, includeUnknownTotal: true)) return;
 
-        Kiriha.Utils.Async.TaskExtensions.SafeFireAndForget(
+        Kiriha.Core.Domain.Utils.Async.TaskExtensions.SafeFireAndForget(
             _airingInfoService.SyncEpisodesForAnimeAsync(item),
             "AnimeListActionService.TriggerAiringSync");
     }

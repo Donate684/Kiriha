@@ -1,5 +1,5 @@
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Shared;
+using Kiriha.Core.Domain.Constants;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;

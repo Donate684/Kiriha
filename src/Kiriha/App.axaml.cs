@@ -22,7 +22,7 @@ public partial class App : Application
         var args = Environment.GetCommandLineArgs();
         var isPlayerMode = PlayerModeCoordinator.IsPlayerMode(args);
         ServiceProvider = AppStartupCoordinator.BuildServiceProvider(isPlayerMode);
-        var appSettingsService = ServiceProvider.GetService<Kiriha.Services.Data.Settings.SettingsService>();
+        var appSettingsService = ServiceProvider.GetService<Kiriha.Infrastructure.Settings.SettingsService>();
         if (appSettingsService != null)
         {
             AnimeEntityPresentation.GetUseRussianTitles = () => appSettingsService.Current.UI.UseRussianTitles;
@@ -45,7 +45,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void ApplyAppThemeAndAccents(Kiriha.Services.Data.Settings.SettingsService? settings)
+    private void ApplyAppThemeAndAccents(Kiriha.Infrastructure.Settings.SettingsService? settings)
     {
         if (settings == null) return;
 

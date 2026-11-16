@@ -1,7 +1,7 @@
 using BenchmarkDotNet.Attributes;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Utils.Collections;
+using Kiriha.Core.Domain.Collections;
 
 namespace Kiriha.Benchmarks.Collections;
 

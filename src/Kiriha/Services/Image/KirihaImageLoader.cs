@@ -3,7 +3,7 @@ using AsyncImageLoader.Core.Leases;
 using AsyncImageLoader.Core.Pipeline;
 using Serilog;
 
-namespace Kiriha.Services.Data.Image;
+namespace Kiriha.Services.Image;
 
 public class KirihaImageLoader : IAsyncImageLoader
 {

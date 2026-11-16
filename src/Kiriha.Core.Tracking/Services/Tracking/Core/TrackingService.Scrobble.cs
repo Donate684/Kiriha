@@ -3,8 +3,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Infrastructure.Player;
-using Kiriha.Utils.Async;
+using Kiriha.Core.Domain.Utils.Async;
 
 namespace Kiriha.Core.Tracking.Core;
 
@@ -275,18 +274,6 @@ public partial class TrackingService
             media.TorrentHash);
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
-
-        if (!_internalPlayerServer.HasConnectedClients)
-        {
-            PlayerProcessBridge.ForwardMetadata(
-                media.OriginalTitle,
-                matched.Id,
-                matched.RussianTitle,
-                matched.EnglishTitle,
-                matched.Title,
-                media.Episode,
-                media.TorrentHash);
-        }
     }
 
     private void ClearPlayerMetadata(ParsedMedia media)
@@ -304,18 +291,6 @@ public partial class TrackingService
             media.TorrentHash);
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
-
-        if (!_internalPlayerServer.HasConnectedClients)
-        {
-            PlayerProcessBridge.ForwardMetadata(
-                media.OriginalTitle,
-                0,
-                string.Empty,
-                string.Empty,
-                media.AnimeTitle,
-                media.Episode,
-                media.TorrentHash);
-        }
     }
 
     private void UpdateDiscordPresence(ParsedMedia media, AnimeEntity matched)
