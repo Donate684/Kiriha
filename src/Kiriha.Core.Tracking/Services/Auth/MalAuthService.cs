@@ -17,16 +17,9 @@ public class MalAuthService
         _httpClient = httpClient;
     }
 
-    public string CreateCodeVerifier() => GenerateCodeVerifier();
-
     public string GetAuthUrl(string codeVerifier)
     {
         return $"{AppConstants.Api.Mal.AuthUrl}?response_type=code&client_id={ApiKeys.MalClientId}&code_challenge={codeVerifier}&redirect_uri={AppConstants.Api.RedirectUri}&scope=write:users";
-    }
-
-    public async Task<MalTokens?> LoginWithCodeAsync(string code, string codeVerifier)
-    {
-        return await ExchangeCodeForTokenAsync(code, codeVerifier);
     }
 
     public async Task<MalTokens?> LoginAsync(CancellationToken cancellationToken = default)

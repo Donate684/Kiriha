@@ -167,7 +167,6 @@ public static class AppConstants
         public static class FileNames
         {
             public const string Database = "kiriha.db";
-            public const string Settings = "config.json";
             public const string LegacySettings = "config.json";
             public const string SettingsDir = "settings";
             public const string SettingsApp = "app.json";

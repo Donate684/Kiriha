@@ -6,7 +6,23 @@ namespace Kiriha.Core.Tracking.Sync;
 
 public partial class SyncManager
 {
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<(int AnimeId, MediaKind Kind), (int Id, SyncTaskType Type)> _latestTaskIds = new();
+    private readonly record struct LatestSyncTaskSnapshot(
+        int Id,
+        SyncTaskType Type,
+        int? Progress,
+        UserAnimeStatus? Status,
+        int? Score);
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(int AnimeId, MediaKind Kind), LatestSyncTaskSnapshot> _latestTaskIds = new();
+
+    private void RecordLatestTask(SyncTask task)
+    {
+        var snap = new LatestSyncTaskSnapshot(task.Id, task.Type, task.Progress, task.Status, task.Score);
+        _latestTaskIds.AddOrUpdate(
+            (task.AnimeId, task.MediaKind),
+            snap,
+            (_, existing) => snap.Id >= existing.Id ? snap : existing);
+    }
 
     private static MediaKind ExtractPayloadMediaKind(string? payload)
     {
@@ -96,7 +112,7 @@ public partial class SyncManager
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity);
 
-        _latestTaskIds[(animeId, mediaKind)] = (task.Id, task.Type);
+        RecordLatestTask(task);
         try
         {
             var pendingTrackers = !string.IsNullOrEmpty(targetTracker)
@@ -136,7 +152,7 @@ public partial class SyncManager
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity);
 
-        _latestTaskIds[(animeId, mediaKind)] = (task.Id, task.Type);
+        RecordLatestTask(task);
         try
         {
             _highPriorityQueue.Enqueue(task);
@@ -164,7 +180,7 @@ public partial class SyncManager
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity);
 
-        _latestTaskIds[(item.Id, item.MediaKind)] = (task.Id, task.Type);
+        RecordLatestTask(task);
         try
         {
             var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();

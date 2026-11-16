@@ -7,27 +7,22 @@ using Serilog;
 namespace Kiriha.Services.Data.Core;
 
 /// <summary>
-/// Owns the schema lifecycle of the SQLite database. Strategy:
-///   * Native SQLite PRAGMA user_version schema marking (v1.6 = 1600).
-///   * Automatic legacy pre-1.6 schema detection and safe backup to *.pre16.bak.
-///   * Unified EF Core baseline migration (v1.6) with zero runtime DDL workarounds.
-///   * Single round-trip WAL and performance pragmas.
+/// Owns the schema lifecycle of the SQLite database (minimum supported baseline: v1.8+).
+/// Applies EF Core migrations and configures WAL + performance pragmas in a single round-trip.
 /// </summary>
 public sealed class DatabaseInitializer : IDatabaseInitializer
 {
-    public const int CurrentSchemaVersion = 1600;
+    public const int CurrentSchemaVersion = 1800;
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
-    private readonly string? _legacySettingsPath;
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted; // 0 = not started, 1 = started (Interlocked guard)
 
     public Task InitializationTask => _initTcs.Task;
 
-    public DatabaseInitializer(IDbContextFactory<AppDbContext> contextFactory, string? legacySettingsPath = null)
+    public DatabaseInitializer(IDbContextFactory<AppDbContext> contextFactory)
     {
         _contextFactory = contextFactory;
-        _legacySettingsPath = legacySettingsPath;
     }
 
     public async Task InitializeAsync()
@@ -43,9 +38,6 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         {
             var total = Stopwatch.StartNew();
 
-            // Detect and safely backup pre-v1.6 legacy database files
-            await HandlePreV16DatabaseAsync();
-
             using var context = await _contextFactory.CreateDbContextAsync();
 
             var stage = Stopwatch.StartNew();
@@ -58,8 +50,6 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
                 $"PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA wal_autocheckpoint=1000; PRAGMA user_version = {CurrentSchemaVersion};");
             Log.Information("StartupTiming: database pragmas elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
-            await LegacyUserStateMigration.MigrateAsync(context, _legacySettingsPath);
-
             Log.Information("Database initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);
 
             _initTcs.TrySetResult();
@@ -68,66 +58,6 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         {
             Log.Error(ex, "Failed to initialize EF Core database");
             _initTcs.TrySetException(ex);
-        }
-    }
-
-    private async Task HandlePreV16DatabaseAsync()
-    {
-        string? dbPath = null;
-        try
-        {
-            using var probeContext = await _contextFactory.CreateDbContextAsync();
-            var connection = probeContext.Database.GetDbConnection();
-            dbPath = connection.DataSource;
-
-            if (string.IsNullOrWhiteSpace(dbPath) ||
-                dbPath.Equals(":memory:", StringComparison.OrdinalIgnoreCase) ||
-                dbPath.Contains("mode=memory", StringComparison.OrdinalIgnoreCase) ||
-                !File.Exists(dbPath))
-            {
-                // New database or in-memory DB; no pre-existing legacy file on disk
-                return;
-            }
-
-            // Database file exists. Check its user_version.
-            int userVersion = 0;
-            if (connection.State != System.Data.ConnectionState.Open)
-            {
-                await connection.OpenAsync();
-            }
-
-            using (var cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = "PRAGMA user_version;";
-                var result = await cmd.ExecuteScalarAsync();
-                if (result != null && result != DBNull.Value)
-                {
-                    userVersion = Convert.ToInt32(result);
-                }
-            }
-
-            await connection.CloseAsync();
-            SqliteConnection.ClearAllPools();
-
-            if (userVersion < CurrentSchemaVersion)
-            {
-                Log.Warning("Detected legacy pre-1.6 database schema (version {Version}). Forcing recreate with backup.", userVersion);
-
-                string bakPath = dbPath + ".pre16.bak";
-                File.Move(dbPath, bakPath, overwrite: true);
-
-                var walPath = dbPath + "-wal";
-                if (File.Exists(walPath)) try { File.Delete(walPath); } catch { }
-
-                var shmPath = dbPath + "-shm";
-                if (File.Exists(shmPath)) try { File.Delete(shmPath); } catch { }
-
-                Log.Information("Legacy database safely backed up to {BakPath} and ready for pristine v1.6 recreation", bakPath);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to probe or backup database at {Path}; proceeding with standard initialization", dbPath);
         }
     }
 

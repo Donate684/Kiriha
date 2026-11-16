@@ -175,7 +175,7 @@ public partial class AnimeRepository : IAnimeRepository
         }
         else
         {
-            _uiDispatcher.InvokeAsync(() => AddToCollectionOnUiThread(item)).GetAwaiter().GetResult();
+            _uiDispatcher.Post(() => AddToCollectionOnUiThread(item));
         }
     }
 

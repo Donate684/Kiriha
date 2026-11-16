@@ -53,12 +53,6 @@ public sealed class InternalPlayerStateClient : IDisposable
         }
     }
 
-    public Task ConnectAsync(int timeoutMs = 1500)
-    {
-        Start();
-        return Task.CompletedTask;
-    }
-
     public void Publish(InternalPlayerState state)
     {
         if (_disposed) return;

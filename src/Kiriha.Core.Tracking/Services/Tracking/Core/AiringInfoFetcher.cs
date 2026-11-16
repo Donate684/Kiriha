@@ -10,12 +10,10 @@ public class AiringInfoFetcher
     private readonly IShikiApiService? _shikiApi;
     private readonly ISettingsService? _settingsService;
 
-    public AiringInfoFetcher(IAniListApiService aniListApi)
-    {
-        _aniListApi = aniListApi;
-    }
-
-    public AiringInfoFetcher(IAniListApiService aniListApi, IShikiApiService shikiApi, ISettingsService settingsService)
+    public AiringInfoFetcher(
+        IAniListApiService aniListApi,
+        IShikiApiService? shikiApi = null,
+        ISettingsService? settingsService = null)
     {
         _aniListApi = aniListApi;
         _shikiApi = shikiApi;

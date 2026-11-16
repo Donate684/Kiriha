@@ -136,7 +136,7 @@ public partial class SyncManager : ISyncManager, IHostedService
                             task.MediaKind = task.FullItem.MediaKind;
                         }
                     }
-                    _latestTaskIds.AddOrUpdate((task.AnimeId, task.MediaKind), (task.Id, task.Type), (k, existing) => task.Id > existing.Id ? (task.Id, task.Type) : existing);
+                    RecordLatestTask(task);
                     _lowPriorityQueue.Enqueue(task);
                     _queueSignal.Release();
                     restoredCount++;

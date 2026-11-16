@@ -84,6 +84,32 @@ public partial class SyncManager
                 }
                 return (true, false);
             }
+
+            // Older FullUpdate retrying after a newer UpdateProgress: advance FullItem's progress/status/score
+            // so retrying the FullUpdate never rolls remote progress backward.
+            if (task.FullItem != null)
+            {
+                if (latest.Progress.HasValue)
+                {
+                    if (task.MediaKind != MediaKind.Anime)
+                        task.FullItem.ChaptersRead = latest.Progress.Value;
+                    else
+                        task.FullItem.Progress = latest.Progress.Value;
+                    task.Progress = latest.Progress;
+                }
+
+                if (latest.Status.HasValue && latest.Status.Value != UserAnimeStatus.None)
+                {
+                    task.FullItem.Status = latest.Status.Value;
+                    task.Status = latest.Status;
+                }
+
+                if (latest.Score.HasValue)
+                {
+                    task.FullItem.Score = latest.Score.Value <= 0 ? "-" : latest.Score.Value.ToString();
+                    task.Score = latest.Score;
+                }
+            }
         }
 
         bool overallSuccess = true;

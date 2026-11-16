@@ -19,6 +19,9 @@ namespace Kiriha.Composition;
 /// </summary>
 internal static class BackgroundServicesRegistration
 {
+    private static readonly TimeSpan PooledHandlerLifetime = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan TorrServerClientTimeout = TimeSpan.FromSeconds(10);
+
     public static IServiceCollection AddKirihaBackgroundServices(this IServiceCollection services)
     {
         // Core tracking & scrobbler service runs in background as IHostedService
@@ -53,7 +56,11 @@ internal static class BackgroundServicesRegistration
         services.AddSingleton<MaintenanceService>();
 
         // TorrServer streaming engine
-        services.AddHttpClient("TorrServerClient", c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient("TorrServerClient", c => c.Timeout = TorrServerClientTimeout)
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = PooledHandlerLifetime,
+                });
         services.AddSingleton<Kiriha.Infrastructure.TorrServer.TorrServerService>(sp =>
             new Kiriha.Infrastructure.TorrServer.TorrServerService(
                 sp.GetRequiredService<ISettingsService>(),

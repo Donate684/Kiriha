@@ -32,12 +32,19 @@ namespace Kiriha.Core.Tracking;
 /// </summary>
 public static class TrackingServicesRegistration
 {
+    private static readonly TimeSpan PooledHandlerLifetime = TimeSpan.FromMinutes(5);
+
     public static IServiceCollection AddKirihaTracking(this IServiceCollection services)
     {
         services.AddTransient<ResilientHttpHandler>();
 
         // --- MyAnimeList ---
         services.AddHttpClient("MalClient", c => { c.BaseAddress = new Uri(AppConstants.Api.Mal.BaseUrl); })
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = PooledHandlerLifetime,
+                    AutomaticDecompression = DecompressionMethods.All,
+                })
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
         services.AddSingleton<MalAuthService>(sp =>
@@ -70,10 +77,11 @@ public static class TrackingServicesRegistration
         // can rewrite poster URLs without a direct dependency on the tracking layer.
         services.AddSingleton<IImageUrlRewriter>(sp => sp.GetRequiredService<ShikiHostResolver>());
         services.AddHttpClient("ShikiClient")
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
                 {
                     AllowAutoRedirect = false,
                     AutomaticDecompression = DecompressionMethods.All,
+                    PooledConnectionLifetime = PooledHandlerLifetime,
                 })
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
@@ -122,6 +130,11 @@ public static class TrackingServicesRegistration
 
         // --- AniList ---
         services.AddHttpClient("AniListClient")
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = PooledHandlerLifetime,
+                    AutomaticDecompression = DecompressionMethods.All,
+                })
                 .AddHttpMessageHandler<ResilientHttpHandler>();
 
         services.AddSingleton<AniListAuthService>(sp =>
@@ -137,7 +150,12 @@ public static class TrackingServicesRegistration
         services.AddSingleton<IAnimeCountryService, Kiriha.Core.Tracking.Services.AnimeCountryService>();
 
         // --- RSS ---
-        services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent));
+        services.AddHttpClient("RssClient", c => c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent))
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = PooledHandlerLifetime,
+                    AutomaticDecompression = DecompressionMethods.All,
+                });
         services.AddSingleton<NyaaFeedClient>();
         services.AddSingleton<RssFeedService>();
         services.AddForwardedSingleton<RssFeedService, IRssFeedService>();

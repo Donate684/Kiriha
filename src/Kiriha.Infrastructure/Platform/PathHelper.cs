@@ -40,6 +40,10 @@ public static class PathHelper
 
     public static string GetMpvWatchLaterPath() => Path.Combine(BasePath, AppConstants.System.FileNames.MpvWatchLaterDir);
 
+    public static string GetTorrServerDataPath() => Path.Combine(BasePath, "torrserver");
+
+    public static string GetNotificationIconPath() => Path.Combine(BasePath, "kiriha_notif.png");
+
     public static void EnsureDirectoriesExist()
     {
         Directory.CreateDirectory(BasePath);

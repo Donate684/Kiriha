@@ -484,7 +484,7 @@ public sealed class PostRefactorRegressionTests
 
             var progressMock = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
             var historyMock = new Mock<HistoryService>(null!);
-            var notificationMock = new Mock<NotificationService>(null!, null!);
+            var notificationMock = new Mock<INotificationService>();
             var bgMock = new Mock<IBackgroundTaskSupervisor>();
             bgMock.Setup(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()))
                 .Callback<string, Func<CancellationToken, Task>, CancellationToken>((_, fn, ct) => fn(ct).GetAwaiter().GetResult());

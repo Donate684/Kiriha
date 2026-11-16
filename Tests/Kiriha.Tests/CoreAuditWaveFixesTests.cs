@@ -129,56 +129,6 @@ public sealed class CoreAuditWaveFixesTests
     }
 
     [Fact]
-    public async Task LegacyUserStateMigration_ArchivesConfig_AndDoesNotResurrectUnhiddenItems()
-    {
-        using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
-        await using (var initCtx = new AppDbContext(options))
-        {
-            await initCtx.Database.EnsureCreatedAsync();
-        }
-
-        var tempDir = Path.Combine(Path.GetTempPath(), "KirihaMigrationTest_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempDir);
-        var configPath = Path.Combine(tempDir, "config.json");
-
-        try
-        {
-            await File.WriteAllTextAsync(configPath, """{"UI":{"HiddenSeasonalIds":[101,202]}}""");
-
-            await using (var ctx1 = new AppDbContext(options))
-            {
-                await LegacyUserStateMigration.MigrateAsync(ctx1, configPath);
-                Assert.Equal(2, await ctx1.HiddenSeasonalAnime.CountAsync());
-            }
-
-            Assert.False(File.Exists(configPath));
-            Assert.True(File.Exists(configPath + ".migrated"));
-
-            // User unhides item 101 in SQLite
-            await using (var ctx2 = new AppDbContext(options))
-            {
-                await ctx2.HiddenSeasonalAnime.Where(x => x.AnimeId == 101).ExecuteDeleteAsync();
-                Assert.Equal(1, await ctx2.HiddenSeasonalAnime.CountAsync());
-            }
-
-            // Subsequent startup migration must be a no-op and NOT resurrect 101
-            await using (var ctx3 = new AppDbContext(options))
-            {
-                await LegacyUserStateMigration.MigrateAsync(ctx3, configPath);
-                var remaining = await ctx3.HiddenSeasonalAnime.Select(x => x.AnimeId).ToListAsync();
-                Assert.Single(remaining);
-                Assert.Equal(202, remaining[0]);
-            }
-        }
-        finally
-        {
-            try { Directory.Delete(tempDir, recursive: true); } catch { }
-        }
-    }
-
-    [Fact]
     public async Task DatabaseMaintenance_CleanOrphanedMetadata_PreservesMangaAndLightNovelBitMaskedEntries()
     {
         using var connection = new SqliteConnection("Data Source=:memory:");

@@ -54,6 +54,9 @@ public sealed partial class AppStartupCoordinator
             .AddKirihaUi();
     }
 
+    private static readonly TimeSpan PooledHandlerLifetime = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan TorrServerClientTimeout = TimeSpan.FromSeconds(10);
+
     private static void ConfigurePlayerServices(IServiceCollection services)
     {
         PathHelper.EnsureDirectoriesExist();
@@ -63,7 +66,11 @@ public sealed partial class AppStartupCoordinator
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.FilenamePlayerMediaMetadataResolver>();
-        services.AddHttpClient("TorrServerClient", c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient("TorrServerClient", c => c.Timeout = TorrServerClientTimeout)
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = PooledHandlerLifetime,
+                });
         services.AddSingleton<ITorrServerService>(sp =>
             new Kiriha.Infrastructure.TorrServer.TorrServerService(
                 sp.GetRequiredService<ISettingsService>(),

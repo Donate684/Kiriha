@@ -76,7 +76,8 @@ public partial class TrackingService : ITrackingService, IHostedService
 
         if (media != null && matched != null)
         {
-            var inRepo = _animeRepo.Collection.FirstOrDefault(x => x.Id == matched.Id && x.MediaKind == MediaKind.Anime);
+            var inRepo = _animeRepo.FindById(matched.Id, MediaKind.Anime)
+                ?? (_uiDispatcher.CheckAccess() ? _animeRepo.Collection?.FirstOrDefault(x => x.Id == matched.Id && x.MediaKind == MediaKind.Anime) : null);
             if (inRepo != null && inRepo.Status != UserAnimeStatus.None &&
                 (!ReferenceEquals(matched, inRepo) || matched.Status == UserAnimeStatus.None))
             {

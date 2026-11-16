@@ -12,7 +12,6 @@ public interface IAnimeRepository
     AnimeEntity? FindById(int animeId, MediaKind kind = MediaKind.Anime) =>
         Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == kind);
 
-    bool IsRecentlyDeleted(int animeId);
     bool IsRecentlyDeleted(int animeId, MediaKind kind);
     Task AddOrUpdateAnimeAsync(AnimeEntity anime);
     Task<List<AnimeEntity>> GetSnapshotAsync(MediaKind[] kinds);

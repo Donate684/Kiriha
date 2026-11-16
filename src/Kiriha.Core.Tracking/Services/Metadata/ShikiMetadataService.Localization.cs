@@ -10,21 +10,25 @@ public partial class ShikiMetadataService
     public async Task LocalizeItemsAsync(IEnumerable<AnimeEntity> items, Action<int>? onProgress = null, CancellationToken ct = default)
     {
         bool useRussian = _settingsService.Current.UI.UseRussianTitles || _settingsService.Current.UI.UseRussianDescriptions;
-        bool showAiring = _settingsService.Current.UI.ShowAiringInfo;
+        if (!useRussian)
+            return;
 
-        if (!useRussian && !showAiring)
+        var itemList = items as IReadOnlyList<AnimeEntity> ?? items.ToList();
+        if (itemList.Count == 0)
             return;
 
         int localizedCount = 0;
         var uncached = new List<AnimeEntity>();
 
-        foreach (var item in items)
-        {
-            if (!useRussian && showAiring && item.Status != UserAnimeStatus.Watching && item.Status != UserAnimeStatus.PlanToWatch)
-                continue;
+        var cacheIds = itemList.Select(i => GetCacheId(i.Id, i.MediaKind)).Distinct();
+        var cachedMap = await _metadataRepo.GetBatchAsync(cacheIds, ct);
 
+        foreach (var item in itemList)
+        {
             int cacheId = GetCacheId(item.Id, item.MediaKind);
-            var meta = await _metadataRepo.GetAsync(cacheId);
+            var meta = cachedMap != null
+                ? cachedMap.GetValueOrDefault(cacheId)
+                : await _metadataRepo.GetAsync(cacheId);
             if (meta != null)
             {
                 // ApplyMetadata mutates ObservableObject properties — dispatch to UI thread.
@@ -50,9 +54,11 @@ public partial class ShikiMetadataService
 
                 tasks.Add(Task.Run(async () =>
                 {
+                    bool acquired = false;
                     try
                     {
                         await _concurrentFetches.WaitAsync(ct);
+                        acquired = true;
                         var fetchedMeta = await FetchMetadataFromApiAsync(item.Id, ct, item.MediaKind);
                         if (fetchedMeta != null)
                         {
@@ -66,7 +72,8 @@ public partial class ShikiMetadataService
                     }
                     finally
                     {
-                        _concurrentFetches.Release();
+                        if (acquired)
+                            _concurrentFetches.Release();
                         _activeFetches.TryRemove(cacheId, out _);
                     }
                 }, ct));

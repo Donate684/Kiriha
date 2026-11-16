@@ -35,28 +35,6 @@ public class AniListAuthService
         return await ExchangeCodeForTokenAsync(code, cancellationToken);
     }
 
-    public async Task<AniListTokens?> LoginWithTokenAsync(string accessToken, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(accessToken)) return null;
-
-        var tokens = new AniListTokens
-        {
-            AccessToken = accessToken.Trim(),
-            TokenType = "Bearer",
-            ExpiresIn = 31536000, // AniList tokens are typically 1-year long
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var userInfo = await FetchUserInfoAsync(tokens.AccessToken, ct);
-        if (userInfo != null)
-        {
-            tokens.UserId = userInfo.Value.Id;
-            tokens.UserName = userInfo.Value.Name;
-        }
-
-        return tokens;
-    }
-
     public async Task<AniListTokens?> ExchangeCodeForTokenAsync(string code, CancellationToken ct = default)
     {
         var payload = new Dictionary<string, string>

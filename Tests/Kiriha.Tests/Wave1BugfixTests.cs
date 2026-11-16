@@ -885,8 +885,6 @@ public sealed class Wave1BugfixTests
         // Simulate Manga 21 was recently deleted; Anime 21 is NOT deleted
         mockAnimeRepo.Setup(r => r.IsRecentlyDeleted(21, MediaKind.Manga)).Returns(true);
         mockAnimeRepo.Setup(r => r.IsRecentlyDeleted(21, MediaKind.Anime)).Returns(false);
-        // If the single-arg IsRecentlyDeleted(21) is called, it would return true (cross-kind collision bug)
-        mockAnimeRepo.Setup(r => r.IsRecentlyDeleted(21)).Returns(true);
 
         var addedItems = new List<AnimeEntity>();
         mockAnimeRepo.Setup(r => r.AddToCollection(It.IsAny<AnimeEntity>()))

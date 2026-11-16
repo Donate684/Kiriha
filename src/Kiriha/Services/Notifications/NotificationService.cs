@@ -24,11 +24,9 @@ public class NotificationService : INotificationService
     // De-dup: don't fire the same "new app version" toast twice in a row.
     private string? _lastNotifiedVersion;
 
-    public NotificationService(ISettingsService settingsService, IBackgroundTaskSupervisor? backgroundTasks = null)
+    public NotificationService(ISettingsService settingsService)
     {
         _settingsService = settingsService;
-        _ = backgroundTasks;
-        AppUserModelIdRegistrar.Register();
     }
 
     public virtual void NotifyNewEpisode(AnimeEntity anime, int episodeNumber)

@@ -23,7 +23,7 @@ internal static class AppUserModelIdRegistrar
                         key.SetValue("DisplayName", Kiriha.Core.Domain.Constants.AppConstants.System.AppName);
                         key.SetValue("ShowInSettings", 1, Microsoft.Win32.RegistryValueKind.DWord);
 
-                        var appDataIcon = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Kiriha.Core.Domain.Constants.AppConstants.System.AppName, "kiriha_notif.png");
+                        var appDataIcon = Kiriha.Infrastructure.Platform.PathHelper.GetNotificationIconPath();
                         if (!File.Exists(appDataIcon))
                         {
                             var localAsset = Path.Combine(AppContext.BaseDirectory, "Assets", "kiriha_notif.png");

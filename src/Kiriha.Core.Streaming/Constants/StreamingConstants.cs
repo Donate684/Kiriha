@@ -44,7 +44,6 @@ public static class StreamingConstants
         public const string TranslationsEndpoint = "https://smotret-anime.co/api/translations";
         public const string EmbedEndpoint = "https://smotret-anime.co/api/translations/embed";
         public const string LoginEndpoint = "https://smotret-anime.co/api/login";
-        public const string AccessTokenEndpoint = "https://smotret-anime.co/api/accessToken";
         public const string MeEndpoint = "https://smotret-anime.co/api/me";
         public const string EmbedPath = "/translations/embed/";
         public const string EmbedWebUrlPrefix = "https://smotret-anime.co/translations/embed/";

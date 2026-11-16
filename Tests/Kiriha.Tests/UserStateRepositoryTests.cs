@@ -189,60 +189,6 @@ public sealed class UserStateRepositoryTests
     }
 
     [Fact]
-    public async Task LegacyUserStateMigration_MigratesJsonDataToSqlite()
-    {
-        var (context, factory, dbPath) = CreateTestDb();
-        var tempConfigFile = Path.Combine(Path.GetTempPath(), "Kiriha.Tests", Guid.NewGuid() + ".json");
-        try
-        {
-            var json = """
-            {
-              "UI": {
-                "HiddenSeasonalIds": [10, 20, 30]
-              },
-              "Torrents": {
-                "HiddenAnimeIds": [100, 200],
-                "PerTitleFilters": {
-                  "300": {
-                    "OnlyCrunchyroll": true,
-                    "FilterNetflix": false,
-                    "Filter1080p": true,
-                    "UseCustomQuery": true,
-                    "CustomQuery": "Sousou no Frieren"
-                  }
-                }
-              }
-            }
-            """;
-            await File.WriteAllTextAsync(tempConfigFile, json);
-
-            await LegacyUserStateMigration.MigrateAsync(context, tempConfigFile);
-
-            var seasonal = await context.HiddenSeasonalAnime.Select(x => x.AnimeId).ToListAsync();
-            Assert.Contains(10, seasonal);
-            Assert.Contains(20, seasonal);
-            Assert.Contains(30, seasonal);
-
-            var torrentHidden = await context.HiddenTorrentAnime.Select(x => x.AnimeId).ToListAsync();
-            Assert.Contains(100, torrentHidden);
-            Assert.Contains(200, torrentHidden);
-
-            var filter = await context.TorrentTitleFilters.FirstOrDefaultAsync(x => x.AnimeId == 300);
-            Assert.NotNull(filter);
-            Assert.True(filter.OnlyCrunchyroll);
-            Assert.True(filter.Filter1080p);
-            Assert.True(filter.UseCustomQuery);
-            Assert.Equal("Sousou no Frieren", filter.CustomQuery);
-        }
-        finally
-        {
-            try { File.Delete(tempConfigFile); } catch { }
-            await context.DisposeAsync();
-            CleanupTestDb(dbPath);
-        }
-    }
-
-    [Fact]
     public async Task TorrentFilterRepository_CustomQueryFilterId_PersistsAndLoadsCorrectly()
     {
         var (context, factory, dbPath) = CreateTestDb();

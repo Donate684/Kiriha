@@ -67,9 +67,9 @@ public class MaintenanceService : IDisposable
 
             await ExecuteSafeAsync();
 
-            using var timer = new PeriodicTimer(task.Interval);
-            while (await timer.WaitForNextTickAsync(combinedCt))
+            while (!combinedCt.IsCancellationRequested)
             {
+                await Task.Delay(task.Interval, combinedCt);
                 await ExecuteSafeAsync();
             }
         }

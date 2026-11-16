@@ -31,7 +31,9 @@ public class ImageCacheCleanup
         {
             var activeSet = activePaths
                 .Where(p => !string.IsNullOrEmpty(p))
-                .Select(p => Path.GetFileName(p).ToLowerInvariant())
+                .Select(p => p.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    ? ImageDownloader.GetFileNameForUrl(p).ToLowerInvariant()
+                    : Path.GetFileName(p).ToLowerInvariant())
                 .ToHashSet();
 
             var directoryInfo = new DirectoryInfo(_cacheRoot);

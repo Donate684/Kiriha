@@ -1,12 +1,40 @@
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Sync.Models;
 
 namespace Kiriha.Core.Tracking.Sync;
 
 public partial class AnimeSyncOrchestrator
 {
-    private async Task ProcessSyncResults(List<AnimeEntity> apiList, List<AnimeEntity> currentItems, IProgress<string>? status, CancellationToken ct)
+    private async Task ProcessSyncResults(
+        List<AnimeEntity> apiList,
+        List<AnimeEntity> currentItems,
+        List<SyncTaskEntity> pendingTasks,
+        IProgress<string>? status,
+        CancellationToken ct)
     {
-        var distinctApiList = apiList.DistinctBy(x => (x.Id, x.MediaKind)).ToList();
+        var pendingRemoves = new HashSet<(int Id, MediaKind Kind)>();
+        var pendingMutations = new HashSet<(int Id, MediaKind Kind)>();
+
+        if (pendingTasks.Count > 0)
+        {
+            foreach (var group in pendingTasks.GroupBy(t => (t.AnimeId, t.MediaKind)))
+            {
+                var latest = group.OrderBy(t => t.Id).Last();
+                if (string.Equals(latest.Type, nameof(SyncTaskType.Remove), StringComparison.OrdinalIgnoreCase))
+                {
+                    pendingRemoves.Add(group.Key);
+                }
+                else
+                {
+                    pendingMutations.Add(group.Key);
+                }
+            }
+        }
+
+        var distinctApiList = apiList
+            .Where(x => !pendingRemoves.Contains((x.Id, x.MediaKind)))
+            .DistinctBy(x => (x.Id, x.MediaKind))
+            .ToList();
 
         var apiMap = new Dictionary<(int Id, MediaKind Kind), AnimeEntity>(distinctApiList.Count);
         for (int i = 0; i < distinctApiList.Count; i++) apiMap[(distinctApiList[i].Id, distinctApiList[i].MediaKind)] = distinctApiList[i];
@@ -17,7 +45,8 @@ public partial class AnimeSyncOrchestrator
         var toRemove = new List<AnimeEntity>();
         for (int i = 0; i < currentItems.Count; i++)
         {
-            if (!apiMap.ContainsKey((currentItems[i].Id, currentItems[i].MediaKind)))
+            var key = (currentItems[i].Id, currentItems[i].MediaKind);
+            if (!apiMap.ContainsKey(key) && !pendingMutations.Contains(key))
             {
                 toRemove.Add(currentItems[i]);
             }
@@ -31,18 +60,26 @@ public partial class AnimeSyncOrchestrator
             if (ct.IsCancellationRequested) break;
 
             var newItem = distinctApiList[i];
+            var key = (newItem.Id, newItem.MediaKind);
 
             if (_animeRepository.IsRecentlyDeleted(newItem.Id, newItem.MediaKind)) continue;
 
-            if (existingMap.TryGetValue((newItem.Id, newItem.MediaKind), out var existing))
+            if (existingMap.TryGetValue(key, out var existing))
             {
                 var captured = newItem;
                 var capturedExisting = existing;
-                uiBatch.Add(() => captured.CopyTo(capturedExisting));
+                bool preserveOfflineEdits = pendingMutations.Contains(key);
+                uiBatch.Add(() =>
+                {
+                    if (preserveOfflineEdits)
+                        capturedExisting.MergeFullDetails(captured);
+                    else
+                        captured.CopyTo(capturedExisting);
+                });
             }
             else
             {
-                existingMap[(newItem.Id, newItem.MediaKind)] = newItem;
+                existingMap[key] = newItem;
                 uiBatch.Add(() =>
                 {
                     _animeRepository.AddToCollection(newItem);

@@ -11,8 +11,6 @@ public interface IShikiMetadataService
         Func<ShikiMetadata, Task>? onFetched = null,
         MediaKind mediaKind = MediaKind.Anime);
 
-    Task<string?> FetchPosterFromGraphQlAsync(int animeId, MediaKind mediaKind, CancellationToken ct);
-
     Task LocalizeItemsAsync(
         IEnumerable<AnimeEntity> items,
         Action<int>? onProgress = null,

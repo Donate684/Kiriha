@@ -19,6 +19,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
     private readonly ISettingsService? _settingsService;
     private readonly ILocalizer? _localizer;
     private readonly LibrarySyncGate? _syncGate;
+    private readonly ISyncTaskRepository? _syncTaskRepo;
 
     private int _syncing;
     public bool IsSyncing => Volatile.Read(ref _syncing) == 1;
@@ -30,7 +31,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         IRecognitionCache recognitionCache,
         ISettingsService? settingsService = null,
         ILocalizer? localizer = null,
-        LibrarySyncGate? syncGate = null)
+        LibrarySyncGate? syncGate = null,
+        ISyncTaskRepository? syncTaskRepo = null)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
@@ -39,6 +41,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         _settingsService = settingsService;
         _localizer = localizer;
         _syncGate = syncGate;
+        _syncTaskRepo = syncTaskRepo;
     }
 
     private string FormatLoc(string key, params object?[] args) =>
@@ -83,7 +86,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             var localCount = currentItems.Count;
             if (!isMigration)
             {
-                if (localCount >= 50 && apiList.Count < localCount * 0.7)
+                if (localCount >= Kiriha.Core.Domain.Constants.SyncSafetyConstants.MinimumTotalGuardCount &&
+                    (double)(localCount - apiList.Count) / localCount > Kiriha.Core.Domain.Constants.SyncSafetyConstants.MaximumAllowedTotalDropRatio)
                 {
                     Log.Warning("SyncWithTrackers: aborting - incoming list ({Incoming}) is much smaller than local cache ({Local}). Likely a partial fetch.",
                         apiList.Count, localCount);
@@ -94,7 +98,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
                     return false;
             }
 
-            await ProcessSyncResults(apiList, currentItems, status, ct);
+            var pendingTasks = _syncTaskRepo != null ? await _syncTaskRepo.GetPendingAsync(ct) : [];
+            await ProcessSyncResults(apiList, currentItems, pendingTasks, status, ct);
 
             status?.Report(FormatLoc("sync.saving.to_db"));
             Log.Information("AnimeSyncOrchestrator: getting anime snapshot for DB sync");
@@ -146,7 +151,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
             var localCount = currentItems.Count;
             if (!isMigration)
             {
-                if (localCount >= 50 && apiList.Count < localCount * 0.7)
+                if (localCount >= Kiriha.Core.Domain.Constants.SyncSafetyConstants.MinimumTotalGuardCount &&
+                    (double)(localCount - apiList.Count) / localCount > Kiriha.Core.Domain.Constants.SyncSafetyConstants.MaximumAllowedTotalDropRatio)
                 {
                     Log.Warning("SyncMangaWithTrackers: aborting - incoming list ({Incoming}) is much smaller than local cache ({Local}). Likely a partial fetch.",
                         apiList.Count, localCount);
@@ -157,7 +163,8 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
                     return false;
             }
 
-            await ProcessSyncResults(apiList, currentItems, status, ct);
+            var pendingTasks = _syncTaskRepo != null ? await _syncTaskRepo.GetPendingAsync(ct) : [];
+            await ProcessSyncResults(apiList, currentItems, pendingTasks, status, ct);
 
             status?.Report(FormatLoc("sync.saving.to_db"));
             var snapshot = await _animeRepository.GetSnapshotAsync(kinds);

@@ -102,12 +102,6 @@ public partial class AnimeEntity : DomainObservableObject
         _cachedLocalPosterValid ??= LocalPosterValidator(_localPosterPath);
     }
 
-    public void InvalidatePosterCache()
-    {
-        _cachedLocalPosterValid = null;
-        OnPropertyChanged(nameof(PosterSource));
-    }
-
     /// <summary>
     /// Returns the best available poster source: the local cached file path if it exists and is non-empty,
     /// otherwise falls back to the remote URL. Validation is memoized per path assignment to avoid UI-thread disk I/O.

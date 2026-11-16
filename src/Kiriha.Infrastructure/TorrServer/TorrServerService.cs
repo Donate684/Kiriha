@@ -93,7 +93,7 @@ public sealed class TorrServerService : ITorrServerService
             }
 
             var port = _settingsService.Current.Torrents.Streaming.ServerPort;
-            var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kiriha", "torrserver");
+            var dataDir = Platform.PathHelper.GetTorrServerDataPath();
             Directory.CreateDirectory(dataDir);
 
             var psi = new ProcessStartInfo
@@ -491,6 +491,7 @@ public sealed class TorrServerService : ITorrServerService
         {
             Path.Combine(baseDir, "torrserver", "torrserver.exe"),
             Path.Combine(baseDir, "torrserver.exe"),
+            Path.Combine(Platform.PathHelper.GetTorrServerDataPath(), "torrserver.exe"),
             Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "subprojects", "torrserver", "torrserver.exe")),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kiriha", "torrserver", "torrserver.exe")
         };

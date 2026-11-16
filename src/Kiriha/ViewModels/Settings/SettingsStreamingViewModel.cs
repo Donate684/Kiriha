@@ -353,9 +353,9 @@ public partial class SettingsStreamingViewModel : ObservableObject
             request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Accept, "application/json");
 
             using var response = _hostResolver != null
-                ? await _hostResolver.SendWithFailoverAsync(SharedHttpClient, request, default).ConfigureAwait(false)
-                : await SharedHttpClient.SendAsync(request).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                ? await _hostResolver.SendWithFailoverAsync(SharedHttpClient, request, default)
+                : await SharedHttpClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
 
             using var doc = JsonDocument.Parse(content);
             if (doc.RootElement.TryGetProperty("error", out var errorProp))
@@ -375,7 +375,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
             }
 
             Anime365Password = string.Empty;
-            await ApplyAnime365TokenInternalAsync(token.Trim()).ConfigureAwait(false);
+            await ApplyAnime365TokenInternalAsync(token.Trim());
             StatusMessage = UIUtils.GetLoc("settings.streaming.anime365_success_login");
         }
         catch (Exception ex)
@@ -399,7 +399,7 @@ public partial class SettingsStreamingViewModel : ObservableObject
         }
 
         var token = Anime365ManualToken.Trim();
-        var success = await ApplyAnime365TokenInternalAsync(token).ConfigureAwait(false);
+        var success = await ApplyAnime365TokenInternalAsync(token);
         if (success)
         {
             Anime365ManualToken = string.Empty;
@@ -426,12 +426,12 @@ public partial class SettingsStreamingViewModel : ObservableObject
             request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Accept, "application/json");
 
             using var response = _hostResolver != null
-                ? await _hostResolver.SendWithFailoverAsync(SharedHttpClient, request, default).ConfigureAwait(false)
-                : await SharedHttpClient.SendAsync(request).ConfigureAwait(false);
+                ? await _hostResolver.SendWithFailoverAsync(SharedHttpClient, request, default)
+                : await SharedHttpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
                 return false;
 
-            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var content = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(content);
             if (!doc.RootElement.TryGetProperty("data", out var dataProp))
                 return false;
@@ -450,10 +450,13 @@ public partial class SettingsStreamingViewModel : ObservableObject
                 s.Torrents.OnlineStreaming.Anime365Username = username ?? "Anime365 User";
             }, SettingsSection.Torrents);
 
-            IsAnime365LoggedIn = true;
-            IsAnime365ManualTokenExpanded = false;
-            Anime365Username = username ?? "Anime365 User";
-            Anime365StatusText = FormatPremiumStatus(isPremium, premiumUntil);
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                IsAnime365LoggedIn = true;
+                IsAnime365ManualTokenExpanded = false;
+                Anime365Username = username ?? "Anime365 User";
+                Anime365StatusText = FormatPremiumStatus(isPremium, premiumUntil);
+            });
             return true;
         }
         catch (Exception ex)
@@ -488,16 +491,20 @@ public partial class SettingsStreamingViewModel : ObservableObject
             var isLogined = dataProp.TryGetProperty("isLogined", out var logProp) && logProp.GetBoolean();
             if (!isLogined)
             {
-                IsAnime365LoggedIn = false;
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => IsAnime365LoggedIn = false);
                 return;
             }
 
             var username = dataProp.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : "Anime365 User";
             var isPremium = dataProp.TryGetProperty("isPremium", out var premProp) && premProp.GetBoolean();
             var premiumUntil = dataProp.TryGetProperty("premiumUntil", out var untilProp) ? untilProp.GetString() : null;
+            var statusText = FormatPremiumStatus(isPremium, premiumUntil);
 
-            Anime365Username = username ?? "Anime365 User";
-            Anime365StatusText = FormatPremiumStatus(isPremium, premiumUntil);
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                Anime365Username = username ?? "Anime365 User";
+                Anime365StatusText = statusText;
+            });
         }
         catch
         {

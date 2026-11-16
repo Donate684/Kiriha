@@ -21,7 +21,7 @@ public class ScrobbleTimerAndResumeTests : IDisposable
     private readonly SettingsService _settingsService;
     private readonly Mock<AnimeProgressService> _mockProgressService;
     private readonly Mock<HistoryService> _mockHistoryService;
-    private readonly Mock<NotificationService> _mockNotificationService;
+    private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
     private readonly Mock<ILocalizer> _mockLocalizer;
@@ -33,7 +33,7 @@ public class ScrobbleTimerAndResumeTests : IDisposable
 
         _mockProgressService = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
         _mockHistoryService = new Mock<HistoryService>(null!);
-        _mockNotificationService = new Mock<NotificationService>(null!, null!);
+        _mockNotificationService = new Mock<INotificationService>();
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
         _mockUiDispatcher = new Mock<IUiDispatcher>();
         _mockLocalizer = new Mock<ILocalizer>();

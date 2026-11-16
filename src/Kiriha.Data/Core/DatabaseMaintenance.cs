@@ -18,7 +18,7 @@ namespace Kiriha.Services.Data.Core;
 public sealed class DatabaseMaintenance
 {
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
-    private DateTime _lastVacuum = DateTime.MinValue;
+    private DateTime _lastVacuum = DateTime.UtcNow;
 
     public DatabaseMaintenance(IDbContextFactory<AppDbContext> contextFactory)
     {
@@ -50,7 +50,8 @@ public sealed class DatabaseMaintenance
     {
         var orphanedMetadataCount = await context.Database.ExecuteSqlRawAsync("""
             DELETE FROM metadata
-            WHERE id NOT IN (
+            WHERE fetched_at < date('now', '-30 days')
+            AND id NOT IN (
                 SELECT CASE media_kind
                     WHEN 'Manga' THEN (id | 1073741824)
                     WHEN 'LightNovel' THEN (id | 536870912)

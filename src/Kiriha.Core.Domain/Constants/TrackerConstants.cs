@@ -8,10 +8,6 @@ public static class TrackerConstants
         public const string ShikiOrig = "shiki-orig";
         public const string ShikiFork = "shiki-fork";
         public const string AniList = "anilist";
-
-        // Aliases for compatibility
-        public const string ShikiOne = ShikiOrig;
-        public const string ShikiNet = ShikiFork;
     }
 
     public static class Names

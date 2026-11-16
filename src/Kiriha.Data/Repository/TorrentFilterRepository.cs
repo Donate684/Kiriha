@@ -186,13 +186,12 @@ public sealed class TorrentFilterRepository : ITorrentFilterRepository
                 _cachedFilters.Clear();
                 foreach (var f in filters)
                     _cachedFilters[f.AnimeId] = MapToFilterSet(f);
+
+                _initialized = true;
             }
             catch
             {
-            }
-            finally
-            {
-                _initialized = true;
+                // Leave _initialized = false on transient startup DB unavailability so later reads retry cleanly
             }
         }
     }

@@ -118,14 +118,11 @@ public sealed class SeasonalHiddenRepository : ISeasonalHiddenRepository
                 _cachedIds.Clear();
                 foreach (var id in ids)
                     _cachedIds.Add(id);
+                _initialized = true;
             }
             catch
             {
-                // In case DB is not yet ready or migrating
-            }
-            finally
-            {
-                _initialized = true;
+                // In case DB is not yet ready or migrating; leave _initialized = false so a subsequent call retries cleanly
             }
         }
     }

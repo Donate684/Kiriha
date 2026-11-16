@@ -54,19 +54,32 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
         if (snapshot.Count == 0)
             return;
 
+        var itemsWithInvalidPosters = new List<AnimeEntity>();
         var itemsToProcess = new List<AnimeEntity>();
         foreach (var item in snapshot)
         {
-            if (AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl))
+            bool invalidPoster = AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl);
+            if (invalidPoster)
             {
-                item.MainPictureUrl = null;
-                item.LocalPosterPath = null;
+                itemsWithInvalidPosters.Add(item);
             }
 
-            if (NeedsWork(item))
+            if (invalidPoster || NeedsWork(item))
             {
                 itemsToProcess.Add(item);
             }
+        }
+
+        if (itemsWithInvalidPosters.Count > 0)
+        {
+            await _uiDispatcher.InvokeAsync(() =>
+            {
+                foreach (var item in itemsWithInvalidPosters)
+                {
+                    item.MainPictureUrl = null;
+                    item.LocalPosterPath = null;
+                }
+            });
         }
 
         if (itemsToProcess.Count == 0)
@@ -74,6 +87,11 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
         Log.Information("MetadataFetchMaintenanceTask: Found {Count} items needing metadata or poster download. This may take ~{EstMinutes} minutes.",
             itemsToProcess.Count, (int)Math.Ceiling(itemsToProcess.Count * NetworkThrottleDelayMs / 60000.0));
+
+        var batchCacheIds = itemsToProcess
+            .Select(i => Kiriha.Core.Domain.Models.Api.ShikiMetadata.GetCacheId(i.Id, i.MediaKind))
+            .Distinct();
+        var prefetchedMetadata = await _metadataRepo.GetBatchAsync(batchCacheIds, ct);
 
         int processed = 0;
         foreach (var item in itemsToProcess)
@@ -99,7 +117,9 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
                 if (needsMeta || needsPoster)
                 {
-                    var meta = await _metadataRepo.GetAsync(cacheId);
+                    var meta = prefetchedMetadata != null
+                        ? prefetchedMetadata.GetValueOrDefault(cacheId)
+                        : await _metadataRepo.GetAsync(cacheId);
 
                     // Only fetch from Shikimori API when metadata row does not exist yet or PosterUrl was never probed (null).
                     // An empty string ("") means Shikimori was already queried and had no valid poster, avoiding 20-min infinite retries.

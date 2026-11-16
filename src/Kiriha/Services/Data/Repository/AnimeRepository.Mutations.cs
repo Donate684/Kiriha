@@ -6,10 +6,6 @@ namespace Kiriha.Services.Data.Repository;
 public partial class AnimeRepository
 {
     private static readonly TimeSpan RecentDeleteExpiryDelay = TimeSpan.FromSeconds(60);
-    public bool IsRecentlyDeleted(int animeId)
-    {
-        lock (_recentlyDeletedLock) return _recentlyDeletedIds.Keys.Any(k => k.Id == animeId);
-    }
 
     public bool IsRecentlyDeleted(int animeId, MediaKind kind)
     {

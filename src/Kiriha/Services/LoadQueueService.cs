@@ -21,8 +21,8 @@ public class LoadQueueService : ILoadQueueService, IDisposable
     private const int ShikiQueueCapacity = 256;
 
     private readonly Lock _dedupeLock = new();
-    private readonly HashSet<int> _queuedForImage = new();
-    private readonly HashSet<int> _queuedForShiki = new();
+    private readonly HashSet<MediaKey> _queuedForImage = new();
+    private readonly HashSet<MediaKey> _queuedForShiki = new();
     private readonly Channel<AnimeEntity> _imageQueue = CreateQueue(ImageQueueCapacity);
     private readonly Channel<AnimeEntity> _shikiQueue = CreateQueue(ShikiQueueCapacity);
 
@@ -76,21 +76,21 @@ public class LoadQueueService : ILoadQueueService, IDisposable
         });
     }
 
-    private void EnqueueItem(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<int> queuedIds)
+    private void EnqueueItem(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<MediaKey> queuedKeys)
     {
         lock (_dedupeLock)
         {
-            if (!queuedIds.Add(item.Id))
+            if (!queuedKeys.Add(item.Key))
                 return;
         }
 
         if (writer.TryWrite(item))
             return;
 
-        _ = EnqueueSlowAsync(item, writer, queuedIds);
+        _ = EnqueueSlowAsync(item, writer, queuedKeys);
     }
 
-    private async Task EnqueueSlowAsync(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<int> queuedIds)
+    private async Task EnqueueSlowAsync(AnimeEntity item, ChannelWriter<AnimeEntity> writer, HashSet<MediaKey> queuedKeys)
     {
         try
         {
@@ -100,7 +100,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
         {
             lock (_dedupeLock)
             {
-                queuedIds.Remove(item.Id);
+                queuedKeys.Remove(item.Key);
             }
         }
         catch (Exception ex)
@@ -108,7 +108,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
             Log.Debug(ex, "LoadQueueService: failed to enqueue item {Id}", item.Id);
             lock (_dedupeLock)
             {
-                queuedIds.Remove(item.Id);
+                queuedKeys.Remove(item.Key);
             }
         }
     }
@@ -139,7 +139,7 @@ public class LoadQueueService : ILoadQueueService, IDisposable
             {
                 foreach (var b in batch)
                 {
-                    RemoveQueuedId(_queuedForImage, b.Id);
+                    RemoveQueuedKey(_queuedForImage, b.Key);
                 }
             }
         }
@@ -171,17 +171,17 @@ public class LoadQueueService : ILoadQueueService, IDisposable
             {
                 foreach (var b in batch)
                 {
-                    RemoveQueuedId(_queuedForShiki, b.Id);
+                    RemoveQueuedKey(_queuedForShiki, b.Key);
                 }
             }
         }
     }
 
-    private void RemoveQueuedId(HashSet<int> queuedIds, int id)
+    private void RemoveQueuedKey(HashSet<MediaKey> queuedKeys, MediaKey key)
     {
         lock (_dedupeLock)
         {
-            queuedIds.Remove(id);
+            queuedKeys.Remove(key);
         }
     }
 

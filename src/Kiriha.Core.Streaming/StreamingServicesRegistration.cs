@@ -12,6 +12,8 @@ namespace Kiriha.Core.Streaming;
 /// </summary>
 public static class StreamingServicesRegistration
 {
+    private static readonly TimeSpan PooledHandlerLifetime = TimeSpan.FromMinutes(5);
+
     public static IServiceCollection AddKirihaStreaming(this IServiceCollection services)
     {
         services.AddHttpClient("StreamingClient", client =>
@@ -19,6 +21,10 @@ public static class StreamingServicesRegistration
             client.Timeout = TimeSpan.FromSeconds(StreamingConstants.Timeouts.HttpClientTimeoutSeconds);
             client.DefaultRequestHeaders.TryAddWithoutValidation(StreamingConstants.Headers.UserAgent, StreamingConstants.Headers.DefaultUserAgent);
             client.DefaultRequestHeaders.TryAddWithoutValidation(StreamingConstants.Headers.AcceptLanguage, StreamingConstants.Headers.RuRuLanguage);
+        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            PooledConnectionLifetime = PooledHandlerLifetime,
+            AutomaticDecompression = System.Net.DecompressionMethods.All,
         });
 
         // Host resolvers & mirror rewriters

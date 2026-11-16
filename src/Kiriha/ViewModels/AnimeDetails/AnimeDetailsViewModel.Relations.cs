@@ -136,6 +136,12 @@ public partial class AnimeDetailsViewModel
 
     private async Task LoadFranchiseAndRelationsAsync()
     {
+        if (Anime.MediaKind != MediaKind.Anime)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(UpdateRelationsVisibility);
+            return;
+        }
+
         // 1. Load Shikimori franchise data
         try
         {

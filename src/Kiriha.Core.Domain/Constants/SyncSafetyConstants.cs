@@ -2,8 +2,9 @@ namespace Kiriha.Core.Domain.Constants;
 
 public static class SyncSafetyConstants
 {
+    public const int MinimumTotalGuardCount = 50;
     public const int MinimumStatusGuardCount = 10;
     public const int MinimumStatusDropCount = 5;
     public const double MaximumAllowedStatusDropRatio = 0.30;
-    public const double MaxAllowedTotalDropRatio = 0.70;
+    public const double MaximumAllowedTotalDropRatio = 0.30;
 }

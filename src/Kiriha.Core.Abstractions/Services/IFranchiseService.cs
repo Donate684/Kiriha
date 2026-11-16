@@ -21,11 +21,6 @@ public interface IFranchiseService
     event System.Action? IndexRebuilt;
 
     /// <summary>
-    /// Rebuilds the in-memory franchise index using the user's library and cached relations.
-    /// </summary>
-    Task RebuildIndexAsync(CancellationToken ct = default);
-
-    /// <summary>
     /// Enqueues an anime to resolve its franchise in background (e.g. from viewport).
     /// </summary>
     void EnqueueForResolution(AnimeEntity item);

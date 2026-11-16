@@ -32,8 +32,8 @@ public partial class AnimeSyncOrchestrator
             var dropped = local - incoming;
             if (dropped < SyncSafetyConstants.MinimumStatusDropCount) continue;
 
-            var incomingRatio = (double)incoming / local;
-            if (incomingRatio < SyncSafetyConstants.MaximumAllowedStatusDropRatio)
+            var dropRatio = (double)dropped / local;
+            if (dropRatio > SyncSafetyConstants.MaximumAllowedStatusDropRatio)
             {
                 Log.Warning(
                     "SyncWithTrackers: aborting because {Status} count dropped suspiciously from {Local} to {Incoming}. Likely a partial or stale tracker snapshot.",

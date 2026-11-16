@@ -33,6 +33,9 @@ namespace Kiriha.Composition;
 /// </summary>
 internal static class DataServicesRegistration
 {
+    private static readonly TimeSpan PooledHandlerLifetime = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan ImageClientTimeout = TimeSpan.FromSeconds(30);
+
     public static IServiceCollection AddKirihaData(this IServiceCollection services, string dbPath)
     {
         services.AddDbContextFactory<AppDbContext>(options =>
@@ -51,9 +54,7 @@ internal static class DataServicesRegistration
         services.AddSingleton<SettingsService>();
         services.AddForwardedSingleton<SettingsService, ISettingsService>();
         services.AddSingleton<AppReadinessService>();
-        services.AddSingleton<DatabaseInitializer>(sp => new DatabaseInitializer(
-            sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
-            Kiriha.Infrastructure.Platform.PathHelper.GetLegacySettingsPath()));
+        services.AddSingleton<DatabaseInitializer>();
         services.AddForwardedSingleton<DatabaseInitializer, IDatabaseInitializer>();
         services.AddSingleton<DatabaseMaintenance>();
         services.AddSingleton<CacheCleanupService>(sp => new CacheCleanupService(
@@ -82,8 +83,12 @@ internal static class DataServicesRegistration
         services.AddForwardedSingleton<LocalizationService, ILocalizer>();
         services.AddHttpClient("ImageClient", c =>
         {
-            c.Timeout = TimeSpan.FromSeconds(30);
+            c.Timeout = ImageClientTimeout;
             c.DefaultRequestHeaders.Add("User-Agent", AppInfo.UserAgent);
+        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            PooledConnectionLifetime = PooledHandlerLifetime,
+            AutomaticDecompression = System.Net.DecompressionMethods.All,
         });
         services.AddSingleton<ImageCacheService>(sp =>
         {

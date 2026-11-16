@@ -19,14 +19,17 @@ public sealed class AnimeCountryService : IAnimeCountryService
     {
         if (items == null || items.Count == 0) return false;
 
+        var animeItems = items.Where(x => x.MediaKind == MediaKind.Anime).ToList();
+        if (animeItems.Count == 0) return false;
+
         bool updatedAny = false;
         var newlyResolved = new Dictionary<int, string>();
-        var itemIds = items.Select(x => x.Id).Distinct().ToList();
+        var itemIds = animeItems.Select(x => x.Id).Distinct().ToList();
 
         // 1. Check local DB first
         var cached = await _countryRepo.GetBatchAsync(itemIds, ct);
 
-        foreach (var item in items)
+        foreach (var item in animeItems)
         {
             // Local detector (0ms, 100% offline)
             var localDetected = DonghuaDetector.Detect(item);

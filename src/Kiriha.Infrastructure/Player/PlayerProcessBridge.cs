@@ -170,16 +170,6 @@ public static class PlayerProcessBridge
         return Task.Run(() => TryForward(["--player", ShutdownArg], timeoutMs: 500));
     }
 
-    public static void ForwardMetadata(
-        string originalTitle,
-        int animeId,
-        string? titleRu,
-        string? titleEn,
-        string? episodeText)
-    {
-        ForwardMetadata(originalTitle, animeId, titleRu, titleEn, titleRomaji: null, episodeText, torrentHash: null);
-    }
-
     private static string? s_lastForwardedKey;
     private static readonly Lock s_forwardGate = new();
 

@@ -60,7 +60,6 @@ public class TorrentEntity
         return _title;
     }
     public string Quality { get; set; } = string.Empty;
-    public string Subber { get; set; } = string.Empty;
     public string DownloadLink { get; set; } = string.Empty;
     public string MagnetLink { get; set; } = string.Empty;
     public DateTime PublishDate { get; set; }

@@ -155,7 +155,7 @@ public sealed partial class Anime365HostResolver : IImageUrlRewriter
         triedHosts.Add(initialUri.Host);
 
         using var firstAttemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        firstAttemptCts.CancelAfter(TimeSpan.FromSeconds(StreamingConstants.Timeouts.MirrorProbeTimeoutSeconds));
+        firstAttemptCts.CancelAfter(TimeSpan.FromSeconds(StreamingConstants.Timeouts.ProviderSearchTimeoutSeconds));
 
         try
         {

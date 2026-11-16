@@ -122,7 +122,7 @@ public class Wave4BugfixTests
 
             var mockProgress = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
             var mockHistory = new Mock<HistoryService>(null!);
-            var mockNotification = new Mock<NotificationService>(null!, null!);
+            var mockNotification = new Mock<INotificationService>();
             var mockBackground = new Mock<IBackgroundTaskSupervisor>();
             var mockUi = new Mock<IUiDispatcher>();
             var mockStore = new Mock<IScrobbleProgressStore>();
@@ -194,7 +194,7 @@ public class Wave4BugfixTests
 
             var mockProgress = new Mock<AnimeProgressService>(null!, null!, null!, null!, null!);
             var mockHistory = new Mock<HistoryService>(null!);
-            var mockNotification = new Mock<NotificationService>(null!, null!);
+            var mockNotification = new Mock<INotificationService>();
             var mockBackground = new Mock<IBackgroundTaskSupervisor>();
             var mockUi = new Mock<IUiDispatcher>();
             var mockStore = new Mock<IScrobbleProgressStore>();

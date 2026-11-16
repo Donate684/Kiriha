@@ -104,7 +104,7 @@ graph TD
 * **Роль:** Изолированное хранилище данных на SQLite + EF Core (не зависит от `Kiriha.Infrastructure`).
 * **Ключевые компоненты:**
   - `AppDbContext`: контекст БД с `QueryTrackingBehavior.NoTracking` и WAL-режимом через `SqlitePragmaConnectionInterceptor`.
-  - `DatabaseInitializer`, `DatabaseMaintenance`, `CacheCleanupService`, `LegacyUserStateMigration` (однократная миграция с архивацией `.migrated`).
+  - `DatabaseInitializer` (базовая схема от `v1.8+`), `DatabaseMaintenance`, `CacheCleanupService`.
   - `Repository/`: реализации репозиториев (`UserAnimeRepository`, `MetadataRepository`, `HistoryRepository` с сериализацией RMW-обновлений `tracker_status_json`, `SyncTaskRepository` и др.).
 
 ### 3.4. `Kiriha.Infrastructure`
