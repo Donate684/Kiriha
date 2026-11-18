@@ -95,10 +95,9 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     public async Task DeleteAsync(int id, MediaKind kind = MediaKind.Anime, CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var existing = await context.UserAnime.FirstOrDefaultAsync(x => x.Id == id && x.MediaKind == kind, ct);
-        if (existing is null) return;
-        context.UserAnime.Remove(existing);
-        await context.SaveChangesAsync(ct);
+        await context.UserAnime
+            .Where(x => x.Id == id && x.MediaKind == kind)
+            .ExecuteDeleteAsync(ct);
     }
 
     public async Task<List<string>> GetActiveLocalImagePathsAsync(CancellationToken ct = default)

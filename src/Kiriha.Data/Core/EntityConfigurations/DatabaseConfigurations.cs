@@ -32,7 +32,8 @@ public class AnimeEntityConfiguration : IEntityTypeConfiguration<AnimeEntity>
 
         builder.Property(e => e.MediaKind)
               .HasConversion<string>()
-              .HasDefaultValue(MediaKind.Anime);
+              .HasDefaultValue(MediaKind.Anime)
+              .ValueGeneratedNever();
 
         builder.Property(e => e.Status)
               .HasConversion(
@@ -169,7 +170,8 @@ public class ShikiMetadataConfiguration : IEntityTypeConfiguration<ShikiMetadata
         builder.Property(e => e.Id).ValueGeneratedNever();
         builder.Property(e => e.MediaKind)
                .HasConversion<string>()
-               .HasDefaultValue(MediaKind.Anime);
+               .HasDefaultValue(MediaKind.Anime)
+               .ValueGeneratedNever();
     }
 }
 
