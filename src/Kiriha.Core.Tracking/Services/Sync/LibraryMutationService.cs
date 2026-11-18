@@ -170,6 +170,10 @@ public sealed class LibraryMutationService : ILibraryMutationService
         if (isManga || nextStatus.HasValue)
             await _syncManager.EnqueueFullUpdateAsync(item);
         else
-            await _syncManager.EnqueueUpdateAsync(item.Id, item.MediaKind, nextProgress, nextStatus);
+            await _syncManager.EnqueueUpdateAsync(
+                item.Id,
+                item.MediaKind,
+                nextProgress,
+                nextStatus ?? (item.Status != UserAnimeStatus.None ? item.Status : null));
     }
 }

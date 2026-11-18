@@ -98,6 +98,24 @@ public sealed class ResilientHttpHandlerTests
         Assert.Equal(1, inner.Attempts);
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.RequestTimeout)]
+    [InlineData((HttpStatusCode)520)]
+    [InlineData((HttpStatusCode)522)]
+    public async Task SendAsync_RetriesTransientCloudflareAndTimeoutResponses(HttpStatusCode statusCode)
+    {
+        var inner = new QueueHandler(
+            new HttpResponseMessage(statusCode),
+            new HttpResponseMessage(HttpStatusCode.OK));
+        using var client = new HttpClient(new ResilientHttpHandler(inner));
+
+        using var response = await client.GetAsync("https://example.test/resource");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, inner.Attempts);
+    }
+
     [Fact]
     public async Task SendAsync_ConvertsFinalTimeoutToHttpRequestException()
     {

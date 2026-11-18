@@ -22,7 +22,7 @@ public abstract class OAuthTokens
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public bool IsExpired => DateTime.UtcNow >= CreatedAt.AddSeconds(ExpiresIn - 60);
+    public bool IsExpired => ExpiresIn > 0 && DateTime.UtcNow >= CreatedAt.AddSeconds(ExpiresIn - 60);
 
     public virtual void Encrypt(Func<string?, string> protect)
     {

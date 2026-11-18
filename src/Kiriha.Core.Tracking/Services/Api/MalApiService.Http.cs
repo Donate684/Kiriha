@@ -29,6 +29,12 @@ public partial class MalApiService
     private async Task<System.Net.HttpStatusCode?> SendRequestRawAsync(Func<HttpRequestMessage> requestFactory, CancellationToken ct)
     {
         var token = await EnsureValidTokenAsync(ct);
+        if (string.IsNullOrEmpty(token))
+        {
+            Log.Warning("MalApiService: no valid token available, aborting request");
+            return System.Net.HttpStatusCode.Unauthorized;
+        }
+
         var statusCode = await SendOnceAsync(requestFactory, token, ct);
         if (statusCode is null) return null;
 
@@ -68,6 +74,13 @@ public partial class MalApiService
         {
             await ThrottleAsync(ct);
             using var response = await _httpClient.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(ct);
+                Log.Warning("MalApiService: {Method} {Uri} failed with HTTP {StatusCode}: {Body}",
+                    request.Method, request.RequestUri, (int)response.StatusCode,
+                    errorBody.Length > 500 ? errorBody[..500] : errorBody);
+            }
             return response.StatusCode;
         }
         catch (OperationCanceledException) { throw; }
@@ -83,18 +96,30 @@ public partial class MalApiService
         }
     }
 
-    private static SyncOutcome MapStatusToOutcome(System.Net.HttpStatusCode status)
+    private SyncOutcome MapStatusToOutcome(System.Net.HttpStatusCode status)
     {
         if ((int)status >= 200 && (int)status < 300) return SyncOutcome.Success;
-        // 5xx + 408 + 429 are explicitly retriable. Note: ResilientHttpHandler already
-        // burned through its retries for 5xx/429, so seeing one here means the server
-        // is *still* misbehaving — still classify as Transient so SyncManager backs off
+        // 5xx + 408 + 429 + 403 (Cloudflare WAF / rate limit disguise) are explicitly retriable.
+        // Note: ResilientHttpHandler already burned through its retries for 5xx/429/403, so seeing one
+        // here means the server is *still* misbehaving — still classify as Transient so SyncManager backs off
         // on a longer timescale (minutes) than the handler's seconds-scale retries.
-        if ((int)status >= 500 || status == System.Net.HttpStatusCode.RequestTimeout || status == System.Net.HttpStatusCode.TooManyRequests)
+        if ((int)status >= 500
+            || status == System.Net.HttpStatusCode.RequestTimeout
+            || status == System.Net.HttpStatusCode.TooManyRequests
+            || status == System.Net.HttpStatusCode.Forbidden)
         {
             Log.Warning("MalApiService: transient HTTP {Status}", (int)status);
             return SyncOutcome.TransientFailure;
         }
+
+        // If 401 occurs but we still have credentials configured in settings,
+        // token refresh might have suffered a transient network error. Allow SyncManager to retry.
+        if (status == System.Net.HttpStatusCode.Unauthorized && IsEnabled)
+        {
+            Log.Warning("MalApiService: 401 Unauthorized with active credentials; treating as transient failure");
+            return SyncOutcome.TransientFailure;
+        }
+
         Log.Warning("MalApiService: permanent HTTP {Status}", (int)status);
         return SyncOutcome.PermanentFailure;
     }

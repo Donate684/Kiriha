@@ -47,6 +47,7 @@ public class MalTokenManager : IDisposable
             }
 
             _refreshFailures++;
+            Log.Warning("MalTokenManager: refresh attempt failed ({Count}/{Max})", _refreshFailures, MaxRefreshFailures);
             if (_refreshFailures >= MaxRefreshFailures)
             {
                 Log.Warning("MalTokenManager: clearing saved tokens after {Count} consecutive refresh failures. User must re-authenticate.", _refreshFailures);

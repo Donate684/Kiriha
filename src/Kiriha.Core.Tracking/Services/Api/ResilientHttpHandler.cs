@@ -98,11 +98,10 @@ public class ResilientHttpHandler : DelegatingHandler
     }
 
     private static bool IsTransient(HttpStatusCode statusCode) =>
-        statusCode is HttpStatusCode.TooManyRequests
-            or HttpStatusCode.InternalServerError
-            or HttpStatusCode.BadGateway
-            or HttpStatusCode.ServiceUnavailable
-            or HttpStatusCode.GatewayTimeout;
+        (int)statusCode is >= 500 and < 600
+        || statusCode is HttpStatusCode.TooManyRequests
+            or HttpStatusCode.RequestTimeout
+            or HttpStatusCode.Forbidden;
 
     private static TimeSpan? GetRetryAfter(HttpResponseMessage response)
     {

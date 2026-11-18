@@ -181,7 +181,12 @@ public class AnimeProgressService : IProgressUpdateService
         if (isManga)
             await _syncManager.EnqueueFullUpdateAsync(item);
         else
-            await _syncManager.EnqueueUpdateAsync(item.Id, item.MediaKind, item.Progress, score: score);
+            await _syncManager.EnqueueUpdateAsync(
+                item.Id,
+                item.MediaKind,
+                item.Progress,
+                item.Status != UserAnimeStatus.None ? item.Status : null,
+                score: score);
     }
 
     public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)
