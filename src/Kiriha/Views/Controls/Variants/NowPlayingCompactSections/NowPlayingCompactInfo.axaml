@@ -49,8 +49,8 @@
                                        Classes="Value" TextWrapping="Wrap"/>
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"/>
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding MatchedAnime.Presentation.IsManga}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding MatchedAnime.Studios, Converter={StaticResource LocConverter}}"
-                                       Classes="Value" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding MatchedAnime.Presentation.StudiosDisplay}"
+                                       Classes="Value" TextWrapping="Wrap" IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"/>
                         </Grid>
 
                         <!-- Synopsis -->

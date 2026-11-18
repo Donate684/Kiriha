@@ -181,7 +181,18 @@ public partial class AnimeEntity : DomainObservableObject
             }
         }
     }
-    public List<string> Studios { get; set; } = new();
+    private List<string> _studios = new();
+    public List<string> Studios
+    {
+        get => _studios;
+        set
+        {
+            if (SetProperty(ref _studios, value))
+            {
+                OnPropertyChanged("Presentation");
+            }
+        }
+    }
     private string? _statusDetailed;
     public string? StatusDetailed { get => _statusDetailed; set { if (SetProperty(ref _statusDetailed, value)) OnPropertyChanged("Presentation"); } }
     private string? _meanScore;

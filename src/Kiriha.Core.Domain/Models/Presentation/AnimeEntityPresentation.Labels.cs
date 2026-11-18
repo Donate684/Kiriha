@@ -159,14 +159,37 @@ public partial class AnimeEntityPresentation
     {
         get
         {
-            return _item.StatusDetailed?.ToLowerInvariant() switch
+            var raw = _item.StatusDetailed?.Trim().ToLowerInvariant().Replace(" ", "_");
+            if (string.IsNullOrWhiteSpace(raw)) return GetLoc("anime.status.unknown");
+
+            return raw switch
             {
-                AppConstants.AiringStatus.CurrentlyAiring or AppConstants.AiringStatus.CurrentlyAiringSpaced => GetLoc("anime.status.currently_airing"),
-                AppConstants.AiringStatus.FinishedAiring or AppConstants.AiringStatus.FinishedAiringSpaced => GetLoc("anime.status.finished_airing"),
-                AppConstants.AiringStatus.NotYetAired or AppConstants.AiringStatus.NotYetAiredSpaced or AppConstants.AiringStatus.Anons => GetLoc("anime.status.not_yet_aired"),
-                _ => _item.StatusDetailed != null ? GetLoc("anime.status." + _item.StatusDetailed.ToLowerInvariant().Replace(" ", "_")) : GetLoc("anime.status.unknown")
+                AppConstants.AiringStatus.CurrentlyAiring or "ongoing" or "releasing"
+                    => GetLoc(IsManga ? "anime.status.currently_publishing" : "anime.status.currently_airing"),
+                "currently_publishing"
+                    => GetLoc("anime.status.currently_publishing"),
+                AppConstants.AiringStatus.FinishedAiring or "released"
+                    => GetLoc(IsManga ? "anime.status.finished" : "anime.status.finished_airing"),
+                "finished"
+                    => GetLoc(IsAnime ? "anime.status.finished_airing" : "anime.status.finished"),
+                AppConstants.AiringStatus.NotYetAired or AppConstants.AiringStatus.Anons or "not_yet_released"
+                    => GetLoc(IsManga ? "anime.status.not_yet_published" : "anime.status.not_yet_aired"),
+                "not_yet_published"
+                    => GetLoc("anime.status.not_yet_published"),
+                "on_hiatus" or "hiatus" or "paused"
+                    => GetLoc("anime.status.on_hiatus"),
+                "discontinued" or "cancelled"
+                    => GetLoc("anime.status.discontinued"),
+                _ => ResolveFallbackStatus(raw)
             };
         }
+    }
+
+    private string ResolveFallbackStatus(string raw)
+    {
+        var locKey = "anime.status." + raw;
+        var loc = GetLoc(locKey);
+        return loc == locKey ? raw : loc;
     }
 
     public bool ShowAiredInfo => IsAnime && !AppConstants.AiringStatus.IsFinishedAiring(_item.StatusDetailed);
@@ -176,4 +199,6 @@ public partial class AnimeEntityPresentation
     public IEnumerable<string> TopGenres => _item.Genres?.Take(2) ?? [];
 
     public bool HasStudios => _item.Studios != null && _item.Studios.Count > 0;
+
+    public string StudiosDisplay => HasStudios ? string.Join(", ", _item.Studios) : "-";
 }

@@ -91,6 +91,8 @@ public sealed partial class UserAnimeRepository
         using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var alternativeTitles = new List<string>(item.AlternativeTitles);
+        var genres = new List<string>(item.Genres);
+        var studios = new List<string>(item.Studios);
         var affected = await context.UserAnime
             .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
             .ExecuteUpdateAsync(setters => setters
@@ -102,6 +104,8 @@ public sealed partial class UserAnimeRepository
                 .SetProperty(x => x.MainPictureUrl, item.MainPictureUrl)
                 .SetProperty(x => x.LocalPosterPath, item.LocalPosterPath)
                 .SetProperty(x => x.TotalEpisodes, item.TotalEpisodes)
+                .SetProperty(x => x.Genres, genres)
+                .SetProperty(x => x.Studios, studios)
                 .SetProperty(x => x.AlternativeTitles, alternativeTitles), ct);
 
         if (affected == 0)

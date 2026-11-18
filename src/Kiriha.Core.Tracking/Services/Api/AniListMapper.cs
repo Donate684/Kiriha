@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Api;
@@ -94,6 +95,16 @@ public static class AniListMapper
             }
         }
 
+        string? statusDetailed = status?.ToUpperInvariant() switch
+        {
+            "RELEASING" => format is "MANGA" or "ONE_SHOT" or "NOVEL" ? "currently_publishing" : AppConstants.AiringStatus.CurrentlyAiring,
+            "NOT_YET_RELEASED" => format is "MANGA" or "ONE_SHOT" or "NOVEL" ? "not_yet_published" : AppConstants.AiringStatus.NotYetAired,
+            "FINISHED" => format is "MANGA" or "ONE_SHOT" or "NOVEL" ? "finished" : AppConstants.AiringStatus.FinishedAiring,
+            "CANCELLED" => "discontinued",
+            "HIATUS" => "on_hiatus",
+            _ => status?.ToLowerInvariant()
+        };
+
         var item = new AnimeEntity
         {
             Id = primaryId,
@@ -108,7 +119,7 @@ public static class AniListMapper
             MeanScore = meanScore,
             Popularity = popularity,
             AiringDate = startDate,
-            StatusDetailed = status,
+            StatusDetailed = statusDetailed,
             Type = format
         };
 
@@ -161,6 +172,28 @@ public static class AniListMapper
                 if (!string.IsNullOrEmpty(val)) genres.Add(val);
             }
             item.Genres = genres;
+        }
+
+        if (media.TryGetProperty("studios", out var studiosProp) && studiosProp.ValueKind == JsonValueKind.Object)
+        {
+            if (studiosProp.TryGetProperty("nodes", out var nodesProp) && nodesProp.ValueKind == JsonValueKind.Array)
+            {
+                var studios = new List<string>();
+                var allStudios = new List<string>();
+                foreach (var node in nodesProp.EnumerateArray())
+                {
+                    var name = node.TryGetProperty("name", out var n) && n.ValueKind == JsonValueKind.String ? n.GetString() : null;
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+
+                    var isAnimation = node.TryGetProperty("isAnimationStudio", out var isAnim) && isAnim.ValueKind == JsonValueKind.True;
+                    if (isAnimation)
+                    {
+                        studios.Add(name);
+                    }
+                    allStudios.Add(name);
+                }
+                item.Studios = studios.Count > 0 ? studios : allStudios;
+            }
         }
 
         return item;

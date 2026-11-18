@@ -34,6 +34,14 @@ public class ShikiMetadata
     [Column("poster_url")]
     public string? PosterUrl { get; set; }
 
+    [NotMapped]
+    [JsonIgnore]
+    public List<string>? Studios { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public List<string>? Genres { get; set; }
+
     /// <summary>
     /// UTC timestamp of the last successful upsert. EF-only column —
     /// not part of the Shikimori response, so <see cref="JsonIgnoreAttribute"/>

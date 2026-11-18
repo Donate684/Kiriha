@@ -157,6 +157,18 @@ public partial class ShikiMetadataService
             changed = true;
         }
 
+        if (meta.Studios != null && meta.Studios.Count > 0 && item.Studios.Count == 0)
+        {
+            item.Studios.AddRange(meta.Studios);
+            changed = true;
+        }
+
+        if (meta.Genres != null && meta.Genres.Count > 0 && item.Genres.Count == 0)
+        {
+            item.Genres.AddRange(meta.Genres);
+            changed = true;
+        }
+
         // EpisodesAired and NextEpisodeAt are intentionally NOT applied from Shikimori.
         // Shiki's `episodes_aired` is known to lead `next_episode_at` by one (e.g. claims
         // 5 aired while next_episode_at still points at episode 5 in the future), which

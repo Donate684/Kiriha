@@ -56,6 +56,12 @@ public partial class AniListApiService
                   genres
                   synonyms
                   countryOfOrigin
+                  studios {
+                    nodes {
+                      name
+                      isAnimationStudio
+                    }
+                  }
                 }
               }
             }
@@ -320,6 +326,12 @@ public partial class AniListApiService
                   genres
                   synonyms
                   countryOfOrigin
+                  studios {
+                    nodes {
+                      name
+                      isAnimationStudio
+                    }
+                  }
                 }
               }
             }

@@ -174,6 +174,28 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
                                 : $"{websiteRoot}{(candidate.StartsWith('/') ? candidate : "/" + candidate)}";
                         }
                     }
+
+                    if (doc.RootElement.TryGetProperty("studios", out var studiosNode) && studiosNode.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        var studios = new List<string>();
+                        foreach (var s in studiosNode.EnumerateArray())
+                        {
+                            var sName = s.TryGetProperty("name", out var sn) && sn.ValueKind == System.Text.Json.JsonValueKind.String ? sn.GetString() : null;
+                            if (!string.IsNullOrWhiteSpace(sName)) studios.Add(sName);
+                        }
+                        if (studios.Count > 0) metadata.Studios = studios;
+                    }
+
+                    if (doc.RootElement.TryGetProperty("genres", out var genresNode) && genresNode.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        var genres = new List<string>();
+                        foreach (var g in genresNode.EnumerateArray())
+                        {
+                            var gName = g.TryGetProperty("name", out var gn) && gn.ValueKind == System.Text.Json.JsonValueKind.String ? gn.GetString() : null;
+                            if (!string.IsNullOrWhiteSpace(gName)) genres.Add(gName);
+                        }
+                        if (genres.Count > 0) metadata.Genres = genres;
+                    }
                 }
                 catch (Exception ex)
                 {

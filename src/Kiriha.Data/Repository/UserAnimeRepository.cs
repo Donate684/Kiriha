@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Repositories;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Data.Core;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,23 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
                 if (!string.IsNullOrWhiteSpace(romaji) && !string.Equals(entity.Title, romaji, StringComparison.OrdinalIgnoreCase))
                 {
                     entity.Title = romaji;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(entity.StatusDetailed))
+            {
+                var s = entity.StatusDetailed.Trim().ToUpperInvariant();
+                if (s is "RELEASING" or "NOT_YET_RELEASED" or "FINISHED" or "CANCELLED" or "HIATUS")
+                {
+                    entity.StatusDetailed = s switch
+                    {
+                        "RELEASING" => entity.MediaKind == MediaKind.Anime ? AppConstants.AiringStatus.CurrentlyAiring : "currently_publishing",
+                        "NOT_YET_RELEASED" => entity.MediaKind == MediaKind.Anime ? AppConstants.AiringStatus.NotYetAired : "not_yet_published",
+                        "FINISHED" => entity.MediaKind == MediaKind.Anime ? AppConstants.AiringStatus.FinishedAiring : "finished",
+                        "CANCELLED" => "discontinued",
+                        "HIATUS" => "on_hiatus",
+                        _ => entity.StatusDetailed
+                    };
                 }
             }
         }

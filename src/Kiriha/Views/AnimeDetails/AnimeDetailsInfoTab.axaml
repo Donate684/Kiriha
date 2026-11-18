@@ -58,7 +58,7 @@
                                     <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Anime.Genres, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsAnime}"/>
                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding Anime.Presentation.IsManga}"/>
-                                    <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Anime.Studios, Converter={StaticResource LocConverter}}" TextWrapping="Wrap"/>
+                                    <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Anime.Presentation.StudiosDisplay}" TextWrapping="Wrap"/>
                                     <TextBlock Grid.Row="7" Grid.Column="0" Text="{DynamicResource l.anime.labels.score}" Classes="Label"/>
                                     <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Anime.MeanScore}"/>
                                 </Grid>

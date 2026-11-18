@@ -266,7 +266,7 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         Anime.RefreshMetadata();
         Metadata.NotifyMetadataChanged();
 
-        if (Anime.Genres.Count == 0 || string.IsNullOrEmpty(Anime.Synopsis))
+        if (Anime.Genres.Count == 0 || string.IsNullOrEmpty(Anime.Synopsis) || (Anime.Presentation.IsAnime && Anime.Studios.Count == 0))
         {
             IsLoading = true;
             try
@@ -275,6 +275,10 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
                 if (loadedFull != null && !ReferenceEquals(_originalAnime, Anime))
                 {
                     _originalAnime.MergeFullDetails(loadedFull);
+                    if (_originalAnime.Status != UserAnimeStatus.None)
+                    {
+                        await _animeRepo.AddOrUpdateAnimeAsync(_originalAnime);
+                    }
                     Editor.RefreshBaselineState();
                 }
             }

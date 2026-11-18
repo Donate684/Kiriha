@@ -394,4 +394,77 @@ public sealed class AnimeEntityTests
         Assert.Equal("О моём перерождении в меч 2", entity.RussianTitle);
         Assert.Equal("転生したら剣でした 第2期", entity.JapaneseTitle);
     }
+
+    [Theory]
+    [InlineData("RELEASING", "anime.status.currently_airing")]
+    [InlineData("releasing", "anime.status.currently_airing")]
+    [InlineData("currently_airing", "anime.status.currently_airing")]
+    [InlineData("ongoing", "anime.status.currently_airing")]
+    [InlineData("FINISHED", "anime.status.finished_airing")]
+    [InlineData("finished", "anime.status.finished_airing")]
+    [InlineData("released", "anime.status.finished_airing")]
+    [InlineData("NOT_YET_RELEASED", "anime.status.not_yet_aired")]
+    [InlineData("not_yet_released", "anime.status.not_yet_aired")]
+    [InlineData("anons", "anime.status.not_yet_aired")]
+    [InlineData("HIATUS", "anime.status.on_hiatus")]
+    [InlineData("CANCELLED", "anime.status.discontinued")]
+    public void DisplayAiringStatus_MapsVariousStatusesCorrectly(string rawStatus, string expectedLocalizationKey)
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Test Anime",
+            StatusDetailed = rawStatus
+        };
+
+        Assert.Equal(expectedLocalizationKey, item.Presentation.DisplayAiringStatus);
+        Assert.Equal(expectedLocalizationKey, item.DisplayAiringStatus);
+    }
+
+    [Fact]
+    public void StudiosDisplay_ShowsCommaSeparatedStudios_OrDashWhenEmpty()
+    {
+        var emptyItem = new AnimeEntity { Title = "No Studios" };
+        Assert.Equal("-", emptyItem.Presentation.StudiosDisplay);
+        Assert.Equal("-", emptyItem.StudiosDisplay);
+        Assert.False(emptyItem.Presentation.HasStudios);
+
+        var singleItem = new AnimeEntity { Title = "C2C Anime", Studios = ["C2C"] };
+        Assert.Equal("C2C", singleItem.Presentation.StudiosDisplay);
+        Assert.Equal("C2C", singleItem.StudiosDisplay);
+        Assert.True(singleItem.Presentation.HasStudios);
+
+        var multiItem = new AnimeEntity { Title = "Collab Anime", Studios = ["C2C", "Studio Bind"] };
+        Assert.Equal("C2C, Studio Bind", multiItem.Presentation.StudiosDisplay);
+        Assert.Equal("C2C, Studio Bind", multiItem.StudiosDisplay);
+    }
+
+    [Fact]
+    public void AniListMapper_MapsStudios_AndNormalizesDetailedStatus()
+    {
+        using var aniDoc = System.Text.Json.JsonDocument.Parse("""
+        {
+            "id": 154587,
+            "idMal": 53913,
+            "status": "RELEASING",
+            "format": "TV",
+            "title": {
+                "romaji": "Tensei shitara Ken Deshita 2",
+                "english": "Reincarnated as a Sword Season 2"
+            },
+            "studios": {
+                "nodes": [
+                    { "name": "C2C", "isAnimationStudio": true },
+                    { "name": "Bandai Namco Music Live", "isAnimationStudio": false }
+                ]
+            }
+        }
+        """);
+
+        var entity = Kiriha.Core.Tracking.Api.AniListMapper.MapMediaToAnimeEntity(aniDoc.RootElement);
+
+        Assert.Equal("currently_airing", entity.StatusDetailed);
+        Assert.Single(entity.Studios);
+        Assert.Equal("C2C", entity.Studios[0]);
+        Assert.Equal("C2C", entity.StudiosDisplay);
+    }
 }

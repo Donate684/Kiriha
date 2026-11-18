@@ -103,9 +103,12 @@ public static class AppConstants
         public static bool IsNotYetAired(string? statusDetailed)
         {
             if (string.IsNullOrWhiteSpace(statusDetailed)) return false;
-            return statusDetailed.Equals(NotYetAired, StringComparison.OrdinalIgnoreCase)
-                || statusDetailed.Equals(NotYetAiredSpaced, StringComparison.OrdinalIgnoreCase)
-                || statusDetailed.Equals(Anons, StringComparison.OrdinalIgnoreCase);
+            var s = statusDetailed.Trim();
+            return s.Equals(NotYetAired, StringComparison.OrdinalIgnoreCase)
+                || s.Equals(NotYetAiredSpaced, StringComparison.OrdinalIgnoreCase)
+                || s.Equals(Anons, StringComparison.OrdinalIgnoreCase)
+                || s.Equals("not_yet_released", StringComparison.OrdinalIgnoreCase)
+                || s.Equals("not yet released", StringComparison.OrdinalIgnoreCase);
         }
     }
 
