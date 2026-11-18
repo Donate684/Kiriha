@@ -55,15 +55,15 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- Main title -->
-                            <TextBlock Text="{Binding MatchedAnime.Presentation.DisplayTitle}" FontSize="24" FontWeight="Bold"
+                            <!-- Main title (Japanese / Romaji like in cards and details) -->
+                            <TextBlock Text="{Binding MatchedAnime.Title}" FontSize="24" FontWeight="Bold"
                                        Foreground="White" TextWrapping="Wrap" LineHeight="30"
                                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                             <TextBlock Text="{Binding CurrentMedia.AnimeTitle}" FontSize="22" FontWeight="Bold"
                                        Foreground="White" TextWrapping="Wrap" LineHeight="28"
                                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNull}}"/>
 
-                            <!-- Secondary title (optional) -->
+                            <!-- Secondary title (Russian) -->
                             <TextBlock Text="{Binding MatchedAnime.Presentation.SecondaryTitle}" FontSize="13" Foreground="#90FFFFFF"
                                        TextWrapping="Wrap"
                                        IsVisible="{Binding MatchedAnime.Presentation.HasSecondaryTitle}"/>

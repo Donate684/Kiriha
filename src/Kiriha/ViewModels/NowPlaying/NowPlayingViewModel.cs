@@ -40,6 +40,10 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     [NotifyPropertyChangedFor(nameof(AllAlternativeTitles))]
     [NotifyPropertyChangedFor(nameof(HasAlternativeTitles))]
     [NotifyPropertyChangedFor(nameof(DisplayEpisodeNumber))]
+    [NotifyPropertyChangedFor(nameof(JapaneseTitle))]
+    [NotifyPropertyChangedFor(nameof(HasJapaneseTitle))]
+    [NotifyPropertyChangedFor(nameof(SecondaryTitle))]
+    [NotifyPropertyChangedFor(nameof(HasSecondaryTitle))]
     private AnimeEntity? _matchedAnime;
     
     [ObservableProperty] private AnimeEntity? _pendingMatch;
@@ -51,6 +55,11 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     [ObservableProperty] private bool _isLoadingDetails;
 
     public bool IsNotInList => MatchedAnime != null && MatchedAnime.Status == UserAnimeStatus.None;
+
+    public string? JapaneseTitle => MatchedAnime?.Presentation.JapaneseTitle;
+    public bool HasJapaneseTitle => MatchedAnime?.Presentation.HasJapaneseTitle ?? false;
+    public string? SecondaryTitle => MatchedAnime?.Presentation.SecondaryTitle;
+    public bool HasSecondaryTitle => MatchedAnime?.Presentation.HasSecondaryTitle ?? false;
 
     public string DisplayEpisodeNumber =>
         !string.IsNullOrWhiteSpace(CurrentMedia?.Episode)

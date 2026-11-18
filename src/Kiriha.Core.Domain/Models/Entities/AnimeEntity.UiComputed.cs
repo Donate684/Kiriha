@@ -25,6 +25,14 @@ public partial class AnimeEntity
     [JsonIgnore]
     public bool HasSecondaryTitle => Presentation.HasSecondaryTitle;
 
+    [NotMapped]
+    [JsonIgnore]
+    public string? JapaneseDisplayTitle => Presentation.JapaneseTitle;
+
+    [NotMapped]
+    [JsonIgnore]
+    public bool HasJapaneseTitle => Presentation.HasJapaneseTitle;
+
     public AnimeEntity()
     {
     }

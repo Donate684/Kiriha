@@ -225,4 +225,92 @@ public sealed class AnimeEntityTests
         Assert.Equal(5, originalPresentation.EffectiveProgress);
         Assert.Equal(10, clone.Presentation.EffectiveProgress);
     }
+
+    [Fact]
+    public void JapaneseTitle_PrefersNativeJapanese_WhenRussianTitleIsDisplayTitle()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Baby Princess 3D Paradise 0 [Love]",
+            RussianTitle = "Юные принцессы: Райское влечение",
+            JapaneseTitle = "Baby Princess 3D ぱらだいす0［ラブ］"
+        };
+
+        Assert.Equal("Юные принцессы: Райское влечение", item.Presentation.DisplayTitle);
+        Assert.Equal("Baby Princess 3D ぱらだいす0［ラブ］", item.Presentation.JapaneseTitle);
+        Assert.True(item.Presentation.HasJapaneseTitle);
+        Assert.Equal("Baby Princess 3D ぱらだいす0［ラブ］", item.JapaneseDisplayTitle);
+        Assert.True(item.HasJapaneseTitle);
+    }
+
+    [Fact]
+    public void JapaneseTitle_FallsBackToRomajiTitle_WhenNativeJapaneseIsMissing()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Baby Princess 3D Paradise 0 [Love]",
+            RussianTitle = "Юные принцессы: Райское влечение",
+            JapaneseTitle = null
+        };
+
+        Assert.Equal("Юные принцессы: Райское влечение", item.Presentation.DisplayTitle);
+        Assert.Equal("Baby Princess 3D Paradise 0 [Love]", item.Presentation.JapaneseTitle);
+        Assert.True(item.Presentation.HasJapaneseTitle);
+    }
+
+    [Fact]
+    public void JapaneseTitle_ReturnsNull_WhenJapaneseMatchesDisplayTitle()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Sousou no Frieren",
+            RussianTitle = null,
+            JapaneseTitle = "Sousou no Frieren"
+        };
+
+        Assert.Equal("Sousou no Frieren", item.Presentation.DisplayTitle);
+        Assert.Null(item.Presentation.JapaneseTitle);
+        Assert.False(item.Presentation.HasJapaneseTitle);
+    }
+
+    [Fact]
+    public void JapaneseTitle_ReturnsNativeJapanese_WhenRomajiIsDisplayTitle()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Sousou no Frieren",
+            RussianTitle = null,
+            JapaneseTitle = "葬送のフリーレン"
+        };
+
+        Assert.Equal("Sousou no Frieren", item.Presentation.DisplayTitle);
+        Assert.Equal("葬送のフリーレン", item.Presentation.JapaneseTitle);
+        Assert.True(item.Presentation.HasJapaneseTitle);
+    }
+
+    [Fact]
+    public void TitleAndSecondaryTitle_MatchCardAndHeaderSymmetry()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Baby Princess 3D Paradise 0 [Love]",
+            RussianTitle = "Юные принцессы: Райское влечение",
+            JapaneseTitle = "Baby Princess 3D ぱらだいす0［ラブ］"
+        };
+
+        AnimeEntityPresentation.GetUseRussianTitles = () => true;
+        try
+        {
+            // Top line across cards, details hero, and now playing header
+            Assert.Equal("Baby Princess 3D Paradise 0 [Love]", item.Title);
+
+            // Bottom line across cards, details hero, and now playing header
+            Assert.Equal("Юные принцессы: Райское влечение", item.Presentation.SecondaryTitle);
+            Assert.True(item.Presentation.HasSecondaryTitle);
+        }
+        finally
+        {
+            AnimeEntityPresentation.GetUseRussianTitles = () => false;
+        }
+    }
 }

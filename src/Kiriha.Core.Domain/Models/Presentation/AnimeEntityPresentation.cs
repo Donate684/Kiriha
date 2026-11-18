@@ -117,10 +117,15 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     private bool _secondaryTitleComputed;
     private bool _cachedUseRussianTitles;
 
+    private string? _cachedJapaneseTitle;
+    private bool _japaneseTitleComputed;
+    private bool _cachedPreferRussianDisplayTitle;
+
     public void RaiseAll()
     {
         _now = EffectiveClock.GetUtcNow().UtcDateTime;
         _secondaryTitleComputed = false;
+        _japaneseTitleComputed = false;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
 
@@ -189,6 +194,59 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     }
 
     public bool HasSecondaryTitle => !string.IsNullOrWhiteSpace(SecondaryTitle);
+
+    public string? JapaneseTitle
+    {
+        get
+        {
+            bool preferRussian = EffectivePreferRussianDisplayTitle;
+            if (_japaneseTitleComputed && _cachedPreferRussianDisplayTitle == preferRussian)
+            {
+                return _cachedJapaneseTitle;
+            }
+
+            _cachedJapaneseTitle = ComputeJapaneseTitle();
+            _cachedPreferRussianDisplayTitle = preferRussian;
+            _japaneseTitleComputed = true;
+            return _cachedJapaneseTitle;
+        }
+    }
+
+    private string? ComputeJapaneseTitle()
+    {
+        var top = DisplayTitle;
+
+        if (!string.IsNullOrWhiteSpace(_item.JapaneseTitle))
+        {
+            var ja = _item.JapaneseTitle.Trim();
+            if (!string.Equals(ja, top, StringComparison.OrdinalIgnoreCase))
+            {
+                return ja;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(_item.Title))
+        {
+            var title = _item.Title.Trim();
+            if (!string.Equals(title, top, StringComparison.OrdinalIgnoreCase))
+            {
+                return title;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(_item.EnglishTitle))
+        {
+            var en = _item.EnglishTitle.Trim();
+            if (!string.Equals(en, top, StringComparison.OrdinalIgnoreCase))
+            {
+                return en;
+            }
+        }
+
+        return null;
+    }
+
+    public bool HasJapaneseTitle => !string.IsNullOrWhiteSpace(JapaneseTitle);
 
     public string? DisplaySynopsis => EffectiveUseRussianDescriptions
         ? (!string.IsNullOrEmpty(_item.RussianSynopsis) ? _item.RussianSynopsis : _item.Synopsis)

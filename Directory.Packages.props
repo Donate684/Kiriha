@@ -33,8 +33,6 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0" />
     <!-- Microsoft.Extensions.* — keep versions in lockstep -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="11.0.0" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="Serilog" Version="4.4.0" />
