@@ -53,7 +53,7 @@
                     </Panel>
                 </Border>
                 <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center" Spacing="4">
-                    <SelectableTextBlock Text="{Binding Anime.Title}" FontSize="28" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34"/>
+                    <SelectableTextBlock Text="{Binding Anime.Presentation.RomajiTitle}" FontSize="28" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34"/>
                     <SelectableTextBlock Text="{Binding Anime.Presentation.SecondaryTitle}" FontSize="15" Foreground="#BFFFFFFF" TextWrapping="Wrap"
                                          IsVisible="{Binding Anime.Presentation.HasSecondaryTitle}"/>
                     <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">

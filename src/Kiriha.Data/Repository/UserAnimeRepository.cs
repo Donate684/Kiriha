@@ -19,6 +19,18 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entities = await context.UserAnime.AsNoTracking().ToListAsync(ct);
+        foreach (var entity in entities)
+        {
+            if (!string.IsNullOrWhiteSpace(entity.EnglishTitle) &&
+                string.Equals(entity.Title?.Trim(), entity.EnglishTitle.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                var romaji = entity.Presentation.RomajiTitle;
+                if (!string.IsNullOrWhiteSpace(romaji) && !string.Equals(entity.Title, romaji, StringComparison.OrdinalIgnoreCase))
+                {
+                    entity.Title = romaji;
+                }
+            }
+        }
         Log.Information("Loaded {Count} anime/manga items from database", entities.Count);
         return entities;
     }

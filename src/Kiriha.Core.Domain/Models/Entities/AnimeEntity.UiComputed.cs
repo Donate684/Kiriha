@@ -19,6 +19,10 @@ public partial class AnimeEntity
 
     [NotMapped]
     [JsonIgnore]
+    public string RomajiTitle => Presentation.RomajiTitle;
+
+    [NotMapped]
+    [JsonIgnore]
     public string? SecondaryTitle => Presentation.SecondaryTitle;
 
     [NotMapped]

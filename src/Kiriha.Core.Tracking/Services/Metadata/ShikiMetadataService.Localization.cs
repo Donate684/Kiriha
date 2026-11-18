@@ -119,6 +119,21 @@ public partial class ShikiMetadataService
     private bool ApplyMetadata(AnimeEntity item, ShikiMetadata meta)
     {
         bool changed = false;
+
+        if (!string.IsNullOrEmpty(meta.Name))
+        {
+            if (string.IsNullOrEmpty(item.Title) ||
+                item.Title.StartsWith("ID ") ||
+                (!string.IsNullOrEmpty(item.EnglishTitle) && string.Equals(item.Title.Trim(), item.EnglishTitle.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                if (item.Title != meta.Name)
+                {
+                    item.Title = meta.Name;
+                    changed = true;
+                }
+            }
+        }
+
         if (_settingsService.Current.UI.UseRussianTitles && !string.IsNullOrEmpty(meta.Russian))
         {
             if (item.RussianTitle != meta.Russian) { item.RussianTitle = meta.Russian; changed = true; }

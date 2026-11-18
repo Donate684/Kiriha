@@ -113,6 +113,9 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
 
     private string GetLoc(string key, params object?[] args) => EffectiveLocalizer.GetLoc(key, args);
 
+    private string? _cachedRomajiTitle;
+    private bool _romajiTitleComputed;
+
     private string? _cachedSecondaryTitle;
     private bool _secondaryTitleComputed;
     private bool _cachedUseRussianTitles;
@@ -124,6 +127,7 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     public void RaiseAll()
     {
         _now = EffectiveClock.GetUtcNow().UtcDateTime;
+        _romajiTitleComputed = false;
         _secondaryTitleComputed = false;
         _japaneseTitleComputed = false;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
@@ -247,6 +251,108 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
     }
 
     public bool HasJapaneseTitle => !string.IsNullOrWhiteSpace(JapaneseTitle);
+
+    public string RomajiTitle
+    {
+        get
+        {
+            if (_romajiTitleComputed && _cachedRomajiTitle != null)
+            {
+                return _cachedRomajiTitle;
+            }
+
+            _cachedRomajiTitle = ComputeRomajiTitle();
+            _romajiTitleComputed = true;
+            return _cachedRomajiTitle;
+        }
+    }
+
+    private string ComputeRomajiTitle()
+    {
+        // 1. If Title is already present and does NOT match EnglishTitle, it is already the Romaji title.
+        if (!string.IsNullOrWhiteSpace(_item.Title))
+        {
+            bool matchesEnglish = !string.IsNullOrWhiteSpace(_item.EnglishTitle) &&
+                string.Equals(_item.Title.Trim(), _item.EnglishTitle.Trim(), StringComparison.OrdinalIgnoreCase);
+
+            if (!matchesEnglish)
+            {
+                return _item.Title.Trim();
+            }
+        }
+
+        // 2. Title matches EnglishTitle (or is empty). Check AlternativeTitles for a Romaji title.
+        if (_item.AlternativeTitles is { Count: > 0 })
+        {
+            foreach (var alt in _item.AlternativeTitles)
+            {
+                if (string.IsNullOrWhiteSpace(alt)) continue;
+                var trimmed = alt.Trim();
+
+                if (!string.IsNullOrWhiteSpace(_item.EnglishTitle) &&
+                    string.Equals(trimmed, _item.EnglishTitle.Trim(), StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(_item.RussianTitle) &&
+                    string.Equals(trimmed, _item.RussianTitle.Trim(), StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(_item.JapaneseTitle) &&
+                    string.Equals(trimmed, _item.JapaneseTitle.Trim(), StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Candidate must have Latin letters and no Cyrillic or CJK characters
+                if (IsRomajiText(trimmed))
+                {
+                    // Heal _item.Title in-place if it was corrupted to English
+                    if (string.IsNullOrWhiteSpace(_item.Title) ||
+                        string.Equals(_item.Title.Trim(), _item.EnglishTitle?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        _item.Title = trimmed;
+                    }
+                    return trimmed;
+                }
+            }
+        }
+
+        // 3. Fallback to Title, then EnglishTitle, then RussianTitle
+        return !string.IsNullOrWhiteSpace(_item.Title)
+            ? _item.Title.Trim()
+            : (!string.IsNullOrWhiteSpace(_item.EnglishTitle) ? _item.EnglishTitle.Trim() : (_item.RussianTitle?.Trim() ?? string.Empty));
+    }
+
+    public static bool IsRomajiText(ReadOnlySpan<char> text)
+    {
+        if (text.IsEmpty) return false;
+
+        bool hasLatin = false;
+        foreach (char c in text)
+        {
+            // Reject Cyrillic
+            if (c is >= '\u0400' and <= '\u04FF' or >= '\u0500' and <= '\u052F')
+                return false;
+
+            // Reject CJK / Japanese kana / Hangul
+            if (c is >= '\u3040' and <= '\u309F' or // Hiragana
+                     >= '\u30A0' and <= '\u30FF' or // Katakana
+                     >= '\u4E00' and <= '\u9FFF' or // CJK Unified Ideographs
+                     >= '\u3400' and <= '\u4DBF' or // CJK Extension A
+                     >= '\uAC00' and <= '\uD7AF' or // Hangul Syllables
+                     >= '\u1100' and <= '\u11FF' or // Hangul Jamo
+                     >= '\u3130' and <= '\u318F')   // Hangul Compatibility Jamo
+            {
+                return false;
+            }
+
+            if (c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or
+                     >= '\u00C0' and <= '\u024F') // Latin-1 Supplement & Latin Extended (ō, ū, etc.)
+            {
+                hasLatin = true;
+            }
+        }
+
+        return hasLatin;
+    }
 
     public string? DisplaySynopsis => EffectiveUseRussianDescriptions
         ? (!string.IsNullOrEmpty(_item.RussianSynopsis) ? _item.RussianSynopsis : _item.Synopsis)

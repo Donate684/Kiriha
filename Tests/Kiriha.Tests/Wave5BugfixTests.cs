@@ -336,7 +336,7 @@ public class Wave5BugfixTests
         Assert.Contains("Anime.PosterSource", templatesXaml);
 
         var nowPlayingHeaderXaml = File.ReadAllText(Path.Combine(repoRoot, "src", "Kiriha", "Views", "Controls", "Variants", "NowPlayingCompactSections", "NowPlayingCompactHeader.axaml"));
-        Assert.Contains("MatchedAnime.Title", nowPlayingHeaderXaml);
+        Assert.True(nowPlayingHeaderXaml.Contains("MatchedAnime.Presentation.RomajiTitle") || nowPlayingHeaderXaml.Contains("MatchedAnime.Title"));
         Assert.Contains("MatchedAnime.PosterSource", nowPlayingHeaderXaml);
     }
 

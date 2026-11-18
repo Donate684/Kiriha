@@ -40,6 +40,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
     [NotifyPropertyChangedFor(nameof(AllAlternativeTitles))]
     [NotifyPropertyChangedFor(nameof(HasAlternativeTitles))]
     [NotifyPropertyChangedFor(nameof(DisplayEpisodeNumber))]
+    [NotifyPropertyChangedFor(nameof(RomajiTitle))]
     [NotifyPropertyChangedFor(nameof(JapaneseTitle))]
     [NotifyPropertyChangedFor(nameof(HasJapaneseTitle))]
     [NotifyPropertyChangedFor(nameof(SecondaryTitle))]
@@ -56,6 +57,7 @@ public partial class NowPlayingViewModel : ViewModelBase, IDisposable,
 
     public bool IsNotInList => MatchedAnime != null && MatchedAnime.Status == UserAnimeStatus.None;
 
+    public string? RomajiTitle => MatchedAnime?.Presentation.RomajiTitle;
     public string? JapaneseTitle => MatchedAnime?.Presentation.JapaneseTitle;
     public bool HasJapaneseTitle => MatchedAnime?.Presentation.HasJapaneseTitle ?? false;
     public string? SecondaryTitle => MatchedAnime?.Presentation.SecondaryTitle;

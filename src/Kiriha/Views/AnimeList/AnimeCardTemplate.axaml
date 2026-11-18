@@ -120,12 +120,12 @@
                 <!-- ══ Info panel ══ -->
                 <Grid Grid.Row="1" RowDefinitions="*,Auto,Auto" Margin="12,10,12,4">
 
-                    <!-- Title block: English + Russian, 2 lines each -->
+                    <!-- Title block: Romaji (Japanese) + Russian/English, 2 lines each -->
                     <StackPanel Grid.Row="0" Spacing="2" VerticalAlignment="Top">
-                        <TextBlock Text="{Binding Title}"
-                                   FontSize="13" FontWeight="Bold" MaxLines="2"
+                        <TextBlock Text="{Binding Presentation.RomajiTitle}"
+                                   FontSize="12" FontWeight="SemiBold" MaxLines="2"
                                    TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                                   LineHeight="16"
+                                   LineHeight="15"
                                    Foreground="{DynamicResource SystemBaseHighColor}"/>
                         <TextBlock Text="{Binding Presentation.SecondaryTitle}"
                                    FontSize="10" MaxLines="2"

@@ -205,9 +205,9 @@
                     <!-- ─── Right: Info ─── -->
                     <Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="11,10,10,10">
 
-                        <!-- Row 0: EN title + RU title -->
+                        <!-- Row 0: Romaji title + RU/EN title -->
                         <StackPanel Grid.Row="0" Spacing="3">
-                            <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold"
+                            <TextBlock Text="{Binding Presentation.RomajiTitle}" FontSize="12.5" FontWeight="SemiBold"
                                        MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                        LineHeight="16" Foreground="{DynamicResource SystemBaseHighColor}"/>
                             <TextBlock Text="{Binding Presentation.SecondaryTitle}" FontSize="10.5" FontWeight="Medium"

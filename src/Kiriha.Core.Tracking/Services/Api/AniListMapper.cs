@@ -29,7 +29,7 @@ public static class AniListMapper
             romaji = titleObj.TryGetProperty("romaji", out var ro) && ro.ValueKind == JsonValueKind.String ? ro.GetString() : null;
             native = titleObj.TryGetProperty("native", out var na) && na.ValueKind == JsonValueKind.String ? na.GetString() : null;
 
-            title = !string.IsNullOrEmpty(english) ? english : (!string.IsNullOrEmpty(romaji) ? romaji : native ?? string.Empty);
+            title = !string.IsNullOrEmpty(romaji) ? romaji : (!string.IsNullOrEmpty(english) ? english : native ?? string.Empty);
         }
 
         string? coverUrl = null;

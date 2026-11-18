@@ -91,7 +91,9 @@ public sealed class AniListTrackerServiceTests
         var entity = AniListMapper.MapMediaToAnimeEntity(doc.RootElement);
 
         Assert.Equal(16498, entity.Id);
-        Assert.Equal("Attack on Titan", entity.Title);
+        Assert.Equal("Shingeki no Kyojin", entity.Title);
+        Assert.Equal("Attack on Titan", entity.EnglishTitle);
+        Assert.Equal("Shingeki no Kyojin", entity.RomajiTitle);
         Assert.Equal(25, entity.TotalEpisodes);
         Assert.Equal(MediaKind.Anime, entity.MediaKind);
         Assert.Equal("8.40", entity.MeanScore);

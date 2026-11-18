@@ -65,6 +65,7 @@ public static class ShikiMapper
         }
 
         string title;
+        string? romajiTitle = null;
         string? russianTitle = null;
         string? englishTitle = null;
         string? japaneseTitle = null;
@@ -81,7 +82,7 @@ public static class ShikiMapper
 
         if (hasMedia)
         {
-            englishTitle = mediaNode.GetOptionalString("name");
+            romajiTitle = mediaNode.GetOptionalString("name");
             russianTitle = mediaNode.GetOptionalString("russian");
 
             if (mediaNode.TryGetProperty("japanese", out var jaProp))
@@ -108,9 +109,35 @@ public static class ShikiMapper
                 japaneseTitle = mediaNode.GetOptionalString("japanese_name") ?? mediaNode.GetOptionalString("japanese_title");
             }
 
-            title = !string.IsNullOrWhiteSpace(englishTitle)
-                ? englishTitle
-                : (!string.IsNullOrWhiteSpace(russianTitle) ? russianTitle : $"ID {primaryId}");
+            if (mediaNode.TryGetProperty("english", out var enProp))
+            {
+                if (enProp.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var el in enProp.EnumerateArray())
+                    {
+                        var s = el.GetString();
+                        if (!string.IsNullOrWhiteSpace(s))
+                        {
+                            englishTitle = s;
+                            break;
+                        }
+                    }
+                }
+                else if (enProp.ValueKind == JsonValueKind.String)
+                {
+                    englishTitle = enProp.GetString();
+                }
+            }
+            if (string.IsNullOrWhiteSpace(englishTitle))
+            {
+                englishTitle = mediaNode.GetOptionalString("english_name") ?? mediaNode.GetOptionalString("english_title");
+            }
+
+            title = !string.IsNullOrWhiteSpace(romajiTitle)
+                ? romajiTitle
+                : (!string.IsNullOrWhiteSpace(englishTitle)
+                    ? englishTitle
+                    : (!string.IsNullOrWhiteSpace(russianTitle) ? russianTitle : $"ID {primaryId}"));
 
             coverUrl = ResolveImageUrl(mediaNode, websiteRoot);
             synopsis = mediaNode.GetOptionalString("description");
@@ -181,6 +208,8 @@ public static class ShikiMapper
             item.MediaKind = MediaKind.Anime;
         }
 
+        if (!string.IsNullOrEmpty(romajiTitle) && !item.AlternativeTitles.Contains(romajiTitle, StringComparer.OrdinalIgnoreCase))
+            item.AlternativeTitles.Add(romajiTitle);
         if (!string.IsNullOrEmpty(englishTitle) && !item.AlternativeTitles.Contains(englishTitle, StringComparer.OrdinalIgnoreCase))
             item.AlternativeTitles.Add(englishTitle);
         if (!string.IsNullOrEmpty(russianTitle) && !item.AlternativeTitles.Contains(russianTitle, StringComparer.OrdinalIgnoreCase))

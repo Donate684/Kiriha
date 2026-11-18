@@ -302,7 +302,7 @@ public sealed class AnimeEntityTests
         try
         {
             // Top line across cards, details hero, and now playing header
-            Assert.Equal("Baby Princess 3D Paradise 0 [Love]", item.Title);
+            Assert.Equal("Baby Princess 3D Paradise 0 [Love]", item.RomajiTitle);
 
             // Bottom line across cards, details hero, and now playing header
             Assert.Equal("Юные принцессы: Райское влечение", item.Presentation.SecondaryTitle);
@@ -312,5 +312,86 @@ public sealed class AnimeEntityTests
         {
             AnimeEntityPresentation.GetUseRussianTitles = () => false;
         }
+    }
+
+    [Fact]
+    public void RomajiTitle_HealsFromAlternativeTitles_WhenTitleWasOverwrittenWithEnglishTitle()
+    {
+        var item = new AnimeEntity
+        {
+            Title = "Reincarnated as a Sword Season 2",
+            EnglishTitle = "Reincarnated as a Sword Season 2",
+            RussianTitle = "О моём перерождении в меч 2",
+            JapaneseTitle = "転生したら剣でした 2",
+            AlternativeTitles = ["Tensei shitara Ken Deshita 2", "Reincarnated as a Sword Season 2", "転生したら剣でした 2"]
+        };
+
+        // When Title was mistakenly English, RomajiTitle extracts the romaji from AlternativeTitles and heals Title
+        Assert.Equal("Tensei shitara Ken Deshita 2", item.RomajiTitle);
+        Assert.Equal("Tensei shitara Ken Deshita 2", item.Title);
+
+        // When Russian titles are enabled: bottom title is Russian
+        AnimeEntityPresentation.GetUseRussianTitles = () => true;
+        try
+        {
+            Assert.Equal("О моём перерождении в меч 2", item.Presentation.SecondaryTitle);
+            Assert.True(item.Presentation.HasSecondaryTitle);
+        }
+        finally
+        {
+            AnimeEntityPresentation.GetUseRussianTitles = () => false;
+        }
+
+        // When Russian titles are disabled: bottom title falls back to English
+        AnimeEntityPresentation.GetUseRussianTitles = () => false;
+        Assert.Equal("Reincarnated as a Sword Season 2", item.Presentation.SecondaryTitle);
+        Assert.True(item.Presentation.HasSecondaryTitle);
+    }
+
+    [Fact]
+    public void AniListMapper_PrioritizesRomajiForTitle_AndEnglishForEnglishTitle()
+    {
+        using var aniDoc = System.Text.Json.JsonDocument.Parse("""
+        {
+            "id": 154587,
+            "idMal": 53913,
+            "title": {
+                "romaji": "Tensei shitara Ken Deshita 2",
+                "english": "Reincarnated as a Sword Season 2",
+                "native": "転生したら剣でした 2"
+            }
+        }
+        """);
+
+        var entity = Kiriha.Core.Tracking.Api.AniListMapper.MapMediaToAnimeEntity(aniDoc.RootElement);
+
+        Assert.Equal("Tensei shitara Ken Deshita 2", entity.Title);
+        Assert.Equal("Tensei shitara Ken Deshita 2", entity.RomajiTitle);
+        Assert.Equal("Reincarnated as a Sword Season 2", entity.EnglishTitle);
+        Assert.Equal("転生したら剣でした 2", entity.JapaneseTitle);
+    }
+
+    [Fact]
+    public void ShikiMapper_ExtractsEnglishTitleFromMediaNode_AndPreservesRomajiTitle()
+    {
+        using var rateDoc = System.Text.Json.JsonDocument.Parse("""
+        {
+            "anime": {
+                "id": 53913,
+                "name": "Tensei shitara Ken deshita 2nd Season",
+                "russian": "О моём перерождении в меч 2",
+                "english": [ "Reincarnated as a Sword Season 2" ],
+                "japanese": [ "転生したら剣でした 第2期" ]
+            }
+        }
+        """);
+
+        var entity = Kiriha.Core.Tracking.Api.ShikiMapper.MapRateToAnimeEntity(rateDoc.RootElement, "https://shikimori.one");
+
+        Assert.Equal("Tensei shitara Ken deshita 2nd Season", entity.Title);
+        Assert.Equal("Tensei shitara Ken deshita 2nd Season", entity.RomajiTitle);
+        Assert.Equal("Reincarnated as a Sword Season 2", entity.EnglishTitle);
+        Assert.Equal("О моём перерождении в меч 2", entity.RussianTitle);
+        Assert.Equal("転生したら剣でした 第2期", entity.JapaneseTitle);
     }
 }
