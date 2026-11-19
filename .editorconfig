@@ -178,5 +178,31 @@ dotnet_diagnostic.S6640.severity = none
 dotnet_diagnostic.S5332.severity = none
 # S3220: Partial overload match in tests / Moq
 dotnet_diagnostic.S3220.severity = none
+# MA0008: Add StructLayoutAttribute on structs/records is unnecessary boilerplate
+dotnet_diagnostic.MA0008.severity = none
+# S101: EF Core migration classes start with underscore by convention
+dotnet_diagnostic.S101.severity = none
+# S6418: Public tracker OAuth client secrets are public by design
+dotnet_diagnostic.S6418.severity = none
+# S4144: Methods with identical implementation (common in MVVM change notification callbacks)
+dotnet_diagnostic.S4144.severity = none
+# S6618: string.Create instead of FormattableString is extreme micro-optimization
+dotnet_diagnostic.S6618.severity = none
+# S3604: Redundant field initializers are defensive and preferred in ViewModels
+dotnet_diagnostic.S3604.severity = none
+# S3218: Inner class member shadows outer class member
+dotnet_diagnostic.S3218.severity = none
+# MA0147: Async void is required for UI event handler delegates
+dotnet_diagnostic.MA0147.severity = none
+# MA0134: Observe result of async calls (intentional fire-and-forget discards)
+dotnet_diagnostic.MA0134.severity = none
+# MA0091: Sender parameter should be 'this' for instance events
+dotnet_diagnostic.MA0091.severity = none
+# MA0055: Finalizers in native interop wrappers (libmpv fallback)
+dotnet_diagnostic.MA0055.severity = none
+# S2094: Empty classes (used for marker types / records)
+dotnet_diagnostic.S2094.severity = none
+# S3963: Static field initialization order in static constructors
+dotnet_diagnostic.S3963.severity = none
 
 
