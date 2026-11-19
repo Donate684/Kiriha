@@ -5,7 +5,7 @@ namespace Kiriha.Core.Domain.Utils.Classification;
 
 public static class DonghuaDetector
 {
-    private static readonly FrozenSet<string> ChineseStudios = new[]
+    private static readonly FrozenSet<string> ChineseStudios = new string[]
     {
         "BUILD DREAM", "Nice Boat Animation", "HMCH", "Big Firebird Culture", "Big Firebird", "Flying Fish Studio",
         "L²Studio", "L2Studio", "Bu Keneng de Shijie", "Haoliners Animation League", "Haoliners", "Haoliners Animation",
@@ -33,7 +33,7 @@ public static class DonghuaDetector
         "Taikong Animation", "Chongqing Panda", "CGCG Studio", "iQIYI", "Youku", "Mango TV"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> KoreanStudios = new[]
+    private static readonly FrozenSet<string> KoreanStudios = new string[]
     {
         "Studio Mir", "DR Movie", "Studio Animal", "Studio Gale", "Red Dog Culture House",
         "Studio PPURI", "Cocktail Media", "Studio Shelter", "Mirang Co., Ltd.", "Roi Visual",
@@ -43,7 +43,7 @@ public static class DonghuaDetector
         "Sidus Animation", "Studio Bazooka", "CJ ENM", "Studio N", "Tinto Animation", "Studio Pivote"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> ChineseStudioStems = new[]
+    private static readonly FrozenSet<string> ChineseStudioStems = new string[]
     {
         "Sparkly Key", "Bilibili", "Tencent", "iQIYI", "Youku", "Foch", "Haoliners", "Big Firebird",
         "Paper Plane", "Ruo Hong", "Suoyi", "Soyep", "Shenman", "Samsara", "YHKT", "B.CMAY",
@@ -54,7 +54,7 @@ public static class DonghuaDetector
         "Alpha Animation", "Winsing", "Chuanxiang", "Mango TV"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> KoreanStudioStems = new[]
+    private static readonly FrozenSet<string> KoreanStudioStems = new string[]
     {
         "Studio Mir", "DR Movie", "Studio Animal", "Studio Gale", "Red Dog", "Studio PPURI",
         "Cocktail Media", "Studio Shelter", "Mirang", "Roi Visual", "Iconix", "Dong Woo",
@@ -62,7 +62,7 @@ public static class DonghuaDetector
         "Daewon", "SamG", "SAMG", "Studio EEK", "Locus", "Studio Bazooka", "Studio N"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> ChineseTitlePhrases = new[]
+    private static readonly FrozenSet<string> ChineseTitlePhrases = new string[]
     {
         "xian ni", "douluo dalu", "doupo cangqiong", "tunshi xingkong", "shiguang dailiren",
         "tian guan ci fu", "tianguan cifu", "mo dao zu shi", "modao zushi",
@@ -73,7 +73,7 @@ public static class DonghuaDetector
         "wu dong qian kun", "cang yuan tu", "ling jian shan", "quanzhi fashi", "quanzhi gaoshou"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> ChineseTitleKeywords = new[]
+    private static readonly FrozenSet<string> ChineseTitleKeywords = new string[]
     {
         "xian", "shixiong", "zuizhong", "changan", "douluo", "dalu", "doupo", "cangqiong",
         "tunshi", "xingkong", "xianxia", "wuxia", "xuanhuan", "quanzhi", "wushen", "zhuzai",

@@ -325,4 +325,19 @@ public static class AppConstants
             "wss://tracker.btorrent.xyz\n" +
             "wss://tracker.openwebtorrent.com";
     }
+
+    public static class Franchise
+    {
+        public const string RoleMovie = "anime.labels.franchise_role_movie";
+        public const string RoleSpecial = "anime.labels.franchise_role_special";
+        public const string RoleManga = "anime.labels.franchise_role_manga";
+        public const string RoleNovel = "anime.labels.franchise_role_novel";
+        public const string RoleMain = "anime.labels.franchise_role_main";
+        public const string RoleSideStory = "anime.labels.franchise_role_sidestory";
+        public const string RoleSpinOff = "anime.labels.franchise_role_spinoff";
+        public const string Sequel = "anime.labels.franchise_sequel";
+        public const string Prequel = "anime.labels.franchise_prequel";
+        public const string Summary = "anime.labels.franchise_summary";
+        public const string Parent = "anime.labels.franchise_parent";
+    }
 }
