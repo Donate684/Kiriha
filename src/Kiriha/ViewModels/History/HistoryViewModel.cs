@@ -196,7 +196,7 @@ public partial class HistoryViewModel : ViewModelBase, IDisposable
 
         // 2. Identify Primary Tracker
         string primaryId = _settingsService?.Current.Api.PrimaryTrackerId ?? TrackerConstants.Ids.Mal;
-        string primaryName = TrackerConstants.Names.Mal;
+        string primaryName;
         bool isPrimaryEnabled = false;
 
         if (string.Equals(primaryId, TrackerConstants.Ids.AniList, StringComparison.OrdinalIgnoreCase))

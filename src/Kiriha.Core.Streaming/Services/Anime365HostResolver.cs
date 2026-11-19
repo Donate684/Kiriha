@@ -170,7 +170,7 @@ public sealed partial class Anime365HostResolver : IImageUrlRewriter
         }
         catch (Exception ex) when (IsTransientConnectionException(ex, ct))
         {
-            Log.Warning("[Anime365] Mirror {Host} unreachable: {Message}. Probing mirrors...", initialUri.Host, ex.Message);
+            Log.Warning(ex, "[Anime365] Mirror {Host} unreachable. Probing mirrors...", initialUri.Host);
         }
 
         // Failover: probe remaining mirrors

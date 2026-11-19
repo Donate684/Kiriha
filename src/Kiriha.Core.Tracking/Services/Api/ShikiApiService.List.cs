@@ -94,10 +94,10 @@ public partial class ShikiApiService
                     response = await GetAsync(url, pageCts.Token);
                     Log.Information("ShikiApiService ({Tracker}): page {Page} response HTTP {Status}", Name, page, (int)response.StatusCode);
                 }
-                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                catch (OperationCanceledException ex) when (!ct.IsCancellationRequested)
                 {
                     // Our page-level timeout fired, not the caller's cancellation
-                    Log.Error("ShikiApiService ({Tracker}): page {Page} timed out after {Timeout}s — aborting sync", Name, page, PageTimeoutSeconds);
+                    Log.Error(ex, "ShikiApiService ({Tracker}): page {Page} timed out after {Timeout}s — aborting sync", Name, page, PageTimeoutSeconds);
                     return null;
                 }
 

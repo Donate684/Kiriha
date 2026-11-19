@@ -58,9 +58,9 @@ public class UpdateService
             Log.Information("UpdateService: Check complete. No updates found. You are already on the latest version ({Version}).", _updateManager.CurrentVersion);
             return false;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            Log.Warning("UpdateService: Update check was cancelled or timed out.");
+            Log.Warning(ex, "UpdateService: Update check was cancelled or timed out.");
             return false;
         }
         catch (Exception ex)
@@ -97,9 +97,9 @@ public class UpdateService
             Log.Information("Update {Version} downloaded successfully and is ready to be applied.", NewVersion);
             return true;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            Log.Warning("UpdateService: Update download was cancelled.");
+            Log.Warning(ex, "UpdateService: Update download was cancelled.");
             return false;
         }
         catch (Exception ex)

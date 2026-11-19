@@ -46,9 +46,9 @@ public sealed class BackgroundTaskSupervisor : IBackgroundTaskSupervisor, IDispo
                 Log.Debug("Background task {Name} started", name);
                 await operation(linkedCts.Token).ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (linkedCts.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (linkedCts.IsCancellationRequested)
             {
-                Log.Debug("Background task {Name} cancelled", name);
+                Log.Debug(ex, "Background task {Name} cancelled", name);
             }
             catch (Exception ex)
             {
@@ -87,11 +87,11 @@ public sealed class BackgroundTaskSupervisor : IBackgroundTaskSupervisor, IDispo
         {
             await Task.WhenAll(running.Select(t => t.Task).OfType<Task>()).WaitAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
             var stillRunning = _tasks.Values.Select(t => t.Name).Distinct().ToArray();
             if (stillRunning.Length > 0)
-                Log.Warning("Background task shutdown timed out: {Tasks}", string.Join(", ", stillRunning));
+                Log.Warning(ex, "Background task shutdown timed out: {Tasks}", string.Join(", ", stillRunning));
         }
     }
 

@@ -16,11 +16,7 @@ public sealed record MpvOptions(
     public static MpvOptions Sanitize(MpvOptions options)
     {
         var gpuApi = options.GpuApi?.Trim().ToLowerInvariant();
-        if (gpuApi is "d3d11" or "vulkan" or "" or null)
-        {
-            gpuApi = "auto";
-        }
-        else if (gpuApi is not ("auto" or "opengl"))
+        if (gpuApi is not ("auto" or "opengl"))
         {
             gpuApi = "auto";
         }

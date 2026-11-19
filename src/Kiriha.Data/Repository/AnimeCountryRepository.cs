@@ -77,7 +77,7 @@ public sealed class AnimeCountryRepository : IAnimeCountryRepository
                 await connection.OpenAsync(ct);
             }
 
-            using var transaction = connection.BeginTransaction();
+            await using var transaction = await connection.BeginTransactionAsync(ct);
             string now = DateTime.UtcNow.ToString("O");
 
             foreach (var kvp in countries)
@@ -109,7 +109,7 @@ public sealed class AnimeCountryRepository : IAnimeCountryRepository
                 await command.ExecuteNonQueryAsync(ct);
             }
 
-            transaction.Commit();
+            await transaction.CommitAsync(ct);
         }
         catch (Exception ex)
         {

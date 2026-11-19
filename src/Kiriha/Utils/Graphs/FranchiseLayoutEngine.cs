@@ -90,7 +90,7 @@ public static partial class FranchiseLayoutEngine
                 bool isMovie = string.Equals(neighborVisual.Node.Kind, "movie", StringComparison.OrdinalIgnoreCase);
 
                 // Target X: Movies go to right (+1), small specials or chibi to left (-1) or right (+1)
-                int targetX = isMovie ? 1 : 1;
+                int targetX = isMovie ? 1 : -1;
                 if (occupiedGrid.Contains((targetX, spineVisual.GridY)))
                 {
                     targetX = -1;
@@ -102,11 +102,8 @@ public static partial class FranchiseLayoutEngine
 
                 // Target Y: If it's a sequel or released between this season and next season, place at spineVisual.GridY + 1
                 int targetY = spineVisual.GridY;
-                if ((link.Relation == "sequel" || isMovie) && !occupiedGrid.Contains((targetX, spineVisual.GridY + 1)))
-                {
-                    targetY = spineVisual.GridY + 1;
-                }
-                else if (occupiedGrid.Contains((targetX, targetY)))
+                if (((link.Relation == "sequel" || isMovie) && !occupiedGrid.Contains((targetX, spineVisual.GridY + 1)))
+                    || occupiedGrid.Contains((targetX, targetY)))
                 {
                     targetY = spineVisual.GridY + 1;
                 }

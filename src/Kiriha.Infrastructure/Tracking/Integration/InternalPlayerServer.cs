@@ -127,18 +127,18 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
             }
             catch (OperationCanceledException)
             {
-                pipeServer?.Dispose();
+                if (pipeServer != null) await pipeServer.DisposeAsync().ConfigureAwait(false);
                 break;
             }
             catch (ObjectDisposedException) when (stoppingToken.IsCancellationRequested)
             {
-                pipeServer?.Dispose();
+                if (pipeServer != null) await pipeServer.DisposeAsync().ConfigureAwait(false);
                 break;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "InternalPlayerServer: Error accepting pipe connection");
-                pipeServer?.Dispose();
+                if (pipeServer != null) await pipeServer.DisposeAsync().ConfigureAwait(false);
                 try { await Task.Delay(500, stoppingToken).ConfigureAwait(false); } catch { }
             }
         }
@@ -190,9 +190,9 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                 _currentPipes.Remove(pipe);
             }
 
-            try { session.Writer.Dispose(); } catch { }
+            try { await session.Writer.DisposeAsync().ConfigureAwait(false); } catch { }
             try { reader.Dispose(); } catch { }
-            try { pipe.Dispose(); } catch { }
+            try { await pipe.DisposeAsync().ConfigureAwait(false); } catch { }
 
             bool noClientsLeft;
             lock (_clientsGate)

@@ -80,7 +80,7 @@ public partial class AnimeEntityPresentation : INotifyPropertyChanged
 
     public AnimeEntityPresentation(
         AnimeEntity item,
-        ILocalizer? localizer = null,
+        ILocalizer? localizer,
         TimeProvider? clock = null,
         Func<bool>? getUseRussianTitles = null)
         : this(item, localizer, clock, getUseRussianTitles, null, null)

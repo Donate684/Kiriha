@@ -142,7 +142,7 @@ public class ExternalMediaDetectorService : IHostedService, IDisposable, IExtern
             }
             catch (Exception ex)
             {
-                Log.Debug("External media detector polling error: {Msg}", ex.Message);
+                Log.Debug(ex, "External media detector polling error");
             }
 
             int delayMs = 5000;

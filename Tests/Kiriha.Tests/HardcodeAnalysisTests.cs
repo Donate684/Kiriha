@@ -454,11 +454,15 @@ public class HardcodeAnalysisTests
                 if (namedAssignment.IsMatch(lines[i])) continue;
 
                 foreach (var rx in patterns)
-                foreach (Match m in rx.Matches(lines[i]))
                 {
-                    if (int.TryParse(m.Groups["val"].Value, out var num)
-                        && !MagicTimeoutAllowList.Contains(num))
-                        violations.Add($"  {RelativePath(file)}:{i + 1}  →  {lines[i].Trim()}");
+                    foreach (Match m in rx.Matches(lines[i]))
+                    {
+                        if (int.TryParse(m.Groups["val"].Value, out var num)
+                            && !MagicTimeoutAllowList.Contains(num))
+                        {
+                            violations.Add($"  {RelativePath(file)}:{i + 1}  →  {lines[i].Trim()}");
+                        }
+                    }
                 }
             }
         }

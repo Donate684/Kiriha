@@ -78,7 +78,7 @@ public static class ShikiHttp
                     foreach (var alias in resolver.ProbeOrder(originalHost))
                     {
                         var target = new UriBuilder(currentUri) { Host = alias }.Uri;
-                        Log.Information("Shiki network failure on {Host}, probing alias {Alias}", originalHost, alias);
+                        Log.Information(ex, "Shiki network failure on {Host}, probing alias {Alias}", originalHost, alias);
                         try
                         {
                             using var probeRequest = await CloneRequestAsync(request, target, ct).ConfigureAwait(false);

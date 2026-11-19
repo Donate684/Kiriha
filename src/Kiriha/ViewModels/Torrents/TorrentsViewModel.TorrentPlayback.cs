@@ -294,21 +294,11 @@ public partial class TorrentsViewModel
         {
             if (state.IsClosed) return;
 
-            bool matches = false;
-            if (!string.IsNullOrEmpty(torrentHash) && string.Equals(state.TorrentHash, torrentHash, StringComparison.OrdinalIgnoreCase))
-            {
-                matches = true;
-            }
-            else if (!string.IsNullOrEmpty(state.OriginalTitle) &&
-                     (torrentTitle.Contains(state.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
-                      state.OriginalTitle.Contains(torrentTitle, StringComparison.OrdinalIgnoreCase)))
-            {
-                matches = true;
-            }
-            else if (string.IsNullOrEmpty(torrentHash) && (state.IsLoading || state.IsBuffering || state.IsPlaying))
-            {
-                matches = true;
-            }
+            bool matches = (!string.IsNullOrEmpty(torrentHash) && string.Equals(state.TorrentHash, torrentHash, StringComparison.OrdinalIgnoreCase))
+                || (!string.IsNullOrEmpty(state.OriginalTitle) &&
+                    (torrentTitle.Contains(state.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
+                     state.OriginalTitle.Contains(torrentTitle, StringComparison.OrdinalIgnoreCase)))
+                || (string.IsNullOrEmpty(torrentHash) && (state.IsLoading || state.IsBuffering || state.IsPlaying));
 
             if (matches)
             {

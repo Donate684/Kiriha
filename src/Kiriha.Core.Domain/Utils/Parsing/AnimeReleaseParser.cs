@@ -24,18 +24,7 @@ public static partial class AnimeReleaseParser
         {
             text = Path.GetFileName(text);
         }
-        else if (text.Contains("://"))
-        {
-            int lastSlash = text.LastIndexOf('/');
-            if (lastSlash >= 0)
-                text = text[(lastSlash + 1)..];
-
-            int qIdx = text.IndexOf('?');
-            if (qIdx >= 0) text = text[..qIdx];
-            int hashIdx = text.IndexOf('#');
-            if (hashIdx >= 0) text = text[..hashIdx];
-        }
-        else if (text.StartsWith('/') && !text.Contains(" / "))
+        else if (text.Contains("://") || (text.StartsWith('/') && !text.Contains(" / ")))
         {
             int lastSlash = text.LastIndexOf('/');
             if (lastSlash >= 0)

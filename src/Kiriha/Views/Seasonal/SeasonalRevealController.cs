@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 namespace Kiriha.Views.Seasonal;
 
-public class SeasonalRevealController
+public sealed class SeasonalRevealController : IDisposable
 {
     private DateTime _lastRevealEvent = DateTime.MinValue;
     private int _revealStaggerIndex;

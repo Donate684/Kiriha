@@ -136,9 +136,9 @@ public static class OAuthHelper
                 return code;
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            Log.Information("Authorization timed out or was cancelled.");
+            Log.Information(ex, "Authorization timed out or was cancelled.");
         }
         catch (Exception ex)
         {

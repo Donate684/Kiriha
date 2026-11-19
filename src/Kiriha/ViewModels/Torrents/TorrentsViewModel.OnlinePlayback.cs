@@ -160,22 +160,13 @@ public partial class TorrentsViewModel
 
         foreach (var ep in OnlineEpisodes)
         {
-            if (isCompleted)
+            if (isCompleted || (watchedProgress > 0 && ep.EpisodeNumber <= watchedProgress))
             {
                 ep.IsWatched = true;
                 ep.IsNew = false;
             }
-            else if (watchedProgress > 0 && ep.EpisodeNumber <= watchedProgress)
-            {
-                ep.IsWatched = true;
-                ep.IsNew = false;
-            }
-            else if (!isCompleted && watchedProgress > 0 && ep.EpisodeNumber > watchedProgress)
-            {
-                ep.IsWatched = false;
-                ep.IsNew = true;
-            }
-            else if (isWatching && watchedProgress == 0 && (anime.Presentation.HasNewEpisodes || anime.EpisodesAired > 0))
+            else if ((!isCompleted && watchedProgress > 0 && ep.EpisodeNumber > watchedProgress) ||
+                     (isWatching && watchedProgress == 0 && (anime.Presentation.HasNewEpisodes || anime.EpisodesAired > 0)))
             {
                 ep.IsWatched = false;
                 ep.IsNew = true;
