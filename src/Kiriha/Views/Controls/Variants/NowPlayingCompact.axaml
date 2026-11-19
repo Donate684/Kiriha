@@ -1,180 +1,264 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:controls="using:Kiriha.Views.Controls"
-             xmlns:sections="using:Kiriha.Views.Controls.Variants.NowPlayingCompactSections"
-             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:u="using:Kiriha.Utils.UI"
-             x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompact"
-             x:Name="Root"
-             x:DataType="vmNowPlaying:NowPlayingViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompact"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Controls"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:sections="using:Kiriha.Views.Controls.Variants.NowPlayingCompactSections"
+    xmlns:u="using:Kiriha.Utils.UI"
+    xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+    x:Name="Root"
+    x:DataType="vmNowPlaying:NowPlayingViewModel">
 
 
 
     <UserControl.Styles>
         <Style Selector="TextBlock.Label">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Opacity" Value="0.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,2"/>
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,2" />
         </Style>
         <Style Selector="TextBlock.Value">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="13" />
         </Style>
         <Style Selector="Border.Section">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="18"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="18" />
         </Style>
         <Style Selector="TextBlock.SectionHead">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
 
-        <!-- Underline-style tabs integrated into the card header -->
+        <!--  Underline-style tabs integrated into the card header  -->
         <Style Selector="RadioButton.Tab">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}"
-                            Padding="{TemplateBinding Padding}"
-                            Cursor="Hand">
-                        <Grid RowDefinitions="*,2" HorizontalAlignment="Center" Background="Transparent">
-                            <ContentPresenter Grid.Row="0"
-                                              Name="PART_Content"
-                                              Content="{TemplateBinding Content}"
-                                              Margin="0,12,0,10"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                            <Rectangle Grid.Row="1" Name="PART_Indicator"
-                                       Height="2" Fill="Transparent"
-                                       RadiusX="1" RadiusY="1"
-                                       HorizontalAlignment="Stretch"/>
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        Cursor="Hand">
+                        <Grid
+                            HorizontalAlignment="Center"
+                            Background="Transparent"
+                            RowDefinitions="*,2">
+                            <ContentPresenter
+                                Name="PART_Content"
+                                Grid.Row="0"
+                                Margin="0,12,0,10"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" />
+                            <Rectangle
+                                Name="PART_Indicator"
+                                Grid.Row="1"
+                                Height="2"
+                                HorizontalAlignment="Stretch"
+                                Fill="Transparent"
+                                RadiusX="1"
+                                RadiusY="1" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-            <Setter Property="Opacity" Value="0.55"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Margin" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Opacity" Value="0.55" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="RadioButton.Tab:pointerover">
-            <Setter Property="Opacity" Value="0.85"/>
+            <Setter Property="Opacity" Value="0.85" />
         </Style>
         <Style Selector="RadioButton.Tab:checked">
-            <Setter Property="Opacity" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
         </Style>
         <Style Selector="RadioButton.Tab:checked /template/ Rectangle#PART_Indicator">
-            <Setter Property="Fill" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Fill" Value="{DynamicResource SystemAccentColor}" />
         </Style>
-        
+
     </UserControl.Styles>
 
     <Panel>
-        <!-- Empty -->
-        <controls:DetectionStatusView Margin="32,24,32,32" IsVisible="{Binding !IsMediaDetected}"/>
+        <!--  Empty  -->
+        <controls:DetectionStatusView Margin="32,24,32,32" IsVisible="{Binding !IsMediaDetected}" />
 
-        <!-- Detected -->
-        <Grid IsVisible="{Binding IsMediaDetected}" RowDefinitions="Auto,*" Margin="0,12,0,0">
+        <!--  Detected  -->
+        <Grid
+            Margin="0,12,0,0"
+            IsVisible="{Binding IsMediaDetected}"
+            RowDefinitions="Auto,*">
 
-                <!-- PLAYER BAR (sticky, styled like AnimeDetails hero) -->
-                <sections:NowPlayingCompactHeader Grid.Row="0"/>
-                <!-- SCROLLABLE CONTENT -->
-                <ScrollViewer Grid.Row="1" Margin="0,18,0,0"
-                              HorizontalScrollBarVisibility="Disabled"
-                              VerticalScrollBarVisibility="Auto"
-                              u:SmoothScroll.IsEnabled="True">
-                    <StackPanel Margin="32,0,24,40" Spacing="18">
+            <!--  PLAYER BAR (sticky, styled like AnimeDetails hero)  -->
+            <sections:NowPlayingCompactHeader Grid.Row="0" />
+            <!--  SCROLLABLE CONTENT  -->
+            <ScrollViewer
+                Grid.Row="1"
+                Margin="0,18,0,0"
+                u:SmoothScroll.IsEnabled="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="32,0,24,40" Spacing="18">
 
-                <!-- Add to list -->
-                <Border Padding="14,10" Background="#20f1c40f" CornerRadius="10"
-                        BorderBrush="#60f1c40f" BorderThickness="1"
+                    <!--  Add to list  -->
+                    <Border
+                        Padding="14,10"
+                        Background="#20f1c40f"
+                        BorderBrush="#60f1c40f"
+                        BorderThickness="1"
+                        CornerRadius="10"
                         IsVisible="{Binding IsNotInList}">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <material:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline" Foreground="#f1c40f"
-                                               Width="20" Height="20" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1" Text="{DynamicResource l.anime.list_actions.not_in_my_list}"
-                                   VerticalAlignment="Center" FontSize="13" Margin="12,0"/>
-                        <Button Grid.Column="2" Command="{Binding AddToWatchingCommand}"
-                                Padding="14,6" CornerRadius="6" BorderThickness="0"
-                                Background="{DynamicResource SystemAccentColor}" Foreground="White">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="Play" Width="14" Height="14"/>
-                                <TextBlock Text="{DynamicResource l.anime.status.watching}" FontSize="12" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <!-- Manual match: collapsed CTA -->
-                <sections:NowPlayingCompactManualMatch />
-                <!-- Info card with tab switcher: Details / Synopsis / Alt titles -->
-                <sections:NowPlayingCompactInfo />
-                <!-- Detection raw info -->
-                <Border Classes="Section">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="{DynamicResource l.scrobbler.status.detection_info}" Classes="SectionHead"/>
-                        <TextBlock Text="{Binding CurrentMedia.OriginalTitle}" FontSize="11"
-                                   FontStyle="Italic" Opacity="0.6" TextWrapping="Wrap"/>
-                        <!-- Player + mapping info -->
-                        <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,6,0,0">
-                            <StackPanel Orientation="Horizontal" Spacing="6"
-                                        IsVisible="{Binding CurrentMedia.ProcessName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                <material:MaterialIcon Kind="Monitor" Width="12" Height="12" Opacity="0.4" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource l.scrobbler.status.player}" FontSize="10" Opacity="0.4" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding CurrentMedia.ProcessName}" FontSize="10" Opacity="0.6" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4"
-                                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                <TextBlock Text="{DynamicResource l.scrobbler.status.mapped_by}" FontSize="10" Opacity="0.4" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding !IsManuallyMapped}">
-                                    <TextBlock Text="{DynamicResource l.scrobbler.status.mapped_auto}" FontSize="10" Opacity="0.5" VerticalAlignment="Center"/>
-                                    <Button Background="Transparent" BorderThickness="0" Padding="0"
-                                            Command="{Binding UnlinkMatchCommand}" Foreground="{DynamicResource SystemAccentColor}">
-                                        <TextBlock Text="{DynamicResource l.scrobbler.status.delete_mapping}" FontSize="10" TextDecorations="Underline"/>
-                                    </Button>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <material:MaterialIcon
+                                Grid.Column="0"
+                                Width="20"
+                                Height="20"
+                                VerticalAlignment="Center"
+                                Foreground="#f1c40f"
+                                Kind="AlertCircleOutline" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="12,0"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Text="{DynamicResource l.anime.list_actions.not_in_my_list}" />
+                            <Button
+                                Grid.Column="2"
+                                Padding="14,6"
+                                Background="{DynamicResource SystemAccentColor}"
+                                BorderThickness="0"
+                                Command="{Binding AddToWatchingCommand}"
+                                CornerRadius="6"
+                                Foreground="White">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:MaterialIcon
+                                        Width="14"
+                                        Height="14"
+                                        Kind="Play" />
+                                    <TextBlock
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Text="{DynamicResource l.anime.status.watching}" />
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding IsManuallyMapped}">
-                                    <TextBlock Text="{DynamicResource l.scrobbler.status.mapped_manual}" FontSize="10" Opacity="0.6" FontWeight="Bold" VerticalAlignment="Center"/>
-                                    <Button Background="Transparent" BorderThickness="0" Padding="0"
-                                            Command="{Binding UnlinkMatchCommand}" Foreground="{DynamicResource SystemAccentColor}">
-                                        <TextBlock Text="{DynamicResource l.scrobbler.status.delete_mapping}" FontSize="10" TextDecorations="Underline"/>
-                                    </Button>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!--  Manual match: collapsed CTA  -->
+                    <sections:NowPlayingCompactManualMatch />
+                    <!--  Info card with tab switcher: Details / Synopsis / Alt titles  -->
+                    <sections:NowPlayingCompactInfo />
+                    <!--  Detection raw info  -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="SectionHead" Text="{DynamicResource l.scrobbler.status.detection_info}" />
+                            <TextBlock
+                                FontSize="11"
+                                FontStyle="Italic"
+                                Opacity="0.6"
+                                Text="{Binding CurrentMedia.OriginalTitle}"
+                                TextWrapping="Wrap" />
+                            <!--  Player + mapping info  -->
+                            <StackPanel
+                                Margin="0,6,0,0"
+                                Orientation="Horizontal"
+                                Spacing="14">
+                                <StackPanel
+                                    IsVisible="{Binding CurrentMedia.ProcessName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    Orientation="Horizontal"
+                                    Spacing="6">
+                                    <material:MaterialIcon
+                                        Width="12"
+                                        Height="12"
+                                        VerticalAlignment="Center"
+                                        Kind="Monitor"
+                                        Opacity="0.4" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="10"
+                                        FontWeight="Bold"
+                                        Opacity="0.4"
+                                        Text="{DynamicResource l.scrobbler.status.player}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="10"
+                                        FontWeight="SemiBold"
+                                        Opacity="0.6"
+                                        Text="{Binding CurrentMedia.ProcessName}" />
+                                </StackPanel>
+                                <StackPanel
+                                    IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    Orientation="Horizontal"
+                                    Spacing="4">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="10"
+                                        FontWeight="Bold"
+                                        Opacity="0.4"
+                                        Text="{DynamicResource l.scrobbler.status.mapped_by}" />
+                                    <StackPanel
+                                        IsVisible="{Binding !IsManuallyMapped}"
+                                        Orientation="Horizontal"
+                                        Spacing="4">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="10"
+                                            Opacity="0.5"
+                                            Text="{DynamicResource l.scrobbler.status.mapped_auto}" />
+                                        <Button
+                                            Padding="0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Command="{Binding UnlinkMatchCommand}"
+                                            Foreground="{DynamicResource SystemAccentColor}">
+                                            <TextBlock
+                                                FontSize="10"
+                                                Text="{DynamicResource l.scrobbler.status.delete_mapping}"
+                                                TextDecorations="Underline" />
+                                        </Button>
+                                    </StackPanel>
+                                    <StackPanel
+                                        IsVisible="{Binding IsManuallyMapped}"
+                                        Orientation="Horizontal"
+                                        Spacing="4">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="10"
+                                            FontWeight="Bold"
+                                            Opacity="0.6"
+                                            Text="{DynamicResource l.scrobbler.status.mapped_manual}" />
+                                        <Button
+                                            Padding="0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Command="{Binding UnlinkMatchCommand}"
+                                            Foreground="{DynamicResource SystemAccentColor}">
+                                            <TextBlock
+                                                FontSize="10"
+                                                Text="{DynamicResource l.scrobbler.status.delete_mapping}"
+                                                TextDecorations="Underline" />
+                                        </Button>
+                                    </StackPanel>
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
-                    </StackPanel>
-                </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
     </Panel>
 </UserControl>

@@ -1,24 +1,13 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:variants="using:Kiriha.Views.Controls.Variants"
-             x:Class="Kiriha.Views.SettingsView"
-             x:DataType="vmSettings:SettingsViewModel"
-             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+﻿<UserControl
+    x:Class="Kiriha.Views.SettingsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:variants="using:Kiriha.Views.Controls.Variants"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    HorizontalContentAlignment="Stretch"
+    VerticalContentAlignment="Stretch"
+    x:DataType="vmSettings:SettingsViewModel">
 
-    <variants:SettingsSidebar/>
+    <variants:SettingsSidebar />
 
 </UserControl>

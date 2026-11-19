@@ -1,248 +1,361 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:u="using:Kiriha.Utils.UI"
-             x:Class="Kiriha.Views.Torrents.TorrentFilters"
-             x:DataType="vmTorrents:TorrentsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Torrents.TorrentFilters"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
+    x:DataType="vmTorrents:TorrentsViewModel">
 
     <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:LocConverter x:Key="LocConverter" />
     </UserControl.Resources>
 
-    <!-- ═══ Search + Sort + Filters container ═══ -->
-    <Border Margin="20,4,20,12" Padding="8,6"
-            Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10"
-            BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1">
+    <!--  ═══ Search + Sort + Filters container ═══  -->
+    <Border
+        Margin="20,4,20,12"
+        Padding="8,6"
+        Background="{DynamicResource SubtleFillColorSecondary}"
+        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+        BorderThickness="1"
+        CornerRadius="10">
         <Grid ColumnDefinitions="*, Auto, Auto">
 
-            <!-- ═══ Search textbox with Clear button & Magnify icon ═══ -->
+            <!--  ═══ Search textbox with Clear button & Magnify icon ═══  -->
             <Grid Grid.Column="0" VerticalAlignment="Center">
-                <TextBox Text="{Binding SearchQuery, Mode=TwoWay}"
-                         PlaceholderText="{DynamicResource l.torrents.search.placeholder}"
-                         VerticalAlignment="Center" Height="34"
-                         Background="Transparent" BorderThickness="0"
-                         VerticalContentAlignment="Center"
-                         FontSize="13" Padding="8,0">
+                <TextBox
+                    Height="34"
+                    Padding="8,0"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="13"
+                    PlaceholderText="{DynamicResource l.torrents.search.placeholder}"
+                    Text="{Binding SearchQuery, Mode=TwoWay}">
                     <TextBox.InnerRightContent>
-                        <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
-                            <Button Command="{Binding ClearSearchCommand}"
-                                    IsVisible="{Binding HasSearchQuery}"
-                                    Background="Transparent" BorderThickness="0"
-                                    Padding="3" CornerRadius="6"
-                                    Cursor="Hand" VerticalAlignment="Center"
-                                    ToolTip.Tip="{DynamicResource l.common.actions.clear}">
-                                <material:MaterialIcon Kind="CloseCircleOutline" Width="16" Height="16" Opacity="0.45"/>
+                        <StackPanel
+                            Margin="0,0,6,0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="2">
+                            <Button
+                                Padding="3"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding ClearSearchCommand}"
+                                CornerRadius="6"
+                                Cursor="Hand"
+                                IsVisible="{Binding HasSearchQuery}"
+                                ToolTip.Tip="{DynamicResource l.common.actions.clear}">
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    Kind="CloseCircleOutline"
+                                    Opacity="0.45" />
                             </Button>
-                            <material:MaterialIcon Kind="Magnify" Width="18" Height="18"
-                                                   Margin="2,0,4,0" Opacity="0.3" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="18"
+                                Height="18"
+                                Margin="2,0,4,0"
+                                VerticalAlignment="Center"
+                                Kind="Magnify"
+                                Opacity="0.3" />
                         </StackPanel>
                     </TextBox.InnerRightContent>
                     <TextBox.KeyBindings>
-                        <KeyBinding Gesture="Enter" Command="{Binding PerformSearchCommand}"/>
+                        <KeyBinding Command="{Binding PerformSearchCommand}" Gesture="Enter" />
                     </TextBox.KeyBindings>
                 </TextBox>
             </Grid>
 
-            <!-- ═══ Search Mode Toggle (Torrents / Online) - Placed to the right of search ═══ -->
-            <ToggleButton Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center"
-                          Classes="TorrentsModeToggle"
-                          IsChecked="{Binding IsOnlineMode, Mode=TwoWay}"/>
+            <!--  ═══ Search Mode Toggle (Torrents / Online) - Placed to the right of search ═══  -->
+            <ToggleButton
+                Grid.Column="1"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Classes="TorrentsModeToggle"
+                IsChecked="{Binding IsOnlineMode, Mode=TwoWay}" />
 
-            <!-- ═══ Right Actions Container (Sort, Filters / Sources) ═══ -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" Margin="8,0,4,0" VerticalAlignment="Center">
+            <!--  ═══ Right Actions Container (Sort, Filters / Sources) ═══  -->
+            <StackPanel
+                Grid.Column="2"
+                Margin="8,0,4,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="4">
 
-                <!-- ── Torrents Mode Actions (Visible when !IsOnlineMode) ── -->
-                <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0"
-                        VerticalAlignment="Center" IsVisible="{Binding !IsOnlineMode}"/>
+                <!--  ── Torrents Mode Actions (Visible when !IsOnlineMode) ──  -->
+                <Border
+                    Width="1"
+                    Height="20"
+                    Margin="4,0"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource DividerStrokeColorDefault}"
+                    IsVisible="{Binding !IsOnlineMode}" />
 
-                <!-- Sort ComboBox -->
-                <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
-                            IsVisible="{Binding !IsOnlineMode}">
-                    <material:MaterialIcon Kind="SortVariant" Width="15" Height="15"
-                                           Opacity="0.55" Margin="4,0,2,0" VerticalAlignment="Center"/>
-                    <ComboBox Classes="SortCombo"
-                              ItemsSource="{Binding SortModes}"
-                              SelectedItem="{Binding SelectedSortOption}"
-                              VerticalAlignment="Center">
+                <!--  Sort ComboBox  -->
+                <StackPanel
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding !IsOnlineMode}"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <material:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        Margin="4,0,2,0"
+                        VerticalAlignment="Center"
+                        Kind="SortVariant"
+                        Opacity="0.55" />
+                    <ComboBox
+                        VerticalAlignment="Center"
+                        Classes="SortCombo"
+                        ItemsSource="{Binding SortModes}"
+                        SelectedItem="{Binding SelectedSortOption}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vmTorrents:TorrentSortOption">
-                                <TextBlock Text="{Binding LocalizationKey, Converter={StaticResource LocConverter}}"/>
+                                <TextBlock Text="{Binding LocalizationKey, Converter={StaticResource LocConverter}}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </StackPanel>
 
-                <!-- Divider -->
-                <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0"
-                        VerticalAlignment="Center" IsVisible="{Binding !IsOnlineMode}"/>
+                <!--  Divider  -->
+                <Border
+                    Width="1"
+                    Height="20"
+                    Margin="4,0"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource DividerStrokeColorDefault}"
+                    IsVisible="{Binding !IsOnlineMode}" />
 
-                <!-- Torrents Filters Button with Flyout -->
-                <Button Classes="FilterFlyoutTrigger"
-                        Classes.active="{Binding HasActiveFilters}"
-                        Background="Transparent" VerticalAlignment="Center"
-                        BorderThickness="0" Padding="8,6" CornerRadius="6"
-                        IsVisible="{Binding !IsOnlineMode}">
+                <!--  Torrents Filters Button with Flyout  -->
+                <Button
+                    Padding="8,6"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Classes="FilterFlyoutTrigger"
+                    Classes.active="{Binding HasActiveFilters}"
+                    CornerRadius="6"
+                    IsVisible="{Binding !IsOnlineMode}">
                     <Button.Styles>
                         <Style Selector="Button.FilterFlyoutTrigger">
-                            <Setter Property="Opacity" Value="0.6"/>
+                            <Setter Property="Opacity" Value="0.6" />
                         </Style>
                         <Style Selector="Button.FilterFlyoutTrigger:pointerover">
-                            <Setter Property="Opacity" Value="0.85"/>
+                            <Setter Property="Opacity" Value="0.85" />
                         </Style>
                         <Style Selector="Button.FilterFlyoutTrigger.active">
-                            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
-                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+                            <Setter Property="Opacity" Value="1" />
                         </Style>
                         <Style Selector="Button.FilterFlyoutTrigger.active TextBlock">
-                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontWeight" Value="SemiBold" />
                         </Style>
                     </Button.Styles>
                     <StackPanel Orientation="Horizontal" Spacing="5">
-                        <material:MaterialIcon Kind="FilterVariant" Width="16" Height="16"
-                                               Foreground="{Binding $parent[Button].Foreground}"/>
-                        <TextBlock Text="{DynamicResource l.torrents.search.filters_button}"
-                                   FontSize="12" VerticalAlignment="Center"
-                                   Foreground="{Binding $parent[Button].Foreground}"/>
+                        <material:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Foreground="{Binding $parent[Button].Foreground}"
+                            Kind="FilterVariant" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{Binding $parent[Button].Foreground}"
+                            Text="{DynamicResource l.torrents.search.filters_button}" />
                     </StackPanel>
                     <Button.Flyout>
-                        <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="FilterFlyout"
-                                Opened="OnFilterFlyoutOpened">
-                            <StackPanel Spacing="4" Margin="8,6" HorizontalAlignment="Stretch">
+                        <Flyout
+                            FlyoutPresenterClasses="FilterFlyout"
+                            Opened="OnFilterFlyoutOpened"
+                            Placement="BottomEdgeAlignedRight">
+                            <StackPanel
+                                Margin="8,6"
+                                HorizontalAlignment="Stretch"
+                                Spacing="4">
 
-                                <!-- Per-title notice (only shown when a specific anime title is selected) -->
+                                <!--  Per-title notice (only shown when a specific anime title is selected)  -->
                                 <StackPanel IsVisible="{Binding HasSelectedAnime}" Spacing="4">
-                                    <Border Classes="FilterNotice" Margin="0,0,0,0">
+                                    <Border Margin="0,0,0,0" Classes="FilterNotice">
                                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
-                                            <material:MaterialIcon Grid.Column="0" Kind="InformationOutline"
-                                                                   Width="16" Height="16"
-                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                   VerticalAlignment="Top" Margin="0,1,0,0"/>
-                                            <TextBlock Grid.Column="1"
-                                                       Text="{DynamicResource l.torrents.search.per_title_notice}"
-                                                       FontSize="11" LineHeight="15"
-                                                       TextWrapping="Wrap"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <material:MaterialIcon
+                                                Grid.Column="0"
+                                                Width="16"
+                                                Height="16"
+                                                Margin="0,1,0,0"
+                                                VerticalAlignment="Top"
+                                                Foreground="{DynamicResource SystemAccentColor}"
+                                                Kind="InformationOutline" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                LineHeight="15"
+                                                Text="{DynamicResource l.torrents.search.per_title_notice}"
+                                                TextWrapping="Wrap" />
                                         </Grid>
                                     </Border>
-                                    <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}"/>
+                                    <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" />
                                 </StackPanel>
 
-                                <!-- Release groups -->
+                                <!--  Release groups  -->
                                 <StackPanel Spacing="4">
-                                    <TextBlock Classes="FlyoutSection"
-                                               Text="{DynamicResource l.torrents.search.filter_sections.release_groups}"/>
+                                    <TextBlock Classes="FlyoutSection" Text="{DynamicResource l.torrents.search.filter_sections.release_groups}" />
                                     <WrapPanel ItemWidth="NaN" Orientation="Horizontal">
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterVaryg, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.filters.varyg}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterEraiRaws, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.filters.erai_raws}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterToonsHub, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.filters.toonshub}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterJudas, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.filters.judas}"/>
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.filters.varyg}"
+                                            IsChecked="{Binding FilterVaryg, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.filters.erai_raws}"
+                                            IsChecked="{Binding FilterEraiRaws, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.filters.toonshub}"
+                                            IsChecked="{Binding FilterToonsHub, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.filters.judas}"
+                                            IsChecked="{Binding FilterJudas, Mode=TwoWay}" />
                                     </WrapPanel>
                                 </StackPanel>
 
-                                <!-- Quality -->
+                                <!--  Quality  -->
                                 <StackPanel Spacing="4">
-                                    <TextBlock Classes="FlyoutSection"
-                                               Text="{DynamicResource l.torrents.search.filter_sections.quality}"/>
+                                    <TextBlock Classes="FlyoutSection" Text="{DynamicResource l.torrents.search.filter_sections.quality}" />
                                     <WrapPanel Orientation="Horizontal">
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding Filter1080p, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.filters.p1080}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterHevc, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.filters.hevc}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterOnlyNew, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.quick_only_new}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterOnlyBatches, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.quick_batches}"/>
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.filters.p1080}"
+                                            IsChecked="{Binding Filter1080p, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.filters.hevc}"
+                                            IsChecked="{Binding FilterHevc, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.quick_only_new}"
+                                            IsChecked="{Binding FilterOnlyNew, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.quick_batches}"
+                                            IsChecked="{Binding FilterOnlyBatches, Mode=TwoWay}" />
                                     </WrapPanel>
                                 </StackPanel>
 
-                                <!-- Source -->
+                                <!--  Source  -->
                                 <StackPanel Spacing="4">
-                                    <TextBlock Classes="FlyoutSection"
-                                               Text="{DynamicResource l.torrents.search.filter_sections.source}"/>
+                                    <TextBlock Classes="FlyoutSection" Text="{DynamicResource l.torrents.search.filter_sections.source}" />
                                     <WrapPanel Orientation="Horizontal">
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding OnlyCrunchyroll, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.only_crunchyroll}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterNetflix, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.netflix}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterAmazon, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.amazon}"/>
-                                        <ToggleButton Classes="FilterChip" Margin="0,0,4,4"
-                                                      IsChecked="{Binding FilterHidive, Mode=TwoWay}"
-                                                      Content="{DynamicResource l.torrents.search.hidive}"/>
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.only_crunchyroll}"
+                                            IsChecked="{Binding OnlyCrunchyroll, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.netflix}"
+                                            IsChecked="{Binding FilterNetflix, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.amazon}"
+                                            IsChecked="{Binding FilterAmazon, Mode=TwoWay}" />
+                                        <ToggleButton
+                                            Margin="0,0,4,4"
+                                            Classes="FilterChip"
+                                            Content="{DynamicResource l.torrents.search.hidive}"
+                                            IsChecked="{Binding FilterHidive, Mode=TwoWay}" />
                                     </WrapPanel>
                                 </StackPanel>
 
-                                <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,0,0,0"/>
+                                <Border
+                                    Height="1"
+                                    Margin="0,0,0,0"
+                                    Background="{DynamicResource DividerStrokeColorDefault}" />
 
-                                <!-- Search formula customization -->
+                                <!--  Search formula customization  -->
                                 <StackPanel Spacing="6">
                                     <CheckBox IsChecked="{Binding UseCustomQuery, Mode=TwoWay}">
-                                        <TextBlock Text="{DynamicResource l.torrents.search.custom_formula_toggle}"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                   VerticalAlignment="Center"/>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{DynamicResource l.torrents.search.custom_formula_toggle}" />
                                     </CheckBox>
 
-                                    <TextBox Classes="CustomQueryInput"
-                                             Text="{Binding CustomQuery, Mode=TwoWay}"
-                                             IsVisible="{Binding UseCustomQuery}"
-                                             PlaceholderText="{DynamicResource l.torrents.search.custom_formula_placeholder}"
-                                             Height="28" VerticalContentAlignment="Center">
+                                    <TextBox
+                                        Height="28"
+                                        VerticalContentAlignment="Center"
+                                        Classes="CustomQueryInput"
+                                        IsVisible="{Binding UseCustomQuery}"
+                                        PlaceholderText="{DynamicResource l.torrents.search.custom_formula_placeholder}"
+                                        Text="{Binding CustomQuery, Mode=TwoWay}">
                                         <TextBox.KeyBindings>
-                                            <KeyBinding Gesture="Enter" Command="{Binding PerformSearchCommand}"/>
+                                            <KeyBinding Command="{Binding PerformSearchCommand}" Gesture="Enter" />
                                         </TextBox.KeyBindings>
                                     </TextBox>
 
-                                    <!-- Query preview -->
+                                    <!--  Query preview  -->
                                     <StackPanel Spacing="2">
-                                        <TextBlock Text="{DynamicResource l.torrents.search.preview_label}"
-                                                   FontSize="9" FontWeight="SemiBold" Opacity="0.5"
-                                                   LetterSpacing="0.3"/>
+                                        <TextBlock
+                                            FontSize="9"
+                                            FontWeight="SemiBold"
+                                            LetterSpacing="0.3"
+                                            Opacity="0.5"
+                                            Text="{DynamicResource l.torrents.search.preview_label}" />
                                         <Border Classes="PreviewBox">
                                             <Grid ColumnDefinitions="Auto, *">
-                                                <material:MaterialIcon Grid.Column="0" Kind="Magnify"
-                                                                       Width="12" Height="12"
-                                                                       Opacity="0.45" Margin="0,0,5,0"
-                                                                       VerticalAlignment="Center"/>
-                                                <TextBlock Grid.Column="1"
-                                                           Text="{Binding PreviewQuery}"
-                                                           FontSize="10"
-                                                           FontFamily="Consolas, Cascadia Code, monospace"
-                                                           TextWrapping="Wrap"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <material:MaterialIcon
+                                                    Grid.Column="0"
+                                                    Width="12"
+                                                    Height="12"
+                                                    Margin="0,0,5,0"
+                                                    VerticalAlignment="Center"
+                                                    Kind="Magnify"
+                                                    Opacity="0.45" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    FontFamily="Consolas, Cascadia Code, monospace"
+                                                    FontSize="10"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding PreviewQuery}"
+                                                    TextWrapping="Wrap" />
                                             </Grid>
                                         </Border>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- Reset -->
-                                <Button Classes="FilterReset"
-                                        Command="{Binding ClearFiltersCommand}"
-                                        IsEnabled="{Binding HasActiveFilters}"
-                                        Margin="0,2,0,0">
-                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                        <material:MaterialIcon Kind="FilterRemove" Width="14" Height="14"
-                                                              Foreground="{Binding $parent[Button].Foreground}"/>
-                                        <TextBlock Text="{DynamicResource l.torrents.search.clear_filters}"
-                                                   Foreground="{Binding $parent[Button].Foreground}"/>
+                                <!--  Reset  -->
+                                <Button
+                                    Margin="0,2,0,0"
+                                    Classes="FilterReset"
+                                    Command="{Binding ClearFiltersCommand}"
+                                    IsEnabled="{Binding HasActiveFilters}">
+                                    <StackPanel
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="6">
+                                        <material:MaterialIcon
+                                            Width="14"
+                                            Height="14"
+                                            Foreground="{Binding $parent[Button].Foreground}"
+                                            Kind="FilterRemove" />
+                                        <TextBlock Foreground="{Binding $parent[Button].Foreground}" Text="{DynamicResource l.torrents.search.clear_filters}" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
@@ -250,313 +363,554 @@
                     </Button.Flyout>
                 </Button>
 
-                <!-- ── Online Mode Actions (Visible when IsOnlineMode) ── -->
-                <Border Width="1" Height="20" Background="{DynamicResource DividerStrokeColorDefault}" Margin="4,0"
-                        VerticalAlignment="Center" IsVisible="{Binding IsOnlineMode}"/>
+                <!--  ── Online Mode Actions (Visible when IsOnlineMode) ──  -->
+                <Border
+                    Width="1"
+                    Height="20"
+                    Margin="4,0"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource DividerStrokeColorDefault}"
+                    IsVisible="{Binding IsOnlineMode}" />
 
-                <!-- Online Sources Button with Flyout -->
-                <Button Name="SourcesButton"
-                        Classes="SourcesFlyoutTrigger"
-                        Classes.active="{Binding HasActiveOnlineSources}"
-                        Background="Transparent" VerticalAlignment="Center"
-                        BorderThickness="0" Padding="8,6" CornerRadius="6"
-                        IsVisible="{Binding IsOnlineMode}">
+                <!--  Online Sources Button with Flyout  -->
+                <Button
+                    Name="SourcesButton"
+                    Padding="8,6"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Classes="SourcesFlyoutTrigger"
+                    Classes.active="{Binding HasActiveOnlineSources}"
+                    CornerRadius="6"
+                    IsVisible="{Binding IsOnlineMode}">
                     <Button.Styles>
                         <Style Selector="Button.SourcesFlyoutTrigger">
-                            <Setter Property="Opacity" Value="0.6"/>
+                            <Setter Property="Opacity" Value="0.6" />
                         </Style>
                         <Style Selector="Button.SourcesFlyoutTrigger:pointerover">
-                            <Setter Property="Opacity" Value="0.85"/>
+                            <Setter Property="Opacity" Value="0.85" />
                         </Style>
                         <Style Selector="Button.SourcesFlyoutTrigger.active">
-                            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
-                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+                            <Setter Property="Opacity" Value="1" />
                         </Style>
                         <Style Selector="Button.SourcesFlyoutTrigger.active TextBlock">
-                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontWeight" Value="SemiBold" />
                         </Style>
                     </Button.Styles>
                     <StackPanel Orientation="Horizontal" Spacing="5">
-                        <material:MaterialIcon Kind="Web" Width="16" Height="16"
-                                               Foreground="{Binding $parent[Button].Foreground}"/>
-                        <TextBlock Text="{DynamicResource l.torrents.online.sources_button}"
-                                   FontSize="12" VerticalAlignment="Center"
-                                   Foreground="{Binding $parent[Button].Foreground}"/>
-                        <Border CornerRadius="8" Padding="5,1" Margin="2,0,0,0"
-                                Background="{DynamicResource SubtleFillColorTertiary}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1">
-                            <TextBlock Text="{Binding ActiveOnlineSourcesCountText}"
-                                       FontSize="10" FontWeight="SemiBold" Opacity="0.8"/>
+                        <material:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            Foreground="{Binding $parent[Button].Foreground}"
+                            Kind="Web" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{Binding $parent[Button].Foreground}"
+                            Text="{DynamicResource l.torrents.online.sources_button}" />
+                        <Border
+                            Margin="2,0,0,0"
+                            Padding="5,1"
+                            Background="{DynamicResource SubtleFillColorTertiary}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <TextBlock
+                                FontSize="10"
+                                FontWeight="SemiBold"
+                                Opacity="0.8"
+                                Text="{Binding ActiveOnlineSourcesCountText}" />
                         </Border>
                     </StackPanel>
                     <Button.Flyout>
-                        <Flyout Placement="BottomEdgeAlignedRight"
-                                FlyoutPresenterClasses="SourcesFlyout"
-                                Opened="OnSourcesFlyoutOpened">
-                            <StackPanel Width="330" Spacing="8" Margin="12,10">
-                                <!-- Header: title and active count badge -->
-                                <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,2">
-                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <material:MaterialIcon Kind="Web" Width="16" Height="16"
-                                                               Foreground="{DynamicResource SystemAccentColor}"
-                                                               VerticalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource l.torrents.online.sources_flyout_title}"
-                                                   FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Flyout
+                            FlyoutPresenterClasses="SourcesFlyout"
+                            Opened="OnSourcesFlyoutOpened"
+                            Placement="BottomEdgeAlignedRight">
+                            <StackPanel
+                                Width="330"
+                                Margin="12,10"
+                                Spacing="8">
+                                <!--  Header: title and active count badge  -->
+                                <Grid Margin="0,2,0,2" ColumnDefinitions="*, Auto">
+                                    <StackPanel
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="6">
+                                        <material:MaterialIcon
+                                            Width="16"
+                                            Height="16"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource SystemAccentColor}"
+                                            Kind="Web" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            FontWeight="SemiBold"
+                                            Text="{DynamicResource l.torrents.online.sources_flyout_title}" />
                                     </StackPanel>
-                                    <Border Grid.Column="1" CornerRadius="8" Padding="6,2"
-                                            Background="{DynamicResource SubtleFillColorSecondary}"
-                                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                            BorderThickness="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ActiveOnlineSourcesCountText}"
-                                                   FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource SystemAccentColor}"/>
+                                    <Border
+                                        Grid.Column="1"
+                                        Padding="6,2"
+                                        VerticalAlignment="Center"
+                                        Background="{DynamicResource SubtleFillColorSecondary}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                        <TextBlock
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource SystemAccentColor}"
+                                            Text="{Binding ActiveOnlineSourcesCountText}" />
                                     </Border>
                                 </Grid>
 
-                                <!-- Notice -->
-                                <Border Classes="FilterNotice" Padding="8,6">
+                                <!--  Notice  -->
+                                <Border Padding="8,6" Classes="FilterNotice">
                                     <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
-                                        <material:MaterialIcon Grid.Column="0" Kind="InformationOutline"
-                                                               Width="15" Height="15"
-                                                               Foreground="{DynamicResource SystemAccentColor}"
-                                                               VerticalAlignment="Top" Margin="0,1,0,0"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{DynamicResource l.torrents.online.sources_notice}"
-                                                   FontSize="11" LineHeight="15"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <material:MaterialIcon
+                                            Grid.Column="0"
+                                            Width="15"
+                                            Height="15"
+                                            Margin="0,1,0,0"
+                                            VerticalAlignment="Top"
+                                            Foreground="{DynamicResource SystemAccentColor}"
+                                            Kind="InformationOutline" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            LineHeight="15"
+                                            Text="{DynamicResource l.torrents.online.sources_notice}"
+                                            TextWrapping="Wrap" />
                                     </Grid>
                                 </Border>
 
-                                <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,1"/>
+                                <Border
+                                    Height="1"
+                                    Margin="0,1"
+                                    Background="{DynamicResource DividerStrokeColorDefault}" />
 
-                                <!-- Source 1: AniLibria -->
+                                <!--  Source 1: AniLibria  -->
                                 <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterOnlineAniLibria, Mode=TwoWay}">
-                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SubtleFillColorSecondary}" VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="TelevisionPlay" Width="15" Height="15"
-                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid
+                                        VerticalAlignment="Center"
+                                        ColumnDefinitions="Auto, *, Auto"
+                                        ColumnSpacing="10">
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="26"
+                                            Height="26"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                            CornerRadius="7">
+                                            <material:MaterialIcon
+                                                Width="15"
+                                                Height="15"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SystemAccentColor}"
+                                                Kind="TelevisionPlay" />
                                         </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.provider_anilibria}"
-                                                       FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.desc_anilibria}"
-                                                       FontSize="10" Opacity="0.5" TextWrapping="Wrap" LineHeight="14"/>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="1">
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource l.torrents.online.provider_anilibria}" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                LineHeight="14"
+                                                Opacity="0.5"
+                                                Text="{DynamicResource l.torrents.online.desc_anilibria}"
+                                                TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
-                                            <Ellipse Classes="SwitchThumb"/>
+                                        <Border
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Classes="SwitchTrack">
+                                            <Ellipse Classes="SwitchThumb" />
                                         </Border>
                                     </Grid>
                                 </ToggleButton>
 
-                                <!-- Source 2: AnimeLib -->
+                                <!--  Source 2: AnimeLib  -->
                                 <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterOnlineAnimeLib, Mode=TwoWay}">
-                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SubtleFillColorSecondary}" VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="LayersOutline" Width="15" Height="15"
-                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid
+                                        VerticalAlignment="Center"
+                                        ColumnDefinitions="Auto, *, Auto"
+                                        ColumnSpacing="10">
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="26"
+                                            Height="26"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                            CornerRadius="7">
+                                            <material:MaterialIcon
+                                                Width="15"
+                                                Height="15"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SystemAccentColor}"
+                                                Kind="LayersOutline" />
                                         </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.provider_animelib}"
-                                                       FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.desc_animelib}"
-                                                       FontSize="10" Opacity="0.5" TextWrapping="Wrap" LineHeight="14"/>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="1">
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource l.torrents.online.provider_animelib}" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                LineHeight="14"
+                                                Opacity="0.5"
+                                                Text="{DynamicResource l.torrents.online.desc_animelib}"
+                                                TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
-                                            <Ellipse Classes="SwitchThumb"/>
+                                        <Border
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Classes="SwitchTrack">
+                                            <Ellipse Classes="SwitchThumb" />
                                         </Border>
                                     </Grid>
                                 </ToggleButton>
 
-                                <!-- AnimeLib Kodik Auth Warning (shown when AnimeLib is enabled but user is not logged in) -->
-                                <Border IsVisible="{Binding ShowAnimeLibWarning}"
-                                        Margin="0,2,0,4" Padding="10,8"
-                                        CornerRadius="8"
-                                        Background="#15ff9500"
-                                        BorderBrush="#cc8400"
-                                        BorderThickness="1">
+                                <!--  AnimeLib Kodik Auth Warning (shown when AnimeLib is enabled but user is not logged in)  -->
+                                <Border
+                                    Margin="0,2,0,4"
+                                    Padding="10,8"
+                                    Background="#15ff9500"
+                                    BorderBrush="#cc8400"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding ShowAnimeLibWarning}">
                                     <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
-                                        <material:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline"
-                                                               Width="16" Height="16"
-                                                               Foreground="#cc8400"
-                                                               VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                        <material:MaterialIcon
+                                            Grid.Column="0"
+                                            Width="16"
+                                            Height="16"
+                                            Margin="0,2,0,0"
+                                            VerticalAlignment="Top"
+                                            Foreground="#cc8400"
+                                            Kind="AlertCircleOutline" />
                                         <StackPanel Grid.Column="1" Spacing="5">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.animelib_kodik_warning}"
-                                                       FontSize="11" LineHeight="15" TextWrapping="Wrap"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <Button Command="{Binding NavigateToStreamingSettingsCommand}"
-                                                    Click="OnAnimeLibSettingsLinkClick"
-                                                    HorizontalAlignment="Left"
-                                                    Cursor="Hand"
-                                                    Padding="0" Background="Transparent" BorderThickness="0">
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                LineHeight="15"
+                                                Text="{DynamicResource l.torrents.online.animelib_kodik_warning}"
+                                                TextWrapping="Wrap" />
+                                            <Button
+                                                Padding="0"
+                                                HorizontalAlignment="Left"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Click="OnAnimeLibSettingsLinkClick"
+                                                Command="{Binding NavigateToStreamingSettingsCommand}"
+                                                Cursor="Hand">
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="{DynamicResource l.torrents.online.animelib_login_link}"
-                                                               FontSize="11" FontWeight="SemiBold"
-                                                               TextDecorations="Underline"
-                                                               Foreground="{DynamicResource SystemAccentColor}"/>
-                                                    <material:MaterialIcon Kind="ArrowTopRight" Width="13" Height="13"
-                                                                           Foreground="{DynamicResource SystemAccentColor}"
-                                                                           VerticalAlignment="Center"/>
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{DynamicResource SystemAccentColor}"
+                                                        Text="{DynamicResource l.torrents.online.animelib_login_link}"
+                                                        TextDecorations="Underline" />
+                                                    <material:MaterialIcon
+                                                        Width="13"
+                                                        Height="13"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource SystemAccentColor}"
+                                                        Kind="ArrowTopRight" />
                                                 </StackPanel>
                                             </Button>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
 
-                                <!-- Source 3: DreamCast -->
+                                <!--  Source 3: DreamCast  -->
                                 <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterOnlineDreamCast, Mode=TwoWay}">
-                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SubtleFillColorSecondary}" VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="MicrophoneOutline" Width="15" Height="15"
-                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid
+                                        VerticalAlignment="Center"
+                                        ColumnDefinitions="Auto, *, Auto"
+                                        ColumnSpacing="10">
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="26"
+                                            Height="26"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                            CornerRadius="7">
+                                            <material:MaterialIcon
+                                                Width="15"
+                                                Height="15"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SystemAccentColor}"
+                                                Kind="MicrophoneOutline" />
                                         </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.provider_dreamcast}"
-                                                       FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.desc_dreamcast}"
-                                                       FontSize="10" Opacity="0.5" TextWrapping="Wrap" LineHeight="14"/>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="1">
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource l.torrents.online.provider_dreamcast}" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                LineHeight="14"
+                                                Opacity="0.5"
+                                                Text="{DynamicResource l.torrents.online.desc_dreamcast}"
+                                                TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
-                                            <Ellipse Classes="SwitchThumb"/>
+                                        <Border
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Classes="SwitchTrack">
+                                            <Ellipse Classes="SwitchThumb" />
                                         </Border>
                                     </Grid>
                                 </ToggleButton>
 
-                                <!-- Source 4: YummyAnime -->
+                                <!--  Source 4: YummyAnime  -->
                                 <ToggleButton Classes="FilterToggle" IsChecked="{Binding FilterOnlineYummyAnime, Mode=TwoWay}">
-                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SubtleFillColorSecondary}" VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="MovieFilterOutline" Width="15" Height="15"
-                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid
+                                        VerticalAlignment="Center"
+                                        ColumnDefinitions="Auto, *, Auto"
+                                        ColumnSpacing="10">
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="26"
+                                            Height="26"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                            CornerRadius="7">
+                                            <material:MaterialIcon
+                                                Width="15"
+                                                Height="15"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SystemAccentColor}"
+                                                Kind="MovieFilterOutline" />
                                         </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.provider_yummyanime}"
-                                                       FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.desc_yummyanime}"
-                                                       FontSize="10" Opacity="0.5" TextWrapping="Wrap" LineHeight="14"/>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="1">
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource l.torrents.online.provider_yummyanime}" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                LineHeight="14"
+                                                Opacity="0.5"
+                                                Text="{DynamicResource l.torrents.online.desc_yummyanime}"
+                                                TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
-                                            <Ellipse Classes="SwitchThumb"/>
+                                        <Border
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Classes="SwitchTrack">
+                                            <Ellipse Classes="SwitchThumb" />
                                         </Border>
                                     </Grid>
                                 </ToggleButton>
 
-                                <!-- Source 5: Anime 365 -->
-                                <Button Classes="FilterToggle"
-                                        Classes.active="{Binding FilterOnlineAnime365}"
-                                        Command="{Binding ToggleOnlineAnime365Command}">
-                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7"
-                                                Background="{DynamicResource SubtleFillColorSecondary}" VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="FilmstripBox" Width="15" Height="15"
-                                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <!--  Source 5: Anime 365  -->
+                                <Button
+                                    Classes="FilterToggle"
+                                    Classes.active="{Binding FilterOnlineAnime365}"
+                                    Command="{Binding ToggleOnlineAnime365Command}">
+                                    <Grid
+                                        VerticalAlignment="Center"
+                                        ColumnDefinitions="Auto, *, Auto"
+                                        ColumnSpacing="10">
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="26"
+                                            Height="26"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource SubtleFillColorSecondary}"
+                                            CornerRadius="7">
+                                            <material:MaterialIcon
+                                                Width="15"
+                                                Height="15"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SystemAccentColor}"
+                                                Kind="FilmstripBox" />
                                         </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.provider_anime365}"
-                                                       FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.desc_anime365}"
-                                                       FontSize="10" Opacity="0.5" TextWrapping="Wrap" LineHeight="14"/>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="1">
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource l.torrents.online.provider_anime365}" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                LineHeight="14"
+                                                Opacity="0.5"
+                                                Text="{DynamicResource l.torrents.online.desc_anime365}"
+                                                TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <Border Grid.Column="2" Classes="SwitchTrack" VerticalAlignment="Center">
-                                            <Ellipse Classes="SwitchThumb"/>
+                                        <Border
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Classes="SwitchTrack">
+                                            <Ellipse Classes="SwitchThumb" />
                                         </Border>
                                     </Grid>
                                 </Button>
 
-                                <!-- Anime 365 Auth Warning -->
-                                <Border IsVisible="{Binding ShowAnime365Warning}"
-                                        Margin="0,2,0,4" Padding="10,8"
-                                        CornerRadius="8"
-                                        Background="#15ff9500"
-                                        BorderBrush="#cc8400"
-                                        BorderThickness="1">
+                                <!--  Anime 365 Auth Warning  -->
+                                <Border
+                                    Margin="0,2,0,4"
+                                    Padding="10,8"
+                                    Background="#15ff9500"
+                                    BorderBrush="#cc8400"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding ShowAnime365Warning}">
                                     <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
-                                        <material:MaterialIcon Grid.Column="0" Kind="AlertCircleOutline"
-                                                               Width="16" Height="16"
-                                                               Foreground="#cc8400"
-                                                               VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                        <material:MaterialIcon
+                                            Grid.Column="0"
+                                            Width="16"
+                                            Height="16"
+                                            Margin="0,2,0,0"
+                                            VerticalAlignment="Top"
+                                            Foreground="#cc8400"
+                                            Kind="AlertCircleOutline" />
                                         <StackPanel Grid.Column="1" Spacing="5">
-                                            <TextBlock Text="{DynamicResource l.torrents.online.anime365_auth_warning}"
-                                                       FontSize="11" LineHeight="15" TextWrapping="Wrap"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <Button Command="{Binding NavigateToStreamingSettingsCommand}"
-                                                    Click="OnAnimeLibSettingsLinkClick"
-                                                    HorizontalAlignment="Left"
-                                                    Cursor="Hand"
-                                                    Padding="0" Background="Transparent" BorderThickness="0">
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                LineHeight="15"
+                                                Text="{DynamicResource l.torrents.online.anime365_auth_warning}"
+                                                TextWrapping="Wrap" />
+                                            <Button
+                                                Padding="0"
+                                                HorizontalAlignment="Left"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Click="OnAnimeLibSettingsLinkClick"
+                                                Command="{Binding NavigateToStreamingSettingsCommand}"
+                                                Cursor="Hand">
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="{DynamicResource l.torrents.online.anime365_login_link}"
-                                                               FontSize="11" FontWeight="SemiBold"
-                                                               TextDecorations="Underline"
-                                                               Foreground="{DynamicResource SystemAccentColor}"/>
-                                                    <material:MaterialIcon Kind="ArrowTopRight" Width="13" Height="13"
-                                                                           Foreground="{DynamicResource SystemAccentColor}"
-                                                                           VerticalAlignment="Center"/>
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{DynamicResource SystemAccentColor}"
+                                                        Text="{DynamicResource l.torrents.online.anime365_login_link}"
+                                                        TextDecorations="Underline" />
+                                                    <material:MaterialIcon
+                                                        Width="13"
+                                                        Height="13"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource SystemAccentColor}"
+                                                        Kind="ArrowTopRight" />
                                                 </StackPanel>
                                             </Button>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
 
-                                <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,3,0,1"/>
+                                <Border
+                                    Height="1"
+                                    Margin="0,3,0,1"
+                                    Background="{DynamicResource DividerStrokeColorDefault}" />
 
-                                <!-- Filters -->
-                                <StackPanel Spacing="6" Margin="4,3,4,4">
-                                    <TextBlock Text="{DynamicResource l.torrents.online.quality_filter_header}"
-                                               FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
-                                    <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="6">
-                                        <CheckBox Grid.Row="0" Grid.Column="0"
-                                                  Content="{DynamicResource l.torrents.online.hide_480p}"
-                                                  IsChecked="{Binding Hide480pSources, Mode=TwoWay}"
-                                                  FontSize="11.5"/>
-                                        <CheckBox Grid.Row="0" Grid.Column="1"
-                                                  Content="{DynamicResource l.torrents.online.hide_720p}"
-                                                  IsChecked="{Binding Hide720pSources, Mode=TwoWay}"
-                                                  FontSize="11.5"/>
-                                        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                                  Content="{DynamicResource l.torrents.online.hide_non_russian}"
-                                                  IsChecked="{Binding HideNonRussianSources, Mode=TwoWay}"
-                                                  FontSize="11.5"/>
+                                <!--  Filters  -->
+                                <StackPanel Margin="4,3,4,4" Spacing="6">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Opacity="0.7"
+                                        Text="{DynamicResource l.torrents.online.quality_filter_header}" />
+                                    <Grid
+                                        ColumnDefinitions="*, *"
+                                        ColumnSpacing="10"
+                                        RowDefinitions="Auto, Auto"
+                                        RowSpacing="6">
+                                        <CheckBox
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Content="{DynamicResource l.torrents.online.hide_480p}"
+                                            FontSize="11.5"
+                                            IsChecked="{Binding Hide480pSources, Mode=TwoWay}" />
+                                        <CheckBox
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Content="{DynamicResource l.torrents.online.hide_720p}"
+                                            FontSize="11.5"
+                                            IsChecked="{Binding Hide720pSources, Mode=TwoWay}" />
+                                        <CheckBox
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                            Content="{DynamicResource l.torrents.online.hide_non_russian}"
+                                            FontSize="11.5"
+                                            IsChecked="{Binding HideNonRussianSources, Mode=TwoWay}" />
                                     </Grid>
                                 </StackPanel>
 
-                                <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="0,2,0,0"/>
+                                <Border
+                                    Height="1"
+                                    Margin="0,2,0,0"
+                                    Background="{DynamicResource DividerStrokeColorDefault}" />
 
-                                <!-- Bottom actions: Select All & Deselect All -->
-                                <Grid ColumnDefinitions="*, *" ColumnSpacing="8" Margin="0,2,0,0">
-                                    <Button Grid.Column="0" Classes="FilterReset"
-                                            Command="{Binding SelectAllOnlineSourcesCommand}"
-                                            IsEnabled="{Binding !AllOnlineSourcesActive}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                            <material:MaterialIcon Kind="CheckAll" Width="14" Height="14"
-                                                                   Foreground="{Binding $parent[Button].Foreground}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.select_all}"
-                                                       Foreground="{Binding $parent[Button].Foreground}"/>
+                                <!--  Bottom actions: Select All & Deselect All  -->
+                                <Grid
+                                    Margin="0,2,0,0"
+                                    ColumnDefinitions="*, *"
+                                    ColumnSpacing="8">
+                                    <Button
+                                        Grid.Column="0"
+                                        Classes="FilterReset"
+                                        Command="{Binding SelectAllOnlineSourcesCommand}"
+                                        IsEnabled="{Binding !AllOnlineSourcesActive}">
+                                        <StackPanel
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="6">
+                                            <material:MaterialIcon
+                                                Width="14"
+                                                Height="14"
+                                                Foreground="{Binding $parent[Button].Foreground}"
+                                                Kind="CheckAll" />
+                                            <TextBlock Foreground="{Binding $parent[Button].Foreground}" Text="{DynamicResource l.torrents.online.select_all}" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Grid.Column="1" Classes="FilterReset"
-                                            Command="{Binding DeselectAllOnlineSourcesCommand}"
-                                            IsEnabled="{Binding HasActiveOnlineSources}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                                            <material:MaterialIcon Kind="Close" Width="14" Height="14"
-                                                                   Foreground="{Binding $parent[Button].Foreground}"/>
-                                            <TextBlock Text="{DynamicResource l.torrents.online.deselect_all}"
-                                                       Foreground="{Binding $parent[Button].Foreground}"/>
+                                    <Button
+                                        Grid.Column="1"
+                                        Classes="FilterReset"
+                                        Command="{Binding DeselectAllOnlineSourcesCommand}"
+                                        IsEnabled="{Binding HasActiveOnlineSources}">
+                                        <StackPanel
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="6">
+                                            <material:MaterialIcon
+                                                Width="14"
+                                                Height="14"
+                                                Foreground="{Binding $parent[Button].Foreground}"
+                                                Kind="Close" />
+                                            <TextBlock Foreground="{Binding $parent[Button].Foreground}" Text="{DynamicResource l.torrents.online.deselect_all}" />
                                         </StackPanel>
                                     </Button>
                                 </Grid>

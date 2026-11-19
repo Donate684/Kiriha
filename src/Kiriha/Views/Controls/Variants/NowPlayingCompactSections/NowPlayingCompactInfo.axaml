@@ -1,85 +1,183 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompactSections.NowPlayingCompactInfo"
-             x:DataType="vmNowPlaying:NowPlayingViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Controls.Variants.NowPlayingCompactSections.NowPlayingCompactInfo"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
+    x:DataType="vmNowPlaying:NowPlayingViewModel">
 
     <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:LocConverter x:Key="LocConverter" />
     </UserControl.Resources>
 
-                <Border Classes="Section" Padding="0"
-                        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <StackPanel>
-                        <!-- Tabs header (flush with card top) -->
-                        <Border BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="0,0,0,1"
-                                Padding="6,0,18,0">
-                            <StackPanel Orientation="Horizontal">
-                                <RadioButton x:Name="TabDetails" Classes="Tab" GroupName="NpInfoTab"
-                                             IsChecked="True"
-                                             Content="{DynamicResource l.common.actions.details}"/>
-                                <RadioButton x:Name="TabSynopsis" Classes="Tab" GroupName="NpInfoTab"
-                                             Content="{DynamicResource l.anime.labels.synopsis}"/>
-                                <RadioButton x:Name="TabAltTitles" Classes="Tab" GroupName="NpInfoTab"
-                                             Content="{DynamicResource l.anime.labels.alternative_titles}"/>
-                            </StackPanel>
-                        </Border>
-                        <ProgressBar IsIndeterminate="True" Height="2" Margin="0" IsVisible="{Binding IsLoadingDetails}"/>
+    <Border
+        Padding="0"
+        Classes="Section"
+        IsVisible="{Binding MatchedAnime, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <StackPanel>
+            <!--  Tabs header (flush with card top)  -->
+            <Border
+                Padding="6,0,18,0"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton
+                        x:Name="TabDetails"
+                        Classes="Tab"
+                        Content="{DynamicResource l.common.actions.details}"
+                        GroupName="NpInfoTab"
+                        IsChecked="True" />
+                    <RadioButton
+                        x:Name="TabSynopsis"
+                        Classes="Tab"
+                        Content="{DynamicResource l.anime.labels.synopsis}"
+                        GroupName="NpInfoTab" />
+                    <RadioButton
+                        x:Name="TabAltTitles"
+                        Classes="Tab"
+                        Content="{DynamicResource l.anime.labels.alternative_titles}"
+                        GroupName="NpInfoTab" />
+                </StackPanel>
+            </Border>
+            <ProgressBar
+                Height="2"
+                Margin="0"
+                IsIndeterminate="True"
+                IsVisible="{Binding IsLoadingDetails}" />
 
-                        <Panel Margin="18,18,18,18">
+            <Panel Margin="18,18,18,18">
 
-                        <!-- Details -->
-                        <Grid IsVisible="{Binding #TabDetails.IsChecked}"
-                              ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource l.anime.labels.type}" Classes="Label"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MatchedAnime.Type, Converter={StaticResource LocConverter}}" Classes="Value"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.episodes}" Classes="Label" IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MatchedAnime.TotalEpisodes}" Classes="Value" IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource l.anime.labels.chapters}" Classes="Label" IsVisible="{Binding MatchedAnime.Presentation.IsManga}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MatchedAnime.Presentation.TotalPart}" Classes="Value" IsVisible="{Binding MatchedAnime.Presentation.IsManga}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource l.anime.labels.status}" Classes="Label"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MatchedAnime.Presentation.DisplayAiringStatus}" Classes="Value"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource l.anime.labels.season}" Classes="Label"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MatchedAnime.Season, Converter={StaticResource LocConverter}}" Classes="Value"/>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="{DynamicResource l.anime.labels.genres}" Classes="Label"/>
-                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding MatchedAnime.Genres, Converter={StaticResource LocConverter}}"
-                                       Classes="Value" TextWrapping="Wrap"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.studios}" Classes="Label" IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource l.anime.labels.authors}" Classes="Label" IsVisible="{Binding MatchedAnime.Presentation.IsManga}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding MatchedAnime.Presentation.StudiosDisplay}"
-                                       Classes="Value" TextWrapping="Wrap" IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"/>
-                        </Grid>
+                <!--  Details  -->
+                <Grid
+                    ColumnDefinitions="120,*"
+                    IsVisible="{Binding #TabDetails.IsChecked}"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                    RowSpacing="10">
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Classes="Label"
+                        Text="{DynamicResource l.anime.labels.type}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Classes="Value"
+                        Text="{Binding MatchedAnime.Type, Converter={StaticResource LocConverter}}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Classes="Label"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"
+                        Text="{DynamicResource l.anime.labels.episodes}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Classes="Value"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"
+                        Text="{Binding MatchedAnime.TotalEpisodes}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Classes="Label"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsManga}"
+                        Text="{DynamicResource l.anime.labels.chapters}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Classes="Value"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsManga}"
+                        Text="{Binding MatchedAnime.Presentation.TotalPart}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Classes="Label"
+                        Text="{DynamicResource l.anime.labels.status}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Classes="Value"
+                        Text="{Binding MatchedAnime.Presentation.DisplayAiringStatus}" />
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        Classes="Label"
+                        Text="{DynamicResource l.anime.labels.season}" />
+                    <TextBlock
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Classes="Value"
+                        Text="{Binding MatchedAnime.Season, Converter={StaticResource LocConverter}}" />
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        Classes="Label"
+                        Text="{DynamicResource l.anime.labels.genres}" />
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Classes="Value"
+                        Text="{Binding MatchedAnime.Genres, Converter={StaticResource LocConverter}}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="0"
+                        Classes="Label"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"
+                        Text="{DynamicResource l.anime.labels.studios}" />
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="0"
+                        Classes="Label"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsManga}"
+                        Text="{DynamicResource l.anime.labels.authors}" />
+                    <TextBlock
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Classes="Value"
+                        IsVisible="{Binding MatchedAnime.Presentation.IsAnime}"
+                        Text="{Binding MatchedAnime.Presentation.StudiosDisplay}"
+                        TextWrapping="Wrap" />
+                </Grid>
 
-                        <!-- Synopsis -->
-                        <TextBlock IsVisible="{Binding #TabSynopsis.IsChecked}"
-                                   Text="{Binding MatchedAnime.Presentation.DisplaySynopsis}" FontSize="13"
-                                   TextWrapping="Wrap" Opacity="0.85" LineHeight="20"/>
+                <!--  Synopsis  -->
+                <TextBlock
+                    FontSize="13"
+                    IsVisible="{Binding #TabSynopsis.IsChecked}"
+                    LineHeight="20"
+                    Opacity="0.85"
+                    Text="{Binding MatchedAnime.Presentation.DisplaySynopsis}"
+                    TextWrapping="Wrap" />
 
-                        <!-- Alt titles -->
-                        <StackPanel IsVisible="{Binding #TabAltTitles.IsChecked}">
-                            <ItemsControl ItemsSource="{Binding AllAlternativeTitles}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="6"
-                                                Padding="10,4" Margin="0,0,6,6">
-                                            <TextBlock Text="{Binding}" FontSize="12"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <TextBlock Text="{DynamicResource l.anime.labels.no_alternative_titles}" FontSize="12" Opacity="0.5"
-                                       IsVisible="{Binding !HasAlternativeTitles}"/>
-                        </StackPanel>
+                <!--  Alt titles  -->
+                <StackPanel IsVisible="{Binding #TabAltTitles.IsChecked}">
+                    <ItemsControl ItemsSource="{Binding AllAlternativeTitles}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border
+                                    Margin="0,0,6,6"
+                                    Padding="10,4"
+                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                    CornerRadius="6">
+                                    <TextBlock FontSize="12" Text="{Binding}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock
+                        FontSize="12"
+                        IsVisible="{Binding !HasAlternativeTitles}"
+                        Opacity="0.5"
+                        Text="{DynamicResource l.anime.labels.no_alternative_titles}" />
+                </StackPanel>
 
-                        </Panel>
-                    </StackPanel>
-                </Border>
+            </Panel>
+        </StackPanel>
+    </Border>
 
 </UserControl>
 

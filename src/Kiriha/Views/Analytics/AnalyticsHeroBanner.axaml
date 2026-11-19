@@ -1,136 +1,174 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.Analytics.AnalyticsHeroBanner"
-             x:DataType="vmAnalytics:AnalyticsViewModel">
-            <Border Margin="20,8,20,14" CornerRadius="14"
-                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                    BorderThickness="1"
-                    Background="{DynamicResource CardBackgroundFillDefault}"
-                    ClipToBounds="True">
-                <Panel>
-                    <!-- Градиентный тинт слева -->
-                    <Border CornerRadius="14">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="85%,100%">
-                                <GradientStop Color="#1A2D7DD2" Offset="0"/>
-                                <GradientStop Color="#007B61FF" Offset="0.6"/>
-                                <GradientStop Color="#00000000" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
-
-                    <!-- Акцентная полоса сверху -->
-                    <Border Height="3" VerticalAlignment="Top" CornerRadius="14,14,0,0">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                                <GradientStop Color="#FF7B61FF" Offset="0"/>
-                                <GradientStop Color="#FF2D7DD2" Offset="0.5"/>
-                                <GradientStop Color="#FF2E9D62" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
-
-                    <!-- Основной контент -->
-                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="20,18,20,18" ColumnSpacing="18">
-
-                        <!-- Аватар с градиентным кольцом -->
-                        <Panel Width="62" Height="62" VerticalAlignment="Center">
-                            <!-- Кольцо (градиентный фон) -->
-                            <Border CornerRadius="31">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Color="#FF7B61FF" Offset="0"/>
-                                        <GradientStop Color="#FF2D7DD2" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                            </Border>
-                            <!-- Внутренний круг -->
-                            <Border Width="54" Height="54" CornerRadius="27"
-                                    Background="{DynamicResource CardBackgroundFillDefault}"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
-                                <material:MaterialIcon Kind="AccountCircle"
-                                                       Width="30" Height="30"
-                                                       Foreground="{DynamicResource SystemAccentColor}"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                            </Border>
-                        </Panel>
-
-                        <!-- Заголовок -->
-                        <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource l.analytics.hero_title}"
-                                       FontSize="21"
-                                       FontWeight="SemiBold"/>
-                            <TextBlock Text="{DynamicResource l.analytics.hero_subtitle}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-
-                        <!-- Декоративные стат-пузыри (2 ключевых показателя) -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-
-                            <!-- Всего тайтлов -->
-                            <Border CornerRadius="12" Padding="14,10">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Color="#1A7B61FF" Offset="0"/>
-                                        <GradientStop Color="#0D2D7DD2" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel Spacing="2" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding Overview.Metrics[0].Value}"
-                                               FontSize="22" FontWeight="Light"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource AnalyticsSectionPurpleBrush}"/>
-                                    <TextBlock Text="{Binding Overview.Metrics[0].Label}"
-                                               FontSize="10" Opacity="0.55"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Завершено -->
-                            <Border CornerRadius="12" Padding="14,10">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Color="#162E9D62" Offset="0"/>
-                                        <GradientStop Color="#0D2D7DD2" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel Spacing="2" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding Overview.Metrics[1].Value}"
-                                               FontSize="22" FontWeight="Light"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource AnalyticsSectionGreenBrush}"/>
-                                    <TextBlock Text="{Binding Overview.Metrics[1].Label}"
-                                               FontSize="10" Opacity="0.55"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Средняя оценка -->
-                            <Border CornerRadius="12" Padding="14,10">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Color="#1AD17A22" Offset="0"/>
-                                        <GradientStop Color="#00000000" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel Spacing="2" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding Overview.Metrics[2].Value}"
-                                               FontSize="22" FontWeight="Light"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource AnalyticsSectionOrangeBrush}"/>
-                                    <TextBlock Text="{Binding Overview.Metrics[2].Label}"
-                                               FontSize="10" Opacity="0.55"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                        </StackPanel>
-                    </Grid>
-                </Panel>
+﻿<UserControl
+    x:Class="Kiriha.Views.Analytics.AnalyticsHeroBanner"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+    x:DataType="vmAnalytics:AnalyticsViewModel">
+    <Border
+        Margin="20,8,20,14"
+        Background="{DynamicResource CardBackgroundFillDefault}"
+        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+        BorderThickness="1"
+        ClipToBounds="True"
+        CornerRadius="14">
+        <Panel>
+            <!--  Градиентный тинт слева  -->
+            <Border CornerRadius="14">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="85%,100%">
+                        <GradientStop Offset="0" Color="#1A2D7DD2" />
+                        <GradientStop Offset="0.6" Color="#007B61FF" />
+                        <GradientStop Offset="1" Color="#00000000" />
+                    </LinearGradientBrush>
+                </Border.Background>
             </Border>
+
+            <!--  Акцентная полоса сверху  -->
+            <Border
+                Height="3"
+                VerticalAlignment="Top"
+                CornerRadius="14,14,0,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Offset="0" Color="#FF7B61FF" />
+                        <GradientStop Offset="0.5" Color="#FF2D7DD2" />
+                        <GradientStop Offset="1" Color="#FF2E9D62" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <!--  Основной контент  -->
+            <Grid
+                Margin="20,18,20,18"
+                ColumnDefinitions="Auto,*,Auto"
+                ColumnSpacing="18">
+
+                <!--  Аватар с градиентным кольцом  -->
+                <Panel
+                    Width="62"
+                    Height="62"
+                    VerticalAlignment="Center">
+                    <!--  Кольцо (градиентный фон)  -->
+                    <Border CornerRadius="31">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#FF7B61FF" />
+                                <GradientStop Offset="1" Color="#FF2D7DD2" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <!--  Внутренний круг  -->
+                    <Border
+                        Width="54"
+                        Height="54"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource CardBackgroundFillDefault}"
+                        CornerRadius="27">
+                        <material:MaterialIcon
+                            Width="30"
+                            Height="30"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            Kind="AccountCircle" />
+                    </Border>
+                </Panel>
+
+                <!--  Заголовок  -->
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="5">
+                    <TextBlock
+                        FontSize="21"
+                        FontWeight="SemiBold"
+                        Text="{DynamicResource l.analytics.hero_title}" />
+                    <TextBlock
+                        FontSize="12"
+                        Opacity="0.5"
+                        Text="{DynamicResource l.analytics.hero_subtitle}" />
+                </StackPanel>
+
+                <!--  Декоративные стат-пузыри (2 ключевых показателя)  -->
+                <StackPanel
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="10">
+
+                    <!--  Всего тайтлов  -->
+                    <Border Padding="14,10" CornerRadius="12">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#1A7B61FF" />
+                                <GradientStop Offset="1" Color="#0D2D7DD2" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel HorizontalAlignment="Center" Spacing="2">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="22"
+                                FontWeight="Light"
+                                Foreground="{DynamicResource AnalyticsSectionPurpleBrush}"
+                                Text="{Binding Overview.Metrics[0].Value}" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="10"
+                                Opacity="0.55"
+                                Text="{Binding Overview.Metrics[0].Label}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Завершено  -->
+                    <Border Padding="14,10" CornerRadius="12">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#162E9D62" />
+                                <GradientStop Offset="1" Color="#0D2D7DD2" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel HorizontalAlignment="Center" Spacing="2">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="22"
+                                FontWeight="Light"
+                                Foreground="{DynamicResource AnalyticsSectionGreenBrush}"
+                                Text="{Binding Overview.Metrics[1].Value}" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="10"
+                                Opacity="0.55"
+                                Text="{Binding Overview.Metrics[1].Label}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Средняя оценка  -->
+                    <Border Padding="14,10" CornerRadius="12">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#1AD17A22" />
+                                <GradientStop Offset="1" Color="#00000000" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel HorizontalAlignment="Center" Spacing="2">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="22"
+                                FontWeight="Light"
+                                Foreground="{DynamicResource AnalyticsSectionOrangeBrush}"
+                                Text="{Binding Overview.Metrics[2].Value}" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="10"
+                                Opacity="0.55"
+                                Text="{Binding Overview.Metrics[2].Label}" />
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+        </Panel>
+    </Border>
 </UserControl>

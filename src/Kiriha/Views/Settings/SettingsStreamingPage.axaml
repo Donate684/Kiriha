@@ -1,170 +1,289 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.Settings.SettingsStreamingPage"
-             x:DataType="vmSettings:SettingsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Settings.SettingsStreamingPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    x:DataType="vmSettings:SettingsViewModel">
 
     <UserControl.Styles>
         <Style Selector="Button.AccentAction">
-            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="CornerRadius" Value="7"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.AccentAction:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight1}"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight1}" />
+            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.DangerAction">
-            <Setter Property="Background" Value="#20e85656"/>
-            <Setter Property="Foreground" Value="#ff5555"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="7"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#20e85656" />
+            <Setter Property="Foreground" Value="#ff5555" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
     </UserControl.Styles>
 
     <StackPanel Spacing="16">
-        <!-- ═══ Page Header ═══ -->
-        <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.streaming}"/>
+        <!--  ═══ Page Header ═══  -->
+        <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.streaming}" />
 
-        <!-- ═══ Notification / Status Banner ═══ -->
-        <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                BorderBrush="{DynamicResource SystemAccentColor}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="14,10"
-                IsVisible="{Binding Streaming.StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <!--  ═══ Notification / Status Banner ═══  -->
+        <Border
+            Padding="14,10"
+            Background="{DynamicResource SubtleFillColorSecondary}"
+            BorderBrush="{DynamicResource SystemAccentColor}"
+            BorderThickness="1"
+            CornerRadius="8"
+            IsVisible="{Binding Streaming.StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <material:MaterialIcon Grid.Column="0" Kind="CheckCircleOutline" Width="18" Height="18"
-                                      Foreground="{DynamicResource SystemAccentColor}"
-                                      VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBlock Grid.Column="1" Text="{Binding Streaming.StatusMessage}"
-                           VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap"/>
-                <Button Grid.Column="2" Content="✕" Background="Transparent" BorderThickness="0"
-                        Padding="6,2" Cursor="Hand" Opacity="0.6"
-                        Command="{Binding Streaming.ClearStatusCommand}"/>
+                <material:MaterialIcon
+                    Grid.Column="0"
+                    Width="18"
+                    Height="18"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource SystemAccentColor}"
+                    Kind="CheckCircleOutline" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Text="{Binding Streaming.StatusMessage}"
+                    TextWrapping="Wrap" />
+                <Button
+                    Grid.Column="2"
+                    Padding="6,2"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{Binding Streaming.ClearStatusCommand}"
+                    Content="✕"
+                    Cursor="Hand"
+                    Opacity="0.6" />
             </Grid>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════════════ -->
-        <!-- ── Card 1: AnimeLib Account & Direct CDN Player ──              -->
-        <!-- ═══════════════════════════════════════════════════════════════ -->
-        <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                BorderThickness="1"
-                CornerRadius="12"
-                Padding="20">
+        <!--  ═══════════════════════════════════════════════════════════════  -->
+        <!--  ── Card 1: AnimeLib Account & Direct CDN Player ──  -->
+        <!--  ═══════════════════════════════════════════════════════════════  -->
+        <Border
+            Padding="20"
+            Background="{DynamicResource SubtleFillColorSecondary}"
+            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+            BorderThickness="1"
+            CornerRadius="12">
             <StackPanel Spacing="16">
-                <!-- Header row with brand and action -->
+                <!--  Header row with brand and action  -->
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorTertiary}"
-                            CornerRadius="8" Width="44" Height="44" Margin="0,0,14,0"
-                            VerticalAlignment="Center">
-                        <material:MaterialIcon Kind="TelevisionPlay" Width="24" Height="24"
-                                              Foreground="{DynamicResource SystemAccentColor}"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border
+                        Grid.Column="0"
+                        Width="44"
+                        Height="44"
+                        Margin="0,0,14,0"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource SubtleFillColorTertiary}"
+                        CornerRadius="8">
+                        <material:MaterialIcon
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            Kind="TelevisionPlay" />
                     </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <TextBlock Text="AnimeLib" FontSize="16" FontWeight="SemiBold"/>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="4">
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Text="AnimeLib" />
 
-                            <!-- Status Badge: Logged In -->
-                            <Border Background="#152ecc71" CornerRadius="4" Padding="7,2"
-                                    IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}">
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="CheckCircle" Width="13" Height="13" Foreground="#2ecc71"/>
-                                    <TextBlock Text="{DynamicResource l.settings.streaming.status_logged_in}" FontSize="11" FontWeight="SemiBold" Foreground="#2ecc71"/>
+                            <!--  Status Badge: Logged In  -->
+                            <Border
+                                Padding="7,2"
+                                Background="#152ecc71"
+                                CornerRadius="4"
+                                IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="5">
+                                    <material:MaterialIcon
+                                        Width="13"
+                                        Height="13"
+                                        Foreground="#2ecc71"
+                                        Kind="CheckCircle" />
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#2ecc71"
+                                        Text="{DynamicResource l.settings.streaming.status_logged_in}" />
                                 </StackPanel>
                             </Border>
 
-                            <!-- Status Badge: Guest -->
-                            <Border Background="#15ff9500" CornerRadius="4" Padding="7,2"
-                                    IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}">
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="InformationOutline" Width="13" Height="13" Foreground="#cc8400"/>
-                                    <TextBlock Text="{DynamicResource l.settings.streaming.status_guest}" FontSize="11" FontWeight="SemiBold" Foreground="#cc8400"/>
+                            <!--  Status Badge: Guest  -->
+                            <Border
+                                Padding="7,2"
+                                Background="#15ff9500"
+                                CornerRadius="4"
+                                IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="5">
+                                    <material:MaterialIcon
+                                        Width="13"
+                                        Height="13"
+                                        Foreground="#cc8400"
+                                        Kind="InformationOutline" />
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#cc8400"
+                                        Text="{DynamicResource l.settings.streaming.status_guest}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <!-- Logged In description -->
-                        <TextBlock Text="{Binding Streaming.AnimeLibUsername, StringFormat='{} {0}'}"
-                                   FontSize="12" Opacity="0.75"
-                                   IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}"/>
+                        <!--  Logged In description  -->
+                        <TextBlock
+                            FontSize="12"
+                            IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}"
+                            Opacity="0.75"
+                            Text="{Binding Streaming.AnimeLibUsername, StringFormat='{} {0}'}" />
 
-                        <!-- Guest description -->
-                        <TextBlock Text="{DynamicResource l.settings.streaming.guest_desc}"
-                                   FontSize="12" Opacity="0.6" TextWrapping="Wrap"
-                                   IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}"/>
+                        <!--  Guest description  -->
+                        <TextBlock
+                            FontSize="12"
+                            IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}"
+                            Opacity="0.6"
+                            Text="{DynamicResource l.settings.streaming.guest_desc}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
 
-                    <!-- Login Button -->
-                    <Button Grid.Column="2" Classes="AccentAction" VerticalAlignment="Center"
-                            Command="{Binding Streaming.LoginAnimeLibCommand}"
-                            IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}"
-                            IsEnabled="{Binding !Streaming.IsLoggingIn}">
+                    <!--  Login Button  -->
+                    <Button
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Classes="AccentAction"
+                        Command="{Binding Streaming.LoginAnimeLibCommand}"
+                        IsEnabled="{Binding !Streaming.IsLoggingIn}"
+                        IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <material:MaterialIcon Kind="Login" Width="16" Height="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.settings.streaming.login_button}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Kind="Login" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.settings.streaming.login_button}" />
                         </StackPanel>
                     </Button>
 
-                    <!-- Logout Button -->
-                    <Button Grid.Column="2" Classes="DangerAction" VerticalAlignment="Center"
-                            Command="{Binding Streaming.LogoutAnimeLibCommand}"
-                            IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}">
+                    <!--  Logout Button  -->
+                    <Button
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Classes="DangerAction"
+                        Command="{Binding Streaming.LogoutAnimeLibCommand}"
+                        IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <material:MaterialIcon Kind="Logout" Width="16" Height="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.settings.streaming.logout_button}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Kind="Logout" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.settings.streaming.logout_button}" />
                         </StackPanel>
                     </Button>
                 </Grid>
 
-                <!-- Prefer direct MP4 toggle (when logged in) -->
-                <StackPanel Spacing="10" IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}">
-                    <Border Classes="Divider"/>
+                <!--  Prefer direct MP4 toggle (when logged in)  -->
+                <StackPanel IsVisible="{Binding Streaming.IsAnimeLibLoggedIn}" Spacing="10">
+                    <Border Classes="Divider" />
                     <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.prefer_direct_title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.prefer_direct_sub}"/>
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Spacing="2">
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.prefer_direct_title}" />
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.prefer_direct_sub}" />
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                     IsChecked="{Binding Streaming.PreferDirectMp4}"
-                                     OnContent="{DynamicResource l.common.status.on}"
-                                     OffContent="{DynamicResource l.common.status.off}"/>
+                        <ToggleSwitch
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding Streaming.PreferDirectMp4}"
+                            OffContent="{DynamicResource l.common.status.off}"
+                            OnContent="{DynamicResource l.common.status.on}" />
                     </Grid>
                 </StackPanel>
 
-                <!-- Manual Token input expander (for power users or fallback, hidden when logged in) -->
-                <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="0,1,0,0" Padding="0,10,0,0"
-                        IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}">
+                <!--  Manual Token input expander (for power users or fallback, hidden when logged in)  -->
+                <Border
+                    Padding="0,10,0,0"
+                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                    BorderThickness="0,1,0,0"
+                    IsVisible="{Binding !Streaming.IsAnimeLibLoggedIn}">
                     <StackPanel Spacing="8">
-                        <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
-                                Command="{Binding Streaming.ToggleManualTokenCommand}">
+                        <Button
+                            Padding="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Streaming.ToggleManualTokenCommand}"
+                            Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Opacity="0.6"
-                                                      IsVisible="{Binding !Streaming.IsManualTokenExpanded}"/>
-                                <material:MaterialIcon Kind="ChevronDown" Width="16" Height="16" Opacity="0.6"
-                                                      IsVisible="{Binding Streaming.IsManualTokenExpanded}"/>
-                                <TextBlock Text="{DynamicResource l.settings.streaming.manual_token_toggle}" FontSize="11" Opacity="0.65"/>
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    IsVisible="{Binding !Streaming.IsManualTokenExpanded}"
+                                    Kind="ChevronRight"
+                                    Opacity="0.6" />
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    IsVisible="{Binding Streaming.IsManualTokenExpanded}"
+                                    Kind="ChevronDown"
+                                    Opacity="0.6" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Opacity="0.65"
+                                    Text="{DynamicResource l.settings.streaming.manual_token_toggle}" />
                             </StackPanel>
                         </Button>
 
-                        <StackPanel Spacing="8" IsVisible="{Binding Streaming.IsManualTokenExpanded}" Margin="4,4,0,0">
-                            <TextBlock Text="{DynamicResource l.settings.streaming.manual_token_hint}"
-                                       FontSize="11" Opacity="0.55" TextWrapping="Wrap"/>
+                        <StackPanel
+                            Margin="4,4,0,0"
+                            IsVisible="{Binding Streaming.IsManualTokenExpanded}"
+                            Spacing="8">
+                            <TextBlock
+                                FontSize="11"
+                                Opacity="0.55"
+                                Text="{DynamicResource l.settings.streaming.manual_token_hint}"
+                                TextWrapping="Wrap" />
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Text="{Binding Streaming.ManualToken}"
-                                         PlaceholderText="{DynamicResource l.settings.streaming.manual_token_placeholder}"
-                                         CornerRadius="6" Margin="0,0,8,0"/>
-                                <Button Grid.Column="1" Content="{DynamicResource l.settings.streaming.apply_button}" Padding="14,6" CornerRadius="6"
-                                        Command="{Binding Streaming.ApplyManualTokenCommand}"/>
+                                <TextBox
+                                    Grid.Column="0"
+                                    Margin="0,0,8,0"
+                                    CornerRadius="6"
+                                    PlaceholderText="{DynamicResource l.settings.streaming.manual_token_placeholder}"
+                                    Text="{Binding Streaming.ManualToken}" />
+                                <Button
+                                    Grid.Column="1"
+                                    Padding="14,6"
+                                    Command="{Binding Streaming.ApplyManualTokenCommand}"
+                                    Content="{DynamicResource l.settings.streaming.apply_button}"
+                                    CornerRadius="6" />
                             </Grid>
                         </StackPanel>
                     </StackPanel>
@@ -172,138 +291,252 @@
             </StackPanel>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════════════ -->
-        <!-- ── Card 2: Anime 365 (Smotret Anime) Account ──                 -->
-        <!-- ═══════════════════════════════════════════════════════════════ -->
-        <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                BorderThickness="1"
-                CornerRadius="12"
-                Padding="20">
+        <!--  ═══════════════════════════════════════════════════════════════  -->
+        <!--  ── Card 2: Anime 365 (Smotret Anime) Account ──  -->
+        <!--  ═══════════════════════════════════════════════════════════════  -->
+        <Border
+            Padding="20"
+            Background="{DynamicResource SubtleFillColorSecondary}"
+            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+            BorderThickness="1"
+            CornerRadius="12">
             <StackPanel Spacing="16">
-                <!-- Header row with brand and status -->
+                <!--  Header row with brand and status  -->
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorTertiary}"
-                            CornerRadius="8" Width="44" Height="44" Margin="0,0,14,0"
-                            VerticalAlignment="Center">
-                        <material:MaterialIcon Kind="FilmstripBox" Width="24" Height="24"
-                                              Foreground="{DynamicResource SystemAccentColor}"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border
+                        Grid.Column="0"
+                        Width="44"
+                        Height="44"
+                        Margin="0,0,14,0"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource SubtleFillColorTertiary}"
+                        CornerRadius="8">
+                        <material:MaterialIcon
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            Kind="FilmstripBox" />
                     </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <TextBlock Text="Anime 365" FontSize="16" FontWeight="SemiBold"/>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="4">
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Text="Anime 365" />
 
-                            <!-- Status Badge: Logged In -->
-                            <Border Background="#152ecc71" CornerRadius="4" Padding="7,2"
-                                    IsVisible="{Binding Streaming.IsAnime365LoggedIn}">
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="CheckCircle" Width="13" Height="13" Foreground="#2ecc71"/>
-                                    <TextBlock Text="{DynamicResource l.settings.streaming.status_logged_in}" FontSize="11" FontWeight="SemiBold" Foreground="#2ecc71"/>
+                            <!--  Status Badge: Logged In  -->
+                            <Border
+                                Padding="7,2"
+                                Background="#152ecc71"
+                                CornerRadius="4"
+                                IsVisible="{Binding Streaming.IsAnime365LoggedIn}">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="5">
+                                    <material:MaterialIcon
+                                        Width="13"
+                                        Height="13"
+                                        Foreground="#2ecc71"
+                                        Kind="CheckCircle" />
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#2ecc71"
+                                        Text="{DynamicResource l.settings.streaming.status_logged_in}" />
                                 </StackPanel>
                             </Border>
 
-                            <!-- Status Badge: Not Logged In -->
-                            <Border Background="#15ff9500" CornerRadius="4" Padding="7,2"
-                                    IsVisible="{Binding !Streaming.IsAnime365LoggedIn}">
-                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="InformationOutline" Width="13" Height="13" Foreground="#cc8400"/>
-                                    <TextBlock Text="{DynamicResource l.settings.streaming.anime365_account_required}" FontSize="11" FontWeight="SemiBold" Foreground="#cc8400"/>
+                            <!--  Status Badge: Not Logged In  -->
+                            <Border
+                                Padding="7,2"
+                                Background="#15ff9500"
+                                CornerRadius="4"
+                                IsVisible="{Binding !Streaming.IsAnime365LoggedIn}">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="5">
+                                    <material:MaterialIcon
+                                        Width="13"
+                                        Height="13"
+                                        Foreground="#cc8400"
+                                        Kind="InformationOutline" />
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#cc8400"
+                                        Text="{DynamicResource l.settings.streaming.anime365_account_required}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <!-- Logged In details -->
-                        <StackPanel Spacing="2" IsVisible="{Binding Streaming.IsAnime365LoggedIn}">
-                            <TextBlock Text="{Binding Streaming.Anime365Username, StringFormat='{} {0}'}"
-                                       FontSize="12" Opacity="0.8" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding Streaming.Anime365StatusText}"
-                                       FontSize="11" Opacity="0.65"/>
+                        <!--  Logged In details  -->
+                        <StackPanel IsVisible="{Binding Streaming.IsAnime365LoggedIn}" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Opacity="0.8"
+                                Text="{Binding Streaming.Anime365Username, StringFormat='{} {0}'}" />
+                            <TextBlock
+                                FontSize="11"
+                                Opacity="0.65"
+                                Text="{Binding Streaming.Anime365StatusText}" />
                         </StackPanel>
 
-                        <!-- Not Logged In description -->
-                        <TextBlock Text="{DynamicResource l.settings.streaming.anime365_desc}"
-                                   FontSize="12" Opacity="0.6" TextWrapping="Wrap"
-                                   IsVisible="{Binding !Streaming.IsAnime365LoggedIn}"/>
+                        <!--  Not Logged In description  -->
+                        <TextBlock
+                            FontSize="12"
+                            IsVisible="{Binding !Streaming.IsAnime365LoggedIn}"
+                            Opacity="0.6"
+                            Text="{DynamicResource l.settings.streaming.anime365_desc}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
 
-                    <!-- Logout Button -->
-                    <Button Grid.Column="2" Classes="DangerAction" VerticalAlignment="Center"
-                            Command="{Binding Streaming.LogoutAnime365Command}"
-                            IsVisible="{Binding Streaming.IsAnime365LoggedIn}">
+                    <!--  Logout Button  -->
+                    <Button
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Classes="DangerAction"
+                        Command="{Binding Streaming.LogoutAnime365Command}"
+                        IsVisible="{Binding Streaming.IsAnime365LoggedIn}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <material:MaterialIcon Kind="Logout" Width="16" Height="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.settings.streaming.logout_button}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Kind="Logout" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.settings.streaming.logout_button}" />
                         </StackPanel>
                     </Button>
                 </Grid>
 
-                <!-- Login form when not logged in -->
-                <StackPanel Spacing="10" IsVisible="{Binding !Streaming.IsAnime365LoggedIn}">
-                    <Border Classes="Divider"/>
-                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="10" VerticalAlignment="Center">
-                        <TextBox Grid.Column="0" Text="{Binding Streaming.Anime365Email}"
-                                 PlaceholderText="{DynamicResource l.settings.streaming.anime365_email_placeholder}"
-                                 CornerRadius="6"/>
-                        <TextBox Grid.Column="1" Text="{Binding Streaming.Anime365Password}"
-                                 PasswordChar="●"
-                                 PlaceholderText="{DynamicResource l.settings.streaming.anime365_password_placeholder}"
-                                 CornerRadius="6"/>
-                        <Button Grid.Column="2" Classes="AccentAction" VerticalAlignment="Center"
-                                Command="{Binding Streaming.LoginAnime365Command}"
-                                IsEnabled="{Binding !Streaming.IsAnime365LoggingIn}">
+                <!--  Login form when not logged in  -->
+                <StackPanel IsVisible="{Binding !Streaming.IsAnime365LoggedIn}" Spacing="10">
+                    <Border Classes="Divider" />
+                    <Grid
+                        VerticalAlignment="Center"
+                        ColumnDefinitions="*,*,Auto"
+                        ColumnSpacing="10">
+                        <TextBox
+                            Grid.Column="0"
+                            CornerRadius="6"
+                            PlaceholderText="{DynamicResource l.settings.streaming.anime365_email_placeholder}"
+                            Text="{Binding Streaming.Anime365Email}" />
+                        <TextBox
+                            Grid.Column="1"
+                            CornerRadius="6"
+                            PasswordChar="●"
+                            PlaceholderText="{DynamicResource l.settings.streaming.anime365_password_placeholder}"
+                            Text="{Binding Streaming.Anime365Password}" />
+                        <Button
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Classes="AccentAction"
+                            Command="{Binding Streaming.LoginAnime365Command}"
+                            IsEnabled="{Binding !Streaming.IsAnime365LoggingIn}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <material:MaterialIcon Kind="Login" Width="16" Height="16" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource l.settings.streaming.login_button}" VerticalAlignment="Center"/>
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center"
+                                    Kind="Login" />
+                                <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.settings.streaming.login_button}" />
                             </StackPanel>
                         </Button>
                     </Grid>
                 </StackPanel>
 
-                <!-- Site mirror selector -->
-                <Border Classes="Divider"/>
+                <!--  Site mirror selector  -->
+                <Border Classes="Divider" />
                 <Grid Classes="Row" ColumnDefinitions="*,260">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
-                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.anime365_mirror_title}"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.anime365_mirror_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        Margin="0,0,16,0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.anime365_mirror_title}" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.anime365_mirror_sub}" />
                     </StackPanel>
-                    <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding Streaming.Anime365Mirrors}"
-                              SelectedItem="{Binding Streaming.SelectedAnime365Mirror}"
-                              CornerRadius="6">
+                    <ComboBox
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        CornerRadius="6"
+                        ItemsSource="{Binding Streaming.Anime365Mirrors}"
+                        SelectedItem="{Binding Streaming.SelectedAnime365Mirror}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vmSettings:Anime365MirrorOption">
-                                <TextBlock Text="{Binding DisplayName}"/>
+                                <TextBlock Text="{Binding DisplayName}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </Grid>
 
-                <!-- Manual Token input expander (hidden when logged in) -->
-                <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="0,1,0,0" Padding="0,10,0,0"
-                        IsVisible="{Binding !Streaming.IsAnime365LoggedIn}">
+                <!--  Manual Token input expander (hidden when logged in)  -->
+                <Border
+                    Padding="0,10,0,0"
+                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                    BorderThickness="0,1,0,0"
+                    IsVisible="{Binding !Streaming.IsAnime365LoggedIn}">
                     <StackPanel Spacing="8">
-                        <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
-                                Command="{Binding Streaming.ToggleAnime365ManualTokenCommand}">
+                        <Button
+                            Padding="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Streaming.ToggleAnime365ManualTokenCommand}"
+                            Cursor="Hand">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="ChevronRight" Width="16" Height="16" Opacity="0.6"
-                                                      IsVisible="{Binding !Streaming.IsAnime365ManualTokenExpanded}"/>
-                                <material:MaterialIcon Kind="ChevronDown" Width="16" Height="16" Opacity="0.6"
-                                                      IsVisible="{Binding Streaming.IsAnime365ManualTokenExpanded}"/>
-                                <TextBlock Text="{DynamicResource l.settings.streaming.anime365_manual_token_toggle}" FontSize="11" Opacity="0.65"/>
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    IsVisible="{Binding !Streaming.IsAnime365ManualTokenExpanded}"
+                                    Kind="ChevronRight"
+                                    Opacity="0.6" />
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    IsVisible="{Binding Streaming.IsAnime365ManualTokenExpanded}"
+                                    Kind="ChevronDown"
+                                    Opacity="0.6" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Opacity="0.65"
+                                    Text="{DynamicResource l.settings.streaming.anime365_manual_token_toggle}" />
                             </StackPanel>
                         </Button>
 
-                        <StackPanel Spacing="8" IsVisible="{Binding Streaming.IsAnime365ManualTokenExpanded}" Margin="4,4,0,0">
-                            <TextBlock Text="{DynamicResource l.settings.streaming.anime365_manual_token_hint}"
-                                       FontSize="11" Opacity="0.55" TextWrapping="Wrap"/>
+                        <StackPanel
+                            Margin="4,4,0,0"
+                            IsVisible="{Binding Streaming.IsAnime365ManualTokenExpanded}"
+                            Spacing="8">
+                            <TextBlock
+                                FontSize="11"
+                                Opacity="0.55"
+                                Text="{DynamicResource l.settings.streaming.anime365_manual_token_hint}"
+                                TextWrapping="Wrap" />
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Text="{Binding Streaming.Anime365ManualToken}"
-                                         PlaceholderText="{DynamicResource l.settings.streaming.anime365_manual_token_placeholder}"
-                                         CornerRadius="6" Margin="0,0,8,0"/>
-                                <Button Grid.Column="1" Content="{DynamicResource l.settings.streaming.apply_button}" Padding="14,6" CornerRadius="6"
-                                        Command="{Binding Streaming.ApplyManualAnime365TokenCommand}"/>
+                                <TextBox
+                                    Grid.Column="0"
+                                    Margin="0,0,8,0"
+                                    CornerRadius="6"
+                                    PlaceholderText="{DynamicResource l.settings.streaming.anime365_manual_token_placeholder}"
+                                    Text="{Binding Streaming.Anime365ManualToken}" />
+                                <Button
+                                    Grid.Column="1"
+                                    Padding="14,6"
+                                    Command="{Binding Streaming.ApplyManualAnime365TokenCommand}"
+                                    Content="{DynamicResource l.settings.streaming.apply_button}"
+                                    CornerRadius="6" />
                             </Grid>
                         </StackPanel>
                     </StackPanel>
@@ -311,130 +544,176 @@
             </StackPanel>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════════════ -->
-        <!-- ── Card 3: Sources Manager ──                                   -->
-        <!-- ═══════════════════════════════════════════════════════════════ -->
-        <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                BorderThickness="1"
-                CornerRadius="12"
-                Padding="20">
+        <!--  ═══════════════════════════════════════════════════════════════  -->
+        <!--  ── Card 3: Sources Manager ──  -->
+        <!--  ═══════════════════════════════════════════════════════════════  -->
+        <Border
+            Padding="20"
+            Background="{DynamicResource SubtleFillColorSecondary}"
+            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+            BorderThickness="1"
+            CornerRadius="12">
             <StackPanel Spacing="12">
-                <TextBlock Text="{DynamicResource l.settings.streaming.sources_header}" FontSize="14" FontWeight="SemiBold"/>
-                <TextBlock Text="{DynamicResource l.settings.streaming.sources_sub}"
-                           FontSize="12" Opacity="0.6"/>
+                <TextBlock
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Text="{DynamicResource l.settings.streaming.sources_header}" />
+                <TextBlock
+                    FontSize="12"
+                    Opacity="0.6"
+                    Text="{DynamicResource l.settings.streaming.sources_sub}" />
 
-                <Border Classes="Divider" Margin="0,4"/>
+                <Border Margin="0,4" Classes="Divider" />
 
-                <!-- AniLibria -->
+                <!--  AniLibria  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="AniLibria"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.anilibria_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="AniLibria" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.anilibria_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.EnableAniLibria}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.EnableAniLibria}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- AnimeLib -->
+                <!--  AnimeLib  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="AnimeLib"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.animelib_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="AnimeLib" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.animelib_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.EnableAnimeLib}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.EnableAnimeLib}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- DreamCast -->
+                <!--  DreamCast  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="DreamCast"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.dreamcast_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="DreamCast" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.dreamcast_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.EnableDreamCast}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.EnableDreamCast}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- YummyAnime -->
+                <!--  YummyAnime  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="YummyAnime"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.yummyanime_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="YummyAnime" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.yummyanime_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.EnableYummyAnime}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.EnableYummyAnime}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- Anime 365 -->
+                <!--  Anime 365  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="Anime 365"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.anime365_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="Anime 365" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.anime365_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.EnableAnime365}"
-                                 IsEnabled="{Binding Streaming.IsAnime365LoggedIn}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.EnableAnime365}"
+                        IsEnabled="{Binding Streaming.IsAnime365LoggedIn}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- Hide 480p -->
+                <!--  Hide 480p  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.hide_480p_title}"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.hide_480p_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.hide_480p_title}" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.hide_480p_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.Hide480p}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.Hide480p}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- Hide 720p -->
+                <!--  Hide 720p  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.hide_720p_title}"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.hide_720p_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.hide_720p_title}" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.hide_720p_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.Hide720p}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.Hide720p}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
 
-                <Border Classes="Divider"/>
+                <Border Classes="Divider" />
 
-                <!-- Hide Non-Russian -->
+                <!--  Hide Non-Russian  -->
                 <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.hide_non_russian_title}"/>
-                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.hide_non_russian_sub}"/>
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Classes="Title" Text="{DynamicResource l.settings.streaming.hide_non_russian_title}" />
+                        <TextBlock Classes="Sub" Text="{DynamicResource l.settings.streaming.hide_non_russian_sub}" />
                     </StackPanel>
-                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
-                                 IsChecked="{Binding Streaming.HideNonRussian}"
-                                 OnContent="{DynamicResource l.common.status.on}"
-                                 OffContent="{DynamicResource l.common.status.off}"/>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Streaming.HideNonRussian}"
+                        OffContent="{DynamicResource l.common.status.off}"
+                        OnContent="{DynamicResource l.common.status.on}" />
                 </Grid>
             </StackPanel>
         </Border>

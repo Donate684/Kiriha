@@ -1,75 +1,89 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="using:Kiriha.ViewModels"
-        xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-        xmlns:material="using:Material.Icons.Avalonia"
-        xmlns:controls="using:Kiriha.Views.Controls"
-        xmlns:playerControls="using:Kiriha.Views.Player.Controls"
-        xmlns:conv="using:Kiriha.Views.Converters"
-        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
-        x:Class="Kiriha.Views.Player.PlayerWindow"
-        x:DataType="vmPlayer:PlayerViewModel"
-        Title="{Binding TrackingTitle}"
-        Background="Black"
-        TransparencyBackgroundFallback="Black"
-        Width="960" Height="540"
-        WindowStartupLocation="CenterScreen"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="34"
-        WindowDecorations="BorderOnly"
-        DragDrop.AllowDrop="True">
-    
+﻿<Window
+    x:Class="Kiriha.Views.Player.PlayerWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:playerControls="using:Kiriha.Views.Player.Controls"
+    xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+    Title="{Binding TrackingTitle}"
+    Width="960"
+    Height="540"
+    d:DesignHeight="720"
+    d:DesignWidth="1280"
+    x:DataType="vmPlayer:PlayerViewModel"
+    Background="Black"
+    DragDrop.AllowDrop="True"
+    ExtendClientAreaTitleBarHeightHint="34"
+    ExtendClientAreaToDecorationsHint="True"
+    TransparencyBackgroundFallback="Black"
+    WindowDecorations="BorderOnly"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://Kiriha/Views/Styles/PlayerOverlayWindowResources.axaml"/>
+                <ResourceInclude Source="avares://Kiriha/Views/Styles/PlayerOverlayWindowResources.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
     <Window.Styles>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerSliderStyles.axaml"/>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerControlStyles.axaml"/>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerSettingsStyles.axaml"/>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerOsdStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerSliderStyles.axaml" />
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerControlStyles.axaml" />
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerSettingsStyles.axaml" />
+        <StyleInclude Source="avares://Kiriha/Views/Styles/PlayerOsdStyles.axaml" />
     </Window.Styles>
 
-    <Grid Background="Black" Name="MainGrid"
-          PointerMoved="OnGridPointerMoved"
-          PointerExited="OnGridPointerExited"
-          PointerPressed="OnBackgroundPointerPressed"
-          PointerWheelChanged="OnBackgroundPointerWheelChanged"
-          DoubleTapped="OnBackgroundDoubleTapped">
-        
-        <!-- Base Video Layer -->
-        <controls:MpvOpenGlVideoView x:Name="VideoHost"/>
+    <Grid
+        Name="MainGrid"
+        Background="Black"
+        DoubleTapped="OnBackgroundDoubleTapped"
+        PointerExited="OnGridPointerExited"
+        PointerMoved="OnGridPointerMoved"
+        PointerPressed="OnBackgroundPointerPressed"
+        PointerWheelChanged="OnBackgroundPointerWheelChanged">
 
-        <!-- Minimal Center Accent Spinner (Clean, modern streaming style) -->
-        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                IsHitTestVisible="False"
-                IsVisible="{Binding IsBufferingOrLoading}">
+        <!--  Base Video Layer  -->
+        <controls:MpvOpenGlVideoView x:Name="VideoHost" />
+
+        <!--  Minimal Center Accent Spinner (Clean, modern streaming style)  -->
+        <Border
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsHitTestVisible="False"
+            IsVisible="{Binding IsBufferingOrLoading}">
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                    <DoubleTransition
+                        Easing="CubicEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.2" />
                 </Transitions>
             </Border.Transitions>
-            <material:MaterialIcon Kind="Loading" Width="44" Height="44"
-                                   IsVisible="{Binding IsBufferingOrLoading}"
-                                   Foreground="{DynamicResource SystemAccentColor}"
-                                   Opacity="0.85">
+            <material:MaterialIcon
+                Width="44"
+                Height="44"
+                Foreground="{DynamicResource SystemAccentColor}"
+                IsVisible="{Binding IsBufferingOrLoading}"
+                Kind="Loading"
+                Opacity="0.85">
                 <material:MaterialIcon.Styles>
                     <Style Selector="material|MaterialIcon[IsVisible=True]">
                         <Style.Animations>
-                            <Animation Duration="0:0:1.0" IterationCount="Infinite" PlaybackBehavior="OnlyIfVisible">
-                                <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
-                                <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                            <Animation
+                                IterationCount="Infinite"
+                                PlaybackBehavior="OnlyIfVisible"
+                                Duration="0:0:1.0">
+                                <KeyFrame Cue="0%">
+                                    <Setter Property="RotateTransform.Angle" Value="0" />
+                                </KeyFrame>
+                                <KeyFrame Cue="100%">
+                                    <Setter Property="RotateTransform.Angle" Value="360" />
+                                </KeyFrame>
                             </Animation>
                         </Style.Animations>
                     </Style>
@@ -77,539 +91,751 @@
             </material:MaterialIcon>
         </Border>
 
-        <!-- Playback Error Panel -->
-        <Border Classes="player-state-panel error"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsVisible="{Binding HasPlaybackError}">
-            <StackPanel Spacing="12" Width="340">
-                <material:MaterialIcon Kind="AlertCircleOutline"
-                                       Width="32"
-                                       Height="32"
-                                       Foreground="#FFFFD166"
-                                       HorizontalAlignment="Center"/>
-                <TextBlock Text="{DynamicResource l.player.overlay.error_failed_to_play}"
-                           Classes="overlay-text"
-                           Foreground="White"
-                           FontSize="15"
-                           FontWeight="SemiBold"
-                           TextAlignment="Center"/>
-                <TextBlock Text="{Binding PlaybackErrorMessage}"
-                           Foreground="#BFFFFFFF"
-                           FontSize="12"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap"/>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8"
-                            HorizontalAlignment="Center">
-                    <Button Classes="icon-btn state-action"
-                            Command="{Binding ReloadMediaCommand}"
-                            ToolTip.Tip="{DynamicResource l.player.overlay.error_retry}">
-                        <material:MaterialIcon Kind="Refresh" Width="20" Height="20" Foreground="White"/>
+        <!--  Playback Error Panel  -->
+        <Border
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Classes="player-state-panel error"
+            IsVisible="{Binding HasPlaybackError}">
+            <StackPanel Width="340" Spacing="12">
+                <material:MaterialIcon
+                    Width="32"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    Foreground="#FFFFD166"
+                    Kind="AlertCircleOutline" />
+                <TextBlock
+                    Classes="overlay-text"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="White"
+                    Text="{DynamicResource l.player.overlay.error_failed_to_play}"
+                    TextAlignment="Center" />
+                <TextBlock
+                    FontSize="12"
+                    Foreground="#BFFFFFFF"
+                    Text="{Binding PlaybackErrorMessage}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <Button
+                        Classes="icon-btn state-action"
+                        Command="{Binding ReloadMediaCommand}"
+                        ToolTip.Tip="{DynamicResource l.player.overlay.error_retry}">
+                        <material:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Foreground="White"
+                            Kind="Refresh" />
                     </Button>
-                    <Button Classes="icon-btn state-action"
-                            Command="{Binding OpenNextMediaCommand}"
-                            IsEnabled="{Binding CanOpenNextMedia}"
-                            ToolTip.Tip="{DynamicResource l.player.overlay.error_next_file}">
-                        <material:MaterialIcon Kind="SkipNext" Width="20" Height="20" Foreground="White"/>
+                    <Button
+                        Classes="icon-btn state-action"
+                        Command="{Binding OpenNextMediaCommand}"
+                        IsEnabled="{Binding CanOpenNextMedia}"
+                        ToolTip.Tip="{DynamicResource l.player.overlay.error_next_file}">
+                        <material:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Foreground="White"
+                            Kind="SkipNext" />
                     </Button>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <!-- ===== TOP GRADIENT + BAR (Cinematic Header & Unified Inline Stream HUD) ===== -->
-        <Border Name="TopBar" VerticalAlignment="Top"
-                CornerRadius="8,8,0,0">
+        <!--  ===== TOP GRADIENT + BAR (Cinematic Header & Unified Inline Stream HUD) =====  -->
+        <Border
+            Name="TopBar"
+            VerticalAlignment="Top"
+            CornerRadius="8,8,0,0">
             <Border.Background>
                 <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
-                    <GradientStop Color="#68000000" Offset="0"/>
-                    <GradientStop Color="#28000000" Offset="0.55"/>
-                    <GradientStop Color="#00000000" Offset="1"/>
+                    <GradientStop Offset="0" Color="#68000000" />
+                    <GradientStop Offset="0.55" Color="#28000000" />
+                    <GradientStop Offset="1" Color="#00000000" />
                 </LinearGradientBrush>
             </Border.Background>
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                    <DoubleTransition
+                        Easing="CubicEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.25" />
                 </Transitions>
             </Border.Transitions>
 
-            <Grid ColumnDefinitions="Auto, *, Auto" VerticalAlignment="Top"
-                  Background="Transparent" PointerPressed="OnTopBarPointerPressed"
-                  Margin="0,0,0,10">
+            <Grid
+                Margin="0,0,0,10"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                ColumnDefinitions="Auto, *, Auto"
+                PointerPressed="OnTopBarPointerPressed">
 
-                <!-- Left: Anime Title, Episode / Romaji & Inline Dynamic Telemetry/Toasts -->
-                <StackPanel Grid.Column="0"
-                            Spacing="2"
-                            VerticalAlignment="Top"
-                            Margin="24,14,0,0"
-                            MaxWidth="850">
-                    <!-- Primary Russian/Romaji Anime Title -->
-                    <TextBlock Classes="overlay-text"
-                               Text="{Binding TopTitle}"
-                               Foreground="White" FontSize="17" FontWeight="SemiBold"
-                               TextTrimming="CharacterEllipsis" Opacity="0.98"/>
+                <!--  Left: Anime Title, Episode / Romaji & Inline Dynamic Telemetry/Toasts  -->
+                <StackPanel
+                    Grid.Column="0"
+                    MaxWidth="850"
+                    Margin="24,14,0,0"
+                    VerticalAlignment="Top"
+                    Spacing="2">
+                    <!--  Primary Russian/Romaji Anime Title  -->
+                    <TextBlock
+                        Classes="overlay-text"
+                        FontSize="17"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Opacity="0.98"
+                        Text="{Binding TopTitle}"
+                        TextTrimming="CharacterEllipsis" />
 
-                    <!-- Row 2: Episode Title | Romaji / English Title -->
-                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,1,0,0">
-                        <TextBlock Classes="overlay-secondary-text"
-                                   Text="{Binding EpisodeTitle}"
-                                   Foreground="#E6FFFFFF" FontSize="13.5"
-                                   TextTrimming="CharacterEllipsis"
-                                   IsVisible="{Binding EpisodeTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                        <TextBlock Classes="overlay-secondary-text"
-                                   Text="|"
-                                   Foreground="#B3FFFFFF" FontSize="13.5"
-                                   IsVisible="{Binding HasEpisodeAndBottom}"/>
-                        <TextBlock Classes="overlay-secondary-text"
-                                   Text="{Binding BottomTitle}"
-                                   Foreground="#CCFFFFFF" FontSize="13.5"
-                                   TextTrimming="CharacterEllipsis"
-                                   IsVisible="{Binding HasBottomTitle}"/>
+                    <!--  Row 2: Episode Title | Romaji / English Title  -->
+                    <StackPanel
+                        Margin="0,1,0,0"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                        <TextBlock
+                            Classes="overlay-secondary-text"
+                            FontSize="13.5"
+                            Foreground="#E6FFFFFF"
+                            IsVisible="{Binding EpisodeTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            Text="{Binding EpisodeTitle}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Classes="overlay-secondary-text"
+                            FontSize="13.5"
+                            Foreground="#B3FFFFFF"
+                            IsVisible="{Binding HasEpisodeAndBottom}"
+                            Text="|" />
+                        <TextBlock
+                            Classes="overlay-secondary-text"
+                            FontSize="13.5"
+                            Foreground="#CCFFFFFF"
+                            IsVisible="{Binding HasBottomTitle}"
+                            Text="{Binding BottomTitle}"
+                            TextTrimming="CharacterEllipsis" />
                     </StackPanel>
 
-                    <!-- Row 3: Organic Inline Status (OSD & Torrent Telemetry, No Bubbles) -->
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,3,0,0">
+                    <!--  Row 3: Organic Inline Status (OSD & Torrent Telemetry, No Bubbles)  -->
+                    <StackPanel
+                        Margin="0,3,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="6">
 
-                        <!-- Inline OSD Notification (Volume, Tracks, Subtitles) -->
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center"
-                                    IsVisible="{Binding Overlay.IsOsdVisible}">
-                            <material:MaterialIcon Classes="overlay-icon"
-                                                   Kind="InformationOutline" Width="13" Height="13"
-                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                   VerticalAlignment="Center"/>
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="{Binding Overlay.OsdMessage}"
-                                       Foreground="White" FontSize="13" FontWeight="SemiBold"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="{Binding Overlay.OsdDetail}"
-                                       Foreground="White" FontSize="13" FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{Binding Overlay.OsdDetail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="|"
-                                       Foreground="#80FFFFFF" FontSize="13"
-                                       IsVisible="{Binding IsTorrentStream}"/>
+                        <!--  Inline OSD Notification (Volume, Tracks, Subtitles)  -->
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding Overlay.IsOsdVisible}"
+                            Orientation="Horizontal"
+                            Spacing="5">
+                            <material:MaterialIcon
+                                Width="13"
+                                Height="13"
+                                VerticalAlignment="Center"
+                                Classes="overlay-icon"
+                                Foreground="{DynamicResource SystemAccentColor}"
+                                Kind="InformationOutline" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Classes="overlay-secondary-text"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="{Binding Overlay.OsdMessage}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Classes="overlay-secondary-text"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                Foreground="White"
+                                IsVisible="{Binding Overlay.OsdDetail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Text="{Binding Overlay.OsdDetail}" />
+                            <TextBlock
+                                Classes="overlay-secondary-text"
+                                FontSize="13"
+                                Foreground="#80FFFFFF"
+                                IsVisible="{Binding IsTorrentStream}"
+                                Text="|" />
                         </StackPanel>
 
-                        <!-- Inline Torrent Telemetry Strip (ALWAYS visible when streaming torrents) -->
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                                    IsVisible="{Binding IsTorrentStream}"
-                                    ToolTip.Tip="{Binding TorrentDetailsTooltip}">
+                        <!--  Inline Torrent Telemetry Strip (ALWAYS visible when streaming torrents)  -->
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsTorrentStream}"
+                            Orientation="Horizontal"
+                            Spacing="6"
+                            ToolTip.Tip="{Binding TorrentDetailsTooltip}">
 
-                            <!-- Active Buffering / Rebuffering Indicator -->
-                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center"
-                                        IsVisible="{Binding IsBufferingOrLoading}">
-                                <material:MaterialIcon Classes="overlay-icon"
-                                                       IsVisible="{Binding IsBufferingOrLoading}"
-                                                       Kind="Loading" Width="13" Height="13"
-                                                       Foreground="{DynamicResource SystemAccentColor}"
-                                                       VerticalAlignment="Center">
+                            <!--  Active Buffering / Rebuffering Indicator  -->
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding IsBufferingOrLoading}"
+                                Orientation="Horizontal"
+                                Spacing="5">
+                                <material:MaterialIcon
+                                    Width="13"
+                                    Height="13"
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-icon"
+                                    Foreground="{DynamicResource SystemAccentColor}"
+                                    IsVisible="{Binding IsBufferingOrLoading}"
+                                    Kind="Loading">
                                     <material:MaterialIcon.Styles>
                                         <Style Selector="material|MaterialIcon[IsVisible=True]">
                                             <Style.Animations>
-                                                <Animation Duration="0:0:1.0" IterationCount="Infinite" PlaybackBehavior="OnlyIfVisible">
-                                                    <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
-                                                    <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                                                <Animation
+                                                    IterationCount="Infinite"
+                                                    PlaybackBehavior="OnlyIfVisible"
+                                                    Duration="0:0:1.0">
+                                                    <KeyFrame Cue="0%">
+                                                        <Setter Property="RotateTransform.Angle" Value="0" />
+                                                    </KeyFrame>
+                                                    <KeyFrame Cue="100%">
+                                                        <Setter Property="RotateTransform.Angle" Value="360" />
+                                                    </KeyFrame>
                                                 </Animation>
                                             </Style.Animations>
                                         </Style>
                                     </material:MaterialIcon.Styles>
                                 </material:MaterialIcon>
-                                <TextBlock Classes="overlay-secondary-text"
-                                           Text="{Binding StreamStatusBadgeText}"
-                                           Foreground="White"
-                                           FontSize="13" FontWeight="Bold"
-                                           VerticalAlignment="Center"/>
-                                <TextBlock Classes="overlay-secondary-text"
-                                           Text="{Binding TorrentBufferPercent, StringFormat='{}{0:0}%'}"
-                                           Foreground="White" FontSize="13" FontWeight="Bold"
-                                           VerticalAlignment="Center"/>
-                                <TextBlock Classes="overlay-secondary-text"
-                                           Text="|"
-                                           Foreground="#80FFFFFF" FontSize="13"/>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-secondary-text"
+                                    FontSize="13"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="{Binding StreamStatusBadgeText}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-secondary-text"
+                                    FontSize="13"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="{Binding TorrentBufferPercent, StringFormat='{}{0:0}%'}" />
+                                <TextBlock
+                                    Classes="overlay-secondary-text"
+                                    FontSize="13"
+                                    Foreground="#80FFFFFF"
+                                    Text="|" />
                             </StackPanel>
 
-                            <!-- Torrent Speed -->
-                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
-                                        IsVisible="{Binding TorrentDownloadSpeedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                <material:MaterialIcon Classes="overlay-icon"
-                                                       Kind="LightningBolt" Width="13" Height="13"
-                                                       Foreground="#00E676" VerticalAlignment="Center"/>
-                                <TextBlock Classes="overlay-secondary-text"
-                                           Text="{Binding TorrentDownloadSpeedText}"
-                                           Foreground="White" FontSize="13" FontWeight="SemiBold"
-                                           FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"
-                                           VerticalAlignment="Center"/>
+                            <!--  Torrent Speed  -->
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding TorrentDownloadSpeedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Orientation="Horizontal"
+                                Spacing="4">
+                                <material:MaterialIcon
+                                    Width="13"
+                                    Height="13"
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-icon"
+                                    Foreground="#00E676"
+                                    Kind="LightningBolt" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-secondary-text"
+                                    FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"
+                                    Text="{Binding TorrentDownloadSpeedText}" />
                             </StackPanel>
 
-                            <!-- Separator -->
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="|"
-                                       Foreground="#80FFFFFF" FontSize="13"
-                                       IsVisible="{Binding TorrentPeersBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            <!--  Separator  -->
+                            <TextBlock
+                                Classes="overlay-secondary-text"
+                                FontSize="13"
+                                Foreground="#80FFFFFF"
+                                IsVisible="{Binding TorrentPeersBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Text="|" />
 
-                            <!-- Torrent Peers -->
-                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
-                                        IsVisible="{Binding TorrentPeersBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                <material:MaterialIcon Classes="overlay-icon"
-                                                       Kind="AccountMultipleOutline" Width="13" Height="13"
-                                                       Foreground="#E6FFFFFF" VerticalAlignment="Center"/>
-                                <TextBlock Classes="overlay-secondary-text"
-                                           Text="{Binding TorrentPeersBadgeText}"
-                                           Foreground="White" FontSize="13"
-                                           FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"
-                                           VerticalAlignment="Center"/>
+                            <!--  Torrent Peers  -->
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding TorrentPeersBadgeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Orientation="Horizontal"
+                                Spacing="4">
+                                <material:MaterialIcon
+                                    Width="13"
+                                    Height="13"
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-icon"
+                                    Foreground="#E6FFFFFF"
+                                    Kind="AccountMultipleOutline" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="overlay-secondary-text"
+                                    FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"
+                                    FontSize="13"
+                                    Foreground="White"
+                                    Text="{Binding TorrentPeersBadgeText}" />
                             </StackPanel>
 
-                            <!-- Separator -->
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="|"
-                                       Foreground="#80FFFFFF" FontSize="13"
-                                       IsVisible="{Binding TorrentBufferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            <!--  Separator  -->
+                            <TextBlock
+                                Classes="overlay-secondary-text"
+                                FontSize="13"
+                                Foreground="#80FFFFFF"
+                                IsVisible="{Binding TorrentBufferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Text="|" />
 
-                            <!-- Preload Buffer / Cache text -->
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="{Binding TorrentBufferText}"
-                                       Foreground="#E6FFFFFF" FontSize="12.5"
-                                       FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{Binding TorrentBufferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            <!--  Preload Buffer / Cache text  -->
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Classes="overlay-secondary-text"
+                                FontFamily="Consolas,Cascadia Code,Segoe UI Variable,monospace"
+                                FontSize="12.5"
+                                Foreground="#E6FFFFFF"
+                                IsVisible="{Binding TorrentBufferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Text="{Binding TorrentBufferText}" />
                         </StackPanel>
 
-                        <!-- Non-Torrent Buffering Status (HTTP or local loading) -->
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center"
-                                    IsVisible="{Binding ShowNonTorrentBuffering}">
-                            <material:MaterialIcon Classes="overlay-icon"
-                                                   IsVisible="{Binding ShowNonTorrentBuffering}"
-                                                   Kind="Loading" Width="13" Height="13"
-                                                   Foreground="{DynamicResource SystemAccentColor}"
-                                                   VerticalAlignment="Center">
+                        <!--  Non-Torrent Buffering Status (HTTP or local loading)  -->
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding ShowNonTorrentBuffering}"
+                            Orientation="Horizontal"
+                            Spacing="5">
+                            <material:MaterialIcon
+                                Width="13"
+                                Height="13"
+                                VerticalAlignment="Center"
+                                Classes="overlay-icon"
+                                Foreground="{DynamicResource SystemAccentColor}"
+                                IsVisible="{Binding ShowNonTorrentBuffering}"
+                                Kind="Loading">
                                 <material:MaterialIcon.Styles>
                                     <Style Selector="material|MaterialIcon[IsVisible=True]">
                                         <Style.Animations>
-                                            <Animation Duration="0:0:1.0" IterationCount="Infinite" PlaybackBehavior="OnlyIfVisible">
-                                                <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0"/></KeyFrame>
-                                                <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360"/></KeyFrame>
+                                            <Animation
+                                                IterationCount="Infinite"
+                                                PlaybackBehavior="OnlyIfVisible"
+                                                Duration="0:0:1.0">
+                                                <KeyFrame Cue="0%">
+                                                    <Setter Property="RotateTransform.Angle" Value="0" />
+                                                </KeyFrame>
+                                                <KeyFrame Cue="100%">
+                                                    <Setter Property="RotateTransform.Angle" Value="360" />
+                                                </KeyFrame>
                                             </Animation>
                                         </Style.Animations>
                                     </Style>
                                 </material:MaterialIcon.Styles>
                             </material:MaterialIcon>
-                            <TextBlock Classes="overlay-secondary-text"
-                                       Text="{Binding PlaybackStatusMessage}"
-                                       Foreground="White" FontSize="13"
-                                       VerticalAlignment="Center"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Classes="overlay-secondary-text"
+                                FontSize="13"
+                                Foreground="White"
+                                Text="{Binding PlaybackStatusMessage}" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Center: Empty drag region -->
-                <Grid Grid.Column="1" Background="Transparent" PointerPressed="OnTopBarPointerPressed"/>
+                <!--  Center: Empty drag region  -->
+                <Grid
+                    Grid.Column="1"
+                    Background="Transparent"
+                    PointerPressed="OnTopBarPointerPressed" />
 
-                <!-- Right: Window Control Buttons -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="0"
-                            VerticalAlignment="Top">
+                <!--  Right: Window Control Buttons  -->
+                <StackPanel
+                    Grid.Column="2"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal"
+                    Spacing="0">
                     <Button Classes="wnd-btn" Click="OnMinimizeClick">
-                        <TextBlock Text="&#xE921;"/>
+                        <TextBlock Text="&#xE921;" />
                     </Button>
                     <Button Classes="wnd-btn" Click="OnMaximizeClick">
-                        <TextBlock Name="MaximizeIcon" Text="&#xE922;"/>
+                        <TextBlock Name="MaximizeIcon" Text="&#xE922;" />
                     </Button>
-                    <Button Name="CloseButton" Classes="wnd-btn close" Click="OnCloseClick">
-                        <TextBlock Text="&#xE8BB;"/>
+                    <Button
+                        Name="CloseButton"
+                        Classes="wnd-btn close"
+                        Click="OnCloseClick">
+                        <TextBlock Text="&#xE8BB;" />
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- ===== BOTTOM GRADIENT + BAR (Cinematic Full-Width Scrubber & Controls) ===== -->
-        <Border Name="BottomBar" VerticalAlignment="Bottom"
-                CornerRadius="0,0,8,8" ClipToBounds="False"
-                PointerPressed="OnBottomBarPointerPressed">
+        <!--  ===== BOTTOM GRADIENT + BAR (Cinematic Full-Width Scrubber & Controls) =====  -->
+        <Border
+            Name="BottomBar"
+            VerticalAlignment="Bottom"
+            ClipToBounds="False"
+            CornerRadius="0,0,8,8"
+            PointerPressed="OnBottomBarPointerPressed">
             <Border.Background>
                 <LinearGradientBrush StartPoint="50%,100%" EndPoint="50%,0%">
-                    <GradientStop Color="#E6000000" Offset="0"/>
-                    <GradientStop Color="#A0000000" Offset="0.5"/>
-                    <GradientStop Color="#33000000" Offset="0.8"/>
-                    <GradientStop Color="#00000000" Offset="1"/>
+                    <GradientStop Offset="0" Color="#E6000000" />
+                    <GradientStop Offset="0.5" Color="#A0000000" />
+                    <GradientStop Offset="0.8" Color="#33000000" />
+                    <GradientStop Offset="1" Color="#00000000" />
                 </LinearGradientBrush>
             </Border.Background>
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                    <DoubleTransition
+                        Easing="CubicEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.25" />
                 </Transitions>
             </Border.Transitions>
 
             <StackPanel Margin="0,20,0,0">
-                <!-- Timeline Preview Popup (Canvas) -->
-                <Canvas Height="0"
-                        HorizontalAlignment="Stretch"
-                        IsHitTestVisible="False"
-                        ZIndex="20">
-                    <Border Name="TimelinePreviewBorder"
-                            Canvas.Left="{Binding Overlay.TimelinePreviewLeft}"
-                            Canvas.Bottom="14"
-                            IsVisible="{Binding Overlay.IsTimelinePreviewVisible}"
-                            Background="#F0141414"
-                            BorderBrush="#2AFFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="10"
-                            BoxShadow="0 12 36 0 #80000000"
-                            Padding="6">
+                <!--  Timeline Preview Popup (Canvas)  -->
+                <Canvas
+                    Height="0"
+                    HorizontalAlignment="Stretch"
+                    IsHitTestVisible="False"
+                    ZIndex="20">
+                    <Border
+                        Name="TimelinePreviewBorder"
+                        Canvas.Left="{Binding Overlay.TimelinePreviewLeft}"
+                        Canvas.Bottom="14"
+                        Padding="6"
+                        Background="#F0141414"
+                        BorderBrush="#2AFFFFFF"
+                        BorderThickness="1"
+                        BoxShadow="0 12 36 0 #80000000"
+                        CornerRadius="10"
+                        IsVisible="{Binding Overlay.IsTimelinePreviewVisible}">
                         <Grid RowDefinitions="Auto,Auto">
-                            <Border Grid.Row="0"
-                                    Width="224"
-                                    Height="126"
-                                    Background="#FF050505"
-                                    CornerRadius="6"
-                                    ClipToBounds="True"
-                                    IsVisible="{Binding Overlay.TimelinePreviewImage, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                <Image Source="{Binding Overlay.TimelinePreviewImage}"
-                                       Stretch="Uniform"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                            <Border
+                                Grid.Row="0"
+                                Width="224"
+                                Height="126"
+                                Background="#FF050505"
+                                ClipToBounds="True"
+                                CornerRadius="6"
+                                IsVisible="{Binding Overlay.TimelinePreviewImage, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Image
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Overlay.TimelinePreviewImage}"
+                                    Stretch="Uniform" />
                             </Border>
-                            <TextBlock Grid.Row="1"
-                                       Text="{Binding Overlay.TimelinePreviewTime}"
-                                       Foreground="White"
-                                       FontSize="12.5"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,5,0,0"/>
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="12.5"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="{Binding Overlay.TimelinePreviewTime}" />
                         </Grid>
                     </Border>
                 </Canvas>
 
-                <!-- ===== FULL-WIDTH TIMELINE (Scrubber + Preload Buffer Bar) ===== -->
-                <Grid Name="TimelineContainer"
-                      Margin="24,0,24,6"
-                      PointerMoved="OnTimelinePointerMoved"
-                      PointerExited="OnTimelinePointerExited">
-                    <!-- Preload Stream Buffer (Torrent RAM buffer bar) -->
-                    <ProgressBar Name="TimelineBufferBar"
-                                 Height="3.5"
-                                 VerticalAlignment="Center"
-                                 Minimum="0" Maximum="100"
-                                 Value="{Binding TorrentBufferPercent}"
-                                 IsIndeterminate="False"
-                                 IsVisible="{Binding IsTorrentStream}"
-                                 Background="Transparent"
-                                 Foreground="#50FFFFFF"
-                                 CornerRadius="2"/>
-                    <Slider Name="TimelineSlider"
-                            Classes="timeline"
-                            Minimum="0" Maximum="{Binding Duration}"
-                            Value="{Binding CurrentTime}"
-                            VerticalAlignment="Center"/>
-                    <playerControls:PlayerChapterMarkers Margin="7,0,7,0"
-                                                         VerticalAlignment="Stretch" />
+                <!--  ===== FULL-WIDTH TIMELINE (Scrubber + Preload Buffer Bar) =====  -->
+                <Grid
+                    Name="TimelineContainer"
+                    Margin="24,0,24,6"
+                    PointerExited="OnTimelinePointerExited"
+                    PointerMoved="OnTimelinePointerMoved">
+                    <!--  Preload Stream Buffer (Torrent RAM buffer bar)  -->
+                    <ProgressBar
+                        Name="TimelineBufferBar"
+                        Height="3.5"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        CornerRadius="2"
+                        Foreground="#50FFFFFF"
+                        IsIndeterminate="False"
+                        IsVisible="{Binding IsTorrentStream}"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="{Binding TorrentBufferPercent}" />
+                    <Slider
+                        Name="TimelineSlider"
+                        VerticalAlignment="Center"
+                        Classes="timeline"
+                        Maximum="{Binding Duration}"
+                        Minimum="0"
+                        Value="{Binding CurrentTime}" />
+                    <playerControls:PlayerChapterMarkers Margin="7,0,7,0" VerticalAlignment="Stretch" />
                 </Grid>
 
-                <!-- ===== CINEMATIC CONTROLS ROW ===== -->
-                <playerControls:PlayerControlBar Name="ControlBar"
-                                                 SettingsClicked="OnSettingsClicked"
-                                                 ActionExecuted="OnActionExecuted"
-                                                 FullscreenClicked="OnFullscreenClick" />
+                <!--  ===== CINEMATIC CONTROLS ROW =====  -->
+                <playerControls:PlayerControlBar
+                    Name="ControlBar"
+                    ActionExecuted="OnActionExecuted"
+                    FullscreenClicked="OnFullscreenClick"
+                    SettingsClicked="OnSettingsClicked" />
             </StackPanel>
         </Border>
 
-        <!-- Edge Drag Strips for Frameless Resizing & Moving -->
-        <Border Name="TopDragStrip"
-                Height="8"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Stretch"
-                Margin="0,0,160,0"
-                Background="Transparent"
-                Cursor="SizeAll"
-                PointerPressed="OnDragStripPointerPressed"/>
+        <!--  Edge Drag Strips for Frameless Resizing & Moving  -->
+        <Border
+            Name="TopDragStrip"
+            Height="8"
+            Margin="0,0,160,0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            Cursor="SizeAll"
+            PointerPressed="OnDragStripPointerPressed" />
 
-        <Border Name="LeftDragStrip"
-                Width="8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Stretch"
-                Margin="0,58,0,14"
-                Background="Transparent"
-                Cursor="SizeAll"
-                PointerPressed="OnDragStripPointerPressed"/>
+        <Border
+            Name="LeftDragStrip"
+            Width="8"
+            Margin="0,58,0,14"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            Cursor="SizeAll"
+            PointerPressed="OnDragStripPointerPressed" />
 
-        <Border Name="RightDragStrip"
-                Width="8"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Stretch"
-                Margin="0,58,0,14"
-                Background="Transparent"
-                Cursor="SizeAll"
-                PointerPressed="OnDragStripPointerPressed"/>
+        <Border
+            Name="RightDragStrip"
+            Width="8"
+            Margin="0,58,0,14"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            Cursor="SizeAll"
+            PointerPressed="OnDragStripPointerPressed" />
 
-        <Border Name="BottomDragStrip"
-                Height="8"
-                VerticalAlignment="Bottom"
-                Background="Transparent"
-                Cursor="SizeAll"
-                PointerPressed="OnDragStripPointerPressed"/>
+        <Border
+            Name="BottomDragStrip"
+            Height="8"
+            VerticalAlignment="Bottom"
+            Background="Transparent"
+            Cursor="SizeAll"
+            PointerPressed="OnDragStripPointerPressed" />
 
-        <!-- Resume Playback Prompt Notification -->
-        <Border HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                Margin="0,0,0,96"
-                ZIndex="25"
-                IsVisible="{Binding Overlay.IsResumePromptVisible}"
-                Background="#EE141416"
-                BorderBrush="#33FFFFFF"
-                BorderThickness="1"
-                CornerRadius="12"
-                BoxShadow="0 8 32 0 #90000000"
-                Padding="16,10">
+        <!--  Resume Playback Prompt Notification  -->
+        <Border
+            Margin="0,0,0,96"
+            Padding="16,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="#EE141416"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            BoxShadow="0 8 32 0 #90000000"
+            CornerRadius="12"
+            IsVisible="{Binding Overlay.IsResumePromptVisible}"
+            ZIndex="25">
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                    <DoubleTransition
+                        Easing="CubicEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.25" />
                 </Transitions>
             </Border.Transitions>
-            <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                <Border Width="34" Height="34"
-                        CornerRadius="8"
-                        Background="#2638bdf8"
-                        VerticalAlignment="Center">
-                    <material:MaterialIcon Kind="History"
-                                           Width="18" Height="18"
-                                           Foreground="{DynamicResource SystemAccentColor}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+            <StackPanel
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="14">
+                <Border
+                    Width="34"
+                    Height="34"
+                    VerticalAlignment="Center"
+                    Background="#2638bdf8"
+                    CornerRadius="8">
+                    <material:MaterialIcon
+                        Width="18"
+                        Height="18"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource SystemAccentColor}"
+                        Kind="History" />
                 </Border>
                 <StackPanel VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Text="{DynamicResource l.player.resume.prompt}"
-                               FontSize="13" FontWeight="SemiBold"
-                               Foreground="White"/>
+                    <TextBlock
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="{DynamicResource l.player.resume.prompt}" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="{DynamicResource l.player.resume.at_time}"
-                                   FontSize="11.5"
-                                   Foreground="#9EFFFFFF"/>
-                        <TextBlock Text="{Binding Overlay.ResumePromptTimeString}"
-                                   FontSize="11.5" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource SystemAccentColor}"/>
+                        <TextBlock
+                            FontSize="11.5"
+                            Foreground="#9EFFFFFF"
+                            Text="{DynamicResource l.player.resume.at_time}" />
+                        <TextBlock
+                            FontSize="11.5"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            Text="{Binding Overlay.ResumePromptTimeString}" />
                     </StackPanel>
                 </StackPanel>
-                <Button Classes="resume-action-btn"
-                        Command="{Binding ResumeFromSavedPositionCommand}">
+                <Button Classes="resume-action-btn" Command="{Binding ResumeFromSavedPositionCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <material:MaterialIcon Kind="Play" Width="14" Height="14" Foreground="White"/>
-                        <TextBlock Text="{DynamicResource l.player.resume.continue}"
-                                   FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                        <material:MaterialIcon
+                            Width="14"
+                            Height="14"
+                            Foreground="White"
+                            Kind="Play" />
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Text="{DynamicResource l.player.resume.continue}" />
                     </StackPanel>
                 </Button>
-                <Button Classes="icon-btn"
-                        Command="{Binding DismissResumePromptCommand}"
-                        Width="28" Height="28"
-                        Padding="0"
-                        CornerRadius="6"
-                        Cursor="Hand"
-                        VerticalAlignment="Center"
-                        ToolTip.Tip="{DynamicResource l.player.resume.dismiss}">
-                    <material:MaterialIcon Kind="Close" Width="15" Height="15"
-                                           Foreground="#80FFFFFF"/>
+                <Button
+                    Width="28"
+                    Height="28"
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    Classes="icon-btn"
+                    Command="{Binding DismissResumePromptCommand}"
+                    CornerRadius="6"
+                    Cursor="Hand"
+                    ToolTip.Tip="{DynamicResource l.player.resume.dismiss}">
+                    <material:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        Foreground="#80FFFFFF"
+                        Kind="Close" />
                 </Button>
             </StackPanel>
         </Border>
 
-        <!-- Skip Opening/Ending/Recap Prompt Notification -->
-        <Border HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                Margin="0,0,0,96"
-                ZIndex="25"
-                IsVisible="{Binding Overlay.IsSkipPromptVisible}"
-                Opacity="{Binding Overlay.SkipPromptOpacity}"
-                IsHitTestVisible="{Binding Overlay.IsSkipPromptHitTestVisible}"
-                Background="#EE141416"
-                BorderBrush="#33FFFFFF"
-                BorderThickness="1"
-                CornerRadius="12"
-                BoxShadow="0 8 32 0 #90000000"
-                Padding="16,10"
-                PointerEntered="OnSkipPromptPointerEntered"
-                PointerExited="OnSkipPromptPointerExited">
+        <!--  Skip Opening/Ending/Recap Prompt Notification  -->
+        <Border
+            Margin="0,0,0,96"
+            Padding="16,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="#EE141416"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            BoxShadow="0 8 32 0 #90000000"
+            CornerRadius="12"
+            IsHitTestVisible="{Binding Overlay.IsSkipPromptHitTestVisible}"
+            IsVisible="{Binding Overlay.IsSkipPromptVisible}"
+            Opacity="{Binding Overlay.SkipPromptOpacity}"
+            PointerEntered="OnSkipPromptPointerEntered"
+            PointerExited="OnSkipPromptPointerExited"
+            ZIndex="25">
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.35" Easing="CubicEaseOut"/>
+                    <DoubleTransition
+                        Easing="CubicEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.35" />
                 </Transitions>
             </Border.Transitions>
-            <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                <Border Width="34" Height="34"
-                        CornerRadius="8"
-                        Background="#2638bdf8"
-                        VerticalAlignment="Center">
-                    <material:MaterialIcon Kind="FastForward"
-                                           Width="18" Height="18"
-                                           Foreground="{DynamicResource SystemAccentColor}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+            <StackPanel
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="14">
+                <Border
+                    Width="34"
+                    Height="34"
+                    VerticalAlignment="Center"
+                    Background="#2638bdf8"
+                    CornerRadius="8">
+                    <material:MaterialIcon
+                        Width="18"
+                        Height="18"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource SystemAccentColor}"
+                        Kind="FastForward" />
                 </Border>
                 <StackPanel VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Text="{Binding Overlay.SkipPromptTitle}"
-                               FontSize="13" FontWeight="SemiBold"
-                               Foreground="White"/>
-                    <TextBlock Text="{Binding Overlay.SkipPromptSubtitle}"
-                               FontSize="11.5"
-                               Foreground="#9EFFFFFF"/>
+                    <TextBlock
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="{Binding Overlay.SkipPromptTitle}" />
+                    <TextBlock
+                        FontSize="11.5"
+                        Foreground="#9EFFFFFF"
+                        Text="{Binding Overlay.SkipPromptSubtitle}" />
                 </StackPanel>
-                <Button Classes="resume-action-btn"
-                        Command="{Binding SkipActiveSegmentCommand}">
+                <Button Classes="resume-action-btn" Command="{Binding SkipActiveSegmentCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <material:MaterialIcon Kind="FastForward" Width="14" Height="14" Foreground="White"/>
-                        <TextBlock Text="{DynamicResource l.player.skip.action}"
-                                   FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                        <material:MaterialIcon
+                            Width="14"
+                            Height="14"
+                            Foreground="White"
+                            Kind="FastForward" />
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Text="{DynamicResource l.player.skip.action}" />
                     </StackPanel>
                 </Button>
-                <Button Classes="icon-btn"
-                        Command="{Binding DismissSkipPromptCommand}"
-                        Width="28" Height="28"
-                        Padding="0"
-                        CornerRadius="6"
-                        Cursor="Hand"
-                        VerticalAlignment="Center"
-                        ToolTip.Tip="{DynamicResource l.player.resume.dismiss}">
-                    <material:MaterialIcon Kind="Close" Width="15" Height="15"
-                                           Foreground="#80FFFFFF"/>
+                <Button
+                    Width="28"
+                    Height="28"
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    Classes="icon-btn"
+                    Command="{Binding DismissSkipPromptCommand}"
+                    CornerRadius="6"
+                    Cursor="Hand"
+                    ToolTip.Tip="{DynamicResource l.player.resume.dismiss}">
+                    <material:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        Foreground="#80FFFFFF"
+                        Kind="Close" />
                 </Button>
             </StackPanel>
         </Border>
 
-        <!-- Skip Confirmation Toast Notification (2 seconds) -->
-        <Border HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                Margin="0,0,0,96"
-                ZIndex="26"
-                IsVisible="{Binding Overlay.IsSkipToastVisible}"
-                Background="#EE141416"
-                BorderBrush="#33FFFFFF"
-                BorderThickness="1"
-                CornerRadius="12"
-                BoxShadow="0 8 32 0 #90000000"
-                Padding="16,10">
+        <!--  Skip Confirmation Toast Notification (2 seconds)  -->
+        <Border
+            Margin="0,0,0,96"
+            Padding="16,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="#EE141416"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            BoxShadow="0 8 32 0 #90000000"
+            CornerRadius="12"
+            IsVisible="{Binding Overlay.IsSkipToastVisible}"
+            ZIndex="26">
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                    <DoubleTransition
+                        Easing="CubicEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.2" />
                 </Transitions>
             </Border.Transitions>
-            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                <Border Width="34" Height="34"
-                        CornerRadius="8"
-                        Background="#2638bdf8"
-                        VerticalAlignment="Center">
-                    <material:MaterialIcon Kind="FastForward"
-                                           Width="18" Height="18"
-                                           Foreground="{DynamicResource SystemAccentColor}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+            <StackPanel
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="12">
+                <Border
+                    Width="34"
+                    Height="34"
+                    VerticalAlignment="Center"
+                    Background="#2638bdf8"
+                    CornerRadius="8">
+                    <material:MaterialIcon
+                        Width="18"
+                        Height="18"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource SystemAccentColor}"
+                        Kind="FastForward" />
                 </Border>
-                <TextBlock Text="{Binding Overlay.SkipToastMessage}"
-                           FontSize="13" FontWeight="SemiBold"
-                           Foreground="White"
-                           VerticalAlignment="Center"/>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Foreground="White"
+                    Text="{Binding Overlay.SkipToastMessage}" />
             </StackPanel>
         </Border>
 
-        <!-- Settings Overlay -->
+        <!--  Settings Overlay  -->
         <playerControls:PlayerSettingsOverlay Name="SettingsOverlayControl" OverlayClosed="OnSettingsOverlayClosed" />
     </Grid>
 </Window>

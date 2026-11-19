@@ -1,26 +1,43 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ===== Slider.timeline (Cinematic Full-Width Scrubber) ===== -->
+    <!--  ===== Slider.timeline (Cinematic Full-Width Scrubber) =====  -->
     <Style Selector="Slider.timeline">
-        <Setter Property="Height" Value="24"/>
-        <Setter Property="Margin" Value="0"/>
-        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Background="Transparent" ClipToBounds="False">
-                    <Track Name="PART_Track" Orientation="Horizontal" ClipToBounds="False"
-                           Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}">
+                    <Track
+                        Name="PART_Track"
+                        ClipToBounds="False"
+                        Maximum="{TemplateBinding Maximum}"
+                        Minimum="{TemplateBinding Minimum}"
+                        Orientation="Horizontal"
+                        Value="{TemplateBinding Value}">
                         <Track.DecreaseButton>
-                            <RepeatButton Name="PART_DecreaseButton" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <RepeatButton
+                                Name="PART_DecreaseButton"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Focusable="False">
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Name="DecTrack" Height="3.5" Background="{DynamicResource SystemAccentColor}" CornerRadius="2" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <Border
+                                                Name="DecTrack"
+                                                Height="3.5"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                Background="{DynamicResource SystemAccentColor}"
+                                                CornerRadius="2">
                                                 <Border.Transitions>
                                                     <Transitions>
-                                                        <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut"/>
-                                                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18"/>
+                                                        <DoubleTransition
+                                                            Easing="CubicEaseOut"
+                                                            Property="Height"
+                                                            Duration="0:0:0.18" />
+                                                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18" />
                                                     </Transitions>
                                                 </Border.Transitions>
                                             </Border>
@@ -30,15 +47,28 @@
                             </RepeatButton>
                         </Track.DecreaseButton>
                         <Track.IncreaseButton>
-                            <RepeatButton Name="PART_IncreaseButton" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <RepeatButton
+                                Name="PART_IncreaseButton"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Focusable="False">
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Name="IncTrack" Height="3.5" Background="#38FFFFFF" CornerRadius="2" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <Border
+                                                Name="IncTrack"
+                                                Height="3.5"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                Background="#38FFFFFF"
+                                                CornerRadius="2">
                                                 <Border.Transitions>
                                                     <Transitions>
-                                                        <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut"/>
-                                                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18"/>
+                                                        <DoubleTransition
+                                                            Easing="CubicEaseOut"
+                                                            Property="Height"
+                                                            Duration="0:0:0.18" />
+                                                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18" />
                                                     </Transitions>
                                                 </Border.Transitions>
                                             </Border>
@@ -48,22 +78,41 @@
                             </RepeatButton>
                         </Track.IncreaseButton>
                         <Track.Thumb>
-                            <Thumb Name="thumb" Width="0" Height="0" ClipToBounds="False" Opacity="0">
+                            <Thumb
+                                Name="thumb"
+                                Width="0"
+                                Height="0"
+                                ClipToBounds="False"
+                                Opacity="0">
                                 <Thumb.Transitions>
                                     <Transitions>
-                                        <DoubleTransition Property="Width" Duration="0:0:0.15" Easing="CubicEaseOut"/>
-                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
-                                        <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                                        <DoubleTransition
+                                            Easing="CubicEaseOut"
+                                            Property="Width"
+                                            Duration="0:0:0.15" />
+                                        <DoubleTransition
+                                            Easing="CubicEaseOut"
+                                            Property="Height"
+                                            Duration="0:0:0.15" />
+                                        <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                                     </Transitions>
                                 </Thumb.Transitions>
                                 <Thumb.Template>
                                     <ControlTemplate>
                                         <Grid>
-                                            <!-- Glowing outer ring -->
-                                            <Ellipse Width="15" Height="15" Fill="{DynamicResource SystemAccentColor}"
-                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            <Ellipse Width="7" Height="7" Fill="White"
-                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <!--  Glowing outer ring  -->
+                                            <Ellipse
+                                                Width="15"
+                                                Height="15"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Fill="{DynamicResource SystemAccentColor}" />
+                                            <Ellipse
+                                                Width="7"
+                                                Height="7"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Fill="White" />
                                         </Grid>
                                     </ControlTemplate>
                                 </Thumb.Template>
@@ -74,40 +123,57 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <!-- Timeline hover: thicker track + prominent glowing thumb -->
+    <!--  Timeline hover: thicker track + prominent glowing thumb  -->
     <Style Selector="Slider.timeline:pointerover /template/ Border#DecTrack">
-        <Setter Property="Height" Value="6.5"/>
-        <Setter Property="CornerRadius" Value="3.25"/>
+        <Setter Property="Height" Value="6.5" />
+        <Setter Property="CornerRadius" Value="3.25" />
     </Style>
     <Style Selector="Slider.timeline:pointerover /template/ Border#IncTrack">
-        <Setter Property="Height" Value="6.5"/>
-        <Setter Property="CornerRadius" Value="3.25"/>
+        <Setter Property="Height" Value="6.5" />
+        <Setter Property="CornerRadius" Value="3.25" />
     </Style>
     <Style Selector="Slider.timeline:pointerover /template/ Thumb#thumb">
-        <Setter Property="Width" Value="15"/>
-        <Setter Property="Height" Value="15"/>
-        <Setter Property="Opacity" Value="1"/>
+        <Setter Property="Width" Value="15" />
+        <Setter Property="Height" Value="15" />
+        <Setter Property="Opacity" Value="1" />
     </Style>
 
-    <!-- ===== Slider.volume ===== -->
+    <!--  ===== Slider.volume =====  -->
     <Style Selector="Slider.volume">
-        <Setter Property="Height" Value="24"/>
-        <Setter Property="Margin" Value="0"/>
-        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Background="Transparent" ClipToBounds="False">
-                    <Track Name="PART_Track" Orientation="Horizontal" ClipToBounds="False"
-                           Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}">
+                    <Track
+                        Name="PART_Track"
+                        ClipToBounds="False"
+                        Maximum="{TemplateBinding Maximum}"
+                        Minimum="{TemplateBinding Minimum}"
+                        Orientation="Horizontal"
+                        Value="{TemplateBinding Value}">
                         <Track.DecreaseButton>
-                            <RepeatButton Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <RepeatButton
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Focusable="False">
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Name="VolDec" Height="3" Background="{DynamicResource SystemAccentColor}" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <Border
+                                                Name="VolDec"
+                                                Height="3"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                Background="{DynamicResource SystemAccentColor}"
+                                                CornerRadius="1.5">
                                                 <Border.Transitions>
                                                     <Transitions>
-                                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                                        <DoubleTransition
+                                                            Easing="CubicEaseOut"
+                                                            Property="Height"
+                                                            Duration="0:0:0.15" />
                                                     </Transitions>
                                                 </Border.Transitions>
                                             </Border>
@@ -117,14 +183,26 @@
                             </RepeatButton>
                         </Track.DecreaseButton>
                         <Track.IncreaseButton>
-                            <RepeatButton Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <RepeatButton
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Focusable="False">
                                 <RepeatButton.Template>
                                     <ControlTemplate>
                                         <Grid Background="Transparent">
-                                            <Border Name="VolInc" Height="3" Background="#33FFFFFF" CornerRadius="1.5" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                            <Border
+                                                Name="VolInc"
+                                                Height="3"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                Background="#33FFFFFF"
+                                                CornerRadius="1.5">
                                                 <Border.Transitions>
                                                     <Transitions>
-                                                        <DoubleTransition Property="Height" Duration="0:0:0.15" Easing="CubicEaseOut"/>
+                                                        <DoubleTransition
+                                                            Easing="CubicEaseOut"
+                                                            Property="Height"
+                                                            Duration="0:0:0.15" />
                                                     </Transitions>
                                                 </Border.Transitions>
                                             </Border>
@@ -134,16 +212,20 @@
                             </RepeatButton>
                         </Track.IncreaseButton>
                         <Track.Thumb>
-                            <Thumb Name="volThumb" Width="10" Height="10" ClipToBounds="False">
+                            <Thumb
+                                Name="volThumb"
+                                Width="10"
+                                Height="10"
+                                ClipToBounds="False">
                                 <Thumb.Transitions>
                                     <Transitions>
-                                        <DoubleTransition Property="Width" Duration="0:0:0.12"/>
-                                        <DoubleTransition Property="Height" Duration="0:0:0.12"/>
+                                        <DoubleTransition Property="Width" Duration="0:0:0.12" />
+                                        <DoubleTransition Property="Height" Duration="0:0:0.12" />
                                     </Transitions>
                                 </Thumb.Transitions>
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Ellipse Fill="White"/>
+                                        <Ellipse Fill="White" />
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -154,14 +236,14 @@
         </Setter>
     </Style>
     <Style Selector="Slider.volume:pointerover /template/ Border#VolDec">
-        <Setter Property="Height" Value="4.5"/>
+        <Setter Property="Height" Value="4.5" />
     </Style>
     <Style Selector="Slider.volume:pointerover /template/ Border#VolInc">
-        <Setter Property="Height" Value="4.5"/>
+        <Setter Property="Height" Value="4.5" />
     </Style>
     <Style Selector="Slider.volume:pointerover /template/ Thumb#volThumb">
-        <Setter Property="Width" Value="13"/>
-        <Setter Property="Height" Value="13"/>
+        <Setter Property="Width" Value="13" />
+        <Setter Property="Height" Value="13" />
     </Style>
 
 </Styles>

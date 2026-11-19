@@ -1,64 +1,82 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
-             x:Class="Kiriha.Views.Main.SettingsModalOverlay"
-             x:DataType="vmMain:MainWindowViewModel">
-    <Border IsVisible="{Binding IsSettingsOpen}"
-            Background="{DynamicResource ModalOverlayBackgroundBrush}"
-            ZIndex="100">
+﻿<UserControl
+    x:Class="Kiriha.Views.Main.SettingsModalOverlay"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vmMain="using:Kiriha.ViewModels.Main"
+    d:DesignHeight="720"
+    d:DesignWidth="1100"
+    x:DataType="vmMain:MainWindowViewModel"
+    mc:Ignorable="d">
+    <Border
+        Background="{DynamicResource ModalOverlayBackgroundBrush}"
+        IsVisible="{Binding IsSettingsOpen}"
+        ZIndex="100">
         <Border.Styles>
-            <!-- Dim-overlay button must never show hover/pressed visuals -->
+            <!--  Dim-overlay button must never show hover/pressed visuals  -->
             <Style Selector="Button.DimOverlay">
                 <Setter Property="Template">
                     <ControlTemplate>
-                        <Border Background="Transparent"/>
+                        <Border Background="Transparent" />
                     </ControlTemplate>
                 </Setter>
             </Style>
         </Border.Styles>
         <Border.Transitions>
             <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
             </Transitions>
         </Border.Transitions>
 
         <Grid>
-            <!-- Click dim to close -->
-            <Button Classes="DimOverlay"
-                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    Focusable="False"
-                    Command="{Binding CloseSettingsCommand}"/>
+            <!--  Click dim to close  -->
+            <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Classes="DimOverlay"
+                Command="{Binding CloseSettingsCommand}"
+                Focusable="False" />
 
-            <!-- Modal card -->
-            <Border Name="SettingsModalCard"
-                    Background="{DynamicResource ModalBackgroundFill}"
-                    CornerRadius="12"
-                    Margin="40,50,40,50"
-                    MaxWidth="1280" MaxHeight="820"
-                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                    BorderThickness="1"
-                    BoxShadow="0 10 40 0 #60000000"
-                    ClipToBounds="True">
+            <!--  Modal card  -->
+            <Border
+                Name="SettingsModalCard"
+                MaxWidth="1280"
+                MaxHeight="820"
+                Margin="40,50,40,50"
+                Background="{DynamicResource ModalBackgroundFill}"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="1"
+                BoxShadow="0 10 40 0 #60000000"
+                ClipToBounds="True"
+                CornerRadius="12">
                 <Grid>
-                    <ContentControl Content="{Binding SettingsViewModel}"
-                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                    <ContentControl
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Content="{Binding SettingsViewModel}" />
 
-                    <!-- Close (X) top-right -->
-                    <Button HorizontalAlignment="Right" VerticalAlignment="Top"
-                            Margin="0,16,16,0"
-                            Width="32" Height="32"
-                            Padding="0"
-                            Background="Transparent" BorderThickness="0"
-                            CornerRadius="16"
-                            Command="{Binding CloseSettingsCommand}"
-                            ToolTip.Tip="Esc">
-                        <material:MaterialIcon Kind="Close" Width="18" Height="18"
-                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <!--  Close (X) top-right  -->
+                    <Button
+                        Width="32"
+                        Height="32"
+                        Margin="0,16,16,0"
+                        Padding="0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding CloseSettingsCommand}"
+                        CornerRadius="16"
+                        ToolTip.Tip="Esc">
+                        <material:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                            Kind="Close" />
                     </Button>
                 </Grid>
             </Border>

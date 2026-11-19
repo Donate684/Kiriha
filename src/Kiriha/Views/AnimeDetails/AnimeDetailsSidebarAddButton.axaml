@@ -1,34 +1,59 @@
-<UserControl IsVisible="{Binding !Editor.IsInList}" xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarAddButton"
-             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
-    <Border Classes="ContentCard" Padding="18,24">
-        <StackPanel Spacing="16" HorizontalAlignment="Center">
-            <Border Width="52" Height="52" CornerRadius="26"
-                    Background="{DynamicResource SubtleFillColorSecondary}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                    BorderThickness="1"
-                    HorizontalAlignment="Center">
-                <material:MaterialIcon Kind="PlaylistPlus" Width="26" Height="26"
-                                       Foreground="{DynamicResource SystemAccentColor}"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+﻿<UserControl
+    x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarAddButton"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+    x:DataType="vmAnimeDetails:AnimeDetailsViewModel"
+    IsVisible="{Binding !Editor.IsInList}">
+    <Border Padding="18,24" Classes="ContentCard">
+        <StackPanel HorizontalAlignment="Center" Spacing="16">
+            <Border
+                Width="52"
+                Height="52"
+                HorizontalAlignment="Center"
+                Background="{DynamicResource SubtleFillColorSecondary}"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="1"
+                CornerRadius="26">
+                <material:MaterialIcon
+                    Width="26"
+                    Height="26"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource SystemAccentColor}"
+                    Kind="PlaylistPlus" />
             </Border>
-            
-            <TextBlock Text="{DynamicResource l.anime.list_actions.not_in_my_list}"
-                       FontSize="13" FontWeight="Medium"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap"
-                       Opacity="0.75"
-                       MaxWidth="200"/>
 
-            <Button Classes="AddButton" Command="{Binding Editor.AddToListCommand}"
-                    HorizontalAlignment="Stretch" Height="38" CornerRadius="8">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                    <material:MaterialIcon Kind="Plus" Width="18" Height="18" VerticalAlignment="Center"/>
-                    <TextBlock Text="{DynamicResource l.anime.list_actions.add_to_list}"
-                               FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+            <TextBlock
+                MaxWidth="200"
+                FontSize="13"
+                FontWeight="Medium"
+                Opacity="0.75"
+                Text="{DynamicResource l.anime.list_actions.not_in_my_list}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+
+            <Button
+                Height="38"
+                HorizontalAlignment="Stretch"
+                Classes="AddButton"
+                Command="{Binding Editor.AddToListCommand}"
+                CornerRadius="8">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <material:MaterialIcon
+                        Width="18"
+                        Height="18"
+                        VerticalAlignment="Center"
+                        Kind="Plus" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Text="{DynamicResource l.anime.list_actions.add_to_list}" />
                 </StackPanel>
             </Button>
         </StackPanel>

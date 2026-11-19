@@ -1,26 +1,41 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.Player.Controls.PlayerVolumeControl"
-             x:DataType="vmPlayer:PlayerViewModel">
-    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-        <Button Classes="icon-btn"
-                Command="{Binding ToggleMuteCommand}"
-                IsVisible="{Binding ShowMuteButton}"
-                ToolTip.Tip="{DynamicResource l.player.controls.mute_toggle}">
+﻿<UserControl
+    x:Class="Kiriha.Views.Player.Controls.PlayerVolumeControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+    x:DataType="vmPlayer:PlayerViewModel">
+    <StackPanel
+        VerticalAlignment="Center"
+        Orientation="Horizontal"
+        Spacing="2">
+        <Button
+            Classes="icon-btn"
+            Command="{Binding ToggleMuteCommand}"
+            IsVisible="{Binding ShowMuteButton}"
+            ToolTip.Tip="{DynamicResource l.player.controls.mute_toggle}">
             <Panel>
-                <material:MaterialIcon Kind="VolumeHigh" Width="21" Height="21" Foreground="White"
-                                       IsVisible="{Binding !IsMuted}"/>
-                <material:MaterialIcon Kind="VolumeOff" Width="21" Height="21" Foreground="#B3FFFFFF"
-                                       IsVisible="{Binding IsMuted}"/>
+                <material:MaterialIcon
+                    Width="21"
+                    Height="21"
+                    Foreground="White"
+                    IsVisible="{Binding !IsMuted}"
+                    Kind="VolumeHigh" />
+                <material:MaterialIcon
+                    Width="21"
+                    Height="21"
+                    Foreground="#B3FFFFFF"
+                    IsVisible="{Binding IsMuted}"
+                    Kind="VolumeOff" />
             </Panel>
         </Button>
-        <Slider Classes="volume"
-                Width="82"
-                Minimum="0" Maximum="100"
-                Value="{Binding Volume}"
-                VerticalAlignment="Center"
-                IsVisible="{Binding ShowVolumeSlider}"/>
+        <Slider
+            Width="82"
+            VerticalAlignment="Center"
+            Classes="volume"
+            IsVisible="{Binding ShowVolumeSlider}"
+            Maximum="100"
+            Minimum="0"
+            Value="{Binding Volume}" />
     </StackPanel>
 </UserControl>

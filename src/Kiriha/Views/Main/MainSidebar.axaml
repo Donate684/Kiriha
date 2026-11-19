@@ -1,190 +1,372 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:controls="using:Kiriha.Views.Controls"
-             xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             mc:Ignorable="d" d:DesignWidth="230" d:DesignHeight="720"
-             x:Class="Kiriha.Views.Main.MainSidebar"
-             x:DataType="vmMain:MainWindowViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Main.MainSidebar"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vmMain="using:Kiriha.ViewModels.Main"
+    d:DesignHeight="720"
+    d:DesignWidth="230"
+    x:DataType="vmMain:MainWindowViewModel"
+    mc:Ignorable="d">
     <Grid RowDefinitions="Auto, Auto, Auto, *, Auto">
 
-        <!-- Brand header — лейаут одинаковый в обоих режимах,
-             текст просто "проявляется" справа при раскрытии панели. -->
-        <Button Grid.Row="0"
-                Background="Transparent" BorderThickness="0" Padding="0"
-                HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                Margin="0,10,0,6"
-                Command="{Binding NavigateWelcomeCommand}">
-            <StackPanel Orientation="Horizontal" Spacing="10"
-                        VerticalAlignment="Center"
-                        Margin="2,0,0,0">
-                <controls:LeafLogo Width="56" Height="56"
-                                   ShowHalo="False"
-                                   VerticalAlignment="Center"/>
-                <TextBlock Text="{DynamicResource l.common.app_name}"
-                           FontSize="22" FontWeight="Light"
-                           LetterSpacing="3"
-                           VerticalAlignment="Center"
-                           Opacity="0.9"
-                           IsVisible="{Binding IsPaneOpen}"/>
+        <!--
+            Brand header — лейаут одинаковый в обоих режимах,
+            текст просто "проявляется" справа при раскрытии панели.
+        -->
+        <Button
+            Grid.Row="0"
+            Margin="0,10,0,6"
+            Padding="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            BorderThickness="0"
+            Command="{Binding NavigateWelcomeCommand}">
+            <StackPanel
+                Margin="2,0,0,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="10">
+                <controls:LeafLogo
+                    Width="56"
+                    Height="56"
+                    VerticalAlignment="Center"
+                    ShowHalo="False" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="22"
+                    FontWeight="Light"
+                    IsVisible="{Binding IsPaneOpen}"
+                    LetterSpacing="3"
+                    Opacity="0.9"
+                    Text="{DynamicResource l.common.app_name}" />
             </StackPanel>
         </Button>
 
-        <!-- Divider -->
-        <Border Grid.Row="1" Height="1"
-                Background="{DynamicResource DividerStrokeColorDefault}"
-                Margin="12,0,12,0"
-                Opacity="0.6"/>
+        <!--  Divider  -->
+        <Border
+            Grid.Row="1"
+            Height="1"
+            Margin="12,0,12,0"
+            Background="{DynamicResource DividerStrokeColorDefault}"
+            Opacity="0.6" />
 
-        <!-- Section label -->
+        <!--  Section label  -->
         <Panel Grid.Row="2" Height="28">
-            <TextBlock Text="{DynamicResource l.navigation.header}" FontSize="10" FontWeight="Bold" LetterSpacing="1.2"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
-                       Margin="18,12,0,0" IsVisible="{Binding IsPaneOpen}"/>
+            <TextBlock
+                Margin="18,12,0,0"
+                FontSize="10"
+                FontWeight="Bold"
+                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                IsVisible="{Binding IsPaneOpen}"
+                LetterSpacing="1.2"
+                Text="{DynamicResource l.navigation.header}" />
         </Panel>
 
-        <!-- Navigation items -->
-        <ListBox Grid.Row="3" Background="Transparent" BorderThickness="0"
-                 Classes="NavList"
-                 IsEnabled="{Binding !IsNavigationBlocked}"
-                 SelectedIndex="{Binding SelectedNavigationIndex}">
+        <!--  Navigation items  -->
+        <ListBox
+            Grid.Row="3"
+            Background="Transparent"
+            BorderThickness="0"
+            Classes="NavList"
+            IsEnabled="{Binding !IsNavigationBlocked}"
+            SelectedIndex="{Binding SelectedNavigationIndex}">
 
-            <!-- Profile -->
+            <!--  Profile  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="AccountCircleOutline" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.profile}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="AccountCircleOutline" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.profile}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
 
-            <!-- Home / Now Playing -->
+            <!--  Home / Now Playing  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="PlayCircleOutline" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.now_playing}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="PlayCircleOutline" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.now_playing}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
 
-            <!-- Anime List -->
+            <!--  Anime List  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="FormatListBulleted" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.anime_list}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="FormatListBulleted" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.anime_list}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
 
-            <!-- Seasonal -->
+            <!--  Seasonal  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="CalendarMonthOutline" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.seasonal}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="CalendarMonthOutline" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.seasonal}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
 
-            <!-- History -->
+            <!--  History  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="History" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.history}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="History" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.history}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
 
-            <!-- Torrents -->
+            <!--  Torrents  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="CloudDownloadOutline" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.torrents}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="CloudDownloadOutline" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.torrents}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
 
-            <!-- Search / Discover -->
+            <!--  Search / Discover  -->
             <ListBoxItem>
                 <Panel Height="40">
-                    <Border Classes="SelectionIndicator" Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="Magnify" Width="22" Height="22" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.navigation.search}" FontSize="13" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsPaneOpen}" FontWeight="SemiBold"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        Classes="SelectionIndicator"
+                        CornerRadius="0,3,3,0" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Kind="Magnify" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.search}" />
                     </StackPanel>
                 </Panel>
             </ListBoxItem>
         </ListBox>
 
-        <!-- ═══ Bottom controls ═══ -->
-        <StackPanel Grid.Row="4" Margin="6,0,6,12" Spacing="2">
-            <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="6,0,6,6"/>
+        <!--  ═══ Bottom controls ═══  -->
+        <StackPanel
+            Grid.Row="4"
+            Margin="6,0,6,12"
+            Spacing="2">
+            <Border
+                Height="1"
+                Margin="6,0,6,6"
+                Background="{DynamicResource DividerStrokeColorDefault}" />
 
-            <!-- Settings -->
-            <Button Background="Transparent" BorderThickness="0"
-                    HorizontalAlignment="Stretch" CornerRadius="6"
-                    Padding="0" Height="40"
-                    IsEnabled="{Binding !IsNavigationBlocked}"
-                    Command="{Binding NavigateSettings}">
+            <!--  Settings  -->
+            <Button
+                Height="40"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding NavigateSettings}"
+                CornerRadius="6"
+                IsEnabled="{Binding !IsNavigationBlocked}">
                 <Panel>
-                    <Border Width="3" Background="{DynamicResource SystemAccentColor}"
-                            HorizontalAlignment="Left" CornerRadius="0,3,3,0" Height="18"
-                            IsVisible="{Binding IsSettingsSelected}"/>
-                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                        <material:MaterialIcon Kind="CogOutline" Width="22" Height="22" VerticalAlignment="Center"
-                                              Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                              Classes.active="{Binding IsSettingsSelected}"/>
-                        <TextBlock Text="{DynamicResource l.navigation.settings}" FontSize="13" FontWeight="SemiBold"
-                                   VerticalAlignment="Center"
-                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                   IsVisible="{Binding IsPaneOpen}"
-                                   Classes.active="{Binding IsSettingsSelected}"/>
+                    <Border
+                        Width="3"
+                        Height="18"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SystemAccentColor}"
+                        CornerRadius="0,3,3,0"
+                        IsVisible="{Binding IsSettingsSelected}" />
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="14">
+                        <material:MaterialIcon
+                            Width="22"
+                            Height="22"
+                            VerticalAlignment="Center"
+                            Classes.active="{Binding IsSettingsSelected}"
+                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                            Kind="CogOutline" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Classes.active="{Binding IsSettingsSelected}"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Text="{DynamicResource l.navigation.settings}" />
                     </StackPanel>
                 </Panel>
             </Button>
 
-            <!-- Collapse toggle -->
-            <Button Background="Transparent" BorderThickness="0"
-                    HorizontalAlignment="Stretch" CornerRadius="6"
-                    Padding="0" Height="36"
-                    Command="{Binding TriggerPaneCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="14" Margin="14,0,0,0">
-                    <Panel Width="22" Height="22" VerticalAlignment="Center">
-                        <material:MaterialIcon Kind="ChevronDoubleLeft" Width="20" Height="20"
-                                              Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" IsVisible="{Binding IsPaneOpen}"/>
-                        <material:MaterialIcon Kind="ChevronDoubleRight" Width="20" Height="20"
-                                              Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" IsVisible="{Binding !IsPaneOpen}"/>
+            <!--  Collapse toggle  -->
+            <Button
+                Height="36"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding TriggerPaneCommand}"
+                CornerRadius="6">
+                <StackPanel
+                    Margin="14,0,0,0"
+                    Orientation="Horizontal"
+                    Spacing="14">
+                    <Panel
+                        Width="22"
+                        Height="22"
+                        VerticalAlignment="Center">
+                        <material:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                            IsVisible="{Binding IsPaneOpen}"
+                            Kind="ChevronDoubleLeft" />
+                        <material:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                            IsVisible="{Binding !IsPaneOpen}"
+                            Kind="ChevronDoubleRight" />
                     </Panel>
-                    <TextBlock Text="{DynamicResource l.common.actions.collapse}" FontSize="11" 
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                               VerticalAlignment="Center" IsVisible="{Binding IsPaneOpen}"/>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                        IsVisible="{Binding IsPaneOpen}"
+                        Text="{DynamicResource l.common.actions.collapse}" />
                 </StackPanel>
             </Button>
         </StackPanel>

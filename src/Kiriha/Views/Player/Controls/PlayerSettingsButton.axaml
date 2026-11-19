@@ -1,22 +1,26 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:settings="using:Kiriha.Views.Player.Controls.Settings"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:Class="Kiriha.Views.Player.Controls.PlayerSettingsButton"
-             x:DataType="vmPlayer:PlayerViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Player.Controls.PlayerSettingsButton"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+    x:DataType="vmPlayer:PlayerViewModel">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://Kiriha/Views/Styles/PlayerOverlayWindowResources.axaml"/>
+                <ResourceInclude Source="avares://Kiriha/Views/Styles/PlayerOverlayWindowResources.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    
-    <Button Classes="icon-btn"
-            Click="OnSettingsButtonClick"
-            ToolTip.Tip="{DynamicResource l.player.settings}">
-        <material:MaterialIcon Kind="Cog" Width="22" Height="22" Foreground="White"/>
+
+    <Button
+        Classes="icon-btn"
+        Click="OnSettingsButtonClick"
+        ToolTip.Tip="{DynamicResource l.player.settings}">
+        <material:MaterialIcon
+            Width="22"
+            Height="22"
+            Foreground="White"
+            Kind="Cog" />
     </Button>
 </UserControl>

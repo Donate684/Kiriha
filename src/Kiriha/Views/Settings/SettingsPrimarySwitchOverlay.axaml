@@ -1,256 +1,371 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:material="using:Material.Icons.Avalonia"
-             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
-             x:Class="Kiriha.Views.Settings.SettingsPrimarySwitchOverlay"
-             x:DataType="vmSettings:SettingsViewModel"
-             IsVisible="{Binding Auth.IsSwitchDialogOpen}">
+﻿<UserControl
+    x:Class="Kiriha.Views.Settings.SettingsPrimarySwitchOverlay"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    d:DesignHeight="500"
+    d:DesignWidth="700"
+    x:DataType="vmSettings:SettingsViewModel"
+    IsVisible="{Binding Auth.IsSwitchDialogOpen}"
+    mc:Ignorable="d">
 
     <UserControl.Styles>
         <Style Selector="TextBlock.Title">
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="TextBlock.Sub">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Opacity" Value="0.65"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Opacity" Value="0.65" />
+            <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <Style Selector="Button.Primary">
-            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="MinWidth" Value="110"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinWidth" Value="110" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.Secondary">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="MinWidth" Value="90"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinWidth" Value="90" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.Success">
-            <Setter Property="Background" Value="#2ecc71"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="MinWidth" Value="110"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="#2ecc71" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinWidth" Value="110" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.DimOverlay">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Background="Transparent"/>
+                    <Border Background="Transparent" />
                 </ControlTemplate>
             </Setter>
         </Style>
     </UserControl.Styles>
 
     <Grid Background="{DynamicResource ModalOverlayBackgroundBrush}">
-        <!-- Click dim overlay to cancel (disabled while syncing) -->
-        <Button Classes="DimOverlay"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                Focusable="False"
-                IsEnabled="{Binding !Auth.IsSwitchSyncing}"
-                Command="{Binding Auth.CancelPrimarySwitchCommand}"/>
+        <!--  Click dim overlay to cancel (disabled while syncing)  -->
+        <Button
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Classes="DimOverlay"
+            Command="{Binding Auth.CancelPrimarySwitchCommand}"
+            Focusable="False"
+            IsEnabled="{Binding !Auth.IsSwitchSyncing}" />
 
-        <!-- Modal Dialog Card (Same aesthetic as UpdateDialogView) -->
-        <Border Background="{DynamicResource ModalBackgroundFill}"
-                CornerRadius="12"
-                Width="460"
-                HorizontalAlignment="Center" VerticalAlignment="Center"
-                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                BorderThickness="1"
-                BoxShadow="0 10 40 0 #60000000"
-                ClipToBounds="True">
+        <!--  Modal Dialog Card (Same aesthetic as UpdateDialogView)  -->
+        <Border
+            Width="460"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource ModalBackgroundFill}"
+            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+            BorderThickness="1"
+            BoxShadow="0 10 40 0 #60000000"
+            ClipToBounds="True"
+            CornerRadius="12">
             <Grid RowDefinitions="*,Auto">
 
-                <!-- Content Area -->
-                <Grid Grid.Row="0" Margin="28,24,28,20" MinHeight="130">
+                <!--  Content Area  -->
+                <Grid
+                    Grid.Row="0"
+                    MinHeight="130"
+                    Margin="28,24,28,20">
 
-                    <!-- State 0: Confirm Switch (Ask user Yes/No) -->
-                    <StackPanel Spacing="14" VerticalAlignment="Center"
-                                IsVisible="{Binding Auth.IsSwitchConfirm}">
+                    <!--  State 0: Confirm Switch (Ask user Yes/No)  -->
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding Auth.IsSwitchConfirm}"
+                        Spacing="14">
                         <StackPanel Spacing="4">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_confirm_title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_confirm_desc}"/>
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_confirm_title}" />
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_confirm_desc}" />
                         </StackPanel>
 
-                        <!-- Selected Target Service Card -->
-                        <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="12,10">
+                        <!--  Selected Target Service Card  -->
+                        <Border
+                            Padding="12,10"
+                            Background="{DynamicResource SubtleFillColorSecondary}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            CornerRadius="8">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Background="{DynamicResource SystemAccentColor}"
-                                        CornerRadius="6" Width="30" Height="30" Margin="0,0,10,0">
-                                    <TextBlock Text="{Binding Auth.PendingPrimaryTracker.Badge}"
-                                               Foreground="White" FontSize="10" FontWeight="Bold"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border
+                                    Grid.Column="0"
+                                    Width="30"
+                                    Height="30"
+                                    Margin="0,0,10,0"
+                                    Background="{DynamicResource SystemAccentColor}"
+                                    CornerRadius="6">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="10"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        Text="{Binding Auth.PendingPrimaryTracker.Badge}" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Auth.PendingPrimaryTracker.Name}"
-                                               FontWeight="SemiBold" FontSize="13"/>
-                                    <TextBlock Text="{Binding Auth.PendingPrimaryTracker.Domain}"
-                                               FontSize="10" FontFamily="Consolas,monospace" Opacity="0.6"/>
+                                    <TextBlock
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Auth.PendingPrimaryTracker.Name}" />
+                                    <TextBlock
+                                        FontFamily="Consolas,monospace"
+                                        FontSize="10"
+                                        Opacity="0.6"
+                                        Text="{Binding Auth.PendingPrimaryTracker.Domain}" />
                                 </StackPanel>
                             </Grid>
                         </Border>
                     </StackPanel>
 
-                    <!-- State 1: Requires Auth -->
-                    <StackPanel Spacing="14" VerticalAlignment="Center"
-                                IsVisible="{Binding Auth.IsSwitchRequiresAuth}">
+                    <!--  State 1: Requires Auth  -->
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding Auth.IsSwitchRequiresAuth}"
+                        Spacing="14">
                         <StackPanel Spacing="4">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_auth_title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_auth_desc}"/>
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_auth_title}" />
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_auth_desc}" />
                         </StackPanel>
 
-                        <!-- Selected Target Service Card -->
-                        <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="12,10">
+                        <!--  Selected Target Service Card  -->
+                        <Border
+                            Padding="12,10"
+                            Background="{DynamicResource SubtleFillColorSecondary}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            CornerRadius="8">
                             <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Background="{DynamicResource SystemAccentColor}"
-                                        CornerRadius="6" Width="30" Height="30" Margin="0,0,10,0">
-                                    <TextBlock Text="{Binding Auth.PendingPrimaryTracker.Badge}"
-                                               Foreground="White" FontSize="10" FontWeight="Bold"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border
+                                    Grid.Column="0"
+                                    Width="30"
+                                    Height="30"
+                                    Margin="0,0,10,0"
+                                    Background="{DynamicResource SystemAccentColor}"
+                                    CornerRadius="6">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="10"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        Text="{Binding Auth.PendingPrimaryTracker.Badge}" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Auth.PendingPrimaryTracker.Name}"
-                                               FontWeight="SemiBold" FontSize="13"/>
-                                    <TextBlock Text="{Binding Auth.PendingPrimaryTracker.Domain}"
-                                               FontSize="10" FontFamily="Consolas,monospace" Opacity="0.6"/>
+                                    <TextBlock
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Auth.PendingPrimaryTracker.Name}" />
+                                    <TextBlock
+                                        FontFamily="Consolas,monospace"
+                                        FontSize="10"
+                                        Opacity="0.6"
+                                        Text="{Binding Auth.PendingPrimaryTracker.Domain}" />
                                 </StackPanel>
                             </Grid>
                         </Border>
                     </StackPanel>
 
-                    <!-- State 2: Syncing Database -->
-                    <StackPanel Spacing="14" VerticalAlignment="Center"
-                                IsVisible="{Binding Auth.IsSwitchSyncing}">
+                    <!--  State 2: Syncing Database  -->
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding Auth.IsSwitchSyncing}"
+                        Spacing="14">
                         <StackPanel Spacing="4">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_sync_title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_sync_desc}"/>
+                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_sync_title}" />
+                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_sync_desc}" />
                         </StackPanel>
 
-                        <ProgressBar IsIndeterminate="True"
-                                     Height="6" CornerRadius="3"
-                                     Foreground="{DynamicResource SystemAccentColor}"
-                                     Background="{DynamicResource SubtleFillColorSecondary}"
-                                     BorderThickness="0"/>
+                        <ProgressBar
+                            Height="6"
+                            Background="{DynamicResource SubtleFillColorSecondary}"
+                            BorderThickness="0"
+                            CornerRadius="3"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            IsIndeterminate="True" />
 
-                        <TextBlock Classes="Sub" Text="{Binding Auth.SyncStatusDisplay}"
-                                   FontSize="11" Opacity="0.65"/>
+                        <TextBlock
+                            Classes="Sub"
+                            FontSize="11"
+                            Opacity="0.65"
+                            Text="{Binding Auth.SyncStatusDisplay}" />
                     </StackPanel>
 
-                    <!-- State 3: Success -->
-                    <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                IsVisible="{Binding Auth.IsSwitchSuccess}">
-                        <Border Width="52" Height="52" CornerRadius="26"
-                                Background="#152ecc71" HorizontalAlignment="Center">
-                            <material:MaterialIcon Kind="CheckCircle" Width="30" Height="30"
-                                                   Foreground="#2ecc71"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <!--  State 3: Success  -->
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding Auth.IsSwitchSuccess}"
+                        Spacing="12">
+                        <Border
+                            Width="52"
+                            Height="52"
+                            HorizontalAlignment="Center"
+                            Background="#152ecc71"
+                            CornerRadius="26">
+                            <material:MaterialIcon
+                                Width="30"
+                                Height="30"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="#2ecc71"
+                                Kind="CheckCircle" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_success_title}"
-                                       HorizontalAlignment="Center" TextAlignment="Center"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_success_desc}"
-                                       HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="380"/>
+                        <StackPanel HorizontalAlignment="Center" Spacing="4">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Classes="Title"
+                                Text="{DynamicResource l.settings.accounts_hub.switch_success_title}"
+                                TextAlignment="Center" />
+                            <TextBlock
+                                MaxWidth="380"
+                                HorizontalAlignment="Center"
+                                Classes="Sub"
+                                Text="{DynamicResource l.settings.accounts_hub.switch_success_desc}"
+                                TextAlignment="Center" />
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- State 4: Failed -->
-                    <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                IsVisible="{Binding Auth.IsSwitchFailed}">
-                        <Border Width="52" Height="52" CornerRadius="26"
-                                Background="#15ff9500" HorizontalAlignment="Center">
-                            <material:MaterialIcon Kind="AlertCircle" Width="30" Height="30"
-                                                   Foreground="#cc8400"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <!--  State 4: Failed  -->
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding Auth.IsSwitchFailed}"
+                        Spacing="12">
+                        <Border
+                            Width="52"
+                            Height="52"
+                            HorizontalAlignment="Center"
+                            Background="#15ff9500"
+                            CornerRadius="26">
+                            <material:MaterialIcon
+                                Width="30"
+                                Height="30"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="#cc8400"
+                                Kind="AlertCircle" />
                         </Border>
-                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.accounts_hub.switch_failed_title}"
-                                       HorizontalAlignment="Center" TextAlignment="Center"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.accounts_hub.switch_failed_desc}"
-                                       HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="380"/>
+                        <StackPanel HorizontalAlignment="Center" Spacing="4">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Classes="Title"
+                                Text="{DynamicResource l.settings.accounts_hub.switch_failed_title}"
+                                TextAlignment="Center" />
+                            <TextBlock
+                                MaxWidth="380"
+                                HorizontalAlignment="Center"
+                                Classes="Sub"
+                                Text="{DynamicResource l.settings.accounts_hub.switch_failed_desc}"
+                                TextAlignment="Center" />
                         </StackPanel>
                     </StackPanel>
 
                 </Grid>
 
-                <!-- Actions Bar -->
-                <Border Grid.Row="1" Padding="20,14"
-                        Background="{DynamicResource ModalSidebarFill}"
-                        BorderBrush="{DynamicResource DividerStrokeColorDefault}"
-                        BorderThickness="0,1,0,0">
+                <!--  Actions Bar  -->
+                <Border
+                    Grid.Row="1"
+                    Padding="20,14"
+                    Background="{DynamicResource ModalSidebarFill}"
+                    BorderBrush="{DynamicResource DividerStrokeColorDefault}"
+                    BorderThickness="0,1,0,0">
                     <Grid>
-                        <!-- Confirm Actions -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
-                                    IsVisible="{Binding Auth.IsSwitchConfirm}">
-                            <Button Classes="Secondary"
-                                    Content="{DynamicResource l.common.actions.cancel}"
-                                    Command="{Binding Auth.CancelPrimarySwitchCommand}"/>
-                            <Button Classes="Primary"
-                                    Content="{DynamicResource l.settings.accounts_hub.switch_confirm_action}"
-                                    Command="{Binding Auth.ConfirmPrimarySwitchCommand}"/>
+                        <!--  Confirm Actions  -->
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding Auth.IsSwitchConfirm}"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                Classes="Secondary"
+                                Command="{Binding Auth.CancelPrimarySwitchCommand}"
+                                Content="{DynamicResource l.common.actions.cancel}" />
+                            <Button
+                                Classes="Primary"
+                                Command="{Binding Auth.ConfirmPrimarySwitchCommand}"
+                                Content="{DynamicResource l.settings.accounts_hub.switch_confirm_action}" />
                         </StackPanel>
 
-                        <!-- Requires Auth Actions -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
-                                    IsVisible="{Binding Auth.IsSwitchRequiresAuth}">
-                            <Button Classes="Secondary"
-                                    Content="{DynamicResource l.common.actions.cancel}"
-                                    Command="{Binding Auth.CancelPrimarySwitchCommand}"
-                                    IsEnabled="{Binding !Auth.IsLoggingInForSwitch}"/>
-                            <Button Classes="Primary"
-                                    Command="{Binding Auth.ExecutePendingLoginCommand}"
-                                    IsEnabled="{Binding !Auth.IsLoggingInForSwitch}">
+                        <!--  Requires Auth Actions  -->
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding Auth.IsSwitchRequiresAuth}"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                Classes="Secondary"
+                                Command="{Binding Auth.CancelPrimarySwitchCommand}"
+                                Content="{DynamicResource l.common.actions.cancel}"
+                                IsEnabled="{Binding !Auth.IsLoggingInForSwitch}" />
+                            <Button
+                                Classes="Primary"
+                                Command="{Binding Auth.ExecutePendingLoginCommand}"
+                                IsEnabled="{Binding !Auth.IsLoggingInForSwitch}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <material:MaterialIcon Kind="OpenInBrowser" Width="14" Height="14"/>
-                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.switch_auth_login}"/>
+                                    <material:MaterialIcon
+                                        Width="14"
+                                        Height="14"
+                                        Kind="OpenInBrowser" />
+                                    <TextBlock Text="{DynamicResource l.settings.accounts_hub.switch_auth_login}" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
 
-                        <!-- Syncing Actions (waiting indicator or disabled) -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
-                                    IsVisible="{Binding Auth.IsSwitchSyncing}">
-                            <Button Classes="Secondary" IsEnabled="False"
-                                    Content="{DynamicResource l.settings.accounts_hub.syncing_action}"/>
+                        <!--  Syncing Actions (waiting indicator or disabled)  -->
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding Auth.IsSwitchSyncing}"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                Classes="Secondary"
+                                Content="{DynamicResource l.settings.accounts_hub.syncing_action}"
+                                IsEnabled="False" />
                         </StackPanel>
 
-                        <!-- Success Actions -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
-                                    IsVisible="{Binding Auth.IsSwitchSuccess}">
-                            <Button Classes="Success"
-                                    Content="{DynamicResource l.settings.accounts_hub.switch_done_action}"
-                                    Command="{Binding Auth.ClosePrimarySwitchDialogCommand}"/>
+                        <!--  Success Actions  -->
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding Auth.IsSwitchSuccess}"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                Classes="Success"
+                                Command="{Binding Auth.ClosePrimarySwitchDialogCommand}"
+                                Content="{DynamicResource l.settings.accounts_hub.switch_done_action}" />
                         </StackPanel>
 
-                        <!-- Failed Actions -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"
-                                    IsVisible="{Binding Auth.IsSwitchFailed}">
-                            <Button Classes="Secondary"
-                                    Content="{DynamicResource l.common.actions.close}"
-                                    Command="{Binding Auth.ClosePrimarySwitchDialogCommand}"/>
+                        <!--  Failed Actions  -->
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding Auth.IsSwitchFailed}"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                Classes="Secondary"
+                                Command="{Binding Auth.ClosePrimarySwitchDialogCommand}"
+                                Content="{DynamicResource l.common.actions.close}" />
                         </StackPanel>
                     </Grid>
                 </Border>

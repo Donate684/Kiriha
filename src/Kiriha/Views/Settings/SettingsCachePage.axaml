@@ -1,82 +1,110 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:Class="Kiriha.Views.Settings.SettingsCachePage"
-             x:DataType="vmSettings:SettingsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Settings.SettingsCachePage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    x:DataType="vmSettings:SettingsViewModel">
 
     <StackPanel>
 
-                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.cache.title}"/>
+        <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.cache.title}" />
 
-                    <Border Background="{DynamicResource SubtleFillColorTertiary}" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
-                        <TextBlock Text="{DynamicResource l.settings.cache.subtitle}" FontSize="12" Opacity="0.7" TextWrapping="Wrap"/>
-                    </Border>
+        <Border
+            Margin="0,0,0,16"
+            Padding="14,12"
+            Background="{DynamicResource SubtleFillColorTertiary}"
+            CornerRadius="8">
+            <TextBlock
+                FontSize="12"
+                Opacity="0.7"
+                Text="{DynamicResource l.settings.cache.subtitle}"
+                TextWrapping="Wrap" />
+        </Border>
 
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-                        <TextBlock Text="{DynamicResource l.settings.cache.clear_data}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Command="{Binding Cache.RefreshCacheStatsCommand}" IsEnabled="{Binding !Cache.IsCacheBusy}"
-                                Padding="12,6" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="Refresh" Width="14" Height="14"/>
-                                <TextBlock Text="{DynamicResource l.common.actions.refresh}" FontSize="12"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
+        <Grid Margin="0,0,0,10" ColumnDefinitions="*,Auto">
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="15"
+                FontWeight="SemiBold"
+                Text="{DynamicResource l.settings.cache.clear_data}" />
+            <Button
+                Grid.Column="1"
+                Padding="12,6"
+                Background="{DynamicResource SubtleFillColorSecondary}"
+                Command="{Binding Cache.RefreshCacheStatsCommand}"
+                CornerRadius="6"
+                IsEnabled="{Binding !Cache.IsCacheBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <material:MaterialIcon
+                        Width="14"
+                        Height="14"
+                        Kind="Refresh" />
+                    <TextBlock FontSize="12" Text="{DynamicResource l.common.actions.refresh}" />
+                </StackPanel>
+            </Button>
+        </Grid>
 
-                    <Border Background="{DynamicResource CardBackgroundFillDefault}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                            BorderThickness="1" CornerRadius="8" Padding="14,6">
-                        <ItemsControl ItemsSource="{Binding Cache.CacheItems}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vmSettings:CacheCleanupItem">
-                                    <Grid MinHeight="44" ColumnDefinitions="*,Auto">
-                                        <CheckBox Grid.Column="0"
-                                                  IsChecked="{Binding IsSelected}"
-                                                  VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding TitleKey, Converter={StaticResource LocConverter}}" FontSize="14"/>
-                                        </CheckBox>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding DisplayStats}"
-                                                   FontSize="13"
-                                                   Opacity="0.65"
-                                                   VerticalAlignment="Center"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Border>
+        <Border
+            Padding="14,6"
+            Background="{DynamicResource CardBackgroundFillDefault}"
+            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <ItemsControl ItemsSource="{Binding Cache.CacheItems}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vmSettings:CacheCleanupItem">
+                        <Grid MinHeight="44" ColumnDefinitions="*,Auto">
+                            <CheckBox
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsSelected}">
+                                <TextBlock FontSize="14" Text="{Binding TitleKey, Converter={StaticResource LocConverter}}" />
+                            </CheckBox>
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Opacity="0.65"
+                                Text="{Binding DisplayStats}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
 
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,16,0,0">
-                        <TextBlock Grid.Column="0" Text="{Binding Cache.CacheStatus}" FontSize="12" Opacity="0.65" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Command="{Binding Cache.ClearSelectedCacheCommand}"
-                                IsEnabled="{Binding Cache.CanClearSelectedCache}"
-                                Padding="18,8" CornerRadius="6"
-                                Background="{DynamicResource SystemAccentColor}" Foreground="White">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <material:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14"/>
-                                <TextBlock Text="{DynamicResource l.settings.cache.clear}" FontSize="12" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-</StackPanel>
+        <Grid Margin="0,16,0,0" ColumnDefinitions="*,Auto">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Opacity="0.65"
+                Text="{Binding Cache.CacheStatus}" />
+            <Button
+                Grid.Column="1"
+                Padding="18,8"
+                Background="{DynamicResource SystemAccentColor}"
+                Command="{Binding Cache.ClearSelectedCacheCommand}"
+                CornerRadius="6"
+                Foreground="White"
+                IsEnabled="{Binding Cache.CanClearSelectedCache}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <material:MaterialIcon
+                        Width="14"
+                        Height="14"
+                        Kind="TrashCanOutline" />
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Text="{DynamicResource l.settings.cache.clear}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </StackPanel>
 </UserControl>
 

@@ -1,92 +1,150 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:Class="Kiriha.Views.Settings.SettingsAppearancePage"
-             x:DataType="vmSettings:SettingsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Settings.SettingsAppearancePage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    x:DataType="vmSettings:SettingsViewModel">
 
     <StackPanel>
 
-                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.appearance}"/>
+        <TextBlock Classes="PageTitle" Text="{DynamicResource l.settings.sections.appearance}" />
 
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding Ui.IsMicaSupported}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.mica.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mica.subtitle}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.EnableMica}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider" IsVisible="{Binding Ui.IsMicaSupported}"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_titles}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.russian_titles_sub}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.UseRussianTitles}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_descriptions}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.russian_descriptions_sub}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.UseRussianDescriptions}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.airing_info.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.airing_info.subtitle}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Ui.ShowAiringInfo}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider" IsVisible="{Binding Ui.ShowAiringInfo}"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding Ui.ShowAiringInfo}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.airing_source.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.airing_source.subtitle}"/>
-                        </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding System.AvailableAiringSources}" SelectedItem="{Binding System.SelectedAiringSource}" Width="200" CornerRadius="6">
-                            <ComboBox.ItemTemplate><DataTemplate x:DataType="vmSettings:AiringSourceOption"><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.custom_accent_color}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.ui.custom_accent_color_sub}"/>
-                        </StackPanel>
-                        <ColorPicker Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" Color="{Binding Ui.CustomAccentColor}" IsVisible="{Binding Ui.EnableCustomAccentColor}"/>
-                        <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding Ui.EnableCustomAccentColor}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.scale}"/>
-                        </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Ui.AvailableUiScales}" SelectedItem="{Binding Ui.UiScale}" Width="160" CornerRadius="6">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="x:Double">
-                                    <TextBlock Text="{Binding StringFormat={}{0:P0}}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
-</StackPanel>
+        <Grid
+            Classes="Row"
+            ColumnDefinitions="*,Auto"
+            IsVisible="{Binding Ui.IsMicaSupported}">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.mica.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.mica.subtitle}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding Ui.EnableMica}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" IsVisible="{Binding Ui.IsMicaSupported}" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_titles}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.russian_titles_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding Ui.UseRussianTitles}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.shikimori.russian_descriptions}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.shikimori.russian_descriptions_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding Ui.UseRussianDescriptions}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.airing_info.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.airing_info.subtitle}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding Ui.ShowAiringInfo}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" IsVisible="{Binding Ui.ShowAiringInfo}" />
+        <Grid
+            Classes="Row"
+            ColumnDefinitions="*,Auto"
+            IsVisible="{Binding Ui.ShowAiringInfo}">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.airing_source.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.airing_source.subtitle}" />
+            </StackPanel>
+            <ComboBox
+                Grid.Column="1"
+                Width="200"
+                VerticalAlignment="Center"
+                CornerRadius="6"
+                ItemsSource="{Binding System.AvailableAiringSources}"
+                SelectedItem="{Binding System.SelectedAiringSource}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vmSettings:AiringSourceOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.custom_accent_color}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.ui.custom_accent_color_sub}" />
+            </StackPanel>
+            <ColorPicker
+                Grid.Column="1"
+                Margin="0,0,16,0"
+                VerticalAlignment="Center"
+                IsVisible="{Binding Ui.EnableCustomAccentColor}"
+                Color="{Binding Ui.CustomAccentColor}" />
+            <ToggleSwitch
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                IsChecked="{Binding Ui.EnableCustomAccentColor}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.ui.scale}" />
+            </StackPanel>
+            <ComboBox
+                Grid.Column="1"
+                Width="160"
+                VerticalAlignment="Center"
+                CornerRadius="6"
+                ItemsSource="{Binding Ui.AvailableUiScales}"
+                SelectedItem="{Binding Ui.UiScale}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="x:Double">
+                        <TextBlock Text="{Binding StringFormat={}{0:P0}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+    </StackPanel>
 </UserControl>
 

@@ -1,6 +1,7 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:conv="using:Kiriha.Views.Converters">
-    <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
-    <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+﻿<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters">
+    <conv:IntEqualsConverter x:Key="IntEqualsConverter" />
+    <conv:SettingModifiedConverter x:Key="SettingModifiedConverter" />
 </ResourceDictionary>

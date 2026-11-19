@@ -1,193 +1,309 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-        xmlns:material="using:Material.Icons.Avalonia"
-        xmlns:controls="using:Kiriha.Views.Controls"
-        xmlns:u="using:Kiriha.Utils.UI"
-        x:Class="Kiriha.Views.Player.PlayerSelectionWindow"
-        x:DataType="vmPlayer:PlayerSelectionViewModel"
-        Title="{DynamicResource l.scrobbler.processes.tracked_apps}"
-        Width="720" Height="620"
-        MinWidth="580" MinHeight="480"
-        WindowStartupLocation="CenterOwner"
-        Background="{x:Null}"
-        TransparencyLevelHint="Mica, AcrylicBlur"
-        TransparencyBackgroundFallback="Transparent"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="36"
-        WindowDecorations="BorderOnly">
+﻿<Window
+    x:Class="Kiriha.Views.Player.PlayerSelectionWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Controls"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:u="using:Kiriha.Utils.UI"
+    xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+    Title="{DynamicResource l.scrobbler.processes.tracked_apps}"
+    Width="720"
+    Height="620"
+    MinWidth="580"
+    MinHeight="480"
+    x:DataType="vmPlayer:PlayerSelectionViewModel"
+    Background="{x:Null}"
+    ExtendClientAreaTitleBarHeightHint="36"
+    ExtendClientAreaToDecorationsHint="True"
+    TransparencyBackgroundFallback="Transparent"
+    TransparencyLevelHint="Mica, AcrylicBlur"
+    WindowDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner">
 
     <Window.Styles>
-        <!-- Card base button -->
+        <!--  Card base button  -->
         <Style Selector="Button.PlayerCard">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.PlayerCard:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
         </Style>
         <Style Selector="Button.PlayerCard:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
         </Style>
 
-        <!-- Active player card specific style -->
+        <!--  Active player card specific style  -->
         <Style Selector="Button.ActivePlayerCard">
-            <Setter Property="Background" Value="#152ecc71"/>
-            <Setter Property="BorderBrush" Value="#2ecc71"/>
+            <Setter Property="Background" Value="#152ecc71" />
+            <Setter Property="BorderBrush" Value="#2ecc71" />
         </Style>
         <Style Selector="Button.ActivePlayerCard:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#152ecc71"/>
-            <Setter Property="BorderBrush" Value="#2ecc71"/>
+            <Setter Property="Background" Value="#152ecc71" />
+            <Setter Property="BorderBrush" Value="#2ecc71" />
         </Style>
         <Style Selector="Button.ActivePlayerCard:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#152ecc71"/>
+            <Setter Property="Background" Value="#152ecc71" />
         </Style>
 
-        <!-- Action pill buttons in header -->
+        <!--  Action pill buttons in header  -->
         <Style Selector="Button.PillAction">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,7"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.PillAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
         </Style>
 
-        <!-- Secondary footer button -->
+        <!--  Secondary footer button  -->
         <Style Selector="Button.SecondaryAction">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="18,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="18,8" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.SecondaryAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorSecondary}" />
         </Style>
     </Window.Styles>
 
     <Panel>
-        <!-- Background surface fallback -->
-        <Border Background="{DynamicResource SystemAltLowColor}" Opacity="0.5"/>
-        <Border BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1" IsHitTestVisible="False"/>
+        <!--  Background surface fallback  -->
+        <Border Background="{DynamicResource SystemAltLowColor}" Opacity="0.5" />
+        <Border
+            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+            BorderThickness="1"
+            IsHitTestVisible="False" />
 
         <LayoutTransformControl Name="ScaleRoot">
             <LayoutTransformControl.LayoutTransform>
-                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
             </LayoutTransformControl.LayoutTransform>
 
             <Grid RowDefinitions="36, Auto, Auto, *, Auto">
-                <!-- Row 0: Custom Title Bar with caption buttons -->
-                <Border Grid.Row="0" Background="Transparent" PointerPressed="OnTitleBarPressed">
+                <!--  Row 0: Custom Title Bar with caption buttons  -->
+                <Border
+                    Grid.Row="0"
+                    Background="Transparent"
+                    PointerPressed="OnTitleBarPressed">
                     <Grid ColumnDefinitions="Auto, *, Auto">
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="16,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
-                            <material:MaterialIcon Kind="Tune" Width="14" Height="14" Opacity="0.5"/>
-                            <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="11.5" Opacity="0.5" VerticalAlignment="Center"/>
+                        <StackPanel
+                            Grid.Column="0"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            IsHitTestVisible="False"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <material:MaterialIcon
+                                Width="14"
+                                Height="14"
+                                Kind="Tune"
+                                Opacity="0.5" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="11.5"
+                                Opacity="0.5"
+                                Text="{DynamicResource l.scrobbler.processes.tracked_apps}" />
                         </StackPanel>
-                        
-                        <controls:TitleBarButtons Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+
+                        <controls:TitleBarButtons
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top" />
                     </Grid>
                 </Border>
 
-                <!-- Row 1: Header -->
-                <StackPanel Grid.Row="1" Spacing="4" Margin="28,8,28,16">
-                    <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="22" FontWeight="SemiBold"/>
-                    <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps_sub}" FontSize="12.5" Opacity="0.6" TextWrapping="Wrap"/>
+                <!--  Row 1: Header  -->
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="28,8,28,16"
+                    Spacing="4">
+                    <TextBlock
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Text="{DynamicResource l.scrobbler.processes.tracked_apps}" />
+                    <TextBlock
+                        FontSize="12.5"
+                        Opacity="0.6"
+                        Text="{DynamicResource l.scrobbler.processes.tracked_apps_sub}"
+                        TextWrapping="Wrap" />
                 </StackPanel>
 
-                <!-- Row 2: Search and Actions -->
-                <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="28,0,28,16">
-                    <TextBox Grid.Column="0" 
-                             Text="{Binding SearchText}" 
-                             PlaceholderText="{DynamicResource l.scrobbler.processes.search_placeholder}" 
-                             Classes="clearButton" 
-                             CornerRadius="8"
-                             Height="36">
+                <!--  Row 2: Search and Actions  -->
+                <Grid
+                    Grid.Row="2"
+                    Margin="28,0,28,16"
+                    ColumnDefinitions="*, Auto">
+                    <TextBox
+                        Grid.Column="0"
+                        Height="36"
+                        Classes="clearButton"
+                        CornerRadius="8"
+                        PlaceholderText="{DynamicResource l.scrobbler.processes.search_placeholder}"
+                        Text="{Binding SearchText}">
                         <TextBox.InnerLeftContent>
-                            <material:MaterialIcon Kind="Magnify" Width="18" Height="18" Margin="10,0,4,0" Opacity="0.5"/>
+                            <material:MaterialIcon
+                                Width="18"
+                                Height="18"
+                                Margin="10,0,4,0"
+                                Kind="Magnify"
+                                Opacity="0.5" />
                         </TextBox.InnerLeftContent>
                     </TextBox>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0">
-                        <Button Command="{Binding SelectAllCommand}" Classes="PillAction">
+                    <StackPanel
+                        Grid.Column="1"
+                        Margin="12,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button Classes="PillAction" Command="{Binding SelectAllCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="CheckAll" Width="14" Height="14" Foreground="{DynamicResource SystemAccentColor}"/>
-                                <TextBlock Text="{DynamicResource l.common.actions.select_all}" FontSize="12"/>
+                                <material:MaterialIcon
+                                    Width="14"
+                                    Height="14"
+                                    Foreground="{DynamicResource SystemAccentColor}"
+                                    Kind="CheckAll" />
+                                <TextBlock FontSize="12" Text="{DynamicResource l.common.actions.select_all}" />
                             </StackPanel>
                         </Button>
-                        <Button Command="{Binding DeselectAllCommand}" Classes="PillAction">
+                        <Button Classes="PillAction" Command="{Binding DeselectAllCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="CloseBoxOutline" Width="14" Height="14" Opacity="0.6"/>
-                                <TextBlock Text="{DynamicResource l.common.actions.deselect_all}" FontSize="12"/>
+                                <material:MaterialIcon
+                                    Width="14"
+                                    Height="14"
+                                    Kind="CloseBoxOutline"
+                                    Opacity="0.6" />
+                                <TextBlock FontSize="12" Text="{DynamicResource l.common.actions.deselect_all}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </Grid>
 
-                <!-- Row 3: Content List -->
-                <ScrollViewer Grid.Row="3" u:SmoothScroll.IsEnabled="True" Padding="28,0,28,12">
+                <!--  Row 3: Content List  -->
+                <ScrollViewer
+                    Grid.Row="3"
+                    Padding="28,0,28,12"
+                    u:SmoothScroll.IsEnabled="True">
                     <StackPanel Spacing="24">
-                        <!-- Active/Running Players -->
-                        <StackPanel Spacing="12" IsVisible="{Binding ActivePlayers.Count}">
+                        <!--  Active/Running Players  -->
+                        <StackPanel IsVisible="{Binding ActivePlayers.Count}" Spacing="12">
                             <StackPanel Spacing="3">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <material:MaterialIcon Kind="LightningBolt" Width="18" Height="18" Foreground="#2ecc71"/>
-                                    <TextBlock Text="{DynamicResource l.scrobbler.status.detected}" FontWeight="SemiBold" FontSize="15" Foreground="#2ecc71"/>
-                                    <Border Background="#152ecc71" CornerRadius="10" Padding="8,1" Margin="4,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ActivePlayers.Count}" Foreground="#2ecc71" FontSize="11" FontWeight="Bold"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        Foreground="#2ecc71"
+                                        Kind="LightningBolt" />
+                                    <TextBlock
+                                        FontSize="15"
+                                        FontWeight="SemiBold"
+                                        Foreground="#2ecc71"
+                                        Text="{DynamicResource l.scrobbler.status.detected}" />
+                                    <Border
+                                        Margin="4,0,0,0"
+                                        Padding="8,1"
+                                        VerticalAlignment="Center"
+                                        Background="#152ecc71"
+                                        CornerRadius="10">
+                                        <TextBlock
+                                            FontSize="11"
+                                            FontWeight="Bold"
+                                            Foreground="#2ecc71"
+                                            Text="{Binding ActivePlayers.Count}" />
                                     </Border>
                                 </StackPanel>
-                                <TextBlock Text="{DynamicResource l.scrobbler.matching.sources_tip}" FontSize="11.5" Opacity="0.5" Margin="26,0,0,0"/>
+                                <TextBlock
+                                    Margin="26,0,0,0"
+                                    FontSize="11.5"
+                                    Opacity="0.5"
+                                    Text="{DynamicResource l.scrobbler.matching.sources_tip}" />
                             </StackPanel>
 
                             <ItemsControl ItemsSource="{Binding ActivePlayers}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <UniformGrid Columns="2"/>
+                                        <UniformGrid Columns="2" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vmPlayer:PlayerSelectionItem">
-                                        <Button Classes="PlayerCard ActivePlayerCard" Command="{Binding ToggleCommand}" Margin="4">
+                                        <Button
+                                            Margin="4"
+                                            Classes="PlayerCard ActivePlayerCard"
+                                            Command="{Binding ToggleCommand}">
                                             <Grid ColumnDefinitions="Auto, *, Auto">
-                                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" 
-                                                        Background="#152ecc71" Margin="0,0,12,0" VerticalAlignment="Center">
-                                                    <material:MaterialIcon Kind="PlayCircle" Width="20" Height="20" Foreground="#2ecc71"
-                                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <Border
+                                                    Grid.Column="0"
+                                                    Width="36"
+                                                    Height="36"
+                                                    Margin="0,0,12,0"
+                                                    VerticalAlignment="Center"
+                                                    Background="#152ecc71"
+                                                    CornerRadius="8">
+                                                    <material:MaterialIcon
+                                                        Width="20"
+                                                        Height="20"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#2ecc71"
+                                                        Kind="PlayCircle" />
                                                 </Border>
 
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
-                                                    <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold"
-                                                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="3">
+                                                    <TextBlock
+                                                        FontSize="13.5"
+                                                        FontWeight="SemiBold"
+                                                        Text="{Binding Name}"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="NoWrap" />
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <Border Width="6" Height="6" CornerRadius="3" Background="#2ecc71" VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{DynamicResource l.scrobbler.status.active}" FontSize="10.5"
-                                                                   Foreground="#2ecc71" FontWeight="Medium"/>
+                                                        <Border
+                                                            Width="6"
+                                                            Height="6"
+                                                            VerticalAlignment="Center"
+                                                            Background="#2ecc71"
+                                                            CornerRadius="3" />
+                                                        <TextBlock
+                                                            FontSize="10.5"
+                                                            FontWeight="Medium"
+                                                            Foreground="#2ecc71"
+                                                            Text="{DynamicResource l.scrobbler.status.active}" />
                                                     </StackPanel>
                                                 </StackPanel>
 
-                                                <ToggleSwitch Grid.Column="2" IsChecked="{Binding IsEnabled}"
-                                                              IsHitTestVisible="False" OnContent="" OffContent=""
-                                                              MinWidth="0" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                <ToggleSwitch
+                                                    Grid.Column="2"
+                                                    MinWidth="0"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    IsChecked="{Binding IsEnabled}"
+                                                    IsHitTestVisible="False"
+                                                    OffContent=""
+                                                    OnContent="" />
                                             </Grid>
                                         </Button>
                                     </DataTemplate>
@@ -195,39 +311,80 @@
                             </ItemsControl>
                         </StackPanel>
 
-                        <!-- Video Players -->
-                        <StackPanel Spacing="12" IsVisible="{Binding VideoPlayers.Count}">
+                        <!--  Video Players  -->
+                        <StackPanel IsVisible="{Binding VideoPlayers.Count}" Spacing="12">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <material:MaterialIcon Kind="PlayCircleOutline" Width="18" Height="18" Foreground="{DynamicResource SystemAccentColor}"/>
-                                <TextBlock Text="{DynamicResource l.scrobbler.processes.video_players}" FontWeight="SemiBold" FontSize="15"/>
-                                <Border Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="10" Padding="8,1" Margin="4,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding VideoPlayers.Count}" Opacity="0.6" FontSize="11" FontWeight="Bold"/>
+                                <material:MaterialIcon
+                                    Width="18"
+                                    Height="18"
+                                    Foreground="{DynamicResource SystemAccentColor}"
+                                    Kind="PlayCircleOutline" />
+                                <TextBlock
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    Text="{DynamicResource l.scrobbler.processes.video_players}" />
+                                <Border
+                                    Margin="4,0,0,0"
+                                    Padding="8,1"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                    CornerRadius="10">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="Bold"
+                                        Opacity="0.6"
+                                        Text="{Binding VideoPlayers.Count}" />
                                 </Border>
                             </StackPanel>
 
                             <ItemsControl ItemsSource="{Binding VideoPlayers}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <UniformGrid Columns="2"/>
+                                        <UniformGrid Columns="2" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vmPlayer:PlayerSelectionItem">
-                                        <Button Classes="PlayerCard" Command="{Binding ToggleCommand}" Margin="4">
+                                        <Button
+                                            Margin="4"
+                                            Classes="PlayerCard"
+                                            Command="{Binding ToggleCommand}">
                                             <Grid ColumnDefinitions="Auto, *, Auto">
-                                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" 
-                                                        Background="{DynamicResource SubtleFillColorSecondary}" Margin="0,0,12,0" VerticalAlignment="Center">
-                                                    <material:MaterialIcon Kind="PlayCircleOutline" Width="20" Height="20" 
-                                                                           Foreground="{DynamicResource SystemAccentColor}"
-                                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <Border
+                                                    Grid.Column="0"
+                                                    Width="36"
+                                                    Height="36"
+                                                    Margin="0,0,12,0"
+                                                    VerticalAlignment="Center"
+                                                    Background="{DynamicResource SubtleFillColorSecondary}"
+                                                    CornerRadius="8">
+                                                    <material:MaterialIcon
+                                                        Width="20"
+                                                        Height="20"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource SystemAccentColor}"
+                                                        Kind="PlayCircleOutline" />
                                                 </Border>
 
-                                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13.5" FontWeight="Medium"
-                                                           VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="13.5"
+                                                    FontWeight="Medium"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
 
-                                                <ToggleSwitch Grid.Column="2" IsChecked="{Binding IsEnabled}"
-                                                              IsHitTestVisible="False" OnContent="" OffContent=""
-                                                              MinWidth="0" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                <ToggleSwitch
+                                                    Grid.Column="2"
+                                                    MinWidth="0"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    IsChecked="{Binding IsEnabled}"
+                                                    IsHitTestVisible="False"
+                                                    OffContent=""
+                                                    OnContent="" />
                                             </Grid>
                                         </Button>
                                     </DataTemplate>
@@ -235,42 +392,83 @@
                             </ItemsControl>
                         </StackPanel>
 
-                        <!-- Search empty state -->
-                        <StackPanel IsVisible="{Binding HasNoMatches}" HorizontalAlignment="Center" Margin="0,48,0,0" Spacing="8">
-                            <material:MaterialIcon Kind="MagnifyRemoveOutline" Width="36" Height="36" Opacity="0.3" HorizontalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.search.status.not_found}" Opacity="0.5" FontSize="13" HorizontalAlignment="Center"/>
+                        <!--  Search empty state  -->
+                        <StackPanel
+                            Margin="0,48,0,0"
+                            HorizontalAlignment="Center"
+                            IsVisible="{Binding HasNoMatches}"
+                            Spacing="8">
+                            <material:MaterialIcon
+                                Width="36"
+                                Height="36"
+                                HorizontalAlignment="Center"
+                                Kind="MagnifyRemoveOutline"
+                                Opacity="0.3" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="13"
+                                Opacity="0.5"
+                                Text="{DynamicResource l.search.status.not_found}" />
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- Row 4: Footer -->
-                <Border Grid.Row="4" 
-                        Background="{DynamicResource CardBackgroundFillSecondary}"
-                        BorderBrush="{DynamicResource DividerStrokeColorDefault}" 
-                        BorderThickness="0,1,0,0"
-                        Padding="28,14">
+                <!--  Row 4: Footer  -->
+                <Border
+                    Grid.Row="4"
+                    Padding="28,14"
+                    Background="{DynamicResource CardBackgroundFillSecondary}"
+                    BorderBrush="{DynamicResource DividerStrokeColorDefault}"
+                    BorderThickness="0,1,0,0">
                     <Grid ColumnDefinitions="*, Auto">
-                        <!-- Left side: Summary counter and notice -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <material:MaterialIcon Kind="CheckCircleOutline" Width="15" Height="15" Foreground="{DynamicResource SystemAccentColor}"/>
-                            <TextBlock Text="{Binding SelectionSummary}" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock Text="•" Opacity="0.3" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.scrobbler.rules.applied_prompt}" 
-                                       Opacity="0.5" FontSize="11.5" VerticalAlignment="Center"/>
+                        <!--  Left side: Summary counter and notice  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                Foreground="{DynamicResource SystemAccentColor}"
+                                Kind="CheckCircleOutline" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12.5"
+                                FontWeight="SemiBold"
+                                Text="{Binding SelectionSummary}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Opacity="0.3"
+                                Text="•" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="11.5"
+                                Opacity="0.5"
+                                Text="{DynamicResource l.scrobbler.rules.applied_prompt}" />
                         </StackPanel>
 
-                        <!-- Right side: Cancel & Save Buttons -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                            <Button Content="{DynamicResource l.common.actions.cancel}"
-                                    Command="{Binding CancelCommand}"
-                                    CommandParameter="{Binding $parent[Window]}"
-                                    Classes="SecondaryAction"
-                                    FontSize="12.5"/>
-                            <Button Content="{DynamicResource l.common.actions.save_and_close}" 
-                                    Command="{Binding SaveAndCloseCommand}" 
-                                    CommandParameter="{Binding $parent[Window]}"
-                                    Background="{DynamicResource SystemAccentColor}" Foreground="White"
-                                    Padding="22,8" CornerRadius="8" FontWeight="SemiBold" FontSize="12.5"/>
+                        <!--  Right side: Cancel & Save Buttons  -->
+                        <StackPanel
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="10">
+                            <Button
+                                Classes="SecondaryAction"
+                                Command="{Binding CancelCommand}"
+                                CommandParameter="{Binding $parent[Window]}"
+                                Content="{DynamicResource l.common.actions.cancel}"
+                                FontSize="12.5" />
+                            <Button
+                                Padding="22,8"
+                                Background="{DynamicResource SystemAccentColor}"
+                                Command="{Binding SaveAndCloseCommand}"
+                                CommandParameter="{Binding $parent[Window]}"
+                                Content="{DynamicResource l.common.actions.save_and_close}"
+                                CornerRadius="8"
+                                FontSize="12.5"
+                                FontWeight="SemiBold"
+                                Foreground="White" />
                         </StackPanel>
                     </Grid>
                 </Border>

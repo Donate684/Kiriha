@@ -1,152 +1,236 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.Analytics.AnalyticsReadNextSection"
-             x:DataType="vmAnalytics:AnalyticsViewModel">
-                    <StackPanel Spacing="16"
-                                HorizontalAlignment="Stretch"
-                                IsVisible="{Binding IsReadNextSelected}">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" MinWidth="0"/>
-                                <ColumnDefinition Width="*" MinWidth="0"/>
-                            </Grid.ColumnDefinitions>
+﻿<UserControl
+    x:Class="Kiriha.Views.Analytics.AnalyticsReadNextSection"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+    x:DataType="vmAnalytics:AnalyticsViewModel">
+    <StackPanel
+        HorizontalAlignment="Stretch"
+        IsVisible="{Binding IsReadNextSelected}"
+        Spacing="16">
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="0" />
+                <ColumnDefinition Width="*" MinWidth="0" />
+            </Grid.ColumnDefinitions>
 
-                            <!-- Левый столбец -->
-                            <StackPanel Grid.Column="0" Spacing="16" MinWidth="0">
+            <!--  Левый столбец  -->
+            <StackPanel
+                Grid.Column="0"
+                MinWidth="0"
+                Spacing="16">
 
-                                <!-- Догнать онгоинги -->
-                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
-                                    <StackPanel Spacing="14">
-                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                            <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="{DynamicResource AnalyticsSectionRedBrush}"
-                                                    VerticalAlignment="Center">
-                                                <material:MaterialIcon Kind="PlaylistPlay"
-                                                                       Width="16" Height="16"
-                                                                       Foreground="White"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_ongoings}" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_ongoings_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Grid>
-                                        <ItemsControl ItemsSource="{Binding ReadNext.ReadTodo}"
-                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
-                                                      HorizontalAlignment="Stretch">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <UniformGrid Columns="1"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Скоро выйдет -->
-                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
-                                    <StackPanel Spacing="14">
-                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                            <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="{DynamicResource AnalyticsSectionBlueBrush}"
-                                                    VerticalAlignment="Center">
-                                                <material:MaterialIcon Kind="CalendarClock"
-                                                                       Width="16" Height="16"
-                                                                       Foreground="White"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.upcoming}" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.upcoming_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Grid>
-                                        <ItemsControl ItemsSource="{Binding ReadNext.UpcomingTodo}"
-                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
-                                                      HorizontalAlignment="Stretch">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <UniformGrid Columns="1"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </Border>
-
-                            </StackPanel>
-
-                            <!-- Правый столбец -->
-                            <StackPanel Grid.Column="1" Spacing="16" MinWidth="0">
-
-                                <!-- Догнать вышедшее -->
-                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
-                                    <StackPanel Spacing="14">
-                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                            <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="{DynamicResource AnalyticsSectionPurpleBrush}"
-                                                    VerticalAlignment="Center">
-                                                <material:MaterialIcon Kind="PlaylistCheck"
-                                                                       Width="16" Height="16"
-                                                                       Foreground="White"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_released}" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.catch_up_released_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Grid>
-                                        <ItemsControl ItemsSource="{Binding ReadNext.FinishedReadTodo}"
-                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
-                                                      HorizontalAlignment="Stretch">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <UniformGrid Columns="1"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Планы -->
-                                <Border Classes="AnalyticsPanel" MinHeight="0" MinWidth="0">
-                                    <StackPanel Spacing="14">
-                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                            <Border Width="30" Height="30" CornerRadius="8"
-                                                    Background="{DynamicResource AnalyticsSectionGreenBrush}"
-                                                    VerticalAlignment="Center">
-                                                <material:MaterialIcon Kind="BookmarkPlusOutline"
-                                                                       Width="16" Height="16"
-                                                                       Foreground="White"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.plans}" FontSize="15" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{DynamicResource l.analytics.read_next.plans_sub}" FontSize="10.5" Opacity="0.45" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Grid>
-                                        <ItemsControl ItemsSource="{Binding ReadNext.PlanTodo}"
-                                                      ItemTemplate="{StaticResource ProfileTodoTemplate}"
-                                                      HorizontalAlignment="Stretch">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <UniformGrid Columns="1"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </Border>
-
+                <!--  Догнать онгоинги  -->
+                <Border
+                    MinWidth="0"
+                    MinHeight="0"
+                    Classes="AnalyticsPanel">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Border
+                                Width="30"
+                                Height="30"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource AnalyticsSectionRedBrush}"
+                                CornerRadius="8">
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="White"
+                                    Kind="PlaylistPlay" />
+                            </Border>
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    Text="{DynamicResource l.analytics.read_next.catch_up_ongoings}" />
+                                <TextBlock
+                                    FontSize="10.5"
+                                    Opacity="0.45"
+                                    Text="{DynamicResource l.analytics.read_next.catch_up_ongoings_sub}"
+                                    TextWrapping="Wrap" />
                             </StackPanel>
                         </Grid>
-                        <Border Height="110" IsHitTestVisible="False"/>
+                        <ItemsControl
+                            HorizontalAlignment="Stretch"
+                            ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                            ItemsSource="{Binding ReadNext.ReadTodo}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
                     </StackPanel>
+                </Border>
 
-                    <!-- ══════════ СЕКЦИЯ: ИСТОРИЯ ══════════ -->
+                <!--  Скоро выйдет  -->
+                <Border
+                    MinWidth="0"
+                    MinHeight="0"
+                    Classes="AnalyticsPanel">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Border
+                                Width="30"
+                                Height="30"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource AnalyticsSectionBlueBrush}"
+                                CornerRadius="8">
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="White"
+                                    Kind="CalendarClock" />
+                            </Border>
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    Text="{DynamicResource l.analytics.read_next.upcoming}" />
+                                <TextBlock
+                                    FontSize="10.5"
+                                    Opacity="0.45"
+                                    Text="{DynamicResource l.analytics.read_next.upcoming_sub}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl
+                            HorizontalAlignment="Stretch"
+                            ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                            ItemsSource="{Binding ReadNext.UpcomingTodo}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <!--  Правый столбец  -->
+            <StackPanel
+                Grid.Column="1"
+                MinWidth="0"
+                Spacing="16">
+
+                <!--  Догнать вышедшее  -->
+                <Border
+                    MinWidth="0"
+                    MinHeight="0"
+                    Classes="AnalyticsPanel">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Border
+                                Width="30"
+                                Height="30"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource AnalyticsSectionPurpleBrush}"
+                                CornerRadius="8">
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="White"
+                                    Kind="PlaylistCheck" />
+                            </Border>
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    Text="{DynamicResource l.analytics.read_next.catch_up_released}" />
+                                <TextBlock
+                                    FontSize="10.5"
+                                    Opacity="0.45"
+                                    Text="{DynamicResource l.analytics.read_next.catch_up_released_sub}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl
+                            HorizontalAlignment="Stretch"
+                            ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                            ItemsSource="{Binding ReadNext.FinishedReadTodo}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!--  Планы  -->
+                <Border
+                    MinWidth="0"
+                    MinHeight="0"
+                    Classes="AnalyticsPanel">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Border
+                                Width="30"
+                                Height="30"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource AnalyticsSectionGreenBrush}"
+                                CornerRadius="8">
+                                <material:MaterialIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="White"
+                                    Kind="BookmarkPlusOutline" />
+                            </Border>
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    Text="{DynamicResource l.analytics.read_next.plans}" />
+                                <TextBlock
+                                    FontSize="10.5"
+                                    Opacity="0.45"
+                                    Text="{DynamicResource l.analytics.read_next.plans_sub}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl
+                            HorizontalAlignment="Stretch"
+                            ItemTemplate="{StaticResource ProfileTodoTemplate}"
+                            ItemsSource="{Binding ReadNext.PlanTodo}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+        <Border Height="110" IsHitTestVisible="False" />
+    </StackPanel>
+
+    <!--  ══════════ СЕКЦИЯ: ИСТОРИЯ ══════════  -->
 </UserControl>
 
 

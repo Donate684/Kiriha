@@ -1,15 +1,15 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:materialIcons="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:coreInfra="using:Kiriha.Infrastructure"
-             x:Class="Kiriha.App"
-             RequestedThemeVariant="Default">
+﻿<Application
+    x:Class="Kiriha.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:coreInfra="using:Kiriha.Infrastructure"
+    xmlns:materialIcons="using:Material.Icons.Avalonia"
+    RequestedThemeVariant="Default">
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/kiriha.ico" 
-                      Clicked="TrayRestore_Click">
+            <TrayIcon Clicked="TrayRestore_Click" Icon="/Assets/kiriha.ico">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Click="TrayRestore_Click" />
@@ -27,18 +27,18 @@
                 <ResourceInclude Source="avares://Kiriha/Styles/Themes.axaml" />
                 <ResourceInclude Source="avares://Kiriha/Views/Analytics/AnalyticsDataTemplates.axaml" />
             </ResourceDictionary.MergedDictionaries>
-            <conv:LocConverter x:Key="LocConverter"/>
-            <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
-            <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
-            <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
-            <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+            <conv:LocConverter x:Key="LocConverter" />
+            <conv:IntToBooleanConverter x:Key="IntToBoolConverter" />
+            <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter" />
+            <conv:IntEqualsConverter x:Key="IntEqualsConverter" />
+            <conv:SettingModifiedConverter x:Key="SettingModifiedConverter" />
         </ResourceDictionary>
     </Application.Resources>
 
     <Application.DataTemplates>
-        <coreInfra:ViewLocator/>
+        <coreInfra:ViewLocator />
     </Application.DataTemplates>
-  
+
     <Application.Styles>
         <FluentTheme />
         <materialIcons:MaterialIconStyles />

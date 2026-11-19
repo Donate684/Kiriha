@@ -1,30 +1,43 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarSaveButton"
-             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
-    <Button Command="{Binding Editor.SaveCommand}"
-            CommandParameter="{Binding $parent[Window]}"
-            HorizontalAlignment="Stretch"
-            Height="38"
-            CornerRadius="8"
-            Background="{DynamicResource SystemAccentColor}"
-            BorderThickness="0"
-            Foreground="White"
-            ToolTip.Tip="{DynamicResource l.common.actions.save}">
+﻿<UserControl
+    x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarSaveButton"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+    x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+    <Button
+        Height="38"
+        HorizontalAlignment="Stretch"
+        Background="{DynamicResource SystemAccentColor}"
+        BorderThickness="0"
+        Command="{Binding Editor.SaveCommand}"
+        CommandParameter="{Binding $parent[Window]}"
+        CornerRadius="8"
+        Foreground="White"
+        ToolTip.Tip="{DynamicResource l.common.actions.save}">
         <Button.Styles>
             <Style Selector="Button:disabled">
-                <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
-                <Setter Property="Opacity" Value="0.6"/>
+                <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                <Setter Property="Opacity" Value="0.6" />
             </Style>
         </Button.Styles>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-            <material:MaterialIcon Kind="Check" Width="18" Height="18" VerticalAlignment="Center"/>
-            <TextBlock Text="{DynamicResource l.common.actions.save}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+        <StackPanel
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <material:MaterialIcon
+                Width="18"
+                Height="18"
+                VerticalAlignment="Center"
+                Kind="Check" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Text="{DynamicResource l.common.actions.save}" />
         </StackPanel>
     </Button>
 </UserControl>

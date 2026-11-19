@@ -1,117 +1,175 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:Class="Kiriha.Views.Settings.SettingsScrobblerPage"
-             x:DataType="vmSettings:SettingsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Settings.SettingsScrobblerPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    x:DataType="vmSettings:SettingsViewModel">
     <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:LocConverter x:Key="LocConverter" />
     </UserControl.Resources>
     <StackPanel>
 
-                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.scrobbler.title}"/>
+        <TextBlock Classes="PageTitle" Text="{DynamicResource l.scrobbler.title}" />
 
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.enable.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.enable.subtitle}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableScrobbler}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.processes.tracked_apps}"/>
-                            <TextBlock Classes="Sub" Text="{Binding Playback.EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter=scrobbler.rules.active_count}"/>
-                        </StackPanel>
-                        <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding Playback.ManagePlayersCommand}" Padding="14,6" CornerRadius="6" Background="{DynamicResource SubtleFillColorSecondary}">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <material:MaterialIcon Kind="CogOutline" Width="14" Height="14"/>
-                                <TextBlock Text="{DynamicResource l.scrobbler.processes.tracked_apps}" FontSize="12" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.mode_title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.mode_subtitle}"/>
-                        </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center"
-                                  ItemsSource="{Binding System.AvailableScrobbleModes}"
-                                  SelectedItem="{Binding System.SelectedScrobbleMode}"
-                                  Width="200" CornerRadius="6">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="vmSettings:ScrobbleModeOption">
-                                    <TextBlock Text="{Binding Name}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding System.IsScrobbleTimeMode}" IsEnabled="{Binding System.EnableScrobbler}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.subtitle}"/>
-                        </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center"
-                                  ItemsSource="{Binding System.AvailableScrobbleDelays}"
-                                  SelectedItem="{Binding System.SelectedScrobbleDelay}"
-                                  Width="200" CornerRadius="6">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="vmSettings:ScrobbleDelayOption">
-                                    <TextBlock Text="{Binding Name}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsVisible="{Binding System.IsScrobblePercentMode}" IsEnabled="{Binding System.EnableScrobbler}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.percent_title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.percent_subtitle}"/>
-                        </StackPanel>
-                        <ComboBox Grid.Column="1" VerticalAlignment="Center"
-                                  ItemsSource="{Binding System.AvailableScrobblePercentages}"
-                                  SelectedItem="{Binding System.SelectedScrobblePercentage}"
-                                  Width="200" CornerRadius="6">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="vmSettings:ScrobblePercentOption">
-                                    <TextBlock Text="{Binding Name}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto" IsEnabled="{Binding System.EnableScrobbler}">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.skip_notify.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.skip_notify.subtitle}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.ScrobbleNotifyOnSkip}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.discord.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.discord.subtitle}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.EnableDiscordRPC}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-</StackPanel>
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.enable.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.enable.subtitle}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding System.EnableScrobbler}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.processes.tracked_apps}" />
+                <TextBlock Classes="Sub" Text="{Binding Playback.EnabledPlayersCount, Converter={StaticResource LocConverter}, ConverterParameter=scrobbler.rules.active_count}" />
+            </StackPanel>
+            <Button
+                Grid.Column="1"
+                Padding="14,6"
+                VerticalAlignment="Center"
+                Background="{DynamicResource SubtleFillColorSecondary}"
+                Command="{Binding Playback.ManagePlayersCommand}"
+                CornerRadius="6">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <material:MaterialIcon
+                        Width="14"
+                        Height="14"
+                        Kind="CogOutline" />
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Text="{DynamicResource l.scrobbler.processes.tracked_apps}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid
+            Classes="Row"
+            ColumnDefinitions="*,Auto"
+            IsEnabled="{Binding System.EnableScrobbler}">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.mode_title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.mode_subtitle}" />
+            </StackPanel>
+            <ComboBox
+                Grid.Column="1"
+                Width="200"
+                VerticalAlignment="Center"
+                CornerRadius="6"
+                ItemsSource="{Binding System.AvailableScrobbleModes}"
+                SelectedItem="{Binding System.SelectedScrobbleMode}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vmSettings:ScrobbleModeOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid
+            Classes="Row"
+            ColumnDefinitions="*,Auto"
+            IsEnabled="{Binding System.EnableScrobbler}"
+            IsVisible="{Binding System.IsScrobbleTimeMode}">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.subtitle}" />
+            </StackPanel>
+            <ComboBox
+                Grid.Column="1"
+                Width="200"
+                VerticalAlignment="Center"
+                CornerRadius="6"
+                ItemsSource="{Binding System.AvailableScrobbleDelays}"
+                SelectedItem="{Binding System.SelectedScrobbleDelay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vmSettings:ScrobbleDelayOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <Grid
+            Classes="Row"
+            ColumnDefinitions="*,Auto"
+            IsEnabled="{Binding System.EnableScrobbler}"
+            IsVisible="{Binding System.IsScrobblePercentMode}">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.delay.percent_title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.delay.percent_subtitle}" />
+            </StackPanel>
+            <ComboBox
+                Grid.Column="1"
+                Width="200"
+                VerticalAlignment="Center"
+                CornerRadius="6"
+                ItemsSource="{Binding System.AvailableScrobblePercentages}"
+                SelectedItem="{Binding System.SelectedScrobblePercentage}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vmSettings:ScrobblePercentOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid
+            Classes="Row"
+            ColumnDefinitions="*,Auto"
+            IsEnabled="{Binding System.EnableScrobbler}">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.scrobbler.skip_notify.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.scrobbler.skip_notify.subtitle}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding System.ScrobbleNotifyOnSkip}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.discord.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.discord.subtitle}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding System.EnableDiscordRPC}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+    </StackPanel>
 </UserControl>
 

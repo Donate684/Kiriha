@@ -1,96 +1,88 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Models"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
-             xmlns:core="using:Kiriha.Core"
-             xmlns:u="using:Kiriha.Utils.UI"
-             xmlns:controls="using:Kiriha.Views.Controls"
-             xmlns:local="using:Kiriha.Views.AnimeList"
-             x:Class="Kiriha.Views.AnimeList.AnimeListView"
-             x:DataType="vmAnimeList:AnimeListViewModel"
-             x:CompileBindings="True"
-             x:Name="animeListRoot">
+﻿<UserControl
+    x:Class="Kiriha.Views.AnimeList.AnimeListView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Kiriha.Views.AnimeList"
+    xmlns:models="using:Kiriha.Models"
+    xmlns:u="using:Kiriha.Utils.UI"
+    xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+    x:Name="animeListRoot"
+    x:CompileBindings="True"
+    x:DataType="vmAnimeList:AnimeListViewModel">
 
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Views/AnimeList/AnimeCardTemplate.axaml"/>
+                <ResourceInclude Source="/Views/AnimeList/AnimeCardTemplate.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <Style Selector="MenuFlyoutPresenter.ScoreFlyout MenuItem" x:DataType="models:RatingOption">
-            <Setter Property="Header" Value="{Binding}"/>
+        <Style x:DataType="models:RatingOption" Selector="MenuFlyoutPresenter.ScoreFlyout MenuItem">
+            <Setter Property="Header" Value="{Binding}" />
             <Setter Property="HeaderTemplate">
                 <DataTemplate x:DataType="models:RatingOption">
-                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Display}" />
                 </DataTemplate>
             </Setter>
-            <Setter Property="Command" Value="{Binding #animeListRoot.((vmAnimeList:AnimeListViewModel)DataContext).ApplyScoreFromMenuCommand}"/>
-            <Setter Property="CommandParameter" Value="{Binding}"/>
-            <Setter Property="Foreground" Value="{DynamicResource ScoreFlyoutItemForeground}"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="MinHeight" Value="32"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Command" Value="{Binding #animeListRoot.((vmAnimeList:AnimeListViewModel)DataContext).ApplyScoreFromMenuCommand}" />
+            <Setter Property="CommandParameter" Value="{Binding}" />
+            <Setter Property="Foreground" Value="{DynamicResource ScoreFlyoutItemForeground}" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
                 </Transitions>
             </Setter>
         </Style>
 
-        <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeCardStyles.axaml"/>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeFilterStyles.axaml"/>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeListLayoutStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeCardStyles.axaml" />
+        <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeFilterStyles.axaml" />
+        <StyleInclude Source="avares://Kiriha/Views/Styles/AnimeListLayoutStyles.axaml" />
 
     </UserControl.Styles>
 
-    <Grid RowDefinitions="Auto, Auto, *, Auto" Margin="0">
+    <Grid Margin="0" RowDefinitions="Auto, Auto, *, Auto">
 
-        <!-- Header -->
-        <local:AnimeListHeader x:Name="AnimeListHeader" Grid.Row="0" ReleaseMapRequested="AnimeListHeader_ReleaseMapRequested"/>
+        <!--  Header  -->
+        <local:AnimeListHeader
+            x:Name="AnimeListHeader"
+            Grid.Row="0"
+            ReleaseMapRequested="AnimeListHeader_ReleaseMapRequested" />
 
-        <!-- CONTENT: Grid -->
-        <ScrollViewer x:Name="AnimeListScrollViewer"
-                      Grid.Row="2"
-                      HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto"
-                      u:SmoothScroll.IsEnabled="True"
-                      u:SmoothScroll.WheelMultiplier="120"
-                      u:SmoothScroll.SmoothingTimeMs="125">
-            <ItemsRepeater x:Name="AnimeGridRepeater"
-                           ItemsSource="{Binding FilteredItems}"
-                           Margin="20,0,20,16"
-                           ItemTemplate="{StaticResource AnimeCardTemplate}">
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout MinItemWidth="172"
-                                          MinItemHeight="326"
-                                          MinColumnSpacing="0"
-                                          MinRowSpacing="0"
-                                          ItemsJustification="Start"/>
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
+        <!--  CONTENT: Grid  -->
+        <ScrollViewer
+            x:Name="AnimeListScrollViewer"
+            Grid.Row="2"
+            u:SmoothScroll.IsEnabled="True"
+            u:SmoothScroll.SmoothingTimeMs="125"
+            u:SmoothScroll.WheelMultiplier="120"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsRepeater
+                x:Name="AnimeGridRepeater"
+                Margin="20,0,20,16"
+                ItemTemplate="{StaticResource AnimeCardTemplate}"
+                ItemsSource="{Binding FilteredItems}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsJustification="Start"
+                        MinColumnSpacing="0"
+                        MinItemHeight="326"
+                        MinItemWidth="172"
+                        MinRowSpacing="0" />
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
         </ScrollViewer>
 
-        <local:AnimeReleaseMapView x:Name="ReleaseMapView" Grid.Row="1" Grid.RowSpan="2"/>
+        <local:AnimeReleaseMapView
+            x:Name="ReleaseMapView"
+            Grid.Row="1"
+            Grid.RowSpan="2" />
 
     </Grid>
 </UserControl>

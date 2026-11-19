@@ -1,113 +1,197 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:Class="Kiriha.Views.Settings.SettingsUpdatesPage"
-             x:DataType="vmSettings:SettingsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.Settings.SettingsUpdatesPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    x:DataType="vmSettings:SettingsViewModel">
     <UserControl.Resources>
-        <conv:LocConverter x:Key="LocConverter"/>
+        <conv:LocConverter x:Key="LocConverter" />
     </UserControl.Resources>
     <StackPanel>
 
-                    <TextBlock Classes="PageTitle" Text="{DynamicResource l.updates.title}"/>
+        <TextBlock Classes="PageTitle" Text="{DynamicResource l.updates.title}" />
 
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock IsVisible="{Binding !Update.IsUpdateAvailable}" Classes="Title" Text="{DynamicResource l.updates.no_updates}"/>
-                            <TextBlock IsVisible="{Binding Update.IsUpdateAvailable}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource SystemAccentColor}"
-                                       Text="{Binding Update.NewVersion, Converter={StaticResource LocConverter}, ConverterParameter='format:l.updates.available'}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Button Command="{Binding Update.CheckForUpdatesCommand}" IsVisible="{Binding !Update.IsUpdateAvailable}" IsEnabled="{Binding !Update.IsCheckingUpdates}" Padding="12,6" CornerRadius="6">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <material:MaterialIcon Kind="Refresh" Width="14" Height="14"/>
-                                    <TextBlock Text="{DynamicResource l.updates.check}" FontSize="12"/>
-                                </StackPanel>
-                            </Button>
-                            <!-- Download (ready state) -->
-                            <Button Command="{Binding Update.DownloadUpdateCommand}" IsVisible="{Binding Update.IsDownloadReady}" Padding="12,6" CornerRadius="6" Background="{DynamicResource SystemAccentColor}" Foreground="White">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <material:MaterialIcon Kind="Download" Width="14" Height="14"/>
-                                    <TextBlock Text="{DynamicResource l.updates.download}" FontSize="12"/>
-                                </StackPanel>
-                            </Button>
-                            <!-- Download (in progress) -->
-                            <Button IsVisible="{Binding Update.IsDownloading}" IsEnabled="False" Padding="12,6" CornerRadius="6" Background="{DynamicResource SystemAccentColor}" Foreground="White" MinWidth="160">
-                                <Grid>
-                                    <ProgressBar Value="{Binding Update.UpdateProgress}" Maximum="100"
-                                                 Background="Transparent" Foreground="#40FFFFFF"
-                                                 BorderThickness="0" Height="28" CornerRadius="4"
-                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                 Margin="-12,-6"/>
-                                    <TextBlock Text="{Binding Update.UpdateProgress, Converter={StaticResource LocConverter}, ConverterParameter='format:l.updates.downloading'}"
-                                               FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Foreground="White"/>
-                                </Grid>
-                            </Button>
-                            <!-- Restart (after download) -->
-                            <Button Command="{Binding Update.RestartAndApplyCommand}" IsVisible="{Binding Update.IsUpdateDownloaded}" Padding="12,6" CornerRadius="6" Background="#2ecc71" Foreground="White">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <material:MaterialIcon Kind="Restart" Width="14" Height="14"/>
-                                    <TextBlock Text="{DynamicResource l.updates.install_and_restart}" FontSize="12"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock
+                    Classes="Title"
+                    IsVisible="{Binding !Update.IsUpdateAvailable}"
+                    Text="{DynamicResource l.updates.no_updates}" />
+                <TextBlock
+                    FontSize="14"
+                    FontWeight="Medium"
+                    Foreground="{DynamicResource SystemAccentColor}"
+                    IsVisible="{Binding Update.IsUpdateAvailable}"
+                    Text="{Binding Update.NewVersion, Converter={StaticResource LocConverter}, ConverterParameter='format:l.updates.available'}" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    Padding="12,6"
+                    Command="{Binding Update.CheckForUpdatesCommand}"
+                    CornerRadius="6"
+                    IsEnabled="{Binding !Update.IsCheckingUpdates}"
+                    IsVisible="{Binding !Update.IsUpdateAvailable}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon
+                            Width="14"
+                            Height="14"
+                            Kind="Refresh" />
+                        <TextBlock FontSize="12" Text="{DynamicResource l.updates.check}" />
+                    </StackPanel>
+                </Button>
+                <!--  Download (ready state)  -->
+                <Button
+                    Padding="12,6"
+                    Background="{DynamicResource SystemAccentColor}"
+                    Command="{Binding Update.DownloadUpdateCommand}"
+                    CornerRadius="6"
+                    Foreground="White"
+                    IsVisible="{Binding Update.IsDownloadReady}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon
+                            Width="14"
+                            Height="14"
+                            Kind="Download" />
+                        <TextBlock FontSize="12" Text="{DynamicResource l.updates.download}" />
+                    </StackPanel>
+                </Button>
+                <!--  Download (in progress)  -->
+                <Button
+                    MinWidth="160"
+                    Padding="12,6"
+                    Background="{DynamicResource SystemAccentColor}"
+                    CornerRadius="6"
+                    Foreground="White"
+                    IsEnabled="False"
+                    IsVisible="{Binding Update.IsDownloading}">
+                    <Grid>
+                        <ProgressBar
+                            Height="28"
+                            Margin="-12,-6"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="4"
+                            Foreground="#40FFFFFF"
+                            Maximum="100"
+                            Value="{Binding Update.UpdateProgress}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Text="{Binding Update.UpdateProgress, Converter={StaticResource LocConverter}, ConverterParameter='format:l.updates.downloading'}" />
                     </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.updates.check_on_launch}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.updates.check_on_launch_sub}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.AutoCheckUpdates}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.updates.download_in_background}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.updates.download_in_background_sub}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.AutoDownloadUpdates}" IsEnabled="{Binding System.AutoCheckUpdates}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <!-- Mirror of the same toggle in the Notifications page; both bind to NotifyAppUpdate
-                         so flipping one instantly reflects in the other. -->
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.app_update.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.app_update.subtitle}"/>
-                        </StackPanel>
-                        <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding System.NotifyAppUpdate}" OnContent="{DynamicResource l.common.status.on}" OffContent="{DynamicResource l.common.status.off}"/>
-                    </Grid>
-                    <Border Classes="Divider"/>
-                    <Grid Classes="Row" ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="Title" Text="{DynamicResource l.updates.manual_download.title}"/>
-                            <TextBlock Classes="Sub" Text="{DynamicResource l.updates.manual_download.subtitle}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding Update.OpenReleasesPageCommand}" Padding="12,6" CornerRadius="6">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <material:MaterialIcon Kind="OpenInNew" Width="14" Height="14"/>
-                                <TextBlock Text="{DynamicResource l.updates.manual_download.button}" FontSize="12"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-</StackPanel>
+                </Button>
+                <!--  Restart (after download)  -->
+                <Button
+                    Padding="12,6"
+                    Background="#2ecc71"
+                    Command="{Binding Update.RestartAndApplyCommand}"
+                    CornerRadius="6"
+                    Foreground="White"
+                    IsVisible="{Binding Update.IsUpdateDownloaded}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <material:MaterialIcon
+                            Width="14"
+                            Height="14"
+                            Kind="Restart" />
+                        <TextBlock FontSize="12" Text="{DynamicResource l.updates.install_and_restart}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.updates.check_on_launch}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.updates.check_on_launch_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding System.AutoCheckUpdates}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.updates.download_in_background}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.updates.download_in_background_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding System.AutoDownloadUpdates}"
+                IsEnabled="{Binding System.AutoCheckUpdates}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <!--
+            Mirror of the same toggle in the Notifications page; both bind to NotifyAppUpdate
+            so flipping one instantly reflects in the other.
+        -->
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.settings.notifications.app_update.title}" />
+                <TextBlock Classes="Sub" Text="{DynamicResource l.settings.notifications.app_update.subtitle}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding System.NotifyAppUpdate}"
+                OffContent="{DynamicResource l.common.status.off}"
+                OnContent="{DynamicResource l.common.status.on}" />
+        </Grid>
+        <Border Classes="Divider" />
+        <Grid Classes="Row" ColumnDefinitions="*,Auto">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="Title" Text="{DynamicResource l.updates.manual_download.title}" />
+                <TextBlock
+                    Classes="Sub"
+                    Text="{DynamicResource l.updates.manual_download.subtitle}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <Button
+                Grid.Column="1"
+                Padding="12,6"
+                VerticalAlignment="Center"
+                Command="{Binding Update.OpenReleasesPageCommand}"
+                CornerRadius="6">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <material:MaterialIcon
+                        Width="14"
+                        Height="14"
+                        Kind="OpenInNew" />
+                    <TextBlock FontSize="12" Text="{DynamicResource l.updates.manual_download.button}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </StackPanel>
 </UserControl>
 

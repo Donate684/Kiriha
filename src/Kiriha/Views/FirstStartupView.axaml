@@ -1,71 +1,119 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:controls="using:Kiriha.Views.Controls"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             x:Class="Kiriha.Views.FirstStartupView"
-             x:DataType="vmStartup:FirstStartupViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.FirstStartupView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Controls"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+    x:DataType="vmStartup:FirstStartupViewModel">
 
-    <Grid Background="Transparent" Margin="40">
-        <Border Background="{DynamicResource SystemRegionBrush}" 
-                Width="420"
-                CornerRadius="24" BoxShadow="0 10 40 0 #40000000" Padding="32">
+    <Grid Margin="40" Background="Transparent">
+        <Border
+            Width="420"
+            Padding="32"
+            Background="{DynamicResource SystemRegionBrush}"
+            BoxShadow="0 10 40 0 #40000000"
+            CornerRadius="24">
             <StackPanel Spacing="24">
-                <!-- Header / Drag Area -->
-                <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
-                    <controls:LeafLogo Width="60" Height="60"/>
+                <!--  Header / Drag Area  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="16">
+                    <controls:LeafLogo Width="60" Height="60" />
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource l.wizard.welcome}" FontSize="22" FontWeight="Bold"/>
-                        <TextBlock Text="{DynamicResource l.wizard.subtitle}" Opacity="0.5" FontSize="12"/>
+                        <TextBlock
+                            FontSize="22"
+                            FontWeight="Bold"
+                            Text="{DynamicResource l.wizard.welcome}" />
+                        <TextBlock
+                            FontSize="12"
+                            Opacity="0.5"
+                            Text="{DynamicResource l.wizard.subtitle}" />
                     </StackPanel>
                 </StackPanel>
 
-                <Separator Background="{DynamicResource DividerStrokeColorDefault}"/>
+                <Separator Background="{DynamicResource DividerStrokeColorDefault}" />
 
-                <!-- Content Area: Language Selection -->
+                <!--  Content Area: Language Selection  -->
                 <StackPanel Spacing="20">
-                    <StackPanel Spacing="8" HorizontalAlignment="Center">
-                        <material:MaterialIcon Kind="Translate" Width="48" Height="48" Foreground="{DynamicResource SystemAccentColor}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.wizard.language.title}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.wizard.language.subtitle}" FontSize="13" Opacity="0.6" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="320"/>
+                    <StackPanel HorizontalAlignment="Center" Spacing="8">
+                        <material:MaterialIcon
+                            Width="48"
+                            Height="48"
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            Kind="Translate" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="{DynamicResource l.wizard.language.title}" />
+                        <TextBlock
+                            MaxWidth="320"
+                            FontSize="13"
+                            Opacity="0.6"
+                            Text="{DynamicResource l.wizard.language.subtitle}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
                     </StackPanel>
 
-                    <!-- Language Selection List -->
-                    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="16" Padding="8">
-                        <ListBox ItemsSource="{Binding SettingsVm.Ui.AvailableLanguages}" 
-                                 SelectedItem="{Binding SettingsVm.Ui.SelectedLanguage}"
-                                 Background="Transparent" BorderThickness="0">
+                    <!--  Language Selection List  -->
+                    <Border
+                        Padding="8"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        CornerRadius="16">
+                        <ListBox
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ItemsSource="{Binding SettingsVm.Ui.AvailableLanguages}"
+                            SelectedItem="{Binding SettingsVm.Ui.SelectedLanguage}">
                             <ListBox.Styles>
                                 <Style Selector="ListBoxItem">
-                                    <Setter Property="Padding" Value="16,12"/>
-                                    <Setter Property="CornerRadius" Value="12"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                                    <Setter Property="Margin" Value="0,2"/>
-                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Setter Property="Padding" Value="16,12" />
+                                    <Setter Property="CornerRadius" Value="12" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    <Setter Property="Margin" Value="0,2" />
+                                    <Setter Property="Cursor" Value="Hand" />
                                 </Style>
                             </ListBox.Styles>
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="vmSettings:LanguageOption">
-                                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium"/>
+                                    <TextBlock
+                                        FontSize="15"
+                                        FontWeight="Medium"
+                                        Text="{Binding Name}" />
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </Border>
                 </StackPanel>
 
-                <Separator Background="{DynamicResource DividerStrokeColorDefault}"/>
+                <Separator Background="{DynamicResource DividerStrokeColorDefault}" />
 
-                <!-- Footer / Action Button -->
-                <Button Command="{Binding NextStepCommand}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        Background="{DynamicResource SystemAccentColor}" 
-                        Foreground="White"
-                        Padding="20,13" CornerRadius="12">
-                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                        <TextBlock Text="{DynamicResource l.wizard.finish}" FontSize="15" FontWeight="Bold"/>
-                        <material:MaterialIcon Kind="ArrowRight" Width="18" Height="18" VerticalAlignment="Center"/>
+                <!--  Footer / Action Button  -->
+                <Button
+                    Padding="20,13"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Background="{DynamicResource SystemAccentColor}"
+                    Command="{Binding NextStepCommand}"
+                    CornerRadius="12"
+                    Foreground="White">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="Bold"
+                            Text="{DynamicResource l.wizard.finish}" />
+                        <material:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            VerticalAlignment="Center"
+                            Kind="ArrowRight" />
                     </StackPanel>
                 </Button>
             </StackPanel>

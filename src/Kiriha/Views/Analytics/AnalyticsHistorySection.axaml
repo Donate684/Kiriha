@@ -1,267 +1,391 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.Analytics.AnalyticsHistorySection"
-             x:DataType="vmAnalytics:AnalyticsViewModel" x:Name="analyticsRoot">
-                    <StackPanel Spacing="16"
+﻿<UserControl
+    x:Class="Kiriha.Views.Analytics.AnalyticsHistorySection"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+    x:Name="analyticsRoot"
+    x:DataType="vmAnalytics:AnalyticsViewModel">
+    <StackPanel
+        HorizontalAlignment="Stretch"
+        IsVisible="{Binding IsHistorySelected}"
+        Spacing="16">
+
+        <!--  График активности + статистика  -->
+        <Grid ColumnDefinitions="*,175" ColumnSpacing="16">
+
+            <!--  График  -->
+            <Border MinHeight="238" Classes="AnalyticsPanel">
+                <StackPanel Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Border
+                            Width="30"
+                            Height="30"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource AnalyticsSectionPurpleBrush}"
+                            CornerRadius="8">
+                            <material:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="White"
+                                Kind="ChartBar" />
+                        </Border>
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Spacing="2">
+                            <TextBlock
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Text="{DynamicResource l.analytics.history.recent_activity}" />
+                            <TextBlock
+                                FontSize="10.5"
+                                Opacity="0.45"
+                                Text="{DynamicResource l.analytics.history.recent_activity_sub}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid MinHeight="178" ColumnDefinitions="Auto,*">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Opacity="0.65"
+                            RenderTransform="rotate(-90deg)"
+                            Text="{DynamicResource l.analytics.history.episodes}" />
+
+                        <Grid
+                            Grid.Column="1"
+                            Margin="0,0,0,0"
+                            RowDefinitions="*,Auto">
+                            <ItemsControl
                                 HorizontalAlignment="Stretch"
-                                IsVisible="{Binding IsHistorySelected}">
+                                VerticalAlignment="Center"
+                                ItemsSource="{Binding History.RecentHistory}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Rows="1" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vmAnalytics:AnalyticsDailyHistoryPoint">
+                                        <Button
+                                            HorizontalAlignment="Stretch"
+                                            Classes="ChartPointButton"
+                                            Command="{Binding #analyticsRoot.((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenDailyHistoryCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="{Binding Tooltip}">
+                                            <Grid
+                                                Margin="2,0"
+                                                VerticalAlignment="Center"
+                                                RowDefinitions="Auto,122,Auto">
 
-                        <!-- График активности + статистика -->
-                        <Grid ColumnDefinitions="*,175" ColumnSpacing="16">
+                                                <!--  Кол-во сверху (только если > 0)  -->
+                                                <TextBlock
+                                                    MinHeight="13"
+                                                    Margin="0,0,0,3"
+                                                    HorizontalAlignment="Center"
+                                                    FontSize="9"
+                                                    IsVisible="{Binding HasCount}"
+                                                    Opacity="0.6"
+                                                    Text="{Binding Count}" />
+                                                <!--  Распорка для дней где 0  -->
+                                                <Border
+                                                    MinHeight="13"
+                                                    Margin="0,0,0,3"
+                                                    IsVisible="{Binding !HasCount}" />
 
-                            <!-- График -->
-                            <Border Classes="AnalyticsPanel" MinHeight="238">
-                                <StackPanel Spacing="14">
-                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                        <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="{DynamicResource AnalyticsSectionPurpleBrush}"
-                                                VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="ChartBar"
-                                                                   Width="16" Height="16"
-                                                                   Foreground="White"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="{DynamicResource l.analytics.history.recent_activity}" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{DynamicResource l.analytics.history.recent_activity_sub}" FontSize="10.5" Opacity="0.45"/>
-                                        </StackPanel>
-                                    </Grid>
+                                                <!--  Область бара фиксированной высоты  -->
+                                                <Grid Grid.Row="1">
+                                                    <!--  Фоновый трек  -->
+                                                    <Border
+                                                        VerticalAlignment="Stretch"
+                                                        Background="{DynamicResource SubtleFillColorSecondary}"
+                                                        CornerRadius="4" />
+                                                    <!--  Цветной бар от низа  -->
+                                                    <Border
+                                                        Height="{Binding BarHeight}"
+                                                        VerticalAlignment="Bottom"
+                                                        Background="{DynamicResource SystemAccentColor}"
+                                                        CornerRadius="4,4,0,0"
+                                                        Opacity="{Binding Alpha}" />
+                                                </Grid>
 
-                                    <Grid ColumnDefinitions="Auto,*" MinHeight="178">
-                                        <TextBlock Text="{DynamicResource l.analytics.history.episodes}"
-                                                   FontSize="11"
-                                                   FontWeight="SemiBold"
-                                                   Opacity="0.65"
-                                                   VerticalAlignment="Center"
-                                                   RenderTransform="rotate(-90deg)"/>
+                                                <!--  Метка дня снизу  -->
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Margin="0,5,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    FontSize="9"
+                                                    Opacity="0.65"
+                                                    Text="{Binding Label}" />
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
 
-                                        <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="0,0,0,0">
-                                            <ItemsControl ItemsSource="{Binding History.RecentHistory}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <UniformGrid Rows="1"/>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="vmAnalytics:AnalyticsDailyHistoryPoint">
-                                                        <Button Classes="ChartPointButton"
-                                                                Command="{Binding #analyticsRoot.((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenDailyHistoryCommand}"
-                                                                CommandParameter="{Binding}"
-                                                                HorizontalAlignment="Stretch"
-                                                                ToolTip.Tip="{Binding Tooltip}">
-                                                            <Grid RowDefinitions="Auto,122,Auto" Margin="2,0" VerticalAlignment="Center">
-
-                                                                <!-- Кол-во сверху (только если > 0) -->
-                                                                <TextBlock Text="{Binding Count}"
-                                                                           FontSize="9"
-                                                                           HorizontalAlignment="Center"
-                                                                           Opacity="0.6"
-                                                                           Margin="0,0,0,3"
-                                                                           MinHeight="13"
-                                                                           IsVisible="{Binding HasCount}"/>
-                                                                <!-- Распорка для дней где 0 -->
-                                                                <Border MinHeight="13" Margin="0,0,0,3" IsVisible="{Binding !HasCount}"/>
-
-                                                                <!-- Область бара фиксированной высоты -->
-                                                                <Grid Grid.Row="1">
-                                                                    <!-- Фоновый трек -->
-                                                                    <Border Background="{DynamicResource SubtleFillColorSecondary}"
-                                                                            CornerRadius="4"
-                                                                            VerticalAlignment="Stretch"/>
-                                                                    <!-- Цветной бар от низа -->
-                                                                    <Border Background="{DynamicResource SystemAccentColor}"
-                                                                            Height="{Binding BarHeight}"
-                                                                            VerticalAlignment="Bottom"
-                                                                            Opacity="{Binding Alpha}"
-                                                                            CornerRadius="4,4,0,0"/>
-                                                                </Grid>
-
-                                                                <!-- Метка дня снизу -->
-                                                                <TextBlock Grid.Row="2"
-                                                                           Text="{Binding Label}"
-                                                                           FontSize="9"
-                                                                           HorizontalAlignment="Center"
-                                                                           Margin="0,5,0,0"
-                                                                           Opacity="0.65"/>
-                                                            </Grid>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-
-                                            <TextBlock Grid.Row="1"
-                                                       Text="{DynamicResource l.analytics.history.days_ago}"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"
-                                                       HorizontalAlignment="Center"
-                                                       Opacity="0.65"
-                                                       Margin="0,8,0,0"/>
-                                        </Grid>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Статистика 14 дней -->
-                            <Border Grid.Column="1" Classes="AnalyticsPanel" Padding="0" ClipToBounds="True">
-                                <Grid ColumnDefinitions="4,*">
-                                    <Border Grid.Column="0" Background="{DynamicResource AnalyticsSectionPurpleBrush}" CornerRadius="10,0,0,10"/>
-                                    <Border Grid.Column="1">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                                <GradientStop Color="#1A7B61FF" Offset="0"/>
-                                                <GradientStop Color="#00000000" Offset="1"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                        <StackPanel VerticalAlignment="Center" Spacing="24" Margin="16">
-                                            <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                                <TextBlock Text="{DynamicResource l.analytics.history.for_14_days}" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="{Binding History.RecentHistoryEpisodes}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center" Foreground="{DynamicResource AnalyticsSectionPurpleBrush}"/>
-                                                <TextBlock Text="{DynamicResource l.analytics.history.episodes_lower}" FontSize="11" HorizontalAlignment="Center" Opacity="0.65"/>
-                                            </StackPanel>
-                                            <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Margin="10,0"/>
-                                            <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                                <TextBlock Text="{DynamicResource l.analytics.history.unique_titles}" FontSize="11" FontWeight="Medium" Opacity="0.5" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="{Binding History.RecentHistoryTitles}" FontSize="36" FontWeight="Light" HorizontalAlignment="Center"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </Border>
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Opacity="0.65"
+                                Text="{DynamicResource l.analytics.history.days_ago}" />
                         </Grid>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-                        <!-- Просмотрено по году выхода -->
-                        <Border Classes="AnalyticsPanel">
-                            <StackPanel Spacing="14">
-                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                    <Border Width="30" Height="30" CornerRadius="8"
-                                            Background="{DynamicResource AnalyticsSectionPurpleBrush}"
-                                            VerticalAlignment="Center">
-                                        <material:MaterialIcon Kind="CalendarRange"
-                                                               Width="16" Height="16"
-                                                               Foreground="White"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"/>
-                                    </Border>
-                                     <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Text="{DynamicResource l.analytics.history.by_release_year}" FontSize="15" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{DynamicResource l.analytics.history.by_release_year_sub}" FontSize="10.5" Opacity="0.45"/>
-                                    </StackPanel>
-                                </Grid>
-                                <ItemsControl ItemsSource="{Binding History.ReleaseYearCompletions}"
-                                              ItemTemplate="{StaticResource ReleaseYearTemplate}"
-                                              ToolTip.Tip="{DynamicResource l.analytics.history.release_year_tooltip}">
+            <!--  Статистика 14 дней  -->
+            <Border
+                Grid.Column="1"
+                Padding="0"
+                Classes="AnalyticsPanel"
+                ClipToBounds="True">
+                <Grid ColumnDefinitions="4,*">
+                    <Border
+                        Grid.Column="0"
+                        Background="{DynamicResource AnalyticsSectionPurpleBrush}"
+                        CornerRadius="10,0,0,10" />
+                    <Border Grid.Column="1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#1A7B61FF" />
+                                <GradientStop Offset="1" Color="#00000000" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel
+                            Margin="16"
+                            VerticalAlignment="Center"
+                            Spacing="24">
+                            <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="11"
+                                    FontWeight="Medium"
+                                    Opacity="0.5"
+                                    Text="{DynamicResource l.analytics.history.for_14_days}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="36"
+                                    FontWeight="Light"
+                                    Foreground="{DynamicResource AnalyticsSectionPurpleBrush}"
+                                    Text="{Binding History.RecentHistoryEpisodes}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="11"
+                                    Opacity="0.65"
+                                    Text="{DynamicResource l.analytics.history.episodes_lower}" />
+                            </StackPanel>
+                            <Border
+                                Height="1"
+                                Margin="10,0"
+                                Background="{DynamicResource DividerStrokeColorDefault}" />
+                            <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="11"
+                                    FontWeight="Medium"
+                                    Opacity="0.5"
+                                    Text="{DynamicResource l.analytics.history.unique_titles}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="36"
+                                    FontWeight="Light"
+                                    Text="{Binding History.RecentHistoryTitles}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!--  Просмотрено по году выхода  -->
+        <Border Classes="AnalyticsPanel">
+            <StackPanel Spacing="14">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Border
+                        Width="30"
+                        Height="30"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource AnalyticsSectionPurpleBrush}"
+                        CornerRadius="8">
+                        <material:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Kind="CalendarRange" />
+                    </Border>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="{DynamicResource l.analytics.history.by_release_year}" />
+                        <TextBlock
+                            FontSize="10.5"
+                            Opacity="0.45"
+                            Text="{DynamicResource l.analytics.history.by_release_year_sub}" />
+                    </StackPanel>
+                </Grid>
+                <ItemsControl
+                    ItemTemplate="{StaticResource ReleaseYearTemplate}"
+                    ItemsSource="{Binding History.ReleaseYearCompletions}"
+                    ToolTip.Tip="{DynamicResource l.analytics.history.release_year_tooltip}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="12" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!--  Завершения по месяцам (heatmap)  -->
+        <Border Classes="AnalyticsPanel" IsVisible="{Binding History.HasMonthlyHistory}">
+            <StackPanel Spacing="14">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Border
+                        Width="30"
+                        Height="30"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource AnalyticsSectionTealBrush}"
+                        CornerRadius="8">
+                        <material:MaterialIcon
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Kind="CalendarMonthOutline" />
+                    </Border>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="{DynamicResource l.analytics.history.by_month}" />
+                        <TextBlock
+                            FontSize="10.5"
+                            Opacity="0.45"
+                            Text="{DynamicResource l.analytics.history.by_month_sub}" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="52,*">
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding History.MonthHeaders}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="12" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    HorizontalAlignment="Center"
+                                    FontSize="11"
+                                    Opacity="0.6"
+                                    Text="{Binding}"
+                                    TextAlignment="Center" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding History.MonthlyHistory}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmAnalytics:AnalyticsMonthlyHistoryRow">
+                            <Grid Margin="0,0,0,2" ColumnDefinitions="52,*">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="11"
+                                    Opacity="0.6"
+                                    Text="{Binding Year}" />
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Months}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <UniformGrid Columns="12"/>
+                                            <UniformGrid Columns="12" />
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Завершения по месяцам (heatmap) -->
-                        <Border Classes="AnalyticsPanel" IsVisible="{Binding History.HasMonthlyHistory}">
-                            <StackPanel Spacing="14">
-                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                    <Border Width="30" Height="30" CornerRadius="8"
-                                            Background="{DynamicResource AnalyticsSectionTealBrush}"
-                                            VerticalAlignment="Center">
-                                        <material:MaterialIcon Kind="CalendarMonthOutline"
-                                                               Width="16" Height="16"
-                                                               Foreground="White"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Text="{DynamicResource l.analytics.history.by_month}" FontSize="15" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{DynamicResource l.analytics.history.by_month_sub}" FontSize="10.5" Opacity="0.45"/>
-                                    </StackPanel>
-                                </Grid>
-
-                                <Grid ColumnDefinitions="52,*">
-                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding History.MonthHeaders}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <UniformGrid Columns="12"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="x:String">
-                                                <TextBlock Text="{Binding}" FontSize="11" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,6" Opacity="0.6"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Grid>
-
-                                <ItemsControl ItemsSource="{Binding History.MonthlyHistory}">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vmAnalytics:AnalyticsMonthlyHistoryRow">
-                                            <Grid ColumnDefinitions="52,*" Margin="0,0,0,2">
-                                                <TextBlock Text="{Binding Year}" FontSize="11" Opacity="0.6" VerticalAlignment="Center"/>
-                                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Months}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <UniformGrid Columns="12"/>
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="vmAnalytics:AnalyticsMonthlyHistoryCell">
-                                                            <Button Classes="ChartPointButton"
-                                                                    Command="{Binding #analyticsRoot.((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenMonthlyHistoryCommand}"
-                                                                    CommandParameter="{Binding}"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    ToolTip.Tip="{Binding Tooltip}">
-                                                                <Border Classes="MonthCell"
-                                                                        Classes.current="{Binding IsCurrentMonth}"
-                                                                        Background="{Binding Fill}"
-                                                                        HorizontalAlignment="Stretch"
-                                                                        Margin="1">
-                                                                    <Border.Styles>
-                                                                        <Style Selector="TextBlock.HeatmapCellCount">
-                                                                            <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColor}"/>
-                                                                        </Style>
-                                                                        <Style Selector="TextBlock.HeatmapCellCount.high">
-                                                                            <Setter Property="Foreground" Value="White"/>
-                                                                        </Style>
-                                                                    </Border.Styles>
-                                                                    <TextBlock Classes="HeatmapCellCount"
-                                                                               Classes.high="{Binding IsHighIntensity}"
-                                                                               Text="{Binding Count}"
-                                                                               FontSize="10"
-                                                                               FontWeight="SemiBold"
-                                                                               HorizontalAlignment="Center"
-                                                                               VerticalAlignment="Center"
-                                                                               IsVisible="{Binding HasCount}"/>
-                                                                </Border>
-                                                            </Button>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </Grid>
+                                        <DataTemplate x:DataType="vmAnalytics:AnalyticsMonthlyHistoryCell">
+                                            <Button
+                                                HorizontalAlignment="Stretch"
+                                                Classes="ChartPointButton"
+                                                Command="{Binding #analyticsRoot.((vmAnalytics:AnalyticsViewModel)DataContext).History.OpenMonthlyHistoryCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="{Binding Tooltip}">
+                                                <Border
+                                                    Margin="1"
+                                                    HorizontalAlignment="Stretch"
+                                                    Background="{Binding Fill}"
+                                                    Classes="MonthCell"
+                                                    Classes.current="{Binding IsCurrentMonth}">
+                                                    <Border.Styles>
+                                                        <Style Selector="TextBlock.HeatmapCellCount">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColor}" />
+                                                        </Style>
+                                                        <Style Selector="TextBlock.HeatmapCellCount.high">
+                                                            <Setter Property="Foreground" Value="White" />
+                                                        </Style>
+                                                    </Border.Styles>
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Classes="HeatmapCellCount"
+                                                        Classes.high="{Binding IsHighIntensity}"
+                                                        FontSize="10"
+                                                        FontWeight="SemiBold"
+                                                        IsVisible="{Binding HasCount}"
+                                                        Text="{Binding Count}" />
+                                                </Border>
+                                            </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                            </StackPanel>
-                        </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
 
-                        <!-- Заглушка если нет дат -->
-                        <Border Classes="AnalyticsPanel" IsVisible="{Binding !History.HasMonthlyHistory}">
-                            <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8">
-                                <material:MaterialIcon Kind="CalendarBlankOutline" Width="32" Height="32" Opacity="0.25" HorizontalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource l.analytics.history.empty_monthly}"
-                                           FontSize="13"
-                                           Opacity="0.55"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
+        <!--  Заглушка если нет дат  -->
+        <Border Classes="AnalyticsPanel" IsVisible="{Binding !History.HasMonthlyHistory}">
+            <StackPanel
+                Margin="0,8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="10">
+                <material:MaterialIcon
+                    Width="32"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    Kind="CalendarBlankOutline"
+                    Opacity="0.25" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    FontSize="13"
+                    Opacity="0.55"
+                    Text="{DynamicResource l.analytics.history.empty_monthly}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
 
-                        <Border Height="110" IsHitTestVisible="False"/>
-                    </StackPanel>
+        <Border Height="110" IsHitTestVisible="False" />
+    </StackPanel>
 
 </UserControl>
 

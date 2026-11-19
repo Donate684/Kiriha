@@ -1,246 +1,437 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-                    xmlns:material="using:Material.Icons.Avalonia"
-                    xmlns:core="using:Kiriha.Core"
-                    xmlns:u="using:Kiriha.Utils.UI"
-                    xmlns:conv="using:Kiriha.Views.Converters"
-                    xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-                    x:Class="Kiriha.Views.Seasonal.SeasonalCardTemplate">
+﻿<ResourceDictionary
+    x:Class="Kiriha.Views.Seasonal.SeasonalCardTemplate"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:core="using:Kiriha.Core"
+    xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal">
 
-        <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
-        <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
-        <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter"/>
-        <conv:StatusNoneConverter x:Key="StatusNoneConverter"/>
-        <conv:FranchiseToColorConverter x:Key="FranchiseToColorConverter"/>
-        <conv:FranchiseToIconConverter x:Key="FranchiseToIconConverter"/>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:IntToBooleanConverter x:Key="IntToBoolConverter"/>
+    <conv:StatusToColorConverter x:Key="StatusToColorConverter" />
+    <conv:StatusToIconConverter x:Key="StatusToIconConverter" />
+    <conv:StatusNotNoneConverter x:Key="StatusNotNoneConverter" />
+    <conv:StatusNoneConverter x:Key="StatusNoneConverter" />
+    <conv:FranchiseToColorConverter x:Key="FranchiseToColorConverter" />
+    <conv:FranchiseToIconConverter x:Key="FranchiseToIconConverter" />
+    <conv:LocConverter x:Key="LocConverter" />
+    <conv:IntToBooleanConverter x:Key="IntToBoolConverter" />
 
-        <ControlTemplate x:Key="PosterLoadingTemplate">
-            <Panel Background="{DynamicResource SubtleFillColorSecondary}">
-                <material:MaterialIcon Kind="ImageOutline" Width="32" Height="32" Opacity="0.1" 
-                                      VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            </Panel>
-        </ControlTemplate>
+    <ControlTemplate x:Key="PosterLoadingTemplate">
+        <Panel Background="{DynamicResource SubtleFillColorSecondary}">
+            <material:MaterialIcon
+                Width="32"
+                Height="32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Kind="ImageOutline"
+                Opacity="0.1" />
+        </Panel>
+    </ControlTemplate>
 
-        <!-- ═══════════ Compact Horizontal Card ═══════════ -->
-        <DataTemplate x:Key="AnimeGridItemTemplate" x:DataType="entities:AnimeEntity">
-            <Border Classes="AnimeCard revealItem FloatingMagCard" Margin="4" ClipToBounds="False"
-                    CornerRadius="10" Background="{DynamicResource CardBackgroundFillSecondary}"
-                    BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1">
-                <Grid ColumnDefinitions="110, *" DoubleTapped="Poster_DoubleTapped">
+    <!--  ═══════════ Compact Horizontal Card ═══════════  -->
+    <DataTemplate x:Key="AnimeGridItemTemplate" x:DataType="entities:AnimeEntity">
+        <Border
+            Margin="4"
+            Background="{DynamicResource CardBackgroundFillSecondary}"
+            BorderBrush="{DynamicResource DividerStrokeColorDefault}"
+            BorderThickness="1"
+            Classes="AnimeCard revealItem FloatingMagCard"
+            ClipToBounds="False"
+            CornerRadius="10">
+            <Grid ColumnDefinitions="110, *" DoubleTapped="Poster_DoubleTapped">
 
-                    <!-- ─── Left: Poster ─── -->
-                    <Border Grid.Column="0" Width="110" Height="165" CornerRadius="9,0,0,9" ClipToBounds="True">
-                        <Panel Width="110" Height="165">
-                            <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}"/>
-                            <Image core:CachedImage.Source="{Binding MainPictureUrl}" core:CachedImage.DecodeWidth="200" Stretch="UniformToFill"
-                                   Height="165" Width="110"/>
+                <!--  ─── Left: Poster ───  -->
+                <Border
+                    Grid.Column="0"
+                    Width="110"
+                    Height="165"
+                    ClipToBounds="True"
+                    CornerRadius="9,0,0,9">
+                    <Panel Width="110" Height="165">
+                        <TemplatedControl Template="{DynamicResource PosterLoadingTemplate}" />
+                        <Image
+                            Width="110"
+                            Height="165"
+                            core:CachedImage.DecodeWidth="200"
+                            core:CachedImage.Source="{Binding MainPictureUrl}"
+                            Stretch="UniformToFill" />
 
-                        <!-- Top-left badges: Status / Franchise + Airing date -->
-                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5" Spacing="3">
-                            <Border Classes="Badge"
-                                    IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}"
-                                    Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
-                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
-                                                           Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Status, Converter={StaticResource LocConverter}}"
-                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <!--  Top-left badges: Status / Franchise + Airing date  -->
+                        <StackPanel
+                            Margin="5"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Spacing="3">
+                            <Border
+                                Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                Classes="Badge"
+                                IsVisible="{Binding Status, Converter={StaticResource StatusNotNoneConverter}}">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="3">
+                                    <material:MaterialIcon
+                                        Width="10"
+                                        Height="10"
+                                        VerticalAlignment="Center"
+                                        Foreground="White"
+                                        Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                        Opacity="0.9" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="8"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding Status, Converter={StaticResource LocConverter}}" />
                                 </StackPanel>
                             </Border>
 
-                            <Border Classes="Badge FranchiseBadge"
-                                    IsVisible="{Binding Presentation.HasFranchiseBadge}"
-                                    Background="{Binding Franchise, Converter={StaticResource FranchiseToColorConverter}}"
-                                    ToolTip.Tip="{Binding Presentation.FranchiseTooltip}">
-                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="{Binding Franchise, Converter={StaticResource FranchiseToIconConverter}}"
-                                                           Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Presentation.FranchiseBadgeText}"
-                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <Border
+                                Background="{Binding Franchise, Converter={StaticResource FranchiseToColorConverter}}"
+                                Classes="Badge FranchiseBadge"
+                                IsVisible="{Binding Presentation.HasFranchiseBadge}"
+                                ToolTip.Tip="{Binding Presentation.FranchiseTooltip}">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="3">
+                                    <material:MaterialIcon
+                                        Width="10"
+                                        Height="10"
+                                        VerticalAlignment="Center"
+                                        Foreground="White"
+                                        Kind="{Binding Franchise, Converter={StaticResource FranchiseToIconConverter}}"
+                                        Opacity="0.9" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="8"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding Presentation.FranchiseBadgeText}" />
                                 </StackPanel>
                             </Border>
 
-                            <Border Classes="Badge DateBadge"
-                                    ToolTip.Tip="{DynamicResource l.schedule.premiere}">
+                            <Border Classes="Badge DateBadge" ToolTip.Tip="{DynamicResource l.schedule.premiere}">
                                 <Border.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding Path="Presentation.HasAiringDate"/>
-                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsDateSort"/>
+                                        <Binding Path="Presentation.HasAiringDate" />
+                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsDateSort" />
                                     </MultiBinding>
                                 </Border.IsVisible>
-                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="CalendarOutline" Width="10" Height="10" Foreground="White" Opacity="0.9" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Presentation.AiringDateDisplay}"
-                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="3">
+                                    <material:MaterialIcon
+                                        Width="10"
+                                        Height="10"
+                                        VerticalAlignment="Center"
+                                        Foreground="White"
+                                        Kind="CalendarOutline"
+                                        Opacity="0.9" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="8"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding Presentation.AiringDateDisplay}" />
                                 </StackPanel>
                             </Border>
 
-                            <Border Classes="Badge ScoreBadge"
-                                    ToolTip.Tip="{DynamicResource l.filters.sort.score}">
+                            <Border Classes="Badge ScoreBadge" ToolTip.Tip="{DynamicResource l.filters.sort.score}">
                                 <Border.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding Path="Presentation.HasMeanScore"/>
-                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsScoreSort"/>
+                                        <Binding Path="Presentation.HasMeanScore" />
+                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsScoreSort" />
                                     </MultiBinding>
                                 </Border.IsVisible>
-                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="Star" Width="10" Height="10" Foreground="{DynamicResource RatingStarForegroundBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Presentation.MeanScoreDisplay}"
-                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="3">
+                                    <material:MaterialIcon
+                                        Width="10"
+                                        Height="10"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource RatingStarForegroundBrush}"
+                                        Kind="Star" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="8"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding Presentation.MeanScoreDisplay}" />
                                 </StackPanel>
                             </Border>
 
-                            <Border Classes="Badge PopularityBadge"
-                                    ToolTip.Tip="{DynamicResource l.filters.sort.popularity}">
+                            <Border Classes="Badge PopularityBadge" ToolTip.Tip="{DynamicResource l.filters.sort.popularity}">
                                 <Border.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding Path="Presentation.HasPopularity"/>
-                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsPopularitySort"/>
+                                        <Binding Path="Presentation.HasPopularity" />
+                                        <Binding Path="$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsPopularitySort" />
                                     </MultiBinding>
                                 </Border.IsVisible>
-                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="Fire" Width="10" Height="10" Foreground="{DynamicResource OrangeredAccentBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Presentation.PopularityDisplay}"
-                                               FontSize="8" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="3">
+                                    <material:MaterialIcon
+                                        Width="10"
+                                        Height="10"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource OrangeredAccentBrush}"
+                                        Kind="Fire" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="8"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding Presentation.PopularityDisplay}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <!-- Action buttons top-right -->
-                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5" Spacing="4">
-                            <!-- Hide btn top-right, appears on card hover -->
-                            <Border Classes="HideBtn" Classes.confirming="{Binding IsHideConfirming}"
-                                    Tapped="HideBtn_Tapped"
-                                    ToolTip.Tip="{DynamicResource l.filters.options.hide_tooltip}">
+                        <!--  Action buttons top-right  -->
+                        <StackPanel
+                            Margin="5"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Spacing="4">
+                            <!--  Hide btn top-right, appears on card hover  -->
+                            <Border
+                                Classes="HideBtn"
+                                Classes.confirming="{Binding IsHideConfirming}"
+                                Tapped="HideBtn_Tapped"
+                                ToolTip.Tip="{DynamicResource l.filters.options.hide_tooltip}">
                                 <Border.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                        <Binding Path="Status" Converter="{StaticResource StatusNoneConverter}"/>
-                                        <Binding Path="IsHiddenInSeasons"/>
+                                        <Binding Converter="{StaticResource StatusNoneConverter}" Path="Status" />
+                                        <Binding Path="IsHiddenInSeasons" />
                                     </MultiBinding>
                                 </Border.IsVisible>
-                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                    <material:MaterialIcon Kind="EyeOffOutline" Width="12" Height="12" Foreground="White" IsVisible="{Binding !IsHiddenInSeasons}"/>
-                                    <material:MaterialIcon Kind="EyeOutline" Width="12" Height="12" Foreground="White" IsVisible="{Binding IsHiddenInSeasons}"/>
-                                    <TextBlock IsVisible="{Binding IsHideConfirming}" FontSize="9" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center">
+                                <StackPanel
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="3">
+                                    <material:MaterialIcon
+                                        Width="12"
+                                        Height="12"
+                                        Foreground="White"
+                                        IsVisible="{Binding !IsHiddenInSeasons}"
+                                        Kind="EyeOffOutline" />
+                                    <material:MaterialIcon
+                                        Width="12"
+                                        Height="12"
+                                        Foreground="White"
+                                        IsVisible="{Binding IsHiddenInSeasons}"
+                                        Kind="EyeOutline" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="9"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        IsVisible="{Binding IsHideConfirming}">
                                         <TextBlock.Text>
                                             <MultiBinding Converter="{x:Static conv:HideConfirmTextConverter.Instance}">
-                                                <Binding Path="IsHiddenInSeasons"/>
+                                                <Binding Path="IsHiddenInSeasons" />
                                             </MultiBinding>
                                         </TextBlock.Text>
                                     </TextBlock>
                                 </StackPanel>
                             </Border>
 
-                            <!-- Quick-add (+) btn — top-right, only when not in list -->
-                            <Border Classes="HideBtn"
-                                    IsVisible="{Binding Status, Converter={StaticResource StatusNoneConverter}}"
-                                    Tapped="QuickAddBtn_Tapped"
-                                    ToolTip.Tip="{DynamicResource l.anime.list_actions.add_to_list}">
+                            <!--  Quick-add (+) btn — top-right, only when not in list  -->
+                            <Border
+                                Classes="HideBtn"
+                                IsVisible="{Binding Status, Converter={StaticResource StatusNoneConverter}}"
+                                Tapped="QuickAddBtn_Tapped"
+                                ToolTip.Tip="{DynamicResource l.anime.list_actions.add_to_list}">
                                 <Border.ContextFlyout>
                                     <MenuFlyout>
-                                        <MenuItem Header="{DynamicResource l.anime.status.plan_to_watch}" Click="QuickAddMenuItem_Click" Tag="PlanToWatch">
-                                            <MenuItem.Icon><material:MaterialIcon Kind="BookmarkOutline"/></MenuItem.Icon>
+                                        <MenuItem
+                                            Click="QuickAddMenuItem_Click"
+                                            Header="{DynamicResource l.anime.status.plan_to_watch}"
+                                            Tag="PlanToWatch">
+                                            <MenuItem.Icon>
+                                                <material:MaterialIcon Kind="BookmarkOutline" />
+                                            </MenuItem.Icon>
                                         </MenuItem>
-                                        <MenuItem Header="{DynamicResource l.anime.status.watching}" Click="QuickAddMenuItem_Click" Tag="Watching">
-                                            <MenuItem.Icon><material:MaterialIcon Kind="PlayCircleOutline"/></MenuItem.Icon>
+                                        <MenuItem
+                                            Click="QuickAddMenuItem_Click"
+                                            Header="{DynamicResource l.anime.status.watching}"
+                                            Tag="Watching">
+                                            <MenuItem.Icon>
+                                                <material:MaterialIcon Kind="PlayCircleOutline" />
+                                            </MenuItem.Icon>
                                         </MenuItem>
-                                        <MenuItem Header="{DynamicResource l.anime.status.on_hold}" Click="QuickAddMenuItem_Click" Tag="OnHold">
-                                            <MenuItem.Icon><material:MaterialIcon Kind="PauseCircleOutline"/></MenuItem.Icon>
+                                        <MenuItem
+                                            Click="QuickAddMenuItem_Click"
+                                            Header="{DynamicResource l.anime.status.on_hold}"
+                                            Tag="OnHold">
+                                            <MenuItem.Icon>
+                                                <material:MaterialIcon Kind="PauseCircleOutline" />
+                                            </MenuItem.Icon>
                                         </MenuItem>
-                                        <MenuItem Header="{DynamicResource l.anime.status.completed}" Click="QuickAddMenuItem_Click" Tag="Completed">
-                                            <MenuItem.Icon><material:MaterialIcon Kind="CheckCircleOutline"/></MenuItem.Icon>
+                                        <MenuItem
+                                            Click="QuickAddMenuItem_Click"
+                                            Header="{DynamicResource l.anime.status.completed}"
+                                            Tag="Completed">
+                                            <MenuItem.Icon>
+                                                <material:MaterialIcon Kind="CheckCircleOutline" />
+                                            </MenuItem.Icon>
                                         </MenuItem>
-                                        <MenuItem Header="{DynamicResource l.anime.status.dropped}" Click="QuickAddMenuItem_Click" Tag="Dropped">
-                                            <MenuItem.Icon><material:MaterialIcon Kind="CloseCircleOutline"/></MenuItem.Icon>
+                                        <MenuItem
+                                            Click="QuickAddMenuItem_Click"
+                                            Header="{DynamicResource l.anime.status.dropped}"
+                                            Tag="Dropped">
+                                            <MenuItem.Icon>
+                                                <material:MaterialIcon Kind="CloseCircleOutline" />
+                                            </MenuItem.Icon>
                                         </MenuItem>
                                     </MenuFlyout>
                                 </Border.ContextFlyout>
-                                <material:MaterialIcon Kind="Plus" Width="12" Height="12" Foreground="White"/>
+                                <material:MaterialIcon
+                                    Width="12"
+                                    Height="12"
+                                    Foreground="White"
+                                    Kind="Plus" />
                             </Border>
                         </StackPanel>
 
-                        <!-- Bottom overlay: gradient + Score/Type/Eps pills -->
+                        <!--  Bottom overlay: gradient + Score/Type/Eps pills  -->
                         <Border VerticalAlignment="Bottom" IsHitTestVisible="False">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                                    <GradientStop Color="#00000000" Offset="0"/>
-                                    <GradientStop Color="#BB000000" Offset="1"/>
+                                    <GradientStop Offset="0" Color="#00000000" />
+                                    <GradientStop Offset="1" Color="#BB000000" />
                                 </LinearGradientBrush>
                             </Border.Background>
-                            <StackPanel Orientation="Horizontal" Spacing="3" Margin="5,10,5,6" VerticalAlignment="Bottom">
-                                <!-- Score pill -->
-                                <Border Background="#88000000" CornerRadius="5" Padding="5,2">
+                            <StackPanel
+                                Margin="5,10,5,6"
+                                VerticalAlignment="Bottom"
+                                Orientation="Horizontal"
+                                Spacing="3">
+                                <!--  Score pill  -->
+                                <Border
+                                    Padding="5,2"
+                                    Background="#88000000"
+                                    CornerRadius="5">
                                     <Border.IsVisible>
                                         <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="MeanScore" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-                                            <Binding Path="!$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsScoreSort"/>
+                                            <Binding Converter="{x:Static StringConverters.IsNotNullOrEmpty}" Path="MeanScore" />
+                                            <Binding Path="!$parent[UserControl].((vmSeasonal:SeasonalViewModel)DataContext).IsScoreSort" />
                                         </MultiBinding>
                                     </Border.IsVisible>
                                     <StackPanel Orientation="Horizontal" Spacing="3">
-                                        <material:MaterialIcon Kind="Star" Width="9" Height="9" Foreground="{DynamicResource RatingStarForegroundBrush}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding MeanScore}" FontSize="9" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                        <material:MaterialIcon
+                                            Width="9"
+                                            Height="9"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource RatingStarForegroundBrush}"
+                                            Kind="Star" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="9"
+                                            FontWeight="Bold"
+                                            Foreground="White"
+                                            Text="{Binding MeanScore}" />
                                     </StackPanel>
                                 </Border>
-                                <!-- Type pill -->
-                                <Border Background="#88000000" CornerRadius="5" Padding="5,2"
-                                        IsVisible="{Binding Type, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                    <TextBlock Text="{Binding Type, Converter={StaticResource LocConverter}}"
-                                               FontSize="9" FontWeight="SemiBold" Foreground="White"/>
+                                <!--  Type pill  -->
+                                <Border
+                                    Padding="5,2"
+                                    Background="#88000000"
+                                    CornerRadius="5"
+                                    IsVisible="{Binding Type, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <TextBlock
+                                        FontSize="9"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Text="{Binding Type, Converter={StaticResource LocConverter}}" />
                                 </Border>
-                                <!-- Eps pill -->
-                                <Border Background="#88000000" CornerRadius="5" Padding="5,2"
-                                        IsVisible="{Binding TotalEpisodes, Converter={StaticResource IntToBoolConverter}}">
-                                    <TextBlock FontSize="9" FontWeight="SemiBold" Foreground="White" Opacity="0.85">
+                                <!--  Eps pill  -->
+                                <Border
+                                    Padding="5,2"
+                                    Background="#88000000"
+                                    CornerRadius="5"
+                                    IsVisible="{Binding TotalEpisodes, Converter={StaticResource IntToBoolConverter}}">
+                                    <TextBlock
+                                        FontSize="9"
+                                        FontWeight="SemiBold"
+                                        Foreground="White"
+                                        Opacity="0.85">
                                         <Run Text="{Binding TotalEpisodes}" /><Run Text=" " /><Run Text="{DynamicResource l.anime.labels.ep_abbr}" />
                                     </TextBlock>
                                 </Border>
                             </StackPanel>
                         </Border>
                     </Panel>
-                    </Border>
+                </Border>
 
-                    <!-- ─── Right: Info ─── -->
-                    <Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="11,10,10,10">
+                <!--  ─── Right: Info ───  -->
+                <Grid
+                    Grid.Column="1"
+                    Margin="11,10,10,10"
+                    RowDefinitions="*, Auto">
 
-                        <!-- Row 0: Romaji title + RU/EN title -->
-                        <StackPanel Grid.Row="0" Spacing="3">
-                            <TextBlock Text="{Binding Presentation.RomajiTitle}" FontSize="12.5" FontWeight="SemiBold"
-                                       MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                                       LineHeight="16" Foreground="{DynamicResource SystemBaseHighColor}"/>
-                            <TextBlock Text="{Binding Presentation.SecondaryTitle}" FontSize="10.5" FontWeight="Medium"
-                                       MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                                       LineHeight="14" Opacity="0.6"
-                                       Foreground="{DynamicResource SystemBaseHighColor}"
-                                       IsVisible="{Binding Presentation.HasSecondaryTitle}"/>
-                        </StackPanel>
+                    <!--  Row 0: Romaji title + RU/EN title  -->
+                    <StackPanel Grid.Row="0" Spacing="3">
+                        <TextBlock
+                            FontSize="12.5"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SystemBaseHighColor}"
+                            LineHeight="16"
+                            MaxLines="2"
+                            Text="{Binding Presentation.RomajiTitle}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            FontSize="10.5"
+                            FontWeight="Medium"
+                            Foreground="{DynamicResource SystemBaseHighColor}"
+                            IsVisible="{Binding Presentation.HasSecondaryTitle}"
+                            LineHeight="14"
+                            MaxLines="2"
+                            Opacity="0.6"
+                            Text="{Binding Presentation.SecondaryTitle}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
 
-                        <!-- Row 1: Genre pills -->
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding Genres}"
-                                      Margin="0,7,0,0"
-                                      IsVisible="{Binding Presentation.HasGenres}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Border Background="{DynamicResource PillBgBrush}" CornerRadius="5" Padding="6,3"
-                                            BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="1"
-                                            Margin="0,0,4,4">
-                                        <TextBlock Text="{Binding Converter={StaticResource LocConverter}}"
-                                                   FontSize="9.5" FontWeight="Medium" Opacity="0.85"/>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                    </Grid>
+                    <!--  Row 1: Genre pills  -->
+                    <ItemsControl
+                        Grid.Row="1"
+                        Margin="0,7,0,0"
+                        IsVisible="{Binding Presentation.HasGenres}"
+                        ItemsSource="{Binding Genres}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border
+                                    Margin="0,0,4,4"
+                                    Padding="6,3"
+                                    Background="{DynamicResource PillBgBrush}"
+                                    BorderBrush="{DynamicResource DividerStrokeColorDefault}"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <TextBlock
+                                        FontSize="9.5"
+                                        FontWeight="Medium"
+                                        Opacity="0.85"
+                                        Text="{Binding Converter={StaticResource LocConverter}}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
                 </Grid>
-            </Border>
-        </DataTemplate>
+
+            </Grid>
+        </Border>
+    </DataTemplate>
 </ResourceDictionary>

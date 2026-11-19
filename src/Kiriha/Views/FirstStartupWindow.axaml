@@ -1,20 +1,21 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:views="using:Kiriha.Views"
-        x:Class="Kiriha.Views.FirstStartupWindow"
-        x:DataType="vmStartup:FirstStartupViewModel"
-        Title="Kiriha Setup"
-        WindowDecorations="None"
-        WindowStartupLocation="CenterScreen"
-        Background="Transparent"
-        TransparencyLevelHint="Transparent"
-        SizeToContent="WidthAndHeight"
-        CanResize="False">
-    
+﻿<Window
+    x:Class="Kiriha.Views.FirstStartupWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:Kiriha.Views"
+    xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
+    Title="Kiriha Setup"
+    x:DataType="vmStartup:FirstStartupViewModel"
+    Background="Transparent"
+    CanResize="False"
+    SizeToContent="WidthAndHeight"
+    TransparencyLevelHint="Transparent"
+    WindowDecorations="None"
+    WindowStartupLocation="CenterScreen">
+
     <LayoutTransformControl Name="ScaleRoot">
         <LayoutTransformControl.LayoutTransform>
-            <ScaleTransform ScaleX="1" ScaleY="1"/>
+            <ScaleTransform ScaleX="1" ScaleY="1" />
         </LayoutTransformControl.LayoutTransform>
         <views:FirstStartupView />
     </LayoutTransformControl>

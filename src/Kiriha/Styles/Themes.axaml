@@ -1,145 +1,150 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <!-- ═══ Windows 11 Layered Surface System ═══ -->
-            <SolidColorBrush x:Key="LayerFillColorDefault" Color="#66F9F9F9"/>
-            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#E4000000"/>
-            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#9E000000"/>
-            <SolidColorBrush x:Key="CardBackgroundFillDefault" Color="#B3FFFFFF"/>
-            <SolidColorBrush x:Key="CardBackgroundFillSecondary" Color="#80F6F6F6"/>
-            <SolidColorBrush x:Key="SubtleFillColorSecondary" Color="#09000000"/>
-            <SolidColorBrush x:Key="SubtleFillColorTertiary" Color="#04000000"/>
-            <SolidColorBrush x:Key="DividerStrokeColorDefault" Color="#0C000000"/>
-            <SolidColorBrush x:Key="CardStrokeColorDefault" Color="#0F000000"/>
-            <SolidColorBrush x:Key="CardStrokeColorSecondary" Color="#18000000"/>
-            <SolidColorBrush x:Key="CardHoverFillColor" Color="#12000000"/>
-            <SolidColorBrush x:Key="NavItemHoverColor" Color="#0A000000"/>
-            <SolidColorBrush x:Key="ContentSurfaceFill" Color="#4CFFFFFF"/>
-            <SolidColorBrush x:Key="ToastBackground" Color="#F0F5F5F5"/>
-            <!-- Modal (opaque) -->
-            <SolidColorBrush x:Key="ModalBackgroundFill" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="ModalSidebarFill" Color="#FFF3F3F3"/>
-            <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="Transparent"/>
-            <!-- Luxury Overlay -->
-            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="LuxuryFlyoutBorder" Color="#22000000"/>
-            <!-- Scrollbar -->
-            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#08000000"/>
-            <SolidColorBrush x:Key="ScrollBarTrackFillHover" Color="#10000000"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#66787878"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillHover" Color="#99585858"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#CC484848"/>
-            <!-- ═══ Leaf Logo (theme-aware) ═══ -->
-            <SolidColorBrush x:Key="LeafVeinBrush"   Color="#FFFFFF" Opacity="0.55"/>
-            <!-- ═══ Anime Card (theme-aware) ═══ -->
+            <!--  ═══ Windows 11 Layered Surface System ═══  -->
+            <SolidColorBrush x:Key="LayerFillColorDefault" Color="#66F9F9F9" />
+            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#E4000000" />
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#9E000000" />
+            <SolidColorBrush x:Key="CardBackgroundFillDefault" Color="#B3FFFFFF" />
+            <SolidColorBrush x:Key="CardBackgroundFillSecondary" Color="#80F6F6F6" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondary" Color="#09000000" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiary" Color="#04000000" />
+            <SolidColorBrush x:Key="DividerStrokeColorDefault" Color="#0C000000" />
+            <SolidColorBrush x:Key="CardStrokeColorDefault" Color="#0F000000" />
+            <SolidColorBrush x:Key="CardStrokeColorSecondary" Color="#18000000" />
+            <SolidColorBrush x:Key="CardHoverFillColor" Color="#12000000" />
+            <SolidColorBrush x:Key="NavItemHoverColor" Color="#0A000000" />
+            <SolidColorBrush x:Key="ContentSurfaceFill" Color="#4CFFFFFF" />
+            <SolidColorBrush x:Key="ToastBackground" Color="#F0F5F5F5" />
+            <!--  Modal (opaque)  -->
+            <SolidColorBrush x:Key="ModalBackgroundFill" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ModalSidebarFill" Color="#FFF3F3F3" />
+            <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="Transparent" />
+            <!--  Luxury Overlay  -->
+            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="LuxuryFlyoutBorder" Color="#22000000" />
+            <!--  Scrollbar  -->
+            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#08000000" />
+            <SolidColorBrush x:Key="ScrollBarTrackFillHover" Color="#10000000" />
+            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#66787878" />
+            <SolidColorBrush x:Key="ScrollBarThumbFillHover" Color="#99585858" />
+            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#CC484848" />
+            <!--  ═══ Leaf Logo (theme-aware) ═══  -->
+            <SolidColorBrush
+                x:Key="LeafVeinBrush"
+                Opacity="0.55"
+                Color="#FFFFFF" />
+            <!--  ═══ Anime Card (theme-aware) ═══  -->
             <BoxShadows x:Key="CardBoxShadow">0 0 0 0 #00000000</BoxShadows>
             <BoxShadows x:Key="CardBoxShadowHover">0 0 0 0 #00000000</BoxShadows>
-            <SolidColorBrush x:Key="ProgressStepHoverBrush" Color="#12000000"/>
-            <SolidColorBrush x:Key="SegmentedTrackBrush" Color="#26000000"/>
-            <SolidColorBrush x:Key="PillBgBrush" Color="#F3F4F6"/>
-            <!-- Score flyout (light) -->
-            <SolidColorBrush x:Key="ScoreFlyoutBackground" Color="#F5FFFFFF"/>
-            <SolidColorBrush x:Key="ScoreFlyoutBorder" Color="#18000000"/>
-            <SolidColorBrush x:Key="ScoreFlyoutItemHover" Color="#0C000000"/>
-            <SolidColorBrush x:Key="ScoreFlyoutItemPressed" Color="#18000000"/>
-            <SolidColorBrush x:Key="ScoreFlyoutItemForeground" Color="#E4000000"/>
-            <!-- Score Pill -->
-            <SolidColorBrush x:Key="ScorePillBackground" Color="#2A2D34"/>
-            <SolidColorBrush x:Key="ScorePillBorder" Color="#3A3E47"/>
-            <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700"/>
-            <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="ProgressStepHoverBrush" Color="#12000000" />
+            <SolidColorBrush x:Key="SegmentedTrackBrush" Color="#26000000" />
+            <SolidColorBrush x:Key="PillBgBrush" Color="#F3F4F6" />
+            <!--  Score flyout (light)  -->
+            <SolidColorBrush x:Key="ScoreFlyoutBackground" Color="#F5FFFFFF" />
+            <SolidColorBrush x:Key="ScoreFlyoutBorder" Color="#18000000" />
+            <SolidColorBrush x:Key="ScoreFlyoutItemHover" Color="#0C000000" />
+            <SolidColorBrush x:Key="ScoreFlyoutItemPressed" Color="#18000000" />
+            <SolidColorBrush x:Key="ScoreFlyoutItemForeground" Color="#E4000000" />
+            <!--  Score Pill  -->
+            <SolidColorBrush x:Key="ScorePillBackground" Color="#2A2D34" />
+            <SolidColorBrush x:Key="ScorePillBorder" Color="#3A3E47" />
+            <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700" />
+            <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF" />
 
-            <!-- Analytics Section Colors -->
-            <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935"/>
-            <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2"/>
-            <SolidColorBrush x:Key="AnalyticsSectionPurpleBrush" Color="#FF7B61FF"/>
-            <SolidColorBrush x:Key="AnalyticsSectionGreenBrush" Color="#FF2E9D62"/>
-            <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22"/>
-            <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83"/>
-            <!-- Semantic UI Colors -->
-            <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365"/>
-            <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0"/>
-            <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000"/>
-            <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#E81123"/>
-            <SolidColorBrush x:Key="DangerButtonHoverBrush" Color="#F1707A"/>
-            <SolidColorBrush x:Key="OrangeredAccentBrush" Color="#FF4500"/>
-            <SolidColorBrush x:Key="OrangeredAccentTintBrush" Color="#15FF4500"/>
-            <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
-            <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
-            <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
-            <SolidColorBrush x:Key="FilterBlueBrush" Color="#FF2196F3"/>
-            <SolidColorBrush x:Key="FilterBlueTintBrush" Color="#1F2196F3"/>
+            <!--  Analytics Section Colors  -->
+            <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935" />
+            <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2" />
+            <SolidColorBrush x:Key="AnalyticsSectionPurpleBrush" Color="#FF7B61FF" />
+            <SolidColorBrush x:Key="AnalyticsSectionGreenBrush" Color="#FF2E9D62" />
+            <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22" />
+            <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83" />
+            <!--  Semantic UI Colors  -->
+            <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365" />
+            <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0" />
+            <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000" />
+            <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#E81123" />
+            <SolidColorBrush x:Key="DangerButtonHoverBrush" Color="#F1707A" />
+            <SolidColorBrush x:Key="OrangeredAccentBrush" Color="#FF4500" />
+            <SolidColorBrush x:Key="OrangeredAccentTintBrush" Color="#15FF4500" />
+            <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935" />
+            <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336" />
+            <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336" />
+            <SolidColorBrush x:Key="FilterBlueBrush" Color="#FF2196F3" />
+            <SolidColorBrush x:Key="FilterBlueTintBrush" Color="#1F2196F3" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-            <!-- ═══ Windows 11 Layered Surface System ═══ -->
-            <SolidColorBrush x:Key="LayerFillColorDefault" Color="#333A3A3A"/>
-            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#A6FFFFFF"/>
-            <SolidColorBrush x:Key="CardBackgroundFillDefault" Color="#0DFFFFFF"/>
-            <SolidColorBrush x:Key="CardBackgroundFillSecondary" Color="#08FFFFFF"/>
-            <SolidColorBrush x:Key="SubtleFillColorSecondary" Color="#0FFFFFFF"/>
-            <SolidColorBrush x:Key="SubtleFillColorTertiary" Color="#06FFFFFF"/>
-            <SolidColorBrush x:Key="DividerStrokeColorDefault" Color="#15FFFFFF"/>
-            <SolidColorBrush x:Key="CardStrokeColorDefault" Color="#19FFFFFF"/>
-            <SolidColorBrush x:Key="CardStrokeColorSecondary" Color="#25FFFFFF"/>
-            <SolidColorBrush x:Key="CardHoverFillColor" Color="#15FFFFFF"/>
-            <SolidColorBrush x:Key="NavItemHoverColor" Color="#15FFFFFF"/>
-            <SolidColorBrush x:Key="ContentSurfaceFill" Color="#26202020"/>
-            <SolidColorBrush x:Key="ToastBackground" Color="#E6212121"/>
-            <!-- Modal (opaque) -->
-            <SolidColorBrush x:Key="ModalBackgroundFill" Color="#FF1F1F1F"/>
-            <SolidColorBrush x:Key="ModalSidebarFill" Color="#FF171717"/>
-            <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="Transparent"/>
-            <!-- Luxury Overlay -->
-            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#FF1E1E1E"/>
-            <SolidColorBrush x:Key="LuxuryFlyoutBorder" Color="#22FFFFFF"/>
-            <!-- Scrollbar -->
-            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#0AFFFFFF"/>
-            <SolidColorBrush x:Key="ScrollBarTrackFillHover" Color="#14FFFFFF"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#50AAAAAA"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillHover" Color="#80B0B0B0"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#A0C0C0C0"/>
-            <!-- ═══ Leaf Logo (theme-aware) ═══ -->
-            <SolidColorBrush x:Key="LeafVeinBrush"   Color="#FFFFFF" Opacity="0.75"/>
-            <!-- ═══ Anime Card (theme-aware) ═══ -->
+            <!--  ═══ Windows 11 Layered Surface System ═══  -->
+            <SolidColorBrush x:Key="LayerFillColorDefault" Color="#333A3A3A" />
+            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#A6FFFFFF" />
+            <SolidColorBrush x:Key="CardBackgroundFillDefault" Color="#0DFFFFFF" />
+            <SolidColorBrush x:Key="CardBackgroundFillSecondary" Color="#08FFFFFF" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondary" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiary" Color="#06FFFFFF" />
+            <SolidColorBrush x:Key="DividerStrokeColorDefault" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="CardStrokeColorDefault" Color="#19FFFFFF" />
+            <SolidColorBrush x:Key="CardStrokeColorSecondary" Color="#25FFFFFF" />
+            <SolidColorBrush x:Key="CardHoverFillColor" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="NavItemHoverColor" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="ContentSurfaceFill" Color="#26202020" />
+            <SolidColorBrush x:Key="ToastBackground" Color="#E6212121" />
+            <!--  Modal (opaque)  -->
+            <SolidColorBrush x:Key="ModalBackgroundFill" Color="#FF1F1F1F" />
+            <SolidColorBrush x:Key="ModalSidebarFill" Color="#FF171717" />
+            <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="Transparent" />
+            <!--  Luxury Overlay  -->
+            <SolidColorBrush x:Key="LuxuryFlyoutBackground" Color="#FF1E1E1E" />
+            <SolidColorBrush x:Key="LuxuryFlyoutBorder" Color="#22FFFFFF" />
+            <!--  Scrollbar  -->
+            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#0AFFFFFF" />
+            <SolidColorBrush x:Key="ScrollBarTrackFillHover" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#50AAAAAA" />
+            <SolidColorBrush x:Key="ScrollBarThumbFillHover" Color="#80B0B0B0" />
+            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#A0C0C0C0" />
+            <!--  ═══ Leaf Logo (theme-aware) ═══  -->
+            <SolidColorBrush
+                x:Key="LeafVeinBrush"
+                Opacity="0.75"
+                Color="#FFFFFF" />
+            <!--  ═══ Anime Card (theme-aware) ═══  -->
             <BoxShadows x:Key="CardBoxShadow">0 2 8 0 #18000000</BoxShadows>
             <BoxShadows x:Key="CardBoxShadowHover">0 6 18 0 #2A000000</BoxShadows>
-            <SolidColorBrush x:Key="ProgressStepHoverBrush" Color="#15FFFFFF"/>
-            <SolidColorBrush x:Key="SegmentedTrackBrush" Color="#2AFFFFFF"/>
-            <SolidColorBrush x:Key="PillBgBrush" Color="#22FFFFFF"/>
-            <!-- Score flyout (dark) -->
-            <SolidColorBrush x:Key="ScoreFlyoutBackground" Color="#F5101010"/>
-            <SolidColorBrush x:Key="ScoreFlyoutBorder" Color="#20FFFFFF"/>
-            <SolidColorBrush x:Key="ScoreFlyoutItemHover" Color="#15FFFFFF"/>
-            <SolidColorBrush x:Key="ScoreFlyoutItemPressed" Color="#30FFFFFF"/>
-            <SolidColorBrush x:Key="ScoreFlyoutItemForeground" Color="#FFFFFFFF"/>
-            <!-- Score Pill -->
-            <SolidColorBrush x:Key="ScorePillBackground" Color="#22252C"/>
-            <SolidColorBrush x:Key="ScorePillBorder" Color="#333740"/>
-            <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700"/>
-            <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="ProgressStepHoverBrush" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="SegmentedTrackBrush" Color="#2AFFFFFF" />
+            <SolidColorBrush x:Key="PillBgBrush" Color="#22FFFFFF" />
+            <!--  Score flyout (dark)  -->
+            <SolidColorBrush x:Key="ScoreFlyoutBackground" Color="#F5101010" />
+            <SolidColorBrush x:Key="ScoreFlyoutBorder" Color="#20FFFFFF" />
+            <SolidColorBrush x:Key="ScoreFlyoutItemHover" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="ScoreFlyoutItemPressed" Color="#30FFFFFF" />
+            <SolidColorBrush x:Key="ScoreFlyoutItemForeground" Color="#FFFFFFFF" />
+            <!--  Score Pill  -->
+            <SolidColorBrush x:Key="ScorePillBackground" Color="#22252C" />
+            <SolidColorBrush x:Key="ScorePillBorder" Color="#333740" />
+            <SolidColorBrush x:Key="ScorePillStar" Color="#FFD700" />
+            <SolidColorBrush x:Key="ScorePillForeground" Color="#FFFFFF" />
 
-            <!-- Analytics Section Colors -->
-            <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935"/>
-            <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2"/>
-            <SolidColorBrush x:Key="AnalyticsSectionPurpleBrush" Color="#FF7B61FF"/>
-            <SolidColorBrush x:Key="AnalyticsSectionGreenBrush" Color="#FF2E9D62"/>
-            <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22"/>
-            <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83"/>
-            <!-- Semantic UI Colors -->
-            <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365"/>
-            <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0"/>
-            <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000"/>
-            <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#E81123"/>
-            <SolidColorBrush x:Key="DangerButtonHoverBrush" Color="#F1707A"/>
-            <SolidColorBrush x:Key="OrangeredAccentBrush" Color="#FF4500"/>
-            <SolidColorBrush x:Key="OrangeredAccentTintBrush" Color="#15FF4500"/>
-            <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935"/>
-            <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336"/>
-            <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336"/>
-            <SolidColorBrush x:Key="FilterBlueBrush" Color="#FF2196F3"/>
-            <SolidColorBrush x:Key="FilterBlueTintBrush" Color="#1F2196F3"/>
+            <!--  Analytics Section Colors  -->
+            <SolidColorBrush x:Key="AnalyticsSectionRedBrush" Color="#FFE53935" />
+            <SolidColorBrush x:Key="AnalyticsSectionBlueBrush" Color="#FF2D7DD2" />
+            <SolidColorBrush x:Key="AnalyticsSectionPurpleBrush" Color="#FF7B61FF" />
+            <SolidColorBrush x:Key="AnalyticsSectionGreenBrush" Color="#FF2E9D62" />
+            <SolidColorBrush x:Key="AnalyticsSectionOrangeBrush" Color="#FFD17A22" />
+            <SolidColorBrush x:Key="AnalyticsSectionTealBrush" Color="#FF0F7B83" />
+            <!--  Semantic UI Colors  -->
+            <SolidColorBrush x:Key="RatingStarForegroundBrush" Color="#F6D365" />
+            <SolidColorBrush x:Key="SearchAccentForegroundBrush" Color="#1565C0" />
+            <SolidColorBrush x:Key="ModalOverlayBackgroundBrush" Color="#80000000" />
+            <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#E81123" />
+            <SolidColorBrush x:Key="DangerButtonHoverBrush" Color="#F1707A" />
+            <SolidColorBrush x:Key="OrangeredAccentBrush" Color="#FF4500" />
+            <SolidColorBrush x:Key="OrangeredAccentTintBrush" Color="#15FF4500" />
+            <SolidColorBrush x:Key="TorrentRedBrush" Color="#E53935" />
+            <SolidColorBrush x:Key="FilterRedBrush" Color="#FFF44336" />
+            <SolidColorBrush x:Key="FilterRedTintBrush" Color="#1FF44336" />
+            <SolidColorBrush x:Key="FilterBlueBrush" Color="#FF2196F3" />
+            <SolidColorBrush x:Key="FilterBlueTintBrush" Color="#1F2196F3" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

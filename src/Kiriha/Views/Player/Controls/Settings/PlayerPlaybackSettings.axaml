@@ -1,134 +1,173 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:models="using:Kiriha.Core.Domain.Models"
-             xmlns:mpv="clr-namespace:Kiriha.Mpv"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             x:DataType="vmPlayer:PlayerViewModel"
-             x:Class="Kiriha.Views.Player.Controls.Settings.PlayerPlaybackSettings">
+﻿<UserControl
+    x:Class="Kiriha.Views.Player.Controls.Settings.PlayerPlaybackSettings"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:models="using:Kiriha.Core.Domain.Models"
+    xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
+    x:DataType="vmPlayer:PlayerViewModel">
     <UserControl.Resources>
-        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter"/>
+        <conv:SettingModifiedConverter x:Key="SettingModifiedConverter" />
     </UserControl.Resources>
     <StackPanel Spacing="10">
-                                <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.playback}"/>
+        <TextBlock Classes="player-settings-title" Text="{DynamicResource l.player.playback}" />
 
-                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
-                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.autoplay}"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.autoplay_sub}"/>
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1"
-                                                  VerticalAlignment="Center"
-                                                  IsChecked="{Binding PlayerAutoPlay}"
-                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
-                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
-                                    <Button Grid.Column="2"
-                                            Classes="player-settings-reset-btn"
-                                            Command="{Binding ResetSettingCommand}"
-                                            CommandParameter="PlayerAutoPlay"
-                                            IsVisible="{Binding PlayerAutoPlay, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
-                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
-                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
-                                    </Button>
-                                </Grid>
-                                <Border Classes="player-settings-divider"/>
+        <Grid MinHeight="56" ColumnDefinitions="*,Auto,32">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.autoplay}" />
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.autoplay_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding PlayerAutoPlay}"
+                OffContent="{DynamicResource l.player.settings_adv.off}"
+                OnContent="{DynamicResource l.player.settings_adv.on}" />
+            <Button
+                Grid.Column="2"
+                Classes="player-settings-reset-btn"
+                Command="{Binding ResetSettingCommand}"
+                CommandParameter="PlayerAutoPlay"
+                IsVisible="{Binding PlayerAutoPlay, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    Kind="Restore" />
+            </Button>
+        </Grid>
+        <Border Classes="player-settings-divider" />
 
-                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
-                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.single_window}"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.single_window_sub}"/>
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1"
-                                                  VerticalAlignment="Center"
-                                                  IsChecked="{Binding SinglePlayerWindow}"
-                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
-                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
-                                    <Button Grid.Column="2"
-                                            Classes="player-settings-reset-btn"
-                                            Command="{Binding ResetSettingCommand}"
-                                            CommandParameter="SinglePlayerWindow"
-                                            IsVisible="{Binding SinglePlayerWindow, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
-                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
-                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
-                                    </Button>
-                                </Grid>
-                                <Border Classes="player-settings-divider"/>
+        <Grid MinHeight="56" ColumnDefinitions="*,Auto,32">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.single_window}" />
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.single_window_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding SinglePlayerWindow}"
+                OffContent="{DynamicResource l.player.settings_adv.off}"
+                OnContent="{DynamicResource l.player.settings_adv.on}" />
+            <Button
+                Grid.Column="2"
+                Classes="player-settings-reset-btn"
+                Command="{Binding ResetSettingCommand}"
+                CommandParameter="SinglePlayerWindow"
+                IsVisible="{Binding SinglePlayerWindow, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    Kind="Restore" />
+            </Button>
+        </Grid>
+        <Border Classes="player-settings-divider" />
 
-                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
-                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.remember_position}"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.remember_position_sub}"/>
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1"
-                                                  VerticalAlignment="Center"
-                                                  IsChecked="{Binding RememberPlaybackPosition}"
-                                                  OnContent="{DynamicResource l.player.settings_adv.on}"
-                                                  OffContent="{DynamicResource l.player.settings_adv.off}"/>
-                                    <Button Grid.Column="2"
-                                            Classes="player-settings-reset-btn"
-                                            Command="{Binding ResetSettingCommand}"
-                                            CommandParameter="RememberPlaybackPosition"
-                                            IsVisible="{Binding RememberPlaybackPosition, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
-                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
-                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
-                                    </Button>
-                                </Grid>
-                                <Border Classes="player-settings-divider"/>
+        <Grid MinHeight="56" ColumnDefinitions="*,Auto,32">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.remember_position}" />
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.remember_position_sub}" />
+            </StackPanel>
+            <ToggleSwitch
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                IsChecked="{Binding RememberPlaybackPosition}"
+                OffContent="{DynamicResource l.player.settings_adv.off}"
+                OnContent="{DynamicResource l.player.settings_adv.on}" />
+            <Button
+                Grid.Column="2"
+                Classes="player-settings-reset-btn"
+                Command="{Binding ResetSettingCommand}"
+                CommandParameter="RememberPlaybackPosition"
+                IsVisible="{Binding RememberPlaybackPosition, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=True}"
+                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    Kind="Restore" />
+            </Button>
+        </Grid>
+        <Border Classes="player-settings-divider" />
 
-                                <Grid ColumnDefinitions="*,Auto,32" MinHeight="56">
-                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                        <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.skip_op_ed}"/>
-                                        <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.skip_op_ed_sub}"/>
-                                    </StackPanel>
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding SkipOpeningEndingOptions}"
-                                              SelectedItem="{Binding SelectedSkipOpeningEndingOption}"
-                                              VerticalAlignment="Center"
-                                              Width="180">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate x:DataType="models:SkipOpeningEndingOption">
-                                                <TextBlock Text="{Binding Name}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                    <Button Grid.Column="2"
-                                            Classes="player-settings-reset-btn"
-                                            Command="{Binding ResetSettingCommand}"
-                                            CommandParameter="SkipOpeningEnding"
-                                            IsVisible="{Binding SkipOpeningEnding, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Prompt}"
-                                            ToolTip.Tip="{DynamicResource l.player.reset_default}">
-                                        <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
-                                    </Button>
-                                </Grid>
-                                <Border Classes="player-settings-divider"/>
+        <Grid MinHeight="56" ColumnDefinitions="*,Auto,32">
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Spacing="2">
+                <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.skip_op_ed}" />
+                <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.skip_op_ed_sub}" />
+            </StackPanel>
+            <ComboBox
+                Grid.Column="1"
+                Width="180"
+                VerticalAlignment="Center"
+                ItemsSource="{Binding SkipOpeningEndingOptions}"
+                SelectedItem="{Binding SelectedSkipOpeningEndingOption}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:SkipOpeningEndingOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button
+                Grid.Column="2"
+                Classes="player-settings-reset-btn"
+                Command="{Binding ResetSettingCommand}"
+                CommandParameter="SkipOpeningEnding"
+                IsVisible="{Binding SkipOpeningEnding, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=Prompt}"
+                ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                <material:MaterialIcon
+                    Width="14"
+                    Height="14"
+                    Kind="Restore" />
+            </Button>
+        </Grid>
+        <Border Classes="player-settings-divider" />
 
-                                <StackPanel Spacing="6" Margin="0,4,0,0">
-                                    <Grid ColumnDefinitions="*,Auto,32">
-                                        <StackPanel Grid.Column="0" Spacing="2">
-                                            <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.default_speed}"/>
-                                            <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.default_speed_sub}"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}×'}"
-                                                   Foreground="#99FFFFFF"
-                                                   FontSize="12"
-                                                   VerticalAlignment="Center"/>
-                                        <Button Grid.Column="2"
-                                                Classes="player-settings-reset-btn"
-                                                Command="{Binding ResetSettingCommand}"
-                                                CommandParameter="PlaybackSpeed"
-                                                IsVisible="{Binding PlaybackSpeed, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1.0}"
-                                                ToolTip.Tip="{DynamicResource l.player.reset_default}">
-                                            <material:MaterialIcon Kind="Restore" Width="14" Height="14"/>
-                                        </Button>
-                                    </Grid>
-                                    <Slider Minimum="0.25" Maximum="2"
-                                            TickFrequency="0.25"
-                                            IsSnapToTickEnabled="True"
-                                            Value="{Binding PlaybackSpeed}"/>
-                                </StackPanel>
+        <StackPanel Margin="0,4,0,0" Spacing="6">
+            <Grid ColumnDefinitions="*,Auto,32">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Classes="player-settings-row-title" Text="{DynamicResource l.player.settings_playback.default_speed}" />
+                    <TextBlock Classes="player-settings-row-sub" Text="{DynamicResource l.player.settings_playback.default_speed_sub}" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="#99FFFFFF"
+                    Text="{Binding PlaybackSpeed, StringFormat='{}{0:0.##}×'}" />
+                <Button
+                    Grid.Column="2"
+                    Classes="player-settings-reset-btn"
+                    Command="{Binding ResetSettingCommand}"
+                    CommandParameter="PlaybackSpeed"
+                    IsVisible="{Binding PlaybackSpeed, Converter={StaticResource SettingModifiedConverter}, ConverterParameter=1.0}"
+                    ToolTip.Tip="{DynamicResource l.player.reset_default}">
+                    <material:MaterialIcon
+                        Width="14"
+                        Height="14"
+                        Kind="Restore" />
+                </Button>
+            </Grid>
+            <Slider
+                IsSnapToTickEnabled="True"
+                Maximum="2"
+                Minimum="0.25"
+                TickFrequency="0.25"
+                Value="{Binding PlaybackSpeed}" />
+        </StackPanel>
 
-                                <Border Height="110" IsHitTestVisible="False"/>
-                            </StackPanel>
+        <Border Height="110" IsHitTestVisible="False" />
+    </StackPanel>
 </UserControl>

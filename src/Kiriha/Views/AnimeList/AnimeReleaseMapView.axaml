@@ -1,258 +1,327 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:core="using:Kiriha.Core"
-             x:Class="Kiriha.Views.AnimeList.AnimeReleaseMapView"
-             x:DataType="vmAnimeList:AnimeListViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.AnimeList.AnimeReleaseMapView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
+    x:DataType="vmAnimeList:AnimeListViewModel">
     <UserControl.Styles>
         <Style Selector="Border#ReleaseHeroClickableArea:pointerover TextBlock#ReleaseHeroAnimeTitle">
-            <Setter Property="TextDecorations" Value="Underline"/>
+            <Setter Property="TextDecorations" Value="Underline" />
         </Style>
         <Style Selector="Button.ReleaseFilterBtn">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,5"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,5" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.ReleaseFilterBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
         </Style>
         <Style Selector="Button.ReleaseFilterBtn.Active">
-            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.ReleaseFilterBtn.Active /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
         </Style>
         <Style Selector="Button.ReleaseFilterBtn.Active TextBlock">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.ReleaseFilterBtn.Active material|MaterialIcon">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="White" />
         </Style>
     </UserControl.Styles>
 
-        <Border x:Name="ReleaseMapOverlay"
-                Margin="20,0,20,16"
-                Padding="0"
-                Background="{DynamicResource CardBackgroundFillDefault}"
-                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                BorderThickness="1"
-                CornerRadius="16"
+    <Border
+        x:Name="ReleaseMapOverlay"
+        Margin="20,0,20,16"
+        Padding="0"
+        Background="{DynamicResource CardBackgroundFillDefault}"
+        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+        BorderThickness="1"
+        BoxShadow="0 2 8 0 #18000000"
+        ClipToBounds="True"
+        CornerRadius="16"
+        Focusable="True"
+        IsVisible="False"
+        KeyDown="ReleaseMapOverlay_KeyDown"
+        Opacity="1"
+        RenderTransform="translate(0,0)">
+        <Border.Transitions>
+            <Transitions>
+                <DoubleTransition
+                    Easing="CubicEaseOut"
+                    Property="Opacity"
+                    Duration="0:0:0.28" />
+                <TransformOperationsTransition
+                    Easing="CubicEaseOut"
+                    Property="RenderTransform"
+                    Duration="0:0:0.28" />
+            </Transitions>
+        </Border.Transitions>
+        <Grid RowDefinitions="Auto,Auto,*">
+
+            <!--  HERO BANNER  -->
+            <Border
+                x:Name="ReleaseHeaderPanel"
+                Grid.Row="0"
+                Height="150"
+                Padding="20,16"
                 ClipToBounds="True"
-                Focusable="True"
-                IsVisible="False"
-                BoxShadow="0 2 8 0 #18000000"
-                Opacity="1"
-                RenderTransform="translate(0,0)"
-                KeyDown="ReleaseMapOverlay_KeyDown">
-            <Border.Transitions>
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.28" Easing="CubicEaseOut"/>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.28" Easing="CubicEaseOut"/>
-                </Transitions>
-            </Border.Transitions>
-            <Grid RowDefinitions="Auto,Auto,*">
+                CornerRadius="16,16,0,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                        <GradientStop Offset="0" Color="{DynamicResource SystemAccentColor}" />
+                        <GradientStop Offset="0.62" Color="{DynamicResource SystemAccentColorDark1}" />
+                        <GradientStop Offset="1" Color="{DynamicResource SystemAccentColorDark2}" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Panel>
+                    <!--  Details-style hero: poster as object, not background.  -->
+                    <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*">
 
-                <!-- HERO BANNER -->
-                <Border x:Name="ReleaseHeaderPanel"
-                        Grid.Row="0"
-                        Height="150"
-                        CornerRadius="16,16,0,0"
-                        ClipToBounds="True"
-                        Padding="20,16">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                            <GradientStop Color="{DynamicResource SystemAccentColor}" Offset="0"/>
-                            <GradientStop Color="{DynamicResource SystemAccentColorDark1}" Offset="0.62"/>
-                            <GradientStop Color="{DynamicResource SystemAccentColorDark2}" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Panel>
-                        <!-- Details-style hero: poster as object, not background. -->
-                        <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-
-                            <!-- Hero clickable area: poster + titles + meta -->
-                            <Border x:Name="ReleaseHeroClickableArea"
+                        <!--  Hero clickable area: poster + titles + meta  -->
+                        <Border
+                            x:Name="ReleaseHeroClickableArea"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Margin="0,0,62,0"
+                            Background="Transparent"
+                            Cursor="Hand"
+                            Focusable="True"
+                            KeyDown="ReleaseHero_KeyDown"
+                            Tapped="ReleaseHero_Tapped">
+                            <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*">
+                                <Border
                                     Grid.Column="0"
-                                    Grid.ColumnSpan="2"
-                                    Margin="0,0,62,0"
-                                    Background="Transparent"
-                                    Cursor="Hand"
-                                    Focusable="True"
-                                    Tapped="ReleaseHero_Tapped"
-                                    KeyDown="ReleaseHero_KeyDown">
-                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-                                    <Border Grid.Column="0"
-                                            Width="100"
-                                            Height="118"
-                                            CornerRadius="8"
-                                            ClipToBounds="True"
-                                            BoxShadow="0 4 20 0 #60000000">
-                                        <Image x:Name="ReleaseHeroPoster"
-                                               Stretch="UniformToFill"
-                                               IsHitTestVisible="False"/>
-                                    </Border>
+                                    Width="100"
+                                    Height="118"
+                                    BoxShadow="0 4 20 0 #60000000"
+                                    ClipToBounds="True"
+                                    CornerRadius="8">
+                                    <Image
+                                        x:Name="ReleaseHeroPoster"
+                                        IsHitTestVisible="False"
+                                        Stretch="UniformToFill" />
+                                </Border>
 
-                                    <!-- LEFT: title, meta, summary -->
-                                    <StackPanel Grid.Column="1" Margin="18,0,0,0" VerticalAlignment="Center" Spacing="3">
+                                <!--  LEFT: title, meta, summary  -->
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="18,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Spacing="3">
 
-                                        <!-- Main anime title -->
-                                        <TextBlock x:Name="ReleaseHeroAnimeTitle"
-                                                   Text=""
-                                                   FontSize="22" FontWeight="Bold"
-                                                   Foreground="White"
-                                                   MaxLines="1"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   LineHeight="28"/>
-         
-                                        <TextBlock x:Name="ReleaseHeroSecondaryTitle"
-                                                   Text=""
-                                                   FontSize="12"
-                                                   Foreground="#A8FFFFFF"
-                                                   MaxLines="1"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   IsVisible="False"/>
+                                    <!--  Main anime title  -->
+                                    <TextBlock
+                                        x:Name="ReleaseHeroAnimeTitle"
+                                        FontSize="22"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        LineHeight="28"
+                                        MaxLines="1"
+                                        Text=""
+                                        TextTrimming="CharacterEllipsis" />
 
-                                        <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,6,0,0">
-                                            <Border Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
-                                                <TextBlock x:Name="ReleaseHeroKindText"
-                                                           Text="{DynamicResource l.schedule.next_ep}"
-                                                           FontSize="11"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#E6FFFFFF"/>
-                                            </Border>
+                                    <TextBlock
+                                        x:Name="ReleaseHeroSecondaryTitle"
+                                        FontSize="12"
+                                        Foreground="#A8FFFFFF"
+                                        IsVisible="False"
+                                        MaxLines="1"
+                                        Text=""
+                                        TextTrimming="CharacterEllipsis" />
 
-                                            <Border Padding="8,4" CornerRadius="6" Background="#16FFFFFF">
-                                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <material:MaterialIcon Kind="ClockOutline" Width="13" Height="13"
-                                                                           Foreground="#CCFFFFFF"
-                                                                           VerticalAlignment="Center"/>
-                                                    <TextBlock x:Name="ReleaseHeroCountdownText"
-                                                               Text=""
-                                                               FontSize="11"
-                                                               Foreground="#D8FFFFFF"/>
-                                                </StackPanel>
-                                            </Border>
+                                    <StackPanel
+                                        Margin="0,6,0,0"
+                                        Orientation="Horizontal"
+                                        Spacing="7">
+                                        <Border
+                                            Padding="8,4"
+                                            Background="#20FFFFFF"
+                                            CornerRadius="6">
+                                            <TextBlock
+                                                x:Name="ReleaseHeroKindText"
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Foreground="#E6FFFFFF"
+                                                Text="{DynamicResource l.schedule.next_ep}" />
+                                        </Border>
 
-                                            <Border Padding="8,4" CornerRadius="6" Background="#16FFFFFF">
-                                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <material:MaterialIcon Kind="CalendarClock" Width="13" Height="13"
-                                                                           Foreground="#CCFFFFFF"
-                                                                           VerticalAlignment="Center"/>
-                                                    <TextBlock x:Name="ReleaseHeroTimeText"
-                                                               Text=""
-                                                               FontSize="11"
-                                                               Foreground="#D8FFFFFF"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
+                                        <Border
+                                            Padding="8,4"
+                                            Background="#16FFFFFF"
+                                            CornerRadius="6">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <material:MaterialIcon
+                                                    Width="13"
+                                                    Height="13"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="#CCFFFFFF"
+                                                    Kind="ClockOutline" />
+                                                <TextBlock
+                                                    x:Name="ReleaseHeroCountdownText"
+                                                    FontSize="11"
+                                                    Foreground="#D8FFFFFF"
+                                                    Text="" />
+                                            </StackPanel>
+                                        </Border>
 
-                                        <TextBlock x:Name="ReleaseHeroWeekText"
-                                                   Text=""
-                                                   FontSize="11"
-                                                   Foreground="#80FFFFFF"
-                                                   Margin="0,2,0,0"/>
+                                        <Border
+                                            Padding="8,4"
+                                            Background="#16FFFFFF"
+                                            CornerRadius="6">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <material:MaterialIcon
+                                                    Width="13"
+                                                    Height="13"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="#CCFFFFFF"
+                                                    Kind="CalendarClock" />
+                                                <TextBlock
+                                                    x:Name="ReleaseHeroTimeText"
+                                                    FontSize="11"
+                                                    Foreground="#D8FFFFFF"
+                                                    Text="" />
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
-                                </Grid>
-                            </Border>
 
-                            <!-- RIGHT: close button anchored top-right -->
-                            <Button Grid.Column="1"
-                                    Width="30" Height="30"
-                                    Padding="0"
-                                    VerticalAlignment="Top"
-                                    HorizontalAlignment="Right"
-                                    Background="#30FFFFFF"
-                                    BorderThickness="0"
-                                    CornerRadius="15"
-                                    Click="ReleaseCloseButton_Click"
-                                    ToolTip.Tip="{DynamicResource l.schedule.close_tooltip}">
-                                <Button.Styles>
-                                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                                        <Setter Property="Background" Value="#55FFFFFF"/>
-                                    </Style>
-                                </Button.Styles>
-                                <material:MaterialIcon Kind="Close" Width="15" Height="15" Foreground="White"/>
-                            </Button>
-                        </Grid>
-                    </Panel>
-                </Border>
-
-                <!-- FILTER TOOLBAR -->
-                <Border x:Name="ReleaseFilterBar"
-                        Grid.Row="1"
-                        Padding="16,8,16,6"
-                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                        BorderThickness="0,0,0,1"
-                        Background="{DynamicResource SubtleFillColorSecondary}">
-                    <Grid ColumnDefinitions="*,Auto,*">
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                            <Button x:Name="FilterUpcomingBtn"
-                                    Classes="ReleaseFilterBtn Active"
-                                    Click="FilterUpcoming_Click"
-                                    ToolTip.Tip="{DynamicResource l.schedule.filter_upcoming}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <material:MaterialIcon Kind="Fire" Width="14" Height="14"/>
-                                    <TextBlock Text="{DynamicResource l.schedule.filter_upcoming}"/>
+                                    <TextBlock
+                                        x:Name="ReleaseHeroWeekText"
+                                        Margin="0,2,0,0"
+                                        FontSize="11"
+                                        Foreground="#80FFFFFF"
+                                        Text="" />
                                 </StackPanel>
-                            </Button>
+                            </Grid>
+                        </Border>
 
-                            <Button x:Name="FilterPastBtn"
-                                    Classes="ReleaseFilterBtn"
-                                    Click="FilterPast_Click"
-                                    ToolTip.Tip="{DynamicResource l.schedule.filter_past}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <material:MaterialIcon Kind="History" Width="14" Height="14"/>
-                                    <TextBlock Text="{DynamicResource l.schedule.filter_past}"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
+                        <!--  RIGHT: close button anchored top-right  -->
+                        <Button
+                            Grid.Column="1"
+                            Width="30"
+                            Height="30"
+                            Padding="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Background="#30FFFFFF"
+                            BorderThickness="0"
+                            Click="ReleaseCloseButton_Click"
+                            CornerRadius="15"
+                            ToolTip.Tip="{DynamicResource l.schedule.close_tooltip}">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                    <Setter Property="Background" Value="#55FFFFFF" />
+                                </Style>
+                            </Button.Styles>
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                Foreground="White"
+                                Kind="Close" />
+                        </Button>
                     </Grid>
-                </Border>
+                </Panel>
+            </Border>
 
-                <!-- CARD LIST -->
-                <Grid Grid.Row="2">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14,10,14,14">
-                        <StackPanel x:Name="ReleaseTimelinePanel" Spacing="3"/>
-                    </ScrollViewer>
+            <!--  FILTER TOOLBAR  -->
+            <Border
+                x:Name="ReleaseFilterBar"
+                Grid.Row="1"
+                Padding="16,8,16,6"
+                Background="{DynamicResource SubtleFillColorSecondary}"
+                BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="*,Auto,*">
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                        <Button
+                            x:Name="FilterUpcomingBtn"
+                            Classes="ReleaseFilterBtn Active"
+                            Click="FilterUpcoming_Click"
+                            ToolTip.Tip="{DynamicResource l.schedule.filter_upcoming}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <material:MaterialIcon
+                                    Width="14"
+                                    Height="14"
+                                    Kind="Fire" />
+                                <TextBlock Text="{DynamicResource l.schedule.filter_upcoming}" />
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Empty state -->
-                    <Border x:Name="ReleaseEmptyState"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Padding="40,32"
-                            IsVisible="False">
-                        <StackPanel Spacing="14" HorizontalAlignment="Center">
-                            <material:MaterialIcon Kind="CalendarBlankOutline" Width="48" Height="48"
-                                                   HorizontalAlignment="Center"
-                                                   Foreground="#30FFFFFF"/>
-                            <TextBlock x:Name="ReleaseEmptyTitle"
-                                       Text="{DynamicResource l.schedule.no_upcoming_releases}"
-                                       FontSize="16" FontWeight="SemiBold"
-                                       HorizontalAlignment="Center"
-                                       Foreground="#80FFFFFF"/>
-                            <TextBlock x:Name="ReleaseEmptySubtitle"
-                                       Text="{DynamicResource l.schedule.after_sync_roadmap}"
-                                       Width="320" TextWrapping="Wrap" TextAlignment="Center"
-                                       FontSize="12" Foreground="#40FFFFFF"/>
-                        </StackPanel>
-                    </Border>
+                        <Button
+                            x:Name="FilterPastBtn"
+                            Classes="ReleaseFilterBtn"
+                            Click="FilterPast_Click"
+                            ToolTip.Tip="{DynamicResource l.schedule.filter_past}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <material:MaterialIcon
+                                    Width="14"
+                                    Height="14"
+                                    Kind="History" />
+                                <TextBlock Text="{DynamicResource l.schedule.filter_past}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </Grid>
+            </Border>
 
+            <!--  CARD LIST  -->
+            <Grid Grid.Row="2">
+                <ScrollViewer Padding="14,10,14,14" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="ReleaseTimelinePanel" Spacing="3" />
+                </ScrollViewer>
+
+                <!--  Empty state  -->
+                <Border
+                    x:Name="ReleaseEmptyState"
+                    Padding="40,32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsVisible="False">
+                    <StackPanel HorizontalAlignment="Center" Spacing="14">
+                        <material:MaterialIcon
+                            Width="48"
+                            Height="48"
+                            HorizontalAlignment="Center"
+                            Foreground="#30FFFFFF"
+                            Kind="CalendarBlankOutline" />
+                        <TextBlock
+                            x:Name="ReleaseEmptyTitle"
+                            HorizontalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#80FFFFFF"
+                            Text="{DynamicResource l.schedule.no_upcoming_releases}" />
+                        <TextBlock
+                            x:Name="ReleaseEmptySubtitle"
+                            Width="320"
+                            FontSize="12"
+                            Foreground="#40FFFFFF"
+                            Text="{DynamicResource l.schedule.after_sync_roadmap}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
             </Grid>
-        </Border>
+
+        </Grid>
+    </Border>
 </UserControl>

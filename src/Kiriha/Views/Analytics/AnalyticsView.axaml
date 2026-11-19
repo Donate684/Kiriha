@@ -1,98 +1,121 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:core="using:Kiriha.Core"
-             xmlns:u="using:Kiriha.Utils.UI"
-             xmlns:controls="using:Kiriha.Views.Analytics"
-             x:Class="Kiriha.Views.Analytics.AnalyticsView"
-             x:DataType="vmAnalytics:AnalyticsViewModel"
-             x:Name="analyticsRoot">
+﻿<UserControl
+    x:Class="Kiriha.Views.Analytics.AnalyticsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Analytics"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:u="using:Kiriha.Utils.UI"
+    xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+    x:Name="analyticsRoot"
+    x:DataType="vmAnalytics:AnalyticsViewModel">
 
     <UserControl.Styles>
-        <StyleInclude Source="avares://Kiriha/Views/Styles/AnalyticsViewStyles.axaml"/>
+        <StyleInclude Source="avares://Kiriha/Views/Styles/AnalyticsViewStyles.axaml" />
     </UserControl.Styles>
 
     <Panel>
-        <!-- ═══════════════ Основной контент ═══════════════ -->
-        <Grid RowDefinitions="Auto,Auto,*" Margin="0" IsVisible="{Binding HasData}">
+        <!--  ═══════════════ Основной контент ═══════════════  -->
+        <Grid
+            Margin="0"
+            IsVisible="{Binding HasData}"
+            RowDefinitions="Auto,Auto,*">
 
-            <!-- ═══ HERO-БАННЕР ═══ -->
+            <!--  ═══ HERO-БАННЕР ═══  -->
             <controls:AnalyticsHeroBanner Grid.Row="0" />
 
-            <!-- ═══ TAB-НАВИГАЦИЯ ═══ -->
-            <Border Grid.Row="1" Padding="4"
-                    Background="{DynamicResource SubtleFillColorSecondary}"
-                    CornerRadius="10"
-                    HorizontalAlignment="Center"
-                    Margin="20,0,20,14">
+            <!--  ═══ TAB-НАВИГАЦИЯ ═══  -->
+            <Border
+                Grid.Row="1"
+                Margin="20,0,20,14"
+                Padding="4"
+                HorizontalAlignment="Center"
+                Background="{DynamicResource SubtleFillColorSecondary}"
+                CornerRadius="10">
                 <StackPanel Orientation="Horizontal" Spacing="2">
 
-                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
-                                 IsChecked="{Binding IsOverviewSelected, Mode=TwoWay}">
+                    <RadioButton
+                        Classes="SectionTab"
+                        GroupName="AnalyticsSections"
+                        IsChecked="{Binding IsOverviewSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <material:MaterialIcon Kind="ChartBoxOutline" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.analytics.tabs.profile}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                VerticalAlignment="Center"
+                                Kind="ChartBoxOutline" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.analytics.tabs.profile}" />
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
-                                 IsChecked="{Binding IsTasteSelected, Mode=TwoWay}">
+                    <RadioButton
+                        Classes="SectionTab"
+                        GroupName="AnalyticsSections"
+                        IsChecked="{Binding IsTasteSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <material:MaterialIcon Kind="HeartOutline" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.analytics.tabs.tastes}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                VerticalAlignment="Center"
+                                Kind="HeartOutline" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.analytics.tabs.tastes}" />
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
-                                 IsChecked="{Binding IsWatchNextSelected, Mode=TwoWay}">
+                    <RadioButton
+                        Classes="SectionTab"
+                        GroupName="AnalyticsSections"
+                        IsChecked="{Binding IsWatchNextSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <material:MaterialIcon Kind="PlaylistPlay" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.analytics.tabs.watch_next}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                VerticalAlignment="Center"
+                                Kind="PlaylistPlay" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.analytics.tabs.watch_next}" />
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
-                                 IsChecked="{Binding IsReadNextSelected, Mode=TwoWay}">
+                    <RadioButton
+                        Classes="SectionTab"
+                        GroupName="AnalyticsSections"
+                        IsChecked="{Binding IsReadNextSelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <material:MaterialIcon Kind="BookOpenPageVariantOutline" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.analytics.tabs.read_next}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                VerticalAlignment="Center"
+                                Kind="BookOpenPageVariantOutline" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.analytics.tabs.read_next}" />
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton Classes="SectionTab" GroupName="AnalyticsSections"
-                                 IsChecked="{Binding IsHistorySelected, Mode=TwoWay}">
+                    <RadioButton
+                        Classes="SectionTab"
+                        GroupName="AnalyticsSections"
+                        IsChecked="{Binding IsHistorySelected, Mode=TwoWay}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <material:MaterialIcon Kind="History" Width="15" Height="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource l.analytics.tabs.history}" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                VerticalAlignment="Center"
+                                Kind="History" />
+                            <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.analytics.tabs.history}" />
                         </StackPanel>
                     </RadioButton>
 
                 </StackPanel>
             </Border>
 
-            <!-- ═══ КОНТЕНТ СЕКЦИЙ ═══ -->
-            <ScrollViewer Grid.Row="2"
-                          Padding="0,0,0,42"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          u:SmoothScroll.IsEnabled="True">
+            <!--  ═══ КОНТЕНТ СЕКЦИЙ ═══  -->
+            <ScrollViewer
+                Grid.Row="2"
+                Padding="0,0,0,42"
+                u:SmoothScroll.IsEnabled="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
                 <Grid Margin="20,0,20,0">
 
-                    <!-- ══════════ СЕКЦИЯ: ПРОФИЛЬ (Overview) ══════════ -->
+                    <!--  ══════════ СЕКЦИЯ: ПРОФИЛЬ (Overview) ══════════  -->
                     <controls:AnalyticsOverviewSection />
                     <controls:AnalyticsTastesSection />
                     <controls:AnalyticsWatchNextSection />
@@ -102,27 +125,40 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- ═══ ЗАГЛУШКА при отсутствии данных ═══ -->
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16"
-                    IsVisible="{Binding !HasData}">
-            <Border Width="80" Height="80" CornerRadius="40"
-                    Background="{DynamicResource SubtleFillColorSecondary}"
-                    HorizontalAlignment="Center">
-                <material:MaterialIcon Kind="ChartTimelineVariant" Width="40" Height="40" Opacity="0.25"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-            <TextBlock Text="{DynamicResource l.analytics.empty_state}"
-                       FontSize="15"
-                       Opacity="0.55"
-                       HorizontalAlignment="Center"/>
-            <Button Content="{DynamicResource l.common.actions.refresh}"
-                    Command="{Binding RefreshCommand}"
+        <!--  ═══ ЗАГЛУШКА при отсутствии данных ═══  -->
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsVisible="{Binding !HasData}"
+            Spacing="16">
+            <Border
+                Width="80"
+                Height="80"
+                HorizontalAlignment="Center"
+                Background="{DynamicResource SubtleFillColorSecondary}"
+                CornerRadius="40">
+                <material:MaterialIcon
+                    Width="40"
+                    Height="40"
                     HorizontalAlignment="Center"
-                    Padding="20,10"
-                    CornerRadius="10"/>
+                    VerticalAlignment="Center"
+                    Kind="ChartTimelineVariant"
+                    Opacity="0.25" />
+            </Border>
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="15"
+                Opacity="0.55"
+                Text="{DynamicResource l.analytics.empty_state}" />
+            <Button
+                Padding="20,10"
+                HorizontalAlignment="Center"
+                Command="{Binding RefreshCommand}"
+                Content="{DynamicResource l.common.actions.refresh}"
+                CornerRadius="10" />
         </StackPanel>
 
-        <!-- ═══ ИСТОРИЯ POPUP ═══ -->
+        <!--  ═══ ИСТОРИЯ POPUP ═══  -->
         <controls:AnalyticsHistoryPopup />
     </Panel>
 </UserControl>

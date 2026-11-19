@@ -1,72 +1,109 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:material="using:Material.Icons.Avalonia"
-             x:Class="Kiriha.Views.Analytics.AnalyticsTastesSection"
-             x:DataType="vmAnalytics:AnalyticsViewModel">
-                    <StackPanel Spacing="16"
-                                HorizontalAlignment="Stretch"
-                                IsVisible="{Binding IsTasteSelected}">
+﻿<UserControl
+    x:Class="Kiriha.Views.Analytics.AnalyticsTastesSection"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
+    x:DataType="vmAnalytics:AnalyticsViewModel">
+    <StackPanel
+        HorizontalAlignment="Stretch"
+        IsVisible="{Binding IsTasteSelected}"
+        Spacing="16">
 
-                        <ItemsControl ItemsSource="{Binding Tastes.TasteHighlights}" ItemTemplate="{StaticResource TasteHighlightTemplate}" IsVisible="False">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="3"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
+        <ItemsControl
+            IsVisible="False"
+            ItemTemplate="{StaticResource TasteHighlightTemplate}"
+            ItemsSource="{Binding Tastes.TasteHighlights}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="3" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
 
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+        <Grid
+            ColumnDefinitions="*,*"
+            ColumnSpacing="16"
+            RowDefinitions="Auto,Auto"
+            RowSpacing="16">
 
-                            <!-- Любимые жанры -->
-                            <Border Classes="AnalyticsPanel">
-                                <StackPanel Spacing="14">
-                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                        <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="{DynamicResource AnalyticsSectionRedBrush}"
-                                                VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="ShapeOutline"
-                                                                   Width="16" Height="16"
-                                                                   Foreground="White"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="{DynamicResource l.analytics.tastes.genres}" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{DynamicResource l.analytics.tastes.by_weighted_score}" FontSize="10.5" Opacity="0.45"/>
-                                        </StackPanel>
-                                    </Grid>
-                                    <ItemsControl ItemsSource="{Binding Tastes.FavoriteGenres}" ItemTemplate="{StaticResource FavoriteRowTemplate}"/>
-                                </StackPanel>
-                            </Border>
+            <!--  Любимые жанры  -->
+            <Border Classes="AnalyticsPanel">
+                <StackPanel Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Border
+                            Width="30"
+                            Height="30"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource AnalyticsSectionRedBrush}"
+                            CornerRadius="8">
+                            <material:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="White"
+                                Kind="ShapeOutline" />
+                        </Border>
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Spacing="2">
+                            <TextBlock
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Text="{DynamicResource l.analytics.tastes.genres}" />
+                            <TextBlock
+                                FontSize="10.5"
+                                Opacity="0.45"
+                                Text="{DynamicResource l.analytics.tastes.by_weighted_score}" />
+                        </StackPanel>
+                    </Grid>
+                    <ItemsControl ItemTemplate="{StaticResource FavoriteRowTemplate}" ItemsSource="{Binding Tastes.FavoriteGenres}" />
+                </StackPanel>
+            </Border>
 
-                            <!-- Любимые студии -->
-                            <Border Grid.Column="1" Classes="AnalyticsPanel">
-                                <StackPanel Spacing="14">
-                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                        <Border Width="30" Height="30" CornerRadius="8"
-                                                Background="{DynamicResource AnalyticsSectionBlueBrush}"
-                                                VerticalAlignment="Center">
-                                            <material:MaterialIcon Kind="MovieOpenOutline"
-                                                                   Width="16" Height="16"
-                                                                   Foreground="White"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="{DynamicResource l.analytics.tastes.studios}" FontSize="15" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{DynamicResource l.analytics.tastes.by_weighted_score}" FontSize="10.5" Opacity="0.45"/>
-                                        </StackPanel>
-                                    </Grid>
-                                    <ItemsControl ItemsSource="{Binding Tastes.FavoriteStudios}" ItemTemplate="{StaticResource FavoriteRowTemplate}"/>
-                                </StackPanel>
-                            </Border>
+            <!--  Любимые студии  -->
+            <Border Grid.Column="1" Classes="AnalyticsPanel">
+                <StackPanel Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Border
+                            Width="30"
+                            Height="30"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource AnalyticsSectionBlueBrush}"
+                            CornerRadius="8">
+                            <material:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="White"
+                                Kind="MovieOpenOutline" />
+                        </Border>
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Spacing="2">
+                            <TextBlock
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Text="{DynamicResource l.analytics.tastes.studios}" />
+                            <TextBlock
+                                FontSize="10.5"
+                                Opacity="0.45"
+                                Text="{DynamicResource l.analytics.tastes.by_weighted_score}" />
+                        </StackPanel>
+                    </Grid>
+                    <ItemsControl ItemTemplate="{StaticResource FavoriteRowTemplate}" ItemsSource="{Binding Tastes.FavoriteStudios}" />
+                </StackPanel>
+            </Border>
 
-                        </Grid>
-                        <Border Height="150" IsHitTestVisible="False"/>
-                    </StackPanel>
+        </Grid>
+        <Border Height="150" IsHitTestVisible="False" />
+    </StackPanel>
 
-                    <!-- ══════════ СЕКЦИЯ: ЧТО ПОСМОТРЕТЬ ══════════ -->
+    <!--  ══════════ СЕКЦИЯ: ЧТО ПОСМОТРЕТЬ ══════════  -->
 </UserControl>
 
 

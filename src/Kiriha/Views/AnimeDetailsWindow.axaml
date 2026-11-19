@@ -1,308 +1,348 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-        xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-        xmlns:models="using:Kiriha.Core.Domain.Models"
-        xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-        xmlns:controls="using:Kiriha.Views.Controls"
-        xmlns:details="using:Kiriha.Views.AnimeDetails"
-        xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
-        xmlns:material="using:Material.Icons.Avalonia"
-        xmlns:conv="using:Kiriha.Views.Converters"
-        xmlns:core="using:Kiriha.Core"
-        xmlns:u="using:Kiriha.Utils.UI"
-        x:Class="Kiriha.Views.AnimeDetailsWindow"
-        x:DataType="vmAnimeDetails:AnimeDetailsViewModel"
-        x:Name="Root"
-        Title="{Binding WindowTitle}"
-        Icon="avares://Kiriha/Assets/kiriha.ico"
-        Width="920" Height="680"
-        WindowStartupLocation="CenterOwner"
-        Background="{x:Null}"
-        TransparencyLevelHint="Mica, AcrylicBlur"
-        TransparencyBackgroundFallback="Transparent"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="34"
-        WindowDecorations="BorderOnly">
+﻿<Window
+    x:Class="Kiriha.Views.AnimeDetailsWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Kiriha.Views.Controls"
+    xmlns:core="using:Kiriha.Core"
+    xmlns:details="using:Kiriha.Views.AnimeDetails"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:u="using:Kiriha.Utils.UI"
+    xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+    x:Name="Root"
+    Title="{Binding WindowTitle}"
+    Width="920"
+    Height="680"
+    x:DataType="vmAnimeDetails:AnimeDetailsViewModel"
+    Background="{x:Null}"
+    ExtendClientAreaTitleBarHeightHint="34"
+    ExtendClientAreaToDecorationsHint="True"
+    Icon="avares://Kiriha/Assets/kiriha.ico"
+    TransparencyBackgroundFallback="Transparent"
+    TransparencyLevelHint="Mica, AcrylicBlur"
+    WindowDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner">
 
     <Window.KeyBindings>
-        <KeyBinding Gesture="Escape" Command="{Binding ClosePosterPreviewCommand}"/>
-        <KeyBinding Gesture="Alt+Left" Command="{Binding GoBackCommand}"/>
+        <KeyBinding Command="{Binding ClosePosterPreviewCommand}" Gesture="Escape" />
+        <KeyBinding Command="{Binding GoBackCommand}" Gesture="Alt+Left" />
     </Window.KeyBindings>
 
     <Window.Styles>
-        <!-- Modern Card Style -->
+        <!--  Modern Card Style  -->
         <Style Selector="Border.ContentCard">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20,16"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BoxShadow" Value="0 4 16 0 #0A000000"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="20,16" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BoxShadow" Value="0 4 16 0 #0A000000" />
         </Style>
         <Style Selector="Border.ContentCard:pointerover">
-            <Setter Property="BoxShadow" Value="0 6 20 0 #0F000000"/>
+            <Setter Property="BoxShadow" Value="0 6 20 0 #0F000000" />
         </Style>
 
         <Style Selector="TextBlock.SectionTitle">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-            <Setter Property="Opacity" Value="0.85"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Opacity" Value="0.85" />
+            <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
         <Style Selector="TextBlock.FieldLabel">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Opacity" Value="0.5"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
-        <Style Selector="Grid.DetailsGrid > Control">
-            <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style Selector="Grid.DetailsGrid &gt; Control">
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-        <Style Selector="Grid.DetailsGrid > TextBlock">
-            <Setter Property="Margin" Value="0,0,16,0"/>
-            <Setter Property="FontSize" Value="13"/>
+        <Style Selector="Grid.DetailsGrid &gt; TextBlock">
+            <Setter Property="Margin" Value="0,0,16,0" />
+            <Setter Property="FontSize" Value="13" />
         </Style>
-        <Style Selector="Grid.DetailsGrid > TextBlock.Label">
-            <Setter Property="Opacity" Value="0.6"/>
+        <Style Selector="Grid.DetailsGrid &gt; TextBlock.Label">
+            <Setter Property="Opacity" Value="0.6" />
         </Style>
         <Style Selector="Button.AddButton">
-            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.AddButton:pointerover">
-            <Setter Property="RenderTransform" Value="scale(1.01)"/>
-            <Setter Property="Opacity" Value="0.95"/>
+            <Setter Property="RenderTransform" Value="scale(1.01)" />
+            <Setter Property="Opacity" Value="0.95" />
         </Style>
 
-        <!-- Underline-style tabs integrated into the card header -->
+        <!--  Underline-style tabs integrated into the card header  -->
         <Style Selector="RadioButton.Tab">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}"
-                            Padding="{TemplateBinding Padding}"
-                            Cursor="Hand">
-                        <Grid RowDefinitions="*,3" HorizontalAlignment="Center" Background="Transparent">
-                            <ContentPresenter Grid.Row="0"
-                                              Name="PART_Content"
-                                              Content="{TemplateBinding Content}"
-                                              Margin="0,14,0,12"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                            <Rectangle Grid.Row="1" Name="PART_Indicator"
-                                       Height="3" Fill="Transparent"
-                                       RadiusX="1.5" RadiusY="1.5"
-                                       HorizontalAlignment="Stretch"/>
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        Cursor="Hand">
+                        <Grid
+                            HorizontalAlignment="Center"
+                            Background="Transparent"
+                            RowDefinitions="*,3">
+                            <ContentPresenter
+                                Name="PART_Content"
+                                Grid.Row="0"
+                                Margin="0,14,0,12"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" />
+                            <Rectangle
+                                Name="PART_Indicator"
+                                Grid.Row="1"
+                                Height="3"
+                                HorizontalAlignment="Stretch"
+                                Fill="Transparent"
+                                RadiusX="1.5"
+                                RadiusY="1.5" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-            <Setter Property="Opacity" Value="0.6"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Margin" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="RadioButton.Tab:pointerover">
-            <Setter Property="Opacity" Value="0.85"/>
+            <Setter Property="Opacity" Value="0.85" />
         </Style>
         <Style Selector="RadioButton.Tab:checked">
-            <Setter Property="Opacity" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
         </Style>
         <Style Selector="RadioButton.Tab:checked /template/ Rectangle#PART_Indicator">
-            <Setter Property="Fill" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Fill" Value="{DynamicResource SystemAccentColor}" />
         </Style>
 
 
-        <!-- Sidebar field label -->
+        <!--  Sidebar field label  -->
         <Style Selector="TextBlock.SidebarLabel">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Opacity" Value="0.6"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="FontWeight" Value="Medium" />
         </Style>
 
-        <!-- ComboBox custom styling for modern look -->
+        <!--  ComboBox custom styling for modern look  -->
         <Style Selector="ComboBox">
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Height" Value="36" />
+            <Setter Property="CornerRadius" Value="8" />
         </Style>
 
-        <!-- Relation Buttons -->
+        <!--  Relation Buttons  -->
         <Style Selector="Button.RelationCardButton">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillDefault}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="10" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.RelationCardButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
         </Style>
     </Window.Styles>
 
     <LayoutTransformControl Name="ScaleRoot">
         <LayoutTransformControl.LayoutTransform>
-            <ScaleTransform ScaleX="1" ScaleY="1"/>
+            <ScaleTransform ScaleX="1" ScaleY="1" />
         </LayoutTransformControl.LayoutTransform>
-    <Grid RowDefinitions="Auto, *">
-        <Border Grid.Row="0" Height="34" VerticalAlignment="Top" Background="Transparent" IsHitTestVisible="True" PointerPressed="OnTitleBarPressed" ZIndex="10"/>
-        
-        <!-- Window Caption Controls: [Back] [Minimize] [Maximize] [Close] -->
-        <StackPanel Grid.Row="0" Grid.RowSpan="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    ZIndex="999">
-            <Button Command="{Binding GoBackCommand}"
-                    IsVisible="{Binding CanGoBack}"
-                    Width="46" Height="34"
-                    Background="Transparent"
-                    BorderThickness="0"
+        <Grid RowDefinitions="Auto, *">
+            <Border
+                Grid.Row="0"
+                Height="34"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                IsHitTestVisible="True"
+                PointerPressed="OnTitleBarPressed"
+                ZIndex="10" />
+
+            <!--  Window Caption Controls: [Back] [Minimize] [Maximize] [Close]  -->
+            <StackPanel
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Orientation="Horizontal"
+                ZIndex="999">
+                <Button
+                    Width="46"
+                    Height="34"
                     Padding="0"
-                    CornerRadius="0"
                     VerticalAlignment="Top"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{Binding GoBackCommand}"
+                    CornerRadius="0"
+                    IsVisible="{Binding CanGoBack}"
                     ToolTip.Tip="{DynamicResource l.common.actions.back}">
-                <Button.Styles>
-                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
-                    </Style>
-                    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}"/>
-                    </Style>
-                </Button.Styles>
-                <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, sans-serif"
-                           FontSize="10"
-                           Foreground="White"
-                           Opacity="0.9"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           Text="&#xE72B;"/>
-            </Button>
-
-            <controls:TitleBarButtons Foreground="White"/>
-        </StackPanel>
-        
-        <!-- =================================================================== -->
-        <!-- HERO BANNER                                                        -->
-        <!-- =================================================================== -->
-            <details:AnimeDetailsHeroBanner />
-
-        <!-- =================================================================== -->
-        <!-- CONTENT AREA: Sidebar (290px) + Main Content (*)                   -->
-        <!-- =================================================================== -->
-        <Grid Grid.Row="1" ColumnDefinitions="290, *">
-
-            <!-- ======================= SIDEBAR ======================= -->
-                <details:AnimeDetailsSidebar Grid.Column="0" />
-
-            <!-- ======================= MAIN CONTENT ======================= -->
-            <ScrollViewer Name="MainContentScrollViewer" Grid.Column="1" HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
-                <StackPanel Spacing="16" Margin="24,18,28,24">
-
-                    <details:AnimeDetailsInfoTab />
-
-                    <!-- == RELATIONS == -->
-                    <details:AnimeDetailsRelations IsVisible="{Binding HasAnyRelationsOrTimeline}" />
-
-                </StackPanel>
-            </ScrollViewer>
-
-        </Grid>
-
-        <!-- =================================================================== -->
-        <!-- POSTER LIGHTBOX MODAL                                              -->
-        <!-- =================================================================== -->
-        <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding IsPosterPreviewOpen}" ZIndex="2000">
-            <!-- Fullscreen Dark Overlay (Click to Dismiss) -->
-            <Button Command="{Binding ClosePosterPreviewCommand}"
-                    Background="#CC000000"
-                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    Padding="0" BorderThickness="0" CornerRadius="0"
-                    Cursor="Hand">
-                <Button.Styles>
-                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="#CC000000"/>
-                    </Style>
-                    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="#CC000000"/>
-                    </Style>
-                </Button.Styles>
-            </Button>
-
-            <!-- Centered Modal Content Card -->
-            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32" IsHitTestVisible="True">
-                <Border CornerRadius="12" ClipToBounds="True"
-                        BoxShadow="0 24 64 0 #80000000"
-                        BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
-                        Background="{DynamicResource CardBackgroundFillDefault}"
-                        HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Image core:CachedImage.Source="{Binding Anime.MainPictureUrl}"
-                           core:CachedImage.DecodeWidth="0"
-                           Stretch="Uniform"
-                           StretchDirection="DownOnly"
-                           RenderOptions.BitmapInterpolationMode="HighQuality"
-                           MaxWidth="640" MaxHeight="520"/>
-                </Border>
-
-                <!-- Floating Close Button -->
-                <Button Command="{Binding ClosePosterPreviewCommand}"
-                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,-14,-14,0"
-                        Width="34" Height="34" CornerRadius="17"
-                        Background="#CC000000" BorderBrush="{DynamicResource CardStrokeColorDefault}" BorderThickness="1"
-                        Cursor="Hand" ToolTip.Tip="{DynamicResource l.common.actions.close}">
                     <Button.Styles>
                         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                            <Setter Property="Background" Value="#EE000000"/>
+                            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+                        </Style>
+                        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
                         </Style>
                     </Button.Styles>
-                    <material:MaterialIcon Kind="Close" Width="18" Height="18" Foreground="White"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, sans-serif"
+                        FontSize="10"
+                        Foreground="White"
+                        Opacity="0.9"
+                        Text="&#xE72B;" />
                 </Button>
+
+                <controls:TitleBarButtons Foreground="White" />
+            </StackPanel>
+
+            <!--  ===================================================================  -->
+            <!--  HERO BANNER  -->
+            <!--  ===================================================================  -->
+            <details:AnimeDetailsHeroBanner />
+
+            <!--  ===================================================================  -->
+            <!--  CONTENT AREA: Sidebar (290px) + Main Content (*)  -->
+            <!--  ===================================================================  -->
+            <Grid Grid.Row="1" ColumnDefinitions="290, *">
+
+                <!--  ======================= SIDEBAR =======================  -->
+                <details:AnimeDetailsSidebar Grid.Column="0" />
+
+                <!--  ======================= MAIN CONTENT =======================  -->
+                <ScrollViewer
+                    Name="MainContentScrollViewer"
+                    Grid.Column="1"
+                    u:SmoothScroll.IsEnabled="True"
+                    HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="24,18,28,24" Spacing="16">
+
+                        <details:AnimeDetailsInfoTab />
+
+                        <!--  == RELATIONS ==  -->
+                        <details:AnimeDetailsRelations IsVisible="{Binding HasAnyRelationsOrTimeline}" />
+
+                    </StackPanel>
+                </ScrollViewer>
+
             </Grid>
-        </Panel>
-    </Grid>
+
+            <!--  ===================================================================  -->
+            <!--  POSTER LIGHTBOX MODAL  -->
+            <!--  ===================================================================  -->
+            <Panel
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                IsVisible="{Binding IsPosterPreviewOpen}"
+                ZIndex="2000">
+                <!--  Fullscreen Dark Overlay (Click to Dismiss)  -->
+                <Button
+                    Padding="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="#CC000000"
+                    BorderThickness="0"
+                    Command="{Binding ClosePosterPreviewCommand}"
+                    CornerRadius="0"
+                    Cursor="Hand">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="#CC000000" />
+                        </Style>
+                        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="#CC000000" />
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+                <!--  Centered Modal Content Card  -->
+                <Grid
+                    Margin="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="True">
+                    <Border
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource CardBackgroundFillDefault}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        BoxShadow="0 24 64 0 #80000000"
+                        ClipToBounds="True"
+                        CornerRadius="12">
+                        <Image
+                            MaxWidth="640"
+                            MaxHeight="520"
+                            core:CachedImage.DecodeWidth="0"
+                            core:CachedImage.Source="{Binding Anime.MainPictureUrl}"
+                            RenderOptions.BitmapInterpolationMode="HighQuality"
+                            Stretch="Uniform"
+                            StretchDirection="DownOnly" />
+                    </Border>
+
+                    <!--  Floating Close Button  -->
+                    <Button
+                        Width="34"
+                        Height="34"
+                        Margin="0,-14,-14,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="#CC000000"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        Command="{Binding ClosePosterPreviewCommand}"
+                        CornerRadius="17"
+                        Cursor="Hand"
+                        ToolTip.Tip="{DynamicResource l.common.actions.close}">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="#EE000000" />
+                            </Style>
+                        </Button.Styles>
+                        <material:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Kind="Close" />
+                    </Button>
+                </Grid>
+            </Panel>
+        </Grid>
     </LayoutTransformControl>
 </Window>

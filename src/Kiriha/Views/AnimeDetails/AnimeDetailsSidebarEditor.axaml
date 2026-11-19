@@ -1,360 +1,621 @@
-<UserControl IsVisible="{Binding Editor.IsInList}" xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:models="using:Kiriha.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:details="using:Kiriha.Views.AnimeDetails"
-             x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarEditor"
-             x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
+﻿<UserControl
+    x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebarEditor"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:details="using:Kiriha.Views.AnimeDetails"
+    xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:models="using:Kiriha.Models"
+    xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
+    x:DataType="vmAnimeDetails:AnimeDetailsViewModel"
+    IsVisible="{Binding Editor.IsInList}">
     <UserControl.Resources>
-        <conv:RatingConverter x:Key="RatingConverter"/>
-        <conv:LocConverter x:Key="LocConverter"/>
-        <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
-        <conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
+        <conv:RatingConverter x:Key="RatingConverter" />
+        <conv:LocConverter x:Key="LocConverter" />
+        <conv:StatusToColorConverter x:Key="StatusToColorConverter" />
+        <conv:StatusToIconConverter x:Key="StatusToIconConverter" />
     </UserControl.Resources>
 
-    <!-- ══ ELEVATED EDITOR CARD ══ -->
-    <Border Classes="ContentCard" Padding="14,14">
+    <!--  ══ ELEVATED EDITOR CARD ══  -->
+    <Border Padding="14,14" Classes="ContentCard">
         <StackPanel Spacing="12">
 
-            <!-- ══ STATUS ══ -->
+            <!--  ══ STATUS ══  -->
             <StackPanel Spacing="5">
-                <TextBlock Text="{DynamicResource l.anime.labels.status_field}" Classes="SidebarLabel" Margin="0"/>
+                <TextBlock
+                    Margin="0"
+                    Classes="SidebarLabel"
+                    Text="{DynamicResource l.anime.labels.status_field}" />
 
-                <ComboBox ItemsSource="{Binding Editor.AvailableStatuses}"
-                          SelectedItem="{Binding Anime.Status}"
-                          HorizontalAlignment="Stretch" FontSize="12">
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    FontSize="12"
+                    ItemsSource="{Binding Editor.AvailableStatuses}"
+                    SelectedItem="{Binding Anime.Status}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="entities:UserAnimeStatus">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <material:MaterialIcon Kind="{Binding Converter={StaticResource StatusToIconConverter}}"
-                                                       Foreground="{Binding Converter={StaticResource StatusToColorConverter}}"
-                                                       Width="15" Height="15" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding Converter={StaticResource LocConverter}}" VerticalAlignment="Center"/>
+                                <material:MaterialIcon
+                                    Width="15"
+                                    Height="15"
+                                    VerticalAlignment="Center"
+                                    Foreground="{Binding Converter={StaticResource StatusToColorConverter}}"
+                                    Kind="{Binding Converter={StaticResource StatusToIconConverter}}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Converter={StaticResource LocConverter}}" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-                <!-- Clean Rewatch Checkbox aligned directly under Status -->
-                <CheckBox IsChecked="{Binding Anime.IsRewatching}"
-                          Margin="2,2,0,0" Padding="8,0,0,0"
-                          FontSize="12" Opacity="0.85">
+                <!--  Clean Rewatch Checkbox aligned directly under Status  -->
+                <CheckBox
+                    Margin="2,2,0,0"
+                    Padding="8,0,0,0"
+                    FontSize="12"
+                    IsChecked="{Binding Anime.IsRewatching}"
+                    Opacity="0.85">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <material:MaterialIcon Kind="Repeat" Width="14" Height="14" Opacity="0.6" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource l.anime.status.rewatching}" VerticalAlignment="Center"/>
+                        <material:MaterialIcon
+                            Width="14"
+                            Height="14"
+                            VerticalAlignment="Center"
+                            Kind="Repeat"
+                            Opacity="0.6" />
+                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource l.anime.status.rewatching}" />
                     </StackPanel>
                 </CheckBox>
             </StackPanel>
 
-            <!-- ══ SCORE ══ -->
+            <!--  ══ SCORE ══  -->
             <StackPanel Spacing="5">
-                <TextBlock Text="{DynamicResource l.anime.labels.your_score}" Classes="SidebarLabel" Margin="0"/>
-                <ComboBox ItemsSource="{Binding Editor.AvailableScores}"
-                          SelectedItem="{Binding Anime.Score, Converter={StaticResource RatingConverter}}"
-                          HorizontalAlignment="Stretch" FontSize="12">
+                <TextBlock
+                    Margin="0"
+                    Classes="SidebarLabel"
+                    Text="{DynamicResource l.anime.labels.your_score}" />
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    FontSize="12"
+                    ItemsSource="{Binding Editor.AvailableScores}"
+                    SelectedItem="{Binding Anime.Score, Converter={StaticResource RatingConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="models:RatingOption">
-                            <TextBlock Text="{Binding Display}" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="12"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="{Binding Display}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </StackPanel>
 
-            <!-- ══ PROGRESS: Episodes (Anime) ══ -->
-            <StackPanel Spacing="6" IsVisible="{Binding Anime.Presentation.IsAnime}">
+            <!--  ══ PROGRESS: Episodes (Anime) ══  -->
+            <StackPanel IsVisible="{Binding Anime.Presentation.IsAnime}" Spacing="6">
                 <Grid ColumnDefinitions="*, Auto">
-                    <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.watched_episodes}" Classes="SidebarLabel" Margin="0" VerticalAlignment="Center"/>
-                    <Border Grid.Column="1"
-                            Background="{DynamicResource SubtleFillColorSecondary}"
-                            CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Anime.Progress}" FontWeight="Bold" FontSize="11"
-                                       Foreground="{DynamicResource SystemAccentColor}"/>
-                            <TextBlock Text="{DynamicResource l.anime.labels.of_short}" FontSize="11" Opacity="0.5"/>
-                            <TextBlock Text="{Binding Anime.TotalEpisodes}" FontSize="11" Opacity="0.8" FontWeight="SemiBold"/>
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="0"
+                        VerticalAlignment="Center"
+                        Classes="SidebarLabel"
+                        Text="{DynamicResource l.anime.labels.watched_episodes}" />
+                    <Border
+                        Grid.Column="1"
+                        Padding="6,2"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource SubtleFillColorSecondary}"
+                        CornerRadius="6">
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="4">
+                            <TextBlock
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource SystemAccentColor}"
+                                Text="{Binding Anime.Progress}" />
+                            <TextBlock
+                                FontSize="11"
+                                Opacity="0.5"
+                                Text="{DynamicResource l.anime.labels.of_short}" />
+                            <TextBlock
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Opacity="0.8"
+                                Text="{Binding Anime.TotalEpisodes}" />
                         </StackPanel>
                     </Border>
                 </Grid>
 
                 <Grid ColumnDefinitions="36, *, 36" ColumnSpacing="6">
-                    <Button Grid.Column="0" Command="{Binding Editor.DecrementProgressCommand}"
-                            ToolTip.Tip="-1"
-                            Width="36" Height="36" Padding="0" CornerRadius="8"
-                            Background="{DynamicResource ControlFillColorDefault}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                            BorderThickness="1" VerticalAlignment="Center"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <material:MaterialIcon Kind="Minus" Width="15" Height="15"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Button
+                        Grid.Column="0"
+                        Width="36"
+                        Height="36"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Background="{DynamicResource ControlFillColorDefault}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        Command="{Binding Editor.DecrementProgressCommand}"
+                        CornerRadius="8"
+                        ToolTip.Tip="-1">
+                        <material:MaterialIcon
+                            Width="15"
+                            Height="15"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="Minus" />
                     </Button>
 
-                    <NumericUpDown Grid.Column="1" Value="{Binding Anime.Progress}"
-                                   Minimum="0" Maximum="{Binding Editor.MaxEpisodes}"
-                                   Height="36" ShowButtonSpinner="False"
-                                   CornerRadius="8" FontSize="14" FontWeight="SemiBold"
-                                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                   BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                   VerticalAlignment="Center"/>
+                    <NumericUpDown
+                        Grid.Column="1"
+                        Height="36"
+                        VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        CornerRadius="8"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Maximum="{Binding Editor.MaxEpisodes}"
+                        Minimum="0"
+                        ShowButtonSpinner="False"
+                        Value="{Binding Anime.Progress}" />
 
-                    <Button Grid.Column="2" Command="{Binding Editor.IncrementProgressCommand}"
-                            ToolTip.Tip="+1"
-                            Width="36" Height="36" Padding="0" CornerRadius="8"
-                            Background="{DynamicResource SystemAccentColor}"
-                            Foreground="White" BorderThickness="0"
+                    <Button
+                        Grid.Column="2"
+                        Width="36"
+                        Height="36"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Background="{DynamicResource SystemAccentColor}"
+                        BorderThickness="0"
+                        Command="{Binding Editor.IncrementProgressCommand}"
+                        CornerRadius="8"
+                        Foreground="White"
+                        ToolTip.Tip="+1">
+                        <material:MaterialIcon
+                            Width="17"
+                            Height="17"
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <material:MaterialIcon Kind="Plus" Width="17" Height="17"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            Kind="Plus" />
                     </Button>
                 </Grid>
 
-                <ProgressBar Minimum="0"
-                             Maximum="{Binding Anime.Presentation.EffectiveTotal}"
-                             Value="{Binding Anime.Progress}"
-                             Height="4" MinHeight="4" CornerRadius="2"
-                             Foreground="{DynamicResource SystemAccentColor}"
-                             Background="{DynamicResource SubtleFillColorSecondary}"
-                             Margin="0,2,0,0" HorizontalAlignment="Stretch"/>
+                <ProgressBar
+                    Height="4"
+                    MinHeight="4"
+                    Margin="0,2,0,0"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource SubtleFillColorSecondary}"
+                    CornerRadius="2"
+                    Foreground="{DynamicResource SystemAccentColor}"
+                    Maximum="{Binding Anime.Presentation.EffectiveTotal}"
+                    Minimum="0"
+                    Value="{Binding Anime.Progress}" />
             </StackPanel>
 
-            <!-- ══ PROGRESS: Chapters & Volumes (Manga) ══ -->
-            <StackPanel Spacing="10" IsVisible="{Binding Anime.Presentation.IsManga}">
-                <!-- Chapters -->
+            <!--  ══ PROGRESS: Chapters & Volumes (Manga) ══  -->
+            <StackPanel IsVisible="{Binding Anime.Presentation.IsManga}" Spacing="10">
+                <!--  Chapters  -->
                 <StackPanel Spacing="6">
                     <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.chapters}" Classes="SidebarLabel" Margin="0" VerticalAlignment="Center"/>
-                        <Border Grid.Column="1"
-                                Background="{DynamicResource SubtleFillColorSecondary}"
-                                CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Anime.ChaptersRead}" FontWeight="Bold" FontSize="11"
-                                           Foreground="{DynamicResource SystemAccentColor}"/>
-                                <TextBlock Text="{DynamicResource l.anime.labels.of_short}" FontSize="11" Opacity="0.5"/>
-                                <TextBlock Text="{Binding Anime.Chapters}" FontSize="11" Opacity="0.8" FontWeight="SemiBold"/>
+                        <TextBlock
+                            Grid.Column="0"
+                            Margin="0"
+                            VerticalAlignment="Center"
+                            Classes="SidebarLabel"
+                            Text="{DynamicResource l.anime.labels.chapters}" />
+                        <Border
+                            Grid.Column="1"
+                            Padding="6,2"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource SubtleFillColorSecondary}"
+                            CornerRadius="6">
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="4">
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource SystemAccentColor}"
+                                    Text="{Binding Anime.ChaptersRead}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Opacity="0.5"
+                                    Text="{DynamicResource l.anime.labels.of_short}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Opacity="0.8"
+                                    Text="{Binding Anime.Chapters}" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <Grid ColumnDefinitions="36, *, 36" ColumnSpacing="6">
-                        <Button Grid.Column="0" Command="{Binding Editor.DecrementProgressCommand}"
-                                ToolTip.Tip="-1"
-                                Width="36" Height="36" Padding="0" CornerRadius="8"
-                                Background="{DynamicResource ControlFillColorDefault}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1" VerticalAlignment="Center"
-                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                            <material:MaterialIcon Kind="Minus" Width="15" Height="15"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Button
+                            Grid.Column="0"
+                            Width="36"
+                            Height="36"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Background="{DynamicResource ControlFillColorDefault}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            Command="{Binding Editor.DecrementProgressCommand}"
+                            CornerRadius="8"
+                            ToolTip.Tip="-1">
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Kind="Minus" />
                         </Button>
 
-                        <NumericUpDown Grid.Column="1" Value="{Binding Anime.ChaptersRead}"
-                                       Minimum="0" Maximum="{Binding Editor.MaxChapters}"
-                                       Height="36" ShowButtonSpinner="False"
-                                       CornerRadius="8" FontSize="14" FontWeight="SemiBold"
-                                       HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                       BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                       VerticalAlignment="Center"/>
+                        <NumericUpDown
+                            Grid.Column="1"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            CornerRadius="8"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Maximum="{Binding Editor.MaxChapters}"
+                            Minimum="0"
+                            ShowButtonSpinner="False"
+                            Value="{Binding Anime.ChaptersRead}" />
 
-                        <Button Grid.Column="2" Command="{Binding Editor.IncrementProgressCommand}"
-                                ToolTip.Tip="+1"
-                                Width="36" Height="36" Padding="0" CornerRadius="8"
-                                Background="{DynamicResource SystemAccentColor}"
-                                Foreground="White" BorderThickness="0"
+                        <Button
+                            Grid.Column="2"
+                            Width="36"
+                            Height="36"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Background="{DynamicResource SystemAccentColor}"
+                            BorderThickness="0"
+                            Command="{Binding Editor.IncrementProgressCommand}"
+                            CornerRadius="8"
+                            Foreground="White"
+                            ToolTip.Tip="+1">
+                            <material:MaterialIcon
+                                Width="17"
+                                Height="17"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                            <material:MaterialIcon Kind="Plus" Width="17" Height="17"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                Kind="Plus" />
                         </Button>
                     </Grid>
 
-                    <ProgressBar Minimum="0"
-                                 Maximum="{Binding Anime.Chapters}"
-                                 Value="{Binding Anime.ChaptersRead}"
-                                 Height="4" MinHeight="4" CornerRadius="2"
-                                 Foreground="{DynamicResource SystemAccentColor}"
-                                 Background="{DynamicResource SubtleFillColorSecondary}"
-                                 Margin="0,2,0,0" HorizontalAlignment="Stretch"/>
+                    <ProgressBar
+                        Height="4"
+                        MinHeight="4"
+                        Margin="0,2,0,0"
+                        HorizontalAlignment="Stretch"
+                        Background="{DynamicResource SubtleFillColorSecondary}"
+                        CornerRadius="2"
+                        Foreground="{DynamicResource SystemAccentColor}"
+                        Maximum="{Binding Anime.Chapters}"
+                        Minimum="0"
+                        Value="{Binding Anime.ChaptersRead}" />
                 </StackPanel>
 
-                <!-- Volumes -->
+                <!--  Volumes  -->
                 <StackPanel Spacing="6">
                     <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.Column="0" Text="{DynamicResource l.anime.labels.volumes}" Classes="SidebarLabel" Margin="0" VerticalAlignment="Center"/>
-                        <Border Grid.Column="1"
-                                Background="{DynamicResource SubtleFillColorSecondary}"
-                                CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Anime.VolumesRead}" FontWeight="Bold" FontSize="11"
-                                           Foreground="{DynamicResource SystemAccentColor}"/>
-                                <TextBlock Text="{DynamicResource l.anime.labels.of_short}" FontSize="11" Opacity="0.5"/>
-                                <TextBlock Text="{Binding Anime.Volumes}" FontSize="11" Opacity="0.8" FontWeight="SemiBold"/>
+                        <TextBlock
+                            Grid.Column="0"
+                            Margin="0"
+                            VerticalAlignment="Center"
+                            Classes="SidebarLabel"
+                            Text="{DynamicResource l.anime.labels.volumes}" />
+                        <Border
+                            Grid.Column="1"
+                            Padding="6,2"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource SubtleFillColorSecondary}"
+                            CornerRadius="6">
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="4">
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource SystemAccentColor}"
+                                    Text="{Binding Anime.VolumesRead}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Opacity="0.5"
+                                    Text="{DynamicResource l.anime.labels.of_short}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Opacity="0.8"
+                                    Text="{Binding Anime.Volumes}" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <Grid ColumnDefinitions="36, *, 36" ColumnSpacing="6">
-                        <Button Grid.Column="0" Command="{Binding Editor.DecrementVolumesCommand}"
-                                ToolTip.Tip="-1"
-                                Width="36" Height="36" Padding="0" CornerRadius="8"
-                                Background="{DynamicResource ControlFillColorDefault}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1" VerticalAlignment="Center"
-                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                            <material:MaterialIcon Kind="Minus" Width="15" Height="15"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Button
+                            Grid.Column="0"
+                            Width="36"
+                            Height="36"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Background="{DynamicResource ControlFillColorDefault}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            BorderThickness="1"
+                            Command="{Binding Editor.DecrementVolumesCommand}"
+                            CornerRadius="8"
+                            ToolTip.Tip="-1">
+                            <material:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Kind="Minus" />
                         </Button>
 
-                        <NumericUpDown Grid.Column="1" Value="{Binding Anime.VolumesRead}"
-                                       Minimum="0" Maximum="{Binding Editor.MaxVolumes}"
-                                       Height="36" ShowButtonSpinner="False"
-                                       CornerRadius="8" FontSize="14" FontWeight="SemiBold"
-                                       HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                       BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                       VerticalAlignment="Center"/>
+                        <NumericUpDown
+                            Grid.Column="1"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                            CornerRadius="8"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Maximum="{Binding Editor.MaxVolumes}"
+                            Minimum="0"
+                            ShowButtonSpinner="False"
+                            Value="{Binding Anime.VolumesRead}" />
 
-                        <Button Grid.Column="2" Command="{Binding Editor.IncrementVolumesCommand}"
-                                ToolTip.Tip="+1"
-                                Width="36" Height="36" Padding="0" CornerRadius="8"
-                                Background="{DynamicResource SystemAccentColor}"
-                                Foreground="White" BorderThickness="0"
+                        <Button
+                            Grid.Column="2"
+                            Width="36"
+                            Height="36"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Background="{DynamicResource SystemAccentColor}"
+                            BorderThickness="0"
+                            Command="{Binding Editor.IncrementVolumesCommand}"
+                            CornerRadius="8"
+                            Foreground="White"
+                            ToolTip.Tip="+1">
+                            <material:MaterialIcon
+                                Width="17"
+                                Height="17"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                            <material:MaterialIcon Kind="Plus" Width="17" Height="17"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                Kind="Plus" />
                         </Button>
                     </Grid>
 
-                    <ProgressBar Minimum="0"
-                                 Maximum="{Binding Anime.Volumes}"
-                                 Value="{Binding Anime.VolumesRead}"
-                                 Height="4" MinHeight="4" CornerRadius="2"
-                                 Foreground="{DynamicResource SystemAccentColor}"
-                                 Background="{DynamicResource SubtleFillColorSecondary}"
-                                 Margin="0,2,0,0" HorizontalAlignment="Stretch"/>
+                    <ProgressBar
+                        Height="4"
+                        MinHeight="4"
+                        Margin="0,2,0,0"
+                        HorizontalAlignment="Stretch"
+                        Background="{DynamicResource SubtleFillColorSecondary}"
+                        CornerRadius="2"
+                        Foreground="{DynamicResource SystemAccentColor}"
+                        Maximum="{Binding Anime.Volumes}"
+                        Minimum="0"
+                        Value="{Binding Anime.VolumesRead}" />
                 </StackPanel>
             </StackPanel>
 
-            <!-- ══ DATES: CalendarDatePickers with quick reset ══ -->
+            <!--  ══ DATES: CalendarDatePickers with quick reset ══  -->
             <Grid ColumnDefinitions="*, *" ColumnSpacing="8">
-                <!-- Start Date -->
+                <!--  Start Date  -->
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource l.anime.labels.start_date}" Classes="SidebarLabel" Margin="0" VerticalAlignment="Center"/>
-                        <Button Command="{Binding Editor.ClearStartDateCommand}"
-                                IsVisible="{Binding Anime.DateStarted, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                ToolTip.Tip="{DynamicResource l.common.actions.clear}"
-                                Width="16" Height="16" Padding="0" CornerRadius="8"
-                                Background="Transparent" BorderThickness="0"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                VerticalAlignment="Center">
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                        <TextBlock
+                            Margin="0"
+                            VerticalAlignment="Center"
+                            Classes="SidebarLabel"
+                            Text="{DynamicResource l.anime.labels.start_date}" />
+                        <Button
+                            Width="16"
+                            Height="16"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Editor.ClearStartDateCommand}"
+                            CornerRadius="8"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            IsVisible="{Binding Anime.DateStarted, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="{DynamicResource l.common.actions.clear}">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover">
-                                    <Setter Property="Foreground" Value="{DynamicResource OrangeredAccentBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource OrangeredAccentBrush}" />
                                 </Style>
                             </Button.Styles>
-                            <material:MaterialIcon Kind="CloseCircle" Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="12"
+                                Height="12"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Kind="CloseCircle" />
                         </Button>
                     </StackPanel>
-                    <CalendarDatePicker SelectedDate="{Binding Anime.DateStarted, Mode=TwoWay}"
-                                        CustomDateFormatString="dd.MM.yyyy"
-                                        PlaceholderText="-"
-                                        HorizontalAlignment="Stretch"
-                                        Height="36"
-                                        CornerRadius="8"
-                                        FontSize="12"
-                                        IsTodayHighlighted="True"/>
+                    <CalendarDatePicker
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        CornerRadius="8"
+                        CustomDateFormatString="dd.MM.yyyy"
+                        FontSize="12"
+                        IsTodayHighlighted="True"
+                        PlaceholderText="-"
+                        SelectedDate="{Binding Anime.DateStarted, Mode=TwoWay}" />
                 </StackPanel>
 
-                <!-- Finish Date -->
+                <!--  Finish Date  -->
                 <StackPanel Grid.Column="1" Spacing="4">
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource l.anime.labels.finish_date}" Classes="SidebarLabel" Margin="0" VerticalAlignment="Center"/>
-                        <Button Command="{Binding Editor.ClearEndDateCommand}"
-                                IsVisible="{Binding Anime.DateCompleted, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                ToolTip.Tip="{DynamicResource l.common.actions.clear}"
-                                Width="16" Height="16" Padding="0" CornerRadius="8"
-                                Background="Transparent" BorderThickness="0"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                VerticalAlignment="Center">
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                        <TextBlock
+                            Margin="0"
+                            VerticalAlignment="Center"
+                            Classes="SidebarLabel"
+                            Text="{DynamicResource l.anime.labels.finish_date}" />
+                        <Button
+                            Width="16"
+                            Height="16"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Editor.ClearEndDateCommand}"
+                            CornerRadius="8"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            IsVisible="{Binding Anime.DateCompleted, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="{DynamicResource l.common.actions.clear}">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover">
-                                    <Setter Property="Foreground" Value="{DynamicResource OrangeredAccentBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource OrangeredAccentBrush}" />
                                 </Style>
                             </Button.Styles>
-                            <material:MaterialIcon Kind="CloseCircle" Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <material:MaterialIcon
+                                Width="12"
+                                Height="12"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Kind="CloseCircle" />
                         </Button>
                     </StackPanel>
-                    <CalendarDatePicker SelectedDate="{Binding Anime.DateCompleted, Mode=TwoWay}"
-                                        CustomDateFormatString="dd.MM.yyyy"
-                                        PlaceholderText="-"
-                                        HorizontalAlignment="Stretch"
-                                        Height="36"
-                                        CornerRadius="8"
-                                        FontSize="12"
-                                        IsTodayHighlighted="True"/>
+                    <CalendarDatePicker
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        CornerRadius="8"
+                        CustomDateFormatString="dd.MM.yyyy"
+                        FontSize="12"
+                        IsTodayHighlighted="True"
+                        PlaceholderText="-"
+                        SelectedDate="{Binding Anime.DateCompleted, Mode=TwoWay}" />
                 </StackPanel>
             </Grid>
 
-            <Border Height="1" Background="{DynamicResource DividerStrokeColorDefault}" Opacity="0.5" Margin="0,4,0,0"/>
+            <Border
+                Height="1"
+                Margin="0,4,0,0"
+                Background="{DynamicResource DividerStrokeColorDefault}"
+                Opacity="0.5" />
 
-            <!-- ══ BOTTOM ACTIONS: Delete & Save ══ -->
+            <!--  ══ BOTTOM ACTIONS: Delete & Save ══  -->
             <Grid ColumnDefinitions="Auto, *">
-                <!-- Delete / Confirmation -->
+                <!--  Delete / Confirmation  -->
                 <Panel Grid.Column="0" Margin="0,0,8,0">
-                    <!-- Normal Trash Button -->
-                    <Button Command="{Binding Editor.RemoveFromListCommand}"
+                    <!--  Normal Trash Button  -->
+                    <Button
+                        Width="38"
+                        Height="38"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource SubtleFillColorSecondary}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefault}"
+                        BorderThickness="1"
+                        Command="{Binding Editor.RemoveFromListCommand}"
+                        CommandParameter="{Binding $parent[Window]}"
+                        CornerRadius="8"
+                        Foreground="{DynamicResource OrangeredAccentBrush}"
+                        IsVisible="{Binding !Editor.IsDeleteConfirmationVisible}"
+                        ToolTip.Tip="{DynamicResource l.anime.list_actions.remove_from_list}">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="{DynamicResource OrangeredAccentTintBrush}" />
+                            </Style>
+                        </Button.Styles>
+                        <material:MaterialIcon
+                            Width="18"
+                            Height="18"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="TrashCanOutline" />
+                    </Button>
+
+                    <!--  In-Place Confirm + Cancel Bar  -->
+                    <StackPanel
+                        IsVisible="{Binding Editor.IsDeleteConfirmationVisible}"
+                        Orientation="Horizontal"
+                        Spacing="4">
+                        <Button
+                            Height="38"
+                            Padding="10,0"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource OrangeredAccentBrush}"
+                            BorderThickness="0"
+                            Command="{Binding Editor.RemoveFromListCommand}"
                             CommandParameter="{Binding $parent[Window]}"
-                            IsVisible="{Binding !Editor.IsDeleteConfirmationVisible}"
-                            ToolTip.Tip="{DynamicResource l.anime.list_actions.remove_from_list}"
-                            Width="38" Height="38" Padding="0" CornerRadius="8"
+                            CornerRadius="8"
+                            Foreground="White">
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="5">
+                                <material:MaterialIcon
+                                    Width="15"
+                                    Height="15"
+                                    VerticalAlignment="Center"
+                                    Kind="AlertCircleOutline" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="11"
+                                    FontWeight="Bold"
+                                    Text="{DynamicResource l.anime.list_actions.confirm_delete}" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            Width="34"
+                            Height="38"
+                            Padding="0"
+                            VerticalAlignment="Center"
                             Background="{DynamicResource SubtleFillColorSecondary}"
                             BorderBrush="{DynamicResource CardStrokeColorDefault}"
                             BorderThickness="1"
-                            Foreground="{DynamicResource OrangeredAccentBrush}"
-                            VerticalAlignment="Center">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="{DynamicResource OrangeredAccentTintBrush}"/>
-                            </Style>
-                        </Button.Styles>
-                        <material:MaterialIcon Width="18" Height="18" Kind="TrashCanOutline"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
-
-                    <!-- In-Place Confirm + Cancel Bar -->
-                    <StackPanel Orientation="Horizontal" Spacing="4"
-                                IsVisible="{Binding Editor.IsDeleteConfirmationVisible}">
-                        <Button Command="{Binding Editor.RemoveFromListCommand}"
-                                CommandParameter="{Binding $parent[Window]}"
-                                Height="38" Padding="10,0" CornerRadius="8"
-                                Background="{DynamicResource OrangeredAccentBrush}"
-                                Foreground="White" BorderThickness="0"
-                                VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                <material:MaterialIcon Width="15" Height="15" Kind="AlertCircleOutline" VerticalAlignment="Center"/>
-                                <TextBlock Text="{DynamicResource l.anime.list_actions.confirm_delete}"
-                                           FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Command="{Binding Editor.CancelDeleteCommand}"
-                                ToolTip.Tip="{DynamicResource l.common.actions.cancel}"
-                                Width="34" Height="38" Padding="0" CornerRadius="8"
-                                Background="{DynamicResource SubtleFillColorSecondary}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefault}"
-                                BorderThickness="1"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                VerticalAlignment="Center">
-                            <material:MaterialIcon Width="14" Height="14" Kind="Close"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            Command="{Binding Editor.CancelDeleteCommand}"
+                            CornerRadius="8"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            ToolTip.Tip="{DynamicResource l.common.actions.cancel}">
+                            <material:MaterialIcon
+                                Width="14"
+                                Height="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Kind="Close" />
                         </Button>
                     </StackPanel>
                 </Panel>
 
-                <!-- Save Button (Fills the remaining width when delete is not confirming) -->
-                <details:AnimeDetailsSidebarSaveButton Grid.Column="1"
-                                                       IsVisible="{Binding !Editor.IsDeleteConfirmationVisible}"/>
+                <!--  Save Button (Fills the remaining width when delete is not confirming)  -->
+                <details:AnimeDetailsSidebarSaveButton Grid.Column="1" IsVisible="{Binding !Editor.IsDeleteConfirmationVisible}" />
             </Grid>
 
         </StackPanel>

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 ════════════════════════════════════════════════════════════════════════════════
   SettingsSidebar.axaml — окно настроек (модалка с сайдбаром слева + контент)
 ════════════════════════════════════════════════════════════════════════════════
@@ -68,195 +68,255 @@
   TL;DR: ЕСЛИ ЧИНИШЬ/ДОБАВЛЯЕШЬ ПУНКТ В НАСТРОЙКИ — СКОПИРУЙ ЛЮБУЮ СУЩЕСТВУЮЩУЮ
   СТРАНИЦУ ЦЕЛИКОМ (от <StackPanel IsVisible=...> до </StackPanel> ВКЛЮЧАЯ
   СПЕЙСЕР В КОНЦЕ) И АДАПТИРУЙ.
-════════════════════════════════════════════════════════════════════════════════
--->
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vmStartup="using:Kiriha.ViewModels.Startup"
-        xmlns:vmDialogs="using:Kiriha.ViewModels.Dialogs"
-        xmlns:vmNowPlaying="using:Kiriha.ViewModels.NowPlaying"
-        xmlns:vmMain="using:Kiriha.ViewModels.Main"
-             xmlns:vm="using:Kiriha.ViewModels"
-             xmlns:vmAnalytics="using:Kiriha.ViewModels.Analytics"
-             xmlns:vmAnimeDetails="using:Kiriha.ViewModels.AnimeDetails"
-             xmlns:vmAnimeList="using:Kiriha.ViewModels.AnimeList"
-             xmlns:vmHistory="using:Kiriha.ViewModels.History"
-             xmlns:vmPlayer="using:Kiriha.Mpv.UI.ViewModels.Player"
-             xmlns:vmSeasonal="using:Kiriha.ViewModels.Seasonal"
-             xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
-             xmlns:vmTorrents="using:Kiriha.ViewModels.Torrents"
-             xmlns:vmSearch="using:Kiriha.ViewModels.Search"
-             xmlns:models="using:Kiriha.Core.Domain.Models" xmlns:entities="using:Kiriha.Core.Domain.Models.Entities"
-             xmlns:material="using:Material.Icons.Avalonia"
-             xmlns:conv="using:Kiriha.Views.Converters"
-             xmlns:u="using:Kiriha.Utils.UI"
-             xmlns:pages="using:Kiriha.Views.Settings"
-             x:Class="Kiriha.Views.Controls.Variants.SettingsSidebar"
-             x:DataType="vmSettings:SettingsViewModel"
-             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+════════════════════════════════════════════════════════════════════════════════-->
+<UserControl
+    x:Class="Kiriha.Views.Controls.Variants.SettingsSidebar"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:Kiriha.Views.Converters"
+    xmlns:material="using:Material.Icons.Avalonia"
+    xmlns:pages="using:Kiriha.Views.Settings"
+    xmlns:u="using:Kiriha.Utils.UI"
+    xmlns:vmSettings="using:Kiriha.ViewModels.Settings"
+    HorizontalContentAlignment="Stretch"
+    VerticalContentAlignment="Stretch"
+    x:DataType="vmSettings:SettingsViewModel">
 
     <UserControl.Resources>
-        <conv:IntEqualsConverter x:Key="IntEqualsConverter"/>
+        <conv:IntEqualsConverter x:Key="IntEqualsConverter" />
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- ===== Sidebar nav list (unchanged) ===== -->
+        <!--  ===== Sidebar nav list (unchanged) =====  -->
         <Style Selector="ListBox.SideNav">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem">
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="8,1"/>
-            <Setter Property="MinHeight" Value="32"/>
-            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="8,1" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="CornerRadius" Value="5" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem /template/ ContentPresenter">
-            <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="10,7" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem:selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem:selected:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}"/>
+            <Setter Property="Background" Value="{DynamicResource CardHoverFillColor}" />
         </Style>
         <Style Selector="ListBox.SideNav TextBlock.NavLabel">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Opacity" Value="0.8"/>
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Opacity" Value="0.8" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem:selected TextBlock.NavLabel">
-            <Setter Property="Opacity" Value="1"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="ListBox.SideNav material|MaterialIcon.NavIcon">
-            <Setter Property="Opacity" Value="0.75"/>
+            <Setter Property="Opacity" Value="0.75" />
         </Style>
         <Style Selector="ListBox.SideNav ListBoxItem:selected material|MaterialIcon.NavIcon">
-            <Setter Property="Opacity" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
         </Style>
         <Style Selector="TextBlock.SectionHeader">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Opacity" Value="0.4"/>
-            <Setter Property="Margin" Value="18,14,12,6"/>
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Margin" Value="18,14,12,6" />
         </Style>
 
-        <!-- ===== Right content: flat rows with dividers ===== -->
+        <!--  ===== Right content: flat rows with dividers =====  -->
         <Style Selector="TextBlock.PageTitle">
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,24"/>
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,24" />
         </Style>
         <Style Selector="Grid.Row">
-            <Setter Property="MinHeight" Value="64"/>
+            <Setter Property="MinHeight" Value="64" />
         </Style>
         <Style Selector="TextBlock.Title">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Medium" />
         </Style>
         <Style Selector="TextBlock.Sub">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Opacity" Value="0.55"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Opacity" Value="0.55" />
+            <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <Style Selector="Border.Divider">
-            <Setter Property="Height" Value="1"/>
-            <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefault}"/>
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefault}" />
         </Style>
     </UserControl.Styles>
 
-    <Grid Name="RootGrid" ColumnDefinitions="232,*" RowDefinitions="*"
-          HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid
+        Name="RootGrid"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        ColumnDefinitions="232,*"
+        RowDefinitions="*">
 
-        <!-- ══════════ LEFT SIDEBAR ══════════ -->
-        <Border Grid.Column="0" Background="{DynamicResource ModalSidebarFill}"
-                BorderBrush="{DynamicResource DividerStrokeColorDefault}" BorderThickness="0,0,1,0">
+        <!--  ══════════ LEFT SIDEBAR ══════════  -->
+        <Border
+            Grid.Column="0"
+            Background="{DynamicResource ModalSidebarFill}"
+            BorderBrush="{DynamicResource DividerStrokeColorDefault}"
+            BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top" Margin="18,20,18,10" Spacing="2">
-                    <TextBlock Text="{DynamicResource l.settings.header}" FontSize="15" FontWeight="SemiBold"/>
-                    <TextBlock Text="{DynamicResource l.settings.title}" FontSize="11" Opacity="0.5"/>
+                <StackPanel
+                    Margin="18,20,18,10"
+                    DockPanel.Dock="Top"
+                    Spacing="2">
+                    <TextBlock
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Text="{DynamicResource l.settings.header}" />
+                    <TextBlock
+                        FontSize="11"
+                        Opacity="0.5"
+                        Text="{DynamicResource l.settings.title}" />
                 </StackPanel>
 
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled" u:SmoothScroll.IsEnabled="True">
+                <ScrollViewer u:SmoothScroll.IsEnabled="True" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <TextBlock Classes="SectionHeader" Text="{DynamicResource l.common.status.system}"/>
-                        <ListBox Name="Nav" Classes="SideNav"
-                                 SelectedIndex="{Binding SelectedSectionIndex, Mode=TwoWay}"
-                                 SelectionChanged="Nav_SelectionChanged">
+                        <TextBlock Classes="SectionHeader" Text="{DynamicResource l.common.status.system}" />
+                        <ListBox
+                            Name="Nav"
+                            Classes="SideNav"
+                            SelectedIndex="{Binding SelectedSectionIndex, Mode=TwoWay}"
+                            SelectionChanged="Nav_SelectionChanged">
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="Monitor" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.common.status.system}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="Monitor" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.common.status.system}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="Palette" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.appearance}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="Palette" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.appearance}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="BellOutline" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.notifications}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="BellOutline" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.notifications}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="AccountCircleOutline" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.accounts}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="AccountCircleOutline" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.accounts}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="AutoFix" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.scrobbler.title}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="AutoFix" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.scrobbler.title}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="Update" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.updates.title}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="Update" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.updates.title}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="Database" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.cache.title}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="Database" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.cache.title}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="PlayCircleOutline" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.player}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="PlayCircleOutline" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.player}" />
                                 </StackPanel>
                             </ListBoxItem>
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="TelevisionPlay" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.streaming}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="TelevisionPlay" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.sections.streaming}" />
                                 </StackPanel>
                             </ListBoxItem>
                         </ListBox>
 
-                        <!-- ── Расширенная кастомизация ── separate ListBox so the
-                             section gets its own header. SelectionChanged in code-behind
-                             keeps the two ListBoxes mutually exclusive (Nav.SelectedIndex
-                             goes to -1 when something here is picked, and vice versa). -->
-                        <TextBlock Classes="SectionHeader" Text="{DynamicResource l.settings.sections.advanced}"/>
-                        <ListBox Name="NavCustom" Classes="SideNav" SelectedIndex="-1"
-                                 SelectionChanged="NavCustom_SelectionChanged">
+                        <!--
+                            ── Расширенная кастомизация ── separate ListBox so the
+                            section gets its own header. SelectionChanged in code-behind
+                            keeps the two ListBoxes mutually exclusive (Nav.SelectedIndex
+                            goes to -1 when something here is picked, and vice versa).
+                        -->
+                        <TextBlock Classes="SectionHeader" Text="{DynamicResource l.settings.sections.advanced}" />
+                        <ListBox
+                            Name="NavCustom"
+                            Classes="SideNav"
+                            SelectedIndex="-1"
+                            SelectionChanged="NavCustom_SelectionChanged">
                             <ListBoxItem>
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <material:MaterialIcon Classes="NavIcon" Kind="LinkVariant" Width="18" Height="18" VerticalAlignment="Center"/>
-                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.custom_links.title}"/>
+                                    <material:MaterialIcon
+                                        Width="18"
+                                        Height="18"
+                                        VerticalAlignment="Center"
+                                        Classes="NavIcon"
+                                        Kind="LinkVariant" />
+                                    <TextBlock Classes="NavLabel" Text="{DynamicResource l.settings.custom_links.title}" />
                                 </StackPanel>
                             </ListBoxItem>
                         </ListBox>
@@ -265,91 +325,126 @@
             </DockPanel>
         </Border>
 
-        <!-- ══════════ RIGHT CONTENT ══════════ -->
-        <ScrollViewer Grid.Column="1" Padding="32,32,32,40" HorizontalScrollBarVisibility="Disabled"
-                      MaxHeight="{Binding #RootGrid.Bounds.Height}"
-                      u:SmoothScroll.IsEnabled="True">
-          <Panel>
+        <!--  ══════════ RIGHT CONTENT ══════════  -->
+        <ScrollViewer
+            Grid.Column="1"
+            MaxHeight="{Binding #RootGrid.Bounds.Height}"
+            Padding="32,32,32,40"
+            u:SmoothScroll.IsEnabled="True"
+            HorizontalScrollBarVisibility="Disabled">
+            <Panel>
 
-            <!-- ── System ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
+                <!--  ── System ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
                     <pages:SettingsSystemPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Appearance ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=1}">
+                <!--  ── Appearance ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=1}">
                     <pages:SettingsAppearancePage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Notifications ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=2}">
+                <!--  ── Notifications ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=2}">
                     <pages:SettingsNotificationsPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Accounts ── -->
-            <StackPanel MaxWidth="960" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=3}">
+                <!--  ── Accounts ──  -->
+                <StackPanel
+                    MaxWidth="960"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=3}">
                     <pages:SettingsAccountsPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Scrobbler ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=4}">
+                <!--  ── Scrobbler ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=4}">
                     <pages:SettingsScrobblerPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Updates ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=5}">
+                <!--  ── Updates ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=5}">
                     <pages:SettingsUpdatesPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Custom Links ── lives in the separate "Расширенная кастомизация"
-                 sidebar group, so visibility is driven by NavCustom.SelectedIndex
-                 instead of Nav.SelectedIndex. -->
-            <!-- Cache -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=6}">
+                <!--
+                    ── Custom Links ── lives in the separate "Расширенная кастомизация"
+                    sidebar group, so visibility is driven by NavCustom.SelectedIndex
+                    instead of Nav.SelectedIndex.
+                -->
+                <!--  Cache  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=6}">
                     <pages:SettingsCachePage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Player ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=7}">
+                <!--  ── Player ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=7}">
                     <pages:SettingsPlayerPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <!-- ── Online Streaming ── -->
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=8}">
+                <!--  ── Online Streaming ──  -->
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=Nav, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=8}">
                     <pages:SettingsStreamingPage />
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
 
-            <StackPanel MaxWidth="720" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                        IsVisible="{Binding ElementName=NavCustom, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
-                    <pages:SettingsCustomLinksPage DataContext="{Binding CustomLinks}"/>
-                    <Border Height="110" IsHitTestVisible="False"/>
-            </StackPanel>
-          </Panel>
+                <StackPanel
+                    MaxWidth="720"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsVisible="{Binding ElementName=NavCustom, Path=SelectedIndex, Converter={StaticResource IntEqualsConverter}, ConverterParameter=0}">
+                    <pages:SettingsCustomLinksPage DataContext="{Binding CustomLinks}" />
+                    <Border Height="110" IsHitTestVisible="False" />
+                </StackPanel>
+            </Panel>
         </ScrollViewer>
 
-        <!-- ═══ Primary Tracker Switch / Auth / Sync Modal Overlay ═══ -->
-        <pages:SettingsPrimarySwitchOverlay Grid.Column="0" Grid.ColumnSpan="2"/>
+        <!--  ═══ Primary Tracker Switch / Auth / Sync Modal Overlay ═══  -->
+        <pages:SettingsPrimarySwitchOverlay Grid.Column="0" Grid.ColumnSpan="2" />
 
-        <!-- ═══ Standalone Account Authorization Modal Overlay ═══ -->
-        <pages:SettingsAuthOverlay Grid.Column="0" Grid.ColumnSpan="2"/>
+        <!--  ═══ Standalone Account Authorization Modal Overlay ═══  -->
+        <pages:SettingsAuthOverlay Grid.Column="0" Grid.ColumnSpan="2" />
     </Grid>
 </UserControl>
 
