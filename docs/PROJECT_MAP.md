@@ -1,7 +1,8 @@
 # Kiriha — Карта архитектуры и устройства проекта
 
-> **Версия:** 1.7.2+  
-> **Стек:** .NET 11.0 RC2 (C# 15), Avalonia UI 12.1.4, Entity Framework Core 11 RC2 (SQLite), libmpv, TorrServer  
+> **Note for AI Assistants:** The primary, unified, and authoritative architecture guide and operational instructions reside in [AGENTS.md](file:///e:/Projects/Kiriha/AGENTS.md). Refer to `AGENTS.md` as the single source of truth.
+
+> **Стек:** .NET 11.0 (C# 15), Avalonia UI 12.1.6, Entity Framework Core 11 (SQLite), libmpv, TorrServer  
 > **Платформа:** Windows (x64)
 
 Документ представляет собой системную карту архитектуры приложения Kiriha для разработчиков и ИИ-ассистентов, а также сводку архитектурных инвариантов ядра.
