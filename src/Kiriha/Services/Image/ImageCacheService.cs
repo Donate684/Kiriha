@@ -91,10 +91,10 @@ public class ImageCacheService : IImageCacheService, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug("Failed to decode bitmap {Url}: {Msg}", url, ex.Message);
+                    Log.Debug(ex, "Failed to decode bitmap {Url}", url);
                     return null;
                 }
-            });
+            }, ct);
         }
         finally
         {

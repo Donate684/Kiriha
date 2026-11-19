@@ -13,22 +13,22 @@ public partial class AnimeRepository
     }
 
 
-    public async Task AddOrUpdateAnimeAsync(AnimeEntity item)
+    public async Task AddOrUpdateAnimeAsync(AnimeEntity anime)
     {
-        if (item.Id <= 0 || string.IsNullOrWhiteSpace(item.Title))
+        if (anime.Id <= 0 || string.IsNullOrWhiteSpace(anime.Title))
         {
-            Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Rejected invalid entity (Id: {Id}, Title: {Title})", item.Id, item.Title);
+            Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Rejected invalid entity (Id: {Id}, Title: {Title})", anime.Id, anime.Title);
             return;
         }
 
-        if (item.Status == UserAnimeStatus.None)
+        if (anime.Status == UserAnimeStatus.None)
         {
-            Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Item has Status None (Id: {Id}). Ensuring it is removed from list.", item.Id);
-            await RemoveAnimeLocalAsync(item.Id, item.MediaKind);
+            Log.Warning("AnimeRepository.AddOrUpdateAnimeAsync: Item has Status None (Id: {Id}). Ensuring it is removed from list.", anime.Id);
+            await RemoveAnimeLocalAsync(anime.Id, anime.MediaKind);
             return;
         }
 
-        var key = (item.Id, item.MediaKind);
+        var key = (anime.Id, anime.MediaKind);
         lock (_recentlyDeletedLock)
         {
             if (_recentlyDeletedIds.TryGetValue(key, out var cts))
@@ -48,17 +48,17 @@ public partial class AnimeRepository
 
             if (found != null)
             {
-                if (!ReferenceEquals(item, found))
+                if (!ReferenceEquals(anime, found))
                 {
-                    item.CopyTo(found);
+                    anime.CopyTo(found);
                 }
             }
             else
             {
-                Collection.Add(item);
+                Collection.Add(anime);
                 lock (_indexLock)
                 {
-                    _idIndex[key] = item;
+                    _idIndex[key] = anime;
                 }
             }
             return found;
@@ -67,7 +67,7 @@ public partial class AnimeRepository
         if (existing != null)
             await _userAnimeRepo.UpdateAsync(existing);
         else
-            await _userAnimeRepo.UpsertAsync(item);
+            await _userAnimeRepo.UpsertAsync(anime);
     }
 
     public Task RemoveAnimeLocalAsync(int animeId) => RemoveAnimeLocalAsync(animeId, MediaKind.Anime);

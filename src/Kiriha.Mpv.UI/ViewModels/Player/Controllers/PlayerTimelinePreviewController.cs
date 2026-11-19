@@ -56,7 +56,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
             {
                 _thumbnailer = CreateThumbnailer();
                 if (_thumbnailer != null)
-                    _ = _thumbnailer.WarmUpAsync(videoUrl, default, headers);
+                    _ = _thumbnailer.WarmUpAsync(videoUrl, _thumbnailCts?.Token ?? CancellationToken.None, headers);
             }
 
             var thumbnailer = _thumbnailer;
@@ -198,7 +198,7 @@ public sealed class PlayerTimelinePreviewController : IDisposable
                     if (task.Exception != null)
                         Serilog.Log.Debug(task.Exception, "Failed to warm up timeline thumbnailer");
                 }, TaskContinuationOptions.OnlyOnFaulted);
-        });
+        }, token);
     }
 
     public void Dispose()

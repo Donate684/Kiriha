@@ -30,30 +30,30 @@ public class NotificationService : INotificationService
         _localizer = localizer ?? LocalizationService.Active;
     }
 
-    public virtual void NotifyNewEpisode(AnimeEntity anime, int episodeNumber)
+    public virtual void NotifyNewEpisode(AnimeEntity anime, int episode)
     {
         if (anime is null) return;
         if (!_settingsService.Current.System.NotifyNewEpisodes) return;
-        if (episodeNumber <= 0) return;
+        if (episode <= 0) return;
 
         // Dedupe — only fire when episode number actually advanced for this anime.
-        if (_lastNotifiedEpisode.TryGetValue(anime.Id, out var prev) && prev >= episodeNumber)
+        if (_lastNotifiedEpisode.TryGetValue(anime.Id, out var prev) && prev >= episode)
             return;
-        _lastNotifiedEpisode[anime.Id] = episodeNumber;
+        _lastNotifiedEpisode[anime.Id] = episode;
 
         var orig = !string.IsNullOrEmpty(anime.Title) ? anime.Title : anime.RussianTitle ?? "Anime";
         var ru = anime.RussianTitle;
-        var episodeLine = _localizer.GetLoc("notifications.new_episode.body", episodeNumber);
+        var episodeLine = _localizer.GetLoc("notifications.new_episode.body", episode);
 
         var lines = new List<string> { episodeLine, orig };
         if (!string.IsNullOrEmpty(ru) && !string.Equals(ru, orig, StringComparison.Ordinal))
-            lines.Add(ru!);
+            lines.Add(ru);
 
-        Log.Information("NotificationService: New episode toast for {Title} ep {Ep}", orig, episodeNumber);
+        Log.Information("NotificationService: New episode toast for {Title} ep {Ep}", orig, episode);
         ToastRenderer.Show(lines, anime.PosterSource);
     }
 
-    public virtual void NotifyScrobbleSkipped(AnimeEntity anime, int detectedEp)
+    public virtual void NotifyScrobbleSkipped(AnimeEntity anime, int episode)
     {
         if (anime is null) return;
 
@@ -62,12 +62,12 @@ public class NotificationService : INotificationService
             : "Anime";
 
         var title = _localizer.GetLoc("scrobbler.skip_notify.title");
-        var body = _localizer.GetLoc("scrobbler.skip_notify.body", detectedEp, anime.Progress + 1);
+        var body = _localizer.GetLoc("scrobbler.skip_notify.body", episode, anime.Progress + 1);
 
         var lines = new List<string> { title, displayTitle, body };
 
         Log.Information("NotificationService: Scrobble-skip toast for {Title} ep {Ep} (expected {Expected})",
-            displayTitle, detectedEp, anime.Progress + 1);
+            displayTitle, episode, anime.Progress + 1);
         ToastRenderer.Show(lines, anime.LocalPosterPath ?? anime.PosterSource);
     }
 

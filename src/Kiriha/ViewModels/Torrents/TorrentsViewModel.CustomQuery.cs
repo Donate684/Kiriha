@@ -300,7 +300,7 @@ public partial class TorrentsViewModel
                 ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents, includeCustomQuery: false);
             target.UseCustomQuery = UseCustomQuery;
             target.CustomQuery = persistedCustomQuery;
-            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
+            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target, CancellationToken.None);
         }
         else
         {

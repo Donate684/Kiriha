@@ -235,26 +235,26 @@ public partial class TrackingService
                string.Equals(a.AnimeTitle, b.AnimeTitle, StringComparison.OrdinalIgnoreCase);
     }
 
-    public void NotifyCurrentMediaMetadataUpdated(AnimeEntity matched)
+    public void NotifyCurrentMediaMetadataUpdated(AnimeEntity anime)
     {
         ParsedMedia? media;
         lock (_state)
         {
-            _matchedAnime = matched;
+            _matchedAnime = anime;
             media = _currentMedia;
         }
 
         if (media != null)
         {
-            var effectiveMedia = (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
+            var effectiveMedia = (anime.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
                 ? media.WithEpisode("1")
                 : media;
 
-            NotifyPlayerMetadata(effectiveMedia, matched);
-            UpdateDiscordPresence(effectiveMedia, matched);
+            NotifyPlayerMetadata(effectiveMedia, anime);
+            UpdateDiscordPresence(effectiveMedia, anime);
 
-            if (matched.Status != UserAnimeStatus.None && _settingsService.Current.System.Scrobbler.Enabled)
-                _scrobbleService.StartScrobble(effectiveMedia, matched);
+            if (anime.Status != UserAnimeStatus.None && _settingsService.Current.System.Scrobbler.Enabled)
+                _scrobbleService.StartScrobble(effectiveMedia, anime);
         }
     }
 

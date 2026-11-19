@@ -135,6 +135,6 @@ public sealed partial class Anime365Provider
         return match.Success ? match.Groups[1].Value : animeUrlOrId.Trim();
     }
 
-    [GeneratedRegex(@"(\d+)")]
+    [GeneratedRegex(@"(\d+)", RegexOptions.None, 500)]
     private static partial Regex SeriesIdRegex();
 }

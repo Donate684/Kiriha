@@ -49,14 +49,14 @@ public static class BearerTokenHelper
             }
             catch
             {
-                var match = Regex.Match(cleaned, @"""access_token""\s*:\s*""([^""]+)""");
+                var match = Regex.Match(cleaned, @"""access_token""\s*:\s*""([^""]+)""", RegexOptions.None, TimeSpan.FromMilliseconds(500));
                 if (match.Success)
                 {
                     cleaned = match.Groups[1].Value;
                 }
                 else
                 {
-                    var tokenMatch = Regex.Match(cleaned, @"""token""\s*:\s*""([^""]+)""");
+                    var tokenMatch = Regex.Match(cleaned, @"""token""\s*:\s*""([^""]+)""", RegexOptions.None, TimeSpan.FromMilliseconds(500));
                     if (tokenMatch.Success)
                     {
                         cleaned = tokenMatch.Groups[1].Value;

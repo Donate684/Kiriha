@@ -87,12 +87,12 @@ public class AnimeProgressService : IProgressUpdateService
     /// Public full-flow overload used by external callers (ScrobbleService, NowPlayingViewModel, etc.).
     /// Applies local DB changes and enqueues sync. Does NOT record a history entry — callers own that.
     /// </summary>
-    public virtual async Task<bool> UpdateProgressAsync(AnimeEntity item, int nextProgress, UserAnimeStatus? nextStatus = null)
+    public virtual async Task<bool> UpdateProgressAsync(AnimeEntity anime, int nextProgress, UserAnimeStatus? nextStatus = null)
     {
-        if (!await _mutations.ApplyLocalProgressAsync(item, nextProgress, nextStatus))
+        if (!await _mutations.ApplyLocalProgressAsync(anime, nextProgress, nextStatus))
             return false;
 
-        await _mutations.EnqueueProgressSyncAsync(item, nextProgress, nextStatus);
+        await _mutations.EnqueueProgressSyncAsync(anime, nextProgress, nextStatus);
         return true;
     }
 

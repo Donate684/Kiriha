@@ -37,7 +37,7 @@ public partial class SearchViewModel
 
         if (oldCts != null)
         {
-            try { oldCts.Cancel(); } catch (ObjectDisposedException) { }
+            try { await oldCts.CancelAsync(); } catch (ObjectDisposedException) { }
             oldCts.Dispose();
         }
 

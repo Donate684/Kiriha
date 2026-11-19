@@ -55,23 +55,6 @@ public partial class NowPlayingViewModel
         }
     }
 
-    private async Task EnsureLocalizedSafeAsync(AnimeEntity anime)
-    {
-        try
-        {
-            await _shikiMetadataService.EnsureLocalizedAsync(anime, _disposeCts.Token);
-            _trackingService.NotifyCurrentMediaMetadataUpdated(anime);
-        }
-        catch (OperationCanceledException)
-        {
-            // Ignore
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "NowPlaying: EnsureLocalizedAsync failed for {Id}", anime.Id);
-        }
-    }
-
     public void Receive(MediaChangedMessage message)
     {
         var media = message.Media;
@@ -103,6 +86,23 @@ public partial class NowPlayingViewModel
             MatchedAnime = null;
             IsManuallyMapped = false;
             CountdownStatus = string.Empty;
+        }
+    }
+
+    private async Task EnsureLocalizedSafeAsync(AnimeEntity anime)
+    {
+        try
+        {
+            await _shikiMetadataService.EnsureLocalizedAsync(anime, _disposeCts.Token);
+            _trackingService.NotifyCurrentMediaMetadataUpdated(anime);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "NowPlaying: EnsureLocalizedAsync failed for {Id}", anime.Id);
         }
     }
 

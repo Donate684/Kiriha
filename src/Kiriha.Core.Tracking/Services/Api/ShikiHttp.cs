@@ -60,7 +60,8 @@ public static class ShikiHttp
             oldContent.Dispose();
         }
 
-        var currentUri = resolver.Rewrite(request.RequestUri!);
+        if (request.RequestUri is null) throw new InvalidOperationException("RequestUri cannot be null");
+        var currentUri = resolver.Rewrite(request.RequestUri);
         for (var hop = 0; hop <= maxHops; hop++)
         {
             var attemptRequest = await CloneRequestAsync(request, currentUri, ct).ConfigureAwait(false);

@@ -111,7 +111,7 @@ public partial class TorrentsViewModel
             var target = _torrentFilterRepo.TryGetCachedFilter(titleId)
                 ?? CreateFilterSetFromGlobal(_settingsService.Current.Torrents, includeCustomQuery: false);
             ApplyFilterValue(target, name, value);
-            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
+            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target, CancellationToken.None);
         }
         else
         {
@@ -245,7 +245,7 @@ public partial class TorrentsViewModel
             target.FilterOnlyBatches = false;
             target.UseCustomQuery = false;
             target.CustomQuery = null;
-            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target);
+            _ = _torrentFilterRepo.SaveFilterAsync(titleId, target, CancellationToken.None);
         }
         else
         {

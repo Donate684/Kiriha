@@ -65,7 +65,7 @@ public sealed class LibraryMutationService : ILibraryMutationService
         if (fromDb != null)
             return fromDb;
 
-        return kind == MediaKind.Anime ? await _userAnimeRepo.GetByIdAsync(animeId) : null;
+        return kind == MediaKind.Anime ? await _userAnimeRepo.GetByIdAsync(animeId, MediaKind.Anime, ct) : null;
     }
 
     public UserAnimeStatus? ComputeSmartNextStatus(AnimeEntity item, int nextProgress)

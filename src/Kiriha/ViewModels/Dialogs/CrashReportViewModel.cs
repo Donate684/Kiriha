@@ -60,7 +60,8 @@ public partial class CrashReportViewModel : ObservableObject
             if (!string.IsNullOrEmpty(_crashFilePath) && File.Exists(_crashFilePath))
             {
                 // Open folder and select the crash file (Windows Explorer).
-                Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{_crashFilePath}\"")
+                var explorerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+                Process.Start(new ProcessStartInfo(File.Exists(explorerPath) ? explorerPath : "explorer.exe", $"/select,\"{_crashFilePath}\"")
                 {
                     UseShellExecute = true
                 })?.Dispose();
@@ -80,7 +81,7 @@ public partial class CrashReportViewModel : ObservableObject
     public void MarkSeen()
     {
         if (!string.IsNullOrEmpty(_crashFilePath))
-            CrashReportReader.MarkSeen(_crashFilePath!);
+            CrashReportReader.MarkSeen(_crashFilePath);
     }
 
     private static IClipboard? GetClipboard()

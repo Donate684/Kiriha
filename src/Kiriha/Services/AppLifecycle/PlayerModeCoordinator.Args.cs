@@ -18,7 +18,7 @@ public sealed partial class PlayerModeCoordinator
     private static string GetPlayerVideoUrl(string[] args)
     {
         var playerArgIndex = Array.FindIndex(args, arg => arg.Equals("--player", StringComparison.OrdinalIgnoreCase));
-        if (playerArgIndex >= 0 && playerArgIndex + 1 < args.Length && !args[playerArgIndex + 1].StartsWith("--"))
+        if (playerArgIndex >= 0 && playerArgIndex + 1 < args.Length && !args[playerArgIndex + 1].StartsWith("--", StringComparison.Ordinal))
             return args[playerArgIndex + 1];
 
         return string.Empty;

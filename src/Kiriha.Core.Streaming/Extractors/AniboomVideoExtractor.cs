@@ -178,15 +178,15 @@ public sealed partial class AniboomVideoExtractor : IVideoExtractor
         return result;
     }
 
-    [GeneratedRegex(@"https?://(?:www\.)?aniboom\.one/", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"https?://(?:www\.)?aniboom\.one/", RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateUrlRegex();
 
-    [GeneratedRegex(@"data-parameters\s*=\s*(?:'([^']*)'|""([^""]*)"")", RegexOptions.Compiled)]
+    [GeneratedRegex(@"data-parameters\s*=\s*(?:'([^']*)'|""([^""]*)"")", RegexOptions.Compiled, 500)]
     internal static partial Regex GenerateDataParametersRegex();
 
-    [GeneratedRegex(@"""hls""\s*:\s*""?\{\s*\\?""src\\?""\s*:\s*\\?""([^""\\]+)""", RegexOptions.Compiled)]
+    [GeneratedRegex(@"""hls""\s*:\s*""?\{\s*\\?""src\\?""\s*:\s*\\?""([^""\\]+)""", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateHlsSrcRegex();
 
-    [GeneratedRegex(@"""dash""\s*:\s*""?\{\s*\\?""src\\?""\s*:\s*\\?""([^""\\]+)""", RegexOptions.Compiled)]
+    [GeneratedRegex(@"""dash""\s*:\s*""?\{\s*\\?""src\\?""\s*:\s*\\?""([^""\\]+)""", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateDashSrcRegex();
 }

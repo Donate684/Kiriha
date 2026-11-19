@@ -15,7 +15,7 @@ internal static class MpvTask
         }
         catch (AggregateException ex)
         {
-            Log.Warning(ex.Flatten(), "Failed while waiting for {Operation}", operation);
+            Log.Warning(ex, "Failed while waiting for {Operation}", operation);
             return true;
         }
         catch (Exception ex)

@@ -24,7 +24,7 @@ public partial class PlayerViewModel
         _updateNavigationCts?.Dispose();
         _updateNavigationCts = new CancellationTokenSource();
 
-        _ = Task.Run(() => UpdateNavigationAvailabilityAsync(videoUrl, _updateNavigationCts.Token));
+        _ = Task.Run(() => UpdateNavigationAvailabilityAsync(videoUrl, _updateNavigationCts.Token), _updateNavigationCts.Token);
     }
 
     private void UpdateNavigationAvailabilityAsync(string videoUrl, CancellationToken token)

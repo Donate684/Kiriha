@@ -19,7 +19,7 @@ internal sealed class MpvEventLoop : IDisposable
 
     public void Start()
     {
-        _loopTask = Task.Run(EventLoop);
+        _loopTask = Task.Run(EventLoop, _cts.Token);
     }
 
     public bool Stop(IntPtr handle, TimeSpan timeout)

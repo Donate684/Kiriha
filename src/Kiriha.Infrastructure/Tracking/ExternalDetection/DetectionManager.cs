@@ -35,7 +35,7 @@ public class DetectionManager
             {
                 if (exe.StartsWith('^'))
                 {
-                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled), player, new List<ExternalPlayerDefinition>(1) { player }));
+                    regexList.Add((new Regex(exe, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromMilliseconds(500)), player, new List<ExternalPlayerDefinition>(1) { player }));
                 }
                 else
                 {
@@ -52,7 +52,7 @@ public class DetectionManager
             {
                 try
                 {
-                    windowTitleDict[player] = new Regex(player.WindowTitleFormat, RegexOptions.Compiled | RegexOptions.CultureInvariant);
+                    windowTitleDict[player] = new Regex(player.WindowTitleFormat, RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(500));
                 }
                 catch (Exception ex)
                 {

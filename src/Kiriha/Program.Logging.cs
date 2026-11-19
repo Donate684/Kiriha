@@ -2,7 +2,7 @@ using Serilog;
 
 namespace Kiriha;
 
-partial class Program
+static partial class Program
 {
     private static void InitializeLogging(string[] args)
     {

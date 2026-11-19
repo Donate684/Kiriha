@@ -2,7 +2,7 @@ namespace Kiriha.Core.Tracking.Mapping;
 
 public partial class MappingService
 {
-    public void AddMapping(string title, int malId)
+    public void AddMapping(string title, int animeId)
     {
         if (string.IsNullOrWhiteSpace(title)) return;
         var (cleanTitle, searchTitle, _, _, _) = ParseAnimeTitle(title);
@@ -16,7 +16,7 @@ public partial class MappingService
             _manualMapping.RemoveMapping(title);
         }
 
-        _manualMapping.AddMapping(target, malId);
+        _manualMapping.AddMapping(target, animeId);
         ClearRecognitionCaches();
     }
 

@@ -290,7 +290,7 @@ public sealed class AnimeLibProvider : IStreamingProvider
                     ? $"{teamName} ({playerType})"
                     : playerType ?? "Player";
 
-                var playerUrl = src.StartsWith("//") ? $"{StreamingConstants.HttpsPrefix}{src[2..]}" : src;
+                var playerUrl = src.StartsWith("//", StringComparison.Ordinal) ? $"{StreamingConstants.HttpsPrefix}{src[2..]}" : src;
 
                 sources.Add(new StreamingSource
                 {

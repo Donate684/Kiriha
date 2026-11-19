@@ -30,7 +30,7 @@ public partial class SeasonalViewModel
             _hiddenSeasonalIds.Remove(id);
         }
 
-        _ = _seasonalHiddenRepo.RemoveRangeAsync(toUnhide);
+        _ = _seasonalHiddenRepo.RemoveRangeAsync(toUnhide, CancellationToken.None);
     }
 
     [RelayCommand]
@@ -45,13 +45,13 @@ public partial class SeasonalViewModel
         {
             _hiddenSeasonalIds.Remove(item.Id);
             item.IsHiddenInSeasons = false;
-            _ = _seasonalHiddenRepo.RemoveAsync(item.Id);
+            _ = _seasonalHiddenRepo.RemoveAsync(item.Id, CancellationToken.None);
         }
         else
         {
             _hiddenSeasonalIds.Add(item.Id);
             item.IsHiddenInSeasons = true;
-            _ = _seasonalHiddenRepo.AddAsync(item.Id);
+            _ = _seasonalHiddenRepo.AddAsync(item.Id, CancellationToken.None);
         }
 
         if (isHidden)

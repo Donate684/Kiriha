@@ -37,7 +37,7 @@ public partial class SeasonalViewModel
             FranchiseIndex: _franchiseService.GetIndex(),
             Localizer: _localizer);
 
-        var result = await Task.Run(() => SeasonalFilterEngine.Apply(request));
+        var result = await Task.Run(() => SeasonalFilterEngine.Apply(request), CancellationToken.None);
         if (requestId != _applyFiltersRequestCount) return;
 
         await Dispatcher.UIThread.InvokeAsync(() =>

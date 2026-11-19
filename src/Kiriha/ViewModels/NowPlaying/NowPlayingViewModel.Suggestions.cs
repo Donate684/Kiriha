@@ -55,8 +55,11 @@ public partial class NowPlayingViewModel
 
         var cts = new CancellationTokenSource();
         var oldCts = Interlocked.Exchange(ref _searchCts, cts);
-        try { oldCts?.Cancel(); } catch (Exception ex) { Log.Debug(ex, "Error canceling search CTS"); }
-        oldCts?.Dispose();
+        if (oldCts != null)
+        {
+            try { await oldCts.CancelAsync(); } catch (Exception ex) { Log.Debug(ex, "Error canceling search CTS"); }
+            oldCts.Dispose();
+        }
 
         IsSearching = true;
         try

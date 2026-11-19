@@ -42,7 +42,7 @@ public class UpdateMaintenanceTask : IMaintenanceTask
         if (found)
         {
             if (!string.IsNullOrEmpty(_updateService.NewVersion))
-                _notificationService.NotifyAppUpdate(_updateService.NewVersion!);
+                _notificationService.NotifyAppUpdate(_updateService.NewVersion);
 
             if (_settingsService.Current.System.AutoDownloadUpdates)
             {
@@ -52,7 +52,7 @@ public class UpdateMaintenanceTask : IMaintenanceTask
                 {
                     _uiDispatcher.InvokeAsync(async () =>
                     {
-                        await _dialogs.ShowUpdateDialogAsync(isDownloaded: true);
+                        await _dialogs.ShowUpdateDialogAsync(isDownloaded: true, ct: ct);
                     }).SafeFireAndForget("UpdateDialog");
                 }
             }
@@ -60,7 +60,7 @@ public class UpdateMaintenanceTask : IMaintenanceTask
             {
                 _uiDispatcher.InvokeAsync(async () =>
                 {
-                    await _dialogs.ShowUpdateDialogAsync();
+                    await _dialogs.ShowUpdateDialogAsync(ct: ct);
                 }).SafeFireAndForget("UpdateDialog");
             }
         }

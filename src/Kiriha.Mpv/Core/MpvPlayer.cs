@@ -47,7 +47,7 @@ public partial class MpvPlayer : IDisposable
 
         _mpvHandle = LibMpvNative.mpv_create();
         if (_mpvHandle == IntPtr.Zero)
-            throw new Exception("Failed to create mpv instance. Ensure mpv-2.dll is in the output mpv/ folder.");
+            throw new InvalidOperationException("Failed to create mpv instance. Ensure mpv-2.dll is in the output mpv/ folder.");
 
         PlaybackController = new MpvPlaybackController(this);
         TrackManager = new MpvTrackManager(this);

@@ -82,7 +82,7 @@ public sealed record PlayerMediaMetadata(
         {
             var query = uri.Query;
             bool isTorrServer = !string.IsNullOrEmpty(query) &&
-                System.Text.RegularExpressions.Regex.IsMatch(query, Constants.AppConstants.Torrents.TorrentHashLinkRegex);
+                System.Text.RegularExpressions.Regex.IsMatch(query, Constants.AppConstants.Torrents.TorrentHashLinkRegex, System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(500));
 
             var seg = uri.Segments.LastOrDefault() ?? string.Empty;
             var rawName = System.IO.Path.GetFileNameWithoutExtension(seg);
@@ -129,7 +129,7 @@ public sealed record PlayerMediaMetadata(
             var query = uri.Query;
             if (!string.IsNullOrEmpty(query))
             {
-                var match = System.Text.RegularExpressions.Regex.Match(query, Constants.AppConstants.Torrents.TorrentHashLinkRegex);
+                var match = System.Text.RegularExpressions.Regex.Match(query, Constants.AppConstants.Torrents.TorrentHashLinkRegex, System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(500));
                 if (match.Success)
                 {
                     torrentHash = match.Groups[1].Value;

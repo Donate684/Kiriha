@@ -356,12 +356,12 @@ public sealed partial class Anime365Extractor : IVideoExtractor
         return match.Success ? Uri.UnescapeDataString(match.Groups[1].Value) : null;
     }
 
-    [GeneratedRegex(@"smotret-?anime\.(?:org|app|co|com)|anime365\.(?:org|app|co|com)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"smotret-?anime\.(?:org|app|co|com)|anime365\.(?:org|app|co|com)", RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateDomainRegex();
 
-    [GeneratedRegex(@"(?:embed|translations)/(\d+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"(?:embed|translations)/(\d+)", RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateTranslationIdRegex();
 
-    [GeneratedRegex(@"[?&]access_token=([^&#]+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"[?&]access_token=([^&#]+)", RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateTokenRegex();
 }

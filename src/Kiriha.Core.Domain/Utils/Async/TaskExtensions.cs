@@ -13,7 +13,9 @@ public static class TaskExtensions
     /// Safely fire-and-forget a task, logging any unhandled exceptions
     /// instead of letting them become UnobservedTaskExceptions.
     /// </summary>
+#pragma warning disable S3168 // Explicit SafeFireAndForget extension method for background tasks
     public static async void SafeFireAndForget(this Task task, string context = "", Action<Exception>? onException = null)
+#pragma warning restore S3168
     {
         try
         {

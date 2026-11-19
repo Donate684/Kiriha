@@ -12,7 +12,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
-public partial class AniListApiService : IDisposable, IAniListApiService, ITrackerService
+public partial class AniListApiService : IDisposable, IAniListApiService
 {
     private const string Endpoint = Kiriha.Core.Domain.Constants.AppConstants.Api.AniList.BaseUrl;
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(6);

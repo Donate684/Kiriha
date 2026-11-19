@@ -25,6 +25,7 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         _contextFactory = contextFactory;
     }
 
+#pragma warning disable S2077 // ExecuteSqlRawAsync executes PRAGMA statements with internal constant integer schema version
     public async Task InitializeAsync()
     {
         // Single-shot guard: every concurrent caller awaits the same TCS.
@@ -60,6 +61,7 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
             _initTcs.TrySetException(ex);
         }
     }
+#pragma warning restore S2077
 
     /// <summary>
     /// Forces all pending WAL frames into the main database file. Call before

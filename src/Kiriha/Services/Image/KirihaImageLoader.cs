@@ -14,14 +14,14 @@ public class KirihaImageLoader : IAsyncImageLoader
         _imageCache = imageCache;
     }
 
-    public async Task<IImageLease?> LoadAsync(ImageLoadRequest request, CancellationToken cancellationToken)
+    public async Task<IImageLease?> LoadAsync(ImageLoadRequest request, CancellationToken cancellationToken = default)
     {
         var url = request.Source?.ToString();
         if (string.IsNullOrEmpty(url)) return null;
 
         try
         {
-            var bitmap = await _imageCache.LoadBitmapAsync(url);
+            var bitmap = await _imageCache.LoadBitmapAsync(url, ct: cancellationToken);
             if (bitmap == null) return null;
             return ImageLease.NonOwning(bitmap);
         }

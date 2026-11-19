@@ -45,13 +45,13 @@ public partial class PlayerViewModel
             if (SmartTrackAutoload)
             {
                 var url = VideoUrl;
-                _ = Task.Run(() => LoadSmartTracks(url));
+                _ = Task.Run(() => LoadSmartTracks(url), CancellationToken.None);
             }
             _ = Task.Run(() =>
             {
                 var info = _playback.GetRuntimeVideoInfo();
                 Dispatcher.UIThread.Post(() => MpvRuntimeInfo = info);
-            });
+            }, CancellationToken.None);
         });
     }
 
@@ -209,7 +209,7 @@ public partial class PlayerViewModel
         {
             var info = _playback.GetRuntimeVideoInfo();
             Dispatcher.UIThread.Post(() => MpvRuntimeInfo = info);
-        });
+        }, CancellationToken.None);
     }
 
     private void OnPlayerSubtitleDelayChanged(double subDelay)

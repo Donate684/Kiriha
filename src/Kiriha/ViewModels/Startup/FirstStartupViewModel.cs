@@ -57,8 +57,6 @@ public partial class FirstStartupViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLastStep;
 
-    private bool CanNext() => true;
-
     private void UpdateCurrentStep()
     {
         if (CurrentStepIndex < Steps.Count)
@@ -78,7 +76,7 @@ public partial class FirstStartupViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanNext))]
+    [RelayCommand]
     private void NextStep()
     {
         if (CurrentStep != null)

@@ -46,13 +46,13 @@ public class TorrentEntity
 
             // 1. Try stripping from start: ^\s*[\[\(]Group[\]\)]\s*
             var startPattern = @"^\s*[\[\(]" + escapedGroup + @"[\]\)]\s*";
-            var cleaned = System.Text.RegularExpressions.Regex.Replace(_title, startPattern, string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var cleaned = System.Text.RegularExpressions.Regex.Replace(_title, startPattern, string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
             if (cleaned != _title && !string.IsNullOrWhiteSpace(cleaned))
                 return cleaned.Trim();
 
             // 2. If not at start, try stripping [Group] or (Group) anywhere
             var anyPattern = @"[\[\(]" + escapedGroup + @"[\]\)]\s*";
-            cleaned = System.Text.RegularExpressions.Regex.Replace(_title, anyPattern, string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            cleaned = System.Text.RegularExpressions.Regex.Replace(_title, anyPattern, string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
             if (!string.IsNullOrWhiteSpace(cleaned))
                 return cleaned.Trim();
         }

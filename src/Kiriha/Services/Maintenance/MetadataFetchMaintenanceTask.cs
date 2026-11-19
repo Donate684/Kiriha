@@ -141,7 +141,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                         {
                             if (meta != null)
                             {
-                                if (item.Title.StartsWith("ID ") && !string.IsNullOrEmpty(meta.Name))
+                                if (item.Title.StartsWith("ID ", StringComparison.Ordinal) && !string.IsNullOrEmpty(meta.Name))
                                 {
                                     item.Title = meta.Name;
                                     changed = true;
@@ -180,7 +180,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                         {
                             try
                             {
-                                await _userAnimeRepo.UpdateMetadataAsync(item);
+                                await _userAnimeRepo.UpdateMetadataAsync(item, CancellationToken.None);
                             }
                             catch (Exception ex)
                             {
@@ -200,7 +200,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
                         await _uiDispatcher.InvokeAsync(() => item.LocalPosterPath = localPath);
                         try
                         {
-                            await _userAnimeRepo.UpdateMetadataAsync(item);
+                            await _userAnimeRepo.UpdateMetadataAsync(item, CancellationToken.None);
                         }
                         catch (Exception ex)
                         {
@@ -231,7 +231,7 @@ public class MetadataFetchMaintenanceTask : IMaintenanceTask
 
     private static bool NeedsWork(AnimeEntity item)
     {
-        return item.Title.StartsWith("ID ")
+        return item.Title.StartsWith("ID ", StringComparison.Ordinal)
             || (string.IsNullOrEmpty(item.RussianTitle) || string.IsNullOrEmpty(item.RussianSynopsis))
             || string.IsNullOrEmpty(item.MainPictureUrl)
             || AnimeEntity.IsMissingPosterUrl(item.MainPictureUrl)

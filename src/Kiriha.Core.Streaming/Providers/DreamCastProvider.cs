@@ -75,7 +75,7 @@ public sealed partial class DreamCastProvider : IStreamingProvider
                 string? thumb = null;
                 if (!string.IsNullOrWhiteSpace(image))
                 {
-                    thumb = image.StartsWith("//") ? $"{StreamingConstants.HttpsPrefix}{image[2..]}" : image;
+                    thumb = image.StartsWith("//", StringComparison.Ordinal) ? $"{StreamingConstants.HttpsPrefix}{image[2..]}" : image;
                 }
 
                 var releasePath = !string.IsNullOrWhiteSpace(url) ? url : id;
@@ -201,6 +201,6 @@ public sealed partial class DreamCastProvider : IStreamingProvider
         return Task.FromResult<IReadOnlyList<StreamingSource>>([]);
     }
 
-    [GeneratedRegex(@"atob\(\s*[""'](?<b64>[A-Za-z0-9+/=]+)[""']\s*\)", RegexOptions.Compiled)]
+    [GeneratedRegex(@"atob\(\s*[""'](?<b64>[A-Za-z0-9+/=]+)[""']\s*\)", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateAtobPlaylistRegex();
 }

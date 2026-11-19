@@ -5,7 +5,7 @@ namespace Kiriha.Core.Tracking.Api;
 
 public sealed partial class ShikiHostResolver : IImageUrlRewriter
 {
-    [GeneratedRegex(@"^shikimori\.[a-z]{2,6}$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^shikimori\.[a-z]{2,6}$", RegexOptions.IgnoreCase, 500)]
     private static partial Regex ShikiHostPattern();
 
     private readonly ShikiHostState _state;

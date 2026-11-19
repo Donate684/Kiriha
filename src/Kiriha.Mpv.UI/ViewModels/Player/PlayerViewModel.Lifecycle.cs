@@ -60,9 +60,9 @@ public partial class PlayerViewModel
             {
                 _ = Task.Run(async () =>
                 {
-                    try { await _torrServer.DropTorrentAsync(hashToDrop).ConfigureAwait(false); }
+                    try { await _torrServer.DropTorrentAsync(hashToDrop, CancellationToken.None).ConfigureAwait(false); }
                     catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop torrent {Hash} on dispose", hashToDrop); }
-                }).Wait(TimeSpan.FromMilliseconds(500));
+                }, CancellationToken.None).Wait(TimeSpan.FromMilliseconds(500), CancellationToken.None);
             }
             catch (Exception ex)
             {

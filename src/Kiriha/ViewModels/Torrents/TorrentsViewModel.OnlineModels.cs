@@ -66,12 +66,12 @@ public sealed class OnlineEpisodeItem : ObservableObject
         get
         {
             var raw = Episode.Title?.Trim();
-            if (string.IsNullOrWhiteSpace(raw) || Regex.IsMatch(raw, @"^(Episode|\u0421\u0435\u0440\u0438\u044F|\u042D\u043F\u0438\u0437\u043E\u0434)?\s*\d+$", RegexOptions.IgnoreCase))
+            if (string.IsNullOrWhiteSpace(raw) || Regex.IsMatch(raw, @"^(Episode|\u0421\u0435\u0440\u0438\u044F|\u042D\u043F\u0438\u0437\u043E\u0434)?\s*\d+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
             {
                 return _localizer?.GetLoc("torrents.online.episode_label", EpisodeNumber) ?? $"Episode {EpisodeNumber}";
             }
 
-            var match = Regex.Match(raw, @"^(Episode|\u0421\u0435\u0440\u0438\u044F|\u042D\u043F\u0438\u0437\u043E\u0434)\s*\d+[:.\s-]+(?<name>.+)$", RegexOptions.IgnoreCase);
+            var match = Regex.Match(raw, @"^(Episode|\u0421\u0435\u0440\u0438\u044F|\u042D\u043F\u0438\u0437\u043E\u0434)\s*\d+[:.\s-]+(?<name>.+)$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
             if (match.Success)
             {
                 var epPrefix = _localizer?.GetLoc("torrents.online.episode_label", EpisodeNumber) ?? $"Episode {EpisodeNumber}";
@@ -204,13 +204,13 @@ public sealed class OnlineSourceItem : ObservableObject
         var combined = $"{title} {dubber}";
         if (string.IsNullOrWhiteSpace(combined)) return null;
 
-        if (Regex.IsMatch(combined, @"\b(ru|rus)\b|\[ru\]|\(ru\)|\[rus\]|\(rus\)|\u0440\u0443\u0441", RegexOptions.IgnoreCase))
+        if (Regex.IsMatch(combined, @"\b(ru|rus)\b|\[ru\]|\(ru\)|\[rus\]|\(rus\)|\u0440\u0443\u0441", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
             return "ru";
 
-        if (Regex.IsMatch(combined, @"\b(en|eng)\b|\[en\]|\(en\)|\[eng\]|\(eng\)|english", RegexOptions.IgnoreCase))
+        if (Regex.IsMatch(combined, @"\b(en|eng)\b|\[en\]|\(en\)|\[eng\]|\(eng\)|english", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
             return "en";
 
-        if (Regex.IsMatch(combined, @"\b(ja|jp|jpn)\b|\[ja\]|\(ja\)|\[jpn\]|\(jpn\)|japanese|raw", RegexOptions.IgnoreCase))
+        if (Regex.IsMatch(combined, @"\b(ja|jp|jpn)\b|\[ja\]|\(ja\)|\[jpn\]|\(jpn\)|japanese|raw", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
             return "ja";
 
         return null;

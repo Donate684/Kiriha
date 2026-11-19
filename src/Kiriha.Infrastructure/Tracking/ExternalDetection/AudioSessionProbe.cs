@@ -126,7 +126,7 @@ internal static unsafe partial class AudioSessionProbe
         }
         catch (Exception ex)
         {
-            Log.Debug("AudioSessionProbe: query failed for PID {Pid}: {Msg}", pid, ex.Message);
+            Log.Debug(ex, "AudioSessionProbe: query failed for PID {Pid}", pid);
             return AudioState.Unknown;
         }
         finally

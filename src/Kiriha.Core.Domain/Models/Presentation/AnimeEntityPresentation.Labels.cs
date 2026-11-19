@@ -78,11 +78,11 @@ public partial class AnimeEntityPresentation
 
     public bool HasMeanScore => !string.IsNullOrWhiteSpace(_item.MeanScore) && _item.MeanScore != "-" && _item.MeanScoreValue > 0;
 
-    public string MeanScoreDisplay => HasMeanScore ? _item.MeanScore! : string.Empty;
+    public string MeanScoreDisplay => HasMeanScore ? (_item.MeanScore ?? string.Empty) : string.Empty;
 
     public bool HasScore => !string.IsNullOrWhiteSpace(_item.Score) && _item.Score != "-" && _item.ScoreValue > 0;
 
-    public string ScoreDisplay => HasScore ? _item.Score! : string.Empty;
+    public string ScoreDisplay => HasScore ? (_item.Score ?? string.Empty) : string.Empty;
 
     public bool HasEffectiveScore => HasMeanScore || HasScore;
 

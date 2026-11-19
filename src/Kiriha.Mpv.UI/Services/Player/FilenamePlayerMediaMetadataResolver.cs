@@ -20,7 +20,7 @@ internal readonly record struct ParsedVideoPathInfo(
 
 public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMetadataResolver
 {
-    [GeneratedRegex(@"([sS]?\d*[eE]\d+)\s*-(.*)")]
+    [GeneratedRegex(@"([sS]?\d*[eE]\d+)\s*-(.*)", RegexOptions.None, 500)]
     internal static partial Regex HyphenatedEpisodeRegex();
 
     internal static ParsedVideoPathInfo ExtractVideoPathInfo(string videoPath)
@@ -37,7 +37,7 @@ public sealed partial class FilenamePlayerMediaMetadataResolver : IPlayerMediaMe
             var query = uri.Query;
             if (!string.IsNullOrEmpty(query))
             {
-                var match = Regex.Match(query, AppConstants.Torrents.TorrentHashLinkRegex);
+                var match = Regex.Match(query, AppConstants.Torrents.TorrentHashLinkRegex, RegexOptions.None, TimeSpan.FromMilliseconds(500));
                 if (match.Success)
                 {
                     torrentHash = match.Groups[1].Value;

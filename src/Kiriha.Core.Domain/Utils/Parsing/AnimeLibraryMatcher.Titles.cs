@@ -5,13 +5,13 @@ namespace Kiriha.Core.Domain.Utils.Parsing;
 
 public static partial class AnimeLibraryMatcher
 {
-    [GeneratedRegex(@"[sS](\d{1,2})[eE]\d+|\b[sS]eason\s*(\d{1,2})\b|\b(\d{1,2})(?:st|nd|rd|th)\s+[sS]eason\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"[sS](\d{1,2})[eE]\d+|\b[sS]eason\s*(\d{1,2})\b|\b(\d{1,2})(?:st|nd|rd|th)\s+[sS]eason\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     public static partial Regex SeasonRegex();
 
-    [GeneratedRegex(@"\b(II|III|IV|V|VI)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\b(II|III|IV|V|VI)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     public static partial Regex RomanSeasonSuffixRegex();
 
-    [GeneratedRegex(@"\((19[6-9]\d|20\d{2})\)", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\((19[6-9]\d|20\d{2})\)", RegexOptions.CultureInvariant, 500)]
     public static partial Regex ParenthesizedYearRegex();
 
     public static int ExtractSeason(string rawTitle, string cleanTitle, int? parsedSeason)

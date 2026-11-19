@@ -76,7 +76,7 @@ public class LocConverter : IValueConverter
         if (param == "shadow_logic") return value is true ? BoxShadows.Parse("-2 0 12 0 #08000000") : new BoxShadows();
 
         // Formatting logic: param="format:l.Key"
-        if (param != null && param.StartsWith("format:"))
+        if (param != null && param.StartsWith("format:", StringComparison.Ordinal))
         {
             string formatKey = param[7..];
             if (Application.Current != null && Application.Current.Resources.TryGetResource(formatKey, ThemeVariant.Default, out var formatObj) && formatObj is string formatStr)

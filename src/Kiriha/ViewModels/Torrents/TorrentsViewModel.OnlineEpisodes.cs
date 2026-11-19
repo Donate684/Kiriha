@@ -27,8 +27,11 @@ public partial class TorrentsViewModel
         OnlineEpisodeSelectorError = null;
         OnlineEpisodeSelectorCountText = string.Empty;
 
-        _modalCts?.Cancel();
-        _modalCts?.Dispose();
+        if (_modalCts != null)
+        {
+            await _modalCts.CancelAsync();
+            _modalCts.Dispose();
+        }
         _modalCts = new CancellationTokenSource();
         var ct = _modalCts.Token;
 
@@ -125,8 +128,11 @@ public partial class TorrentsViewModel
         IsOnlineSourcesLoading = true;
         OnlineEpisodeSelectorError = null;
 
-        _modalCts?.Cancel();
-        _modalCts?.Dispose();
+        if (_modalCts != null)
+        {
+            await _modalCts.CancelAsync();
+            _modalCts.Dispose();
+        }
         _modalCts = new CancellationTokenSource();
         var ct = _modalCts.Token;
 

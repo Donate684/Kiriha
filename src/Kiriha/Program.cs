@@ -6,12 +6,13 @@ using Velopack;
 
 namespace Kiriha;
 
-sealed partial class Program
+static partial class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
+#pragma warning disable S2139 // Fatal application startup exception must be logged and crash report generated before rethrowing to crash
     public static void Main(string[] args)
     {
         Kiriha.Infrastructure.Platform.PathHelper.EnsureDirectoriesExist();
@@ -74,6 +75,7 @@ sealed partial class Program
             mutex?.Dispose();
         }
     }
+#pragma warning restore S2139
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()

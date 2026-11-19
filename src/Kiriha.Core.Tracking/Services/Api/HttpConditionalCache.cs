@@ -109,7 +109,7 @@ public sealed class HttpConditionalCache
         var urlHash = HashUrl(fullUrl);
 
         HttpCacheEntry? cached = null;
-        try { cached = await _cache.GetAsync(urlHash); }
+        try { cached = await _cache.GetAsync(urlHash, ct); }
         catch (Exception ex) { Log.Debug(ex, "{Tag}: HTTP cache lookup failed for {Url}", _logTag, fullUrl); }
 
         if (cached != null)
@@ -128,7 +128,7 @@ public sealed class HttpConditionalCache
                 catch { /* malformed stored ETag — ignore and refetch */ }
             }
             if (!string.IsNullOrEmpty(cached.LastModified)
-                && DateTimeOffset.TryParse(cached.LastModified, out var lm))
+                && DateTimeOffset.TryParse(cached.LastModified, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AdjustToUniversal, out var lm))
             {
                 request.Headers.IfModifiedSince = lm;
             }
@@ -185,7 +185,7 @@ public sealed class HttpConditionalCache
             // just means the next call pays a full payload instead of 304.
             _ = Task.Run(async () =>
             {
-                try { await _cache.UpsertAsync(urlHash, etag, lmHeader, body); }
+                try { await _cache.UpsertAsync(urlHash, etag, lmHeader, body, CancellationToken.None); }
                 catch (Exception ex) { Log.Debug(ex, "{Tag}: failed to persist HTTP cache for {Url}", _logTag, fullUrl); }
             }, CancellationToken.None);
 

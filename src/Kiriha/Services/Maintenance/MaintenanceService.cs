@@ -30,7 +30,7 @@ public class MaintenanceService : IDisposable
 
         foreach (var task in _tasks)
         {
-            _backgroundTasks.Run($"MaintenanceTask.{task.GetType().Name}", ct => RunTaskLoopAsync(task, ct))
+            _backgroundTasks.Run($"MaintenanceTask.{task.GetType().Name}", ct => RunTaskLoopAsync(task, ct), _disposeCts.Token)
                 .SafeFireAndForget(task.GetType().Name);
         }
 

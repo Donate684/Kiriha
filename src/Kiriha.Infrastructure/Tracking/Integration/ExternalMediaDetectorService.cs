@@ -50,7 +50,7 @@ public class ExternalMediaDetectorService : IHostedService, IDisposable, IExtern
             {
                 // Expected on cancellation
             }
-        });
+        }, cancellationToken);
 
         return Task.CompletedTask;
     }

@@ -16,7 +16,7 @@ public partial class NowPlayingViewModel
 
         try
         {
-            var result = await _listActionService.AddToListAsync(MatchedAnime, UserAnimeStatus.Watching, MatchedAnime.Progress);
+            var result = await _listActionService.AddToListAsync(MatchedAnime, UserAnimeStatus.Watching, MatchedAnime.Progress, CancellationToken.None);
             if (!result.Success && !string.IsNullOrEmpty(result.Message))
             {
                 Log.Warning("NowPlayingViewModel: Failed to add anime to watching: {Message}", result.Message);

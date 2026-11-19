@@ -34,7 +34,7 @@ public partial class ShikiMetadataService
             {
                 // ApplyMetadata mutates ObservableObject properties — dispatch to UI thread.
                 bool changed = await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, meta));
-                if (changed) await _userAnimeRepo.UpdateMetadataAsync(item);
+                if (changed) await _userAnimeRepo.UpdateMetadataAsync(item, ct);
                 localizedCount++;
             }
             else
@@ -63,10 +63,10 @@ public partial class ShikiMetadataService
                         var fetchedMeta = await FetchMetadataFromApiAsync(item.Id, ct, item.MediaKind);
                         if (fetchedMeta != null)
                         {
-                            await _metadataRepo.UpsertAsync(fetchedMeta);
+                            await _metadataRepo.UpsertAsync(fetchedMeta, ct);
 
                             bool changed = await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, fetchedMeta));
-                            if (changed) await _userAnimeRepo.UpdateMetadataAsync(item);
+                            if (changed) await _userAnimeRepo.UpdateMetadataAsync(item, ct);
                             int count = System.Threading.Interlocked.Increment(ref localizedCount);
                             onProgress?.Invoke(count);
                         }
@@ -111,7 +111,7 @@ public partial class ShikiMetadataService
         bool changed = await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, meta));
         if (changed)
         {
-            try { await _userAnimeRepo.UpdateMetadataAsync(item); }
+            try { await _userAnimeRepo.UpdateMetadataAsync(item, ct); }
             catch (Exception ex) { Log.Debug(ex, "EnsureLocalizedAsync: failed to persist localized fields for {Id}", item.Id); }
         }
     }
@@ -123,7 +123,7 @@ public partial class ShikiMetadataService
         if (!string.IsNullOrEmpty(meta.Name))
         {
             if (string.IsNullOrEmpty(item.Title) ||
-                item.Title.StartsWith("ID ") ||
+                item.Title.StartsWith("ID ", StringComparison.Ordinal) ||
                 (!string.IsNullOrEmpty(item.EnglishTitle) && string.Equals(item.Title.Trim(), item.EnglishTitle.Trim(), StringComparison.OrdinalIgnoreCase)))
             {
                 if (item.Title != meta.Name)

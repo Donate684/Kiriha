@@ -16,6 +16,7 @@ public sealed class AnimeCountryRepository : IAnimeCountryRepository
         _contextFactory = contextFactory;
     }
 
+#pragma warning disable S2077 // paramNames contains only dynamically generated @p0, @p1 parameter tokens
     public async Task<Dictionary<int, string>> GetBatchAsync(IEnumerable<int> malIds, CancellationToken ct = default)
     {
         var idList = malIds.Distinct().ToList();
@@ -63,6 +64,7 @@ public sealed class AnimeCountryRepository : IAnimeCountryRepository
 
         return result;
     }
+#pragma warning restore S2077
 
     public async Task UpsertBatchAsync(IReadOnlyDictionary<int, string> countries, CancellationToken ct = default)
     {

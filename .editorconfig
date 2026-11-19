@@ -204,5 +204,7 @@ dotnet_diagnostic.MA0055.severity = none
 dotnet_diagnostic.S2094.severity = none
 # S3963: Static field initialization order in static constructors
 dotnet_diagnostic.S3963.severity = none
+# S1133: Deprecated [Obsolete] code markers maintained for backward compatibility
+dotnet_diagnostic.S1133.severity = none
 
 

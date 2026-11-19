@@ -16,7 +16,7 @@ public partial class SyncManager
             Log.Warning("Task {TaskId} failed (attempt {Attempt}/{Max}), will retry in {Delay} min.",
                 task.Id, task.RetryCount, MaxRetries, delayMin);
 
-            await _syncTaskRepo.UpdateAsync(MapToEntity(task));
+            await _syncTaskRepo.UpdateAsync(MapToEntity(task), _cts.Token);
 
             // Fire and forget a delayed re-enqueue to not block the main queue
             var retryDelay = TimeSpan.FromMinutes(delayMin);
@@ -30,7 +30,7 @@ public partial class SyncManager
         else
         {
             Log.Warning("Task {TaskId} permanently failed after {MaxRetries} retries", task.Id, MaxRetries);
-            await _syncTaskRepo.RemoveAsync(task.Id);
+            await _syncTaskRepo.RemoveAsync(task.Id, _cts.Token);
 
             var failedTrackers = GetTaskTrackers(task)
                 .Where(t => !task.SuccessfulTrackers.Contains(t.Name))
@@ -43,7 +43,9 @@ public partial class SyncManager
             }
 
             var detail = _localizer.GetLoc("sync.syncing.failed");
+#pragma warning disable S6966 // Synchronous fire-and-forget history logging
             _historyService.AddEntry(task.AnimeId, task.MediaKind, task.FullItem?.Title ?? $"ID {task.AnimeId}", null, 0, HistoryActionType.SyncFailed, detail);
+#pragma warning restore S6966
         }
     }
 }

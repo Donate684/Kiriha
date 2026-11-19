@@ -270,7 +270,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
                 targetEp,
                 nextStatus == UserAnimeStatus.Completed ? HistoryActionType.Completed : HistoryActionType.Scrobbled,
                 null,
-                match.MainPictureUrl);
+                match.MainPictureUrl,
+                ct);
             await _progressService.UpdateProgressAsync(match, targetEp, nextStatus);
 
             // Auto-Complete & Quick Rating notification

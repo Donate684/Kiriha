@@ -46,8 +46,11 @@ public partial class TorrentsViewModel
 
         if (ct == default)
         {
-            _searchCts?.Cancel();
-            _searchCts?.Dispose();
+            if (_searchCts != null)
+            {
+                await _searchCts.CancelAsync();
+                _searchCts.Dispose();
+            }
             _searchCts = new CancellationTokenSource();
             ct = _searchCts.Token;
         }

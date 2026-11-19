@@ -86,9 +86,9 @@ public sealed partial class SibnetVideoExtractor : IVideoExtractor
         ];
     }
 
-    [GeneratedRegex(@"https?://(?:www\.)?video\.sibnet\.ru/", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"https?://(?:www\.)?video\.sibnet\.ru/", RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateUrlRegex();
 
-    [GeneratedRegex(@"""(/v/[^""]*\.mp4)""", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"""(/v/[^""]*\.mp4)""", RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateMp4PathRegex();
 }

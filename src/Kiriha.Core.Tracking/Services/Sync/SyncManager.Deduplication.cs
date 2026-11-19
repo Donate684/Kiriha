@@ -107,7 +107,7 @@ public partial class SyncManager
         }
 
         var entity = MapToEntity(task);
-        task.Id = await _syncTaskRepo.AddAsync(entity);
+        task.Id = await _syncTaskRepo.AddAsync(entity, _cts.Token);
 
         RecordLatestTask(task);
         try
@@ -118,7 +118,9 @@ public partial class SyncManager
 
             if (pendingTrackers.Count > 0)
             {
+#pragma warning disable S6966 // Synchronous fire-and-forget history logging
                 _historyService.SetPendingTrackers(animeId, mediaKind, progress, pendingTrackers);
+#pragma warning restore S6966
             }
 
             _highPriorityQueue.Enqueue(task);
@@ -142,7 +144,7 @@ public partial class SyncManager
             FullItem = mediaKind != MediaKind.Anime ? new AnimeEntity { Id = animeId, MediaKind = mediaKind } : null
         };
         var entity = MapToEntity(task);
-        task.Id = await _syncTaskRepo.AddAsync(entity);
+        task.Id = await _syncTaskRepo.AddAsync(entity, _cts.Token);
 
         RecordLatestTask(task);
         try
@@ -170,7 +172,7 @@ public partial class SyncManager
             Status = item.Status
         };
         var entity = MapToEntity(task);
-        task.Id = await _syncTaskRepo.AddAsync(entity);
+        task.Id = await _syncTaskRepo.AddAsync(entity, _cts.Token);
 
         RecordLatestTask(task);
         try
@@ -178,7 +180,9 @@ public partial class SyncManager
             var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();
             if (destinationTrackers.Count > 0)
             {
+#pragma warning disable S6966 // Synchronous fire-and-forget history logging
                 _historyService.SetPendingTrackers(item.Id, item.MediaKind, effectiveProgress, destinationTrackers);
+#pragma warning restore S6966
             }
 
             _highPriorityQueue.Enqueue(task);

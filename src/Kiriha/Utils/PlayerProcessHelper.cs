@@ -213,7 +213,7 @@ public static class PlayerProcessHelper
         if (string.IsNullOrWhiteSpace(url))
             return false;
 
-        if (System.Text.RegularExpressions.Regex.IsMatch(url, Kiriha.Core.Domain.Constants.AppConstants.Torrents.TorrentHashLinkRegex))
+        if (System.Text.RegularExpressions.Regex.IsMatch(url, Kiriha.Core.Domain.Constants.AppConstants.Torrents.TorrentHashLinkRegex, System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(500)))
             return true;
 
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&

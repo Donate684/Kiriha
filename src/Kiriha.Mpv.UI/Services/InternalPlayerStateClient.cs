@@ -49,7 +49,7 @@ public sealed class InternalPlayerStateClient : IDisposable
         if (_disposed) return;
         lock (_connectionGate)
         {
-            _supervisorTask ??= Task.Run(SuperviseConnectionLoopAsync);
+            _supervisorTask ??= Task.Run(SuperviseConnectionLoopAsync, _cts.Token);
         }
     }
 
@@ -97,7 +97,7 @@ public sealed class InternalPlayerStateClient : IDisposable
             };
             var json = JsonSerializer.Serialize(msg, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
 
-            if (_writeGate.Wait(300))
+            if (_writeGate.Wait(300, CancellationToken.None))
             {
                 try
                 {
@@ -202,7 +202,7 @@ public sealed class InternalPlayerStateClient : IDisposable
             await _writeGate.WaitAsync(token).ConfigureAwait(false);
             try
             {
-                await writer.WriteLineAsync(handshakeJson).ConfigureAwait(false);
+                await writer.WriteLineAsync(handshakeJson.AsMemory(), token).ConfigureAwait(false);
                 await writer.FlushAsync(token).ConfigureAwait(false);
             }
             finally
@@ -342,7 +342,7 @@ public sealed class InternalPlayerStateClient : IDisposable
 
     private async Task FlushPendingStateAsync()
     {
-        await _writeGate.WaitAsync().ConfigureAwait(false);
+        await _writeGate.WaitAsync(_cts.Token).ConfigureAwait(false);
         try
         {
             while (!_disposed)
@@ -374,8 +374,8 @@ public sealed class InternalPlayerStateClient : IDisposable
                     State = stateToWrite
                 };
                 var json = JsonSerializer.Serialize(msg, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
-                await writer.FlushAsync().ConfigureAwait(false);
+                await writer.WriteLineAsync(json.AsMemory(), _cts.Token).ConfigureAwait(false);
+                await writer.FlushAsync(_cts.Token).ConfigureAwait(false);
             }
         }
         catch (Exception ex)

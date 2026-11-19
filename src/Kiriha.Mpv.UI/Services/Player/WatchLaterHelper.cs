@@ -6,6 +6,7 @@ namespace Kiriha.Mpv.UI.Services.Player;
 
 public static class WatchLaterHelper
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("SonarAnalyzer.CSharp", "S4790:Make sure this weak hash algorithm is not used in a sensitive context", Justification = "mpv internally uses MD5 to generate watch-later cache file names")]
     public static string ComputeMpvHash(string url)
     {
         if (string.IsNullOrEmpty(url)) return string.Empty;

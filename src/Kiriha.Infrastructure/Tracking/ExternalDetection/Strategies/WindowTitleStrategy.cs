@@ -22,7 +22,7 @@ public static class WindowTitleStrategy
         {
             var match = compiledFormat != null
                 ? compiledFormat.Match(windowTitle)
-                : Regex.Match(windowTitle, player.WindowTitleFormat);
+                : Regex.Match(windowTitle, player.WindowTitleFormat, RegexOptions.None, TimeSpan.FromMilliseconds(500));
 
             if (match.Success)
             {

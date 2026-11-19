@@ -90,7 +90,7 @@ internal static class SeasonalFilterEngine
             {
                 bool hasFranchise = request.FranchiseIndex.TryGetValue(x.Id, out var ctx) && ctx.HasRelation;
                 if (!hasFranchise) return false;
-                return (request.FilterNotInList || anyStatusFilter) ? matchesStatus : true;
+                return !(request.FilterNotInList || anyStatusFilter) || matchesStatus;
             }
 
             return matchesStatus;

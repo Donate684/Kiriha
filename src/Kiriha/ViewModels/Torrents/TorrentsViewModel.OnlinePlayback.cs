@@ -30,8 +30,11 @@ public partial class TorrentsViewModel
         PlayerLaunchingTitle = $"{animeTitle} - {epTitle} ({sourceItem.Title})";
         OnlineEpisodeSelectorError = null;
 
-        _launchCts?.Cancel();
-        _launchCts?.Dispose();
+        if (_launchCts != null)
+        {
+            await _launchCts.CancelAsync();
+            _launchCts.Dispose();
+        }
         _launchCts = new CancellationTokenSource();
         var ct = _launchCts.Token;
 
@@ -82,7 +85,7 @@ public partial class TorrentsViewModel
                     titleEn,
                     TorrentHash: string.Empty);
 
-                _internalPlayerServer.SendMetadataAsync(initialMeta).SafeFireAndForget("Torrents.Online.SendMetadata");
+                _internalPlayerServer.SendMetadataAsync(initialMeta, CancellationToken.None).SafeFireAndForget("Torrents.Online.SendMetadata");
             }
 
             PlayerProcessHelper.LaunchPlayer(

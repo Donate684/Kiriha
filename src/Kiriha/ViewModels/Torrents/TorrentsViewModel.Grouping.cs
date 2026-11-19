@@ -112,7 +112,7 @@ internal static class TorrentGrouping
         };
 
         return source
-            .GroupBy(t => string.IsNullOrWhiteSpace(t.AnimeTitle) ? "\u2014" : t.AnimeTitle!.Trim(),
+            .GroupBy(t => string.IsNullOrWhiteSpace(t.AnimeTitle) ? "\u2014" : t.AnimeTitle.Trim(),
                 System.StringComparer.OrdinalIgnoreCase)
             .Select(g => new TorrentGroup(g.Key, g.ToList()))
             .OrderByDescending(g => g.HasMatch)

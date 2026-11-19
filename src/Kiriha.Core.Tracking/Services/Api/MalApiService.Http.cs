@@ -11,7 +11,7 @@ public partial class MalApiService
         // Factory — the value collection is captured once, but the HttpRequestMessage
         // is rebuilt per attempt so a 401-retry can re-issue the same logical request
         // without tripping HttpClient's "request already sent" guard.
-        var fullUrl = url.StartsWith("http") ? url : MalBaseUrl + url.TrimStart('/');
+        var fullUrl = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : MalBaseUrl + url.TrimStart('/');
         return SendRequestAsync(
             () => new HttpRequestMessage(new HttpMethod("PATCH"), fullUrl) { Content = new FormUrlEncodedContent(values) },
             ct);
@@ -140,7 +140,7 @@ public partial class MalApiService
 
     private async Task<HttpResponseMessage> GetAsync(string url, CancellationToken ct = default)
     {
-        var fullUrl = url.StartsWith("http") ? url : MalBaseUrl + url.TrimStart('/');
+        var fullUrl = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : MalBaseUrl + url.TrimStart('/');
         var request = new HttpRequestMessage(HttpMethod.Get, fullUrl);
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
 
@@ -179,7 +179,7 @@ public partial class MalApiService
     /// </summary>
     private Task<byte[]?> GetWithCacheAsync(string url, CancellationToken ct = default, TimeSpan? localTtl = null)
     {
-        var fullUrl = url.StartsWith("http") ? url : MalBaseUrl + url.TrimStart('/');
+        var fullUrl = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : MalBaseUrl + url.TrimStart('/');
 
         return _httpCache.SendAsync(
             requestFactory: async innerCt =>

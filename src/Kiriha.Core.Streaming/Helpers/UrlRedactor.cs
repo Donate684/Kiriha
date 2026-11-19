@@ -15,6 +15,6 @@ public static partial class UrlRedactor
         return SensitiveQueryParamRegex().Replace(url, "$1[REDACTED]");
     }
 
-    [GeneratedRegex(@"([?&](?:access_token|token|api_key|password)=)[^&#\s]+", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"([?&](?:access_token|token|api_key|password)=)[^&#\s]+", RegexOptions.IgnoreCase, 500)]
     private static partial Regex SensitiveQueryParamRegex();
 }

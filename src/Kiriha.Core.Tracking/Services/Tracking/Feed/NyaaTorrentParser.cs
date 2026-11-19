@@ -62,7 +62,7 @@ internal static class NyaaTorrentParser
             MagnetLink = !string.IsNullOrEmpty(infoHash)
                 ? $"magnet:?xt=urn:btih:{infoHash}&dn={Uri.EscapeDataString(title)}{AppConstants.Torrents.NyaaDefaultTrackersQuery}"
                 : string.Empty,
-            PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, out var date) ? date : DateTime.UtcNow,
+            PublishDate = DateTime.TryParse(item.Element("pubDate")?.Value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AdjustToUniversal, out var date) ? date : DateTime.UtcNow,
             Category = categoryStr,
             FormattedSize = sizeStr,
             Seeders = seeders,

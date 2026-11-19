@@ -135,6 +135,12 @@ public partial class AnimeRepository : IAnimeRepository
         }
     }
 
+    public Task<List<AnimeEntity>> GetSnapshotAsync(MediaKind[] kinds)
+    {
+        return _uiDispatcher.InvokeAsync(() =>
+            Collection.Where(x => kinds.Contains(x.MediaKind)).ToList());
+    }
+
     public async Task ApplySyncBatchAsync(List<AnimeEntity> toRemove, List<Action> uiBatch)
     {
         if (toRemove.Any())
@@ -161,21 +167,15 @@ public partial class AnimeRepository : IAnimeRepository
         }
     }
 
-    public Task<List<AnimeEntity>> GetSnapshotAsync(MediaKind[] kinds)
-    {
-        return _uiDispatcher.InvokeAsync(() =>
-            Collection.Where(x => kinds.Contains(x.MediaKind)).ToList());
-    }
-
-    public void AddToCollection(AnimeEntity item)
+    public void AddToCollection(AnimeEntity entity)
     {
         if (_uiDispatcher.CheckAccess())
         {
-            AddToCollectionOnUiThread(item);
+            AddToCollectionOnUiThread(entity);
         }
         else
         {
-            _uiDispatcher.Post(() => AddToCollectionOnUiThread(item));
+            _uiDispatcher.Post(() => AddToCollectionOnUiThread(entity));
         }
     }
 

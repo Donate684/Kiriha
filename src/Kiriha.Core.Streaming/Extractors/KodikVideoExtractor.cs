@@ -186,6 +186,7 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
         return result;
     }
 
+#pragma warning disable S2696 // Cached API endpoint path shared across extractor instances
     private async Task UpdateCachedApiPathAsync(string playerJsUrl, CancellationToken ct)
     {
         await ApiPathLock.WaitAsync(ct).ConfigureAwait(false);
@@ -214,6 +215,7 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
             ApiPathLock.Release();
         }
     }
+#pragma warning restore S2696
 
     private static Dictionary<string, string>? ExtractApiPayload(string html)
     {
@@ -271,7 +273,7 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
 
     internal static string NormalizeScheme(string url)
     {
-        if (url.StartsWith("//")) return $"{Uri.UriSchemeHttps}:{url}";
+        if (url.StartsWith("//", StringComparison.Ordinal)) return $"{Uri.UriSchemeHttps}:{url}";
         if (url.StartsWith(Uri.UriSchemeHttp + "://", StringComparison.OrdinalIgnoreCase) ||
             url.StartsWith(Uri.UriSchemeHttps + "://", StringComparison.OrdinalIgnoreCase))
         {
@@ -316,39 +318,39 @@ public sealed partial class KodikVideoExtractor : IVideoExtractor
         return input;
     }
 
-    [GeneratedRegex(@"https?://(?:www\.)?[\w-]+\.\w+/(?:serial|seria|season|video|film)/\d+/\w+/\d{3,4}p", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"https?://(?:www\.)?[\w-]+\.\w+/(?:serial|seria|season|video|film)/\d+/\w+/\d{3,4}p", RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateUrlRegex();
 
-    [GeneratedRegex(@"var\s*domain\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"var\s*domain\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateDomainRegex();
 
-    [GeneratedRegex(@"var\s*d_sign\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"var\s*d_sign\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateDSignRegex();
 
-    [GeneratedRegex(@"var\s*pd\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"var\s*pd\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GeneratePdRegex();
 
-    [GeneratedRegex(@"var\s*pd_sign\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"var\s*pd_sign\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GeneratePdSignRegex();
 
-    [GeneratedRegex(@"var\s*ref\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"var\s*ref\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateRefRegex();
 
-    [GeneratedRegex(@"var\s*ref_sign\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"var\s*ref_sign\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateRefSignRegex();
 
-    [GeneratedRegex(@"vInfo\.type\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"vInfo\.type\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateTypeRegex();
 
-    [GeneratedRegex(@"vInfo\.hash\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"vInfo\.hash\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateHashRegex();
 
-    [GeneratedRegex(@"vInfo\.id\s*=\s*['""](.*?)['""];", RegexOptions.Compiled)]
+    [GeneratedRegex(@"vInfo\.id\s*=\s*['""](.*?)['""];", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateIdRegex();
 
-    [GeneratedRegex(@"<script[^>]*src\s*=\s*[""']([^""']*assets/js[^""']*)[""']", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"<script[^>]*src\s*=\s*[""']([^""']*assets/js[^""']*)[""']", RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateScriptJsRegex();
 
-    [GeneratedRegex(@"\$\.ajax[^)]+atob\([""'](\w+=*)[""']\)", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\$\.ajax[^)]+atob\([""'](\w+=*)[""']\)", RegexOptions.Compiled, 500)]
     private static partial Regex GenerateApiPathRegex();
 }

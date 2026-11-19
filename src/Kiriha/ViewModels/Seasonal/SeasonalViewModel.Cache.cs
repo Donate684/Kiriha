@@ -33,7 +33,7 @@ public partial class SeasonalViewModel
         {
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
                 if (_isDisposed) return;
                 Dispatcher.UIThread.Post(() => EnsureInitialLoad());
             }
@@ -41,7 +41,7 @@ public partial class SeasonalViewModel
             {
                 // fire-and-forget
             }
-        });
+        }, CancellationToken.None);
     }
 
     public void EnsureInitialLoad()
@@ -76,7 +76,7 @@ public partial class SeasonalViewModel
 
         if (oldCts != null)
         {
-            try { oldCts.Cancel(); } catch (ObjectDisposedException) { }
+            try { await oldCts.CancelAsync(); } catch (ObjectDisposedException) { }
             oldCts.Dispose();
         }
 

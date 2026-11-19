@@ -82,7 +82,7 @@ public partial class PlayerViewModel
         string hash = metadata?.TorrentHash ?? string.Empty;
         if (string.IsNullOrEmpty(hash) && !string.IsNullOrWhiteSpace(videoUrl))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(videoUrl, AppConstants.Torrents.TorrentHashLinkRegex);
+            var match = System.Text.RegularExpressions.Regex.Match(videoUrl, AppConstants.Torrents.TorrentHashLinkRegex, System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(500));
             if (match.Success)
             {
                 hash = match.Groups[1].Value;
@@ -103,9 +103,9 @@ public partial class PlayerViewModel
             {
                 _ = Task.Run(async () =>
                 {
-                    try { await _torrServer.DropTorrentAsync(oldHash).ConfigureAwait(false); }
+                    try { await _torrServer.DropTorrentAsync(oldHash, CancellationToken.None).ConfigureAwait(false); }
                     catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop previous torrent {Hash}", oldHash); }
-                });
+                }, CancellationToken.None);
             }
         }
 

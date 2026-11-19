@@ -134,12 +134,10 @@ public sealed partial class AnimeCollectionProjection
     private static string BuildSearchableText(AnimeEntity item)
     {
         return Normalize(string.Join('\n',
-        [
             item.Title,
             item.RussianTitle,
             item.EnglishTitle,
-            item.JapaneseTitle
-        ]));
+            item.JapaneseTitle));
     }
 
     private static IReadOnlySet<string> ComputeGenreKeys(AnimeEntity item)

@@ -58,7 +58,7 @@ public partial class TorrentsViewModel
 
     private void OnHideMenuItemChanged(HideableAnimeItem item)
     {
-        _ = _torrentFilterRepo.SetAnimeHiddenAsync(item.Anime.Id, item.IsHidden);
+        _ = _torrentFilterRepo.SetAnimeHiddenAsync(item.Anime.Id, item.IsHidden, CancellationToken.None);
 
         if (item.IsHidden)
         {

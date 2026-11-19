@@ -247,6 +247,6 @@ public sealed partial class Anime365HostResolver : IImageUrlRewriter
         return ex is HttpRequestException || ex is TaskCanceledException || ex is TimeoutException;
     }
 
-    [GeneratedRegex(@"^(?:smotret-?anime\.(?:co|com|org|app)|anime365\.(?:co|com|org|app))$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^(?:smotret-?anime\.(?:co|com|org|app)|anime365\.(?:co|com|org|app))$", RegexOptions.IgnoreCase, 500)]
     private static partial Regex GenerateHostPattern();
 }

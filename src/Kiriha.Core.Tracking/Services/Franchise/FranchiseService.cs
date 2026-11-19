@@ -51,7 +51,7 @@ public sealed partial class FranchiseService : IFranchiseService, IDisposable
 
         _rebuildDebouncer = new Debouncer(TimeSpan.FromMilliseconds(500), () =>
         {
-            _ = RebuildIndexAsync();
+            _ = RebuildIndexAsync(_cts.Token);
         });
 
         if (_animeRepo.Collection != null)
@@ -85,7 +85,7 @@ public sealed partial class FranchiseService : IFranchiseService, IDisposable
         else
         {
             // Start resolution worker loop in background
-            _ = Task.Run(() => ResolutionWorkerLoopAsync(_cts.Token));
+            _ = Task.Run(() => ResolutionWorkerLoopAsync(_cts.Token), _cts.Token);
 
             // Initial background index build once repository initialization completes
             _ = Task.Run(async () =>
@@ -96,13 +96,13 @@ public sealed partial class FranchiseService : IFranchiseService, IDisposable
                     {
                         await _animeRepo.InitializationTask.ConfigureAwait(false);
                     }
-                    await RebuildIndexAsync().ConfigureAwait(false);
+                    await RebuildIndexAsync(_cts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     Log.Warning(ex, "FranchiseService: initial index build failed");
                 }
-            });
+            }, _cts.Token);
         }
     }
 

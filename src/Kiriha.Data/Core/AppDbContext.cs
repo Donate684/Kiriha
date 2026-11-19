@@ -51,6 +51,6 @@ public partial class AppDbContext : DbContext
         return SnakeCaseRegex().Replace(input, "$1_$2").ToLowerInvariant();
     }
 
-    [GeneratedRegex(@"([a-z0-9])([A-Z])")]
+    [GeneratedRegex(@"([a-z0-9])([A-Z])", RegexOptions.None, 500)]
     private static partial Regex SnakeCaseRegex();
 }

@@ -67,7 +67,7 @@ public sealed class YummyAnimeProvider : IStreamingProvider
                         thumb = bProp.GetString();
                 }
 
-                if (!string.IsNullOrWhiteSpace(thumb) && thumb.StartsWith("//"))
+                if (!string.IsNullOrWhiteSpace(thumb) && thumb.StartsWith("//", StringComparison.Ordinal))
                 {
                     thumb = $"{StreamingConstants.HttpsPrefix}{thumb[2..]}";
                 }
@@ -140,7 +140,7 @@ public sealed class YummyAnimeProvider : IStreamingProvider
                         player = pProp.GetString();
                 }
 
-                var playerUrl = iframeUrl.StartsWith("//") ? $"{StreamingConstants.HttpsPrefix}{iframeUrl[2..]}" : iframeUrl;
+                var playerUrl = iframeUrl.StartsWith("//", StringComparison.Ordinal) ? $"{StreamingConstants.HttpsPrefix}{iframeUrl[2..]}" : iframeUrl;
                 var sourceTitle = !string.IsNullOrWhiteSpace(dubber)
                     ? (!string.IsNullOrWhiteSpace(player) ? $"{dubber} ({player})" : dubber)
                     : (!string.IsNullOrWhiteSpace(player) ? player : "Player");

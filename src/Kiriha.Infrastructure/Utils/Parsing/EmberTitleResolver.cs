@@ -63,7 +63,7 @@ public static partial class EmberTitleResolver
         }
     }
 
-    [GeneratedRegex(@"\bEMBER\b", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"\bEMBER\b", RegexOptions.IgnoreCase, 500)]
     private static partial Regex EmberWordRegex();
 
     public static bool TryResolveDirectoryMetadata(
@@ -102,7 +102,7 @@ public static partial class EmberTitleResolver
             if (string.IsNullOrEmpty(dirName)) break;
 
             string lower = dirName.ToLowerInvariant();
-            if (lower == "series" || lower.StartsWith("season") || lower.StartsWith("s0") || lower == "ova" || lower == "ncop" || lower == "nced" || lower == "specials" || lower == "episodes")
+            if (lower == "series" || lower.StartsWith("season", StringComparison.Ordinal) || lower.StartsWith("s0", StringComparison.Ordinal) || lower == "ova" || lower == "ncop" || lower == "nced" || lower == "specials" || lower == "episodes")
             {
                 dir = Path.GetDirectoryName(dir);
             }

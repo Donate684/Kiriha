@@ -29,7 +29,7 @@ public partial class SettingsAuthViewModel
     public bool IsSwitchFailed => SwitchStep == PrimarySwitchStep.Failed;
 
     public string SyncStatusDisplay => !string.IsNullOrWhiteSpace(SyncStatusText)
-        ? (SyncStatusText.StartsWith("sync.") ? _localizer.GetLoc(SyncStatusText) : SyncStatusText)
+        ? (SyncStatusText.StartsWith("sync.", StringComparison.Ordinal) ? _localizer.GetLoc(SyncStatusText) : SyncStatusText)
         : _localizer.GetLoc("settings.accounts_hub.switch_sync_desc");
 
     partial void OnSwitchStepChanged(PrimarySwitchStep value)
@@ -84,7 +84,7 @@ public partial class SettingsAuthViewModel
     {
         if (_refreshService == null)
         {
-            await Task.Delay(400);
+            await Task.Delay(400, CancellationToken.None);
             SwitchStep = PrimarySwitchStep.Success;
             return;
         }

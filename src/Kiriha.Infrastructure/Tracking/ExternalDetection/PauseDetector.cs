@@ -92,7 +92,7 @@ internal sealed class PauseDetector
                     return false;
                 }
                 // Below the debounce threshold — still considered playing.
-                return !t.ReportedPaused ? true : false;
+                return !t.ReportedPaused;
 
             case AudioState.Expired:
                 // Session ended — fall back to "playing" so the scrobbler

@@ -79,7 +79,7 @@ public class PosterBatchDownloader
                 {
                     try
                     {
-                        await _userAnimeRepo.UpdateMetadataAsync(item);
+                        await _userAnimeRepo.UpdateMetadataAsync(item, ct);
                     }
                     catch (Exception ex)
                     {

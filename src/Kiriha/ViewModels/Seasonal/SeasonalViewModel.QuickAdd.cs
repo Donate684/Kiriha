@@ -9,7 +9,7 @@ public partial class SeasonalViewModel
     {
         try
         {
-            var result = await _listActionService.AddToListAsync(item, status);
+            var result = await _listActionService.AddToListAsync(item, status, ct: CancellationToken.None);
             if (!result.Success && !string.IsNullOrEmpty(result.Message))
             {
                 Log.Warning("SeasonalViewModel.QuickAddToList failed for {Title}: {Message}", item.Title, result.Message);

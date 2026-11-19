@@ -150,5 +150,5 @@ public static class MalMapper
         element.TryGetProperty(propertyName, out var p) && p.TryGetInt32(out var val) ? val : null;
 
     private static DateTime? GetOptionalDateTime(this JsonElement element, string propertyName) =>
-        element.TryGetProperty(propertyName, out var p) && DateTime.TryParse(p.GetString(), out var date) ? date : null;
+        element.TryGetProperty(propertyName, out var p) && DateTime.TryParse(p.GetString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AdjustToUniversal, out var date) ? date : null;
 }

@@ -19,7 +19,7 @@ public sealed class PlayerCommandServer : IDisposable
 
     public void Start()
     {
-        _loopTask ??= Task.Run(RunAsync);
+        _loopTask ??= Task.Run(RunAsync, _cts.Token);
     }
 
     private async Task RunAsync()
@@ -69,7 +69,10 @@ public sealed class PlayerCommandServer : IDisposable
                     if (ReferenceEquals(_currentPipe, pipe))
                         _currentPipe = null;
                 }
-                pipe?.Dispose();
+                if (pipe != null)
+                {
+                    await pipe.DisposeAsync();
+                }
             }
         }
     }
@@ -107,7 +110,7 @@ public sealed class PlayerCommandServer : IDisposable
 
         try
         {
-            if (_loopTask?.Wait(500) != false)
+            if (_loopTask?.Wait(500, CancellationToken.None) != false)
             {
                 _cts.Dispose();
             }

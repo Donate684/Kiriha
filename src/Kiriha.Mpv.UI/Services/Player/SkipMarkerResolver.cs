@@ -12,27 +12,27 @@ public static partial class SkipMarkerResolver
     private const double EofSeekGuardSeconds = 0.25;
 
     // Mixed Intro: mixed op, mixed intro, mixed opening, mixed-op, смешанный опенинг
-    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(mixed[-_ ]*(op\d*|ncop\d*|intro|opening(\s+theme)?)|(?:mixed|\u0441\u043c\u0435\u0448\u0430\u043d\u043d\w*)[-_ ]*(?:\u043e\u043f\u0435\u043d\u0438\u043d\u0433|\u0437\u0430\u0441\u0442\u0430\u0432\u043a\u0430))($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(mixed[-_ ]*(op\d*|ncop\d*|intro|opening(\s+theme)?)|(?:mixed|\u0441\u043c\u0435\u0448\u0430\u043d\u043d\w*)[-_ ]*(?:\u043e\u043f\u0435\u043d\u0438\u043d\u0433|\u0437\u0430\u0441\u0442\u0430\u0432\u043a\u0430))($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     private static partial Regex MixedIntroRegex();
 
     // Mixed Outro: mixed ed, mixed outro, mixed ending, mixed-ed, смешанный эндинг
-    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(mixed[-_ ]*(ed\d*|nced\d*|outro|ending(\s+theme)?|credits?)|(?:mixed|\u0441\u043c\u0435\u0448\u0430\u043d\u043d\w*)[-_ ]*(?:\u044d\u043d\u0434\u0438\u043d\u0433|\u0442\u0438\u0442\u0440\u044b))($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(mixed[-_ ]*(ed\d*|nced\d*|outro|ending(\s+theme)?|credits?)|(?:mixed|\u0441\u043c\u0435\u0448\u0430\u043d\u043d\w*)[-_ ]*(?:\u044d\u043d\u0434\u0438\u043d\u0433|\u0442\u0438\u0442\u0440\u044b))($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     private static partial Regex MixedOutroRegex();
 
     // Intro: op, op1, ncop, intro, opening, opening theme, опенинг, заставка
-    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(op\d*|ncop\d*|intro|opening(\s+theme)?|theme(\s+song)?|\u043e\u043f\u0435\u043d\u0438\u043d\u0433|\u0437\u0430\u0441\u0442\u0430\u0432\u043a\u0430)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(op\d*|ncop\d*|intro|opening(\s+theme)?|theme(\s+song)?|\u043e\u043f\u0435\u043d\u0438\u043d\u0433|\u0437\u0430\u0441\u0442\u0430\u0432\u043a\u0430)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     private static partial Regex IntroRegex();
 
     // Outro: ed, ed1, nced, outro, ending, ending theme, credits, credit, эндинг, титры
-    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(ed\d*|nced\d*|outro|ending(\s+theme)?|credits?|\u044d\u043d\u0434\u0438\u043d\u0433|\u0442\u0438\u0442\u0440\u044b)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(ed\d*|nced\d*|outro|ending(\s+theme)?|credits?|\u044d\u043d\u0434\u0438\u043d\u0433|\u0442\u0438\u0442\u0440\u044b)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     private static partial Regex OutroRegex();
 
     // Recap: recap, рекап, summary
-    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(recap|\u0440\u0435\u043a\u0430\u043f|summary)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(recap|\u0440\u0435\u043a\u0430\u043f|summary)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     private static partial Regex RecapRegex();
 
     // Preview: preview, превью, анонс
-    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(preview|\u043f\u0440\u0435\u0432\u044c\u044e|\u0430\u043d\u043e\u043d\u0441)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(^|[^\p{L}\p{N}])(preview|\u043f\u0440\u0435\u0432\u044c\u044e|\u0430\u043d\u043e\u043d\u0441)($|[^\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, 500)]
     private static partial Regex PreviewRegex();
 
     public static SkipSegmentType? ClassifyChapterTitle(string? title)

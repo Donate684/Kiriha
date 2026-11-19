@@ -49,7 +49,7 @@ public sealed partial class AppStartupCoordinator
             {
                 await InitializeAppServicesAsync();
                 if (hideToTrayOnStart)
-                    desktop.MainWindow!.Hide();
+                    desktop.MainWindow?.Hide();
             }, DispatcherPriority.Background);
         };
     }

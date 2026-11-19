@@ -60,7 +60,10 @@ public class InstanceServer : BackgroundService
                     if (ReferenceEquals(_currentPipe, pipeServer))
                         _currentPipe = null;
                 }
-                pipeServer?.Dispose();
+                if (pipeServer != null)
+                {
+                    await pipeServer.DisposeAsync();
+                }
             }
         }
     }
@@ -102,13 +105,13 @@ public class InstanceServer : BackgroundService
         string? candidateMediaUrl = null;
         if (playerArgIndex >= 0)
         {
-            candidateMediaUrl = playerArgIndex + 1 < args.Length && !args[playerArgIndex + 1].StartsWith("--")
+            candidateMediaUrl = playerArgIndex + 1 < args.Length && !args[playerArgIndex + 1].StartsWith("--", StringComparison.Ordinal)
                 ? args[playerArgIndex + 1]
                 : string.Empty;
         }
         else
         {
-            candidateMediaUrl = args.FirstOrDefault(a => !a.StartsWith("--") && (
+            candidateMediaUrl = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal) && (
                 a.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
                 a.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
                 a.EndsWith(".avi", StringComparison.OrdinalIgnoreCase) ||
@@ -134,7 +137,7 @@ public class InstanceServer : BackgroundService
                 var headers = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractHeadersFromArgs(args);
                 string? subtitleUrl = null;
                 var subIndex = Array.FindIndex(args, a => a.Equals("--sub-file", StringComparison.OrdinalIgnoreCase) || a.Equals("--subtitle", StringComparison.OrdinalIgnoreCase));
-                if (subIndex >= 0 && subIndex + 1 < args.Length && !args[subIndex + 1].StartsWith("--"))
+                if (subIndex >= 0 && subIndex + 1 < args.Length && !args[subIndex + 1].StartsWith("--", StringComparison.Ordinal))
                 {
                     subtitleUrl = args[subIndex + 1];
                 }

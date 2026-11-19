@@ -99,10 +99,10 @@ public class RecognitionCache : IRecognitionCache
             (id, weight));
     }
 
-    public IEnumerable<WeightedMatch> Search(string normalizedTitle)
+    public IEnumerable<WeightedMatch> Search(string query)
     {
-        bool hasIndexed = _indexCache.TryGetValue(normalizedTitle, out var indexed);
-        bool hasLearned = _learnedCache.TryGetValue(normalizedTitle, out var learned);
+        bool hasIndexed = _indexCache.TryGetValue(query, out var indexed);
+        bool hasLearned = _learnedCache.TryGetValue(query, out var learned);
 
         if (hasIndexed && !hasLearned) return indexed;
         if (!hasIndexed && hasLearned) return learned;

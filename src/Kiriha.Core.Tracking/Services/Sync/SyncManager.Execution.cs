@@ -25,7 +25,7 @@ public partial class SyncManager
 
                         if (success)
                         {
-                            await _syncTaskRepo.RemoveAsync(task.Id);
+                            await _syncTaskRepo.RemoveAsync(task.Id, ct);
                             Log.Information("Sync task {TaskId} completed successfully.", task.Id);
                         }
                         else

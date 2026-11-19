@@ -17,7 +17,7 @@ public partial class SearchViewModel
         IsLoading = true;
         try
         {
-            var result = await _listActionService.AddToListAsync(item, status);
+            var result = await _listActionService.AddToListAsync(item, status, ct: CancellationToken.None);
             if (!result.Success && !string.IsNullOrEmpty(result.Message))
             {
                 Log.Warning("SearchViewModel: Failed to add {Title}: {Message}", item.Title, result.Message);

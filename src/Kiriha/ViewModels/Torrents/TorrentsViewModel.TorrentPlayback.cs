@@ -43,8 +43,11 @@ public partial class TorrentsViewModel
         {
             if (torrent.IsBatch)
             {
-                _modalCts?.Cancel();
-                _modalCts?.Dispose();
+                if (_modalCts != null)
+                {
+                    await _modalCts.CancelAsync();
+                    _modalCts.Dispose();
+                }
                 _modalCts = new CancellationTokenSource();
                 var ct = _modalCts.Token;
 
@@ -86,9 +89,9 @@ public partial class TorrentsViewModel
                         _currentStreamingHash = null;
                         _ = Task.Run(async () =>
                         {
-                            try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
+                            try { await _torrServer.DropTorrentAsync(hash, CancellationToken.None).ConfigureAwait(false); }
                             catch (Exception ex) { Log.Warning(ex, "Failed to drop empty batch torrent {Hash}", hash); }
-                        });
+                        }, CancellationToken.None);
                     }
                     return;
                 }
@@ -102,8 +105,11 @@ public partial class TorrentsViewModel
             }
             else
             {
-                _launchCts?.Cancel();
-                _launchCts?.Dispose();
+                if (_launchCts != null)
+                {
+                    await _launchCts.CancelAsync();
+                    _launchCts.Dispose();
+                }
                 _launchCts = new CancellationTokenSource();
                 var ct = _launchCts.Token;
                 launchToken = ct;
@@ -201,8 +207,11 @@ public partial class TorrentsViewModel
         var streamUrl = _torrServer.GetStreamUrl(streamHash, file.Id, file.FileName);
         CloseEpisodeSelector(dropTorrent: false);
 
-        _launchCts?.Cancel();
-        _launchCts?.Dispose();
+        if (_launchCts != null)
+        {
+            await _launchCts.CancelAsync();
+            _launchCts.Dispose();
+        }
         _launchCts = new CancellationTokenSource();
         var ct = _launchCts.Token;
 
@@ -250,9 +259,9 @@ public partial class TorrentsViewModel
             _currentStreamingHash = null;
             _ = Task.Run(async () =>
             {
-                try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
+                try { await _torrServer.DropTorrentAsync(hash, CancellationToken.None).ConfigureAwait(false); }
                 catch (Exception ex) { Log.Warning(ex, "Failed to drop cancelled batch torrent {Hash}", hash); }
-            });
+            }, CancellationToken.None);
         }
     }
 
@@ -274,9 +283,9 @@ public partial class TorrentsViewModel
         {
             _ = Task.Run(async () =>
             {
-                try { await _torrServer.DropTorrentAsync(hash).ConfigureAwait(false); }
+                try { await _torrServer.DropTorrentAsync(hash, CancellationToken.None).ConfigureAwait(false); }
                 catch (Exception ex) { Log.Warning(ex, "Failed to drop cancelled launch torrent {Hash}", hash); }
-            });
+            }, CancellationToken.None);
         }
     }
 
@@ -307,7 +316,7 @@ public partial class TorrentsViewModel
         }
 
         _internalPlayerServer.PlayerStateChanged += OnPlayerStateChanged;
-        using var reg = ct.Register(() => tcs.TrySetCanceled());
+        using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
 
         try
         {
@@ -362,7 +371,7 @@ public partial class TorrentsViewModel
                 titleEn,
                 torrentHash ?? string.Empty);
 
-            _internalPlayerServer.SendMetadataAsync(initialMeta).SafeFireAndForget("Torrents.SendMetadata");
+            _internalPlayerServer.SendMetadataAsync(initialMeta, CancellationToken.None).SafeFireAndForget("Torrents.SendMetadata");
         }
 
         PlayerProcessHelper.LaunchPlayer(

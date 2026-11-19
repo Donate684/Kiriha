@@ -66,7 +66,7 @@ public static unsafe partial class Win32Api
                             {
                                 if (pattern.StartsWith('^'))
                                 {
-                                    if (System.Text.RegularExpressions.Regex.IsMatch(className, pattern))
+                                    if (System.Text.RegularExpressions.Regex.IsMatch(className, pattern, System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(500)))
                                     {
                                         classMatched = true;
                                         break;

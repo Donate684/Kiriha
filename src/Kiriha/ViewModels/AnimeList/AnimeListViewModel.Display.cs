@@ -88,7 +88,7 @@ public partial class AnimeListViewModel
     public async Task ApplyScoreFromMenu(RatingOption rating)
     {
         if (ActiveItem is null || rating is null) return;
-        int.TryParse(rating.Value, out int score);
+        _ = int.TryParse(rating.Value, out int score);
         await _progressService.SetScoreAsync(ActiveItem, score);
     }
 

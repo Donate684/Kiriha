@@ -66,7 +66,6 @@ public sealed partial class UserAnimeRepository
         {
             Log.Warning("Attempted to update progress for non-existent anime {Title} (ID: {Id})", item.Title, item.Id);
             await UpsertAsync(item, ct);
-            return;
         }
     }
 

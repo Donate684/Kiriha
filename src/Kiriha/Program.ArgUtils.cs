@@ -2,7 +2,7 @@ using System.Buffers;
 
 namespace Kiriha;
 
-partial class Program
+static partial class Program
 {
     private static readonly string[] SensitiveQueryKeys = ["code", "token", "access_token", "refresh_token", "client_secret"];
     private static readonly SearchValues<char> SensitiveArgSeparators = SearchValues.Create("& ?#");

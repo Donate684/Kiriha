@@ -44,6 +44,7 @@ public class LocalizationService : ILocalizer
         "about", "player", "analytics", "schedule"
     ];
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("SonarAnalyzer.CSharp", "S3010:Static field written in instance method", Justification = "Singleton instance referenced by static localization helpers")]
     public LocalizationService()
     {
         _active = this;
@@ -179,6 +180,7 @@ public class LocalizationService : ILocalizer
         return sb.ToString();
     }
 
+#pragma warning disable S2696 // Singleton instance and active snapshot updated on language change
     public void LoadLanguage(string langCode)
     {
         try
@@ -232,6 +234,7 @@ public class LocalizationService : ILocalizer
             Log.Error(ex, "Failed to load language: {Lang}", langCode);
         }
     }
+#pragma warning restore S2696
 
     private void LoadAllNamespaces(string langCode, Dictionary<string, string> target)
     {
@@ -255,13 +258,13 @@ public class LocalizationService : ILocalizer
             using var doc = JsonDocument.Parse(stream);
             FlattenJson(doc.RootElement, ns, result);
         }
-        catch (FileNotFoundException)
+        catch (FileNotFoundException ex)
         {
-            Log.Debug("Namespace {Namespace} not found for language {Lang}", ns, langCode);
+            Log.Debug(ex, "Namespace {Namespace} not found for language {Lang}", ns, langCode);
         }
         catch (Exception ex)
         {
-            Log.Warning("Failed to load namespace {Namespace} for {Lang}: {Error}", ns, langCode, ex.Message);
+            Log.Warning(ex, "Failed to load namespace {Namespace} for {Lang}", ns, langCode);
         }
         return result;
     }

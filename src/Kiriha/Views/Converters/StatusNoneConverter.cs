@@ -8,9 +8,7 @@ public class StatusNoneConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is UserAnimeStatus status
-            ? status == UserAnimeStatus.None
-            : true;
+        return value is not UserAnimeStatus status || status == UserAnimeStatus.None;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

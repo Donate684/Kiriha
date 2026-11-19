@@ -7,6 +7,7 @@ namespace Kiriha.Data.Repository;
 
 public sealed partial class UserAnimeRepository
 {
+#pragma warning disable S2139 // Logging rollback failure context before rethrowing to upstream sync manager
     public async Task SyncFromRemoteAsync(IEnumerable<AnimeEntity> items, MediaKind[]? syncKinds = null, CancellationToken ct = default)
     {
         var incomingItems = items.DistinctBy(x => (x.Id, x.MediaKind)).ToList(); // materialize and deduplicate to avoid multiple evaluations and UNIQUE violations
@@ -81,4 +82,5 @@ public sealed partial class UserAnimeRepository
             throw;
         }
     }
+#pragma warning restore S2139
 }

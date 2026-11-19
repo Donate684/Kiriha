@@ -23,7 +23,7 @@ public static class AnalyticsHelpers
 
     public static string GetAccent(string label)
     {
-        uint hash = (uint)(label?.GetHashCode() ?? 0);
+        uint hash = (uint)(label?.GetHashCode(StringComparison.Ordinal) ?? 0);
         ReadOnlySpan<string> palette =
         [
             "#FF0F7B83",

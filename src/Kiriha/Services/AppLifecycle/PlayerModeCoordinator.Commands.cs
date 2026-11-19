@@ -10,7 +10,9 @@ namespace Kiriha.Services.AppLifecycle;
 
 public sealed partial class PlayerModeCoordinator
 {
+#pragma warning disable S3168 // Action<string[]> callback delegate for IPC command server
     private async void HandlePlayerCommand(string[] args)
+#pragma warning restore S3168
     {
         if (args.Any(arg => arg.Equals(PlayerProcessBridge.ShutdownArg, StringComparison.OrdinalIgnoreCase)))
         {

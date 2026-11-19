@@ -13,7 +13,6 @@ public partial class AnimeListView
         {
             this.FindControl<AnimeReleaseMapView>("ReleaseMapView")?.ToggleReleaseMap();
             e.Handled = true;
-            return;
         }
     }
 

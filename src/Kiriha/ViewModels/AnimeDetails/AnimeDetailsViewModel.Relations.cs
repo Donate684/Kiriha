@@ -96,20 +96,9 @@ public partial class AnimeDetailsViewModel
         if (relation is null || string.IsNullOrEmpty(relation.TargetType)) return;
 
         var type = relation.TargetType.ToLowerInvariant();
-        MediaKind kind;
-
-        if (type == "manga" || type == "manhwa" || type == "manhua" || type == "novel" || type == "light novel" || type == "one-shot" || type == "doujinshi" || type == "light_novel")
-        {
-            kind = type.Contains("novel") ? MediaKind.LightNovel : MediaKind.Manga;
-        }
-        else if (type == "anime" || type == "tv" || type == "movie" || type == "ova" || type == "ona" || type == "special")
-        {
-            kind = MediaKind.Anime;
-        }
-        else
-        {
-            kind = MediaKind.Anime;
-        }
+        var kind = (type == "manga" || type == "manhwa" || type == "manhua" || type == "novel" || type == "light novel" || type == "one-shot" || type == "doujinshi" || type == "light_novel")
+            ? (type.Contains("novel", StringComparison.Ordinal) ? MediaKind.LightNovel : MediaKind.Manga)
+            : MediaKind.Anime;
 
         var targetAnime = new AnimeEntity
         {

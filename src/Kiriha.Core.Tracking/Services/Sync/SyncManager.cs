@@ -75,7 +75,7 @@ public partial class SyncManager : ISyncManager, IHostedService
         if (_isStopped) return;
         _isStopped = true;
 
-        _cts.Cancel();
+        await _cts.CancelAsync();
         if (_loopTask != null)
         {
             try { await _loopTask.WaitAsync(cancellationToken); }
@@ -96,7 +96,7 @@ public partial class SyncManager : ISyncManager, IHostedService
             ct.ThrowIfCancellationRequested();
             await _dbInit.InitializationTask;
             ct.ThrowIfCancellationRequested();
-            var pendingTasks = await _syncTaskRepo.GetPendingAsync();
+            var pendingTasks = await _syncTaskRepo.GetPendingAsync(ct);
 
             var deduplicated = DeduplicateStartupTasks(pendingTasks);
 
@@ -155,7 +155,7 @@ public partial class SyncManager : ISyncManager, IHostedService
             if (skippedIds.Count > 0)
             {
                 ct.ThrowIfCancellationRequested();
-                await _syncTaskRepo.RemoveManyAsync(skippedIds);
+                await _syncTaskRepo.RemoveManyAsync(skippedIds, ct);
             }
 
             if (restoredCount > 0) Log.Information("Restored {Count} pending sync tasks from database.", restoredCount);

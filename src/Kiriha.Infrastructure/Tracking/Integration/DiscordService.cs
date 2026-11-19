@@ -46,7 +46,7 @@ public class DiscordService : IDisposable, IDiscordService
         }
     }
 
-    public virtual void UpdatePresence(string displayTitle, string? episode, int totalEpisodes = 0, string? malUrl = null, string? shikiUrl = null, TimeSpan? position = null, TimeSpan? duration = null, string? imageUrl = null, bool isPlaying = true)
+    public virtual void UpdatePresence(string title, string? episode, int totalEpisodes = 0, string? malUrl = null, string? shikiUrl = null, TimeSpan? position = null, TimeSpan? duration = null, string? imageUrl = null, bool isPlaying = true)
     {
         lock (_gate)
         {
@@ -88,12 +88,12 @@ public class DiscordService : IDisposable, IDiscordService
                 {
                     Type = ActivityType.Watching,
                     StatusDisplay = StatusDisplayType.Details,
-                    Details = TruncateDiscordText(displayTitle),
+                    Details = TruncateDiscordText(title),
                     State = TruncateDiscordText(state),
                     Assets = new Assets()
                     {
                         LargeImageKey = !string.IsNullOrEmpty(imageUrl) && imageUrl.Length <= 256 ? imageUrl : "icon_large",
-                        LargeImageText = TruncateDiscordText(displayTitle),
+                        LargeImageText = TruncateDiscordText(title),
                         SmallImageKey = isPlaying ? "play_icon" : "pause_icon",
                         SmallImageText = isPlaying ? "Watching" : "Paused"
                     },
@@ -109,7 +109,7 @@ public class DiscordService : IDisposable, IDiscordService
                 if (buttons.Count > 0) presence.Buttons = buttons.ToArray();
 
                 _client.SetPresence(presence);
-                Log.Debug("Updating Discord Presence: {Details} | {State}", displayTitle, presence.State);
+                Log.Debug("Updating Discord Presence: {Details} | {State}", title, presence.State);
             }
             catch (Exception ex)
             {
@@ -163,7 +163,7 @@ public class DiscordService : IDisposable, IDiscordService
         }
     }
 
-    private class DiscordSerilogAdapter : DiscordRPC.Logging.ILogger
+    private sealed class DiscordSerilogAdapter : DiscordRPC.Logging.ILogger
     {
         public LogLevel Level { get; set; } = LogLevel.Warning;
 

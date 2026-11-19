@@ -2,7 +2,7 @@ using Kiriha.Infrastructure.Player;
 
 namespace Kiriha;
 
-partial class Program
+static partial class Program
 {
     private static bool TryEnsureSingleInstance(bool isPlayer, string[] args, out System.Threading.Mutex? mutex, out System.Threading.Mutex? playerMutex)
     {

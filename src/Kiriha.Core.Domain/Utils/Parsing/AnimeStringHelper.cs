@@ -52,7 +52,7 @@ public static class AnimeStringHelper
     }.ToFrozenDictionary();
 
     // Pre-compiled Regexes for maximum performance
-    private static readonly Regex SpacesRegex = new(@"\s+", RegexOptions.Compiled);
+    private static readonly Regex SpacesRegex = new(@"\s+", RegexOptions.Compiled, TimeSpan.FromMilliseconds(500));
     private static readonly Regex RomanRegex;
     private static readonly Regex OrdinalRegex;
     private static readonly Regex SeasonRegex;
@@ -73,7 +73,7 @@ public static class AnimeStringHelper
         // Sort by length descending to match longer phrases first (e.g., "1st season" before "1")
         var escaped = patterns.OrderByDescending(p => p.Length).Select(Regex.Escape);
         string pattern = $@"(?<=^|[^a-z0-9])({string.Join("|", escaped)})(?=[^a-z0-9]|$)";
-        return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
     }
 
     // Hot-path memoization. MappingService normalizes the same title (and each
@@ -134,8 +134,8 @@ public static class AnimeStringHelper
             map.TryGetValue(match.Value.ToLowerInvariant(), out var replacement) ? replacement : match.Value);
     }
 
-    private static readonly Regex ShikiTagsRegex = new(@"\[\w+(=[^\]]+)?\](.*?)\[/\w+\]", RegexOptions.Compiled | RegexOptions.Singleline);
-    private static readonly Regex GenericTagsRegex = new(@"\[/?\w+(=[^\]]+)?\]", RegexOptions.Compiled);
+    private static readonly Regex ShikiTagsRegex = new(@"\[\w+(=[^\]]+)?\](.*?)\[/\w+\]", RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromMilliseconds(500));
+    private static readonly Regex GenericTagsRegex = new(@"\[/?\w+(=[^\]]+)?\]", RegexOptions.Compiled, TimeSpan.FromMilliseconds(500));
 
     public static string CleanShikiDescription(string input)
     {

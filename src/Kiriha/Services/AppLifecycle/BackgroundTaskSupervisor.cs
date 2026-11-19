@@ -72,7 +72,7 @@ public sealed class BackgroundTaskSupervisor : IBackgroundTaskSupervisor, IDispo
         if (Interlocked.Exchange(ref _stopped, 1) != 0)
             return;
 
-        _shutdownCts.Cancel();
+        await _shutdownCts.CancelAsync();
 
         var running = _tasks.Values.ToArray();
         if (running.Length == 0)

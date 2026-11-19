@@ -120,8 +120,11 @@ public partial class TorrentsViewModel
     [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task PerformSearch()
     {
-        _searchCts?.Cancel();
-        _searchCts?.Dispose();
+        if (_searchCts != null)
+        {
+            await _searchCts.CancelAsync();
+            _searchCts.Dispose();
+        }
         _searchCts = new CancellationTokenSource();
         var ct = _searchCts.Token;
 

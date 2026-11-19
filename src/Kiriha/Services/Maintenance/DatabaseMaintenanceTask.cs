@@ -32,7 +32,7 @@ public class DatabaseMaintenanceTask : IMaintenanceTask
         await _dbMaintenance.PerformAsync();
 
         // Step 2: Get active image paths from DB
-        var activePaths = await _userAnimeRepo.GetActiveLocalImagePathsAsync();
+        var activePaths = await _userAnimeRepo.GetActiveLocalImagePathsAsync(ct);
 
         // Step 3: Perform smart cleanup of the image folder (delete files NOT in activePaths)
         await _imageCacheService.PerformSmartCleanupAsync(activePaths);

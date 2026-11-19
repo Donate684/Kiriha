@@ -30,8 +30,8 @@ public static class CustomLinkResolver
         if (string.IsNullOrEmpty(template) || anime is null) return template ?? string.Empty;
 
         var title = anime.Title ?? string.Empty;
-        var english = !string.IsNullOrEmpty(anime.EnglishTitle) ? anime.EnglishTitle! : title;
-        var russian = !string.IsNullOrEmpty(anime.RussianTitle) ? anime.RussianTitle! : title;
+        var english = !string.IsNullOrEmpty(anime.EnglishTitle) ? anime.EnglishTitle : title;
+        var russian = !string.IsNullOrEmpty(anime.RussianTitle) ? anime.RussianTitle : title;
         var japanese = anime.JapaneseTitle ?? string.Empty;
         var id = anime.Id.ToString();
 
