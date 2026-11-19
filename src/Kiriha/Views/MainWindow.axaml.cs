@@ -143,13 +143,9 @@ public partial class MainWindow : KirihaWindowBase
         base.OnKeyDown(e);
         if (e.Handled) return;
 
-        if (e.Key == Avalonia.Input.Key.Escape && DataContext is Kiriha.ViewModels.Main.MainWindowViewModel vm)
+        if (e.Key == Avalonia.Input.Key.Escape && DataContext is Kiriha.ViewModels.Main.MainWindowViewModel vm && vm.TryHandleEscapeKey())
         {
-            if (vm.TryHandleEscapeKey())
-            {
-                e.Handled = true;
-                return;
-            }
+            e.Handled = true;
         }
 
 #if DEBUG
