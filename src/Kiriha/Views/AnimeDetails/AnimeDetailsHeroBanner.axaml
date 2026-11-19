@@ -13,7 +13,7 @@
         <conv:LocConverter x:Key="LocConverter"/>
         <conv:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter"/>
     </UserControl.Resources>
-        <Border Grid.Row="0" ClipToBounds="True" Padding="28,40,28,20">
+    <Border ClipToBounds="True" Padding="28,40,28,20">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
                     <GradientStop Color="{DynamicResource SystemAccentColor}" Offset="0"/>

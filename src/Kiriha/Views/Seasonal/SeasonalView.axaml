@@ -82,7 +82,7 @@
                                              Background="Transparent" BorderThickness="0">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate x:DataType="x:String">
-                                                <TextBlock Text="{Binding, Converter={StaticResource LocConverter}}" Padding="8,4" FontSize="12"/>
+                                                <TextBlock Text="{Binding Converter={StaticResource LocConverter}}" Padding="8,4" FontSize="12"/>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                     </ListBox>

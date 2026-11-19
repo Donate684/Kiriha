@@ -28,10 +28,10 @@
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="entities:UserAnimeStatus">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <material:MaterialIcon Kind="{Binding, Converter={StaticResource StatusToIconConverter}}"
-                                                       Foreground="{Binding, Converter={StaticResource StatusToColorConverter}}"
+                                <material:MaterialIcon Kind="{Binding Converter={StaticResource StatusToIconConverter}}"
+                                                       Foreground="{Binding Converter={StaticResource StatusToColorConverter}}"
                                                        Width="15" Height="15" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding, Converter={StaticResource LocConverter}}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Converter={StaticResource LocConverter}}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>

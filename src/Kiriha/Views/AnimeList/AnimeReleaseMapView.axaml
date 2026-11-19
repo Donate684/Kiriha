@@ -46,8 +46,6 @@
     </UserControl.Styles>
 
         <Border x:Name="ReleaseMapOverlay"
-                Grid.Row="1"
-                Grid.RowSpan="2"
                 Margin="20,0,20,16"
                 Padding="0"
                 Background="{DynamicResource CardBackgroundFillDefault}"

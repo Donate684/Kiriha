@@ -91,7 +91,7 @@
                             <!-- Action Buttons (Icon + Text) -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top"
                                         IsVisible="{Binding Status, Converter={StaticResource StatusNoneConverter}}">
-                                <Button Command="{Binding $parent[UserControl].DataContext.AddToWatchingCommand}"
+                                <Button Command="{Binding $parent[UserControl].((vmSearch:SearchViewModel)DataContext).AddToWatchingCommand}"
                                         CommandParameter="{Binding}"
                                         Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="6" Padding="10,6"
                                         BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefault}">
@@ -100,7 +100,7 @@
                                         <TextBlock Text="{DynamicResource l.anime.status.watching}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Command="{Binding $parent[UserControl].DataContext.AddToPlanToWatchCommand}"
+                                <Button Command="{Binding $parent[UserControl].((vmSearch:SearchViewModel)DataContext).AddToPlanToWatchCommand}"
                                         CommandParameter="{Binding}"
                                         Background="{DynamicResource SubtleFillColorSecondary}" CornerRadius="6" Padding="10,6"
                                         BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefault}">

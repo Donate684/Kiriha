@@ -22,14 +22,6 @@
              x:DataType="vmAnalytics:AnalyticsViewModel"
              x:Name="analyticsRoot">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://Kiriha/Views/Analytics/AnalyticsDataTemplates.axaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <UserControl.Styles>
         <StyleInclude Source="avares://Kiriha/Views/Styles/AnalyticsViewStyles.axaml"/>
     </UserControl.Styles>

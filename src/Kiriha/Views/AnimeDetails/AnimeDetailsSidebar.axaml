@@ -11,8 +11,7 @@
              x:Class="Kiriha.Views.AnimeDetails.AnimeDetailsSidebar"
              x:DataType="vmAnimeDetails:AnimeDetailsViewModel">
 
-            <Border Grid.Column="0"
-                    Background="{DynamicResource LayerFillColorDefault}"
+            <Border Background="{DynamicResource LayerFillColorDefault}"
                     BorderBrush="{DynamicResource DividerStrokeColorDefault}"
                     BorderThickness="0,0,1,0">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
