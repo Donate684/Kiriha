@@ -254,7 +254,7 @@ public partial class MpvPlayer : IDisposable
 
         OpenGlRenderer.Dispose();
 
-        Task.Run(() =>
+        _ = Task.Run(() =>
         {
             try
             {

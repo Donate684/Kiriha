@@ -128,3 +128,25 @@ dotnet_diagnostic.CA1812.severity = warning
 
 # CA1823: Avoid unused private fields
 dotnet_diagnostic.CA1823.severity = warning
+
+#####################################
+# Meziantou.Analyzer tuning
+#####################################
+# MA0004: ConfigureAwait(false) is counter-productive in Avalonia UI desktop apps
+dotnet_diagnostic.MA0004.severity = none
+
+# MA0048: Interop/PInvoke native structs co-located in native wrapper files
+dotnet_diagnostic.MA0048.severity = none
+
+# MA0051: Method length limit (60 lines) — project follows Goldilocks Zone (150-400 lines per file)
+dotnet_diagnostic.MA0051.severity = none
+
+# MA0016: Prefer collection abstraction
+dotnet_diagnostic.MA0016.severity = suggestion
+
+# MA0011: ToString(IFormatProvider)
+dotnet_diagnostic.MA0011.severity = suggestion
+
+# MA0006: string.Equals instead of == / !=
+dotnet_diagnostic.MA0006.severity = suggestion
+

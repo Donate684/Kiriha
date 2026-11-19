@@ -338,7 +338,6 @@ public sealed partial class Anime365Extractor : IVideoExtractor
     {
         if (url.Contains(".m3u8", StringComparison.OrdinalIgnoreCase)) return "m3u8";
         if (url.Contains(".mpd", StringComparison.OrdinalIgnoreCase)) return "mpd";
-        if (url.Contains(".mp4", StringComparison.OrdinalIgnoreCase)) return "mp4";
         return "mp4";
     }
 

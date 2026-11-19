@@ -98,9 +98,9 @@ internal static class ShikiGraphQlPosterFetcher
                         if (entry.TryGetProperty("id", out var idProp))
                         {
                             if (idProp.ValueKind == JsonValueKind.String)
-                                int.TryParse(idProp.GetString(), out id);
+                                _ = int.TryParse(idProp.GetString(), out id);
                             else if (idProp.ValueKind == JsonValueKind.Number)
-                                idProp.TryGetInt32(out id);
+                                _ = idProp.TryGetInt32(out id);
                         }
                         if (id <= 0 && chunk.Length == 1)
                         {

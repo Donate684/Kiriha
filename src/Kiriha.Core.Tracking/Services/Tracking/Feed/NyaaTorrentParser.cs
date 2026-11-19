@@ -32,9 +32,9 @@ internal static class NyaaTorrentParser
         var downloadsStr = item.Element(nyaaNs + "downloads")?.Value;
         var categoryStr = item.Element(nyaaNs + "category")?.Value ?? string.Empty;
 
-        int.TryParse(seedersStr, out var seeders);
-        int.TryParse(leechersStr, out var leechers);
-        int.TryParse(downloadsStr, out var downloads);
+        _ = int.TryParse(seedersStr, out var seeders);
+        _ = int.TryParse(leechersStr, out var leechers);
+        _ = int.TryParse(downloadsStr, out var downloads);
 
         bool isMovieOrSpecial = !string.IsNullOrEmpty(parsed.ReleaseType)
             || title.Contains("Movie", StringComparison.OrdinalIgnoreCase)

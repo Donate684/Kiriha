@@ -34,7 +34,7 @@ public partial class SettingsUiViewModel : ObservableObject
     [ObservableProperty] private bool _enableCustomAccentColor;
 
     public List<double> AvailableUiScales { get; } = new() { 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0 };
-    public bool IsMicaSupported => Kiriha.Infrastructure.Platform.Platform.IsMicaSupported;
+    public bool IsMicaSupported => Kiriha.Infrastructure.Platform.PlatformFeatures.IsMicaSupported;
 
     public List<LanguageOption> AvailableLanguages { get; } = new()
     {

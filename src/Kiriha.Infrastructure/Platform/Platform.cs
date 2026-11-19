@@ -4,7 +4,7 @@ namespace Kiriha.Infrastructure.Platform;
 /// Platform feature probes. Centralised so caller code doesn't sprinkle
 /// <c>OperatingSystem.IsWindows()</c> + version checks across the codebase.
 /// </summary>
-public static class Platform
+public static class PlatformFeatures
 {
     /// <summary>
     /// Mica and AcrylicBlur window backdrops are supported on Windows (Windows 10+).
