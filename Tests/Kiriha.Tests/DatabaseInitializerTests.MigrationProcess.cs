@@ -53,19 +53,14 @@ public sealed partial class DatabaseInitializerTests
                 }
             }
 
-            await using (var rolledBack = factory.CreateDbContext())
-            {
-                Assert.Equal(PreviousMigration, (await rolledBack.Database.GetAppliedMigrationsAsync()).Last());
-                Assert.False(await ColumnExistsAsync(rolledBack, "metadata", "media_kind"));
-                Assert.Equal(1, await CountMigrationLocksAsync(rolledBack));
-            }
-
+            // Let the restarted initializer be the first SQLite client to open the file after the crash.
             using (var restarted = StartMigrationProcess(databasePath, "resume"))
             {
                 try
                 {
                     await restarted.WaitForExitAsync().WaitAsync(MigrationTimeout);
                     Assert.True(restarted.ExitCode == 0, await restarted.StandardError.ReadToEndAsync());
+                    Assert.Equal(MigrationTestProcess.ReplayVerified, (await restarted.StandardOutput.ReadToEndAsync()).Trim());
                 }
                 finally
                 {
