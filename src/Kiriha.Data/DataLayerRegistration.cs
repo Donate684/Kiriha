@@ -52,6 +52,7 @@ public static class DataLayerRegistration
         services.AddSingleton<IAnimeRelationRepository, AnimeRelationRepository>();
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ISyncTaskRepository, SyncTaskRepository>();
+        services.AddSingleton<IProgressChangeRepository, ProgressChangeRepository>();
         services.AddSingleton<ISeasonalHiddenRepository, SeasonalHiddenRepository>();
         services.AddSingleton<ITorrentFilterRepository, TorrentFilterRepository>();
         services.AddSingleton<IAnimeCountryRepository, AnimeCountryRepository>();

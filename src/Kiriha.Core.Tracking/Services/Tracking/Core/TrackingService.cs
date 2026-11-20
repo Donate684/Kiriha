@@ -30,6 +30,7 @@ public partial class TrackingService : ITrackingService, IHostedService
     private ParsedMedia? _currentMedia;
     private AnimeEntity? _matchedAnime;
     private bool _manualMapInProgress;
+    private long _mediaVersion;
 
     public ParsedMedia? CurrentMedia { get { lock (_state) return _currentMedia; } }
     public AnimeEntity? MatchedAnime { get { lock (_state) return _matchedAnime; } }
@@ -71,10 +72,12 @@ public partial class TrackingService : ITrackingService, IHostedService
     {
         ParsedMedia? media;
         AnimeEntity? matched;
+        long version;
         lock (_state)
         {
             media = _currentMedia;
             matched = _matchedAnime;
+            version = _mediaVersion;
         }
 
         if (media != null && matched != null)
@@ -86,16 +89,15 @@ public partial class TrackingService : ITrackingService, IHostedService
             {
                 lock (_state)
                 {
+                    if (!IsCurrentMediaVersion(version) || !ReferenceEquals(_matchedAnime, matched))
+                        return;
+
                     _matchedAnime = inRepo;
+                    var effectiveMedia = GetEffectiveMedia(_currentMedia ?? media, inRepo);
+                    NotifyPlayerMetadata(effectiveMedia, inRepo);
+                    UpdateDiscordPresence(effectiveMedia, inRepo);
+                    _scrobbleService.StartScrobble(effectiveMedia, inRepo);
                 }
-
-                var effectiveMedia = (inRepo.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
-                    ? media.WithEpisode("1")
-                    : media;
-
-                NotifyPlayerMetadata(effectiveMedia, inRepo);
-                UpdateDiscordPresence(effectiveMedia, inRepo);
-                _scrobbleService.StartScrobble(effectiveMedia, inRepo);
             }
         }
     }
@@ -128,7 +130,8 @@ public partial class TrackingService : ITrackingService, IHostedService
         _externalMediaDetector.MediaDetected -= OnMediaDetected;
         _externalMediaDetector.MediaCleared -= OnMediaCleared;
         _scrobbleService.CountdownUpdated -= OnScrobbleCountdownUpdated;
-        _scrobbleService.CancelScrobble();
+        lock (_state)
+            _scrobbleService.CancelScrobble();
         _refreshSubscription.Dispose();
     }
 }

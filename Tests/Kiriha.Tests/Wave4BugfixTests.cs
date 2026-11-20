@@ -121,7 +121,6 @@ public class Wave4BugfixTests
             }, save: false);
 
             var mockProgress = new Mock<IProgressUpdateService>();
-            var mockHistory = new Mock<HistoryService>(null!);
             var mockNotification = new Mock<INotificationService>();
             var mockBackground = new Mock<IBackgroundTaskSupervisor>();
             var mockUi = new Mock<IUiDispatcher>();
@@ -129,8 +128,8 @@ public class Wave4BugfixTests
 
             int scrobbledEpisode = 0;
             mockProgress
-                .Setup(p => p.UpdateProgressAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>()))
-                .Callback<AnimeEntity, int, UserAnimeStatus?>((anime, ep, st) =>
+                .Setup(p => p.RecordScrobbleAsync(It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>(), It.IsAny<CancellationToken>()))
+                .Callback<AnimeEntity, int, UserAnimeStatus?, CancellationToken>((_, ep, _, _) =>
                 {
                     scrobbledEpisode = ep;
                 })
@@ -145,7 +144,6 @@ public class Wave4BugfixTests
 
             var scrobbler = new ScrobbleService(
                 mockProgress.Object,
-                mockHistory.Object,
                 settings,
                 mockNotification.Object,
                 mockBackground.Object,
@@ -193,7 +191,6 @@ public class Wave4BugfixTests
             settings.Update(s => s.System.Scrobbler.Enabled = false, save: false);
 
             var mockProgress = new Mock<IProgressUpdateService>();
-            var mockHistory = new Mock<HistoryService>(null!);
             var mockNotification = new Mock<INotificationService>();
             var mockBackground = new Mock<IBackgroundTaskSupervisor>();
             var mockUi = new Mock<IUiDispatcher>();
@@ -201,7 +198,6 @@ public class Wave4BugfixTests
 
             var scrobbler = new ScrobbleService(
                 mockProgress.Object,
-                mockHistory.Object,
                 settings,
                 mockNotification.Object,
                 mockBackground.Object,

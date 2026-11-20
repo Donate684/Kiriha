@@ -1,4 +1,5 @@
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Data.Core;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -9,8 +10,19 @@ public sealed partial class UserAnimeRepository
     public async Task UpdateProgressAsync(AnimeEntity item, int progress, UserAnimeStatus? status = null, CancellationToken ct = default)
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
+        var affected = await UpdateProgressInContextAsync(context, item, progress, status, ct);
+        if (affected == 0)
+        {
+            Log.Warning("Attempted to update progress for non-existent anime {Title} (ID: {Id})", item.Title, item.Id);
+            await UpsertAsync(item, ct);
+        }
+    }
 
-        var shouldUpdateStatus = status.HasValue && status.Value != UserAnimeStatus.None;
+    internal static async Task<int> UpdateProgressInContextAsync(
+        AppDbContext context, AnimeEntity item, int progress, UserAnimeStatus? status, CancellationToken ct)
+    {
+        var newStatus = status.GetValueOrDefault();
+        var shouldUpdateStatus = newStatus != UserAnimeStatus.None;
         var isManga = item.MediaKind != MediaKind.Anime;
 
         int affected;
@@ -28,7 +40,7 @@ public sealed partial class UserAnimeRepository
                         .SetProperty(x => x.RewatchCount, item.RewatchCount)
                         .SetProperty(x => x.DateStarted, item.DateStarted)
                         .SetProperty(x => x.DateCompleted, item.DateCompleted)
-                        .SetProperty(x => x.Status, status!.Value), ct)
+                        .SetProperty(x => x.Status, newStatus), ct)
                 : await context.UserAnime
                     .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
                     .ExecuteUpdateAsync(setters => setters
@@ -51,7 +63,7 @@ public sealed partial class UserAnimeRepository
                         .SetProperty(x => x.RewatchCount, item.RewatchCount)
                         .SetProperty(x => x.DateStarted, item.DateStarted)
                         .SetProperty(x => x.DateCompleted, item.DateCompleted)
-                        .SetProperty(x => x.Status, status!.Value), ct)
+                        .SetProperty(x => x.Status, newStatus), ct)
                 : await context.UserAnime
                     .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
                     .ExecuteUpdateAsync(setters => setters
@@ -62,11 +74,7 @@ public sealed partial class UserAnimeRepository
                         .SetProperty(x => x.DateCompleted, item.DateCompleted), ct);
         }
 
-        if (affected == 0)
-        {
-            Log.Warning("Attempted to update progress for non-existent anime {Title} (ID: {Id})", item.Title, item.Id);
-            await UpsertAsync(item, ct);
-        }
+        return affected;
     }
 
     public async Task UpdateScoreAsync(AnimeEntity item, string score, CancellationToken ct = default)

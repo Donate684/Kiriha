@@ -761,6 +761,9 @@ public sealed class Wave1BugfixTests
         var mockSync = new Mock<ISyncManager>();
         var mockHistory = new Mock<IHistoryService>();
         var uiDispatcher = new SyncUiDispatcher();
+        mockSync.Setup(sync => sync.CommitProgressChangeAsync(
+            It.IsAny<AnimeEntity>(), UserAnimeStatus.Completed, It.IsAny<HistoryItem>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var service = new AnimeProgressService(
             mockRepo.Object,

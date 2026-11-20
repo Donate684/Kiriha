@@ -22,7 +22,6 @@ public interface IScrobbleService
 public class ScrobbleService : IScrobbleService, IDisposable
 {
     private readonly IProgressUpdateService _progressService;
-    private readonly IHistoryService _historyService;
     private readonly ISettingsService _settingsService;
     private readonly INotificationService _notificationService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
@@ -43,7 +42,6 @@ public class ScrobbleService : IScrobbleService, IDisposable
 
     public ScrobbleService(
         IProgressUpdateService progressService,
-        IHistoryService historyService,
         ISettingsService settingsService,
         INotificationService notificationService,
         IBackgroundTaskSupervisor backgroundTasks,
@@ -54,7 +52,6 @@ public class ScrobbleService : IScrobbleService, IDisposable
         ICoreEventBus? eventBus = null)
     {
         _progressService = progressService;
-        _historyService = historyService;
         _settingsService = settingsService;
         _notificationService = notificationService;
         _backgroundTasks = backgroundTasks;
@@ -150,7 +147,7 @@ public class ScrobbleService : IScrobbleService, IDisposable
         }
         CountdownUpdated?.Invoke(this, string.Empty);
 
-        _backgroundTasks.Run("ScrobbleService.Countdown", ct => CountdownTaskAsync(ep, match, media, ct), token);
+        _backgroundTasks.Run("ScrobbleService.Countdown", ct => CountdownTaskAsync(ep, match, media, token, ct), token);
     }
 
     public void UpdatePlayingState(bool isPlaying)
@@ -202,7 +199,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
         return scrobblerConfig.DelaySeconds <= 0 ? 0 : Math.Max(1, scrobblerConfig.DelaySeconds);
     }
 
-    private async Task CountdownTaskAsync(int targetEp, AnimeEntity match, ParsedMedia media, CancellationToken ct)
+    private async Task CountdownTaskAsync(
+        int targetEp, AnimeEntity match, ParsedMedia media, CancellationToken ownerToken, CancellationToken ct)
     {
         string progressKey = $"{match.Id}_{targetEp}";
         int elapsed = _progressStore.GetElapsed(progressKey);
@@ -245,34 +243,27 @@ public class ScrobbleService : IScrobbleService, IDisposable
             }
 
             ct.ThrowIfCancellationRequested();
-            _progressStore.Clear(progressKey);
-            lock (_stateLock)
-            {
-                _currentElapsed = 0;
-            }
-
             var nextStatus = _mutations.ComputeSmartNextStatus(match, targetEp);
 
             bool alreadyScrobbled = await _uiDispatcher.InvokeAsync(() => match.Progress >= targetEp);
-            if (alreadyScrobbled)
+            ct.ThrowIfCancellationRequested();
+            var saved = !alreadyScrobbled && await _progressService.RecordScrobbleAsync(match, targetEp, nextStatus, ct);
+            if (saved || alreadyScrobbled)
             {
-                CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
-                return;
+                _progressStore.Clear(progressKey);
+                lock (_stateLock)
+                {
+                    if (_countdownCts?.Token == ownerToken)
+                        _currentElapsed = 0;
+                }
             }
 
-            // Write history BEFORE UpdateProgressAsync (which enqueues sync / fires SetPendingTrackers)
-            // so the DB row exists when SetPendingTrackers tries to mark it as Pending.
-            await _historyService.AddEntryAsync(
-                match.Id,
-                match.MediaKind,
-                match.Title,
-                match.RussianTitle,
-                targetEp,
-                nextStatus == UserAnimeStatus.Completed ? HistoryActionType.Completed : HistoryActionType.Scrobbled,
-                null,
-                match.MainPictureUrl,
-                ct);
-            await _progressService.UpdateProgressAsync(match, targetEp, nextStatus);
+            if (!saved)
+            {
+                if (alreadyScrobbled)
+                    CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
+                return;
+            }
 
             // Auto-Complete & Quick Rating notification
             if (nextStatus == UserAnimeStatus.Completed)
@@ -293,6 +284,17 @@ public class ScrobbleService : IScrobbleService, IDisposable
         {
             Log.Error(ex, "Scrobble countdown error");
             CountdownUpdated?.Invoke(this, _localizer.GetLoc("common.errors.generic"));
+        }
+        finally
+        {
+            lock (_stateLock)
+            {
+                if (_countdownCts?.Token == ownerToken)
+                {
+                    _countdownCts.Dispose();
+                    _countdownCts = null;
+                }
+            }
         }
     }
 

@@ -9,26 +9,29 @@ public partial class AnimeSyncOrchestrator
         List<AnimeEntity> apiList,
         List<AnimeEntity> currentItems,
         List<SyncTaskEntity> pendingTasks,
+        List<SyncTaskEntity> pendingAtFetchStart,
+        HashSet<(int Id, MediaKind Kind)> protectedItems,
         IProgress<string>? status,
         CancellationToken ct)
     {
         var pendingRemoves = new HashSet<(int Id, MediaKind Kind)>();
-        var pendingMutations = new HashSet<(int Id, MediaKind Kind)>();
-
-        if (pendingTasks.Count > 0)
+        // A task pending at request time may be acknowledged before the stale list arrives.
+        foreach (var task in GetLatestTasksByTitle(pendingAtFetchStart))
         {
-            foreach (var group in pendingTasks.GroupBy(t => (t.AnimeId, t.MediaKind)))
+            if (!IsRemove(task))
+                protectedItems.Add((task.AnimeId, task.MediaKind));
+        }
+
+        foreach (var task in GetLatestTasksByTitle(pendingTasks))
+        {
+            var key = (task.AnimeId, task.MediaKind);
+            if (IsRemove(task))
             {
-                var latest = group.OrderBy(t => t.Id).Last();
-                if (string.Equals(latest.Type, nameof(SyncTaskType.Remove), StringComparison.OrdinalIgnoreCase))
-                {
-                    pendingRemoves.Add(group.Key);
-                }
-                else
-                {
-                    pendingMutations.Add(group.Key);
-                }
+                pendingRemoves.Add(key);
+                protectedItems.Remove(key);
             }
+            else
+                protectedItems.Add(key);
         }
 
         var distinctApiList = apiList
@@ -46,7 +49,7 @@ public partial class AnimeSyncOrchestrator
         for (int i = 0; i < currentItems.Count; i++)
         {
             var key = (currentItems[i].Id, currentItems[i].MediaKind);
-            if (!apiMap.ContainsKey(key) && !pendingMutations.Contains(key))
+            if (!apiMap.ContainsKey(key) && !protectedItems.Contains(key))
             {
                 toRemove.Add(currentItems[i]);
             }
@@ -68,10 +71,10 @@ public partial class AnimeSyncOrchestrator
             {
                 var captured = newItem;
                 var capturedExisting = existing;
-                bool preserveOfflineEdits = pendingMutations.Contains(key);
+                bool preserveLocalEdits = protectedItems.Contains(key);
                 uiBatch.Add(() =>
                 {
-                    if (preserveOfflineEdits)
+                    if (preserveLocalEdits)
                         capturedExisting.MergeFullDetails(captured);
                     else
                         captured.CopyTo(capturedExisting);
@@ -102,4 +105,11 @@ public partial class AnimeSyncOrchestrator
             await _animeRepository.ApplySyncBatchAsync(toRemove, uiBatch);
         }
     }
+
+    private static IEnumerable<SyncTaskEntity> GetLatestTasksByTitle(List<SyncTaskEntity> tasks) =>
+        tasks.GroupBy(task => (task.AnimeId, task.MediaKind))
+            .Select(group => group.OrderBy(task => task.Id).Last());
+
+    private static bool IsRemove(SyncTaskEntity task) =>
+        string.Equals(task.Type, nameof(SyncTaskType.Remove), StringComparison.OrdinalIgnoreCase);
 }

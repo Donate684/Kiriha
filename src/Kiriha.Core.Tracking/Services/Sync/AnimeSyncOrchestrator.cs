@@ -1,5 +1,6 @@
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Serilog;
@@ -76,34 +77,13 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         try
         {
             using var gateScope = _syncGate != null ? await _syncGate.AcquireFullSyncAsync(ct) : null;
+            var pendingAtFetchStart = await GetPendingTasksAsync(ct);
             status?.Report(FormatLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserAnimeListAsync(ct);
             if (apiList is null) return false;
 
-            var currentItems = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
-            var localCount = currentItems.Count;
-            if (!isMigration)
-            {
-                if (localCount >= Kiriha.Core.Domain.Constants.SyncSafetyConstants.MinimumTotalGuardCount &&
-                    (double)(localCount - apiList.Count) / localCount > Kiriha.Core.Domain.Constants.SyncSafetyConstants.MaximumAllowedTotalDropRatio)
-                {
-                    Log.Warning("SyncWithTrackers: aborting - incoming list ({Incoming}) is much smaller than local cache ({Local}). Likely a partial fetch.",
-                        apiList.Count, localCount);
-                    return false;
-                }
-
-                if (!IsRemoteSnapshotSafe(currentItems, apiList))
-                    return false;
-            }
-
-            var pendingTasks = _syncTaskRepo != null ? await _syncTaskRepo.GetPendingAsync(ct) : [];
-            await ProcessSyncResults(apiList, currentItems, pendingTasks, status, ct);
-
-            status?.Report(FormatLoc("sync.saving.to_db"));
-            Log.Information("AnimeSyncOrchestrator: getting anime snapshot for DB sync");
-            var snapshot = await _animeRepository.GetSnapshotAsync([MediaKind.Anime]);
-            Log.Information("AnimeSyncOrchestrator: got {Count} items for DB sync", snapshot.Count);
-            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, [MediaKind.Anime], ct);
+            var snapshot = await ApplyTrackerListAsync(apiList, [MediaKind.Anime], pendingAtFetchStart, isMigration, status, ct);
+            if (snapshot is null) return false;
 
             Log.Information("AnimeSyncOrchestrator: building recognition cache for {Count} anime items", snapshot.Count);
             await Task.Run(() => _recognitionCache.BuildIndex(snapshot), ct);
@@ -140,33 +120,14 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         try
         {
             using var gateScope = _syncGate != null ? await _syncGate.AcquireFullSyncAsync(ct) : null;
+            var pendingAtFetchStart = await GetPendingTasksAsync(ct);
             status?.Report(FormatLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserMangaListAsync(ct);
             if (apiList is null) return false;
 
-            MediaKind[] kinds = [MediaKind.Manga, MediaKind.LightNovel];
-            var currentItems = await _animeRepository.GetSnapshotAsync(kinds);
-            var localCount = currentItems.Count;
-            if (!isMigration)
-            {
-                if (localCount >= Kiriha.Core.Domain.Constants.SyncSafetyConstants.MinimumTotalGuardCount &&
-                    (double)(localCount - apiList.Count) / localCount > Kiriha.Core.Domain.Constants.SyncSafetyConstants.MaximumAllowedTotalDropRatio)
-                {
-                    Log.Warning("SyncMangaWithTrackers: aborting - incoming list ({Incoming}) is much smaller than local cache ({Local}). Likely a partial fetch.",
-                        apiList.Count, localCount);
-                    return false;
-                }
-
-                if (!IsRemoteSnapshotSafe(currentItems, apiList))
-                    return false;
-            }
-
-            var pendingTasks = _syncTaskRepo != null ? await _syncTaskRepo.GetPendingAsync(ct) : [];
-            await ProcessSyncResults(apiList, currentItems, pendingTasks, status, ct);
-
-            status?.Report(FormatLoc("sync.saving.to_db"));
-            var snapshot = await _animeRepository.GetSnapshotAsync(kinds);
-            await _userAnimeRepo.SyncFromRemoteAsync(snapshot, kinds, ct);
+            var snapshot = await ApplyTrackerListAsync(
+                apiList, [MediaKind.Manga, MediaKind.LightNovel], pendingAtFetchStart, isMigration, status, ct);
+            if (snapshot is null) return false;
 
             _eventBus.Publish(new AnimeListRefreshMessage());
             return true;
@@ -180,5 +141,41 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         {
             Interlocked.Exchange(ref _syncing, 0);
         }
+    }
+
+    private async Task<List<SyncTaskEntity>> GetPendingTasksAsync(CancellationToken ct) =>
+        _syncTaskRepo != null ? await _syncTaskRepo.GetPendingAsync(ct) : [];
+
+    private async Task<List<AnimeEntity>?> ApplyTrackerListAsync(
+        List<AnimeEntity> apiList, MediaKind[] kinds, List<SyncTaskEntity> pendingAtFetchStart,
+        bool isMigration, IProgress<string>? status, CancellationToken ct)
+    {
+        // Local progress can be saved during the request. Serialize reconciliation and its
+        // SQLite write with progress commits once the response arrives.
+        using var progressScope = _syncGate != null ? await _syncGate.AcquireProgressWriteAsync(ct) : null;
+        var currentItems = await _animeRepository.GetSnapshotAsync(kinds);
+        if (!isMigration)
+        {
+            var localCount = currentItems.Count;
+            if (localCount >= SyncSafetyConstants.MinimumTotalGuardCount &&
+                (double)(localCount - apiList.Count) / localCount > SyncSafetyConstants.MaximumAllowedTotalDropRatio)
+            {
+                Log.Warning("Full list sync: incoming list ({Incoming}) is much smaller than local cache ({Local}). Likely a partial fetch.",
+                    apiList.Count, localCount);
+                return null;
+            }
+
+            if (!IsRemoteSnapshotSafe(currentItems, apiList))
+                return null;
+        }
+
+        var pendingTasks = await GetPendingTasksAsync(ct);
+        var protectedItems = _syncGate?.GetProgressChangesDuringSync() ?? [];
+        await ProcessSyncResults(apiList, currentItems, pendingTasks, pendingAtFetchStart, protectedItems, status, ct);
+
+        status?.Report(FormatLoc("sync.saving.to_db"));
+        var snapshot = await _animeRepository.GetSnapshotAsync(kinds);
+        await _userAnimeRepo.SyncFromRemoteAsync(snapshot, kinds, ct);
+        return snapshot;
     }
 }

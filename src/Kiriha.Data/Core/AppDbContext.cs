@@ -10,6 +10,8 @@ public partial class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    internal SqliteMigrationLock? ActiveMigrationLock { get; set; }
+
     public DbSet<AnimeEntity> UserAnime { get; set; } = null!;
     public DbSet<HistoryItem> History { get; set; } = null!;
     public DbSet<ShikiMetadata> Metadata { get; set; } = null!;
@@ -26,6 +28,9 @@ public partial class AppDbContext : DbContext
     public DbSet<ScrobbleProgressEntity> ScrobbleProgress { get; set; } = null!;
     public DbSet<PlaybackResumeEntryEntity> PlaybackResume { get; set; } = null!;
     public DbSet<AniListMediaMapEntity> AniListMediaMap { get; set; } = null!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+        optionsBuilder.AddInterceptors(SqliteMigrationLock.OwnerInterceptor.Instance);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

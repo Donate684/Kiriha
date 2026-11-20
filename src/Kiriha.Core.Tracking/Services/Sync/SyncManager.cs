@@ -26,6 +26,7 @@ public partial class SyncManager : ISyncManager, IHostedService
 {
     private readonly IReadOnlyList<ITrackerService> _trackers;
     private readonly ISyncTaskRepository _syncTaskRepo;
+    private readonly IProgressChangeRepository? _progressChangeRepository;
     private readonly IDatabaseInitializer _dbInit;
     private readonly IHistoryService _historyService;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
@@ -48,10 +49,12 @@ public partial class SyncManager : ISyncManager, IHostedService
         IBackgroundTaskSupervisor backgroundTasks,
         INotificationService? notificationService = null,
         ISettingsService? settingsService = null,
-        ILocalizer? localizer = null)
+        ILocalizer? localizer = null,
+        IProgressChangeRepository? progressChangeRepository = null)
     {
         _trackers = trackers.ToList();
         _syncTaskRepo = syncTaskRepo;
+        _progressChangeRepository = progressChangeRepository;
         _dbInit = dbInit;
         _historyService = historyService;
         _backgroundTasks = backgroundTasks;

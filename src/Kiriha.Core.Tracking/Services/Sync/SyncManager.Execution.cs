@@ -132,6 +132,7 @@ public partial class SyncManager
         bool executedAny = false;
         foreach (var tracker in activeTrackers)
         {
+            ct.ThrowIfCancellationRequested();
             if (task.SuccessfulTrackers.Contains(tracker.Name))
             {
                 Log.Debug("Skipping {Tracker} for task {Id} as it was already successful", tracker.Name, task.Id);
@@ -210,6 +211,13 @@ public partial class SyncManager
                 {
                     _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, ex.Message, willRetry: true);
                 }
+            }
+
+            if (task.SuccessfulTrackers.Contains(tracker.Name))
+            {
+                // A later request may be cancelled during shutdown. Persist this tracker’s
+                // resolved outcome before moving on, even if shutdown has already started.
+                await _syncTaskRepo.UpdateAsync(MapToEntity(task), CancellationToken.None);
             }
         }
 

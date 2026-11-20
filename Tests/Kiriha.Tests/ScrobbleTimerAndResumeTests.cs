@@ -23,7 +23,6 @@ public class ScrobbleTimerAndResumeTests : IDisposable
     private readonly string _tempSettingsPath;
     private readonly SettingsService _settingsService;
     private readonly Mock<IProgressUpdateService> _mockProgressService;
-    private readonly Mock<HistoryService> _mockHistoryService;
     private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<IBackgroundTaskSupervisor> _mockBackgroundTasks;
     private readonly Mock<IUiDispatcher> _mockUiDispatcher;
@@ -35,7 +34,8 @@ public class ScrobbleTimerAndResumeTests : IDisposable
         _settingsService = new SettingsService(_tempSettingsPath);
 
         _mockProgressService = new Mock<IProgressUpdateService>();
-        _mockHistoryService = new Mock<HistoryService>(null!);
+        _mockProgressService.Setup(x => x.RecordScrobbleAsync(
+            It.IsAny<AnimeEntity>(), It.IsAny<int>(), It.IsAny<UserAnimeStatus?>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _mockNotificationService = new Mock<INotificationService>();
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
         _mockUiDispatcher = new Mock<IUiDispatcher>();
@@ -69,7 +69,6 @@ public class ScrobbleTimerAndResumeTests : IDisposable
 
         var service = new ScrobbleService(
             _mockProgressService.Object,
-            _mockHistoryService.Object,
             _settingsService,
             _mockNotificationService.Object,
             _mockBackgroundTasks.Object,
@@ -90,7 +89,7 @@ public class ScrobbleTimerAndResumeTests : IDisposable
         service.StartScrobble(media, match);
 
         // Assert: Scrobbler reached 50% threshold and invoked progress update
-        _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 1, It.IsAny<UserAnimeStatus?>()), Times.Once);
+        _mockProgressService.Verify(x => x.RecordScrobbleAsync(match, 1, It.IsAny<UserAnimeStatus?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -109,7 +108,6 @@ public class ScrobbleTimerAndResumeTests : IDisposable
 
         var service = new ScrobbleService(
             _mockProgressService.Object,
-            _mockHistoryService.Object,
             _settingsService,
             _mockNotificationService.Object,
             _mockBackgroundTasks.Object,
@@ -128,7 +126,7 @@ public class ScrobbleTimerAndResumeTests : IDisposable
         service.StartScrobble(media, match);
 
         // Assert: because 300s were restored from store, remaining <= 0 immediately
-        _mockProgressService.Verify(x => x.UpdateProgressAsync(match, 1, It.IsAny<UserAnimeStatus?>()), Times.Once);
+        _mockProgressService.Verify(x => x.RecordScrobbleAsync(match, 1, It.IsAny<UserAnimeStatus?>(), It.IsAny<CancellationToken>()), Times.Once);
         mockStore.Verify(x => x.Clear("10_1"), Times.Once);
     }
 

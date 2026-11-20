@@ -305,6 +305,7 @@ public sealed class CoreArchitectureImprovementsTests
             try { File.Delete(dbPath); } catch { }
             try { File.Delete(dbPath + "-wal"); } catch { }
             try { File.Delete(dbPath + "-shm"); } catch { }
+            File.Delete(dbPath + ".migration-lock");
         }
     }
 

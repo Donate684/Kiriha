@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
@@ -71,9 +72,11 @@ public partial class SyncManager
                     .GroupBy(x => x.Type)
                     .Select(typeGroup => typeGroup.Last())
                     .ToList();
-                if (latestTasks.Any(x => x.Type == nameof(SyncTaskType.FullUpdate)))
+                var latestFullUpdate = latestTasks.Find(x => x.Type == nameof(SyncTaskType.FullUpdate));
+                if (latestFullUpdate != null)
                 {
-                    latestTasks.RemoveAll(x => x.Type == nameof(SyncTaskType.UpdateProgress));
+                    // Keep newer progress so replay can apply it to the older full item.
+                    latestTasks.RemoveAll(x => x.Type == nameof(SyncTaskType.UpdateProgress) && x.Id < latestFullUpdate.Id);
                 }
                 return latestTasks;
             })
@@ -83,16 +86,7 @@ public partial class SyncManager
 
     public async Task EnqueueUpdateAsync(int animeId, MediaKind mediaKind, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
     {
-        var task = new SyncTask
-        {
-            AnimeId = animeId,
-            MediaKind = mediaKind,
-            Type = SyncTaskType.UpdateProgress,
-            Progress = progress,
-            Status = status,
-            Score = score,
-            TargetTracker = targetTracker
-        };
+        var task = CreateProgressTask(animeId, mediaKind, progress, status, score, targetTracker);
 
         var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();
         var allEnabledTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
@@ -161,16 +155,7 @@ public partial class SyncManager
 
     public async Task EnqueueFullUpdateAsync(AnimeEntity item)
     {
-        int effectiveProgress = item.MediaKind != MediaKind.Anime ? item.ChaptersRead : item.Progress;
-        var task = new SyncTask
-        {
-            AnimeId = item.Id,
-            MediaKind = item.MediaKind,
-            Type = SyncTaskType.FullUpdate,
-            FullItem = item,
-            Progress = effectiveProgress,
-            Status = item.Status
-        };
+        var task = CreateFullUpdateTask(item);
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity, _cts.Token);
 
@@ -181,7 +166,7 @@ public partial class SyncManager
             if (destinationTrackers.Count > 0)
             {
 #pragma warning disable S6966 // Synchronous fire-and-forget history logging
-                _historyService.SetPendingTrackers(item.Id, item.MediaKind, effectiveProgress, destinationTrackers);
+                _historyService.SetPendingTrackers(item.Id, item.MediaKind, task.Progress, destinationTrackers);
 #pragma warning restore S6966
             }
 
@@ -195,4 +180,57 @@ public partial class SyncManager
         }
     }
 
+    public async Task<bool> CommitProgressChangeAsync(
+        AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, bool onlyAdvance, CancellationToken ct)
+    {
+        var repository = _progressChangeRepository ?? throw new InvalidOperationException("Progress persistence is not configured.");
+        await _dbInit.InitializationTask.WaitAsync(ct);
+
+        var task = item.MediaKind != MediaKind.Anime || nextStatus.HasValue
+            ? CreateFullUpdateTask(item)
+            : CreateProgressTask(item.Id, item.MediaKind, history.Episode,
+                item.Status == UserAnimeStatus.None ? null : item.Status);
+        foreach (var tracker in GetDestinationTrackers())
+            history.SetTrackerStatus(tracker.Name, TrackerSyncState.Pending);
+
+        var entity = MapToEntity(task);
+        if (!await repository.SaveAsync(item, nextStatus, history, entity, onlyAdvance, ct))
+            return false;
+
+        task.Id = entity.Id;
+        RecordLatestTask(task);
+        _historyService.PublishCommittedEntry(history);
+        if (!_isStopped)
+        {
+            _highPriorityQueue.Enqueue(task);
+            try { _queueSignal.Release(); }
+            catch (ObjectDisposedException) when (_isStopped)
+            {
+                // The committed task will be restored when the application next starts.
+            }
+        }
+        return true;
+    }
+
+    private static SyncTask CreateProgressTask(
+        int animeId, MediaKind mediaKind, int progress, UserAnimeStatus? status, int? score = null, string? targetTracker = null) => new()
+    {
+        AnimeId = animeId,
+        MediaKind = mediaKind,
+        Type = SyncTaskType.UpdateProgress,
+        Progress = progress,
+        Status = status,
+        Score = score,
+        TargetTracker = targetTracker
+    };
+
+    private static SyncTask CreateFullUpdateTask(AnimeEntity item) => new()
+    {
+        AnimeId = item.Id,
+        MediaKind = item.MediaKind,
+        Type = SyncTaskType.FullUpdate,
+        FullItem = item,
+        Progress = item.MediaKind == MediaKind.Anime ? item.Progress : item.ChaptersRead,
+        Status = item.Status
+    };
 }

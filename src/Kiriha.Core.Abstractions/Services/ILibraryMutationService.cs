@@ -13,5 +13,7 @@ public interface ILibraryMutationService
     UserAnimeStatus? ComputeSmartNextStatus(AnimeEntity item, int nextProgress);
     void StampStatusDates(AnimeEntity item, UserAnimeStatus? nextStatus, bool isStarting, AnimeEntity? existing = null);
     Task<bool> ApplyLocalProgressAsync(AnimeEntity item, int nextProgress, UserAnimeStatus? nextStatus = null, CancellationToken ct = default);
+    Task<bool> ApplyProgressChangeAsync(
+        AnimeEntity item, int progress, UserAnimeStatus? status, bool onlyAdvance, Func<AnimeEntity, Task<bool>> saveAsync);
     Task EnqueueProgressSyncAsync(AnimeEntity item, int nextProgress, UserAnimeStatus? nextStatus = null);
 }

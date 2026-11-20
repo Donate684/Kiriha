@@ -54,6 +54,11 @@ public sealed class CoreRefactoringWave4Tests
         var mockSyncManager = new Mock<ISyncManager>();
         var mockHistory = new Mock<IHistoryService>();
         var mockUi = new Mock<IUiDispatcher>();
+        mockSyncManager.Setup(sync => sync.CommitProgressChangeAsync(
+            It.IsAny<AnimeEntity>(), UserAnimeStatus.Completed, It.IsAny<HistoryItem>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        mockUi.Setup(u => u.InvokeAsync(It.IsAny<Func<AnimeEntity?>>()))
+            .Returns((Func<AnimeEntity?> action) => Task.FromResult(action()));
         mockUi.Setup(u => u.InvokeAsync(It.IsAny<Action>()))
             .Callback<Action>(a => a())
             .Returns(Task.CompletedTask);

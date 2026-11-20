@@ -10,58 +10,73 @@ public partial class TrackingService
 {
     private void OnScrobbleCountdownUpdated(object? sender, string e)
     {
-        _uiDispatcher.Post(() => _eventBus.Publish(new TrackingCountdownMessage(e)));
+        lock (_state)
+            PostForMedia(_mediaVersion, () => _eventBus.Publish(new TrackingCountdownMessage(e)));
     }
 
-    private void OnMediaCleared(object? sender, EventArgs e)
+    private void OnMediaCleared(object? sender, EventArgs e) => ClearMedia(external: true);
+
+    private void ClearMedia(bool external)
     {
         lock (_state)
         {
-            // If internal player is currently active, external detector (ExternalMediaDetectorService)
-            // must NOT clear the media or cancel the scrobble!
-            if (ReferenceEquals(sender, _externalMediaDetector) &&
-                _currentMedia != null &&
-                string.Equals(_currentMedia.ProcessName, "KirihaInternal", StringComparison.Ordinal))
-            {
+            if (_disposed != 0 || _currentMedia is null || IsInternalMedia(_currentMedia) == external)
                 return;
-            }
 
+            long version = ++_mediaVersion;
             _currentMedia = null;
             _matchedAnime = null;
+            _scrobbleService.CancelScrobble();
+            PostForMedia(version, () =>
+            {
+                _eventBus.Publish(new MediaChangedMessage(null));
+                _eventBus.Publish(new AnimeMatchedMessage(null));
+            });
+            _discordService.ClearPresence();
         }
-        _scrobbleService.CancelScrobble();
-
-        _uiDispatcher.Post(() =>
-        {
-            _eventBus.Publish(new MediaChangedMessage(null));
-            _eventBus.Publish(new AnimeMatchedMessage(null));
-        });
-        _discordService.ClearPresence();
     }
 
-    private async void OnMediaDetected(object? sender, ParsedMedia media)
+    // Call under _state to order file changes with the effects of accepting a match.
+    private long BeginMedia(ParsedMedia media, bool showMatchingStatus)
     {
-        // async void event handler: any leaked exception bubbles to the
-        // synchronization context (here: process-wide) and tears the app down.
-        // The handler is invoked from ExternalMediaDetectorService's polling thread, so
-        // we can't rely on a UI-thread safety net either.
+        long version = ++_mediaVersion;
+        _currentMedia = media;
+        _matchedAnime = null;
+        _scrobbleService.CancelScrobble();
+        PostForMedia(version, () =>
+        {
+            _eventBus.Publish(new MediaChangedMessage(media));
+            _eventBus.Publish(new AnimeMatchedMessage(null));
+            if (showMatchingStatus)
+                _eventBus.Publish(new TrackingStatusMessage("scrobbler.status.matching"));
+        });
+        return version;
+    }
+
+    private bool IsCurrentMediaVersion(long version) => _disposed == 0 && version == _mediaVersion;
+
+    private void PostForMedia(long version, Action publish) => _uiDispatcher.Post(() =>
+    {
+        lock (_state)
+        {
+            if (IsCurrentMediaVersion(version))
+                publish();
+        }
+    });
+
+    private static bool IsInternalMedia(ParsedMedia media) =>
+        string.Equals(media.ProcessName, "KirihaInternal", StringComparison.Ordinal);
+
+    private async void OnMediaDetected(object? sender, ParsedMedia media) =>
+        await ProcessDetectedMediaAsync(media).ConfigureAwait(false);
+
+    internal async Task ProcessDetectedMediaAsync(ParsedMedia media)
+    {
+        // This runs from an async void detector event, so exceptions must be handled here.
         try
         {
             if (!_settingsService.Current.System.Scrobbler.Enabled) return;
-
-            lock (_state)
-            {
-                if (_manualMapInProgress) return;
-
-                // If internal player is currently active, do not allow external detector events to override it
-                if (_currentMedia != null &&
-                    string.Equals(_currentMedia.ProcessName, "KirihaInternal", StringComparison.Ordinal))
-                {
-                    return;
-                }
-            }
-
-            await MatchMediaAsync(media).ConfigureAwait(false);
+            await MatchMediaAsync(media, external: true).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { /* shutdown */ }
         catch (Exception ex) { Log.Error(ex, "TrackingService: OnMediaDetected failed for {Title}", media?.AnimeTitle); }
@@ -76,12 +91,7 @@ public partial class TrackingService
     {
         if (state.IsClosed)
         {
-            ParsedMedia? current;
-            lock (_state) current = _currentMedia;
-            if (current != null && current.ProcessName == "KirihaInternal")
-            {
-                OnMediaCleared(this, EventArgs.Empty);
-            }
+            ClearMedia(external: false);
             return Task.CompletedTask;
         }
 
@@ -101,43 +111,10 @@ public partial class TrackingService
         if (state.AnimeId is > 0)
         {
             string primaryTitle = !string.IsNullOrWhiteSpace(media.OriginalTitle) ? media.OriginalTitle : media.AnimeTitle;
-            if (_mappingService.IsNegativelyMapped(primaryTitle))
-            {
-                ClearPlayerMetadata(media);
-                return Task.CompletedTask;
-            }
-
-            ParsedMedia? prev;
-            Kiriha.Core.Domain.Models.Entities.AnimeEntity? existingMatched;
-            lock (_state)
-            {
-                prev = _currentMedia;
-                existingMatched = _matchedAnime;
-            }
-
-            if (prev != null && IsSameMedia(prev, media))
-            {
-                if (existingMatched is null)
-                {
-                    HandleSameMediaUpdate(prev, media);
-                    return Task.CompletedTask;
-                }
-
-                if (existingMatched.Id != state.AnimeId.Value)
-                {
-                    return SetMatchedInternalMedia(media, existingMatched.Id);
-                }
-            }
-            else if (_mappingService.IsManuallyMapped(primaryTitle))
-            {
-                return MatchMediaAsync(media);
-            }
-
-            return SetMatchedInternalMedia(media, state.AnimeId.Value);
+            if (!_mappingService.IsNegativelyMapped(primaryTitle) && !_mappingService.IsManuallyMapped(primaryTitle))
+                return SetMatchedInternalMedia(media, state.AnimeId.Value);
         }
-        else
-        {
-            return MatchMediaAsync(media);
-        }
+
+        return MatchMediaAsync(media);
     }
 }

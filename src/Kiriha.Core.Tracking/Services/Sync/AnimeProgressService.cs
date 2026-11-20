@@ -8,7 +8,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public class AnimeProgressService : IProgressUpdateService
+public class AnimeProgressService : IProgressUpdateService, IDisposable
 {
     private readonly IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
@@ -18,6 +18,8 @@ public class AnimeProgressService : IProgressUpdateService
     private readonly ILibraryMutationService _mutations;
     private readonly ICoreEventBus _eventBus;
     private readonly TimeProvider _clock;
+    private readonly LibrarySyncGate _syncGate;
+    private readonly bool _ownsSyncGate;
 
     public AnimeProgressService(
         IAnimeRepository animeRepository,
@@ -27,7 +29,8 @@ public class AnimeProgressService : IProgressUpdateService
         IUiDispatcher uiDispatcher,
         ILibraryMutationService? mutations = null,
         ICoreEventBus? eventBus = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        LibrarySyncGate? syncGate = null)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
@@ -36,6 +39,8 @@ public class AnimeProgressService : IProgressUpdateService
         _uiDispatcher = uiDispatcher;
         _eventBus = eventBus ?? CoreEventBus.Default;
         _clock = clock ?? TimeProvider.System;
+        _syncGate = syncGate ?? new LibrarySyncGate();
+        _ownsSyncGate = syncGate == null;
         _mutations = mutations ?? new LibraryMutationService(
             animeRepository,
             userAnimeRepo,
@@ -84,8 +89,8 @@ public class AnimeProgressService : IProgressUpdateService
     }
 
     /// <summary>
-    /// Public full-flow overload used by external callers (ScrobbleService, NowPlayingViewModel, etc.).
-    /// Applies local DB changes and enqueues sync. Does NOT record a history entry — callers own that.
+    /// Applies local DB changes and enqueues sync. Callers own the history entry.
+    /// Automatic playback tracking uses <see cref="RecordScrobbleAsync"/>.
     /// </summary>
     public virtual async Task<bool> UpdateProgressAsync(AnimeEntity anime, int nextProgress, UserAnimeStatus? nextStatus = null)
     {
@@ -96,64 +101,59 @@ public class AnimeProgressService : IProgressUpdateService
         return true;
     }
 
-    public virtual async Task<UserAnimeStatus?> SmartIncrementProgressAsync(AnimeEntity item, int nextProgress)
+    public Task<bool> RecordScrobbleAsync(AnimeEntity anime, int episode, UserAnimeStatus? nextStatus, CancellationToken ct) =>
+        SerializeProgressChangeAsync(() => SaveProgressChangeAsync(
+            anime, episode, nextStatus, HistoryActionType.Scrobbled, onlyAdvance: true, ct), ct);
+
+    public virtual Task<UserAnimeStatus?> SmartIncrementProgressAsync(AnimeEntity item, int nextProgress) =>
+        SerializeProgressChangeAsync(async () =>
+        {
+            var nextStatus = _mutations.ComputeSmartNextStatus(item, nextProgress);
+            if (!await SaveProgressChangeAsync(
+                    item, nextProgress, nextStatus, HistoryActionType.Watched, onlyAdvance: false, CancellationToken.None))
+                return null;
+
+            if (nextStatus == UserAnimeStatus.Completed)
+                _eventBus.Publish(new AnimeCompletedRatingPromptMessage(item));
+            if (nextStatus.HasValue)
+                _eventBus.Publish(new AnimeListRefreshMessage());
+
+            return nextStatus;
+        }, CancellationToken.None);
+
+    public Task SmartDecrementProgressAsync(AnimeEntity item) =>
+        SerializeProgressChangeAsync(async () =>
+        {
+            int currentProgress = item.MediaKind == MediaKind.Anime ? item.Progress : item.ChaptersRead;
+            return currentProgress > 0 && await SaveProgressChangeAsync(
+                item, currentProgress - 1, null, HistoryActionType.Reverted, onlyAdvance: false, CancellationToken.None);
+        }, CancellationToken.None);
+
+    private async Task<bool> SaveProgressChangeAsync(
+        AnimeEntity item, int progress, UserAnimeStatus? nextStatus, HistoryActionType action, bool onlyAdvance, CancellationToken ct)
     {
-        var nextStatus = _mutations.ComputeSmartNextStatus(item, nextProgress);
-
-        if (!await _mutations.ApplyLocalProgressAsync(item, nextProgress, nextStatus))
-            return null;
-
-        if (nextStatus == UserAnimeStatus.Completed)
-        {
-            _eventBus.Publish(new AnimeCompletedRatingPromptMessage(item));
-        }
-
-        // Write history BEFORE sync so the DB row exists when SetPendingTrackers fires.
-        var actionType = nextStatus == UserAnimeStatus.Completed
-            ? HistoryActionType.Completed
-            : HistoryActionType.Watched;
-        await _historyService.AddEntryAsync(
-            item.Id,
-            item.MediaKind,
-            item.Title,
-            item.RussianTitle,
-            nextProgress,
-            actionType,
-            null,
-            item.MainPictureUrl);
-
-        await _mutations.EnqueueProgressSyncAsync(item, nextProgress, nextStatus);
-
-        if (nextStatus.HasValue)
-        {
-            _eventBus.Publish(new AnimeListRefreshMessage());
-        }
-
-        return nextStatus;
+        var saved = await _mutations.ApplyProgressChangeAsync(item, progress, nextStatus, onlyAdvance, snapshot =>
+            _syncManager.CommitProgressChangeAsync(snapshot, nextStatus, new HistoryItem
+            {
+                AnimeId = snapshot.Id,
+                MediaKind = snapshot.MediaKind,
+                AnimeTitle = snapshot.Title,
+                RussianTitle = snapshot.RussianTitle,
+                Episode = progress,
+                Timestamp = _clock.GetUtcNow().UtcDateTime,
+                ActionType = (int)(nextStatus == UserAnimeStatus.Completed ? HistoryActionType.Completed : action),
+                PosterUrl = snapshot.MainPictureUrl
+            }, onlyAdvance, ct));
+        if (saved)
+            _syncGate.RecordProgressChange(item.Id, item.MediaKind);
+        return saved;
     }
 
-    public async Task SmartDecrementProgressAsync(AnimeEntity item)
+    // Keep UI publication in the same order as commits, including when +/- overlaps with playback tracking.
+    private async Task<T> SerializeProgressChangeAsync<T>(Func<Task<T>> saveAsync, CancellationToken ct)
     {
-        bool isManga = item.MediaKind != MediaKind.Anime;
-        int currentProgress = isManga ? item.ChaptersRead : item.Progress;
-        if (currentProgress <= 0)
-            return;
-
-        int nextProgress = currentProgress - 1;
-        if (!await _mutations.ApplyLocalProgressAsync(item, nextProgress))
-            return;
-
-        await _historyService.AddEntryAsync(
-            item.Id,
-            item.MediaKind,
-            item.Title,
-            item.RussianTitle,
-            nextProgress,
-            HistoryActionType.Reverted,
-            null,
-            item.MainPictureUrl);
-
-        await _mutations.EnqueueProgressSyncAsync(item, nextProgress);
+        using var scope = await _syncGate.AcquireProgressWriteAsync(ct);
+        return await saveAsync();
     }
 
     public async Task SetScoreAsync(AnimeEntity item, int score)
@@ -214,5 +214,12 @@ public class AnimeProgressService : IProgressUpdateService
             null,
             item.MainPictureUrl);
         await _syncManager.EnqueueFullUpdateAsync(item);
+    }
+
+    public void Dispose()
+    {
+        if (_ownsSyncGate)
+            _syncGate.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

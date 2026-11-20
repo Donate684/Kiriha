@@ -129,7 +129,15 @@ public partial class TorrentsViewModel
         var newProgress = episodeItem.EpisodeNumber;
         if (_progressService != null)
         {
-            await _progressService.SmartIncrementProgressAsync(matchedAnime, newProgress).ConfigureAwait(false);
+            try
+            {
+                await _progressService.SmartIncrementProgressAsync(matchedAnime, newProgress).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to mark episode {Episode} watched for {AnimeId}", newProgress, matchedAnime.Id);
+                return;
+            }
             Dispatcher.UIThread.Post(() => UpdateEpisodeWatchedStates(matchedAnime));
         }
         else

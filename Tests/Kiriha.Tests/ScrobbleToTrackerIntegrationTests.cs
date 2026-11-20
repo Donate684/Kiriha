@@ -20,6 +20,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
     private readonly SettingsService _settingsService;
     private readonly Mock<ITrackerService> _mockTracker;
     private readonly Mock<ISyncTaskRepository> _mockSyncTaskRepo;
+    private readonly Mock<IProgressChangeRepository> _mockProgressChanges;
     private readonly Mock<IDatabaseInitializer> _mockDbInit;
     private readonly Mock<IHistoryService> _mockHistoryService;
     private readonly Mock<IAnimeRepository> _mockAnimeRepo;
@@ -49,6 +50,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         _mockTracker.Setup(t => t.IsEnabled).Returns(true);
 
         _mockSyncTaskRepo = new Mock<ISyncTaskRepository>();
+        _mockProgressChanges = new Mock<IProgressChangeRepository>();
         _mockDbInit = new Mock<IDatabaseInitializer>();
         _mockDbInit.Setup(d => d.InitializationTask).Returns(Task.CompletedTask);
 
@@ -57,6 +59,14 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         _mockUserAnimeRepo = new Mock<IUserAnimeRepository>();
         _mockBackgroundTasks = new Mock<IBackgroundTaskSupervisor>();
         _mockUiDispatcher = new Mock<IUiDispatcher>();
+        _mockUiDispatcher.Setup(d => d.InvokeAsync(It.IsAny<Func<AnimeEntity?>>()))
+            .Returns((Func<AnimeEntity?> action) => Task.FromResult(action()));
+        _mockUiDispatcher.Setup(d => d.InvokeAsync(It.IsAny<Action>()))
+            .Returns((Action action) =>
+            {
+                action();
+                return Task.CompletedTask;
+            });
         _mockLocalizer = new Mock<ILocalizer>();
         _mockNotificationService = new Mock<INotificationService>();
 
@@ -73,7 +83,8 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
             _mockDbInit.Object,
             _mockHistoryService.Object,
             _mockBackgroundTasks.Object,
-            _mockNotificationService.Object
+            _mockNotificationService.Object,
+            progressChangeRepository: _mockProgressChanges.Object
         );
 
         _progressService = new AnimeProgressService(
@@ -86,7 +97,6 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
 
         _scrobbleService = new ScrobbleService(
             _progressService,
-            _mockHistoryService.Object,
             _settingsService,
             _mockNotificationService.Object,
             _mockBackgroundTasks.Object,
@@ -103,33 +113,40 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         var anime = new AnimeEntity { Id = 777, Title = "Fullmetal Alchemist", Progress = 7, Status = UserAnimeStatus.Watching };
 
         _mockTracker
-            .Setup(t => t.UpdateProgressAsync(777, 8, null, null, null, null, It.IsAny<CancellationToken>()))
+            .Setup(t => t.UpdateProgressAsync(777, 8, UserAnimeStatus.Watching, null, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(SyncOutcome.Success);
 
         SyncTask? enqueuedTask = null;
-        _mockSyncTaskRepo
-            .Setup(r => r.AddAsync(It.IsAny<SyncTaskEntity>(), It.IsAny<CancellationToken>()))
-            .Callback<SyncTaskEntity, CancellationToken>((entity, ct) =>
+        _mockProgressChanges
+            .Setup(r => r.SaveAsync(It.IsAny<AnimeEntity>(), null, It.IsAny<HistoryItem>(), It.IsAny<SyncTaskEntity>(), true, It.IsAny<CancellationToken>()))
+            .Callback<AnimeEntity, UserAnimeStatus?, HistoryItem, SyncTaskEntity, bool, CancellationToken>((_, _, _, entity, _, _) =>
             {
+                entity.Id = 1;
                 enqueuedTask = new SyncTask
                 {
-                    Id = 1,
+                    Id = entity.Id,
                     AnimeId = entity.AnimeId,
                     Progress = entity.Progress,
+                    Status = StatusMapper.FromDbString(entity.Status),
                     Type = Enum.Parse<SyncTaskType>(entity.Type)
                 };
             })
-            .ReturnsAsync(1);
+            .ReturnsAsync(true);
 
         // Act 1: Scrobble starts
         _scrobbleService.StartScrobble(media, anime);
 
         // Assert 1: Local repository was updated
-        _mockUserAnimeRepo.Verify(r => r.UpdateProgressAsync(anime, 8, null), Times.Once);
+        Assert.Equal(8, anime.Progress);
 
         // Assert 2: SyncTask was enqueued and pending status marked
-        _mockSyncTaskRepo.Verify(r => r.AddAsync(It.Is<SyncTaskEntity>(e => e.AnimeId == 777 && e.Progress == 8), It.IsAny<CancellationToken>()), Times.Once);
-        _mockHistoryService.Verify(h => h.SetPendingTrackers(777, MediaKind.Anime, 8, It.Is<IEnumerable<string>>(t => t.Contains("Shikimori"))), Times.Once);
+        _mockProgressChanges.Verify(r => r.SaveAsync(
+            It.Is<AnimeEntity>(item => item.Id == 777 && item.Progress == 8), null,
+            It.Is<HistoryItem>(entry => entry.Episode == 8 && entry.ActionType == (int)HistoryActionType.Scrobbled),
+            It.Is<SyncTaskEntity>(task => task.AnimeId == 777 && task.Progress == 8),
+            true, It.IsAny<CancellationToken>()), Times.Once);
+        _mockHistoryService.Verify(h => h.PublishCommittedEntry(
+            It.Is<HistoryItem>(entry => entry.TrackerStatuses["Shikimori"].State == TrackerSyncState.Pending)), Times.Once);
 
         // Act 2: SyncManager processes the enqueued task
         Assert.NotNull(enqueuedTask);
@@ -142,7 +159,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         // Assert 3: Tracker received real call and history received Success status
         Assert.True(success);
         Assert.True(didExecute);
-        _mockTracker.Verify(t => t.UpdateProgressAsync(777, 8, null, null, null, null, It.IsAny<CancellationToken>()), Times.Once);
+        _mockTracker.Verify(t => t.UpdateProgressAsync(777, 8, UserAnimeStatus.Watching, null, null, null, It.IsAny<CancellationToken>()), Times.Once);
         _mockHistoryService.Verify(h => h.UpdateTrackerStatus(777, MediaKind.Anime, 8, "Shikimori", TrackerSyncState.Success, It.IsAny<string?>()), Times.Once);
     }
 

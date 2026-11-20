@@ -39,10 +39,17 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
         {
             var total = Stopwatch.StartNew();
 
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            await context.Database.OpenConnectionAsync();
+            var connection = (SqliteConnection)context.Database.GetDbConnection();
+            await using var migrationLock = SqliteMigrationLock.Open(connection);
+            if (migrationLock != null)
+                await migrationLock.RecoverAsync(connection);
+            context.ActiveMigrationLock = migrationLock;
 
             var stage = Stopwatch.StartNew();
             await context.Database.MigrateAsync();
+            migrationLock?.ClearOwner();
             Log.Information("StartupTiming: database migrations elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
             // WAL + sane defaults + user_version in a single batch (one round-trip on cold start).
@@ -60,6 +67,9 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
             Log.Error(ex, "Failed to initialize EF Core database");
             _initTcs.TrySetException(ex);
         }
+
+        // The caller that starts initialization must observe the same outcome as all waiters.
+        await InitializationTask;
     }
 #pragma warning restore S2077
 

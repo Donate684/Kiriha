@@ -482,7 +482,6 @@ public sealed class PostRefactorRegressionTests
             }, save: false);
 
             var progressMock = new Mock<IProgressUpdateService>();
-            var historyMock = new Mock<HistoryService>(null!);
             var notificationMock = new Mock<INotificationService>();
             var bgMock = new Mock<IBackgroundTaskSupervisor>();
             bgMock.Setup(x => x.Run(It.IsAny<string>(), It.IsAny<Func<CancellationToken, Task>>(), It.IsAny<CancellationToken>()))
@@ -491,7 +490,6 @@ public sealed class PostRefactorRegressionTests
             var dispatcher = new SyncUiDispatcher();
             using var scrobble = new ScrobbleService(
                 progressMock.Object,
-                historyMock.Object,
                 settingsService,
                 notificationMock.Object,
                 bgMock.Object,
@@ -517,7 +515,7 @@ public sealed class PostRefactorRegressionTests
 
             scrobble.StartScrobble(media, anime);
 
-            progressMock.Verify(x => x.UpdateProgressAsync(anime, 5, It.IsAny<UserAnimeStatus?>()), Times.Once);
+            progressMock.Verify(x => x.RecordScrobbleAsync(anime, 5, It.IsAny<UserAnimeStatus?>(), It.IsAny<CancellationToken>()), Times.Once);
         }
         finally
         {

@@ -61,12 +61,24 @@ public class HistoryService : IHistoryService
             };
 
             await _repo.AddAsync(entry, ct);
-            EntryAdded?.Invoke(entry);
+            PublishCommittedEntry(entry);
             Log.Debug("History entry added for {Id} ({MediaKind}) {Title} (Ep {Ep})", animeId, mediaKind, title, episode);
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to add history entry for {Title}", title);
+        }
+    }
+
+    public void PublishCommittedEntry(HistoryItem entry)
+    {
+        try
+        {
+            EntryAdded?.Invoke(entry);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to publish committed history entry {HistoryId}", entry.Id);
         }
     }
 

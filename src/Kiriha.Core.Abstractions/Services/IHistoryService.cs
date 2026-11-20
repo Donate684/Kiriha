@@ -9,6 +9,8 @@ public interface IHistoryService
     event Action<HistoryItem>? EntryAdded;
     event Action<int, MediaKind, int?, string, TrackerSyncState, string?>? TrackerStatusUpdated;
 
+    void PublishCommittedEntry(HistoryItem entry);
+
     /// <summary>Awaitable entry append – guarantees the DB row exists before returning.</summary>
     Task AddEntryAsync(
         int animeId,

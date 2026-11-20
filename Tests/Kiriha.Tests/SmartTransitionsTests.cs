@@ -296,6 +296,11 @@ public class SmartTransitionsTests
         var mockSyncManager = new Mock<ISyncManager>();
         var mockHistoryService = new Mock<IHistoryService>();
         var mockUiDispatcher = new Mock<IUiDispatcher>();
+        mockSyncManager.Setup(sync => sync.CommitProgressChangeAsync(
+            It.IsAny<AnimeEntity>(), UserAnimeStatus.Watching, It.IsAny<HistoryItem>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        mockUiDispatcher.Setup(u => u.InvokeAsync(It.IsAny<Func<AnimeEntity?>>()))
+            .Returns((Func<AnimeEntity?> action) => Task.FromResult(action()));
 
         mockUiDispatcher
             .Setup(x => x.InvokeAsync(It.IsAny<System.Action>()))
@@ -325,8 +330,10 @@ public class SmartTransitionsTests
         Assert.Equal(UserAnimeStatus.Watching, anime.Status);
         Assert.Equal(1, anime.Progress);
 
-        mockUserRepo.Verify(x => x.UpdateProgressAsync(anime, 1, UserAnimeStatus.Watching, It.IsAny<CancellationToken>()), Times.Once);
-        mockSyncManager.Verify(x => x.EnqueueFullUpdateAsync(anime), Times.Once);
+        mockSyncManager.Verify(sync => sync.CommitProgressChangeAsync(
+            It.Is<AnimeEntity>(snapshot => snapshot.Id == anime.Id && snapshot.Progress == 1),
+            UserAnimeStatus.Watching, It.Is<HistoryItem>(entry => entry.Episode == 1 && entry.ActionType == (int)HistoryActionType.Watched),
+            false, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]

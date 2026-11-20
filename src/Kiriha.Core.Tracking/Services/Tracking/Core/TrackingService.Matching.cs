@@ -9,11 +9,13 @@ public partial class TrackingService
     public async Task ManualMapAsync(int animeId)
     {
         ParsedMedia? media;
+        long version;
         lock (_state)
         {
             media = _currentMedia;
             if (media is null) return;
             _manualMapInProgress = true;
+            version = _mediaVersion;
         }
 
         try
@@ -29,8 +31,7 @@ public partial class TrackingService
 
             _mappingService.AddMapping(primaryTitle, animeId);
 
-            // Use a temporary flag or bypass to ensure it works even if scrobbler is disabled
-            await MatchMediaAsync(media, forceMatch: true);
+            await MatchMediaAsync(media, remapVersion: version);
         }
         finally
         {
@@ -41,11 +42,13 @@ public partial class TrackingService
     public async Task RemoveManualMappingAsync()
     {
         ParsedMedia? media;
+        long version;
         lock (_state)
         {
             media = _currentMedia;
             if (media is null) return;
             _manualMapInProgress = true;
+            version = _mediaVersion;
         }
 
         try
@@ -58,7 +61,7 @@ public partial class TrackingService
                 _mappingService.RemoveMapping(media.OriginalTitle);
             }
 
-            await MatchMediaAsync(media, forceMatch: true);
+            await MatchMediaAsync(media, remapVersion: version);
         }
         finally
         {
@@ -69,11 +72,13 @@ public partial class TrackingService
     public async Task AddNegativeMappingAsync()
     {
         ParsedMedia? media;
+        long version;
         lock (_state)
         {
             media = _currentMedia;
             if (media is null) return;
             _manualMapInProgress = true;
+            version = _mediaVersion;
         }
 
         try
@@ -82,7 +87,7 @@ public partial class TrackingService
             Log.Information("TrackingService: Adding negative mapping for '{Title}'", primaryTitle);
             _mappingService.AddNegativeMapping(primaryTitle);
 
-            await MatchMediaAsync(media, forceMatch: true);
+            await MatchMediaAsync(media, remapVersion: version);
         }
         finally
         {
@@ -99,29 +104,29 @@ public partial class TrackingService
         return _mappingService.IsManuallyMapped(primaryTitle);
     }
 
-    private async Task MatchMediaAsync(ParsedMedia media, bool forceMatch = false)
+    private async Task MatchMediaAsync(ParsedMedia media, bool external = false, long? remapVersion = null)
     {
-        // Check if it's the same media
-        ParsedMedia? prev;
-        lock (_state) prev = _currentMedia;
-        if (!forceMatch && prev != null && IsSameMedia(prev, media))
-        {
-            if (HandleSameMediaUpdate(prev, media)) return;
-        }
-
+        long version;
         lock (_state)
         {
-            _currentMedia = media;
-            _matchedAnime = null;
-        }
-        _scrobbleService.CancelScrobble();
+            if (_disposed != 0 ||
+                (external && (_manualMapInProgress || (_currentMedia is { } current && IsInternalMedia(current)))))
+                return;
 
-        _uiDispatcher.Post(() =>
-        {
-            _eventBus.Publish(new MediaChangedMessage(media));
-            _eventBus.Publish(new AnimeMatchedMessage(null)); // Clear previous match UI immediately
-            _eventBus.Publish(new TrackingStatusMessage("scrobbler.status.matching"));
-        });
+            if (remapVersion is { } requestedVersion)
+            {
+                if (!IsCurrentMediaVersion(requestedVersion) || _currentMedia is null)
+                    return;
+                media = _currentMedia;
+            }
+            else if (_currentMedia is { } previous && IsSameMedia(previous, media))
+            {
+                HandleSameMediaUpdate(previous, media);
+                return;
+            }
+
+            version = BeginMedia(media, showMatchingStatus: true);
+        }
 
         try
         {
@@ -137,23 +142,16 @@ public partial class TrackingService
             {
                 case MediaNegativelyMapped:
                     Log.Information("TrackingService: '{Title}' is negatively mapped, skipping auto-match", media.AnimeTitle);
-                    ClearPlayerMetadata(media);
+                    ClearPlayerMetadataIfCurrent(version);
                     return;
 
                 case MediaMatchSuccess success:
-                    // Race: another media event may have arrived while we were mapping.
-                    ParsedMedia? cur;
-                    lock (_state) cur = _currentMedia;
-                    if (!IsSameMedia(cur, media)) return;
-
-                    ApplyMatchedMedia(media, success.MatchedAnime);
+                    ApplyMatchedMedia(version, success.MatchedAnime);
                     break;
 
                 case MediaMatchNotFound:
-                    if (forceMatch)
-                    {
-                        ClearPlayerMetadata(media);
-                    }
+                    if (remapVersion.HasValue)
+                        ClearPlayerMetadataIfCurrent(version);
                     break;
             }
         }
@@ -163,12 +161,16 @@ public partial class TrackingService
         }
         finally
         {
-            ParsedMedia? cur;
-            lock (_state) cur = _currentMedia;
-            if (IsSameMedia(cur, media))
-            {
-                _uiDispatcher.Post(() => _eventBus.Publish(new TrackingStatusMessage(string.Empty)));
-            }
+            PostForMedia(version, () => _eventBus.Publish(new TrackingStatusMessage(string.Empty)));
+        }
+    }
+
+    private void ClearPlayerMetadataIfCurrent(long version)
+    {
+        lock (_state)
+        {
+            if (IsCurrentMediaVersion(version) && _currentMedia is { } current)
+                ClearPlayerMetadata(current);
         }
     }
 }

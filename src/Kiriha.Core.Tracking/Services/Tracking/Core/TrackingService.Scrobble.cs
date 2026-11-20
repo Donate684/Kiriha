@@ -9,111 +9,71 @@ namespace Kiriha.Core.Tracking.Core;
 
 public partial class TrackingService
 {
-    private bool HandleSameMediaUpdate(ParsedMedia prev, ParsedMedia media)
+    // Called under _state by both detection paths.
+    private void HandleSameMediaUpdate(ParsedMedia prev, ParsedMedia media)
     {
-        bool timeLeap = false;
-        if (prev.Position.HasValue && media.Position.HasValue)
-        {
-            timeLeap = Math.Abs((media.Position.Value - prev.Position.Value).TotalSeconds) > 3;
-        }
-
+        bool timeLeap = prev.Position.HasValue && media.Position.HasValue &&
+                        Math.Abs((media.Position.Value - prev.Position.Value).TotalSeconds) > 3;
         bool durationChanged = Math.Abs((prev.Duration?.TotalSeconds ?? 0) - (media.Duration?.TotalSeconds ?? 0)) > 1.0;
+        bool changed = prev.IsPlaying != media.IsPlaying || timeLeap || durationChanged;
 
-        bool changed = prev.IsPlaying != media.IsPlaying ||
-                       prev.ProcessName != media.ProcessName ||
-                       timeLeap ||
-                       durationChanged;
-
-        lock (_state) _currentMedia = media;
-
+        _currentMedia = media;
         _scrobbleService.UpdatePlaybackProgress(media.IsPlaying, media.Position, media.Duration);
-
         if (!changed)
-        {
-            return true;
-        }
+            return;
 
-        _uiDispatcher.Post(() => _eventBus.Publish(new MediaChangedMessage(media)));
+        PostForMedia(_mediaVersion, () => _eventBus.Publish(new MediaChangedMessage(media)));
         _scrobbleService.UpdatePlayingState(media.IsPlaying);
-
-        AnimeEntity? currentMatched;
-        lock (_state) currentMatched = _matchedAnime;
-
-        if (currentMatched != null)
-        {
+        if (_matchedAnime is { } currentMatched)
             UpdateDiscordPresence(media, currentMatched);
-        }
-
-        return true;
     }
 
-    private void ApplyMatchedMedia(ParsedMedia media, AnimeEntity? matched)
+    private void ApplyMatchedMedia(long version, AnimeEntity? matched)
     {
-        bool isValid;
-        ParsedMedia actualMedia = media;
         lock (_state)
         {
-            isValid = IsSameMedia(_currentMedia, media);
-            if (isValid)
+            if (!IsCurrentMediaVersion(version) || _currentMedia is not { } actualMedia)
+                return;
+
+            _matchedAnime = matched;
+            PostForMedia(version, () => _eventBus.Publish(new AnimeMatchedMessage(matched)));
+            if (matched is null)
             {
-                _matchedAnime = matched;
-                actualMedia = _currentMedia!;
+                _discordService.UpdatePresence(actualMedia.AnimeTitle, actualMedia.Episode, 0, null, null,
+                    actualMedia.Position, actualMedia.Duration, null, actualMedia.IsPlaying);
+                return;
             }
-        }
 
-        if (!isValid) return;
-
-        _uiDispatcher.Post(() => _eventBus.Publish(new AnimeMatchedMessage(matched)));
-
-        if (matched != null)
-        {
-            var effectiveMedia = (matched.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(actualMedia.Episode))
-                ? actualMedia.WithEpisode("1")
-                : actualMedia;
-
+            var effectiveMedia = GetEffectiveMedia(actualMedia, matched);
             NotifyPlayerMetadata(effectiveMedia, matched);
             UpdateDiscordPresence(effectiveMedia, matched);
-
-            if (_shikiMetadataService != null && (string.IsNullOrEmpty(matched.RussianTitle) || string.IsNullOrEmpty(matched.RussianSynopsis)))
-            {
-                LocalizeAndNotifyAsync(effectiveMedia, matched).SafeFireAndForget("TrackingService.LocalizeMatchedMedia");
-            }
-
             if (matched.Status != UserAnimeStatus.None && _settingsService.Current.System.Scrobbler.Enabled)
                 _scrobbleService.StartScrobble(effectiveMedia, matched);
         }
-        else
+
+        if (_shikiMetadataService != null &&
+            (string.IsNullOrEmpty(matched.RussianTitle) || string.IsNullOrEmpty(matched.RussianSynopsis)))
         {
-            _discordService.UpdatePresence(actualMedia.AnimeTitle, actualMedia.Episode, 0, null, null, actualMedia.Position, actualMedia.Duration, null, actualMedia.IsPlaying);
+            LocalizeAndNotifyAsync(version, matched).SafeFireAndForget("TrackingService.LocalizeMatchedMedia");
         }
     }
 
-    private async Task LocalizeAndNotifyAsync(ParsedMedia media, AnimeEntity matched)
+    private async Task LocalizeAndNotifyAsync(long version, AnimeEntity matched)
     {
         try
         {
             if (_shikiMetadataService != null)
-            {
                 await _shikiMetadataService.EnsureLocalizedAsync(matched).ConfigureAwait(false);
-            }
 
-            ParsedMedia? cur;
-            AnimeEntity? curMatched;
             lock (_state)
             {
-                cur = _currentMedia;
-                curMatched = _matchedAnime;
-            }
+                if (!IsCurrentMediaVersion(version) || !ReferenceEquals(_matchedAnime, matched) || _currentMedia is not { } current)
+                    return;
 
-            if (IsSameMedia(cur, media) && (curMatched == null || curMatched.Id == matched.Id))
-            {
-                lock (_state)
-                {
-                    _matchedAnime = matched;
-                }
-                NotifyPlayerMetadata(media, matched);
-                UpdateDiscordPresence(media, matched);
-                _uiDispatcher.Post(() => _eventBus.Publish(new AnimeMatchedMessage(matched)));
+                var effectiveMedia = GetEffectiveMedia(current, matched);
+                NotifyPlayerMetadata(effectiveMedia, matched);
+                UpdateDiscordPresence(effectiveMedia, matched);
+                PostForMedia(version, () => _eventBus.Publish(new AnimeMatchedMessage(matched)));
             }
         }
         catch (Exception ex)
@@ -126,39 +86,25 @@ public partial class TrackingService
     {
         try
         {
-            ParsedMedia? prev;
             AnimeEntity? existingMatched;
+            long version;
             lock (_state)
             {
-                prev = _currentMedia;
+                if (_disposed != 0) return;
+
+                var previous = _currentMedia;
                 existingMatched = _matchedAnime;
+                bool sameAnime = existingMatched?.Id == animeId;
+                if (previous != null && IsSamePlaybackSource(previous, media) &&
+                    AreEpisodesEqual(previous.Episode, media.Episode) &&
+                    (IsSameMedia(previous, media) || sameAnime))
+                {
+                    HandleSameMediaUpdate(previous, media);
+                    return;
+                }
+
+                version = BeginMedia(media, showMatchingStatus: false);
             }
-
-            bool sameOriginal = string.Equals(prev?.OriginalTitle, media.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(System.IO.Path.GetFileNameWithoutExtension(prev?.OriginalTitle), System.IO.Path.GetFileNameWithoutExtension(media.OriginalTitle), StringComparison.OrdinalIgnoreCase);
-
-            bool isSameMediaFile = prev != null &&
-                (sameOriginal || (existingMatched?.Id == animeId && existingMatched.Id > 0)) &&
-                AreEpisodesEqual(prev.Episode, media.Episode) &&
-                (string.Equals(prev.AnimeTitle, media.AnimeTitle, StringComparison.OrdinalIgnoreCase) || existingMatched?.Id == animeId);
-
-            if (isSameMediaFile)
-            {
-                if (HandleSameMediaUpdate(prev!, media)) return;
-            }
-
-            lock (_state)
-            {
-                _currentMedia = media;
-                _matchedAnime = null;
-            }
-            _scrobbleService.CancelScrobble();
-
-            _uiDispatcher.Post(() =>
-            {
-                _eventBus.Publish(new MediaChangedMessage(media));
-                _eventBus.Publish(new AnimeMatchedMessage(null));
-            });
 
             const int repoInitTimeoutMs = 5000;
             try { await Task.WhenAny(_animeRepo.InitializationTask, Task.Delay(repoInitTimeoutMs)); } catch (Exception ex) when (ex is not OperationCanceledException) { }
@@ -204,11 +150,7 @@ public partial class TrackingService
                     matched.RussianSynopsis = existingMatched.RussianSynopsis;
             }
 
-            ParsedMedia? cur;
-            lock (_state) cur = _currentMedia;
-            if (!IsSameMedia(cur, media)) return;
-
-            ApplyMatchedMedia(media, matched);
+            ApplyMatchedMedia(version, matched);
         }
         catch (Exception ex)
         {
@@ -230,26 +172,30 @@ public partial class TrackingService
         if (a is null || b is null) return false;
         bool sameOriginal = string.Equals(a.OriginalTitle, b.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(System.IO.Path.GetFileNameWithoutExtension(a.OriginalTitle), System.IO.Path.GetFileNameWithoutExtension(b.OriginalTitle), StringComparison.OrdinalIgnoreCase);
-        return sameOriginal &&
+        return IsSamePlaybackSource(a, b) && sameOriginal &&
                AreEpisodesEqual(a.Episode, b.Episode) &&
                string.Equals(a.AnimeTitle, b.AnimeTitle, StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsSamePlaybackSource(ParsedMedia a, ParsedMedia b) =>
+        string.Equals(a.ProcessName, b.ProcessName, StringComparison.OrdinalIgnoreCase) &&
+        (a.Pid == b.Pid || a.Pid == 0 || b.Pid == 0) &&
+        (string.IsNullOrEmpty(a.TorrentHash) || string.IsNullOrEmpty(b.TorrentHash) ||
+            string.Equals(a.TorrentHash, b.TorrentHash, StringComparison.OrdinalIgnoreCase));
+
+    private static ParsedMedia GetEffectiveMedia(ParsedMedia media, AnimeEntity anime) =>
+        anime.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode) ? media.WithEpisode("1") : media;
+
     public void NotifyCurrentMediaMetadataUpdated(AnimeEntity anime)
     {
-        ParsedMedia? media;
         lock (_state)
         {
+            if (_disposed != 0 || _currentMedia is not { } media ||
+                _matchedAnime?.Id != anime.Id || _matchedAnime.MediaKind != anime.MediaKind)
+                return;
+
             _matchedAnime = anime;
-            media = _currentMedia;
-        }
-
-        if (media != null)
-        {
-            var effectiveMedia = (anime.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode))
-                ? media.WithEpisode("1")
-                : media;
-
+            var effectiveMedia = GetEffectiveMedia(media, anime);
             NotifyPlayerMetadata(effectiveMedia, anime);
             UpdateDiscordPresence(effectiveMedia, anime);
 

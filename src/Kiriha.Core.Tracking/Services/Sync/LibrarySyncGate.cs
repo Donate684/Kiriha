@@ -1,31 +1,35 @@
+using Kiriha.Core.Domain.Models.Entities;
+
 namespace Kiriha.Core.Tracking.Sync;
 
 /// <summary>
-/// Coordinates write access to the user library between full tracker list reconciliations
-/// (<see cref="AnimeSyncOrchestrator"/>) and background airing-metadata updates
-/// (<see cref="Core.AiringInfoService"/>) so concurrent background jobs cannot overwrite
-/// freshly fetched fields with stale snapshots.
+/// Coordinates full list reconciliation, background metadata updates, and local progress writes.
 /// </summary>
 public sealed class LibrarySyncGate : IDisposable
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private int _fullSyncActive;
+    private readonly SemaphoreSlim _progressGate = new(1, 1);
+    private readonly Lock _progressChangesLock = new();
+    private HashSet<(int Id, MediaKind Kind)>? _progressChangesDuringSync;
+    private int _fullSyncRequests;
 
-    public bool IsFullSyncActive => Volatile.Read(ref _fullSyncActive) == 1;
+    public bool IsFullSyncActive => Volatile.Read(ref _fullSyncRequests) > 0;
 
     public async Task<IDisposable> AcquireFullSyncAsync(CancellationToken ct = default)
     {
-        Interlocked.Exchange(ref _fullSyncActive, 1);
+        Interlocked.Increment(ref _fullSyncRequests);
         try
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
-            return new ReleaseScope(this, isFullSync: true);
         }
         catch
         {
-            Interlocked.Exchange(ref _fullSyncActive, 0);
+            Interlocked.Decrement(ref _fullSyncRequests);
             throw;
         }
+        lock (_progressChangesLock)
+            _progressChangesDuringSync = [];
+        return new ReleaseScope(_gate, EndFullSync);
     }
 
     public async Task<IDisposable?> TryAcquireBackgroundUpdateAsync(CancellationToken ct = default)
@@ -42,15 +46,41 @@ public sealed class LibrarySyncGate : IDisposable
             return null;
         }
 
-        return new ReleaseScope(this, isFullSync: false);
+        return new ReleaseScope(_gate);
+    }
+
+    internal async Task<IDisposable> AcquireProgressWriteAsync(CancellationToken ct)
+    {
+        await _progressGate.WaitAsync(ct).ConfigureAwait(false);
+        return new ReleaseScope(_progressGate);
+    }
+
+    internal void RecordProgressChange(int id, MediaKind kind)
+    {
+        lock (_progressChangesLock)
+            _progressChangesDuringSync?.Add((id, kind));
+    }
+
+    internal HashSet<(int Id, MediaKind Kind)> GetProgressChangesDuringSync()
+    {
+        lock (_progressChangesLock)
+            return _progressChangesDuringSync is { } changes ? [.. changes] : [];
+    }
+
+    private void EndFullSync()
+    {
+        lock (_progressChangesLock)
+            _progressChangesDuringSync = null;
+        Interlocked.Decrement(ref _fullSyncRequests);
     }
 
     public void Dispose()
     {
         _gate.Dispose();
+        _progressGate.Dispose();
     }
 
-    private sealed class ReleaseScope(LibrarySyncGate owner, bool isFullSync) : IDisposable
+    private sealed class ReleaseScope(SemaphoreSlim gate, Action? beforeRelease = null) : IDisposable
     {
         private int _disposed;
 
@@ -59,10 +89,8 @@ public sealed class LibrarySyncGate : IDisposable
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
 
-            if (isFullSync)
-                Interlocked.Exchange(ref owner._fullSyncActive, 0);
-
-            owner._gate.Release();
+            beforeRelease?.Invoke();
+            gate.Release();
         }
     }
 }

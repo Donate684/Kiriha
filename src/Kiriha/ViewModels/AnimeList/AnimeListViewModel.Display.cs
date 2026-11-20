@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
 using Kiriha.Core.Domain.Utils.Async;
+using Serilog;
 
 namespace Kiriha.ViewModels.AnimeList;
 
@@ -63,7 +64,15 @@ public partial class AnimeListViewModel
         var oldStatus = item.Status;
         var oldRewatching = item.IsRewatching;
 
-        await _progressService.SmartIncrementProgressAsync(item, nextProgress);
+        try
+        {
+            await _progressService.SmartIncrementProgressAsync(item, nextProgress);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to set library progress for {AnimeId} to {Progress}", item.Id, nextProgress);
+            return;
+        }
 
         await UpdateCountsAsync();
 
@@ -77,7 +86,15 @@ public partial class AnimeListViewModel
     [RelayCommand]
     public async Task DecrementProgress(AnimeEntity item)
     {
-        await _progressService.SmartDecrementProgressAsync(item);
+        try
+        {
+            await _progressService.SmartDecrementProgressAsync(item);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to decrease library progress for {AnimeId}", item.Id);
+            return;
+        }
         await UpdateCountsAsync();
     }
 
