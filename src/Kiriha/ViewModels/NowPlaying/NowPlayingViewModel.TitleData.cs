@@ -9,7 +9,7 @@ namespace Kiriha.ViewModels.NowPlaying;
 
 public partial class NowPlayingViewModel
 {
-    private readonly ConcurrentDictionary<int, byte> _detailsLoadingIds = new();
+    private readonly ConcurrentDictionary<(AnimeEntity Item, long Generation), byte> _detailsLoading = new();
 
     /// <summary>
     /// Resolved user-defined share buttons for the currently matched anime.
@@ -30,7 +30,11 @@ public partial class NowPlayingViewModel
         UpdateAlternativeTitles(value);
         UpdateCustomShareLinks(value);
 
-        if (value is null) return;
+        if (value is null)
+        {
+            IsLoadingDetails = false;
+            return;
+        }
 
         if (NeedsDetailsEnrichment(value))
         {
@@ -38,6 +42,7 @@ public partial class NowPlayingViewModel
         }
         else
         {
+            IsLoadingDetails = false;
             EnsureLocalizedSafeAsync(value).SafeFireAndForget("NowPlaying.OnMatchedAnimeChangedLoc");
         }
     }
@@ -47,56 +52,50 @@ public partial class NowPlayingViewModel
         if (anime is null || anime.Id <= 0) return;
         if (!NeedsDetailsEnrichment(anime)) return;
 
-        int animeId = anime.Id;
-        if (!_detailsLoadingIds.TryAdd(animeId, 0)) return;
+        var key = new MediaKey(anime.Id, anime.MediaKind);
+        var generation = _animeRepo.GetEntryGeneration(key.Id, key.Kind);
+        var request = (anime, generation);
+        if (!_detailsLoading.TryAdd(request, 0)) return;
 
         IsLoadingDetails = true;
         try
         {
-            Log.Information("NowPlaying: Anime {Id} ({Title}) is missing details, requesting full data...", animeId, anime.Title);
+            Log.Information("NowPlaying: Anime {Id} ({Title}) is missing details, requesting full data...", key.Id, anime.Title);
 
-            var full = anime.Presentation.IsManga
-                ? await _malApi.GetMangaDetailsAsync(animeId, _disposeCts.Token)
-                : await _malApi.GetAnimeDetailsAsync(animeId, _disposeCts.Token);
+            var ct = _disposeCts.Token;
+            var full = key.Kind == MediaKind.Anime
+                ? await _malApi.GetAnimeDetailsAsync(key.Id, ct)
+                : await _malApi.GetMangaDetailsAsync(key.Id, ct);
+            if (!IsCurrentMatch(anime, key, generation, ct)) return;
 
-            if (MatchedAnime?.Id == animeId)
+            if (full != null && full.Id == key.Id && (full.MediaKind == MediaKind.Anime) == (key.Kind == MediaKind.Anime))
             {
-                if (full != null)
-                {
-                    MatchedAnime.MergeFullDetails(full);
-                }
-
-                UpdateAlternativeTitles(MatchedAnime);
-                UpdateCustomShareLinks(MatchedAnime);
-
-                await EnsureLocalizedSafeAsync(MatchedAnime);
-                MatchedAnime.RefreshMetadata();
-                _trackingService.NotifyCurrentMediaMetadataUpdated(MatchedAnime);
-
-                if (MatchedAnime.Status != UserAnimeStatus.None)
-                {
-                    try { await _animeRepo.AddOrUpdateAnimeAsync(MatchedAnime); }
-                    catch (Exception ex) { Log.Debug(ex, "NowPlaying: Failed to persist enriched details for {Id}", animeId); }
-                }
-
-                OnPropertyChanged(nameof(MatchedAnime));
-                OnPropertyChanged(nameof(AllAlternativeTitles));
-                OnPropertyChanged(nameof(HasAlternativeTitles));
-                OnPropertyChanged(nameof(DisplayEpisodeNumber));
-                OnPropertyChanged(nameof(IsNotInList));
+                var current = _animeRepo.FindById(key.Id, key.Kind);
+                if (current != null)
+                    await _animeRepo.MergeTrackedDetailsAsync(full, key, generation, ct);
+                if (!IsCurrentMatch(anime, key, generation, ct)) return;
+                if (!ReferenceEquals(anime, current))
+                    anime.MergeFullDetails(full, metadataOnly: true);
             }
+
+            await EnsureLocalizedSafeAsync(anime, key, generation, ct);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            Log.Warning(ex, "NowPlaying: Failed to fetch full details for anime {Id}", animeId);
+            Log.Warning(ex, "NowPlaying: Failed to fetch full details for anime {Id}", key.Id);
         }
         finally
         {
-            _detailsLoadingIds.TryRemove(animeId, out _);
-            IsLoadingDetails = false;
+            _detailsLoading.TryRemove(request, out _);
+            IsLoadingDetails = MatchedAnime is { } matched && _detailsLoading.ContainsKey(
+                (matched, _animeRepo.GetEntryGeneration(matched.Id, matched.MediaKind)));
         }
     }
+
+    private bool IsCurrentMatch(AnimeEntity anime, MediaKey key, long generation, CancellationToken ct) =>
+        !ct.IsCancellationRequested && ReferenceEquals(MatchedAnime, anime) &&
+        _animeRepo.GetEntryGeneration(key.Id, key.Kind) == generation;
 
     private void UpdateAlternativeTitles(AnimeEntity? value)
     {

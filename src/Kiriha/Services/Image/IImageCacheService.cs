@@ -6,7 +6,7 @@ public interface IImageCacheService
 {
     Task<Bitmap?> LoadBitmapAsync(string url, int decodeWidth = 300, CancellationToken ct = default);
 
-    Task PerformSmartCleanupAsync(IEnumerable<string> activePaths);
+    Task PerformSmartCleanupAsync(IEnumerable<string> activePaths, CancellationToken ct = default);
 
     void ClearMemoryCache();
 

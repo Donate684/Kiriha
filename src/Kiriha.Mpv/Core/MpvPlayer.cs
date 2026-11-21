@@ -6,7 +6,6 @@ public partial class MpvPlayer : IDisposable
     private const ulong DurationPropertyId = 2;
     private const ulong PausePropertyId = 3;
     private const ulong SeekablePropertyId = 4;
-    private const ulong IdleActivePropertyId = 5;
     private const ulong TrackListPropertyId = 6;
     private const ulong SubDelayPropertyId = 7;
     private const ulong EofReachedPropertyId = 8;
@@ -16,11 +15,14 @@ public partial class MpvPlayer : IDisposable
 
 
     private readonly Lock _gate = new();
+    private readonly Lock _sourceEventGate = new();
+    private readonly MpvPlaylistSource _playlistSource = new();
     private readonly MpvPropertyCache _propertyCache = new(FormatRuntimeVideoInfo(null, null, null, null, null, null, null, null, null, null, null));
     private readonly MpvCommandQueue _commandQueue;
     private readonly MpvEventLoop _eventLoop;
     private IntPtr _mpvHandle;
     private volatile bool _disposed;
+    internal Task ShutdownCompletion { get; private set; } = Task.CompletedTask;
 
     internal Lock Gate => _gate;
     internal bool IsDisposed => _disposed;
@@ -39,6 +41,7 @@ public partial class MpvPlayer : IDisposable
     public event Action? TracksChanged;
     public event Action<double>? SubtitleDelayChanged;
     public event Action<bool>? EofReachedChanged;
+    public event Action<MpvSourceEvent>? SourceEvent;
 
     internal MpvPlayer()
     {
@@ -58,7 +61,6 @@ public partial class MpvPlayer : IDisposable
 
     internal void Initialize()
     {
-        ObservePlaybackProperties();
         _commandQueue.Start();
         _eventLoop.Start();
     }
@@ -70,6 +72,9 @@ public partial class MpvPlayer : IDisposable
     public void RenderOpenGl(int framebuffer, int width, int height) => OpenGlRenderer.RenderOpenGl(framebuffer, width, height);
 
     public void Load(string url, IReadOnlyDictionary<string, string>? headers = null) => PlaybackController.Load(url, headers);
+
+    public long LoadSource(string url, IReadOnlyDictionary<string, string>? headers = null, bool? autoPlay = null) =>
+        PlaybackController.LoadSource(url, headers, autoPlay);
 
     public void AddSubtitle(string path, bool select = true) => TrackManager.AddSubtitle(path, select);
 
@@ -254,21 +259,8 @@ public partial class MpvPlayer : IDisposable
 
         OpenGlRenderer.Dispose();
 
-        _ = Task.Run(() =>
-        {
-            try
-            {
-                MpvPlayerLifecycle.Dispose(
-                    handle,
-                    _commandQueue,
-                    _eventLoop,
-                    UnobservePlaybackProperties);
-            }
-            finally
-            {
-                // Removed _renderGate from MpvPlayer since it moved to OpenGlRenderer
-            }
-        });
+        ShutdownCompletion = Task.Run(() => MpvPlayerLifecycle.Dispose(
+            handle, _commandQueue, _eventLoop, UnobservePlaybackProperties));
     }
 
     public void FreeRenderContext() => OpenGlRenderer.ResetRenderContext();

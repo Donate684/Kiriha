@@ -17,9 +17,15 @@ public sealed class DatabaseShutdownHandler : IShutdownHandler
         const int timeoutMs = 2500;
         try
         {
-            var operation = _databaseInitializer.FlushAsync();
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMs));
+            var ct = cancellation.Token;
+            var operation = Task.Run(() => _databaseInitializer.FlushAsync(ct), ct);
             if (!await ShutdownTimeout.WaitForAsync(operation, timeoutMs))
                 Log.Warning("Shutdown flush: DatabaseInitializer.FlushAsync exceeded {Ms}ms timeout", timeoutMs);
+        }
+        catch (OperationCanceledException ex)
+        {
+            Log.Information(ex, "Shutdown flush: SQLite checkpoint deferred");
         }
         catch (Exception ex)
         {

@@ -11,6 +11,34 @@ public sealed record PlayerMediaMetadata(
 {
     public PlayerMediaMetadata() : this(string.Empty, string.Empty, string.Empty, string.Empty, null, string.Empty, string.Empty) { }
 
+    public string? PlaybackRequestId { get; init; }
+    public string? PlaybackSourceKey { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool HasPlaybackIdentity => !string.IsNullOrWhiteSpace(PlaybackRequestId) || !string.IsNullOrWhiteSpace(PlaybackSourceKey);
+
+    public bool MatchesPlayback(string? requestId, string? sourceKey, string originalTitle, string episode)
+    {
+        if (!string.IsNullOrWhiteSpace(PlaybackRequestId))
+            return string.Equals(PlaybackRequestId, requestId, StringComparison.Ordinal) &&
+                (string.IsNullOrWhiteSpace(PlaybackSourceKey) || string.Equals(PlaybackSourceKey, sourceKey, StringComparison.Ordinal));
+
+        if (!string.IsNullOrWhiteSpace(PlaybackSourceKey))
+            return string.IsNullOrWhiteSpace(requestId) && string.Equals(PlaybackSourceKey, sourceKey, StringComparison.Ordinal);
+
+        if (string.IsNullOrWhiteSpace(OriginalTitle) || string.IsNullOrWhiteSpace(originalTitle) ||
+            IsStreamManifest(OriginalTitle) || IsStreamManifest(originalTitle))
+            return false;
+
+        var left = OriginalTitle.Trim();
+        var right = originalTitle.Trim();
+        bool sameTitle = string.Equals(left, right, StringComparison.OrdinalIgnoreCase) ||
+            ((!Path.HasExtension(left) || !Path.HasExtension(right)) &&
+                string.Equals(Path.GetFileNameWithoutExtension(left), Path.GetFileNameWithoutExtension(right), StringComparison.OrdinalIgnoreCase));
+        return sameTitle && (string.IsNullOrWhiteSpace(EpisodeText) || string.IsNullOrWhiteSpace(episode) ||
+            string.Equals(EpisodeText.Trim(), episode.Trim(), StringComparison.OrdinalIgnoreCase) ||
+            (int.TryParse(EpisodeText, out var leftEpisode) && int.TryParse(episode, out var rightEpisode) && leftEpisode == rightEpisode));
+    }
+
     public static bool IsStreamManifest(string? name)
     {
         if (string.IsNullOrWhiteSpace(name))

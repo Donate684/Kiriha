@@ -1,6 +1,7 @@
 using Kiriha.Core.Domain.Utils.Parsing;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models;
@@ -19,7 +20,7 @@ public interface IScrobbleService
     void UpdatePlaybackProgress(bool isPlaying, TimeSpan? position, TimeSpan? duration);
 }
 
-public class ScrobbleService : IScrobbleService, IDisposable
+public partial class ScrobbleService : IScrobbleService, IDisposable
 {
     private readonly IProgressUpdateService _progressService;
     private readonly ISettingsService _settingsService;
@@ -30,15 +31,15 @@ public class ScrobbleService : IScrobbleService, IDisposable
     private readonly IScrobbleProgressStore _progressStore;
     private readonly ILibraryMutationService _mutations;
     private readonly ICoreEventBus _eventBus;
+    private readonly IAnimeRepository? _library;
+    private readonly TimeProvider _clock;
 
     public event EventHandler<string>? CountdownUpdated;
 
     private readonly Lock _stateLock = new();
-    private CancellationTokenSource? _countdownCts;
-    private string _activeHash = string.Empty;
-    private bool _isPlaying;
-    private TimeSpan? _currentDuration;
-    private int _currentElapsed;
+    private readonly Dictionary<string, long> _checkpointGenerations = new(StringComparer.Ordinal);
+    private Countdown? _active;
+    private bool _disposed;
 
     public ScrobbleService(
         IProgressUpdateService progressService,
@@ -49,7 +50,9 @@ public class ScrobbleService : IScrobbleService, IDisposable
         ILocalizer localizer,
         IScrobbleProgressStore? progressStore = null,
         ILibraryMutationService? mutations = null,
-        ICoreEventBus? eventBus = null)
+        ICoreEventBus? eventBus = null,
+        IAnimeRepository? library = null,
+        TimeProvider? clock = null)
     {
         _progressService = progressService;
         _settingsService = settingsService;
@@ -60,6 +63,8 @@ public class ScrobbleService : IScrobbleService, IDisposable
         _progressStore = progressStore ?? new InMemoryScrobbleProgressStore();
         _eventBus = eventBus ?? CoreEventBus.Default;
         _mutations = mutations ?? new LibraryMutationService(null, null, null, uiDispatcher, _eventBus);
+        _library = library;
+        _clock = clock ?? TimeProvider.System;
     }
 
     private sealed class InMemoryScrobbleProgressStore : IScrobbleProgressStore
@@ -71,17 +76,15 @@ public class ScrobbleService : IScrobbleService, IDisposable
     }
 
     private const double DefaultEpisodeDurationSeconds = 24 * 60; // 1440s (24 min)
+    private const string AlreadyScrobbledLocKey = "scrobbler.status.already_scrobbled";
 
     public void StartScrobble(ParsedMedia media, AnimeEntity match)
     {
-        if (!_settingsService.Current.System.Scrobbler.Enabled)
-        {
-            return;
-        }
+        if (!_settingsService.Current.System.Scrobbler.Enabled) return;
 
         if (!int.TryParse(media.Episode, out int ep))
         {
-            var fallbackEp = Kiriha.Core.Domain.Utils.Parsing.AnimeParseCache.Parse(media.OriginalTitle).Episode;
+            var fallbackEp = AnimeParseCache.Parse(media.OriginalTitle).Episode;
             if (!int.TryParse(fallbackEp, out ep))
             {
                 return;
@@ -93,24 +96,56 @@ public class ScrobbleService : IScrobbleService, IDisposable
             ep = 1;
         }
 
-        // Auto-Rewatch candidate: title is Completed, not currently rewatching, and user launched episode 1
+        var key = new MediaKey(match.Id, match.MediaKind);
+        var generation = _library?.GetEntryGeneration(key.Id, key.Kind) ?? 0;
+        if (_library != null)
+        {
+            if (key.Kind != MediaKind.Anime ||
+                _library.FindById(key.Id, key.Kind) is not { Status: not UserAnimeStatus.None } current)
+                return;
+
+            match = current;
+        }
+
+        // Auto-Rewatch candidate: title is Completed, not currently rewatching, and user launched episode 1.
         bool isRewatchCandidate = match.Status == UserAnimeStatus.Completed && !match.IsRewatching && ep == 1;
+        bool skipped = ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode;
+        Countdown? countdown = null;
+        lock (_stateLock)
+        {
+            if (_disposed || (_active is { } active && active.Episode == ep && active.Key == key &&
+                active.Generation == generation && active.Media.HasSamePlaybackSource(media) && active.Media.HasSameSourceFile(media)))
+                return;
+
+            StopCountdown();
+            if (!isRewatchCandidate && ep > match.Progress && !skipped)
+            {
+                countdown = new Countdown(media with { }, match, key, generation, ep, _clock.GetTimestamp());
+                if (_checkpointGenerations.TryGetValue(countdown.ProgressKey, out var previousGeneration) &&
+                    previousGeneration != generation)
+                    ClearCheckpoint(countdown);
+
+                _active = countdown;
+            }
+        }
 
         if (!isRewatchCandidate && ep <= match.Progress)
         {
-            CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
+            CountdownUpdated?.Invoke(this, _localizer.GetLoc(AlreadyScrobbledLocKey));
             return;
         }
 
         if (isRewatchCandidate)
         {
-            _eventBus.Publish(new AnimeRewatchPromptMessage(match, ep));
+            _eventBus.Publish(new AnimeRewatchPromptMessage(match, ep)
+            {
+                Target = _library == null ? null : new LibraryEntryTarget(key, generation)
+            });
             CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.rewatch_prompt.title"));
             return;
         }
 
-        // Check if the detected episode skips ahead beyond the next expected one.
-        if (ep > match.Progress + 1 && _settingsService.Current.System.Scrobbler.NotifyOnSkippedEpisode)
+        if (skipped)
         {
             var msg = _localizer.GetLoc("scrobbler.status.episode_skipped");
             CountdownUpdated?.Invoke(this, msg);
@@ -120,34 +155,9 @@ public class ScrobbleService : IScrobbleService, IDisposable
             return;
         }
 
-        string hash = $"{match.Id}_{ep}";
-        CancellationToken token;
-        lock (_stateLock)
-        {
-            if (_activeHash == hash && _countdownCts != null && !_countdownCts.IsCancellationRequested) return;
-
-            bool isHashChanged = !string.IsNullOrEmpty(_activeHash) && _activeHash != hash;
-
-            _countdownCts?.Cancel();
-            _countdownCts?.Dispose();
-            _countdownCts = new CancellationTokenSource();
-
-            if (media.Duration is { TotalSeconds: > 0 })
-            {
-                _currentDuration = media.Duration;
-            }
-            else if (isHashChanged)
-            {
-                _currentDuration = null;
-            }
-
-            _activeHash = hash;
-            _isPlaying = media.IsPlaying;
-            token = _countdownCts.Token;
-        }
+        if (countdown is null) return;
         CountdownUpdated?.Invoke(this, string.Empty);
-
-        _backgroundTasks.Run("ScrobbleService.Countdown", ct => CountdownTaskAsync(ep, match, media, token, ct), token);
+        _ = _backgroundTasks.Run("ScrobbleService.Countdown", ct => CountdownTaskAsync(countdown, ct), countdown.Token);
     }
 
     public void UpdatePlayingState(bool isPlaying)
@@ -159,26 +169,25 @@ public class ScrobbleService : IScrobbleService, IDisposable
     {
         lock (_stateLock)
         {
-            _isPlaying = isPlaying;
-            if (duration.HasValue && duration.Value > TimeSpan.Zero) _currentDuration = duration.Value;
+            if (_active is not { } countdown) return;
+
+            if (isPlaying && countdown.PlayingSince is null)
+                countdown.PlayingSince = _clock.GetTimestamp();
+            else if (!isPlaying && countdown.PlayingSince.HasValue)
+            {
+                countdown.Elapsed = ReadElapsed(countdown);
+                countdown.PlayingSince = null;
+            }
+
+            if (duration is { TotalSeconds: > 0 })
+                countdown.Duration = duration;
         }
     }
 
     public void CancelScrobble()
     {
         lock (_stateLock)
-        {
-            if (!string.IsNullOrEmpty(_activeHash) && _currentElapsed > 0)
-            {
-                _progressStore.SaveElapsed(_activeHash, _currentElapsed);
-            }
-            _countdownCts?.Cancel();
-            _countdownCts?.Dispose();
-            _countdownCts = null;
-            _activeHash = string.Empty;
-            _currentElapsed = 0;
-            _currentDuration = null;
-        }
+            StopCountdown();
         CountdownUpdated?.Invoke(this, string.Empty);
     }
 
@@ -199,116 +208,12 @@ public class ScrobbleService : IScrobbleService, IDisposable
         return scrobblerConfig.DelaySeconds <= 0 ? 0 : Math.Max(1, scrobblerConfig.DelaySeconds);
     }
 
-    private async Task CountdownTaskAsync(
-        int targetEp, AnimeEntity match, ParsedMedia media, CancellationToken ownerToken, CancellationToken ct)
-    {
-        string progressKey = $"{match.Id}_{targetEp}";
-        int elapsed = _progressStore.GetElapsed(progressKey);
-
-        try
-        {
-            while (true)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                bool isPlaying;
-                TimeSpan? currentDur;
-                lock (_stateLock)
-                {
-                    isPlaying = _isPlaying;
-                    currentDur = _currentDuration;
-                    _currentElapsed = elapsed;
-                }
-
-                if (!isPlaying)
-                {
-                    CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.paused"));
-                    await Task.Delay(1000, ct);
-                    continue;
-                }
-
-                int targetSeconds = CalculateTargetSeconds(currentDur, media);
-                int remaining = targetSeconds - elapsed;
-
-                if (remaining <= 0) break;
-
-                CountdownUpdated?.Invoke(this, $"{TimeSpan.FromSeconds(remaining):mm\\:ss}");
-                await Task.Delay(1000, ct);
-                elapsed++;
-
-                if (elapsed % 5 == 0)
-                {
-                    _progressStore.SaveElapsed(progressKey, elapsed);
-                }
-            }
-
-            ct.ThrowIfCancellationRequested();
-            var nextStatus = _mutations.ComputeSmartNextStatus(match, targetEp);
-
-            bool alreadyScrobbled = await _uiDispatcher.InvokeAsync(() => match.Progress >= targetEp);
-            ct.ThrowIfCancellationRequested();
-            var saved = !alreadyScrobbled && await _progressService.RecordScrobbleAsync(match, targetEp, nextStatus, ct);
-            if (saved || alreadyScrobbled)
-            {
-                _progressStore.Clear(progressKey);
-                lock (_stateLock)
-                {
-                    if (_countdownCts?.Token == ownerToken)
-                        _currentElapsed = 0;
-                }
-            }
-
-            if (!saved)
-            {
-                if (alreadyScrobbled)
-                    CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.already_scrobbled"));
-                return;
-            }
-
-            // Auto-Complete & Quick Rating notification
-            if (nextStatus == UserAnimeStatus.Completed)
-            {
-                _eventBus.Publish(new AnimeCompletedRatingPromptMessage(match));
-                _notificationService.NotifyAnimeCompleted(match);
-            }
-
-            if (nextStatus.HasValue)
-            {
-                _eventBus.Publish(new AnimeListRefreshMessage());
-            }
-
-            CountdownUpdated?.Invoke(this, _localizer.GetLoc("scrobbler.status.updated"));
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Scrobble countdown error");
-            CountdownUpdated?.Invoke(this, _localizer.GetLoc("common.errors.generic"));
-        }
-        finally
-        {
-            lock (_stateLock)
-            {
-                if (_countdownCts?.Token == ownerToken)
-                {
-                    _countdownCts.Dispose();
-                    _countdownCts = null;
-                }
-            }
-        }
-    }
-
     public void Dispose()
     {
         lock (_stateLock)
         {
-            if (!string.IsNullOrEmpty(_activeHash) && _currentElapsed > 0)
-            {
-                _progressStore.SaveElapsed(_activeHash, _currentElapsed);
-            }
-            _countdownCts?.Cancel();
-            _countdownCts?.Dispose();
-            _countdownCts = null;
+            _disposed = true;
+            StopCountdown();
         }
     }
 }

@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -12,6 +13,59 @@ namespace Kiriha.Tests;
 
 public class SmartTransitionsTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MainWindow_UsesCapturedPromptAndLeavesNewPromptOpen(bool rewatch)
+    {
+        var item = new AnimeEntity { Id = 100, Title = "Completed title", Score = "4", Status = UserAnimeStatus.Completed };
+        var target = new LibraryEntryTarget(new MediaKey(item.Id, item.MediaKind), 1);
+        var replacement = target with { Generation = 2 };
+        var ratingPrompt = new AnimeCompletedRatingPromptMessage(item) { Target = target };
+        var rewatchPrompt = new AnimeRewatchPromptMessage(item, 1) { Target = target };
+        item.Score = "6";
+        item.RewatchCount = 1;
+
+        var pending = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var progress = new Mock<IProgressUpdateService>();
+        progress.Setup(service => service.SetScoreAsync(target, "4", 9)).Returns(pending.Task);
+        progress.Setup(service => service.ConfirmRewatchAsync(target, 0, 1)).Returns(pending.Task);
+        var settings = new AppSettings();
+        using var vm = new MainWindowViewModel(Mock.Of<IViewModelFactory>(),
+            Mock.Of<ISettingsService>(service => service.Current == settings), progress.Object, ILocalizer.Passthrough);
+
+        Task submit;
+        if (rewatch)
+        {
+            vm.ShowRewatchPrompt(rewatchPrompt);
+            submit = vm.ConfirmRewatchCommand.ExecuteAsync(null);
+            vm.ShowRewatchPrompt(new AnimeRewatchPromptMessage(item, 2) { Target = replacement });
+        }
+        else
+        {
+            vm.ShowQuickRating(ratingPrompt);
+            Assert.Equal(4, vm.SelectedRatingScore);
+            submit = vm.SubmitQuickRatingIntCommand.ExecuteAsync(9);
+            vm.ShowQuickRating(new AnimeCompletedRatingPromptMessage(item) { Target = replacement });
+        }
+
+        Assert.False(submit.IsCompleted);
+        pending.SetResult(false);
+        await submit;
+        if (rewatch)
+        {
+            progress.Verify(service => service.ConfirmRewatchAsync(target, 0, 1), Times.Once);
+            Assert.True(vm.IsRewatchPromptVisible);
+            Assert.Equal(2, vm.RewatchEpisode);
+        }
+        else
+        {
+            progress.Verify(service => service.SetScoreAsync(target, "4", 9), Times.Once);
+            Assert.True(vm.IsQuickRatingVisible);
+            Assert.Equal(6, vm.SelectedRatingScore);
+        }
+    }
+
     [Fact]
     public async Task AnimeProgressService_ConfirmRewatchAsync_SetsRewatchingAndSyncs()
     {

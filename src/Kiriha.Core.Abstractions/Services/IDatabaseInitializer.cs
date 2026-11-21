@@ -4,5 +4,5 @@ public interface IDatabaseInitializer
 {
     Task InitializationTask { get; }
     Task InitializeAsync() => InitializationTask;
-    Task FlushAsync() => Task.CompletedTask;
+    Task FlushAsync(CancellationToken ct = default) => Task.CompletedTask;
 }

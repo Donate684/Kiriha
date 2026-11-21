@@ -7,76 +7,128 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 public partial class PlayerViewModel
 {
     private int _isPlaybackStateUpdatePending;
-    private readonly Lock _playbackStateLock = new();
-    private PlaybackState? _pendingPlaybackState;
-    private int _pendingStateSourceVersion;
+    private MpvSourceEvent.State? _pendingPlaybackState;
     private bool _isEofReached;
+    private double _highestObservedDuration;
+    private Action<Action>? _postNativeSourceEvent;
 
-    private void OnPlayerFileLoaded(object? sender, EventArgs e)
+    private void OnNativeSourceEvent(MpvSourceEvent notification)
     {
-        var sourceVersion = Volatile.Read(ref _sourceVersion);
-        Dispatcher.UIThread.Post(() =>
-        {
-            if (_playbackDisposed || _sourceStartup != null || sourceVersion != _sourceVersion)
-                return;
-
-            _isEofReached = false;
-            IsLoading = false;
-            HasPlaybackError = false;
-            PlaybackErrorMessage = string.Empty;
-            PlaybackStatusMessage = _localizer.GetLoc("player.state.ready");
-            _subtitleDelay = 0;
-            UpdateNavigationAvailability();
-            RefreshDurationFromPlayer();
-            UpdateTracks();
-            _timelinePreview.WarmUp(VideoUrl);
-            _statePublisher.Publish();
-
-            if (RememberPlaybackPosition)
-            {
-                CheckAndPromptResume();
-            }
-
-            _skippedSegments.Clear();
-            Overlay.DismissSkipPrompt(smooth: false);
-            RefreshSkipSegments();
-
-            if (!string.IsNullOrWhiteSpace(_pendingSubtitleUrl))
-            {
-                var sub = _pendingSubtitleUrl;
-                _pendingSubtitleUrl = null;
-                _playback.AddSubtitle(sub, select: true);
-            }
-
-            if (SmartTrackAutoload)
-            {
-                var url = VideoUrl;
-                _ = Task.Run(() => LoadSmartTracks(url), CancellationToken.None);
-            }
-            _ = Task.Run(() =>
-            {
-                var info = _playback.GetRuntimeVideoInfo();
-                Dispatcher.UIThread.Post(() => MpvRuntimeInfo = info);
-            }, CancellationToken.None);
-        });
-    }
-
-    private void LoadSmartTracks(string videoPath)
-    {
-        var matches = SmartTrackAutoloader.FindMatchingTracks(videoPath);
-        if (!matches.HasAny)
+        var post = _postNativeSourceEvent;
+        if (post == null)
             return;
 
-        foreach (var subPath in matches.SubtitlePaths)
-            _playback.AddSubtitle(subPath);
+        if (notification is not MpvSourceEvent.State state)
+        {
+            post(() => ApplyNativeSourceEvent(notification));
+            return;
+        }
 
-        foreach (var audioPath in matches.AudioPaths)
-            _playback.AddAudioTrack(audioPath);
+        Volatile.Write(ref _pendingPlaybackState, state);
+        if (Interlocked.Exchange(ref _isPlaybackStateUpdatePending, 1) == 0)
+        {
+            post(() =>
+            {
+                Interlocked.Exchange(ref _isPlaybackStateUpdatePending, 0);
+                var latest = Volatile.Read(ref _pendingPlaybackState);
+                if (latest != null)
+                    ApplyNativeSourceEvent(latest);
+            });
+        }
     }
 
-    private void OnPlayerTracksChanged()
+    internal void ApplyNativeSourceEvent(MpvSourceEvent notification)
     {
-        Dispatcher.UIThread.Post(() => UpdateTracks());
+        if (!IsCurrentNativeSource(notification.SourceId))
+            return;
+
+        switch (notification)
+        {
+            case MpvSourceEvent.Loaded loaded:
+                ApplyFileLoaded(loaded);
+                break;
+            case MpvSourceEvent.Ended ended when ended.Details.StopsPlayback:
+                ApplyPlaybackEnded(ended);
+                break;
+            case MpvSourceEvent.State state when state.Playback.IsLoaded && !IsLoading && !HasPlaybackError:
+                ApplyPlaybackState(state.Playback);
+                break;
+            case MpvSourceEvent.Tracks when !IsLoading && !HasPlaybackError:
+                UpdateTracks();
+                break;
+            case MpvSourceEvent.SubtitleDelay delay:
+                _subtitleDelay = delay.Seconds;
+                break;
+            case MpvSourceEvent.Eof eof when !HasPlaybackError:
+                ApplyEofReached(eof);
+                break;
+            case MpvSourceEvent.Buffering buffering when !HasPlaybackError:
+                ApplyPlayerBuffering(buffering.Active);
+                break;
+        }
+    }
+
+    private void ApplyFileLoaded(MpvSourceEvent.Loaded loaded)
+    {
+        ReleaseReplacedTorrents(_selectedTorrent);
+        _isEofReached = false;
+        _highestObservedDuration = 0;
+        HasPlaybackError = false;
+        PlaybackErrorMessage = string.Empty;
+        PlaybackStatusMessage = _localizer.GetLoc("player.state.ready");
+        _subtitleDelay = 0;
+        UpdateNavigationAvailability();
+        ApplyPlaybackState(loaded.Playback);
+        IsLoading = false;
+        UpdateTracks();
+        _timelinePreview.WarmUp(VideoUrl);
+
+        if (RememberPlaybackPosition)
+            CheckAndPromptResume();
+
+        _skippedSegments.Clear();
+        Overlay.DismissSkipPrompt(smooth: false);
+        RefreshSkipSegments();
+
+        if (!string.IsNullOrWhiteSpace(_pendingSubtitleUrl))
+        {
+            var subtitle = _pendingSubtitleUrl;
+            _pendingSubtitleUrl = null;
+            _playback.AddSubtitle(subtitle, select: true);
+        }
+
+        if (SmartTrackAutoload)
+            _ = LoadSmartTracksAsync(VideoUrl, loaded.SourceId);
+
+        RefreshMpvRuntimeInfo();
+        _statePublisher.Publish();
+    }
+
+    private async Task LoadSmartTracksAsync(string videoPath, long sourceId)
+    {
+        try
+        {
+            var matches = await Task.Run(() => SmartTrackAutoloader.FindMatchingTracks(videoPath), CancellationToken.None)
+                .ConfigureAwait(false);
+            if (!matches.HasAny)
+                return;
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (!IsCurrentNativeSource(sourceId) || HasPlaybackError)
+                    return;
+
+                foreach (var path in matches.SubtitlePaths)
+                    _playback.AddSubtitle(path);
+
+                foreach (var path in matches.AudioPaths)
+                    _playback.AddAudioTrack(path);
+            });
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Debug(ex, "Could not auto-load tracks for the current playback source");
+        }
     }
 
     private void CheckAndPromptResume()
@@ -88,111 +140,107 @@ public partial class PlayerViewModel
         var savedPos = _resumeStore?.TryGetResumePosition(VideoUrl, watchLaterDir)
                        ?? WatchLaterHelper.TryGetSavedPosition(watchLaterDir, VideoUrl);
 
-        if (savedPos.HasValue && savedPos.Value >= 5)
-        {
-            if (Duration > 0 && savedPos.Value >= Duration * 0.95)
-            {
-                return;
-            }
+        if (savedPos is >= 5 && (Duration <= 0 || savedPos.Value < Duration * 0.95))
+            Overlay.ShowResumePrompt(savedPos.Value, PlayerTimelineService.FormatTime(savedPos.Value));
+    }
 
-            var formatted = PlayerTimelineService.FormatTime(savedPos.Value);
-            Overlay.ShowResumePrompt(savedPos.Value, formatted);
+    private bool CanSaveCurrentPosition() => RememberPlaybackPosition && !IsLoading && !HasPlaybackError &&
+        !_isEofReached && Duration > 0 && CurrentTime > 0;
+
+    private void ApplyPlaybackEnded(MpvSourceEvent.Ended ended)
+    {
+        ReleaseReplacedTorrents(_selectedTorrent);
+        var playback = ended.Playback;
+        var endedAt = playback.Position > 0 ? playback.Position : CurrentTime;
+        var duration = Math.Max(_highestObservedDuration, playback.Duration);
+        var prematureStreamEnd = ended.Details.Reason == MpvPlaybackEndedEventArgs.ReasonEof &&
+            IsRemoteSource() && duration > 0 && endedAt < duration * 0.95;
+        var failed = ended.Details.HasError || prematureStreamEnd;
+        if (failed)
+        {
+            FailPlayback(endedAt, duration, ended.Details.ErrorMessage);
+            return;
+        }
+        else if (ended.Details.Reason == MpvPlaybackEndedEventArgs.ReasonEof && CanCompletePlayback(endedAt, duration))
+        {
+            CompletePlayback();
+        }
+
+        StopPlaybackState();
+    }
+
+    private void ApplyEofReached(MpvSourceEvent.Eof eof)
+    {
+        var duration = Math.Max(_highestObservedDuration, eof.Playback.Duration);
+        if (!eof.Reached)
+        {
+            _isEofReached = false;
+            _playback.SetSavePositionOnQuit(RememberPlaybackPosition);
+        }
+        else if (CanCompletePlayback(eof.Playback.Position, duration))
+        {
+            CompletePlayback();
+        }
+        else if (duration > 0)
+        {
+            // With keep-open, a prematurely exhausted network stream may only signal eof-reached.
+            FailPlayback(eof.Playback.Position, duration, errorMessage: null);
         }
     }
 
-    private void OnPlayerPlaybackEnded(object? sender, MpvPlaybackEndedEventArgs e)
+    private void FailPlayback(double position, double duration, string? errorMessage)
     {
-        if (!e.StopsPlayback)
+        if (!HasPlaybackError && RememberPlaybackPosition && position >= 5 &&
+            (duration <= 0 || position < duration * 0.95))
+        {
+            _resumeStore?.SavePosition(VideoUrl, position, duration);
+        }
+
+        HasPlaybackError = true;
+        PlaybackErrorMessage = errorMessage ?? _localizer.GetLoc(AppConstants.Player.OpenFailedLocKey);
+        PlaybackStatusMessage = _localizer.GetLoc("player.state.error_playback");
+        _updateTracksCts?.Cancel();
+        StopPlaybackState();
+    }
+
+    private void StopPlaybackState()
+    {
+        Overlay.DismissResumePrompt();
+        Overlay.DismissSkipPrompt(smooth: false);
+        ApplyPlayerBuffering(false);
+        IsPlaying = false;
+        IsLoading = false;
+        _statePublisher.Publish();
+    }
+
+    private bool CanCompletePlayback(double position, double duration) =>
+        !IsRemoteSource() || duration > 0 && position >= duration * 0.95;
+
+    private bool IsRemoteSource() =>
+        Uri.TryCreate(VideoUrl, UriKind.Absolute, out var uri) && !uri.IsFile;
+
+    private void CompletePlayback()
+    {
+        if (_isEofReached)
             return;
 
-        var sourceVersion = Volatile.Read(ref _sourceVersion);
-        Dispatcher.UIThread.Post(() =>
+        _isEofReached = true;
+        Overlay.DismissResumePrompt();
+        Overlay.DismissSkipPrompt(smooth: false);
+        if (RememberPlaybackPosition)
         {
-            if (_playbackDisposed || _sourceStartup != null || sourceVersion != _sourceVersion)
-                return;
-
-            _isEofReached = true;
-            Overlay.DismissResumePrompt();
-            Overlay.DismissSkipPrompt(smooth: false);
-            if (RememberPlaybackPosition)
-            {
-                _resumeStore?.Remove(VideoUrl);
-                _playback.DeleteWatchLaterConfig();
-                _playback.SetSavePositionOnQuit(false);
-            }
-
-            IsLoading = false;
-            IsPlaying = false;
-            if (e.HasError)
-            {
-                HasPlaybackError = true;
-                PlaybackErrorMessage = string.IsNullOrWhiteSpace(e.ErrorMessage)
-                    ? _localizer.GetLoc(AppConstants.Player.OpenFailedLocKey)
-                    : e.ErrorMessage;
-                PlaybackStatusMessage = _localizer.GetLoc("player.state.error_playback");
-            }
-
-            _statePublisher.Publish();
-        });
-    }
-
-    private void OnPlayerEofReachedChanged(bool isEof)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            _isEofReached = isEof;
-            if (isEof)
-            {
-                Overlay.DismissResumePrompt();
-                Overlay.DismissSkipPrompt(smooth: false);
-                if (RememberPlaybackPosition)
-                {
-                    _resumeStore?.Remove(VideoUrl);
-                    _playback.DeleteWatchLaterConfig();
-                    _playback.SetSavePositionOnQuit(false);
-                }
-            }
-            else
-            {
-                _playback.SetSavePositionOnQuit(RememberPlaybackPosition);
-            }
-        });
-    }
-
-    private void OnPlayerPlaybackStateChanged(PlaybackState state)
-    {
-        lock (_playbackStateLock)
-        {
-            _pendingPlaybackState = state;
-            _pendingStateSourceVersion = Volatile.Read(ref _sourceVersion);
-        }
-
-        if (System.Threading.Interlocked.CompareExchange(ref _isPlaybackStateUpdatePending, 1, 0) == 0)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                System.Threading.Interlocked.Exchange(ref _isPlaybackStateUpdatePending, 0);
-                PlaybackState? pendingState;
-                int pendingVersion;
-                lock (_playbackStateLock)
-                {
-                    pendingState = _pendingPlaybackState;
-                    pendingVersion = _pendingStateSourceVersion;
-                }
-
-                if (pendingState != null && !_playbackDisposed && _sourceStartup == null && pendingVersion == _sourceVersion)
-                {
-                    ApplyPlaybackState(pendingState);
-                }
-            });
+            _resumeStore?.Remove(VideoUrl);
+            _playback.DeleteWatchLaterConfig();
+            _playback.SetSavePositionOnQuit(false);
         }
     }
 
     private void ApplyPlaybackState(PlaybackState state)
     {
-        IsPlaying = state.IsPlaying;
         PlayerTimelineSnapshot? snapshot = null;
 
+        // A demuxer can shorten the reported duration when a network response ends early.
+        _highestObservedDuration = Math.Max(_highestObservedDuration, state.Duration);
         if (state.Duration > 0 && _timeline.TrySetDuration(state.Duration, out var durationSnapshot))
             snapshot = durationSnapshot;
 
@@ -202,6 +250,7 @@ public partial class PlayerViewModel
         if (snapshot.HasValue)
             ApplyTimelineSnapshot(snapshot.Value);
 
+        IsPlaying = state.IsPlaying;
     }
 
     private void ApplyTimelineSnapshot(PlayerTimelineSnapshot snapshot)
@@ -218,18 +267,15 @@ public partial class PlayerViewModel
         if (!_playback.HasPlayer)
             return;
 
+        var sourceId = _nativeSourceId;
         _ = Task.Run(() =>
         {
             var info = _playback.GetRuntimeVideoInfo();
-            Dispatcher.UIThread.Post(() => MpvRuntimeInfo = info);
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (IsCurrentNativeSource(sourceId))
+                    MpvRuntimeInfo = info;
+            });
         }, CancellationToken.None);
-    }
-
-    private void OnPlayerSubtitleDelayChanged(double subDelay)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            _subtitleDelay = subDelay;
-        });
     }
 }

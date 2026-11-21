@@ -1,6 +1,5 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
@@ -108,57 +107,32 @@ public partial class TorrentsViewModel
     [RelayCommand]
     public async Task MarkEpisodeWatchedAsync(OnlineEpisodeItem? episodeItem)
     {
-        if (episodeItem == null || ActiveOnlineAnime is not { } onlineAnime || !OnlineEpisodes.Contains(episodeItem)) return;
-        var matchedAnime = ResolveMatchedAnime(onlineAnime.Title);
-        if (matchedAnime == null) return;
+        if (_progressService == null || episodeItem == null || ActiveOnlineAnime is not { } onlineAnime ||
+            !OnlineEpisodes.Contains(episodeItem) || ResolveMatchedAnime(onlineAnime.Title) is not { } matched)
+            return;
 
-        var newProgress = episodeItem.EpisodeNumber;
-        if (_progressService != null)
+        var key = new MediaKey(matched.Id, matched.MediaKind);
+        var generation = _animeRepo.GetEntryGeneration(key.Id, key.Kind);
+        try
         {
-            try
-            {
-                await _progressService.SmartIncrementProgressAsync(matchedAnime, newProgress).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed to mark episode {Episode} watched for {AnimeId}", newProgress, matchedAnime.Id);
-                return;
-            }
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (ReferenceEquals(ActiveOnlineAnime, onlineAnime))
-                    UpdateEpisodeWatchedStates(matchedAnime);
-            });
+            await _progressService.MarkEpisodeWatchedAsync(key, generation, episodeItem.EpisodeNumber);
+            if (ReferenceEquals(ActiveOnlineAnime, onlineAnime))
+                UpdateEpisodeWatchedStates(_animeRepo.FindById(key.Id, key.Kind));
         }
-        else
+        catch (Exception ex)
         {
-            matchedAnime.Progress = newProgress;
-            if (matchedAnime.TotalEpisodes > 0 && newProgress >= matchedAnime.TotalEpisodes)
-            {
-                matchedAnime.Status = UserAnimeStatus.Completed;
-            }
-            else if (matchedAnime.Status != UserAnimeStatus.Watching)
-            {
-                matchedAnime.Status = UserAnimeStatus.Watching;
-            }
-
-            await _animeRepo.AddOrUpdateAnimeAsync(matchedAnime).ConfigureAwait(false);
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (ReferenceEquals(ActiveOnlineAnime, onlineAnime))
-                    UpdateEpisodeWatchedStates(matchedAnime);
-                WeakReferenceMessenger.Default.Send(new AnimeProgressChangedMessage(matchedAnime, newProgress));
-            });
+            Log.Error(ex, "Failed to mark episode {Episode} watched for {AnimeId}", episodeItem.EpisodeNumber, key.Id);
         }
     }
 
     private void UpdateEpisodeWatchedStates(AnimeEntity? anime)
     {
-        if (anime == null || OnlineEpisodes.Count == 0) return;
+        if (OnlineEpisodes.Count == 0) return;
 
-        var watchedProgress = anime.Progress;
-        var isCompleted = anime.Status == UserAnimeStatus.Completed;
-        var isWatching = anime.Status == UserAnimeStatus.Watching;
+        var watchedProgress = anime?.Progress ?? 0;
+        var isCompleted = anime?.Status == UserAnimeStatus.Completed;
+        var hasNewEpisodes = anime is { Status: UserAnimeStatus.Watching } &&
+            (anime.Presentation.HasNewEpisodes || anime.EpisodesAired > 0);
 
         foreach (var ep in OnlineEpisodes)
         {
@@ -168,7 +142,7 @@ public partial class TorrentsViewModel
                 ep.IsNew = false;
             }
             else if ((!isCompleted && watchedProgress > 0 && ep.EpisodeNumber > watchedProgress) ||
-                     (isWatching && watchedProgress == 0 && (anime.Presentation.HasNewEpisodes || anime.EpisodesAired > 0)))
+                         (hasNewEpisodes && watchedProgress == 0))
             {
                 ep.IsWatched = false;
                 ep.IsNew = true;
@@ -197,7 +171,7 @@ public partial class TorrentsViewModel
         if (!IsOnlineEpisodeSelectorVisible || ActiveOnlineAnime == null)
             return;
 
-        var targetAnime = _activeMatchedAnime ?? ResolveMatchedAnime(ActiveOnlineAnime.Title);
+        var targetAnime = _activeMatchedAnime ?? ResolveTrackedAnime(ActiveOnlineAnime.Title);
         if (targetAnime != null && (targetAnime.Id == message.Anime.Id || IsAnimeTitleMatch(message.Anime, ActiveOnlineAnime.Title)))
         {
             if (!ReferenceEquals(_activeMatchedAnime, targetAnime))
@@ -210,35 +184,39 @@ public partial class TorrentsViewModel
 
     public void OnAnimeMatched(AnimeMatchedMessage message)
     {
-        if (!IsOnlineEpisodeSelectorVisible || ActiveOnlineAnime == null || message.Anime == null)
+        if (!IsOnlineEpisodeSelectorVisible || ActiveOnlineAnime == null || message.Anime is not { MediaKind: MediaKind.Anime })
             return;
 
         if (IsAnimeTitleMatch(message.Anime, ActiveOnlineAnime.Title) ||
             OnlineRelevanceScorer.ComputeRelevance(message.Anime.Title, ActiveOnlineAnime.Title) >= 0.65 ||
             (!string.IsNullOrWhiteSpace(message.Anime.RussianTitle) && OnlineRelevanceScorer.ComputeRelevance(message.Anime.RussianTitle, ActiveOnlineAnime.Title) >= 0.65))
         {
-            SetActiveMatchedAnime(message.Anime);
-            UpdateEpisodeWatchedStates(message.Anime);
+            var current = _animeRepo.FindById(message.Anime.Id, MediaKind.Anime);
+            SetActiveMatchedAnime(current);
+            UpdateEpisodeWatchedStates(current);
         }
     }
 
     public void OnAnimeListRefreshed()
     {
         RefreshWatchingList();
+        RefreshOnlineEpisodeProgress();
+    }
 
+    private void RefreshOnlineEpisodeProgress()
+    {
         if (IsOnlineEpisodeSelectorVisible && ActiveOnlineAnime != null)
         {
-            var matched = ResolveMatchedAnime(ActiveOnlineAnime.Title);
-            if (matched != null)
-            {
-                if (!ReferenceEquals(_activeMatchedAnime, matched))
-                {
-                    SetActiveMatchedAnime(matched);
-                }
-                UpdateEpisodeWatchedStates(matched);
-            }
+            var matched = ResolveTrackedAnime(ActiveOnlineAnime.Title);
+            if (!ReferenceEquals(_activeMatchedAnime, matched))
+                SetActiveMatchedAnime(matched);
+            UpdateEpisodeWatchedStates(matched);
         }
     }
+
+    private AnimeEntity? ResolveTrackedAnime(string title) => ResolveMatchedAnime(title) is { } matched
+        ? _animeRepo.FindById(matched.Id, MediaKind.Anime)
+        : null;
 
     public void SetActiveMatchedAnime(AnimeEntity? anime)
     {

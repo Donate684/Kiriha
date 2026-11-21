@@ -8,3 +8,6 @@ public readonly record struct MediaKey(int Id, MediaKind Kind)
 {
     public override string ToString() => $"{Kind}:{Id}";
 }
+
+/// <summary>Identifies one membership of a title in the local library.</summary>
+public readonly record struct LibraryEntryTarget(MediaKey Key, long Generation);

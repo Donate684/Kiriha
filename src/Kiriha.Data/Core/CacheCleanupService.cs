@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -35,28 +36,32 @@ public sealed class CacheCleanupService
         _seasonalCachePath = seasonalCachePath;
     }
 
-    public async Task<IReadOnlyList<CacheCleanupStats>> GetStatsAsync()
+    public Task<IReadOnlyList<CacheCleanupStats>> GetStatsAsync(CancellationToken ct = default) =>
+        Task.Run(() => ReadStatsAsync(ct), ct);
+
+    private async Task<IReadOnlyList<CacheCleanupStats>> ReadStatsAsync(CancellationToken ct)
     {
         var stats = new List<CacheCleanupStats>();
 
-        using var context = await _contextFactory.CreateDbContextAsync();
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var connection = await SqliteMaintenanceConnection.OpenAsync(context, ct);
 
         stats.Add(new CacheCleanupStats(
             CacheCleanupTarget.History,
-            await context.History.CountAsync(),
+            await context.History.CountAsync(ct),
             0));
 
         stats.Add(GetDirectoryStats(CacheCleanupTarget.ImageFiles, _imageCachePath));
 
         var apiCount =
-            await context.Metadata.CountAsync() +
-            await context.HttpResponseCache.CountAsync() +
-            await context.AnimeRelations.CountAsync() +
-            await context.AnimeCountryOrigin.CountAsync() +
-            await context.AniListMediaMap.CountAsync();
+            await context.Metadata.CountAsync(ct) +
+            await context.HttpResponseCache.CountAsync(ct) +
+            await context.AnimeRelations.CountAsync(ct) +
+            await context.AnimeCountryOrigin.CountAsync(ct) +
+            await context.AniListMediaMap.CountAsync(ct);
         var httpBytes = await context.HttpResponseCache
             .AsNoTracking()
-            .SumAsync(x => (long)x.Body.Length);
+            .SumAsync(x => (long)x.Body.Length, ct);
         stats.Add(new CacheCleanupStats(
             CacheCleanupTarget.ApiCache,
             apiCount,
@@ -64,7 +69,7 @@ public sealed class CacheCleanupService
 
         stats.Add(new CacheCleanupStats(
             CacheCleanupTarget.RecognitionCache,
-            await context.MalSearchCache.CountAsync(),
+            await context.MalSearchCache.CountAsync(ct),
             0));
 
         stats.Add(GetDirectoryStats(CacheCleanupTarget.SeasonalCache, _seasonalCachePath));
@@ -72,40 +77,62 @@ public sealed class CacheCleanupService
         return stats;
     }
 
-    public async Task ClearAsync(IEnumerable<CacheCleanupTarget> targets)
+    public async Task ClearAsync(IEnumerable<CacheCleanupTarget> targets, CancellationToken ct = default)
     {
         var requested = targets.Distinct().ToHashSet();
         if (requested.Count == 0) return;
 
-        await _historyService.FlushAsync(HistoryFlushTimeout);
-
-        using var context = await _contextFactory.CreateDbContextAsync();
-
         if (requested.Contains(CacheCleanupTarget.History))
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM history;");
+            await _historyService.FlushAsync(HistoryFlushTimeout).WaitAsync(ct);
 
-        if (requested.Contains(CacheCleanupTarget.ApiCache))
+        try
         {
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM metadata;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM http_response_cache;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_relations;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_relation_meta;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM anime_country_origin;");
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM anilist_media_map;");
+            await Task.Run(() => ClearStorageAsync(requested, ct), ct);
         }
-
-        if (requested.Contains(CacheCleanupTarget.RecognitionCache))
+        catch (SqliteException ex) when (ct.IsCancellationRequested)
         {
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM mal_search_cache;");
+            throw new OperationCanceledException("Cache cleanup was cancelled.", ex, ct);
         }
+    }
 
-        await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(PASSIVE);");
+    private async Task ClearStorageAsync(HashSet<CacheCleanupTarget> requested, CancellationToken ct)
+    {
+        if (requested.Overlaps([CacheCleanupTarget.History, CacheCleanupTarget.ApiCache, CacheCleanupTarget.RecognitionCache]))
+            await ClearDatabaseAsync(requested, ct);
 
         if (requested.Contains(CacheCleanupTarget.ImageFiles))
-            DeleteDirectoryContents(_imageCachePath);
+            DeleteDirectoryContents(_imageCachePath, ct);
 
         if (requested.Contains(CacheCleanupTarget.SeasonalCache))
-            DeleteDirectoryContents(_seasonalCachePath);
+            DeleteDirectoryContents(_seasonalCachePath, ct);
+    }
+
+    private async Task ClearDatabaseAsync(HashSet<CacheCleanupTarget> requested, CancellationToken ct)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var connection = await SqliteMaintenanceConnection.OpenAsync(context, ct);
+        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        using (connection.InterruptWhenCancelled(ct))
+        {
+            if (requested.Contains(CacheCleanupTarget.History))
+                await HistoryCleanup.PruneAsync(context, cutoff: null, ct);
+
+            if (requested.Contains(CacheCleanupTarget.ApiCache))
+                await context.Database.ExecuteSqlRawAsync("""
+                    DELETE FROM metadata;
+                    DELETE FROM http_response_cache;
+                    DELETE FROM anime_relations;
+                    DELETE FROM anime_relation_meta;
+                    DELETE FROM anime_country_origin;
+                    DELETE FROM anilist_media_map;
+                    """, ct);
+
+            if (requested.Contains(CacheCleanupTarget.RecognitionCache))
+                await context.Database.ExecuteSqlRawAsync("DELETE FROM mal_search_cache;", ct);
+        }
+
+        await transaction.CommitAsync(ct);
+        await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(PASSIVE);", ct);
     }
 
     private static CacheCleanupStats GetDirectoryStats(CacheCleanupTarget target, string? path)
@@ -133,13 +160,14 @@ public sealed class CacheCleanupService
         }
     }
 
-    private static void DeleteDirectoryContents(string? path)
+    private static void DeleteDirectoryContents(string? path, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
             return;
 
         foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).ToList())
         {
+            ct.ThrowIfCancellationRequested();
             try { File.Delete(file); }
             catch (Exception ex) { Log.Debug(ex, "CacheCleanupService: failed to delete {File}", file); }
         }
@@ -148,6 +176,7 @@ public sealed class CacheCleanupService
                      .OrderByDescending(x => x.Length)
                      .ToList())
         {
+            ct.ThrowIfCancellationRequested();
             try { Directory.Delete(dir, recursive: false); }
             catch (Exception ex) { Log.Debug(ex, "CacheCleanupService: failed to delete directory {Dir}", dir); }
         }

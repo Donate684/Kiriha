@@ -9,15 +9,16 @@ using Serilog;
 
 namespace Kiriha.Infrastructure.Tracking.Integration;
 
-public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
+public partial class InternalPlayerServer : BackgroundService, IInternalPlayerServer
 {
     public event EventHandler<InternalPlayerState>? PlayerStateChanged;
 
-    private sealed class ClientSession
+    private sealed class ClientSession(StreamWriter writer, long connectionOrder)
     {
-        public StreamWriter Writer { get; }
+        public StreamWriter Writer { get; } = writer;
         public SemaphoreSlim WriteLock { get; } = new(1, 1);
-        public ClientSession(StreamWriter writer) => Writer = writer;
+        public long ConnectionOrder { get; } = connectionOrder;
+        public bool IsClosed { get; set; }
     }
 
     private readonly Lock _clientsGate = new();
@@ -26,8 +27,8 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
     private readonly Lock _pipeGate = new();
     private readonly HashSet<NamedPipeServerStream> _currentPipes = new();
 
-    private readonly Lock _metadataGate = new();
     private readonly Lock _stateGate = new();
+    private readonly Lock _publicationGate = new();
     private readonly string _pipeName;
 
     public InternalPlayerServer(string pipeName = InternalPlayerBridge.PipeName)
@@ -36,7 +37,12 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
     }
 
     private PlayerMediaMetadata? _latestMetadata;
+    private PlayerMediaMetadata? _pendingPlaybackMetadata;
+    private bool _sendLegacyMetadataOnAccept;
     private InternalPlayerState? _latestState;
+    private ClientSession? _activeSession;
+    private long _connectionOrder;
+    private long _latestOwnerOrder;
 
     public bool HasConnectedClients
     {
@@ -60,48 +66,9 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
         }
     }
 
-    public async Task SendMetadataAsync(PlayerMediaMetadata metadata, CancellationToken cancellationToken = default)
-    {
-        lock (_metadataGate)
-        {
-            _latestMetadata = metadata;
-        }
-
-        var msg = new InternalPlayerIpcMessage
-        {
-            Type = InternalPlayerIpcMessage.TypeMetadata,
-            Metadata = metadata
-        };
-        var json = JsonSerializer.Serialize(msg, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
-
-        List<ClientSession> clientsCopy;
-        lock (_clientsGate)
-        {
-            clientsCopy = [.. _clients];
-        }
-
-        if (clientsCopy.Count == 0)
-        {
-            PlayerProcessBridge.ForwardMetadata(
-                metadata.OriginalTitle,
-                metadata.AnimeId ?? 0,
-                metadata.TitleRu,
-                metadata.TitleEn,
-                metadata.TitleRomaji,
-                metadata.EpisodeText,
-                metadata.TorrentHash);
-            return;
-        }
-
-        foreach (var client in clientsCopy)
-        {
-            if (cancellationToken.IsCancellationRequested) break;
-            await SendToSessionAsync(client, json).ConfigureAwait(false);
-        }
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var clientTasks = new List<Task>();
         while (!stoppingToken.IsCancellationRequested)
         {
             NamedPipeServerStream? pipeServer = null;
@@ -123,25 +90,29 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                 await pipeServer.WaitForConnectionAsync(stoppingToken).ConfigureAwait(false);
                 Log.Information("InternalPlayerServer: Player connected.");
 
-                _ = HandleClientAsync(pipeServer, stoppingToken);
+                clientTasks.RemoveAll(task => task.IsCompleted);
+                clientTasks.Add(HandleClientAsync(pipeServer, stoppingToken));
             }
             catch (OperationCanceledException)
             {
-                if (pipeServer != null) await pipeServer.DisposeAsync().ConfigureAwait(false);
+                if (pipeServer != null) await DisposePipeAsync(pipeServer).ConfigureAwait(false);
                 break;
             }
             catch (ObjectDisposedException) when (stoppingToken.IsCancellationRequested)
             {
-                if (pipeServer != null) await pipeServer.DisposeAsync().ConfigureAwait(false);
+                if (pipeServer != null) await DisposePipeAsync(pipeServer).ConfigureAwait(false);
                 break;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "InternalPlayerServer: Error accepting pipe connection");
-                if (pipeServer != null) await pipeServer.DisposeAsync().ConfigureAwait(false);
-                try { await Task.Delay(500, stoppingToken).ConfigureAwait(false); } catch { }
+                if (pipeServer != null) await DisposePipeAsync(pipeServer).ConfigureAwait(false);
+                try { await Task.Delay(500, stoppingToken).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
             }
         }
+
+        await Task.WhenAll(clientTasks).ConfigureAwait(false);
     }
 
     private async Task HandleClientAsync(NamedPipeServerStream pipe, CancellationToken stoppingToken)
@@ -149,7 +120,7 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
         var encoding = new System.Text.UTF8Encoding(false);
         var writer = new StreamWriter(pipe, encoding, 1024, leaveOpen: true) { AutoFlush = true };
         var reader = new StreamReader(pipe, encoding, false, 1024, leaveOpen: true);
-        var session = new ClientSession(writer);
+        var session = new ClientSession(writer, Interlocked.Increment(ref _connectionOrder));
 
         lock (_clientsGate)
         {
@@ -168,7 +139,7 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                 if (string.IsNullOrEmpty(line))
                     continue;
 
-                await ProcessIncomingMessageAsync(line, session).ConfigureAwait(false);
+                await ProcessIncomingMessageAsync(line, session, stoppingToken).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
@@ -181,187 +152,37 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
         }
         finally
         {
+            CloseSession(session);
             lock (_clientsGate)
             {
                 _clients.Remove(session);
             }
-            lock (_pipeGate)
-            {
-                _currentPipes.Remove(pipe);
-            }
-
             try { await session.Writer.DisposeAsync().ConfigureAwait(false); } catch { }
             try { reader.Dispose(); } catch { }
-            try { await pipe.DisposeAsync().ConfigureAwait(false); } catch { }
-
-            bool noClientsLeft;
-            lock (_clientsGate)
-            {
-                noClientsLeft = _clients.Count == 0;
-            }
-
-            if (noClientsLeft)
-            {
-                Log.Information("InternalPlayerServer: All players disconnected. Clearing media.");
-                lock (_stateGate)
-                {
-                    _latestState = null;
-                }
-                PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsClosed = true });
-            }
+            await DisposePipeAsync(pipe).ConfigureAwait(false);
         }
     }
 
-    private async Task ProcessIncomingMessageAsync(string line, ClientSession session)
+    private async ValueTask DisposePipeAsync(NamedPipeServerStream pipe)
     {
-        InternalPlayerIpcMessage? message = null;
-        try
-        {
-            message = JsonSerializer.Deserialize(line, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
-        }
-        catch
-        {
-            // Not a typed message, fallback to state
-        }
+        lock (_pipeGate)
+            _currentPipes.Remove(pipe);
 
-        if (message != null && !string.IsNullOrEmpty(message.Type))
-        {
-            switch (message.Type)
-            {
-                case InternalPlayerIpcMessage.TypeHandshake:
-                    PlayerMediaMetadata? initialMeta = null;
-                    lock (_metadataGate)
-                    {
-                        if (_latestMetadata != null)
-                        {
-                            bool hashMatch = !string.IsNullOrEmpty(_latestMetadata.TorrentHash) &&
-                                              message.State != null &&
-                                              !string.IsNullOrEmpty(message.State.TorrentHash) &&
-                                              string.Equals(_latestMetadata.TorrentHash, message.State.TorrentHash, StringComparison.OrdinalIgnoreCase);
-
-                            bool titleMatch = message.State == null ||
-                                              string.IsNullOrEmpty(message.State.OriginalTitle) ||
-                                              PlayerMediaMetadata.IsStreamManifest(message.State.OriginalTitle) ||
-                                              string.Equals(_latestMetadata.OriginalTitle, message.State.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
-                                              (_latestMetadata.AnimeId.HasValue && message.State.AnimeId == _latestMetadata.AnimeId);
-
-                            if (hashMatch || titleMatch)
-                            {
-                                initialMeta = _latestMetadata;
-                            }
-                        }
-                    }
-
-                    if (initialMeta != null && message.State != null)
-                    {
-                        if (!message.State.AnimeId.HasValue && initialMeta.AnimeId.HasValue)
-                        {
-                            message.State.AnimeId = initialMeta.AnimeId;
-                        }
-
-                        if (string.IsNullOrEmpty(message.State.OriginalTitle) ||
-                            PlayerMediaMetadata.IsStreamManifest(message.State.OriginalTitle))
-                        {
-                            message.State.OriginalTitle = initialMeta.OriginalTitle;
-                        }
-
-                        if (string.IsNullOrEmpty(message.State.AnimeTitle) ||
-                            PlayerMediaMetadata.IsStreamManifest(message.State.AnimeTitle))
-                        {
-                            message.State.AnimeTitle = !string.IsNullOrEmpty(initialMeta.TitleRu)
-                                ? initialMeta.TitleRu
-                                : (!string.IsNullOrEmpty(initialMeta.TitleEn) ? initialMeta.TitleEn : initialMeta.OriginalTitle);
-                        }
-
-                        if (string.IsNullOrEmpty(message.State.Episode) && !string.IsNullOrEmpty(initialMeta.EpisodeText))
-                        {
-                            message.State.Episode = initialMeta.EpisodeText;
-                        }
-                    }
-
-                    var ack = new InternalPlayerIpcMessage
-                    {
-                        Type = InternalPlayerIpcMessage.TypeHandshakeAck,
-                        Version = "1.0",
-                        Metadata = initialMeta
-                    };
-                    var ackJson = JsonSerializer.Serialize(ack, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
-                    await SendToSessionAsync(session, ackJson).ConfigureAwait(false);
-
-                    if (message.State != null)
-                    {
-                        lock (_stateGate)
-                        {
-                            _latestState = message.State;
-                        }
-                        PlayerStateChanged?.Invoke(this, message.State);
-                    }
-                    else
-                    {
-                        var loading = new InternalPlayerState { IsLoading = true };
-                        lock (_stateGate)
-                        {
-                            _latestState = loading;
-                        }
-                        PlayerStateChanged?.Invoke(this, loading);
-                    }
-                    break;
-
-                case InternalPlayerIpcMessage.TypeState:
-                    if (message.State != null)
-                    {
-                        lock (_stateGate)
-                        {
-                            _latestState = message.State;
-                        }
-                        PlayerStateChanged?.Invoke(this, message.State);
-                    }
-                    break;
-
-                case InternalPlayerIpcMessage.TypeClosed:
-                    lock (_stateGate)
-                    {
-                        _latestState = null;
-                    }
-                    PlayerStateChanged?.Invoke(this, new InternalPlayerState { IsClosed = true });
-                    break;
-
-                case InternalPlayerIpcMessage.TypePing:
-                    var pong = new InternalPlayerIpcMessage { Type = InternalPlayerIpcMessage.TypePong };
-                    await SendToSessionAsync(session, JsonSerializer.Serialize(pong, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage)).ConfigureAwait(false);
-                    break;
-            }
-            return;
-        }
-
-        // Backward compatibility: raw InternalPlayerState JSON
-        try
-        {
-            var state = JsonSerializer.Deserialize(line, InternalPlayerStateJsonContext.Default.InternalPlayerState);
-            if (state != null)
-            {
-                lock (_stateGate)
-                {
-                    _latestState = state;
-                }
-                PlayerStateChanged?.Invoke(this, state);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "InternalPlayerServer: Failed to parse IPC message");
-        }
+        await pipe.DisposeAsync().ConfigureAwait(false);
     }
 
-    private static async Task SendToSessionAsync(ClientSession session, string json)
+    private static async Task<bool> SendToSessionAsync(ClientSession session, string json, CancellationToken ct)
     {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(2));
+        var writeToken = timeout.Token;
         try
         {
-            await session.WriteLock.WaitAsync().ConfigureAwait(false);
+            await session.WriteLock.WaitAsync(writeToken).ConfigureAwait(false);
             try
             {
-                await session.Writer.WriteLineAsync(json).ConfigureAwait(false);
-                await session.Writer.FlushAsync().ConfigureAwait(false);
+                await session.Writer.WriteLineAsync(json.AsMemory(), writeToken).ConfigureAwait(false);
+                return true;
             }
             finally
             {
@@ -371,6 +192,7 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
         catch (Exception ex)
         {
             Log.Debug(ex, "InternalPlayerServer: Failed to write to client");
+            return false;
         }
     }
 
@@ -385,16 +207,6 @@ public class InternalPlayerServer : BackgroundService, IInternalPlayerServer
                 try { pipe.Dispose(); } catch { }
             }
             _currentPipes.Clear();
-        }
-
-        lock (_stateGate)
-        {
-            _latestState = null;
-        }
-
-        lock (_clientsGate)
-        {
-            _clients.Clear();
         }
 
         return stopTask;

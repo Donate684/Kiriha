@@ -137,4 +137,20 @@ public sealed partial class UserAnimeRepository
         await context.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> UpdateAiringAsync(AnimeEntity item, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        var affected = await context.UserAnime
+            .Where(x => x.Id == item.Id && x.MediaKind == item.MediaKind)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.EpisodesAired, item.EpisodesAired)
+                .SetProperty(x => x.NextEpisodeAt, item.NextEpisodeAt)
+                .SetProperty(x => x.LastEpisodeAt, item.LastEpisodeAt)
+                .SetProperty(x => x.LastEpisodesSync, item.LastEpisodesSync)
+                .SetProperty(x => x.AiredSourcePriority, item.AiredSourcePriority)
+                .SetProperty(x => x.StatusDetailed, item.StatusDetailed)
+                .SetProperty(x => x.TotalEpisodes, item.TotalEpisodes), ct);
+        return affected > 0;
+    }
 }

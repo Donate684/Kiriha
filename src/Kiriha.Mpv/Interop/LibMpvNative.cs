@@ -32,6 +32,9 @@ public static class LibMpvNative
     public static extern int mpv_command(IntPtr ctx, IntPtr args);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern int mpv_command_ret(IntPtr ctx, IntPtr args, out MpvNode result);
+
+    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mpv_command_async(IntPtr ctx, ulong reply_userdata, IntPtr args);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
@@ -82,7 +85,7 @@ public static class LibMpvNative
                     Format = MPV_FORMAT_NODE_ARRAY,
                     U = new MpvNodeUnion { List = (IntPtr)(&list) }
                 };
-                mpv_set_property_node(handle, "http-header-fields", MPV_FORMAT_NODE_ARRAY, ref arrayNode);
+                mpv_set_property_node(handle, "http-header-fields", MPV_FORMAT_NODE, ref arrayNode);
             }
         }
         finally
@@ -165,6 +168,7 @@ public static class LibMpvNative
 
     public const int MPV_EVENT_NONE = 0;
     public const int MPV_EVENT_SHUTDOWN = 1;
+    public const int MPV_EVENT_START_FILE = 6;
     public const int MPV_EVENT_END_FILE = 7;
     public const int MPV_EVENT_FILE_LOADED = 8;
     public const int MPV_EVENT_SEEK = 20;
@@ -180,17 +184,25 @@ public static class LibMpvNative
 
     public const string MPV_RENDER_API_TYPE_OPENGL = "opengl";
 
-    public static unsafe int mpv_command_string(IntPtr ctx, params ReadOnlySpan<string> args)
+    public static int mpv_command_string(IntPtr ctx, params ReadOnlySpan<string> args) =>
+        RunStringCommand(ctx, args, false, out _);
+
+    internal static int CommandWithResult(IntPtr ctx, out MpvNode result, params ReadOnlySpan<string> args) =>
+        RunStringCommand(ctx, args, true, out result);
+
+    private static unsafe int RunStringCommand(IntPtr ctx, ReadOnlySpan<string> args, bool readResult, out MpvNode result)
     {
         IntPtr* ptrs = stackalloc IntPtr[args.Length + 1];
+        new Span<IntPtr>(ptrs, args.Length + 1).Clear();
 
         try
         {
             for (int i = 0; i < args.Length; i++)
                 ptrs[i] = Marshal.StringToCoTaskMemUTF8(args[i]);
-            ptrs[args.Length] = IntPtr.Zero;
-
-            return mpv_command(ctx, (IntPtr)ptrs);
+            result = default;
+            return readResult
+                ? mpv_command_ret(ctx, (IntPtr)ptrs, out result)
+                : mpv_command(ctx, (IntPtr)ptrs);
         }
         finally
         {

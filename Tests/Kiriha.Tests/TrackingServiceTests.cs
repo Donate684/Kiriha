@@ -178,6 +178,8 @@ public class TrackingServiceTests : IDisposable
             OriginalTitle = "Sample.Anime.E01.mkv",
             Episode = "1",
             TorrentHash = "deadbeef1234",
+            PlaybackRequestId = "active-open",
+            PlaybackSourceKey = "active-source",
             IsPlaying = true
         };
 
@@ -188,9 +190,10 @@ public class TrackingServiceTests : IDisposable
         // Act
         await service.SetInternalMediaAsync(state);
 
-        // Assert: SendMetadataAsync was invoked with the matching TorrentHash
+        // The tracker reply carries the identities from the state that initiated matching.
         mockPlayerServer.Verify(x => x.SendMetadataAsync(
-            It.Is<PlayerMediaMetadata>(m => m.TorrentHash == "deadbeef1234"),
+            It.Is<PlayerMediaMetadata>(m => m.TorrentHash == "deadbeef1234" &&
+                m.PlaybackRequestId == state.PlaybackRequestId && m.PlaybackSourceKey == state.PlaybackSourceKey),
             It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
 

@@ -1,7 +1,6 @@
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;
@@ -40,14 +39,6 @@ public partial class NowPlayingViewModel
             IsManuallyMapped = _trackingService.IsManuallyMapped();
             LogDetection(CurrentMedia ?? new ParsedMedia { AnimeTitle = anime.Title }, _localizer.GetLoc("scrobbler.status.matched"));
 
-            if (NeedsDetailsEnrichment(anime))
-            {
-                EnsureFullDetailsSafeAsync(anime).SafeFireAndForget("NowPlaying.AnimeMatched");
-            }
-            else
-            {
-                EnsureLocalizedSafeAsync(anime).SafeFireAndForget("NowPlaying.AnimeMatchedLoc");
-            }
         }
         else
         {
@@ -89,21 +80,37 @@ public partial class NowPlayingViewModel
         }
     }
 
-    private async Task EnsureLocalizedSafeAsync(AnimeEntity anime)
+    private Task EnsureLocalizedSafeAsync(AnimeEntity anime) =>
+        EnsureLocalizedSafeAsync(anime, new MediaKey(anime.Id, anime.MediaKind),
+            _animeRepo.GetEntryGeneration(anime.Id, anime.MediaKind), _disposeCts.Token);
+
+    private async Task EnsureLocalizedSafeAsync(AnimeEntity anime, MediaKey key, long generation, CancellationToken ct)
     {
         try
         {
-            await _shikiMetadataService.EnsureLocalizedAsync(anime, _disposeCts.Token);
-            _trackingService.NotifyCurrentMediaMetadataUpdated(anime);
+            await _shikiMetadataService.EnsureLocalizedAsync(anime, ct);
         }
         catch (OperationCanceledException)
         {
-            // Ignore
+            return;
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "NowPlaying: EnsureLocalizedAsync failed for {Id}", anime.Id);
         }
+
+        if (!IsCurrentMatch(anime, key, generation, ct)) return;
+
+        UpdateAlternativeTitles(anime);
+        UpdateCustomShareLinks(anime);
+        anime.RefreshMetadata();
+        var current = _animeRepo.FindById(key.Id, key.Kind);
+        if (current != null || anime.Status == UserAnimeStatus.None)
+            _trackingService.NotifyCurrentMediaMetadataUpdated(current ?? anime);
+
+        OnPropertyChanged(nameof(MatchedAnime));
+        OnPropertyChanged(nameof(DisplayEpisodeNumber));
+        OnPropertyChanged(nameof(IsNotInList));
     }
 
     private void LogDetection(ParsedMedia media, string status)

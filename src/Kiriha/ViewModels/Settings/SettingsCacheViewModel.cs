@@ -110,7 +110,9 @@ public partial class SettingsCacheViewModel : ObservableObject
             await _cacheCleanupService.ClearAsync(selected);
             InvalidateRuntimeCaches(selected);
             foreach (var item in CacheItems) item.IsSelected = false;
-            CacheStatus = _localizer.GetLoc("settings.cache.cleared");
+            CacheStatus = _localizer.GetLoc(selected.Contains(CacheCleanupTarget.History)
+                ? "settings.cache.cleared_keep_pending"
+                : "settings.cache.cleared");
         }
         catch (Exception ex)
         {

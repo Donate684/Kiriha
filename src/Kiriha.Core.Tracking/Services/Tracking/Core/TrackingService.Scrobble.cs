@@ -95,9 +95,9 @@ public partial class TrackingService
                 var previous = _currentMedia;
                 existingMatched = _matchedAnime;
                 bool sameAnime = existingMatched?.Id == animeId;
-                if (previous != null && IsSamePlaybackSource(previous, media) &&
-                    AreEpisodesEqual(previous.Episode, media.Episode) &&
-                    (IsSameMedia(previous, media) || sameAnime))
+                if (previous != null && (existingMatched is null || sameAnime) &&
+                    previous.HasSamePlaybackSource(media) && previous.HasSameSourceFile(media) &&
+                    AreEpisodesEqual(previous.Episode, media.Episode))
                 {
                     HandleSameMediaUpdate(previous, media);
                     return;
@@ -170,18 +170,10 @@ public partial class TrackingService
     {
         if (ReferenceEquals(a, b)) return true;
         if (a is null || b is null) return false;
-        bool sameOriginal = string.Equals(a.OriginalTitle, b.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(System.IO.Path.GetFileNameWithoutExtension(a.OriginalTitle), System.IO.Path.GetFileNameWithoutExtension(b.OriginalTitle), StringComparison.OrdinalIgnoreCase);
-        return IsSamePlaybackSource(a, b) && sameOriginal &&
-               AreEpisodesEqual(a.Episode, b.Episode) &&
-               string.Equals(a.AnimeTitle, b.AnimeTitle, StringComparison.OrdinalIgnoreCase);
+        return a.HasSamePlaybackSource(b) && a.HasSameSourceFile(b) && AreEpisodesEqual(a.Episode, b.Episode) &&
+            (!string.IsNullOrEmpty(a.PlaybackSourceKey) && !string.IsNullOrEmpty(b.PlaybackSourceKey) ||
+                string.Equals(a.AnimeTitle, b.AnimeTitle, StringComparison.OrdinalIgnoreCase));
     }
-
-    private static bool IsSamePlaybackSource(ParsedMedia a, ParsedMedia b) =>
-        string.Equals(a.ProcessName, b.ProcessName, StringComparison.OrdinalIgnoreCase) &&
-        (a.Pid == b.Pid || a.Pid == 0 || b.Pid == 0) &&
-        (string.IsNullOrEmpty(a.TorrentHash) || string.IsNullOrEmpty(b.TorrentHash) ||
-            string.Equals(a.TorrentHash, b.TorrentHash, StringComparison.OrdinalIgnoreCase));
 
     private static ParsedMedia GetEffectiveMedia(ParsedMedia media, AnimeEntity anime) =>
         anime.TotalEpisodes <= 1 && string.IsNullOrWhiteSpace(media.Episode) ? media.WithEpisode("1") : media;
@@ -216,7 +208,11 @@ public partial class TrackingService
             media.Episode ?? string.Empty,
             matched.Id,
             matched.Title ?? string.Empty,
-            media.TorrentHash);
+            media.TorrentHash)
+        {
+            PlaybackRequestId = media.PlaybackRequestId,
+            PlaybackSourceKey = media.PlaybackSourceKey
+        };
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
     }
@@ -233,7 +229,11 @@ public partial class TrackingService
             media.Episode ?? string.Empty,
             null,
             media.AnimeTitle ?? string.Empty,
-            media.TorrentHash);
+            media.TorrentHash)
+        {
+            PlaybackRequestId = media.PlaybackRequestId,
+            PlaybackSourceKey = media.PlaybackSourceKey
+        };
 
         _internalPlayerServer.SendMetadataAsync(metadata).SafeFireAndForget("SendMetadataAsync");
     }

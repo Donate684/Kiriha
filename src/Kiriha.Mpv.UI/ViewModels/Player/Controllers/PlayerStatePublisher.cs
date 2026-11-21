@@ -18,12 +18,11 @@ public sealed class PlayerStatePublisher : IDisposable
     public PlayerStatePublisher(Func<InternalPlayerState> createState)
     {
         _createState = createState;
-        _client.StateProvider = _createState;
     }
 
     public void Connect()
     {
-        _client.Start();
+        Publish();
     }
 
     public void Publish()

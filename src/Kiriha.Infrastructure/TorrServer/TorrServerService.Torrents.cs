@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Net;
+using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.TorrServer;
 using Serilog;
@@ -11,9 +13,54 @@ public sealed partial class TorrServerService
 {
     public async Task<TorrServerTorrentStatus?> AddTorrentAsync(string link, string title, CancellationToken ct = default)
     {
-        if (!await EnsureRunningAsync(ct).ConfigureAwait(false))
+        var endpoint = ServerUrl;
+        if (!await EnsureRunningAsync(ct).ConfigureAwait(false) || ServerUrl != endpoint)
             return null;
 
+        await using var gate = await _usage.LockEndpointAsync(endpoint, ct).ConfigureAwait(false);
+        var status = await AddTorrentAtAsync(endpoint, link, title, ct).ConfigureAwait(false);
+        return status == null ? null : await GetTorrentAsync(status.Hash, ct).ConfigureAwait(false) ?? status;
+    }
+
+    public async Task<TorrServerPreparation?> PrepareTorrentAsync(string link, string title, CancellationToken ct = default)
+    {
+        var endpoint = ServerUrl;
+        if (!await EnsureRunningAsync(ct).ConfigureAwait(false) || ServerUrl != endpoint)
+            return null;
+
+        await using var gate = await _usage.LockEndpointAsync(endpoint, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+
+        // Once sent, read the hash even if the launch is cancelled so a late addition can be released.
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+        TorrServerTorrentStatus? status;
+        try
+        {
+            status = await AddTorrentAtAsync(endpoint, link, title, deadline.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException ex) when (deadline.IsCancellationRequested)
+        {
+            ct.ThrowIfCancellationRequested();
+            Logger.Warning(ex, "TorrServerService: Adding torrent {Title} timed out", title);
+            return null;
+        }
+        if (status == null)
+        {
+            ct.ThrowIfCancellationRequested();
+            return null;
+        }
+
+        var lease = _usage.AcquireLocked(endpoint, status.Hash);
+        if (ct.IsCancellationRequested)
+        {
+            lease.Dispose();
+            ct.ThrowIfCancellationRequested();
+        }
+        return new TorrServerPreparation(endpoint, status, lease);
+    }
+
+    private async Task<TorrServerTorrentStatus?> AddTorrentAtAsync(string endpoint, string link, string title, CancellationToken ct)
+    {
         try
         {
             var finalLink = link;
@@ -31,7 +78,7 @@ public sealed partial class TorrServerService
                 save_to_db = false
             };
 
-            using var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{endpoint}/torrents", payload, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.Warning("TorrServerService: AddTorrent failed with HTTP {Status}", response.StatusCode);
@@ -44,7 +91,7 @@ public sealed partial class TorrServerService
 
             var hash = ReadString(json["hash"], string.Empty);
             return string.IsNullOrWhiteSpace(hash) ? null
-                : await GetTorrentAsync(hash, ct).ConfigureAwait(false) ?? new TorrServerTorrentStatus { Hash = hash, Title = title };
+                : new TorrServerTorrentStatus { Hash = hash, Title = title };
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
@@ -142,14 +189,43 @@ public sealed partial class TorrServerService
 
         try
         {
+            await _usage.RemoveIfUnusedAsync(ServerUrl, hash, requireMarker: false, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            Logger.Warning(ex, "TorrServerService: Failed to schedule removal of torrent {Hash}", hash);
+        }
+    }
+
+    public async Task<IDisposable> AcquirePlaybackAsync(string streamUrl, string hash, CancellationToken ct = default)
+    {
+        if (TorrServerStreamSource.Parse(streamUrl) is not { } source ||
+            !string.Equals(source.Hash, hash, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("The stream URL does not identify the requested torrent.", nameof(streamUrl));
+
+        await using var gate = await _usage.LockEndpointAsync(source.Endpoint, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        return _usage.AcquireLocked(source.Endpoint, source.Hash);
+    }
+
+    public Task FlushTorrentReleasesAsync(CancellationToken ct = default) => _usage.FlushAsync(ct);
+
+    private async Task<bool> RemoveTorrentAsync(string endpoint, string hash, CancellationToken ct)
+    {
+        try
+        {
             var payload = new { action = "rem", hash };
-            using var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{endpoint}/torrents", payload, ct).ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return true;
             response.EnsureSuccessStatusCode();
             Logger.Information("TorrServerService: Dropped torrent {Hash} from RAM cache", hash);
+            return true;
         }
         catch (Exception ex)
         {
             Logger.Warning(ex, "TorrServerService: Failed to drop torrent {Hash}", hash);
+            return false;
         }
     }
 

@@ -53,6 +53,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
     private readonly ITorrServerService? _torrServer;
     private readonly IPlaybackResumeStore? _resumeStore;
     private string? _pendingSubtitleUrl;
+    private string? _sourceSubtitleUrl;
 
     public string? PendingSubtitleUrl => _pendingSubtitleUrl;
     public IReadOnlyDictionary<string, string>? StreamHeaders { get; private set; }
@@ -75,8 +76,8 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _localizer = localizer;
         _torrServer = torrServer;
         _resumeStore = resumeStore;
-        _pendingPlaybackRequestId = requestId;
-        _pendingSubtitleUrl = subtitleUrl;
+        _pendingPlaybackRequestId = NewPlaybackRequestId(requestId);
+        _pendingSubtitleUrl = _sourceSubtitleUrl = subtitleUrl;
         StreamHeaders = headers;
         InitializeOptions();
         _statePublisher = new PlayerStatePublisher(CreatePlayerState);
@@ -84,7 +85,6 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _settingsApplier = new PlayerSettingsApplier(_playback);
         _timelinePreview = new PlayerTimelinePreviewController(Overlay, () => IsTorrentStream, () => StreamHeaders);
         Overlay.SkipPromptDismissed += OnOverlaySkipPromptDismissed;
-        _playback.BufferingChanged += OnPlayerBufferingChanged;
         ApplyPlayerSettings();
         if (metadata != null && (!string.IsNullOrWhiteSpace(metadata.TitleRu) ||
                                  !string.IsNullOrWhiteSpace(metadata.TitleEn) ||
@@ -103,22 +103,21 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _isInitializing = false;
     }
 
-    private void OnExternalMetadataReceived(PlayerMediaMetadata metadata)
-    {
-        bool isMatch = MatchesTorrentHash(metadata.TorrentHash) ||
-                       (_animeId.HasValue && metadata.AnimeId.HasValue && _animeId.Value == metadata.AnimeId.Value) ||
-                       MatchesOriginalTitle(metadata.OriginalTitle) ||
-                       MatchesOriginalTitle(metadata.TitleRomaji) ||
-                       MatchesOriginalTitle(metadata.TitleEn) ||
-                       MatchesOriginalTitle(metadata.TitleRu);
+    private void OnExternalMetadataReceived(PlayerMediaMetadata metadata) =>
+        QueueIpcMetadata(metadata, action => Dispatcher.UIThread.Post(action));
 
-        if (isMatch)
+    internal void QueueIpcMetadata(PlayerMediaMetadata metadata, Action<Action> post)
+    {
+        var sourceVersion = Volatile.Read(ref _sourceVersion);
+        post(() =>
         {
-            Dispatcher.UIThread.Post(() => ApplyExternalMetadata(metadata));
-        }
+            if (sourceVersion == Volatile.Read(ref _sourceVersion) && MatchesIpcMetadata(metadata))
+                ApplyExternalMetadata(metadata);
+        });
     }
 
-
+    public bool MatchesIpcMetadata(PlayerMediaMetadata metadata) => !_playbackDisposed && !string.IsNullOrWhiteSpace(VideoUrl) &&
+        metadata.MatchesPlayback(_pendingPlaybackRequestId, _playbackSourceKey, OriginalTitle, RawEpisodeText);
 
     private readonly List<SkipSegment> _skipSegments = new();
     public ObservableCollection<SkipSegment> SkipSegments { get; } = new();

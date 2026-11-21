@@ -74,19 +74,33 @@ public sealed class DatabaseInitializer : IDatabaseInitializer
 #pragma warning restore S2077
 
     /// <summary>
-    /// Forces all pending WAL frames into the main database file. Call before
-    /// app exit and on system session-end to guarantee durability against a
-    /// forced <c>TerminateProcess</c>.
+    /// Attempts to checkpoint and truncate the WAL before exit. When another
+    /// connection is still active, committed frames remain in the WAL for recovery.
     /// </summary>
-    public async Task FlushAsync()
+    public async Task FlushAsync(CancellationToken ct = default)
     {
         try
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE);");
-            Log.Information("DatabaseInitializer: WAL checkpoint(TRUNCATE) completed");
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var connection = await SqliteMaintenanceConnection.OpenAsync(context, ct);
+            await using var command = context.Database.GetDbConnection().CreateCommand();
+            command.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+            await using var result = await command.ExecuteReaderAsync(ct);
+            if (await result.ReadAsync(ct) && result.GetInt32(0) == 0)
+                Log.Information("DatabaseInitializer: WAL checkpoint completed");
+            else
+                Log.Information("DatabaseInitializer: WAL checkpoint deferred because SQLite is busy");
         }
-        catch (Exception ex)
+        catch (SqliteException ex) when (!ct.IsCancellationRequested &&
+            ex.SqliteErrorCode is SqliteMaintenanceConnection.Busy or SqliteMaintenanceConnection.Locked)
+        {
+            Log.Information(ex, "DatabaseInitializer: WAL checkpoint deferred because SQLite is locked");
+        }
+        catch (SqliteException ex) when (ct.IsCancellationRequested)
+        {
+            throw new OperationCanceledException("SQLite checkpoint was cancelled.", ex, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             Log.Error(ex, "DatabaseInitializer: FlushAsync failed");
         }

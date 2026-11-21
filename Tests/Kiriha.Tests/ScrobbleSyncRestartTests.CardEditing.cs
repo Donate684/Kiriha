@@ -24,7 +24,7 @@ public sealed partial class ScrobbleSyncRestartTests
     {
         using var timeout = new CancellationTokenSource(Timeout);
         var ct = timeout.Token;
-        await using var scenario = await OpenCardLibraryAsync(ct);
+        await using var scenario = await OpenLibraryScenarioAsync(ct);
         var item = new AnimeEntity { Id = AnimeId, Title = "Test title", TotalEpisodes = 12, Notes = "Original note" };
         Assert.True((await scenario.Actions.AddToListAsync(item, UserAnimeStatus.Watching, 2, ct)).Success);
 
@@ -74,7 +74,7 @@ public sealed partial class ScrobbleSyncRestartTests
     {
         using var timeout = new CancellationTokenSource(Timeout);
         var ct = timeout.Token;
-        await using var scenario = await OpenCardLibraryAsync(ct);
+        await using var scenario = await OpenLibraryScenarioAsync(ct);
         var item = new AnimeEntity
         {
             Id = AnimeId, Title = "Manga", MediaKind = MediaKind.Manga, Status = UserAnimeStatus.Watching,
@@ -109,7 +109,7 @@ public sealed partial class ScrobbleSyncRestartTests
     {
         using var timeout = new CancellationTokenSource(Timeout);
         var ct = timeout.Token;
-        await using var scenario = await OpenCardLibraryAsync(ct);
+        await using var scenario = await OpenLibraryScenarioAsync(ct);
         var item = new AnimeEntity { Id = AnimeId, Title = "Test title", TotalEpisodes = 12, Notes = "Local notes" };
         var draft = item.Clone();
         using var editor = new AnimeEditViewModel(item, draft, scenario.Actions, scenario.Library);
@@ -141,7 +141,7 @@ public sealed partial class ScrobbleSyncRestartTests
     {
         using var timeout = new CancellationTokenSource(Timeout);
         var ct = timeout.Token;
-        await using var scenario = await OpenCardLibraryAsync(ct);
+        await using var scenario = await OpenLibraryScenarioAsync(ct);
         var item = new AnimeEntity { Id = AnimeId, Title = "Test title" };
         var remoteDetails = item.Clone();
         remoteDetails.Status = UserAnimeStatus.Watching;
@@ -185,7 +185,7 @@ public sealed partial class ScrobbleSyncRestartTests
         Assert.Equal(2, (await scenario.Queue.GetPendingAsync(ct)).Count);
     }
 
-    private async Task<CardLibrary> OpenCardLibraryAsync(CancellationToken ct)
+    private async Task<LibraryScenario> OpenLibraryScenarioAsync(CancellationToken ct)
     {
         var factory = CreateFactory();
         await using var setup = factory.CreateDbContext();
@@ -207,13 +207,13 @@ public sealed partial class ScrobbleSyncRestartTests
         var actions = new AnimeListActionService(library, sync, progress, history, dispatcher, [tracker.Object],
             store, entryWriter: writer, eventBus: events);
         await library.InitializeAsync();
-        return new CardLibrary(library, store, history, queue, actions, progress, tracker, gate, background, sync);
+        return new LibraryScenario(library, store, history, queue, actions, progress, tracker, gate, background, sync, events);
     }
 
-    private sealed record CardLibrary(
+    private sealed record LibraryScenario(
         AnimeRepository Library, UserAnimeRepository Store, HistoryService History, SyncTaskRepository Queue,
         AnimeListActionService Actions, AnimeProgressService Progress, Mock<ITrackerService> Tracker,
-        LibrarySyncGate Gate, BackgroundTaskSupervisor Background, SyncManager Sync) : IAsyncDisposable
+        LibrarySyncGate Gate, BackgroundTaskSupervisor Background, SyncManager Sync, CoreEventBus Events) : IAsyncDisposable
     {
         public async ValueTask DisposeAsync()
         {

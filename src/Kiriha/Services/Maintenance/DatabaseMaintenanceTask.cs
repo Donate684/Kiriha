@@ -28,13 +28,12 @@ public class DatabaseMaintenanceTask : IMaintenanceTask
     {
         Log.Information("MaintenanceTask: Triggering Database and Image Cache maintenance...");
 
-        // Step 1: Clean Database (History, Orphaned Metadata, Episode Releases, Stuck Tasks)
-        await _dbMaintenance.PerformAsync();
+        if (!await _dbMaintenance.PerformAsync(ct)) return;
 
         // Step 2: Get active image paths from DB
         var activePaths = await _userAnimeRepo.GetActiveLocalImagePathsAsync(ct);
 
         // Step 3: Perform smart cleanup of the image folder (delete files NOT in activePaths)
-        await _imageCacheService.PerformSmartCleanupAsync(activePaths);
+        await _imageCacheService.PerformSmartCleanupAsync(activePaths, ct);
     }
 }

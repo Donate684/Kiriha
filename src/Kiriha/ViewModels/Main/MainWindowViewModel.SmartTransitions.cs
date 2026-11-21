@@ -13,6 +13,8 @@ public partial class MainWindowViewModel :
     IRecipient<AnimeRewatchPromptMessage>
 {
     public static int[] RatingScores { get; } = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    private AnimeCompletedRatingPromptMessage? _quickRatingPrompt;
+    private AnimeRewatchPromptMessage? _rewatchPrompt;
 
     [ObservableProperty]
     private bool _isQuickRatingVisible;
@@ -35,39 +37,44 @@ public partial class MainWindowViewModel :
     [ObservableProperty]
     private string _rewatchPromptText = string.Empty;
 
-    public void Receive(AnimeCompletedRatingPromptMessage message)
+    public void Receive(AnimeCompletedRatingPromptMessage message) =>
+        Dispatcher.UIThread.Post(() => ShowQuickRating(message));
+
+    public void Receive(AnimeRewatchPromptMessage message) =>
+        Dispatcher.UIThread.Post(() => ShowRewatchPrompt(message));
+
+    internal void ShowQuickRating(AnimeCompletedRatingPromptMessage message)
     {
-        Dispatcher.UIThread.Post(() =>
-        {
-            QuickRatingAnime = message.Anime;
-            SelectedRatingScore = message.Anime.UserScore is >= 1 and <= 10
-                ? message.Anime.UserScore.Value
-                : 0;
-            IsQuickRatingVisible = true;
-        });
+        _quickRatingPrompt = message;
+        QuickRatingAnime = message.Anime;
+        SelectedRatingScore = message.SuggestedScore is >= 1 and <= 10 ? message.SuggestedScore.Value : 0;
+        IsQuickRatingVisible = true;
     }
 
-    public void Receive(AnimeRewatchPromptMessage message)
+    internal void ShowRewatchPrompt(AnimeRewatchPromptMessage message)
     {
-        Dispatcher.UIThread.Post(() =>
-        {
-            RewatchPromptAnime = message.Anime;
-            RewatchEpisode = message.Episode;
-            var title = message.Anime.Presentation.DisplayTitle;
-            RewatchPromptText = string.Format(_localizer.GetLoc("scrobbler.rewatch_prompt.body"), title);
-            IsRewatchPromptVisible = true;
-        });
+        _rewatchPrompt = message;
+        RewatchPromptAnime = message.Anime;
+        RewatchEpisode = message.Episode;
+        var title = message.Anime.Presentation.DisplayTitle;
+        RewatchPromptText = string.Format(_localizer.GetLoc("scrobbler.rewatch_prompt.body"), title);
+        IsRewatchPromptVisible = true;
     }
 
     [RelayCommand]
     public async Task SubmitQuickRatingInt(int score)
     {
-        if (QuickRatingAnime != null && score >= 1 && score <= 10)
+        var item = QuickRatingAnime;
+        var prompt = _quickRatingPrompt;
+        if (item != null && score is >= 1 and <= 10)
         {
             SelectedRatingScore = score;
             try
             {
-                await _progressService.SetScoreAsync(QuickRatingAnime, score);
+                if (prompt?.Target is { } target)
+                    await _progressService.SetScoreAsync(target, prompt.ExpectedScore, score);
+                else
+                    await _progressService.SetScoreAsync(item, score);
             }
             catch (Exception ex)
             {
@@ -75,7 +82,8 @@ public partial class MainWindowViewModel :
                 return;
             }
         }
-        CloseQuickRating();
+        if (ReferenceEquals(QuickRatingAnime, item) && ReferenceEquals(_quickRatingPrompt, prompt))
+            CloseQuickRating();
     }
 
     [RelayCommand]
@@ -83,16 +91,22 @@ public partial class MainWindowViewModel :
     {
         IsQuickRatingVisible = false;
         QuickRatingAnime = null;
+        _quickRatingPrompt = null;
     }
 
     [RelayCommand]
     public async Task ConfirmRewatch()
     {
-        if (RewatchPromptAnime != null)
+        var item = RewatchPromptAnime;
+        var prompt = _rewatchPrompt;
+        if (item != null)
         {
             try
             {
-                await _progressService.ConfirmRewatchAsync(RewatchPromptAnime, RewatchEpisode);
+                if (prompt?.Target is { } target)
+                    await _progressService.ConfirmRewatchAsync(target, prompt.ExpectedRewatchCount, prompt.Episode);
+                else
+                    await _progressService.ConfirmRewatchAsync(item, RewatchEpisode);
             }
             catch (Exception ex)
             {
@@ -100,7 +114,8 @@ public partial class MainWindowViewModel :
                 return;
             }
         }
-        CloseRewatchPrompt();
+        if (ReferenceEquals(RewatchPromptAnime, item) && ReferenceEquals(_rewatchPrompt, prompt))
+            CloseRewatchPrompt();
     }
 
     [RelayCommand]
@@ -113,5 +128,6 @@ public partial class MainWindowViewModel :
     {
         IsRewatchPromptVisible = false;
         RewatchPromptAnime = null;
+        _rewatchPrompt = null;
     }
 }

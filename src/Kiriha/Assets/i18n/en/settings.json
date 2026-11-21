@@ -172,6 +172,7 @@
     "clear_data": "Clear data",
     "clear": "Clear",
     "cleared": "Selected cache data was cleared",
+    "cleared_keep_pending": "Selected data was cleared. History linked to pending sync was kept.",
     "stats_items": "{0} item(s)",
     "stats_with_size": "{0} item(s), {1}",
     "items": {

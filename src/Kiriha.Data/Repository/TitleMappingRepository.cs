@@ -7,6 +7,7 @@ namespace Kiriha.Data.Repository;
 
 public sealed class TitleMappingRepository : ITitleMappingRepository
 {
+    private const int CommandTimeoutSeconds = 1;
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
@@ -17,7 +18,8 @@ public sealed class TitleMappingRepository : ITitleMappingRepository
 
     public async Task<List<TitleMappingEntity>> GetAllAsync(CancellationToken ct = default)
     {
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        context.Database.SetCommandTimeout(CommandTimeoutSeconds);
         return await context.TitleMappings.AsNoTracking().ToListAsync(ct);
     }
 
@@ -28,7 +30,8 @@ public sealed class TitleMappingRepository : ITitleMappingRepository
         await _writeLock.WaitAsync(ct);
         try
         {
-            using var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            context.Database.SetCommandTimeout(CommandTimeoutSeconds);
             var existing = await context.TitleMappings
                 .AsTracking()
                 .FirstOrDefaultAsync(x => x.NormalizedTitle == entry.NormalizedTitle, ct);
@@ -55,7 +58,8 @@ public sealed class TitleMappingRepository : ITitleMappingRepository
         await _writeLock.WaitAsync(ct);
         try
         {
-            using var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            context.Database.SetCommandTimeout(CommandTimeoutSeconds);
             var existingMap = await context.TitleMappings
                 .AsTracking()
                 .ToDictionaryAsync(x => x.NormalizedTitle, StringComparer.Ordinal, ct);
@@ -82,7 +86,8 @@ public sealed class TitleMappingRepository : ITitleMappingRepository
         await _writeLock.WaitAsync(ct);
         try
         {
-            using var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            context.Database.SetCommandTimeout(CommandTimeoutSeconds);
             var removed = await context.TitleMappings
                 .Where(x => x.NormalizedTitle == normalizedTitle)
                 .ExecuteDeleteAsync(ct);

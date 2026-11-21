@@ -4,6 +4,15 @@ namespace Kiriha.Mpv;
 
 public partial class MpvPlayer
 {
+    private void Read(Action<IntPtr> read)
+    {
+        lock (_gate)
+        {
+            if (!_disposed && _mpvHandle != IntPtr.Zero)
+                read(_mpvHandle);
+        }
+    }
+
     internal T Read<T>(Func<IntPtr, T> read, T defaultValue)
     {
         lock (_gate)

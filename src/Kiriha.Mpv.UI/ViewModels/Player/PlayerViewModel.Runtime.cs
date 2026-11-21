@@ -10,13 +10,7 @@ public partial class PlayerViewModel
 {
     public void Initialize(MpvPlayer player)
     {
-        _playback.Attach(player);
-        _playback.FileLoaded += OnPlayerFileLoaded;
-        _playback.PlaybackEnded += OnPlayerPlaybackEnded;
-        _playback.PlaybackStateChanged += OnPlayerPlaybackStateChanged;
-        _playback.TracksChanged += OnPlayerTracksChanged;
-        _playback.SubtitleDelayChanged += OnPlayerSubtitleDelayChanged;
-        _playback.EofReachedChanged += OnPlayerEofReachedChanged;
+        AttachPlayback(player, action => Dispatcher.UIThread.Post(action));
         _playback.SetVolume(Volume);
         _playback.SetSpeed(PlaybackSpeed);
         _playback.SetAudioNormalization(NormalizeAudio);
@@ -36,6 +30,14 @@ public partial class PlayerViewModel
         }
 
         _statePublisher.Connect();
+    }
+
+    internal void AttachPlayback(MpvPlayer player, Action<Action> post)
+    {
+        _playback.SourceEvent -= OnNativeSourceEvent;
+        _postNativeSourceEvent = post;
+        _playback.Attach(player);
+        _playback.SourceEvent += OnNativeSourceEvent;
     }
 
     public void LoadSubtitle(string path, bool select = true)
@@ -81,6 +83,8 @@ public partial class PlayerViewModel
         _isEofReached = false;
         ApplyTimelineSnapshot(_timeline.Reset());
         _subtitleDelay = 0;
+        IsLoading = true;
+        IsBuffering = false;
         IsPlaying = PlayerAutoPlay;
         if (IsPlaying)
         {
@@ -93,7 +97,6 @@ public partial class PlayerViewModel
             _timer?.Stop();
         }
 
-        IsLoading = true;
         HasPlaybackError = false;
         PlaybackErrorMessage = string.Empty;
         PlaybackStatusMessage = IsTorrentStream && !string.IsNullOrEmpty(TorrentStatusText)
@@ -106,19 +109,20 @@ public partial class PlayerViewModel
     public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null,
         IReadOnlyDictionary<string, string>? headers = null, string? requestId = null)
     {
+        if (string.IsNullOrWhiteSpace(videoUrl))
+            return;
+
         StreamHeaders = headers;
         if (subtitleUrl != null)
         {
-            _pendingSubtitleUrl = subtitleUrl;
+            _pendingSubtitleUrl = _sourceSubtitleUrl = subtitleUrl;
         }
         else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
         {
-            _pendingSubtitleUrl = null;
+            _pendingSubtitleUrl = _sourceSubtitleUrl = null;
         }
 
-        if (string.IsNullOrWhiteSpace(videoUrl))
-            return;
-        _pendingPlaybackRequestId = requestId;
+        _pendingPlaybackRequestId = NewPlaybackRequestId(requestId);
 
         videoUrl = videoUrl.Trim().Trim('"');
         try
@@ -135,7 +139,7 @@ public partial class PlayerViewModel
 
         if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl))
         {
-            if (RememberPlaybackPosition && !_isEofReached && Duration > 0 && CurrentTime > 0)
+            if (CanSaveCurrentPosition())
             {
                 if (CurrentTime < Duration * 0.95 && CurrentTime >= 5)
                 {
@@ -151,6 +155,14 @@ public partial class PlayerViewModel
         }
         Overlay.DismissResumePrompt();
         _isEofReached = false;
+        var sourceChanged = !string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal);
+        _activePlaybackRequestId = null;
+        IsLoading = true;
+        IsBuffering = false;
+        _updateTracksCts?.Cancel();
+        AudioTracks.Clear();
+        SubtitleTracks.Clear();
+        Chapters.Clear();
 
         if (metadata != null)
         {
@@ -171,7 +183,8 @@ public partial class PlayerViewModel
             ResolveAndApplyMetadata(videoUrl);
         }
 
-        InitializeTorrentStream(videoUrl, metadata);
+        if (sourceChanged || metadata != null)
+            InitializeTorrentStream(videoUrl, metadata);
 
         ApplyTimelineSnapshot(_timeline.Reset());
         _subtitleDelay = 0;
@@ -186,7 +199,6 @@ public partial class PlayerViewModel
             Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
             _timer?.Stop();
         }
-        IsLoading = true;
         HasPlaybackError = false;
         PlaybackErrorMessage = string.Empty;
         PlaybackStatusMessage = _localizer.GetLoc("player.state.loading");
@@ -244,11 +256,6 @@ public partial class PlayerViewModel
         oldCts?.Dispose();
 
         _ = UpdateTracksAsync(_updateTracksCts.Token);
-    }
-
-    private void RefreshDurationFromPlayer()
-    {
-        ApplyPlaybackState(_playback.GetPlaybackState());
     }
 
     private async Task UpdateTracksAsync(CancellationToken token)

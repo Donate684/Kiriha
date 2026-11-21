@@ -116,13 +116,14 @@ public class ExternalMediaDetectorService : IHostedService, IDisposable, IExtern
                         detected.IsPlaying = _pauseDetector.Update(detected.Pid, audioState, contextLabel);
                     }
 
-                    // Update only if title or episode or playing state changed
+                    // A different file can have the same displayed title and episode.
                     if (lastDetected is null ||
+                        !lastDetected.HasSamePlaybackSource(detected) ||
+                        !string.Equals(lastDetected.PlaybackSourceKey, detected.PlaybackSourceKey, StringComparison.Ordinal) ||
                         !string.Equals(lastDetected.OriginalTitle, detected.OriginalTitle, StringComparison.OrdinalIgnoreCase) ||
                         lastDetected.AnimeTitle != detected.AnimeTitle ||
                         lastDetected.Episode != detected.Episode ||
                         lastDetected.IsPlaying != detected.IsPlaying ||
-                        lastDetected.ProcessName != detected.ProcessName ||
                         lastDetected.Duration != detected.Duration)
                     {
                         lastDetected = detected;

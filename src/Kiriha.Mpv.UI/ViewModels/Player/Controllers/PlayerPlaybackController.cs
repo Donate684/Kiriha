@@ -4,13 +4,7 @@ public sealed class PlayerPlaybackController
 {
     private MpvPlayer? _player;
 
-    public event EventHandler? FileLoaded;
-    public event EventHandler<MpvPlaybackEndedEventArgs>? PlaybackEnded;
-    public event Action<PlaybackState>? PlaybackStateChanged;
-    public event Action? TracksChanged;
-    public event Action<double>? SubtitleDelayChanged;
-    public event Action<bool>? EofReachedChanged;
-    public event Action<bool>? BufferingChanged;
+    public event Action<MpvSourceEvent>? SourceEvent;
 
     public bool HasPlayer => _player != null;
 
@@ -19,13 +13,7 @@ public sealed class PlayerPlaybackController
         Detach();
 
         _player = player;
-        _player.FileLoaded += OnFileLoaded;
-        _player.PlaybackEnded += OnPlaybackEnded;
-        _player.PlaybackStateChanged += OnPlaybackStateChanged;
-        _player.TracksChanged += OnTracksChanged;
-        _player.SubtitleDelayChanged += OnSubtitleDelayChanged;
-        _player.EofReachedChanged += OnEofReachedChanged;
-        _player.BufferingChanged += OnBufferingChanged;
+        _player.SourceEvent += OnSourceEvent;
     }
 
     public void Detach()
@@ -33,19 +21,12 @@ public sealed class PlayerPlaybackController
         if (_player is null)
             return;
 
-        _player.FileLoaded -= OnFileLoaded;
-        _player.PlaybackEnded -= OnPlaybackEnded;
-        _player.PlaybackStateChanged -= OnPlaybackStateChanged;
-        _player.TracksChanged -= OnTracksChanged;
-        _player.SubtitleDelayChanged -= OnSubtitleDelayChanged;
-        _player.EofReachedChanged -= OnEofReachedChanged;
-        _player.BufferingChanged -= OnBufferingChanged;
+        _player.SourceEvent -= OnSourceEvent;
         _player = null;
     }
 
-    private void OnBufferingChanged(bool isBuffering) => BufferingChanged?.Invoke(isBuffering);
-
-    public void Load(string videoUrl, IReadOnlyDictionary<string, string>? headers = null) => _player?.Load(videoUrl, headers);
+    public long LoadSource(string videoUrl, IReadOnlyDictionary<string, string>? headers, bool autoPlay) =>
+        _player?.LoadSource(videoUrl, headers, autoPlay) ?? 0;
     public void WriteWatchLaterConfig() => _player?.WriteWatchLaterConfig();
     public void DeleteWatchLaterConfig() => _player?.DeleteWatchLaterConfig();
     public void SetSavePositionOnQuit(bool enabled) => _player?.SetSavePositionOnQuit(enabled);
@@ -152,10 +133,5 @@ public sealed class PlayerPlaybackController
         }
     }
 
-    private void OnFileLoaded(object? sender, EventArgs e) => FileLoaded?.Invoke(sender, e);
-    private void OnPlaybackEnded(object? sender, MpvPlaybackEndedEventArgs e) => PlaybackEnded?.Invoke(sender, e);
-    private void OnPlaybackStateChanged(PlaybackState state) => PlaybackStateChanged?.Invoke(state);
-    private void OnTracksChanged() => TracksChanged?.Invoke();
-    private void OnSubtitleDelayChanged(double delay) => SubtitleDelayChanged?.Invoke(delay);
-    private void OnEofReachedChanged(bool isEof) => EofReachedChanged?.Invoke(isEof);
+    private void OnSourceEvent(MpvSourceEvent notification) => SourceEvent?.Invoke(notification);
 }

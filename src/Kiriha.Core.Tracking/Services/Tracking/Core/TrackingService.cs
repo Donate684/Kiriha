@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Infrastructure;
+using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
@@ -70,35 +71,32 @@ public partial class TrackingService : ITrackingService, IHostedService
 
     private void OnAnimeListRefreshed()
     {
-        ParsedMedia? media;
-        AnimeEntity? matched;
-        long version;
         lock (_state)
         {
-            media = _currentMedia;
-            matched = _matchedAnime;
-            version = _mediaVersion;
-        }
+            if (_disposed != 0 || _currentMedia is not { } media || _matchedAnime is not { } matched)
+                return;
 
-        if (media != null && matched != null)
-        {
-            var inRepo = _animeRepo.FindById(matched.Id, MediaKind.Anime)
-                ?? (_uiDispatcher.CheckAccess() ? _animeRepo.Collection?.FirstOrDefault(x => x.Id == matched.Id && x.MediaKind == MediaKind.Anime) : null);
-            if (inRepo != null && inRepo.Status != UserAnimeStatus.None &&
-                (!ReferenceEquals(matched, inRepo) || matched.Status == UserAnimeStatus.None))
+            var inRepo = _animeRepo.FindById(matched.Id, matched.MediaKind);
+            if (inRepo is null || inRepo.Status == UserAnimeStatus.None)
             {
-                lock (_state)
-                {
-                    if (!IsCurrentMediaVersion(version) || !ReferenceEquals(_matchedAnime, matched))
-                        return;
+                if (matched.Status == UserAnimeStatus.None) return;
 
-                    _matchedAnime = inRepo;
-                    var effectiveMedia = GetEffectiveMedia(_currentMedia ?? media, inRepo);
-                    NotifyPlayerMetadata(effectiveMedia, inRepo);
-                    UpdateDiscordPresence(effectiveMedia, inRepo);
-                    _scrobbleService.StartScrobble(effectiveMedia, inRepo);
-                }
+                var untracked = matched.Clone();
+                new AnimeEditFields(UserAnimeStatus.None, 0, 0, 0, "-", null, false, 0, null, null).ApplyTo(untracked);
+                _matchedAnime = untracked;
+                _scrobbleService.CancelScrobble();
+                PostForMedia(_mediaVersion, () => _eventBus.Publish(new AnimeMatchedMessage(untracked)));
+                return;
             }
+
+            if (ReferenceEquals(inRepo, matched)) return;
+
+            _matchedAnime = inRepo;
+            var effectiveMedia = GetEffectiveMedia(media, inRepo);
+            NotifyPlayerMetadata(effectiveMedia, inRepo);
+            UpdateDiscordPresence(effectiveMedia, inRepo);
+            PostForMedia(_mediaVersion, () => _eventBus.Publish(new AnimeMatchedMessage(inRepo)));
+            _scrobbleService.StartScrobble(effectiveMedia, inRepo);
         }
     }
 

@@ -57,7 +57,7 @@ public partial class TorrentsViewModel
             {
                 if (ct.IsCancellationRequested) return;
                 _onlineDetailsId = details.Id;
-                var matchedAnime = ResolveMatchedAnime(item.Title);
+                var matchedAnime = ResolveTrackedAnime(item.Title);
                 SetActiveMatchedAnime(matchedAnime);
                 var watchedProgress = matchedAnime?.Progress ?? 0;
                 var isCompleted = matchedAnime?.Status == UserAnimeStatus.Completed;

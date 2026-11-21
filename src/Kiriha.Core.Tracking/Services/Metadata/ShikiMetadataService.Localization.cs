@@ -105,15 +105,35 @@ public partial class ShikiMetadataService
                            (string.IsNullOrEmpty(item.RussianSynopsis) && _settingsService.Current.UI.UseRussianDescriptions);
         TimeSpan? maxAge = missingData ? TimeSpan.FromHours(12) : null;
 
-        var meta = await GetOrFetchMetadataAsync(item.Id, maxAge: maxAge, onFetched: null, item.MediaKind);
+        var key = new MediaKey(item.Id, item.MediaKind);
+        var generation = _library?.GetEntryGeneration(key.Id, key.Kind);
+        var meta = await GetOrFetchMetadataAsync(key.Id, maxAge: maxAge, onFetched: null, key.Kind);
+        ct.ThrowIfCancellationRequested();
         if (meta is null) return;
 
-        bool changed = await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, meta));
-        if (changed)
+        using var write = _syncGate != null ? await _syncGate.AcquireProgressWriteAsync(ct) : null;
+        if (_library?.GetEntryGeneration(key.Id, key.Kind) != generation) return;
+
+        var current = _library == null ? item : _library.FindById(key.Id, key.Kind);
+        if (current != null)
         {
-            try { await _userAnimeRepo.UpdateMetadataAsync(item, ct); }
-            catch (Exception ex) { Log.Debug(ex, "EnsureLocalizedAsync: failed to persist localized fields for {Id}", item.Id); }
+            var draft = await _uiDispatcher.InvokeAsync(() => current.Clone());
+            if (ApplyMetadata(draft, meta))
+            {
+                try
+                {
+                    await _userAnimeRepo.UpdateMetadataAsync(draft, ct);
+                    await _uiDispatcher.InvokeAsync(() => ApplyMetadata(current, meta));
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    Log.Debug(ex, "EnsureLocalizedAsync: failed to persist localized fields for {Id}", key.Id);
+                }
+            }
         }
+
+        if (!ReferenceEquals(item, current))
+            await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, meta));
     }
 
     private bool ApplyMetadata(AnimeEntity item, ShikiMetadata meta)

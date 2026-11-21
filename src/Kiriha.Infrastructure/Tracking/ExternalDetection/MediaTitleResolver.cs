@@ -40,6 +40,7 @@ public static class MediaTitleResolver
         return new ParsedMedia
         {
             OriginalTitle = filename,
+            PlaybackSourceKey = ParsedMedia.CreatePlaybackSourceKey(filePath),
             AnimeTitle = animeTitle,
             EpisodeTitle = parsed.EpisodeTitle,
             Episode = parsed.Episode,

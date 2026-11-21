@@ -33,7 +33,7 @@ public partial class PlayerViewModel
 
         if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl))
         {
-            if (RememberPlaybackPosition && !_isEofReached && Duration > 0 && CurrentTime > 0)
+            if (CanSaveCurrentPosition())
             {
                 if (CurrentTime < Duration * 0.95 && CurrentTime >= 5)
                 {
@@ -49,30 +49,9 @@ public partial class PlayerViewModel
             }
         }
 
-        _playback.FileLoaded -= OnPlayerFileLoaded;
-        _playback.PlaybackEnded -= OnPlayerPlaybackEnded;
-        _playback.PlaybackStateChanged -= OnPlayerPlaybackStateChanged;
-        _playback.TracksChanged -= OnPlayerTracksChanged;
-        _playback.SubtitleDelayChanged -= OnPlayerSubtitleDelayChanged;
-        _playback.EofReachedChanged -= OnPlayerEofReachedChanged;
-        _playback.BufferingChanged -= OnPlayerBufferingChanged;
+        _playback.SourceEvent -= OnNativeSourceEvent;
 
-        if (!string.IsNullOrEmpty(TorrentHash) && _torrServer != null)
-        {
-            var hashToDrop = TorrentHash;
-            try
-            {
-                _ = Task.Run(async () =>
-                {
-                    try { await _torrServer.DropTorrentAsync(hashToDrop, CancellationToken.None).ConfigureAwait(false); }
-                    catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop torrent {Hash} on dispose", hashToDrop); }
-                }, CancellationToken.None).Wait(TimeSpan.FromMilliseconds(500), CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                Log.Debug(ex, "PlayerViewModel: Timed out waiting for torrent {Hash} drop on dispose", hashToDrop);
-            }
-        }
+        ReleaseReplacedTorrents(keep: null);
         DisposeTorrentMonitor();
         ResetTorrentOverlayState();
 
@@ -85,7 +64,7 @@ public partial class PlayerViewModel
         Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
     }
 
-    private InternalPlayerState CreatePlayerState()
+    internal InternalPlayerState CreatePlayerState()
     {
         var titleToUse = !string.IsNullOrEmpty(AnimeTitleRomaji)
             ? AnimeTitleRomaji
@@ -113,6 +92,7 @@ public partial class PlayerViewModel
             IsLoading = IsLoading,
             HasPlaybackError = HasPlaybackError,
             PlaybackRequestId = _activePlaybackRequestId,
+            PlaybackSourceKey = _playbackSourceKey,
             TorrentHash = TorrentHash
         };
     }

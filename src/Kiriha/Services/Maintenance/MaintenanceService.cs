@@ -14,7 +14,8 @@ public class MaintenanceService : IDisposable
     private readonly IEnumerable<IMaintenanceTask> _tasks;
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly CancellationTokenSource _disposeCts = new();
-    private int _isRunning;
+    private readonly CancellationToken _disposeToken;
+    private int _state; // 0 = created, 1 = started, 2 = disposed
 
     public MaintenanceService(
         IEnumerable<IMaintenanceTask> tasks,
@@ -22,15 +23,16 @@ public class MaintenanceService : IDisposable
     {
         _tasks = tasks;
         _backgroundTasks = backgroundTasks;
+        _disposeToken = _disposeCts.Token;
     }
 
     public void Start()
     {
-        if (Interlocked.CompareExchange(ref _isRunning, 1, 0) != 0) return;
+        if (Interlocked.CompareExchange(ref _state, 1, 0) != 0) return;
 
         foreach (var task in _tasks)
         {
-            _backgroundTasks.Run($"MaintenanceTask.{task.GetType().Name}", ct => RunTaskLoopAsync(task, ct), _disposeCts.Token)
+            _backgroundTasks.Run($"MaintenanceTask.{task.GetType().Name}", ct => RunTaskLoopAsync(task, ct), _disposeToken)
                 .SafeFireAndForget(task.GetType().Name);
         }
 
@@ -39,23 +41,20 @@ public class MaintenanceService : IDisposable
 
     private async Task RunTaskLoopAsync(IMaintenanceTask task, CancellationToken ct)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, _disposeCts.Token);
-        var combinedCt = linkedCts.Token;
-
         try
         {
             if (task.InitialDelay > TimeSpan.Zero)
             {
-                await Task.Delay(task.InitialDelay, combinedCt);
+                await Task.Delay(task.InitialDelay, ct);
             }
 
             async Task ExecuteSafeAsync()
             {
                 try
                 {
-                    await task.ExecuteAsync(combinedCt);
+                    await task.ExecuteAsync(ct);
                 }
-                catch (OperationCanceledException) when (combinedCt.IsCancellationRequested)
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
                     throw;
                 }
@@ -67,9 +66,9 @@ public class MaintenanceService : IDisposable
 
             await ExecuteSafeAsync();
 
-            while (!combinedCt.IsCancellationRequested)
+            while (!ct.IsCancellationRequested)
             {
-                await Task.Delay(task.Interval, combinedCt);
+                await Task.Delay(task.Interval, ct);
                 await ExecuteSafeAsync();
             }
         }
@@ -81,20 +80,9 @@ public class MaintenanceService : IDisposable
 
     public void Dispose()
     {
-        Interlocked.Exchange(ref _isRunning, 0);
-
-        try
-        {
-            if (!_disposeCts.IsCancellationRequested)
-            {
-                _disposeCts.Cancel();
-            }
-            _disposeCts.Dispose();
-        }
-        catch (ObjectDisposedException)
-        {
-            // Already disposed
-        }
+        if (Interlocked.Exchange(ref _state, 2) == 2) return;
+        _disposeCts.Cancel();
+        _disposeCts.Dispose();
     }
 }
 

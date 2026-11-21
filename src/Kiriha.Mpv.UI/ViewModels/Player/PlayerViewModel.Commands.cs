@@ -147,7 +147,7 @@ public partial class PlayerViewModel
     public void ReloadMedia()
     {
         if (!string.IsNullOrWhiteSpace(VideoUrl))
-            LoadVideo(VideoUrl);
+            LoadVideo(VideoUrl, _sourceSubtitleUrl, headers: StreamHeaders);
     }
 
     [RelayCommand]

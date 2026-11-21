@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Infrastructure.Platform;
 using Serilog;
 
 namespace Kiriha.Infrastructure.TorrServer;
@@ -22,6 +23,7 @@ public sealed partial class TorrServerService : ITorrServerService
     private readonly Lock _processLock = new();
     private readonly Func<int, Process?> _startProcess;
     private readonly TimeSpan _startupTimeout;
+    private readonly TorrServerUsage _usage;
 
     private Process? _process;
     private string? _managedUrl;
@@ -62,13 +64,16 @@ public sealed partial class TorrServerService : ITorrServerService
     }
 
     internal TorrServerService(ISettingsService settingsService, HttpClient? httpClient,
-        Func<int, Process?> startProcess, TimeSpan startupTimeout)
+        Func<int, Process?> startProcess, TimeSpan startupTimeout, string? usageDirectory = null,
+        TimeSpan? releaseDelay = null)
     {
         _settingsService = settingsService;
         _ownsHttpClient = httpClient is null;
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         _startProcess = startProcess;
         _startupTimeout = startupTimeout;
+        _usage = new TorrServerUsage(usageDirectory ?? Path.Combine(PathHelper.GetSettingsDirPath(), "torrent-usage"),
+            releaseDelay ?? TimeSpan.FromMilliseconds(600), RemoveTorrentAsync);
     }
 
     public async Task<bool> EnsureRunningAsync(CancellationToken ct = default)
@@ -200,7 +205,11 @@ public sealed partial class TorrServerService : ITorrServerService
         }
 
         if (needsSettings)
+        {
+            // Keep the idle check and settings update atomic with tracked additions.
+            await using var gate = await _usage.LockEndpointAsync(url, ct).ConfigureAwait(false);
             await ApplyMemorySettingsAsync(url, ct, external).ConfigureAwait(false);
+        }
 
         lock (_processLock)
         {

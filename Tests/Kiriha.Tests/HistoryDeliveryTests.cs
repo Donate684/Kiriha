@@ -24,6 +24,51 @@ public sealed class HistoryDeliveryTests : IDisposable
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("Kiriha.HistoryDelivery.");
 
     [Fact]
+    public async Task OldHistoryWithTransientFailure_SurvivesMaintenanceAndReceivesRestartedDelivery()
+    {
+        var fixture = await CreateFixtureAsync();
+        using var timeout = new CancellationTokenSource(Timeout);
+        var ct = timeout.Token;
+        using var background = new BackgroundTaskSupervisor();
+        var original = NewHistory();
+        original.Timestamp = original.Timestamp.AddDays(-200);
+        fixture.Tracker.Setup(t => t.UpdateProgressAsync(AnimeId, 8, UserAnimeStatus.Watching,
+            null, null, null, It.IsAny<CancellationToken>())).ReturnsAsync(SyncOutcome.TransientFailure);
+        var manager = fixture.CreateManager(background);
+        try
+        {
+            await manager.StartAsync(ct);
+            Assert.True(await manager.CommitProgressChangeAsync(NewItem(), null, original, false, ct));
+            while (!(await fixture.Queue.GetPendingAsync(ct)).Any(task => task.RetryCount > 0))
+                await Task.Delay(25, ct);
+        }
+        finally
+        {
+            await manager.StopAsync(CancellationToken.None);
+        }
+
+        Assert.True(await fixture.PerformMaintenanceAsync(ct));
+        Assert.Equal(original.Id, Assert.Single(await fixture.HistoryStore.GetAsync(ct: ct)).Id);
+        fixture.Tracker.Setup(t => t.UpdateProgressAsync(AnimeId, 8, UserAnimeStatus.Watching,
+            null, null, null, It.IsAny<CancellationToken>())).ReturnsAsync(SyncOutcome.Success);
+        var restarted = fixture.CreateManager(background);
+        try
+        {
+            await restarted.StartAsync(ct);
+            await WaitUntilDrainedAsync(fixture.Queue, ct);
+            var delivered = Assert.Single(await fixture.HistoryStore.GetAsync(ct: ct));
+            Assert.Equal(original.Id, delivered.Id);
+            Assert.Equal(TrackerSyncState.Success, delivered.TrackerStatuses[TrackerName].State);
+            Assert.True(await fixture.PerformMaintenanceAsync(ct));
+            Assert.Empty(await fixture.HistoryStore.GetAsync(ct: ct));
+        }
+        finally
+        {
+            await restarted.StopAsync(CancellationToken.None);
+        }
+    }
+
+    [Fact]
     public async Task LateReplyAfterAccountSwitch_UpdatesOnlyTheOriginalHistoryRow()
     {
         var fixture = await CreateFixtureAsync();
@@ -275,6 +320,7 @@ public sealed class HistoryDeliveryTests : IDisposable
         private AppSettings _current = new();
 
         public SyncTaskRepository Queue { get; }
+        public Task<bool> PerformMaintenanceAsync(CancellationToken ct) => new DatabaseMaintenance(_factory).PerformAsync(ct);
         public HistoryRepository HistoryStore { get; }
         public Mock<ITrackerService> Tracker { get; } = new();
 

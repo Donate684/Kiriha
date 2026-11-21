@@ -102,9 +102,9 @@ public class ImageCacheService : IImageCacheService, IDisposable
         }
     }
 
-    public Task PerformSmartCleanupAsync(IEnumerable<string> activePaths)
+    public Task PerformSmartCleanupAsync(IEnumerable<string> activePaths, CancellationToken ct = default)
     {
-        return _cleanup.PerformSmartCleanupAsync(activePaths);
+        return _cleanup.PerformSmartCleanupAsync(activePaths, ct);
     }
 
     public void ClearMemoryCache()

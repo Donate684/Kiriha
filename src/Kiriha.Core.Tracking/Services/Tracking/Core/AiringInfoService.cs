@@ -24,6 +24,7 @@ public class AiringInfoService : IAiringInfoService
         IShikiApiService shikiApi,
         ISettingsService settingsService,
         IAnimeRepository animeRepo,
+        IUserAnimeRepository userAnimeRepo,
         IAnimeSyncOrchestrator syncOrchestrator,
         INotificationService notificationService,
         IUiDispatcher uiDispatcher,
@@ -38,7 +39,7 @@ public class AiringInfoService : IAiringInfoService
         _syncGate = syncGate;
 
         _fetcher = new AiringInfoFetcher(aniListApi, shikiApi, settingsService);
-        _cache = new AiringInfoCache(animeRepo, notificationService, uiDispatcher);
+        _cache = new AiringInfoCache(animeRepo, userAnimeRepo, notificationService, uiDispatcher, syncGate);
     }
 
     private string FormatLoc(string key, params object?[] args) => _localizer.GetLoc(key, args);
@@ -63,26 +64,15 @@ public class AiringInfoService : IAiringInfoService
     public async Task SyncEpisodesForAnimeAsync(AnimeEntity anime, CancellationToken ct = default)
     {
         if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
-        if (anime.Status != UserAnimeStatus.Watching) return;
-        if (!IsTrackableOngoingAnime(anime, includeUnknownTotal: true)) return;
+        var key = new MediaKey(anime.Id, anime.MediaKind);
+        var generation = _animeRepo.GetEntryGeneration(key.Id, key.Kind);
+        if (_animeRepo.FindById(key.Id, key.Kind) is not { Status: UserAnimeStatus.Watching } current ||
+            !IsTrackableOngoingAnime(current, includeUnknownTotal: true)) return;
 
         var source = _settingsService.Current.System.AiringSource;
         Log.Information("AiringInfoService: Immediate {Source} sync requested for {Title} (ID: {Id})", source, anime.Title, anime.Id);
 
-        var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force: true, ct);
-        if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
-        if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
-
-        using var gateScope = _syncGate != null ? await _syncGate.TryAcquireBackgroundUpdateAsync(ct) : null;
-        if (_syncGate != null && gateScope is null) return;
-
-        if (airing is null)
-        {
-            await _cache.MarkSyncedAsync(anime, DateTime.UtcNow);
-            return;
-        }
-
-        await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, DateTime.UtcNow, airing.TotalEpisodes, airing.Status);
+        await FetchAndSaveAsync(key, generation, force: true, ct);
     }
 
     public async Task SyncOngoingEpisodesAsync(bool force = false, IProgress<string>? progress = null, CancellationToken ct = default)
@@ -104,6 +94,7 @@ public class AiringInfoService : IAiringInfoService
                     x.Status == UserAnimeStatus.Watching &&
                     IsTrackableOngoingAnime(x, includeUnknownTotal: false) &&
                     (force || x.LastEpisodesSync is null || x.LastEpisodesSync < threshold))
+                .Select(anime => (Anime: anime, Generation: _animeRepo.GetEntryGeneration(anime.Id, anime.MediaKind)))
                 .ToList());
 
         if (toSync.Count == 0)
@@ -118,15 +109,14 @@ public class AiringInfoService : IAiringInfoService
         int completed = 0;
         var total = toSync.Count;
 
-        var tasks = toSync.Select(async anime =>
+        var tasks = toSync.Select(async entry =>
         {
+            var (anime, generation) = entry;
             if (ct.IsCancellationRequested) return;
-            if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
 
             await semaphore.WaitAsync(ct);
             try
             {
-                if (ct.IsCancellationRequested || _animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
                 if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
 
                 int currentCompleted = Interlocked.Increment(ref completed);
@@ -135,22 +125,7 @@ public class AiringInfoService : IAiringInfoService
 
                 Log.Information("AiringInfoService: Syncing {Source} airing info for {Title} (ID: {Id})...", source, anime.Title, anime.Id);
 
-                var now = DateTime.UtcNow;
-                // Perform network I/O outside LibrarySyncGate so slow upstream responses never starve full library sync.
-                var (airing, aired, nextSlot) = await _fetcher.FetchAndResolveAsync(anime, force, ct);
-                if (_animeRepo.IsRecentlyDeleted(anime.Id, anime.MediaKind)) return;
-                if (_syncOrchestrator.IsSyncing || (_syncGate?.IsFullSyncActive ?? false)) return;
-
-                using var gateScope = _syncGate != null ? await _syncGate.TryAcquireBackgroundUpdateAsync(ct) : null;
-                if (_syncGate != null && gateScope is null) return;
-
-                if (airing is null)
-                {
-                    await _cache.MarkSyncedAsync(anime, now);
-                    return;
-                }
-
-                await _cache.ApplyAndSaveAiringAsync(anime, aired, nextSlot, now, airing.TotalEpisodes, airing.Status);
+                await FetchAndSaveAsync(new MediaKey(anime.Id, anime.MediaKind), generation, force, ct);
             }
             finally
             {
@@ -161,5 +136,21 @@ public class AiringInfoService : IAiringInfoService
         await Task.WhenAll(tasks);
 
         Log.Information("AiringInfoService: {Source} sync cycle completed.", source);
+    }
+
+    private async Task FetchAndSaveAsync(MediaKey key, long generation, bool force, CancellationToken ct)
+    {
+        if (_animeRepo.GetEntryGeneration(key.Id, key.Kind) != generation) return;
+
+        // Do not hold either write gate during the provider request.
+        var requestedAt = DateTime.UtcNow;
+        var airing = await _fetcher.FetchAsync(key.Id, force, ct);
+        ct.ThrowIfCancellationRequested();
+        if (_syncOrchestrator.IsSyncing) return;
+
+        using var gateScope = _syncGate != null ? await _syncGate.TryAcquireBackgroundUpdateAsync(ct) : null;
+        if (_syncGate != null && gateScope is null) return;
+
+        await _cache.SaveAsync(key, generation, airing, requestedAt, ct);
     }
 }

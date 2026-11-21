@@ -51,8 +51,7 @@ public partial class AnimeRepository
         var current = FindById(id, kind);
         if (current != null)
         {
-            if (await _userAnimeRepo.MergeDetailsMetadataAsync(id, kind, details, ct))
-                await _uiDispatcher.InvokeAsync(() => current.MergeFullDetails(details, metadataOnly: true));
+            await MergeDetailsAsync(current, details, ct);
             return null;
         }
 
@@ -69,6 +68,27 @@ public partial class AnimeRepository
         _syncGate?.RecordProgressChange(id, kind);
         await PublishSavedEntryAsync(original, imported);
         return (AnimeEditFields.From(imported), GetEntryGeneration(id, kind));
+    }
+
+    public async Task<bool> MergeTrackedDetailsAsync(
+        AnimeEntity details, MediaKey key, long generation, CancellationToken ct = default)
+    {
+        if (details.Id != key.Id || (key.Kind == MediaKind.Anime) != (details.MediaKind == MediaKind.Anime))
+            return false;
+
+        using var write = _syncGate != null ? await _syncGate.AcquireProgressWriteAsync(ct) : null;
+        return GetEntryGeneration(key.Id, key.Kind) == generation &&
+            FindById(key.Id, key.Kind) is { } current &&
+            await MergeDetailsAsync(current, details, ct);
+    }
+
+    private async Task<bool> MergeDetailsAsync(AnimeEntity current, AnimeEntity details, CancellationToken ct)
+    {
+        if (!await _userAnimeRepo.MergeDetailsMetadataAsync(current.Id, current.MediaKind, details, ct))
+            return false;
+
+        await _uiDispatcher.InvokeAsync(() => current.MergeFullDetails(details, metadataOnly: true));
+        return true;
     }
 
     internal Task<AnimeEntity?> PublishSavedEntryAsync(AnimeEntity anime, AnimeEntity? committedEntry = null)

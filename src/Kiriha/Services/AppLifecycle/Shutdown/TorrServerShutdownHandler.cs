@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Services;
+using Serilog;
 
 namespace Kiriha.Services.AppLifecycle.Shutdown;
 
@@ -11,9 +12,20 @@ public sealed class TorrServerShutdownHandler : IShutdownHandler
         _torrServer = torrServer;
     }
 
-    public Task FlushAsync()
+    public async Task FlushAsync()
     {
-        _torrServer.Stop();
-        return Task.CompletedTask;
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        try
+        {
+            await _torrServer.FlushTorrentReleasesAsync(timeout.Token);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not finish releasing TorrServer torrents before shutdown");
+        }
+        finally
+        {
+            _torrServer.Stop();
+        }
     }
 }

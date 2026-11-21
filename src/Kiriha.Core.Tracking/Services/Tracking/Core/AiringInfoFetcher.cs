@@ -22,22 +22,19 @@ public class AiringInfoFetcher
 
     public async Task<(EpisodeAiringInfo? Airing, int AiredCount, DateTime? NextSlot)> FetchAndResolveAsync(AnimeEntity anime, bool force, CancellationToken ct)
     {
-        EpisodeAiringInfo? airing;
-        var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
-
-        if (source == EpisodeAiringSource.Shikimori && _shikiApi != null)
-        {
-            airing = await _shikiApi.GetAiringInfoAsync(anime.Id, force, ct);
-        }
-        else
-        {
-            airing = await _aniListApi.GetNextAiringAsync(anime.Id, force, ct);
-        }
-
+        var airing = await FetchAsync(anime.Id, force, ct);
         if (airing is null) return (null, anime.EpisodesAired, anime.NextEpisodeAt);
 
         var (aired, nextSlot) = ResolveAired(anime, airing);
         return (airing, aired, nextSlot);
+    }
+
+    internal Task<EpisodeAiringInfo?> FetchAsync(int id, bool force, CancellationToken ct)
+    {
+        var source = _settingsService?.Current.System.AiringSource ?? EpisodeAiringSource.AniList;
+        return source == EpisodeAiringSource.Shikimori && _shikiApi != null
+            ? _shikiApi.GetAiringInfoAsync(id, force, ct)
+            : _aniListApi.GetNextAiringAsync(id, force, ct);
     }
 
     public static (int aired, DateTime? nextSlot) ResolveAired(AnimeEntity anime, EpisodeAiringInfo airing)

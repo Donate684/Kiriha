@@ -135,19 +135,19 @@ public sealed class PostRefactorRegressionTests
         var filterRepoMock = new Mock<ITorrentFilterRepository>();
         filterRepoMock.Setup(x => x.GetHiddenAnimeIds()).Returns(new HashSet<int>());
 
-        var droppedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lease = new Mock<IDisposable>();
+        var released = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        lease.Setup(x => x.Dispose()).Callback(() => released.TrySetResult());
         var addedStatus = new TorrServerTorrentStatus { Hash = hash, Title = "Test" };
         var torrServerMock = new Mock<ITorrServerService>();
         torrServerMock.Setup(x => x.EnsureRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        torrServerMock.Setup(x => x.AddTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(addedStatus);
+        torrServerMock.SetupGet(x => x.ServerUrl).Returns("http://127.0.0.1:8090");
+        torrServerMock.Setup(x => x.PrepareTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TorrServerPreparation("http://127.0.0.1:8090", addedStatus, lease.Object));
         torrServerMock.Setup(x => x.WaitForFilesAsync(hash, It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<TorrServerFileItem>());
         torrServerMock.Setup(x => x.GetStreamUrl(hash, -1, It.IsAny<string>()))
             .Returns($"http://127.0.0.1:8090/stream/test.mkv?link={hash}&index=-1&play");
-        torrServerMock.Setup(x => x.DropTorrentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Callback<string, CancellationToken>((h, _) => droppedTcs.TrySetResult(h))
-            .Returns(Task.CompletedTask);
 
         string? launchedUrl = null;
         string? launchedHash = null;
@@ -188,12 +188,11 @@ public sealed class PostRefactorRegressionTests
 
             // Closing the batch episode selector must NOT drop the already-launched playback torrent
             vm.CloseEpisodeSelectorCommand.Execute(null);
-            torrServerMock.Verify(x => x.DropTorrentAsync(hash, It.IsAny<CancellationToken>()), Times.Never);
+            lease.Verify(x => x.Dispose(), Times.Never);
 
             // Explicitly cancelling player launch while awaiting wakeup MUST drop the launched torrent
             vm.CancelPlayerLaunchingCommand.Execute(null);
-            var droppedHash = await droppedTcs.Task.WaitAsync(TimeSpan.FromSeconds(2));
-            Assert.Equal(hash, droppedHash);
+            await released.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
             await playTask;
             Assert.False(vm.IsPlayerLaunching);
@@ -213,8 +212,10 @@ public sealed class PostRefactorRegressionTests
         var newLaunch = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var tracker = new Mock<ITorrServerService>();
         tracker.Setup(t => t.EnsureRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        tracker.Setup(t => t.AddTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string _, string title, CancellationToken _) => new TorrServerTorrentStatus { Hash = title });
+        tracker.SetupGet(t => t.ServerUrl).Returns("http://127.0.0.1");
+        tracker.Setup(t => t.PrepareTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string _, string title, CancellationToken _) =>
+                new TorrServerPreparation("http://127.0.0.1", new TorrServerTorrentStatus { Hash = title }, Mock.Of<IDisposable>()));
         tracker.Setup(t => t.WaitForFilesAsync("previous", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .Returns(() =>
             {
@@ -277,8 +278,9 @@ public sealed class PostRefactorRegressionTests
 
         var torrServerMock = new Mock<ITorrServerService>();
         torrServerMock.Setup(x => x.EnsureRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        torrServerMock.Setup(x => x.AddTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(addedStatus);
+        var lease = new Mock<IDisposable>();
+        torrServerMock.Setup(x => x.PrepareTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TorrServerPreparation("http://127.0.0.1:8090", addedStatus, lease.Object));
         torrServerMock.Setup(x => x.WaitForFilesAsync(hash, It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(nonVideoFiles);
         torrServerMock.Setup(x => x.DropTorrentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -307,7 +309,7 @@ public sealed class PostRefactorRegressionTests
 
             Assert.False(launched);
             Assert.False(string.IsNullOrWhiteSpace(vm.StreamingErrorMessage));
-            torrServerMock.Verify(x => x.DropTorrentAsync(hash, It.IsAny<CancellationToken>()), Times.Once);
+            lease.Verify(x => x.Dispose(), Times.Once);
 
             vm.DismissStreamingErrorCommand.Execute(null);
             Assert.Null(vm.StreamingErrorMessage);
@@ -637,16 +639,12 @@ public sealed class PostRefactorRegressionTests
     }
 
     [Fact]
-    public async Task PlayerViewModel_LoadVideo_DropsOldTorrentHashAndClearsStaleStreamHeaders()
+    public void PlayerViewModel_LoadVideo_ChangesTorrentHashAndClearsStaleStreamHeaders()
     {
         const string hash1 = "1111111111111111111111111111111111111111";
         const string hash2 = "2222222222222222222222222222222222222222";
 
-        var droppedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         var torrServerMock = new Mock<ITorrServerService>();
-        torrServerMock.Setup(x => x.DropTorrentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Callback<string, CancellationToken>((h, _) => droppedTcs.TrySetResult(h))
-            .Returns(Task.CompletedTask);
 
         var initialHeaders = new Dictionary<string, string> { ["Authorization"] = "Bearer token123" };
         var meta1 = new PlayerMediaMetadata("Ep 1", "Title", "Title", "1", 100, "Title", hash1);
@@ -672,8 +670,7 @@ public sealed class PostRefactorRegressionTests
 
         Assert.Equal(hash2, vm.TorrentHash);
         Assert.Null(vm.StreamHeaders);
-        var droppedHash = await droppedTcs.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        Assert.Equal(hash1, droppedHash);
+        torrServerMock.Verify(x => x.DropTorrentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

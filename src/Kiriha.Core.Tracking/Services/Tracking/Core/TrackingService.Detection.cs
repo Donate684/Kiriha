@@ -103,7 +103,9 @@ public partial class TrackingService
             Episode = state.Episode,
             Position = TimeSpan.FromSeconds(state.Position),
             Duration = TimeSpan.FromSeconds(state.Duration),
-            IsPlaying = state.IsPlaying,
+            IsPlaying = state.IsPlaying && !state.IsLoading && !state.IsBuffering && !state.HasPlaybackError,
+            PlaybackRequestId = state.PlaybackRequestId,
+            PlaybackSourceKey = state.PlaybackSourceKey,
             TorrentHash = state.TorrentHash,
             Pid = 0
         };

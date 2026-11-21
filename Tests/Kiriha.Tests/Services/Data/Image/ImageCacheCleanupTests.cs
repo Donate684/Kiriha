@@ -52,4 +52,17 @@ public class ImageCacheCleanupTests : IDisposable
 
         Assert.True(File.Exists(oldActiveFile)); // Should be kept because it's active
     }
+
+    [Fact]
+    public async Task PerformSmartCleanupAsync_WhenCancelledBeforeScan_LeavesOldFiles()
+    {
+        var cleanup = new ImageCacheCleanup(_cacheRoot);
+        var oldFile = Path.Combine(_cacheRoot, "expired.jpg");
+        await File.WriteAllTextAsync(oldFile, "test");
+        File.SetLastWriteTimeUtc(oldFile, DateTime.UtcNow.AddDays(-20));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            cleanup.PerformSmartCleanupAsync([], new CancellationToken(canceled: true)));
+        Assert.True(File.Exists(oldFile));
+    }
 }

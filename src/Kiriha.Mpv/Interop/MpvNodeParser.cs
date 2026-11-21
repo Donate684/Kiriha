@@ -75,7 +75,7 @@ internal static class MpvNodeParser
         return unsafe(*(MpvNode*)IntPtr.Add(values, index * sizeof(MpvNode)));
     }
 
-    private static bool TryGetMapValue(MpvNode mapNode, string key, out MpvNode value)
+    internal static bool TryGetMapValue(MpvNode mapNode, string key, out MpvNode value)
     {
         value = default;
         if (!TryGetNodeList(mapNode, LibMpvNative.MPV_FORMAT_NODE_MAP, out var list) || list.Keys == IntPtr.Zero)

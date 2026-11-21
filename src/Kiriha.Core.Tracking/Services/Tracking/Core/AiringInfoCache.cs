@@ -2,90 +2,87 @@ using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Sync;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public class AiringInfoCache
+internal sealed class AiringInfoCache(
+    IAnimeRepository library,
+    IUserAnimeRepository store,
+    INotificationService notifications,
+    IUiDispatcher dispatcher,
+    LibrarySyncGate? gate)
 {
-    private readonly IAnimeRepository _animeRepo;
-    private readonly INotificationService _notificationService;
-    private readonly IUiDispatcher _uiDispatcher;
-
-    public AiringInfoCache(
-        IAnimeRepository animeRepo,
-        INotificationService notificationService,
-        IUiDispatcher uiDispatcher)
+    internal async Task SaveAsync(
+        MediaKey key, long generation, EpisodeAiringInfo? airing, DateTime requestedAt, CancellationToken ct)
     {
-        _animeRepo = animeRepo;
-        _notificationService = notificationService;
-        _uiDispatcher = uiDispatcher;
-    }
+        using var write = gate != null ? await gate.AcquireProgressWriteAsync(ct) : null;
+        if (library.GetEntryGeneration(key.Id, key.Kind) != generation ||
+            library.FindById(key.Id, key.Kind) is not { } current)
+            return;
 
-    public async Task ApplyAndSaveAiringAsync(
-        AnimeEntity anime,
-        int finalAiredCount,
-        DateTime? nextSlot,
-        DateTime now,
-        int? totalEpisodes = null,
-        string? airingStatus = null)
-    {
-        int? notifyEp = null;
+        var draft = await dispatcher.InvokeAsync(() => current.Clone());
+        if (draft.Status != UserAnimeStatus.Watching || draft.LastEpisodesSync >= requestedAt)
+            return;
 
-        await _uiDispatcher.InvokeAsync(() =>
+        int? notifyEpisode = airing == null ? null : ApplyAiring(draft, airing, requestedAt);
+        draft.LastEpisodesSync = requestedAt;
+        if (!await store.UpdateAiringAsync(draft, ct)) return;
+
+        await dispatcher.InvokeAsync(() =>
         {
-            if (finalAiredCount != anime.EpisodesAired)
-            {
-                bool isFirstSyncJumpFromZero = anime.LastEpisodesSync is null && anime.EpisodesAired == 0;
-
-                if (!isFirstSyncJumpFromZero && finalAiredCount > anime.EpisodesAired)
-                {
-                    anime.LastEpisodeAt = now;
-                    notifyEp = finalAiredCount;
-                }
-
-                anime.EpisodesAired = finalAiredCount;
-                anime.AiredSourcePriority = 2;
-            }
-
-            if (totalEpisodes.HasValue && totalEpisodes.Value > 0 && (anime.TotalEpisodes == 0 || anime.TotalEpisodes < totalEpisodes.Value))
-            {
-                anime.TotalEpisodes = totalEpisodes.Value;
-            }
-
-            if (!string.IsNullOrEmpty(airingStatus) && string.IsNullOrEmpty(anime.StatusDetailed))
-            {
-                anime.StatusDetailed = airingStatus.ToUpperInvariant() switch
-                {
-                    "RELEASING" => AppConstants.AiringStatus.CurrentlyAiring,
-                    "NOT_YET_RELEASED" => AppConstants.AiringStatus.NotYetAired,
-                    "FINISHED" => AppConstants.AiringStatus.FinishedAiring,
-                    _ => airingStatus
-                };
-            }
-
-            anime.NextEpisodeAt = nextSlot;
-            anime.LastEpisodesSync = now;
-            anime.RefreshAiringBadge();
+            current.EpisodesAired = draft.EpisodesAired;
+            current.NextEpisodeAt = draft.NextEpisodeAt;
+            current.LastEpisodeAt = draft.LastEpisodeAt;
+            current.LastEpisodesSync = draft.LastEpisodesSync;
+            current.AiredSourcePriority = draft.AiredSourcePriority;
+            current.StatusDetailed = draft.StatusDetailed;
+            current.TotalEpisodes = draft.TotalEpisodes;
+            current.RefreshAiringBadge();
         });
 
-        if (notifyEp.HasValue)
+        if (notifyEpisode is { } episode)
         {
-            Log.Information("AiringInfoService: New episode detected for {Title}: {Count}", anime.Title, notifyEp.Value);
-            _notificationService.NotifyNewEpisode(anime, notifyEp.Value);
+            Log.Information("AiringInfoService: New episode detected for {Title}: {Count}", current.Title, episode);
+            notifications.NotifyNewEpisode(current, episode);
+        }
+    }
+
+    private static int? ApplyAiring(AnimeEntity draft, EpisodeAiringInfo airing, DateTime requestedAt)
+    {
+        var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(draft, airing);
+        int? notifyEpisode = null;
+        if (aired != draft.EpisodesAired)
+        {
+            bool firstSyncFromZero = draft.LastEpisodesSync is null && draft.EpisodesAired == 0;
+            if (!firstSyncFromZero && aired > draft.EpisodesAired)
+            {
+                draft.LastEpisodeAt = requestedAt;
+                notifyEpisode = aired;
+            }
+
+            draft.EpisodesAired = aired;
+            draft.AiredSourcePriority = 2;
         }
 
-        await _animeRepo.AddOrUpdateAnimeAsync(anime);
-    }
+        if (airing.TotalEpisodes is { } total && total > draft.TotalEpisodes)
+            draft.TotalEpisodes = total;
 
-    public async Task MarkSyncedAsync(AnimeEntity anime, DateTime now)
-    {
-        await _uiDispatcher.InvokeAsync(() =>
+        if (!string.IsNullOrEmpty(airing.Status) && string.IsNullOrEmpty(draft.StatusDetailed))
         {
-            anime.LastEpisodesSync = now;
-            anime.RefreshAiringBadge();
-        });
-        await _animeRepo.AddOrUpdateAnimeAsync(anime);
+            draft.StatusDetailed = airing.Status.ToUpperInvariant() switch
+            {
+                "RELEASING" => AppConstants.AiringStatus.CurrentlyAiring,
+                "NOT_YET_RELEASED" => AppConstants.AiringStatus.NotYetAired,
+                "FINISHED" => AppConstants.AiringStatus.FinishedAiring,
+                _ => airing.Status
+            };
+        }
+
+        draft.NextEpisodeAt = nextSlot;
+        return notifyEpisode;
     }
 }

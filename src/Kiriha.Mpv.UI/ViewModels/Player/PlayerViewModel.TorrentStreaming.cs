@@ -95,20 +95,6 @@ public partial class PlayerViewModel
                             (videoUrl.Contains(AppConstants.Api.TorrServer.DefaultHost, StringComparison.OrdinalIgnoreCase) ||
                              (!string.IsNullOrWhiteSpace(configuredServerUrl) && videoUrl.Contains(configuredServerUrl, StringComparison.OrdinalIgnoreCase))));
 
-        // If switching away from an active torrent or switching to a different torrent:
-        if (!string.IsNullOrEmpty(TorrentHash) && (!isTorrServer || !string.Equals(TorrentHash, hash, StringComparison.OrdinalIgnoreCase)))
-        {
-            var oldHash = TorrentHash;
-            if (_torrServer != null)
-            {
-                _ = Task.Run(async () =>
-                {
-                    try { await _torrServer.DropTorrentAsync(oldHash, CancellationToken.None).ConfigureAwait(false); }
-                    catch (Exception ex) { Log.Warning(ex, "PlayerViewModel: Failed to drop previous torrent {Hash}", oldHash); }
-                }, CancellationToken.None);
-            }
-        }
-
         IsTorrentStream = isTorrServer;
         TorrentHash = hash;
 
@@ -234,17 +220,14 @@ public partial class PlayerViewModel
         }
     }
 
-    private void OnPlayerBufferingChanged(bool isBuffering)
+    private void ApplyPlayerBuffering(bool isBuffering)
     {
-        Dispatcher.UIThread.Post(() =>
+        IsBuffering = isBuffering;
+        UpdateRebufferingState();
+        if (isBuffering && IsTorrentStream)
         {
-            IsBuffering = isBuffering;
-            UpdateRebufferingState();
-            if (isBuffering && IsTorrentStream)
-            {
-                BufferingStatusText = $"{_localizer.GetLoc("player.streaming.buffering")} • {TorrentDownloadSpeedText} • {TorrentPeersBadgeText}";
-            }
-        });
+            BufferingStatusText = $"{_localizer.GetLoc("player.streaming.buffering")} • {TorrentDownloadSpeedText} • {TorrentPeersBadgeText}";
+        }
     }
 
     public static string FormatSpeed(double bytesPerSec)

@@ -14,10 +14,11 @@ public class MpvPlaybackController
         _player = player;
     }
 
-    public void Load(string url, IReadOnlyDictionary<string, string>? headers = null)
+    public void Load(string url, IReadOnlyDictionary<string, string>? headers = null) => LoadSource(url, headers, autoPlay: null);
+
+    internal long LoadSource(string url, IReadOnlyDictionary<string, string>? headers, bool? autoPlay)
     {
-        _player.ResetPropertyCache();
-        _player.Enqueue(handle =>
+        return _player.QueueSourceLoad((handle, sourceId) =>
         {
             var targetUrl = url;
             if (targetUrl.Contains("anilib.me", StringComparison.OrdinalIgnoreCase))
@@ -69,7 +70,7 @@ public class MpvPlaybackController
 
             LibMpvNative.SetHttpHeaderFields(handle, extraHeaders);
 
-            MpvPlayer.Check(LibMpvNative.mpv_command_string(handle, "loadfile", targetUrl), "load file");
+            _player.LoadPlaylistEntry(handle, sourceId, targetUrl, autoPlay);
         });
     }
 

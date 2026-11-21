@@ -67,6 +67,7 @@ public sealed partial class AppStartupCoordinator
         services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver, Kiriha.Mpv.UI.Services.Player.FilenamePlayerMediaMetadataResolver>();
         services.AddSingleton<IPlaybackResumeStore, Kiriha.Mpv.UI.Services.Player.FilePlaybackResumeStore>();
+        services.AddSingleton<Kiriha.Services.AppLifecycle.Shutdown.IShutdownHandler, Kiriha.Services.AppLifecycle.Shutdown.ManualMappingShutdownHandler>();
         services.AddHttpClient("TorrServerClient", c => c.Timeout = TorrServerClientTimeout)
                 .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
                 {

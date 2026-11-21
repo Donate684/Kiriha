@@ -8,7 +8,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public class AnimeProgressService : IProgressUpdateService, IDisposable
+public partial class AnimeProgressService : IProgressUpdateService, IDisposable
 {
     private readonly IAnimeRepository _animeRepository;
     private readonly IUserAnimeRepository _userAnimeRepo;
@@ -116,29 +116,70 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
         SerializeProgressChangeAsync(() => SaveProgressChangeAsync(
             anime, episode, nextStatus, HistoryActionType.Scrobbled, onlyAdvance: true, ct), ct);
 
-    public virtual Task<UserAnimeStatus?> SmartIncrementProgressAsync(AnimeEntity item, int nextProgress) =>
+    public Task<ScrobbleResult> RecordScrobbleAsync(MediaKey key, long generation, int episode, CancellationToken ct) =>
         SerializeProgressChangeAsync(async () =>
         {
-            var nextStatus = _mutations.ComputeSmartNextStatus(item, nextProgress);
-            if (!await SaveProgressChangeAsync(
-                    item, nextProgress, nextStatus, HistoryActionType.Watched, onlyAdvance: false, CancellationToken.None))
-                return null;
+            if (await FindCurrentEntryAsync(new LibraryEntryTarget(key, generation), ct) is not { } entry)
+                return new ScrobbleResult(ScrobbleOutcome.EntryChanged);
+            var (item, persisted) = entry;
+            if (item.Progress >= episode || persisted.Progress >= episode ||
+                (item.Status == UserAnimeStatus.Completed && !item.IsRewatching))
+                return new ScrobbleResult(ScrobbleOutcome.AlreadyWatched);
 
-            if (nextStatus == UserAnimeStatus.Completed)
-                _eventBus.Publish(new AnimeCompletedRatingPromptMessage(item));
-            if (nextStatus.HasValue)
-                _eventBus.Publish(new AnimeListRefreshMessage());
+            var nextStatus = _mutations.ComputeSmartNextStatus(item, episode);
+            bool saved = await SaveProgressChangeAsync(item, episode, nextStatus, HistoryActionType.Scrobbled, onlyAdvance: true, ct);
+            return saved ? new ScrobbleResult(ScrobbleOutcome.Saved, item, nextStatus) : default;
+        }, ct);
 
-            return nextStatus;
+    public virtual Task<UserAnimeStatus?> SmartIncrementProgressAsync(AnimeEntity item, int nextProgress)
+    {
+        if (_entryWriter != null)
+            return _animeRepository.CaptureEntry(item) is { } target
+                ? SetObservedProgressAsync(target, ReadProgress(item), nextProgress)
+                : Task.FromResult<UserAnimeStatus?>(null);
+
+        return SerializeProgressChangeAsync(
+            async () => (await SaveWatchedAsync(item, nextProgress, onlyAdvance: false)).Status, CancellationToken.None);
+    }
+
+    public Task<bool> MarkEpisodeWatchedAsync(MediaKey key, long generation, int episode) =>
+        SerializeProgressChangeAsync(async () =>
+        {
+            if (key.Kind != MediaKind.Anime || episode <= 0 ||
+                await FindCurrentEntryAsync(new LibraryEntryTarget(key, generation), CancellationToken.None) is not { } entry ||
+                entry.Item.Status == UserAnimeStatus.Completed)
+                return false;
+
+            return (await SaveWatchedAsync(entry.Item, episode, onlyAdvance: true)).Saved;
         }, CancellationToken.None);
 
-    public Task SmartDecrementProgressAsync(AnimeEntity item) =>
-        SerializeProgressChangeAsync(async () =>
+    private async Task<(bool Saved, UserAnimeStatus? Status)> SaveWatchedAsync(AnimeEntity item, int progress, bool onlyAdvance)
+    {
+        var nextStatus = _mutations.ComputeSmartNextStatus(item, progress);
+        if (!await SaveProgressChangeAsync(
+                item, progress, nextStatus, HistoryActionType.Watched, onlyAdvance, CancellationToken.None))
+            return (false, null);
+
+        if (nextStatus == UserAnimeStatus.Completed)
+            _eventBus.Publish(new AnimeCompletedRatingPromptMessage(item) { Target = _animeRepository.CaptureEntry(item) });
+        if (nextStatus.HasValue)
+            _eventBus.Publish(new AnimeListRefreshMessage());
+
+        return (true, nextStatus);
+    }
+
+    public Task SmartDecrementProgressAsync(AnimeEntity item)
+    {
+        if (_entryWriter != null)
+            return _animeRepository.CaptureEntry(item) is { } target ? ChangeProgressAsync(target, -1) : Task.CompletedTask;
+
+        return SerializeProgressChangeAsync(async () =>
         {
-            int currentProgress = item.MediaKind == MediaKind.Anime ? item.Progress : item.ChaptersRead;
+            int currentProgress = ReadProgress(item);
             return currentProgress > 0 && await SaveProgressChangeAsync(
                 item, currentProgress - 1, null, HistoryActionType.Reverted, onlyAdvance: false, CancellationToken.None);
         }, CancellationToken.None);
+    }
 
     private async Task<bool> SaveProgressChangeAsync(
         AnimeEntity item, int progress, UserAnimeStatus? nextStatus, HistoryActionType action, bool onlyAdvance, CancellationToken ct)
@@ -169,13 +210,10 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
 
     public async Task SetScoreAsync(AnimeEntity item, int score)
     {
-        if (_entryWriter is { } writer)
+        if (_entryWriter != null)
         {
-            using var write = await writer.AcquireWriteAsync(CancellationToken.None);
-            var draft = (await _mutations.FindExistingAsync(item.Id, item.MediaKind) ?? item).Clone();
-            draft.UserScore = score > 0 ? score : null;
-            await writer.SaveAsync(draft, [writer.CreateHistory(draft, HistoryActionType.ScoreSet, score.ToString())],
-                CancellationToken.None, item);
+            if (_animeRepository.CaptureEntry(item) is { } target)
+                await SaveScoreAsync(target, null, score);
             return;
         }
 
@@ -212,20 +250,16 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
 
     public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)
     {
-        var today = _clock.GetLocalNow().Date;
-        if (_entryWriter is { } writer)
+        if (_entryWriter != null)
         {
-            using var write = await writer.AcquireWriteAsync(CancellationToken.None);
-            var draft = (await _mutations.FindExistingAsync(item.Id, item.MediaKind) ?? item).Clone();
-            ApplyRewatch(draft);
-            await writer.SaveAsync(draft, [writer.CreateHistory(draft, HistoryActionType.Rewatching)], CancellationToken.None, item);
-            await _uiDispatcher.InvokeAsync(() => _eventBus.Publish(new AnimeProgressChangedMessage(item, episode)));
+            if (_animeRepository.CaptureEntry(item) is { } target)
+                await ConfirmRewatchAsync(target, item.RewatchCount, episode);
             return;
         }
 
         await _uiDispatcher.InvokeAsync(() =>
         {
-            ApplyRewatch(item);
+            ApplyRewatch(item, episode);
             _eventBus.Publish(new AnimeProgressChangedMessage(item, episode));
         });
 
@@ -240,16 +274,6 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
             null,
             item.MainPictureUrl);
         await _syncManager.EnqueueFullUpdateAsync(item);
-
-        void ApplyRewatch(AnimeEntity entry)
-        {
-            entry.IsRewatching = true;
-            entry.RewatchCount++;
-            entry.Progress = episode;
-            entry.Status = UserAnimeStatus.Watching;
-            entry.DateStarted = today;
-            entry.DateCompleted = null;
-        }
     }
 
     public void Dispose()

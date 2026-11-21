@@ -8,5 +8,6 @@ public interface IInternalPlayerServer
     bool HasConnectedClients => false;
     InternalPlayerState? LatestState { get; }
     event EventHandler<InternalPlayerState>? PlayerStateChanged;
+    void StagePlaybackMetadata(PlayerMediaMetadata metadata);
     Task SendMetadataAsync(PlayerMediaMetadata metadata, CancellationToken cancellationToken = default);
 }

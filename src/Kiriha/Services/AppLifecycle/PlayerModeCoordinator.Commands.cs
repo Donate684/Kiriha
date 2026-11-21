@@ -86,31 +86,10 @@ public sealed partial class PlayerModeCoordinator
             return;
 
         var metadata = new PlayerMediaMetadata(originalTitle, titleRu, titleEn, episodeText, animeId, titleRomaji, torrentHash);
-        var playerWindows = desktop.Windows.OfType<PlayerWindow>().ToArray();
-        var updated = false;
-
-        foreach (var playerWindow in playerWindows)
-        {
-            if (playerWindow.DataContext is not PlayerViewModel vm)
-                continue;
-
-            if (!string.IsNullOrEmpty(torrentHash) && vm.MatchesTorrentHash(torrentHash))
-            {
-                vm.ApplyExternalMetadata(metadata);
-                updated = true;
-                continue;
-            }
-
-            if (!vm.MatchesOriginalTitle(originalTitle))
-                continue;
-
-            vm.ApplyExternalMetadata(metadata);
-            updated = true;
-        }
-
-        if (!updated && playerWindows.LastOrDefault()?.DataContext is PlayerViewModel fallbackVm)
-        {
-            fallbackVm.ApplyExternalMetadata(metadata);
-        }
+        var matching = desktop.Windows.OfType<PlayerWindow>()
+            .Select(window => window.DataContext).OfType<PlayerViewModel>()
+            .Where(vm => vm.MatchesIpcMetadata(metadata)).Take(2).ToArray();
+        if (matching.Length == 1)
+            matching[0].ApplyExternalMetadata(metadata);
     }
 }

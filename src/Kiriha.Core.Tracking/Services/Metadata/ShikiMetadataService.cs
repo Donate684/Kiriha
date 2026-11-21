@@ -9,6 +9,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Api;
+using Kiriha.Core.Tracking.Sync;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Metadata;
@@ -22,6 +23,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     private readonly HttpConditionalCache _httpCache;
     private readonly ShikiHostResolver _hostResolver;
     private readonly IUiDispatcher _uiDispatcher;
+    private readonly IAnimeRepository? _library;
+    private readonly LibrarySyncGate? _syncGate;
 
     private readonly ShikiRateLimiter _rateLimiter;
     private readonly ShikiStateCache? _stateCache;
@@ -37,7 +40,9 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
         ShikiHostResolver hostResolver,
         IUiDispatcher uiDispatcher,
         ShikiRateLimiter rateLimiter,
-        ShikiStateCache? stateCache = null)
+        ShikiStateCache? stateCache = null,
+        IAnimeRepository? library = null,
+        LibrarySyncGate? syncGate = null)
     {
         _httpClient = httpClientFactory.CreateClient("ShikiClient");
         _settingsService = settingsService;
@@ -47,6 +52,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
         _uiDispatcher = uiDispatcher;
         _rateLimiter = rateLimiter;
         _stateCache = stateCache;
+        _library = library;
+        _syncGate = syncGate;
         _httpCache = new HttpConditionalCache(
             _httpClient,
             httpCacheRepo,

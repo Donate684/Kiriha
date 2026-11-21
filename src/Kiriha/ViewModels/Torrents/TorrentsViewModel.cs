@@ -126,8 +126,7 @@ public partial class TorrentsViewModel : ViewModelBase
     public bool HasTorrentResults => !IsOnlineMode && GroupedTorrents.Count > 0;
     public bool HasOnlineResults => IsOnlineMode && OnlineResults.Count > 0;
 
-    private string? _currentStreamingHash;
-    private string? _launchedStreamingHash;
+    private Kiriha.Core.Abstractions.Services.TorrServerPreparation? _episodePreparation;
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _modalCts;
     private CancellationTokenSource? _launchCts;
@@ -176,15 +175,7 @@ public partial class TorrentsViewModel : ViewModelBase
         _animeRepo.Collection.CollectionChanged += (_, _) =>
         {
             RefreshWatchingList();
-            if (IsOnlineEpisodeSelectorVisible && ActiveOnlineAnime != null)
-            {
-                var matched = ResolveMatchedAnime(ActiveOnlineAnime.Title);
-                if (matched != null && !ReferenceEquals(_activeMatchedAnime, matched))
-                {
-                    SetActiveMatchedAnime(matched);
-                    UpdateEpisodeWatchedStates(matched);
-                }
-            }
+            RefreshOnlineEpisodeProgress();
         };
         RefreshWatchingList();
 

@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using System.Text;
 using System.Text.Json;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
@@ -202,6 +203,58 @@ public sealed class PlayerIpcHandshakeTests
 
         await server.StopAsync(CancellationToken.None);
         serverCts.Cancel();
+    }
+
+    [Fact]
+    public async Task PlayerIpc_StateQueuedDuringHandshake_UsesSameConnectionUntilDisconnect()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        string pipeName = $"Kiriha.ClientReconnect.{Guid.NewGuid():N}";
+        await using var first = CreateListener();
+        using var client = new InternalPlayerStateClient(pipeName);
+        var firstConnect = first.WaitForConnectionAsync(ct);
+        client.Publish(new InternalPlayerState { OriginalTitle = "first.mkv", PlaybackRequestId = "first" });
+        await firstConnect;
+
+        using var firstReader = new StreamReader(first, leaveOpen: true);
+        var handshake = await ReadAsync(firstReader);
+        Assert.Equal(InternalPlayerIpcMessage.TypeHandshake, handshake.Type);
+        Assert.Equal("first", handshake.State?.PlaybackRequestId);
+
+        // Publish queues a reconnect wake-up while this connection is still awaiting its acknowledgement.
+        client.Publish(new InternalPlayerState { OriginalTitle = "second.mkv", PlaybackRequestId = "second", Position = 18 });
+        await using var next = CreateListener();
+        var nextConnect = next.WaitForConnectionAsync(ct);
+        var ack = JsonSerializer.Serialize(new InternalPlayerIpcMessage { Type = InternalPlayerIpcMessage.TypeHandshakeAck },
+            InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
+        await using (var firstWriter = new StreamWriter(first, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true })
+            await firstWriter.WriteLineAsync(ack.AsMemory(), ct);
+
+        var update = await ReadAsync(firstReader);
+        Assert.Equal(InternalPlayerIpcMessage.TypeState, update.Type);
+        Assert.Equal("second", update.State?.PlaybackRequestId);
+        await Assert.ThrowsAsync<TimeoutException>(() => nextConnect.WaitAsync(TimeSpan.FromMilliseconds(250), ct));
+
+        first.Disconnect();
+        await nextConnect;
+        using var nextReader = new StreamReader(next, leaveOpen: true);
+        var resumed = await ReadAsync(nextReader);
+        Assert.Equal(InternalPlayerIpcMessage.TypeHandshake, resumed.Type);
+        Assert.Equal("second", resumed.State?.PlaybackRequestId);
+        Assert.Equal(18, resumed.State?.Position);
+
+        NamedPipeServerStream CreateListener() => new(pipeName, PipeDirection.InOut,
+            NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+
+        async Task<InternalPlayerIpcMessage> ReadAsync(StreamReader reader)
+        {
+            var line = await reader.ReadLineAsync(ct);
+            Assert.NotNull(line);
+            var message = JsonSerializer.Deserialize(line, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
+            Assert.NotNull(message);
+            return message;
+        }
     }
 
     [Fact]

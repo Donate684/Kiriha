@@ -25,10 +25,11 @@ public class ImageCacheCleanup
         }
     }
 
-    public async Task PerformSmartCleanupAsync(IEnumerable<string> activePaths)
+    public async Task PerformSmartCleanupAsync(IEnumerable<string> activePaths, CancellationToken ct = default)
     {
         try
         {
+            ct.ThrowIfCancellationRequested();
             var activeSet = activePaths
                 .Where(p => !string.IsNullOrEmpty(p))
                 .Select(p => p.StartsWith("http", StringComparison.OrdinalIgnoreCase)
@@ -45,9 +46,9 @@ public class ImageCacheCleanup
 
             await Task.Run(() =>
             {
-                var snapshot = directoryInfo.EnumerateFiles().ToList();
-                foreach (var file in snapshot)
+                foreach (var file in directoryInfo.EnumerateFiles())
                 {
+                    ct.ThrowIfCancellationRequested();
                     if (!activeSet.Contains(file.Name.ToLowerInvariant()))
                     {
                         if (file.LastWriteTimeUtc < threshold)
@@ -63,13 +64,13 @@ public class ImageCacheCleanup
                         }
                     }
                 }
-            });
+            }, ct);
 
             if (deletedCount > 0)
                 Log.Information("ImageCacheCleanup: Cleaned {Count} unreferenced old images, reclaimed {Space:N2} MB",
                     deletedCount, reclaimedSpace / 1024.0 / 1024.0);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             Log.Error(ex, "ImageCacheCleanup: Error during smart cleanup");
         }
