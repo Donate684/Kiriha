@@ -82,19 +82,12 @@ public sealed class AppReadinessService
 
         try
         {
-            var stage = Stopwatch.StartNew();
-            await _databaseInitializer.InitializeAsync();
-            await _seasonalHiddenRepo.InitializeAsync();
-            await _torrentFilterRepo.InitializeAsync();
-            Log.Information("StartupTiming: readiness database stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
-
-            stage.Restart();
-            await _animeRepo.InitializeAsync();
-
+            // SQLite and library materialization can take time before returning
+            // an incomplete task. Only publication of the library uses the UI dispatcher.
+            await Task.Run(LoadLocalStateAsync);
             bool needsInitialRefresh = _animeRepo.Collection.Count == 0;
-            Log.Information("StartupTiming: readiness anime stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
-            stage.Restart();
+            var stage = Stopwatch.StartNew();
             _discordService.Initialize();
             _maintenanceService.Start();
             Log.Information("StartupTiming: readiness foreground services stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
@@ -134,6 +127,19 @@ public sealed class AppReadinessService
             SetState(AppReadinessState.Failed);
             _readyTcs.TrySetException(ex);
         }
+    }
+
+    private async Task LoadLocalStateAsync()
+    {
+        var stage = Stopwatch.StartNew();
+        await _databaseInitializer.InitializeAsync();
+        await _seasonalHiddenRepo.InitializeAsync();
+        await _torrentFilterRepo.InitializeAsync();
+        Log.Information("StartupTiming: readiness database stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
+
+        stage.Restart();
+        await _animeRepo.InitializeAsync();
+        Log.Information("StartupTiming: readiness anime stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
     }
 
     private void SetState(AppReadinessState state)

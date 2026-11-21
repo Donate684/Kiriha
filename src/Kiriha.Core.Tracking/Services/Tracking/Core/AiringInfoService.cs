@@ -146,7 +146,7 @@ public class AiringInfoService : IAiringInfoService
         var requestedAt = DateTime.UtcNow;
         var airing = await _fetcher.FetchAsync(key.Id, force, ct);
         ct.ThrowIfCancellationRequested();
-        if (_syncOrchestrator.IsSyncing) return;
+        if (airing is null || airing.IsStaleFallback || _syncOrchestrator.IsSyncing) return;
 
         using var gateScope = _syncGate != null ? await _syncGate.TryAcquireBackgroundUpdateAsync(ct) : null;
         if (_syncGate != null && gateScope is null) return;

@@ -38,31 +38,9 @@ public partial class AnimeRepository
                 stage.ElapsedMilliseconds);
 
             stage.Restart();
-            await _uiDispatcher.InvokeAsync(() =>
-            {
-                if (cached != null && cached.Count > 0)
-                {
-                    Collection.Reset(cached);
-                    lock (_indexLock)
-                    {
-                        _idIndex.Clear();
-                        _idIndex.EnsureCapacity(cached.Count);
-                        for (int i = 0; i < cached.Count; i++)
-                        {
-                            var item = cached[i];
-                            _idIndex[(item.Id, item.MediaKind)] = item;
-                        }
-                    }
-                }
-                else
-                {
-                    Collection.Clear();
-                    lock (_indexLock)
-                    {
-                        _idIndex.Clear();
-                    }
-                }
-            });
+            // The collection's Reset handler publishes the ID index and entry
+            // generations together before notifying later subscribers.
+            await _uiDispatcher.InvokeAsync(() => Collection.Reset(cached ?? []));
 
             if (cached != null && cached.Count > 0)
             {
@@ -75,7 +53,7 @@ public partial class AnimeRepository
 
             Log.Information(
                 "StartupTiming: cached anime applied to UI collection count={Count} elapsedMs={ElapsedMs}",
-                Collection.Count,
+                cached?.Count ?? 0,
                 stage.ElapsedMilliseconds);
 
             Log.Information("StartupTiming: anime repo initialized elapsedMs={ElapsedMs}", total.ElapsedMilliseconds);

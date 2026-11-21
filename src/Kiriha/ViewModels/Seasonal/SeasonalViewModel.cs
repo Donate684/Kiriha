@@ -1,5 +1,6 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Dialogs;
@@ -23,6 +24,8 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
     private readonly IMetadataRepository _metadataRepo;
     private readonly ISeasonalHiddenRepository _seasonalHiddenRepo;
     private readonly IAnimeCountryService _countryService;
+    private readonly IUiDispatcher _uiDispatcher;
+    private readonly TimeProvider _clock;
 
     public IDialogService DialogService => _dialogService;
 
@@ -38,7 +41,9 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         IFranchiseService franchiseService,
         IMetadataRepository metadataRepo,
         ISeasonalHiddenRepository seasonalHiddenRepo,
-        IAnimeCountryService countryService)
+        IAnimeCountryService countryService,
+        IUiDispatcher uiDispatcher,
+        TimeProvider? clock = null)
     {
         _apiService = apiService;
         _settingsService = settingsService;
@@ -52,8 +57,10 @@ public partial class SeasonalViewModel : ViewModelBase, IDisposable
         _metadataRepo = metadataRepo;
         _seasonalHiddenRepo = seasonalHiddenRepo;
         _countryService = countryService;
+        _uiDispatcher = uiDispatcher;
+        _clock = clock ?? TimeProvider.System;
 
-        HydrateDiskCacheOnce();
+        HydrateDiskCache();
         LoadSettingsState();
         SetCurrentSeasonFromClock();
 

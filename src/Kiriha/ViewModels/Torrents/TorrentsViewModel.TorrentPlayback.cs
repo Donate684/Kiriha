@@ -266,48 +266,11 @@ public partial class TorrentsViewModel
 
         var torrentHash = prepared.Status.Hash;
         var url = _torrServer.GetStreamUrl(torrentHash, fileId, fileName);
-        var opened = await LaunchAndWaitForPlayerAsync(url, torrent, fileName, torrentHash, ct);
+        var requestId = Guid.NewGuid().ToString("N");
+        var opened = await LaunchStreamAsync(url, torrent, fileName, torrentHash, requestId, ct);
         ct.ThrowIfCancellationRequested();
         if (!opened)
             StreamingErrorMessage = _localizer.GetLoc(AppConstants.Player.OpenFailedLocKey);
-    }
-
-    private async Task<bool> LaunchAndWaitForPlayerAsync(
-        string url, TorrentEntity torrent, string fileName, string torrentHash, CancellationToken ct)
-    {
-        const int noIpcDelayMs = 2500;
-        const int playerWakeupTimeoutSeconds = 25;
-        var requestId = Guid.NewGuid().ToString("N");
-        if (_internalPlayerServer == null)
-        {
-            if (!await LaunchStreamAsync(url, torrent, fileName, torrentHash, requestId, ct))
-                return false;
-            await Task.Delay(noIpcDelayMs, ct);
-            return true;
-        }
-
-        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        void OnPlayerStateChanged(object? sender, InternalPlayerState state)
-        {
-            if (!state.IsClosed && state.PlaybackRequestId == requestId)
-                tcs.TrySetResult(!state.HasPlaybackError);
-        }
-
-        _internalPlayerServer.PlayerStateChanged += OnPlayerStateChanged;
-        try
-        {
-            return await LaunchStreamAsync(url, torrent, fileName, torrentHash, requestId, ct) &&
-                await tcs.Task.WaitAsync(TimeSpan.FromSeconds(playerWakeupTimeoutSeconds), ct);
-        }
-        catch (TimeoutException)
-        {
-            return false;
-        }
-        finally
-        {
-            _internalPlayerServer.PlayerStateChanged -= OnPlayerStateChanged;
-        }
     }
 
     private Task<bool> LaunchStreamAsync(

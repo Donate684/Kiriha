@@ -128,12 +128,15 @@ public sealed partial class UserAnimeRepository
             .FirstOrDefaultAsync(x => x.Id == id && x.MediaKind == kind, ct);
         if (existing == null) return false;
 
-        existing.MergeFullDetails(details, metadataOnly: true);
         // The JSON converters track list references. The merge edits their contents in place.
         var entry = context.Entry(existing);
-        entry.Property(item => item.Genres).IsModified = details.Genres.Count > 0;
-        entry.Property(item => item.Studios).IsModified = details.Studios.Count > 0;
-        entry.Property(item => item.AlternativeTitles).IsModified = details.AlternativeTitles.Count > 0;
+        bool genresChanged = details.Genres.Count > 0 && !existing.Genres.SequenceEqual(details.Genres);
+        bool studiosChanged = details.Studios.Count > 0 && !existing.Studios.SequenceEqual(details.Studios);
+        bool alternativeTitlesChanged = details.AlternativeTitles.Any(title => !existing.AlternativeTitles.Contains(title));
+        existing.MergeFullDetails(details, metadataOnly: true);
+        entry.Property(item => item.Genres).IsModified = genresChanged;
+        entry.Property(item => item.Studios).IsModified = studiosChanged;
+        entry.Property(item => item.AlternativeTitles).IsModified = alternativeTitlesChanged;
         await context.SaveChangesAsync(ct);
         return true;
     }

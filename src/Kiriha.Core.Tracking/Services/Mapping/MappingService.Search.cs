@@ -1,4 +1,6 @@
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Utils.Async;
+using Kiriha.Core.Tracking.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Mapping;
@@ -12,22 +14,25 @@ public partial class MappingService
     /// </summary>
     private const float MinConfidenceScore = 50f;
     private static readonly string[] CriticalKeywords = ["movie", "ova", "oad", "special", "ii", "2", "iii", "3", "iv", "4", "v", "5"];
+    private readonly SharedAsyncWork<(string Query, int? Episode, int? Year), int?> _malSearches = new();
 
-    public virtual async Task<int?> SearchOnMalAsync(string title)
+    public virtual Task<int?> SearchOnMalAsync(string title)
     {
-        if (string.IsNullOrWhiteSpace(title)) return null;
+        if (string.IsNullOrWhiteSpace(title)) return Task.FromResult<int?>(null);
 
         var (cleanTitle, searchQuery, _, parsedEpisode, parsedYear) = ParseAnimeTitle(title);
-
         string normQuery = Normalize(searchQuery);
+        return _malSearches.RunAsync((normQuery, parsedEpisode, parsedYear),
+            () => SearchOnMalCoreAsync(normQuery, cleanTitle, searchQuery, parsedEpisode, parsedYear));
+    }
+
+    private async Task<int?> SearchOnMalCoreAsync(string normQuery, string cleanTitle, string searchQuery, int? parsedEpisode, int? parsedYear)
+    {
         UserListIndex? currentIndex;
         lock (_indexLock) currentIndex = _cachedIndex;
 
         if (_sessionCache.TryGetValue(normQuery, out int cachedId))
         {
-            if (cachedId == 0)
-                return null;
-
             var sessIndexed = currentIndex?.FindById(cachedId);
             if (sessIndexed == null || IsValidMatch(sessIndexed, parsedEpisode, parsedYear))
                 return cachedId;
@@ -49,7 +54,7 @@ public partial class MappingService
 
         // Persistent L2: DB-backed cache. Survives restarts so re-scanning the
         // same library doesn't re-hit MAL for queries we've resolved before.
-        // GetMalSearchCacheAsync already enforces TTL (positive 30d, negative 7d)
+        // The repository enforces freshness (positive 30d, negative 24h)
         // and returns null on expired entries.
         if (_malSearchCache != null)
         {
@@ -61,23 +66,16 @@ public partial class MappingService
                     // Reject cached entries that scored below our confidence threshold.
                     // These are stale false-positive matches from before the threshold
                     // was introduced (e.g. "Dota Dragons Blood" → Kuutei Dragons ~23).
-                    // Invalidate the entry so future sessions re-resolve via live API.
                     if (dbHit.AnimeId != 0 && dbHit.Score < MinConfidenceScore)
                     {
                         Log.Information(
-                            "MappingService: evicting low-confidence DB cache entry for '{Query}' (AnimeId={Id}, Score={Score:F1})",
+                            "MappingService: ignoring low-confidence DB cache entry for '{Query}' (AnimeId={Id}, Score={Score:F1})",
                             normQuery, dbHit.AnimeId, dbHit.Score);
-                        try { await _malSearchCache.UpsertAsync(normQuery, 0, 0f); }
-                        catch (Exception ex) { Log.Debug(ex, "MappingService: failed to evict bad cache entry for {Query}", normQuery); }
-                        // Fall through to live API lookup.
                     }
                     else
                     {
                         if (dbHit.AnimeId == 0)
-                        {
-                            _sessionCache[normQuery] = 0;
                             return null;
-                        }
 
                         var dbIndexed = currentIndex?.FindById(dbHit.AnimeId);
                         if (dbIndexed == null || IsValidMatch(dbIndexed, parsedEpisode, parsedYear))
@@ -97,10 +95,9 @@ public partial class MappingService
             }
         }
 
-        if (_malApi is null)
-            return null;
-
-        var searchResults = (await _malApi.SearchAnimeAsync(searchQuery))
+        var primary = await ReadCatalogAsync(searchQuery);
+        var validated = primary.Validated;
+        var searchResults = primary.Items
             .Where(r => r.MediaKind == MediaKind.Anime)
             .ToList();
 
@@ -111,8 +108,9 @@ public partial class MappingService
 
         if (needCleanFallback)
         {
-            var cleanResults = (await _malApi.SearchAnimeAsync(cleanTitle))
-                .Where(r => r.MediaKind == MediaKind.Anime);
+            var fallback = await ReadCatalogAsync(cleanTitle);
+            validated &= fallback.Validated;
+            var cleanResults = fallback.Items.Where(r => r.MediaKind == MediaKind.Anime);
             var seenIds = searchResults.Select(r => r.Id).ToHashSet();
             foreach (var cr in cleanResults)
             {
@@ -123,8 +121,8 @@ public partial class MappingService
 
         if (searchResults.Count == 0)
         {
+            if (!validated) return null;
             // Negative cache: avoid re-hitting MAL for the same unresolvable title.
-            _sessionCache[normQuery] = 0;
             if (_malSearchCache != null)
             {
                 try { await _malSearchCache.UpsertAsync(normQuery, 0, 0f); }
@@ -221,13 +219,11 @@ public partial class MappingService
                 "MappingService: best MAL candidate '{Title}' scored {Score:F1} < {Min} for query '{Query}' — rejecting as low-confidence",
                 bestMalMatch.Result.Title, bestMalMatch.Score, MinConfidenceScore, searchQuery);
 
-            // Negative-cache only in session memory — don't persist to DB so
-            // that a future manual search on a fresh session can still resolve it.
-            _sessionCache[normQuery] = 0;
             return null;
         }
 
         var resolvedId = bestMalMatch.Result.Id;
+        if (!validated) return resolvedId;
         _sessionCache[normQuery] = resolvedId;
         _recognitionCache.AddMatch(normQuery, resolvedId, bestMalMatch.Score);
 
@@ -240,4 +236,11 @@ public partial class MappingService
 
         return resolvedId;
     }
+
+    private async Task<(List<AnimeEntity> Items, bool Validated)> ReadCatalogAsync(string query) => _malApi switch
+    {
+        MalApiService catalog => await catalog.SearchAnimeCatalogAsync(query),
+        null => ([], false),
+        _ => (await _malApi.SearchAnimeAsync(query), true)
+    };
 }

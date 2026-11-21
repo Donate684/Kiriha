@@ -104,11 +104,11 @@ public sealed partial class ScrobbleSyncRestartTests
             setup.MalSearchCache.AddRange(
                 new MalSearchCache { QueryNormalized = "old hit", AnimeId = AnimeId, CreatedAt = today.AddDays(-31) },
                 new MalSearchCache { QueryNormalized = "kept hit", AnimeId = AnimeId, CreatedAt = today.AddDays(-30) },
-                new MalSearchCache { QueryNormalized = "old miss", CreatedAt = today.AddDays(-8) },
-                new MalSearchCache { QueryNormalized = "kept miss", CreatedAt = today.AddDays(-7) });
+                new MalSearchCache { QueryNormalized = "old miss", CreatedAt = MaintenanceNow.UtcDateTime.AddDays(-1).AddSeconds(-1) },
+                new MalSearchCache { QueryNormalized = "kept miss", CreatedAt = MaintenanceNow.UtcDateTime.AddDays(-1) });
             setup.HttpResponseCache.AddRange(
-                new HttpCacheEntry { UrlHash = "expired", CreatedAt = today.AddDays(-31) },
-                new HttpCacheEntry { UrlHash = "kept", CreatedAt = today.AddDays(-30) });
+                new HttpCacheEntry { UrlHash = "expired", CreatedAt = MaintenanceNow.UtcDateTime.AddDays(-60).AddSeconds(-1) },
+                new HttpCacheEntry { UrlHash = "kept", CreatedAt = MaintenanceNow.UtcDateTime.AddDays(-60) });
             setup.ScrobbleProgress.AddRange(
                 new ScrobbleProgressEntity { Key = "expired", UpdatedAt = today.AddDays(-31) },
                 new ScrobbleProgressEntity { Key = "kept", UpdatedAt = today.AddDays(-30) });

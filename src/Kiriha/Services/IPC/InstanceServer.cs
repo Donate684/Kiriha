@@ -128,6 +128,10 @@ public class InstanceServer : BackgroundService
             _uiDispatcher.Post(() =>
             {
                 var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
+                var playerWindows = _serviceProvider.GetRequiredService<AppLifecycle.PlayerWindowShutdown>();
+                if (playerWindows.IsClosing)
+                    return;
+
                 var settingsService = _serviceProvider.GetService<SettingsService>();
                 var cliMetadata = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractMetadataFromArgs(args);
                 var headers = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractHeadersFromArgs(args);
@@ -167,6 +171,7 @@ public class InstanceServer : BackgroundService
                     _serviceProvider.GetService<IPlaybackResumeStore>(),
                     requestId);
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
+                playerWindows.Track(window);
                 window.Show();
                 window.Activate();
             });

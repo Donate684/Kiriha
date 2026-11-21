@@ -205,6 +205,22 @@ public sealed class TorrServerOwnershipTests : IDisposable
     }
 
     [Fact]
+    public async Task ReleaseFailureIsReportedDuringShutdownEvenAfterTheWorkerHasFinished()
+    {
+        using var timeout = new CancellationTokenSource(Deadline);
+        var ct = timeout.Token;
+        using var server = new TorrentApi { RemovalStatus = () => HttpStatusCode.ServiceUnavailable };
+        using var service = CreateService(server.Client);
+        using var lease = await service.AcquirePlaybackAsync(service.GetStreamUrl(FirstHash, 1, "episode.mkv"), FirstHash, ct);
+        lease.Dispose();
+
+        await Assert.ThrowsAsync<IOException>(() => service.FlushTorrentReleasesAsync(ct));
+        await Assert.ThrowsAsync<IOException>(() => service.FlushTorrentReleasesAsync(ct));
+        Assert.Equal(2, server.Removals.Count());
+        Assert.Single(_directory.GetFiles("*.usage"));
+    }
+
+    [Fact]
     public async Task Release_RespectsAReadHandleInAnotherProcess()
     {
         using var timeout = new CancellationTokenSource(Deadline);

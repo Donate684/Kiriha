@@ -12,7 +12,10 @@ public sealed partial class PlayerModeCoordinator
     private PlayerWindow CreatePlayerWindow(string[] args)
     {
         var player = CreatePlayerViewModel(args, _serviceProvider);
-        return new PlayerWindow(_serviceProvider.GetRequiredService<SettingsService>()) { DataContext = player };
+        var window = new PlayerWindow(_serviceProvider.GetRequiredService<SettingsService>()) { DataContext = player };
+        _playerWindows.Track(window);
+        window.Closed += OnPlayerWindowClosed;
+        return window;
     }
 
     internal static PlayerViewModel CreatePlayerViewModel(string[] args, IServiceProvider serviceProvider)
@@ -34,21 +37,21 @@ public sealed partial class PlayerModeCoordinator
             torrServer, subtitleUrl, headers, resumeStore, GetPlaybackRequestId(args));
     }
 
-    private bool TryReplacePlayerWindow(string[] args)
+    private PlayerWindow? TryReplacePlayerWindow(string[] args)
     {
         if (_app.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
-            return false;
+            return null;
 
         var window = desktop.Windows.OfType<PlayerWindow>().LastOrDefault();
         if (window?.DataContext is not PlayerViewModel vm)
-            return false;
+            return null;
 
         var videoUrl = GetPlayerVideoUrl(args);
         if (string.IsNullOrWhiteSpace(videoUrl))
         {
             window.Show();
             window.Activate();
-            return true;
+            return window;
         }
 
         var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
@@ -58,7 +61,7 @@ public sealed partial class PlayerModeCoordinator
 
         window.Show();
         window.Activate();
-        return true;
+        return window;
     }
 }
 

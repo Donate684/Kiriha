@@ -13,10 +13,12 @@ public partial class MalApiService : IMalApiService, IDisposable
     private static readonly string MalBaseUrl = AppConstants.Api.Mal.BaseUrl;
 
     private static readonly string ListStatusFields = "num_episodes_watched,score,status,num_times_rewatched,is_rewatching,notes,start_date,finish_date";
-    private static readonly string AnimeFields = $"list_status{{{ListStatusFields}}},my_list_status{{{ListStatusFields}}},main_picture,synopsis,mean,rank,popularity,num_episodes,start_season,genres,studios,alternative_titles,status,start_date,nsfw,rating,media_type,broadcast,external_links";
+    private const string AnimeCatalogFields = "main_picture,synopsis,mean,rank,popularity,num_episodes,start_season,genres,studios,alternative_titles,status,start_date,nsfw,rating,media_type,broadcast,external_links";
+    private static readonly string AnimeFields = $"list_status{{{ListStatusFields}}},my_list_status{{{ListStatusFields}}},{AnimeCatalogFields}";
 
     private static readonly string MangaListStatusFields = "num_chapters_read,num_volumes_read,score,status,num_times_reread,is_rereading,notes,start_date,finish_date";
-    private static readonly string MangaFields = $"list_status{{{MangaListStatusFields}}},my_list_status{{{MangaListStatusFields}}},main_picture,synopsis,mean,rank,popularity,num_chapters,num_volumes,authors,genres,alternative_titles,status,start_date,nsfw,media_type,external_links";
+    private const string MangaCatalogFields = "main_picture,synopsis,mean,rank,popularity,num_chapters,num_volumes,authors,genres,alternative_titles,status,start_date,nsfw,media_type,external_links";
+    private static readonly string MangaFields = $"list_status{{{MangaListStatusFields}}},my_list_status{{{MangaListStatusFields}}},{MangaCatalogFields}";
 
     private readonly HttpClient _httpClient;
     private readonly ISettingsService _settingsService;
@@ -40,12 +42,13 @@ public partial class MalApiService : IMalApiService, IDisposable
     public string TrackerId => TrackerConstants.Ids.Mal;
     public bool IsEnabled => _settingsService.Current.Api.Mal != null;
 
-    public MalApiService(HttpClient httpClient, ISettingsService settingsService, MalTokenManager tokenManager, IHttpCacheRepository httpCacheRepo)
+    public MalApiService(HttpClient httpClient, ISettingsService settingsService, MalTokenManager tokenManager, IHttpCacheRepository httpCacheRepo,
+        TimeProvider? clock = null)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
         _tokenManager = tokenManager;
-        _httpCache = new HttpConditionalCache(httpClient, httpCacheRepo, "MalApi");
+        _httpCache = new HttpConditionalCache(httpClient, httpCacheRepo, "MalApi", clock);
     }
 
     public void Dispose()

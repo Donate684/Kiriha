@@ -8,7 +8,7 @@ namespace Kiriha.Data.Repository;
 public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
 {
     private static readonly TimeSpan PositiveTtl = TimeSpan.FromDays(30);
-    private static readonly TimeSpan NegativeTtl = TimeSpan.FromDays(7);
+    internal static readonly TimeSpan NegativeTtl = TimeSpan.FromDays(1);
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly TimeProvider _clock;
@@ -22,7 +22,7 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
     public async Task<MalSearchCache?> GetAsync(string queryNormalized, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(queryNormalized)) return null;
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entry = await context.MalSearchCache.AsNoTracking()
             .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized, ct);
         if (entry is null) return null;
@@ -36,7 +36,7 @@ public sealed class MalSearchCacheRepository : IMalSearchCacheRepository
     public async Task UpsertAsync(string queryNormalized, int animeId, float score, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(queryNormalized)) return;
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.MalSearchCache.AsTracking()
             .FirstOrDefaultAsync(e => e.QueryNormalized == queryNormalized, ct);
         var now = _clock.GetUtcNow().UtcDateTime;

@@ -44,9 +44,9 @@ public sealed class AnimeCountryService : IAnimeCountryService
 
                 if (firmForeign != null && dbCountry == "JP")
                 {
+                    updatedAny |= item.CountryOfOrigin != firmForeign;
                     item.CountryOfOrigin = firmForeign;
                     newlyResolved[item.Id] = firmForeign;
-                    updatedAny = true;
                     continue;
                 }
 
@@ -55,9 +55,9 @@ public sealed class AnimeCountryService : IAnimeCountryService
                     (item.CountryOfOrigin == "JP" ||
                      (localDetected == null && !string.IsNullOrEmpty(item.JapaneseTitle) && DonghuaDetector.ContainsKana(item.JapaneseTitle))))
                 {
+                    updatedAny |= item.CountryOfOrigin != "JP";
                     item.CountryOfOrigin = "JP";
                     newlyResolved[item.Id] = "JP";
-                    updatedAny = true;
                     continue;
                 }
 
@@ -73,9 +73,9 @@ public sealed class AnimeCountryService : IAnimeCountryService
             string country = !string.IsNullOrWhiteSpace(item.CountryOfOrigin)
                 ? item.CountryOfOrigin
                 : (localDetected ?? "JP");
+            updatedAny |= item.CountryOfOrigin != country;
             item.CountryOfOrigin = country;
             newlyResolved[item.Id] = country;
-            updatedAny = true;
         }
 
         // 3. Persist resolved items to SQLite

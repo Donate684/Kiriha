@@ -93,12 +93,8 @@ public partial class MainWindowViewModel
             .ToDictionary(x => x.Id, x => x.Status));
 
         seasonal.UpdateUserList(userStore);
-        // Trigger the initial Shikimori/MAL load on the very first navigation
-        // (no-op on subsequent navigations - the call is idempotent). This
-        // replaces an eager preload in SeasonalViewModel's ctor, which used
-        // to fire HTTP requests during the app's first render frames.
-        seasonal.EnsureInitialLoad();
         SetCurrentPage(seasonal);
+        seasonal.OnOpenedAsync().SafeFireAndForget("OpenSeasonal");
     }
 
     [RelayCommand]

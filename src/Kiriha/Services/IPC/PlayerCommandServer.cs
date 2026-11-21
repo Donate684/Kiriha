@@ -9,6 +9,9 @@ public sealed class PlayerCommandServer : IDisposable, IAsyncDisposable
     private static readonly TimeSpan CommandReadTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(200);
     private readonly Action<string[]> _handleCommand;
+    private readonly Func<Task<bool>>? _prepareShutdown;
+    private readonly Action? _finishShutdown;
+    private readonly Func<string[], CancellationToken, Task<PlayerLaunchStatus>>? _handlePlayback;
     private readonly string _pipeName;
     private readonly TimeSpan _readTimeout;
     private readonly CancellationTokenSource _cts = new();
@@ -22,11 +25,22 @@ public sealed class PlayerCommandServer : IDisposable, IAsyncDisposable
     {
     }
 
-    internal PlayerCommandServer(Action<string[]> handleCommand, string pipeName, TimeSpan readTimeout)
+    internal PlayerCommandServer(Action<string[]> handleCommand, string pipeName, TimeSpan readTimeout,
+        Func<Task<bool>>? prepareShutdown = null, Action? finishShutdown = null,
+        Func<string[], CancellationToken, Task<PlayerLaunchStatus>>? handlePlayback = null)
     {
         _handleCommand = handleCommand;
         _pipeName = pipeName;
         _readTimeout = readTimeout;
+        _prepareShutdown = prepareShutdown;
+        _finishShutdown = finishShutdown;
+        _handlePlayback = handlePlayback;
+    }
+
+    internal PlayerCommandServer(Action<string[]> handleCommand, Func<Task<bool>> prepareShutdown, Action finishShutdown,
+        Func<string[], CancellationToken, Task<PlayerLaunchStatus>> handlePlayback)
+        : this(handleCommand, PlayerProcessBridge.PipeName, CommandReadTimeout, prepareShutdown, finishShutdown, handlePlayback)
+    {
     }
 
     public void Start()
@@ -44,7 +58,7 @@ public sealed class PlayerCommandServer : IDisposable, IAsyncDisposable
         {
             try
             {
-                using var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte,
+                using var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                 lock (_pipeGate)
                 {
@@ -77,23 +91,26 @@ public sealed class PlayerCommandServer : IDisposable, IAsyncDisposable
         while (!ct.IsCancellationRequested)
         {
             await pipe.WaitForConnectionAsync(ct).ConfigureAwait(false);
+            bool shutdown = false;
             try
             {
-                await ReadCommandAsync(pipe, ct).ConfigureAwait(false);
+                shutdown = await ReadCommandAsync(pipe, ct).ConfigureAwait(false);
+                if (shutdown)
+                    return;
             }
             finally
             {
                 // Release the connection even if the client kept its handle open after a read timeout.
                 lock (_pipeGate)
                 {
-                    if (!ct.IsCancellationRequested)
+                    if (!shutdown && !ct.IsCancellationRequested)
                         pipe.Disconnect();
                 }
             }
         }
     }
 
-    private async Task ReadCommandAsync(NamedPipeServerStream pipe, CancellationToken ct)
+    private async Task<bool> ReadCommandAsync(NamedPipeServerStream pipe, CancellationToken ct)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         deadline.CancelAfter(_readTimeout);
@@ -102,12 +119,72 @@ public sealed class PlayerCommandServer : IDisposable, IAsyncDisposable
         {
             var line = await reader.ReadLineAsync(deadline.Token).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
-            if (!string.IsNullOrWhiteSpace(line))
-                _handleCommand(PipeArgumentSerializer.Deserialize(line));
+            if (string.IsNullOrWhiteSpace(line))
+                return false;
+
+            var args = PipeArgumentSerializer.Deserialize(line);
+            if (PlayerPlaybackProtocol.IsPlaybackCommand(args))
+            {
+                if (_handlePlayback != null)
+                {
+                    var result = await _handlePlayback(args, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
+                    await ReplyAsync(pipe, (byte)result, ct).ConfigureAwait(false);
+                }
+                return false;
+            }
+            if (_prepareShutdown != null && args.Contains(PlayerProcessBridge.ShutdownArg, StringComparer.OrdinalIgnoreCase))
+            {
+                await CompleteShutdownAsync(pipe, args, ct).ConfigureAwait(false);
+                return true;
+            }
+            _handleCommand(args);
         }
         catch (OperationCanceledException ex) when (!ct.IsCancellationRequested)
         {
             Log.Debug(ex, "PlayerCommandServer: ignored an incomplete command after read timeout");
+        }
+        return false;
+    }
+
+    private async Task CompleteShutdownAsync(NamedPipeServerStream pipe, string[] args, CancellationToken ct)
+    {
+        var result = PlayerShutdownResult.Failed;
+        try
+        {
+            if (_prepareShutdown != null && await _prepareShutdown().ConfigureAwait(false))
+                result = PlayerShutdownResult.Completed;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "PlayerCommandServer: player cleanup failed");
+        }
+
+        try
+        {
+            if (args.Contains(PlayerProcessBridge.ConfirmShutdownArg, StringComparer.OrdinalIgnoreCase))
+                await ReplyAsync(pipe, (byte)result, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _finishShutdown?.Invoke();
+        }
+    }
+
+    private async Task ReplyAsync(NamedPipeServerStream pipe, byte status, CancellationToken ct)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(_readTimeout);
+        byte[] response = [status];
+        try
+        {
+            await pipe.WriteAsync(response.AsMemory(), deadline.Token).ConfigureAwait(false);
+            // Disconnect discards unread bytes on Windows. Keep the pipe until the requester closes it.
+            if (await pipe.ReadAsync(response.AsMemory(), deadline.Token).ConfigureAwait(false) != 0)
+                Log.Debug("PlayerCommandServer: ignored extra data after confirmation");
+        }
+        catch (Exception ex) when (ex is IOException or OperationCanceledException or ObjectDisposedException)
+        {
+            Log.Debug(ex, "PlayerCommandServer: requester disconnected before reading the confirmation");
         }
     }
 

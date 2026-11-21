@@ -13,6 +13,7 @@ public sealed class ShutdownCoordinator
     private int _shutdownRequested;
     private int _shutdownReady;
     private int _drained;
+    private bool _drainSucceeded;
 
     public ShutdownCoordinator(
         IServiceProvider serviceProvider, 
@@ -53,24 +54,35 @@ public sealed class ShutdownCoordinator
         }
     }
 
-    public async Task DrainAsync()
+    public async Task<bool> DrainAsync()
     {
         if (Volatile.Read(ref _drained) != 0)
-            return;
+            return _drainSucceeded;
 
         await _drainLock.WaitAsync();
         try
         {
             if (_drained != 0)
-                return;
+                return _drainSucceeded;
 
+            bool succeeded = true;
             foreach (var handler in _shutdownHandlers)
             {
-                await handler.FlushAsync();
+                try
+                {
+                    succeeded &= await handler.TryFlushAsync();
+                }
+                catch (Exception ex)
+                {
+                    succeeded = false;
+                    Log.Error(ex, "Shutdown handler {Handler} failed", handler.GetType().Name);
+                }
             }
-            
+
+            _drainSucceeded = succeeded;
             Volatile.Write(ref _drained, 1);
             Volatile.Write(ref _shutdownReady, 1);
+            return succeeded;
         }
         finally
         {

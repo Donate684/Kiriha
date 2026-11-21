@@ -8,10 +8,11 @@ namespace Kiriha.Data.Repository;
 
 public sealed class HttpCacheRepository : IHttpCacheRepository
 {
-    private static readonly TimeSpan Ttl = TimeSpan.FromDays(30);
+    internal static readonly TimeSpan Retention = TimeSpan.FromDays(60);
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly TimeProvider _clock;
+    private readonly SemaphoreSlim _writes = new(1, 1);
 
     public HttpCacheRepository(IDbContextFactory<AppDbContext> contextFactory, TimeProvider? clock = null)
     {
@@ -22,11 +23,11 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
     public async Task<HttpCacheEntry?> GetAsync(string urlHash, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(urlHash)) return null;
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         var entry = await context.HttpResponseCache.AsNoTracking()
             .FirstOrDefaultAsync(e => e.UrlHash == urlHash, ct);
         if (entry is null) return null;
-        if (_clock.GetUtcNow().UtcDateTime - entry.CreatedAt > Ttl) return null;
+        if (_clock.GetUtcNow().UtcDateTime - entry.CreatedAt > Retention) return null;
 
         entry.Body = DecompressIfNeeded(entry.Body);
         return entry;
@@ -35,9 +36,20 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
     public async Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(urlHash) || body is null) return;
-        var storedBody = Compress(body);
+        await _writes.WaitAsync(ct);
+        try
+        {
+            await StoreAsync(urlHash, etag, lastModified, body, ct);
+        }
+        finally
+        {
+            _writes.Release();
+        }
+    }
 
-        using var context = await _contextFactory.CreateDbContextAsync(ct);
+    private async Task StoreAsync(string urlHash, string? etag, string? lastModified, byte[] body, CancellationToken ct)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         var existing = await context.HttpResponseCache.AsTracking()
             .FirstOrDefaultAsync(e => e.UrlHash == urlHash, ct);
         var now = _clock.GetUtcNow().UtcDateTime;
@@ -48,7 +60,7 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
                 UrlHash = urlHash,
                 ETag = etag,
                 LastModified = lastModified,
-                Body = storedBody,
+                Body = Compress(body),
                 CreatedAt = now
             });
         }
@@ -56,10 +68,25 @@ public sealed class HttpCacheRepository : IHttpCacheRepository
         {
             existing.ETag = etag;
             existing.LastModified = lastModified;
-            existing.Body = storedBody;
+            if (!DecompressIfNeeded(existing.Body).AsSpan().SequenceEqual(body))
+                existing.Body = Compress(body);
             existing.CreatedAt = now;
         }
         await context.SaveChangesAsync(ct);
+    }
+
+    public async Task TouchAsync(string urlHash, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        var now = _clock.GetUtcNow().UtcDateTime;
+        await context.HttpResponseCache.Where(entry => entry.UrlHash == urlHash && entry.CreatedAt < now)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(entry => entry.CreatedAt, now), ct);
+    }
+
+    public async Task RemoveAsync(string urlHash, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await context.HttpResponseCache.Where(entry => entry.UrlHash == urlHash).ExecuteDeleteAsync(ct);
     }
 
     public static byte[] Compress(byte[] data)

@@ -18,6 +18,69 @@ namespace Kiriha.Tests;
 public sealed partial class ScrobbleSyncRestartTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MediaSwitch_LateCatalogDetailsDoNotMutatePreviousLibraryEntry(bool builtIn)
+    {
+        var first = new AnimeEntity { Id = AnimeId, Title = "First", Status = UserAnimeStatus.Watching, Progress = 2 };
+        var previousSynopsis = first.Synopsis;
+        var second = new AnimeEntity
+        {
+            Id = AnimeId + 1, Title = "Second", Status = UserAnimeStatus.Watching, TotalEpisodes = 12,
+            Genres = ["Drama"], StatusDetailed = "currently_airing"
+        };
+        var library = new Mock<IAnimeRepository>();
+        library.SetupGet(x => x.InitializationTask).Returns(Task.CompletedTask);
+        library.Setup(x => x.GetSnapshotAsync()).ReturnsAsync([first, second]);
+        library.Setup(x => x.FindById(first.Id, MediaKind.Anime)).Returns(first);
+        library.Setup(x => x.FindById(second.Id, MediaKind.Anime)).Returns(second);
+        var mapping = new Mock<IMappingService>();
+        mapping.Setup(x => x.GetIdFromTitleAsync("First.mkv", It.IsAny<IEnumerable<AnimeEntity>>())).ReturnsAsync(first.Id);
+        mapping.Setup(x => x.GetIdFromTitleAsync("Second.mkv", It.IsAny<IEnumerable<AnimeEntity>>())).ReturnsAsync(second.Id);
+        var requested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var response = new TaskCompletionSource<AnimeEntity?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tracker = new Mock<ITrackerService>();
+        tracker.Setup(x => x.GetAnimeDetailsAsync(first.Id, It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                requested.SetResult();
+                return response.Task;
+            });
+        var settings = new Mock<ISettingsService>();
+        var currentSettings = new AppSettings();
+        currentSettings.System.Scrobbler.Enabled = true;
+        settings.SetupGet(x => x.Current).Returns(currentSettings);
+        using var service = new TrackingService(Mock.Of<IExternalMediaDetector>(), Mock.Of<IInternalPlayerServer>(),
+            mapping.Object, library.Object, settings.Object, Mock.Of<IDiscordService>(), Mock.Of<IScrobbleService>(),
+            new ImmediateProgressDispatcher(), [tracker.Object], new MediaMatchingPipeline(mapping.Object, [tracker.Object]),
+            eventBus: new CoreEventBus());
+
+        Task OpenAsync(AnimeEntity item) => builtIn
+            ? service.SetInternalMediaAsync(new InternalPlayerState { AnimeId = item.Id, OriginalTitle = item.Title + ".mkv" })
+            : service.ProcessDetectedMediaAsync(new ParsedMedia { OriginalTitle = item.Title + ".mkv", ProcessName = "Fixture" });
+
+        try
+        {
+            var old = OpenAsync(first);
+            await requested.Task.WaitAsync(Timeout);
+            await OpenAsync(second).WaitAsync(Timeout);
+            response.SetResult(new AnimeEntity
+            {
+                Id = first.Id, Title = first.Title, TotalEpisodes = 24, StatusDetailed = "finished_airing", Synopsis = "Late details"
+            });
+            await old.WaitAsync(Timeout);
+            Assert.Same(second, service.MatchedAnime);
+            Assert.Equal(previousSynopsis, first.Synopsis);
+            Assert.Equal(0, first.TotalEpisodes);
+            Assert.Equal(2, first.Progress);
+        }
+        finally
+        {
+            response.TrySetResult(null);
+        }
+    }
+
+    [Theory]
     [InlineData(true, false)]
     [InlineData(false, false)]
     [InlineData(false, true)]

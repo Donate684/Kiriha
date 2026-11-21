@@ -1,7 +1,7 @@
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.ViewModels.AnimeList;
+using Kiriha.Services.AppLifecycle;
 
 namespace Kiriha.ViewModels.Startup;
 
@@ -10,32 +10,29 @@ public partial class WelcomeViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private bool _isLoading = true;
 
-    private readonly AnimeListViewModel _animeListViewModel;
+    private readonly AppReadinessService _readiness;
+    private readonly IUiDispatcher _dispatcher;
     private readonly ISettingsService _settingsService;
 
     public ISettingsService SettingsService => _settingsService;
 
-    public WelcomeViewModel(AnimeListViewModel animeListViewModel, ISettingsService settingsService)
+    public WelcomeViewModel(AppReadinessService readiness, ISettingsService settingsService, IUiDispatcher dispatcher)
     {
-        _animeListViewModel = animeListViewModel;
+        _readiness = readiness;
         _settingsService = settingsService;
-        _isLoading = _animeListViewModel.IsBusy;
-        _animeListViewModel.PropertyChanged += OnAnimeListPropertyChanged;
+        _dispatcher = dispatcher;
+        _readiness.StateChanged += OnReadinessChanged;
+        _isLoading = IsStarting(readiness.State);
     }
 
-    private void OnAnimeListPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(AnimeListViewModel.IsBusy))
-        {
-            IsLoading = _animeListViewModel.IsBusy;
-        }
-    }
+    private void OnReadinessChanged(object? sender, AppReadinessState state) =>
+        _dispatcher.Post(() => IsLoading = IsStarting(_readiness.State));
+
+    private static bool IsStarting(AppReadinessState state) =>
+        state is AppReadinessState.NotStarted or AppReadinessState.Starting;
 
     public void Dispose()
     {
-        if (_animeListViewModel != null)
-        {
-            _animeListViewModel.PropertyChanged -= OnAnimeListPropertyChanged;
-        }
+        _readiness.StateChanged -= OnReadinessChanged;
     }
 }

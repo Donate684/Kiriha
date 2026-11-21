@@ -8,7 +8,7 @@ public sealed partial class PlayerModeCoordinator
     internal static string? GetPlaybackRequestId(string[] args) =>
         GetArgValue(args, Kiriha.Infrastructure.Player.PlayerProcessBridge.PlaybackRequestArg);
 
-    private static string? GetArgValue(string[] args, string name)
+    internal static string? GetArgValue(string[] args, string name)
     {
         var index = Array.FindIndex(args, arg => arg.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (index < 0 || index + 1 >= args.Length)

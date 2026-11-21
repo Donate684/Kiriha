@@ -10,6 +10,7 @@ public partial class PlayerViewModel
     private MpvSourceEvent.State? _pendingPlaybackState;
     private bool _isEofReached;
     private double _highestObservedDuration;
+    private double? _pendingResumePosition;
     private Action<Action>? _postNativeSourceEvent;
 
     private void OnNativeSourceEvent(MpvSourceEvent notification)
@@ -70,9 +71,11 @@ public partial class PlayerViewModel
 
     private void ApplyFileLoaded(MpvSourceEvent.Loaded loaded)
     {
+        _openingState = PlaybackOpeningState.Ready;
         ReleaseReplacedTorrents(_selectedTorrent);
         _isEofReached = false;
         _highestObservedDuration = 0;
+        _pendingResumePosition = null;
         HasPlaybackError = false;
         PlaybackErrorMessage = string.Empty;
         PlaybackStatusMessage = _localizer.GetLoc("player.state.ready");
@@ -140,8 +143,30 @@ public partial class PlayerViewModel
         var savedPos = _resumeStore?.TryGetResumePosition(VideoUrl, watchLaterDir)
                        ?? WatchLaterHelper.TryGetSavedPosition(watchLaterDir, VideoUrl);
 
-        if (savedPos is >= 5 && (Duration <= 0 || savedPos.Value < Duration * 0.95))
-            Overlay.ShowResumePrompt(savedPos.Value, PlayerTimelineService.FormatTime(savedPos.Value));
+        if (savedPos is >= 5 && double.IsFinite(savedPos.Value))
+        {
+            _pendingResumePosition = savedPos;
+            TryShowPendingResume();
+        }
+    }
+
+    private void TryShowPendingResume()
+    {
+        if (_pendingResumePosition is not double position)
+            return;
+
+        if (!RememberPlaybackPosition || CurrentTime >= position)
+        {
+            _pendingResumePosition = null;
+            return;
+        }
+
+        // A stream can report a partial duration at FILE_LOADED and extend it as data arrives.
+        if (Duration > 0 && position >= Duration * 0.95)
+            return;
+
+        _pendingResumePosition = null;
+        Overlay.ShowResumePrompt(position, PlayerTimelineService.FormatTime(position));
     }
 
     private bool CanSaveCurrentPosition() => RememberPlaybackPosition && !IsLoading && !HasPlaybackError &&
@@ -205,7 +230,9 @@ public partial class PlayerViewModel
 
     private void StopPlaybackState()
     {
-        Overlay.DismissResumePrompt();
+        if (_openingState == PlaybackOpeningState.Pending)
+            _openingState = PlaybackOpeningState.Failed;
+        DismissResumePrompt();
         Overlay.DismissSkipPrompt(smooth: false);
         ApplyPlayerBuffering(false);
         IsPlaying = false;
@@ -225,7 +252,7 @@ public partial class PlayerViewModel
             return;
 
         _isEofReached = true;
-        Overlay.DismissResumePrompt();
+        DismissResumePrompt();
         Overlay.DismissSkipPrompt(smooth: false);
         if (RememberPlaybackPosition)
         {
@@ -250,6 +277,7 @@ public partial class PlayerViewModel
         if (snapshot.HasValue)
             ApplyTimelineSnapshot(snapshot.Value);
 
+        TryShowPendingResume();
         IsPlaying = state.IsPlaying;
     }
 

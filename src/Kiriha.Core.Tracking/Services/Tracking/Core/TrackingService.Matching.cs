@@ -146,7 +146,7 @@ public partial class TrackingService
                     return;
 
                 case MediaMatchSuccess success:
-                    ApplyMatchedMedia(version, success.MatchedAnime);
+                    ApplyMatchedMedia(version, success.MatchedAnime, success.Details);
                     break;
 
                 case MediaMatchNotFound:

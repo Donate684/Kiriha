@@ -4,12 +4,13 @@ using Serilog;
 
 namespace Kiriha.Infrastructure.Player;
 
-public static class PlayerProcessBridge
+public static partial class PlayerProcessBridge
 {
     public const string MutexName = "Kiriha.PlayerInstance";
     public const string PipeName = "Kiriha.PlayerInstance";
     public const string ResidentArg = "--player-resident";
     public const string ShutdownArg = "--shutdown-player";
+    public const string ConfirmShutdownArg = "--confirm-player-shutdown";
     public const string UpdateMetadataArg = "--player-update-metadata";
     public const string PlaybackRequestArg = "--playback-request";
 
@@ -17,7 +18,8 @@ public static class PlayerProcessBridge
         Array.Exists(args, arg => arg.Equals(ResidentArg, StringComparison.OrdinalIgnoreCase));
 
     private const int ForwardTimeoutMs = 3000;
-    private const int ShutdownTimeoutMs = 500;
+    private static readonly TimeSpan ShutdownConnectTimeout = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan ShutdownConfirmationTimeout = TimeSpan.FromSeconds(15);
 
     public static bool TryForward(string[] args, int timeoutMs = ForwardTimeoutMs) =>
         TryForwardAsync(args, timeoutMs).GetAwaiter().GetResult();
@@ -166,13 +168,80 @@ public static class PlayerProcessBridge
         catch (Exception ex) { Log.Debug(ex, "Failed to start resident player process"); }
     }
 
-    public static Task StopResidentAsync()
+    public static async Task<PlayerShutdownResult> StopResidentAsync(CancellationToken ct = default)
     {
         lock (s_forwardGate)
         {
             s_lastForwardedKey = null;
         }
-        return TryForwardAsync(["--player", ShutdownArg], timeoutMs: ShutdownTimeoutMs);
+        ct.ThrowIfCancellationRequested();
+        if (!IsPlayerInstanceRunning())
+            return PlayerShutdownResult.Unavailable;
+
+        var result = await SendShutdownCommandAsync(
+            PipeName, ShutdownConnectTimeout, ShutdownConfirmationTimeout, ct).ConfigureAwait(false);
+        return result == PlayerShutdownResult.Unavailable && IsPlayerInstanceRunning()
+            ? PlayerShutdownResult.Unconfirmed
+            : result;
+    }
+
+    internal static async Task<PlayerShutdownResult> SendShutdownCommandAsync(
+        string pipeName, TimeSpan connectTimeout, TimeSpan confirmationTimeout, CancellationToken ct)
+    {
+        using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut,
+            PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        using (var connect = CancellationTokenSource.CreateLinkedTokenSource(ct))
+        {
+            connect.CancelAfter(connectTimeout);
+            try
+            {
+                await client.ConnectAsync(connect.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                return PlayerShutdownResult.Unavailable;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // An older resident accepts write-only connections.
+                Log.Debug(ex, "Player shutdown confirmation pipe unavailable, using legacy command");
+                return await SendCommandAsync(pipeName, ["--player", ShutdownArg], connectTimeout, ct).ConfigureAwait(false)
+                    ? PlayerShutdownResult.Unconfirmed
+                    : PlayerShutdownResult.Unavailable;
+            }
+            catch (IOException ex)
+            {
+                ct.ThrowIfCancellationRequested();
+                Log.Debug(ex, "Player shutdown pipe unavailable");
+                return PlayerShutdownResult.Unavailable;
+            }
+        }
+
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(confirmationTimeout);
+        try
+        {
+            var frame = Encoding.UTF8.GetBytes(PipeArgumentSerializer.Serialize(["--player", ShutdownArg, ConfirmShutdownArg]) + "\n");
+            await client.WriteAsync(frame.AsMemory(), deadline.Token).ConfigureAwait(false);
+            var response = new byte[1];
+            await client.ReadExactlyAsync(response, deadline.Token).ConfigureAwait(false);
+            return response[0] switch
+            {
+                (byte)PlayerShutdownResult.Completed => PlayerShutdownResult.Completed,
+                (byte)PlayerShutdownResult.Failed => PlayerShutdownResult.Failed,
+                _ => PlayerShutdownResult.Unconfirmed
+            };
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return PlayerShutdownResult.Unconfirmed;
+        }
+        catch (IOException ex)
+        {
+            ct.ThrowIfCancellationRequested();
+            Log.Debug(ex, "Player disconnected before confirming shutdown");
+            return PlayerShutdownResult.Unconfirmed;
+        }
     }
 
     private static string? s_lastForwardedKey;

@@ -76,7 +76,7 @@ public sealed partial class InternalPlayerStateClient : IDisposable
         }
     }
 
-    public void PublishClosed()
+    public async Task PublishClosedAsync(CancellationToken ct)
     {
         if (_disposed) return;
 
@@ -99,17 +99,14 @@ public sealed partial class InternalPlayerStateClient : IDisposable
             };
             var json = JsonSerializer.Serialize(msg, InternalPlayerStateJsonContext.Default.InternalPlayerIpcMessage);
 
-            if (_writeGate.Wait(300, CancellationToken.None))
+            await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+            try
             {
-                try
-                {
-                    writer.WriteLine(json);
-                    writer.Flush();
-                }
-                finally
-                {
-                    _writeGate.Release();
-                }
+                await writer.WriteLineAsync(json.AsMemory(), ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                _writeGate.Release();
             }
         }
         catch (Exception ex)

@@ -10,17 +10,33 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 public partial class PlayerViewModel
 {
     private CancellationTokenSource? _sourceStartup;
+    private readonly List<Task> _sourcePreparations = [];
     private bool _playbackDisposed;
     private int _sourceVersion;
     private long _nativeSourceId;
     private string _pendingPlaybackRequestId;
     private string? _activePlaybackRequestId;
     private string? _playbackSourceKey;
+    private PlaybackOpeningState _openingState;
+    private bool _waitingForRenderContext;
     private readonly Dictionary<TorrServerStreamSource, IDisposable> _torrentLeases = [];
     private TorrServerStreamSource? _selectedTorrent;
 
     private static string NewPlaybackRequestId(string? requestId) =>
         string.IsNullOrWhiteSpace(requestId) ? Guid.NewGuid().ToString("N") : requestId;
+
+    public PlaybackOpeningState GetOpeningState(string requestId) =>
+        !_playbackDisposed && string.Equals(requestId, _pendingPlaybackRequestId, StringComparison.Ordinal)
+            ? _openingState
+            : PlaybackOpeningState.Superseded;
+
+    public void ReportPlaybackInitializationFailure()
+    {
+        _activePlaybackRequestId = _pendingPlaybackRequestId;
+        FailPlayback(0, 0, errorMessage: null);
+    }
+
+    public void WaitForRenderContext() => _waitingForRenderContext = true;
 
     private void BeginSourcePlayback(string url, IReadOnlyDictionary<string, string>? headers)
     {
@@ -31,7 +47,7 @@ public partial class PlayerViewModel
         _selectedTorrent = null;
         _playbackSourceKey = ParsedMedia.CreatePlaybackSourceKey(url);
         Interlocked.Increment(ref _sourceVersion);
-        if (!_playback.HasPlayer || _playbackDisposed)
+        if (!_playback.HasPlayer || _playbackDisposed || _waitingForRenderContext)
             return;
 
         var torrent = TorrServerStreamSource.Parse(url);
@@ -43,7 +59,8 @@ public partial class PlayerViewModel
             _sourceStartup = request;
             _playback.Pause();
             var needsLease = torrent is { } key && !_torrentLeases.ContainsKey(key);
-            _ = WaitForSourceAsync(server, request, url, headers, torrent, ensureServer, needsLease);
+            _sourcePreparations.RemoveAll(task => task.IsCompletedSuccessfully);
+            _sourcePreparations.Add(WaitForSourceAsync(server, request, url, headers, torrent, ensureServer, needsLease));
         }
         else
         {
@@ -106,6 +123,7 @@ public partial class PlayerViewModel
                     }
 
                     IsLoading = false;
+                    _openingState = PlaybackOpeningState.Failed;
                     _activePlaybackRequestId = _pendingPlaybackRequestId;
                     IsPlaying = false;
                     IsBuffering = false;

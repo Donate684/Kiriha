@@ -121,12 +121,8 @@ public partial class PlayerViewModel
     [RelayCommand]
     private void Skip(object parameter)
     {
-        if (_playback.HasPlayer && parameter != null && int.TryParse(parameter.ToString(), out int seconds))
-        {
-            var snapshot = _timeline.SeekTo(CurrentTime + seconds);
-            _playback.Seek(snapshot.CurrentTime);
-            ApplyTimelineSnapshot(snapshot);
-        }
+        if (parameter != null && int.TryParse(parameter.ToString(), out int seconds))
+            SeekTo(CurrentTime + seconds);
     }
 
     [RelayCommand]
@@ -156,7 +152,7 @@ public partial class PlayerViewModel
         if (Overlay.IsResumePromptVisible && Overlay.ResumePromptPosition > 0)
         {
             var pos = Overlay.ResumePromptPosition;
-            Overlay.DismissResumePrompt();
+            DismissResumePrompt();
             if (_playback.HasPlayer)
             {
                 SeekTo(pos);
@@ -168,6 +164,7 @@ public partial class PlayerViewModel
     [RelayCommand]
     public void DismissResumePrompt()
     {
+        _pendingResumePosition = null;
         Overlay.DismissResumePrompt();
     }
 
@@ -203,6 +200,7 @@ public partial class PlayerViewModel
     {
         if (_playback.HasPlayer)
         {
+            _pendingResumePosition = null;
             var snapshot = _timeline.SeekTo(time);
             _playback.Seek(snapshot.CurrentTime);
             ApplyTimelineSnapshot(snapshot);

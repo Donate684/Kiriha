@@ -56,7 +56,8 @@ public partial class PlayerViewModel
 
     public void StartInitialPlayback()
     {
-        if (string.IsNullOrWhiteSpace(VideoUrl))
+        _waitingForRenderContext = false;
+        if (string.IsNullOrWhiteSpace(VideoUrl) || _nativeSourceId != 0 || _sourceStartup != null || _playbackDisposed)
             return;
 
         var normalizedUrl = VideoUrl.Trim().Trim('"');
@@ -79,7 +80,7 @@ public partial class PlayerViewModel
             VideoUrl = normalizedUrl;
         }
 
-        Overlay.DismissResumePrompt();
+        DismissResumePrompt();
         _isEofReached = false;
         ApplyTimelineSnapshot(_timeline.Reset());
         _subtitleDelay = 0;
@@ -113,16 +114,10 @@ public partial class PlayerViewModel
             return;
 
         StreamHeaders = headers;
-        if (subtitleUrl != null)
-        {
-            _pendingSubtitleUrl = _sourceSubtitleUrl = subtitleUrl;
-        }
-        else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
-        {
-            _pendingSubtitleUrl = _sourceSubtitleUrl = null;
-        }
+        _pendingSubtitleUrl = _sourceSubtitleUrl = subtitleUrl;
 
         _pendingPlaybackRequestId = NewPlaybackRequestId(requestId);
+        _openingState = PlaybackOpeningState.Pending;
 
         videoUrl = videoUrl.Trim().Trim('"');
         try
@@ -153,7 +148,7 @@ public partial class PlayerViewModel
                 }
             }
         }
-        Overlay.DismissResumePrompt();
+        DismissResumePrompt();
         _isEofReached = false;
         var sourceChanged = !string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal);
         _activePlaybackRequestId = null;
@@ -164,16 +159,20 @@ public partial class PlayerViewModel
         SubtitleTracks.Clear();
         Chapters.Clear();
 
-        if (metadata != null)
+        if (metadata != null || requestId != null)
         {
-            _hasExplicitMetadata = true;
+            _hasExplicitMetadata = metadata != null;
             _previousVideoUrlForMetadata = videoUrl;
-            _suppressVideoUrlResolution = true;
-            VideoUrl = videoUrl;
-            ApplyMetadata(metadata, overwriteAll: true, allowResolveByTitle: true);
+            if (sourceChanged)
+            {
+                _suppressVideoUrlResolution = true;
+                VideoUrl = videoUrl;
+            }
+            var resolved = metadata ?? _metadataResolver?.Resolve(videoUrl) ?? PlayerMediaMetadata.FromVideoPath(videoUrl);
+            ApplyMetadata(resolved, overwriteAll: true, allowResolveByTitle: metadata != null);
             UpdateNavigationAvailability();
         }
-        else if (!string.Equals(VideoUrl, videoUrl, StringComparison.Ordinal))
+        else if (sourceChanged)
         {
             _hasExplicitMetadata = false;
             VideoUrl = videoUrl;
@@ -309,7 +308,7 @@ public partial class PlayerViewModel
     public void BeginScrub()
     {
         _lastScrubSeekTick = 0;
-        Overlay.DismissResumePrompt();
+        DismissResumePrompt();
         _timeline.BeginScrub();
     }
 

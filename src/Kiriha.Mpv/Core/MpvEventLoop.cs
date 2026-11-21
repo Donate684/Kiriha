@@ -9,6 +9,7 @@ internal sealed class MpvEventLoop : IDisposable
     private readonly Action<MpvEvent> _handleEvent;
     private readonly CancellationTokenSource _cts = new();
     private Task? _loopTask;
+    internal Task Completion => _loopTask ?? Task.CompletedTask;
 
     public MpvEventLoop(Lock gate, Func<IntPtr> getHandle, Action<MpvEvent> handleEvent)
     {

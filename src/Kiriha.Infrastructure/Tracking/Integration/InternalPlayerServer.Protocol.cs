@@ -93,9 +93,9 @@ public partial class InternalPlayerServer
                 _activeSession = session;
                 _latestOwnerOrder = session.ConnectionOrder;
                 state ??= new InternalPlayerState { IsLoading = true };
-                if (_pendingPlaybackMetadata is { } pending && MatchesState(pending, state))
+                if (state.PlaybackRequestId is { } requestId && FindStagedMetadata(state) is { } pending)
                 {
-                    _pendingPlaybackMetadata = null;
+                    _pendingPlaybackMetadata.Remove(requestId);
                     _latestMetadata = pending;
                     EnrichState(state, pending);
                     // Queue the launch metadata before subscribers can send a newer update for this state.

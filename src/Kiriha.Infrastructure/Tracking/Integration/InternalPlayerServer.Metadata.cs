@@ -7,12 +7,19 @@ namespace Kiriha.Infrastructure.Tracking.Integration;
 
 public partial class InternalPlayerServer
 {
+    private const int MaxPendingPlaybackMetadata = 128;
+
     public void StagePlaybackMetadata(PlayerMediaMetadata metadata)
     {
         if (string.IsNullOrWhiteSpace(metadata.PlaybackRequestId)) return;
 
         lock (_stateGate)
-            _pendingPlaybackMetadata = metadata;
+        {
+            var requestId = metadata.PlaybackRequestId;
+            if (_pendingPlaybackMetadata.Count >= MaxPendingPlaybackMetadata && !_pendingPlaybackMetadata.ContainsKey(requestId))
+                _pendingPlaybackMetadata.Remove(_pendingPlaybackMetadata.Keys.First());
+            _pendingPlaybackMetadata[requestId] = metadata;
+        }
     }
 
     public async Task SendMetadataAsync(PlayerMediaMetadata metadata, CancellationToken cancellationToken = default)
@@ -61,11 +68,15 @@ public partial class InternalPlayerServer
 
         lock (_stateGate)
         {
-            if (_pendingPlaybackMetadata is { } pending && MatchesState(pending, state))
+            if (FindStagedMetadata(state) is { } pending)
                 return pending;
             return _latestMetadata is { } latest && MatchesState(latest, state) ? latest : null;
         }
     }
+
+    private PlayerMediaMetadata? FindStagedMetadata(InternalPlayerState state) =>
+        state.PlaybackRequestId is { } id && _pendingPlaybackMetadata.TryGetValue(id, out var pending) &&
+        MatchesState(pending, state) ? pending : null;
 
     private static bool MatchesState(PlayerMediaMetadata metadata, InternalPlayerState state) =>
         metadata.MatchesPlayback(state.PlaybackRequestId, state.PlaybackSourceKey, state.OriginalTitle, state.Episode);

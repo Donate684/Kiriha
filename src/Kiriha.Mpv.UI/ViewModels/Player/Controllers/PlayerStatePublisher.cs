@@ -30,10 +30,7 @@ public sealed class PlayerStatePublisher : IDisposable
         _client.Publish(_createState());
     }
 
-    public void PublishClosed()
-    {
-        _client.PublishClosed();
-    }
+    public Task PublishClosedAsync(CancellationToken ct) => _client.PublishClosedAsync(ct);
 
     public void Dispose()
     {

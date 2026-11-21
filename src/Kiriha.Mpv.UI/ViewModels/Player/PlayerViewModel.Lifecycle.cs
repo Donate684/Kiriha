@@ -7,7 +7,13 @@ namespace Kiriha.Mpv.UI.ViewModels.Player;
 
 public partial class PlayerViewModel
 {
-    public void Dispose()
+    private static readonly TimeSpan StateCloseTimeout = TimeSpan.FromMilliseconds(500);
+    public Task ShutdownCompletion { get; private set; } = Task.CompletedTask;
+
+    public void Dispose() => DisposeAfterPlaybackStops(Task.CompletedTask);
+
+    /// <summary>Closes the view model while retaining torrent leases until the native player stops.</summary>
+    public void DisposeAfterPlaybackStops(Task playbackShutdown)
     {
         if (_playbackDisposed)
             return;
@@ -31,9 +37,10 @@ public partial class PlayerViewModel
         Overlay.SkipPromptDismissed -= OnOverlaySkipPromptDismissed;
         try { Overlay.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing overlay"); }
 
-        if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl))
+        Task positionSaved = Task.CompletedTask;
+        try
         {
-            if (CanSaveCurrentPosition())
+            if (_playback.HasPlayer && !string.IsNullOrWhiteSpace(VideoUrl) && CanSaveCurrentPosition())
             {
                 if (CurrentTime < Duration * 0.95 && CurrentTime >= 5)
                 {
@@ -48,20 +55,55 @@ public partial class PlayerViewModel
                 }
             }
         }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not save the player position while closing");
+            positionSaved = Task.FromException(ex);
+        }
 
         _playback.SourceEvent -= OnNativeSourceEvent;
 
-        ReleaseReplacedTorrents(keep: null);
+        var leases = _torrentLeases.Values.ToArray();
+        _torrentLeases.Clear();
         DisposeTorrentMonitor();
         ResetTorrentOverlayState();
 
-        try { _statePublisher.PublishClosed(); } catch (Exception ex) { Log.Debug(ex, "Error publishing closed state"); }
-
         try { _playback.Detach(); } catch (Exception ex) { Log.Debug(ex, "Error detaching playback"); }
-        try { _statePublisher.MetadataReceived -= OnExternalMetadataReceived; } catch { }
-        try { _statePublisher.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing state publisher"); }
+        _statePublisher.MetadataReceived -= OnExternalMetadataReceived;
+        ShutdownCompletion = Task.WhenAll(positionSaved, Task.WhenAll(_sourcePreparations),
+            CloseStatePublisherAsync(), ReleaseTorrentLeasesAsync(playbackShutdown, leases));
 
         Kiriha.Infrastructure.Utils.PowerManager.AllowDisplaySleep();
+    }
+
+    private static async Task ReleaseTorrentLeasesAsync(Task playbackShutdown, IDisposable[] leases)
+    {
+        try
+        {
+            await playbackShutdown.ConfigureAwait(false);
+        }
+        finally
+        {
+            foreach (var lease in leases)
+                lease.Dispose();
+        }
+    }
+
+    private async Task CloseStatePublisherAsync()
+    {
+        using var deadline = new CancellationTokenSource(StateCloseTimeout);
+        try
+        {
+            await _statePublisher.PublishClosedAsync(deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException ex) when (deadline.IsCancellationRequested)
+        {
+            Log.Debug(ex, "Player state pipe was still busy at shutdown");
+        }
+        finally
+        {
+            _statePublisher.Dispose();
+        }
     }
 
     internal InternalPlayerState CreatePlayerState()

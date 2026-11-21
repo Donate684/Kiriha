@@ -93,7 +93,8 @@ public partial class ShikiApiService : IShikiApiService
         IHttpCacheRepository httpCacheRepo,
         ShikiRateLimiter? rateLimiter = null,
         ShikiMirror? fixedMirror = null,
-        ShikiStateCache? stateCache = null)
+        ShikiStateCache? stateCache = null,
+        TimeProvider? clock = null)
     {
         _httpClient = httpClient;
         _settingsService = settingsService;
@@ -106,7 +107,8 @@ public partial class ShikiApiService : IShikiApiService
             _httpClient,
             httpCacheRepo,
             $"ShikiApi_{(_fixedMirror?.ToString() ?? "Dynamic")}",
-            (client, request, innerCt) => SendRequestAsync(request, innerCt));
+            (client, request, innerCt) => SendRequestAsync(request, innerCt),
+            clock);
     }
 
 

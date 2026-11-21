@@ -4,22 +4,19 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Utils.Async;
+using Kiriha.Infrastructure.Caching;
 using Serilog;
 
 namespace Kiriha.ViewModels.Seasonal;
 
 public partial class SeasonalViewModel
 {
-    private void HydrateDiskCacheOnce()
+    private void HydrateDiskCache()
     {
-        if (Interlocked.CompareExchange(ref _diskHydrated, 1, 0) != 0) return;
-
         try
         {
             foreach (var entry in _cacheStore.LoadAll())
-            {
-                _seasonalCache.TryAdd((entry.Year, entry.Season), entry.Items);
-            }
+                _seasonalCache.TryAdd((entry.Year, entry.Season), (entry.Items, entry.ValidatedAt));
         }
         catch (Exception ex)
         {
@@ -44,16 +41,31 @@ public partial class SeasonalViewModel
         }, CancellationToken.None);
     }
 
-    public void EnsureInitialLoad()
+    private void EnsureInitialLoad()
     {
         if (_isDisposed) return;
         if (Interlocked.CompareExchange(ref _initialLoadStarted, 1, 0) != 0) return;
         LoadSeasonalAnimeAsync().SafeFireAndForget("LoadSeasonalAnimeAsync");
     }
 
+    public Task OnOpenedAsync()
+    {
+        if (_isDisposed || IsLoading) return Task.CompletedTask;
+        if (Interlocked.CompareExchange(ref _initialLoadStarted, 1, 0) == 0)
+            return LoadSeasonalAnimeAsync();
+
+        var key = (CurrentYear, CurrentSeason);
+        var now = _clock.GetUtcNow().UtcDateTime;
+        if (HasFreshSnapshot(key, now) || _seasonalRetryAfter.GetValueOrDefault(key) > now)
+            return Task.CompletedTask;
+
+        return LoadSeasonalAnimeAsync();
+    }
+
     public void InvalidateCache()
     {
         _seasonalCache.Clear();
+        _seasonalRetryAfter.Clear();
         SetAllSeasonalItems(new List<AnimeEntity>());
         DisplayItems = new AvaloniaList<AnimeEntity>();
 
@@ -72,6 +84,9 @@ public partial class SeasonalViewModel
         if (_isDisposed) return;
 
         var newCts = new CancellationTokenSource();
+        var ct = newCts.Token;
+        var capturedYear = CurrentYear;
+        var capturedSeason = CurrentSeason;
         var oldCts = Interlocked.Exchange(ref _loadCts, newCts);
 
         if (oldCts != null)
@@ -80,45 +95,40 @@ public partial class SeasonalViewModel
             oldCts.Dispose();
         }
 
-        var ct = newCts.Token;
-        var capturedYear = CurrentYear;
-        var capturedSeason = CurrentSeason;
+        if (ct.IsCancellationRequested) return;
         var cacheKey = (capturedYear, capturedSeason);
-        bool foundInCache = _seasonalCache.TryGetValue(cacheKey, out var cached);
-        bool hasCache = !force && foundInCache && cached != null;
+        var cached = _seasonalCache.TryGetValue(cacheKey, out var snapshot) ? snapshot.Items : null;
 
-        if (!hasCache) IsLoading = true;
+        if (cached is null || force) IsLoading = true;
 
         try
         {
-            if (hasCache)
+            if (cached is not null && !force)
             {
-                SetAllSeasonalItems(cached!);
-                await HydrateMetadataAsync(_allSeasonalItems, capturedYear, capturedSeason, ct);
-                await HydrateCountryOriginAsync(_allSeasonalItems, capturedYear, capturedSeason, ct);
+                SetAllSeasonalItems(cached);
+                var changed = await HydrateMetadataAsync(cached, ct);
+                changed |= await HydrateCountryOriginAsync(cached, ct);
+                if (ct.IsCancellationRequested) return;
+                if (changed)
+                    await _cacheStore.SaveAsync(capturedYear, capturedSeason, cached, catalogValidatedAt: snapshot.ValidatedAt);
                 if (ct.IsCancellationRequested) return;
                 await ApplyFiltersAsync();
 
-                // Only background-refresh current or upcoming seasons; past seasons are immutable history.
-                if (IsCurrentOrFutureSeason(capturedYear, capturedSeason))
-                {
-                    _ = RefreshSeasonalCacheInBackground(capturedYear, capturedSeason, ct);
-                }
+                if (!ct.IsCancellationRequested)
+                    await RefreshSeasonalCacheInBackground(capturedYear, capturedSeason, ct);
             }
             else
             {
-                SetAllSeasonalItems(new List<AnimeEntity>());
-                var fresh = await _apiService.GetSeasonalAnimeAsync(capturedYear, capturedSeason, ct);
-                if (ct.IsCancellationRequested) return;
-                if (fresh != null && fresh.Any())
-                {
-                    await HydrateMetadataAsync(fresh, capturedYear, capturedSeason, ct);
-                    await HydrateCountryOriginAsync(fresh, capturedYear, capturedSeason, ct);
-                    if (ct.IsCancellationRequested) return;
-                    SaveSeasonalCache(capturedYear, capturedSeason, fresh);
-                    SetAllSeasonalItems(fresh);
-                }
+                SetAllSeasonalItems(cached ?? []);
                 await ApplyFiltersAsync();
+                if (ct.IsCancellationRequested) return;
+
+                var fresh = await RefreshSeasonAsync(capturedYear, capturedSeason, force, ct);
+                if (fresh is not null && !ct.IsCancellationRequested)
+                {
+                    SetAllSeasonalItems(fresh);
+                    await ApplyFiltersAsync();
+                }
             }
         }
         catch (OperationCanceledException) { }
@@ -135,61 +145,35 @@ public partial class SeasonalViewModel
         }
     }
 
-    private bool IsCurrentOrFutureSeason(int year, string season)
+    private async Task<bool> HydrateCountryOriginAsync(IReadOnlyList<AnimeEntity> items, CancellationToken ct)
     {
-        int month = DateTime.UtcNow.Month;
-        int clockYear = DateTime.UtcNow.Year;
-        if (month == 12) clockYear++;
-
-        string clockSeason = month switch
-        {
-            1 or 2 or 12 => Seasons[0],
-            3 or 4 or 5 => Seasons[1],
-            6 or 7 or 8 => Seasons[2],
-            _ => Seasons[3]
-        };
-
-        if (year > clockYear) return true;
-        if (year < clockYear) return false;
-
-        int targetIdx = Seasons.IndexOf(season);
-        int currentIdx = Seasons.IndexOf(clockSeason);
-        return targetIdx >= currentIdx;
-    }
-
-    private async Task HydrateCountryOriginAsync(IReadOnlyList<AnimeEntity> items, int year, string season, CancellationToken ct)
-    {
-        if (items is null || items.Count == 0 || ct.IsCancellationRequested) return;
+        if (items.Count == 0 || ct.IsCancellationRequested) return false;
 
         try
         {
-            bool updated = await _countryService.HydrateCountriesAsync(items, ct);
-            if (updated && !ct.IsCancellationRequested)
-            {
-                var list = items as List<AnimeEntity> ?? items.ToList();
-                SaveSeasonalCache(year, season, list);
-            }
+            return await _countryService.HydrateCountriesAsync(items, ct);
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "SeasonalViewModel: HydrateCountryOriginAsync failed");
+            return false;
         }
     }
 
-    private async Task HydrateMetadataAsync(IReadOnlyList<AnimeEntity> items, int year, string season, CancellationToken ct)
+    private async Task<bool> HydrateMetadataAsync(IReadOnlyList<AnimeEntity> items, CancellationToken ct)
     {
-        if (items is null || items.Count == 0 || ct.IsCancellationRequested) return;
+        if (items.Count == 0 || ct.IsCancellationRequested) return false;
         var missingKeys = items
             .Where(x => string.IsNullOrEmpty(x.RussianTitle) || string.IsNullOrEmpty(x.RussianSynopsis))
             .Select(x => new MediaKey(x.Id, MediaKind.Anime))
             .ToList();
 
-        if (missingKeys.Count == 0) return;
+        if (missingKeys.Count == 0) return false;
 
         try
         {
             var metaDict = await _metadataRepo.GetBatchAsync(missingKeys, ct);
-            if (metaDict is null || metaDict.Count == 0 || ct.IsCancellationRequested) return;
+            if (metaDict is null || metaDict.Count == 0 || ct.IsCancellationRequested) return false;
 
             bool updatedAny = false;
             foreach (var item in items)
@@ -209,59 +193,73 @@ public partial class SeasonalViewModel
                 }
             }
 
-            if (updatedAny && !ct.IsCancellationRequested)
-            {
-                var list = items as List<AnimeEntity> ?? items.ToList();
-                SaveSeasonalCache(year, season, list);
-            }
+            return updatedAny;
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "SeasonalViewModel: HydrateMetadataAsync failed");
+            return false;
         }
     }
 
-    private Task RefreshSeasonalCacheInBackground(int year, string season, CancellationToken ct) =>
-        Task.Run(async () =>
-        {
-            try
-            {
-                var fresh = await _apiService.GetSeasonalAnimeAsync(year, season, ct);
-                if (ct.IsCancellationRequested) return;
-                if (fresh is null || !fresh.Any()) return;
-
-                await HydrateMetadataAsync(fresh, year, season, ct);
-                await HydrateCountryOriginAsync(fresh, year, season, ct);
-                if (ct.IsCancellationRequested) return;
-
-                SaveSeasonalCache(year, season, fresh);
-                if (year == CurrentYear && season == CurrentSeason)
-                {
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        if (!_isDisposed && year == CurrentYear && season == CurrentSeason)
-                        {
-                            SetAllSeasonalItems(fresh);
-                        }
-                    });
-                    if (!_isDisposed && year == CurrentYear && season == CurrentSeason)
-                    {
-                        await ApplyFiltersAsync();
-                    }
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                Log.Debug(ex, "Background seasonal refresh failed");
-            }
-        }, ct);
-
-    private void SaveSeasonalCache(int year, string season, List<AnimeEntity> items)
+    private async Task RefreshSeasonalCacheInBackground(int year, string season, CancellationToken ct)
     {
-        _seasonalCache[(year, season)] = items;
-        _ = _cacheStore.SaveAsync(year, season, items);
+        try
+        {
+            var fresh = await RefreshSeasonAsync(year, season, force: false, ct);
+            if (fresh is not null && !ct.IsCancellationRequested && !_isDisposed && year == CurrentYear && season == CurrentSeason)
+            {
+                SetAllSeasonalItems(fresh);
+                await ApplyFiltersAsync();
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Background seasonal refresh failed");
+        }
     }
+
+    private async Task<List<AnimeEntity>?> RefreshSeasonAsync(int year, string season, bool force, CancellationToken ct)
+    {
+        var key = (year, season);
+        var now = _clock.GetUtcNow().UtcDateTime;
+        if (!force && HasFreshSnapshot(key, now))
+            return null;
+
+        var retryAfter = now + SeasonalRetryDelay;
+        if (force)
+            _seasonalRetryAfter[key] = retryAfter;
+        else if (!_seasonalRetryAfter.TryAdd(key, retryAfter) &&
+            (!_seasonalRetryAfter.TryGetValue(key, out var nextRetry) ||
+             nextRetry > now || !_seasonalRetryAfter.TryUpdate(key, retryAfter, nextRetry)))
+            return null;
+
+        try
+        {
+            var fresh = await _apiService.GetSeasonalAnimeAsync(year, season, ct);
+            if (ct.IsCancellationRequested || fresh is not { Count: > 0 }) return null;
+
+            await HydrateMetadataAsync(fresh, ct);
+            await HydrateCountryOriginAsync(fresh, ct);
+            if (ct.IsCancellationRequested) return null;
+
+            var validatedAt = _clock.GetUtcNow().UtcDateTime;
+            _seasonalCache[key] = (fresh, validatedAt);
+            _seasonalRetryAfter.TryRemove(new KeyValuePair<(int, string), DateTime>(key, retryAfter));
+            await _cacheStore.SaveAsync(year, season, fresh, validated: true, catalogValidatedAt: validatedAt);
+            return fresh;
+        }
+        finally
+        {
+            if (ct.IsCancellationRequested)
+                _seasonalRetryAfter.TryRemove(new KeyValuePair<(int, string), DateTime>(key, retryAfter));
+        }
+    }
+
+    private bool HasFreshSnapshot((int Year, string Season) key, DateTime now) =>
+        _seasonalCache.TryGetValue(key, out var snapshot) &&
+        now - snapshot.ValidatedAt < SeasonalCacheStore.GetFreshness(key.Year, key.Season, now);
 
     private void SetAllSeasonalItems(List<AnimeEntity> items)
     {

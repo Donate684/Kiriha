@@ -5,7 +5,10 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Core;
 
-public record class MediaMatchSuccess(AnimeEntity? MatchedAnime, int MalId);
+public record class MediaMatchSuccess(AnimeEntity? MatchedAnime, int MalId)
+{
+    internal AnimeEntity? Details { get; init; }
+}
 
 public record class MediaNegativelyMapped;
 
@@ -44,6 +47,7 @@ public class MediaMatchingPipeline
         if (malId.HasValue)
         {
             AnimeEntity? matched = null;
+            AnimeEntity? details = null;
             for (int i = 0; i < userList.Count; i++)
             {
                 if (userList[i].Id == malId.Value && userList[i].MediaKind == MediaKind.Anime)
@@ -63,14 +67,10 @@ public class MediaMatchingPipeline
             }
             else if (matched.IsMissingDetails || (matched.MediaKind == MediaKind.Anime && matched.TotalEpisodes <= 0))
             {
-                var fetched = await FetchDetailsFromTrackersAsync(malId.Value);
-                if (fetched != null)
-                {
-                    matched.MergeFullDetails(fetched);
-                }
+                details = await FetchDetailsFromTrackersAsync(malId.Value);
             }
 
-            return new MediaMatchSuccess(matched, malId.Value);
+            return new MediaMatchSuccess(matched, malId.Value) { Details = details };
         }
 
         return new MediaMatchNotFound();

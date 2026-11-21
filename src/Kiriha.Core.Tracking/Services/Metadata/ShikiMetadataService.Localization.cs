@@ -2,6 +2,7 @@ using Kiriha.Core.Domain.Utils.Parsing;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Tracking.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Metadata;
@@ -60,11 +61,9 @@ public partial class ShikiMetadataService
                     {
                         await _concurrentFetches.WaitAsync(ct);
                         acquired = true;
-                        var fetchedMeta = await FetchMetadataFromApiAsync(item.Id, ct, item.MediaKind);
+                        var fetchedMeta = await GetOrFetchMetadataAsync(item.Id, mediaKind: item.MediaKind).WaitAsync(ct);
                         if (fetchedMeta != null)
                         {
-                            await _metadataRepo.UpsertAsync(fetchedMeta, ct);
-
                             bool changed = await _uiDispatcher.InvokeAsync(() => ApplyMetadata(item, fetchedMeta));
                             if (changed) await _userAnimeRepo.UpdateMetadataAsync(item, ct);
                             int count = System.Threading.Interlocked.Increment(ref localizedCount);
@@ -77,7 +76,7 @@ public partial class ShikiMetadataService
                             _concurrentFetches.Release();
                         _activeFetches.TryRemove(cacheKey, out _);
                     }
-                }, ct));
+                }, CancellationToken.None));
             }
             await Task.WhenAll(tasks);
         }
@@ -203,19 +202,22 @@ public partial class ShikiMetadataService
     {
         try
         {
-            var bytes = await _httpCache.SendAsync(
+            var url = $"{ShikiBaseUrl}animes?search={Uri.EscapeDataString(query)}&limit=1";
+            var result = await _httpCache.SendForResultAsync(
+                url,
                 requestFactory: innerCt =>
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, $"{ShikiBaseUrl}animes?search={Uri.EscapeDataString(query)}&limit=1");
+                    var request = new HttpRequestMessage(HttpMethod.Get, url);
                     request.Headers.Add("User-Agent", AppInfo.UserAgent);
                     return Task.FromResult(request);
                 },
                 throttle: ct => _rateLimiter.ThrottleAsync(ct),
-                ct: ct);
+                ct: ct,
+                getFreshness: CatalogSearchCachePolicy.Shiki);
 
-            if (bytes is null) return null;
+            if (result.Body is null) return null;
 
-            var list = System.Text.Json.JsonSerializer.Deserialize<List<ShikiMetadata>>(bytes);
+            var list = System.Text.Json.JsonSerializer.Deserialize<List<ShikiMetadata>>(result.Body);
             if (list != null && list.Count > 0)
                 return list[0].Name;
         }

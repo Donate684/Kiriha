@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
-using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.ViewModels.NowPlaying;
@@ -25,10 +24,6 @@ public partial class NowPlayingViewModel
         {
             MatchedAnime = suggestion;
             IsManuallyMapped = true;
-            if (NeedsDetailsEnrichment(suggestion))
-            {
-                EnsureFullDetailsSafeAsync(suggestion).SafeFireAndForget("NowPlaying.SelectSuggestion");
-            }
             await _trackingService.ManualMapAsync(suggestion.Id);
         }
         catch (Exception ex)

@@ -11,7 +11,7 @@ using Moq;
 
 namespace Kiriha.Tests;
 
-public sealed class MpvSourceSwitchTests : IDisposable
+public sealed partial class MpvSourceSwitchTests : IDisposable
 {
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(15);
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("Kiriha.MpvSources.");
@@ -210,12 +210,19 @@ public sealed class MpvSourceSwitchTests : IDisposable
         Assert.Contains("X-Kiriha-Test: retained-on-retry", request, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Referer: https://stream.example.test/watch", request, StringComparison.OrdinalIgnoreCase);
         var retried = await fixture.ReadAsync<MpvSourceEvent.Loaded>(ct);
-        DrainCallbacks(callbacks);
+        // The native file-loaded notification can arrive before the HTTP stream's full duration is known.
+        var initialEstimate = retried.Playback with { Position = 0, Duration = 4 };
+        viewModel.ApplyNativeSourceEvent(retried with { Playback = initialEstimate });
         Assert.NotEqual(loaded.SourceId, retried.SourceId);
         Assert.False(viewModel.IsLoading);
         Assert.False(viewModel.HasPlaybackError);
         Assert.Equal(77, viewModel.AnimeId);
         Assert.Equal("3", viewModel.RawEpisodeText);
+        Assert.False(viewModel.Overlay.IsResumePromptVisible);
+
+        viewModel.ApplyNativeSourceEvent(new MpvSourceEvent.State(loaded.SourceId, playback));
+        Assert.False(viewModel.Overlay.IsResumePromptVisible);
+        viewModel.ApplyNativeSourceEvent(new MpvSourceEvent.State(retried.SourceId, initialEstimate with { Duration = 12 }));
         Assert.True(viewModel.Overlay.IsResumePromptVisible);
         Assert.Equal(6, viewModel.Overlay.ResumePromptPosition);
         var recoveredState = viewModel.CreatePlayerState();
@@ -224,6 +231,10 @@ public sealed class MpvSourceSwitchTests : IDisposable
         Assert.False(recoveredState.HasPlaybackError);
         Assert.False(recoveredState.IsLoading);
         resume.Verify(store => store.Remove(network.Url), Times.Never);
+
+        viewModel.DismissResumePromptCommand.Execute(null);
+        viewModel.ApplyNativeSourceEvent(new MpvSourceEvent.State(retried.SourceId, initialEstimate with { Duration = 12.5 }));
+        Assert.False(viewModel.Overlay.IsResumePromptVisible);
 
         var completed = new MpvSourceEvent.Eof(retried.SourceId, true, playback with { Position = 12 });
         viewModel.ApplyNativeSourceEvent(completed);
@@ -294,7 +305,7 @@ public sealed class MpvSourceSwitchTests : IDisposable
         public async ValueTask DisposeAsync()
         {
             Player.Dispose();
-            await Player.ShutdownCompletion.WaitAsync(Deadline);
+            Assert.True(await Player.ShutdownCompletion.WaitAsync(Deadline));
         }
     }
 

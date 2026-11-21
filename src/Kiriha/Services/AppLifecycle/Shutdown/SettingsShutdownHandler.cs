@@ -5,6 +5,7 @@ namespace Kiriha.Services.AppLifecycle.Shutdown;
 
 public sealed class SettingsShutdownHandler : IShutdownHandler
 {
+    private static readonly TimeSpan SaveTimeout = TimeSpan.FromSeconds(2);
     private readonly ISettingsService _settingsService;
 
     public SettingsShutdownHandler(ISettingsService settingsService)
@@ -12,15 +13,19 @@ public sealed class SettingsShutdownHandler : IShutdownHandler
         _settingsService = settingsService;
     }
 
-    public async Task FlushAsync()
+    public async Task FlushAsync() => await TryFlushAsync();
+
+    public async Task<bool> TryFlushAsync()
     {
         try
         {
-            await _settingsService.SaveAsync();
+            await _settingsService.SaveAsync().WaitAsync(SaveTimeout);
+            return true;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Shutdown flush: ISettingsService.SaveAsync failed");
+            return false;
         }
     }
 }

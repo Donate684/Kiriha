@@ -9,6 +9,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
@@ -23,8 +24,10 @@ public partial class AniListApiService : IDisposable, IAniListApiService
     private readonly HttpClient _httpClient;
     private readonly IHttpCacheRepository _cache;
     private readonly ISettingsService _settingsService;
+    private readonly TimeProvider _clock;
     private readonly IAniListMediaMapRepository? _mediaMapRepo;
     private readonly ConcurrentDictionary<(int MalId, string MediaType), int> _malToAniListMap = new();
+    private readonly SharedAsyncWork<(int MalId, bool Force), EpisodeAiringInfo?> _airingRefreshes = new();
 
     private readonly RateLimiter _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
     {
@@ -51,12 +54,14 @@ public partial class AniListApiService : IDisposable, IAniListApiService
         HttpClient httpClient,
         IHttpCacheRepository cache,
         ISettingsService settingsService,
-        IAniListMediaMapRepository? mediaMapRepo = null)
+        IAniListMediaMapRepository? mediaMapRepo = null,
+        TimeProvider? clock = null)
     {
         _httpClient = httpClient;
         _cache = cache;
         _settingsService = settingsService;
         _mediaMapRepo = mediaMapRepo;
+        _clock = clock ?? TimeProvider.System;
     }
 
     private async Task<JsonDocument?> ExecuteGraphQlAsync(string query, object? variables = null, CancellationToken ct = default)
@@ -217,18 +222,18 @@ public partial class AniListApiService : IDisposable, IAniListApiService
         }
     }
 
-    public async Task<EpisodeAiringInfo?> GetNextAiringAsync(int malId, bool force = false, CancellationToken ct = default)
+    public Task<EpisodeAiringInfo?> GetNextAiringAsync(int malId, bool force = false, CancellationToken ct = default) =>
+        malId <= 0 ? Task.FromResult<EpisodeAiringInfo?>(null) :
+            _airingRefreshes.RunAsync((malId, force), () => RefreshAiringAsync(malId, force), ct);
+
+    private async Task<EpisodeAiringInfo?> RefreshAiringAsync(int malId, bool force)
     {
-        if (malId <= 0) return null;
-
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        var ct = deadline.Token;
         var cacheKey = CacheKey(malId);
-        if (!force)
-        {
-            var cached = await TryReadCacheAsync(cacheKey);
-            if (cached.Fresh) return cached.Value;
-        }
-
-        using var lease = await _rateLimiter.AcquireAsync(1, ct);
+        var cached = await TryReadCacheAsync(cacheKey, ct);
+        if (!force && cached.Fresh) return cached.Value;
+        var fallback = cached.Value is { } prior ? prior with { IsStaleFallback = true } : null;
 
         var payload = new AniListGraphQlRequest(
             Query: """
@@ -249,6 +254,9 @@ public partial class AniListApiService : IDisposable, IAniListApiService
 
         try
         {
+            using var lease = await _rateLimiter.AcquireAsync(1, ct);
+            if (!lease.IsAcquired) return fallback;
+
             using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
             {
                 Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
@@ -259,46 +267,42 @@ public partial class AniListApiService : IDisposable, IAniListApiService
             if (!response.IsSuccessStatusCode)
             {
                 Log.Warning("AniList: request for MAL {MalId} returned {Status}", malId, response.StatusCode);
-                return (await TryReadCacheAsync(cacheKey, allowStale: true)).Value;
+                return fallback;
             }
 
             var contentString = await response.Content.ReadAsStringAsync(ct);
 
             using var json = JsonDocument.Parse(contentString);
-            try
-            {
-                var result = AniListParser.ParseAiringInfo(json.RootElement, malId);
-                await WriteCacheAsync(cacheKey, result);
-                return result;
-            }
-            catch (Exception parseEx)
-            {
-                Log.Warning(parseEx, "AniList: failed to parse airing response for MAL {MalId}", malId);
-                return (await TryReadCacheAsync(cacheKey, allowStale: true)).Value;
-            }
+            var root = json.RootElement;
+            if ((root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0) ||
+                !root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object ||
+                !data.TryGetProperty("Media", out var media) || media.ValueKind is not (JsonValueKind.Null or JsonValueKind.Object))
+                return fallback;
+
+            var result = AniListParser.ParseAiringInfo(root, malId);
+            await WriteCacheAsync(cacheKey, result, ct);
+            return result;
         }
-        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             Log.Warning(ex, "AniList: failed to fetch next airing for MAL {MalId}", malId);
-            return (await TryReadCacheAsync(cacheKey, allowStale: true)).Value;
+            return fallback;
         }
     }
 
-    private async Task<(bool Fresh, EpisodeAiringInfo? Value)> TryReadCacheAsync(string cacheKey, bool allowStale = false)
+    private async Task<(bool Fresh, EpisodeAiringInfo? Value)> TryReadCacheAsync(string cacheKey, CancellationToken ct)
     {
         try
         {
-            var entry = await _cache.GetAsync(cacheKey);
+            var entry = await _cache.GetAsync(cacheKey, ct);
             if (entry is null || entry.Body.Length == 0) return (false, null);
 
             var cached = JsonSerializer.Deserialize<AniListAiringCacheEntry>(entry.Body, JsonOptions);
             if (cached is null) return (false, null);
 
-            var age = DateTime.UtcNow - entry.CreatedAt;
+            var age = _clock.GetUtcNow().UtcDateTime - entry.CreatedAt;
             var ttl = cached.Value is null ? EmptyTtl : DefaultTtl;
-            if (!allowStale && age > ttl) return (false, null);
-            return (true, cached.Value);
+            return (age <= ttl, cached.Value);
         }
         catch (Exception ex)
         {
@@ -307,12 +311,12 @@ public partial class AniListApiService : IDisposable, IAniListApiService
         }
     }
 
-    private async Task WriteCacheAsync(string cacheKey, EpisodeAiringInfo? value)
+    private async Task WriteCacheAsync(string cacheKey, EpisodeAiringInfo? value, CancellationToken ct)
     {
         try
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(new AniListAiringCacheEntry(value), JsonOptions);
-            await _cache.UpsertAsync(cacheKey, etag: null, lastModified: null, bytes);
+            await _cache.UpsertAsync(cacheKey, etag: null, lastModified: null, bytes, ct);
         }
         catch (Exception ex)
         {

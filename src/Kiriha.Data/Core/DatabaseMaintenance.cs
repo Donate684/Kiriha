@@ -30,7 +30,7 @@ public sealed class DatabaseMaintenance
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             await using var connection = await SqliteMaintenanceConnection.OpenAsync(context, ct);
-            await PruneAsync(context, connection, _clock.GetUtcNow().UtcDateTime.Date, ct);
+            await PruneAsync(context, connection, _clock.GetUtcNow().UtcDateTime, ct);
             await OptimizeAsync(context, connection, ct);
             return true;
         }
@@ -59,8 +59,9 @@ public sealed class DatabaseMaintenance
     }
 
     private static async Task PruneAsync(
-        AppDbContext context, SqliteMaintenanceConnection connection, DateTime today, CancellationToken ct)
+        AppDbContext context, SqliteMaintenanceConnection connection, DateTime now, CancellationToken ct)
     {
+        var today = now.Date;
         await using var transaction = await context.Database.BeginTransactionAsync(ct);
         int historyRemoved;
         int metadataRemoved;
@@ -80,7 +81,7 @@ public sealed class DatabaseMaintenance
                     WHERE h.anime_id = metadata.id AND h.media_kind = metadata.media_kind
                 )
                 """, ct);
-            cacheRemoved = await PruneCachesAsync(context, today, ct);
+            cacheRemoved = await PruneCachesAsync(context, now, ct);
         }
 
         ct.ThrowIfCancellationRequested();
@@ -89,16 +90,17 @@ public sealed class DatabaseMaintenance
             historyRemoved, metadataRemoved, cacheRemoved);
     }
 
-    private static async Task<int> PruneCachesAsync(AppDbContext context, DateTime today, CancellationToken ct)
+    private static async Task<int> PruneCachesAsync(AppDbContext context, DateTime now, CancellationToken ct)
     {
+        var today = now.Date;
         var monthCutoff = today.AddDays(-30);
         int removed = await context.Database.ExecuteSqlAsync($"""
             DELETE FROM mal_search_cache
             WHERE (anime_id <> 0 AND created_at < {monthCutoff})
-               OR (anime_id = 0 AND created_at < {today.AddDays(-7)})
+               OR (anime_id = 0 AND created_at < {now - Repository.MalSearchCacheRepository.NegativeTtl})
             """, ct);
         removed += await context.Database.ExecuteSqlAsync(
-            $"DELETE FROM http_response_cache WHERE created_at < {monthCutoff}", ct);
+            $"DELETE FROM http_response_cache WHERE created_at < {now - Repository.HttpCacheRepository.Retention}", ct);
         removed += await context.Database.ExecuteSqlAsync(
             $"DELETE FROM scrobble_progress WHERE updated_at < {monthCutoff}", ct);
         removed += await context.Database.ExecuteSqlAsync(

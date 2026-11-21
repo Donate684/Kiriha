@@ -13,6 +13,7 @@ internal sealed class MpvCommandQueue
     private readonly Channel<QueuedMpvCommand> _queue = Channel.CreateUnbounded<QueuedMpvCommand>(
         new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
     private Task? _loopTask;
+    internal Task Completion => _loopTask ?? Task.CompletedTask;
     private long _nextCoalescedVersion;
 
     public MpvCommandQueue(Lock gate, Func<IntPtr> getHandle, Func<bool> isDisposed)

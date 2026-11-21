@@ -1,6 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
-using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Utils.Async;
+using Kiriha.Infrastructure.Caching;
 
 namespace Kiriha.ViewModels.Seasonal;
 
@@ -24,20 +24,8 @@ public partial class SeasonalViewModel
         _filterFranchise = settings.SeasonalStatusFilters.Contains("Franchise");
     }
 
-    private void SetCurrentSeasonFromClock()
-    {
-        int month = DateTime.UtcNow.Month;
-        _currentYear = DateTime.UtcNow.Year;
-        if (month == 12) _currentYear++;
-
-        _currentSeason = month switch
-        {
-            1 or 2 or 12 => AppConstants.Seasons.Winter,
-            3 or 4 or 5 => AppConstants.Seasons.Spring,
-            6 or 7 or 8 => AppConstants.Seasons.Summer,
-            _ => AppConstants.Seasons.Fall
-        };
-    }
+    private void SetCurrentSeasonFromClock() =>
+        (_currentYear, _currentSeason) = SeasonalCacheStore.GetCurrentSeason(_clock.GetUtcNow().UtcDateTime);
 
     private Debouncer CreateSettingsDebouncer() =>
         new(TimeSpan.FromMilliseconds(500), async (ct) =>

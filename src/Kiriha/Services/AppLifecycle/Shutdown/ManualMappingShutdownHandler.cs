@@ -9,7 +9,9 @@ public sealed class ManualMappingShutdownHandler(
     IScrobbleProgressStore? scrobbleProgressStore = null,
     IPlaybackResumeStore? playbackResumeStore = null) : IShutdownHandler
 {
-    public async Task FlushAsync()
+    public async Task FlushAsync() => await TryFlushAsync();
+
+    public async Task<bool> TryFlushAsync()
     {
         const int timeoutMs = 1500;
         using var timeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMs));
@@ -20,7 +22,8 @@ public sealed class ManualMappingShutdownHandler(
             await Task.WhenAll(
                 manualMappingService?.FlushAsync(token) ?? Task.CompletedTask,
                 scrobbleProgressStore?.FlushAsync(token) ?? Task.CompletedTask,
-                playbackResumeStore?.FlushAsync(token).WaitAsync(token) ?? Task.CompletedTask);
+                playbackResumeStore?.FlushAsync(token) ?? Task.CompletedTask).WaitAsync(token);
+            return true;
         }
         catch (OperationCanceledException ex) when (token.IsCancellationRequested)
         {
@@ -30,5 +33,6 @@ public sealed class ManualMappingShutdownHandler(
         {
             Log.Error(ex, "Shutdown flush: local state could not be fully saved");
         }
+        return false;
     }
 }

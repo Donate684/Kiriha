@@ -92,6 +92,17 @@ public class DiskWriteOptimizationTests
             var writeTime3 = File.GetLastWriteTimeUtc(cacheFile);
 
             Assert.NotEqual(writeTime2, writeTime3);
+
+            File.Delete(cacheFile);
+            await store.SaveAsync(year, season, items);
+            Assert.True(File.Exists(cacheFile));
+
+            var cachedBytes = await File.ReadAllBytesAsync(cacheFile);
+            var olderTimestamp = DateTime.UtcNow.AddDays(-1);
+            File.SetLastWriteTimeUtc(cacheFile, olderTimestamp);
+            await store.SaveAsync(year, season, items, validated: true);
+            Assert.True(File.GetLastWriteTimeUtc(cacheFile) > olderTimestamp);
+            Assert.Equal(cachedBytes, await File.ReadAllBytesAsync(cacheFile));
         }
         finally
         {

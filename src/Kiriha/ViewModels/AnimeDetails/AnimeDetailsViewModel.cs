@@ -241,34 +241,52 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
         var original = _originalAnime;
         var generation = editor.EntryGeneration;
         bool IsCurrentEditor() => !_disposed && ReferenceEquals(editor, Editor);
+        bool MatchesTitle(AnimeEntity? details) => details != null && details.Id == original.Id &&
+            (details.MediaKind == MediaKind.Anime) == (original.MediaKind == MediaKind.Anime);
+
+        async Task ApplyLoadedDetailsAsync(Task<AnimeEntity?> load)
+        {
+            var loaded = await load;
+            if (!IsCurrentEditor() || loaded is null || !MatchesTitle(loaded)) return;
+
+            metadata.ApplyFullDetails(loaded);
+            var imported = await _animeRepo.RefreshEditorDetailsAsync(original, loaded, generation);
+            if (IsCurrentEditor() && imported is { } entry)
+                editor.ApplyImportedFields(entry.Fields, entry.Generation);
+        }
 
         Anime.RefreshMetadata();
         metadata.NotifyMetadataChanged();
 
         IsLoading = Anime.Genres.Count == 0 || string.IsNullOrEmpty(Anime.Synopsis) ||
             (Anime.Presentation.IsAnime && Anime.Studios.Count == 0);
-        if (IsLoading)
+        try
         {
-            try
+            var cached = await metadata.ReadCachedDetailsAsync();
+            if (!IsCurrentEditor()) return;
+
+            if (cached.Details is { } snapshot && MatchesTitle(snapshot))
             {
-                var loadedFull = await metadata.FetchFullDetailsAsync();
-                if (!IsCurrentEditor()) return;
-                if (loadedFull != null && loadedFull.Id == original.Id &&
-                    (loadedFull.MediaKind == MediaKind.Anime) == (original.MediaKind == MediaKind.Anime))
-                {
-                    metadata.ApplyFullDetails(loadedFull);
-                    var imported = await _animeRepo.RefreshEditorDetailsAsync(original, loadedFull, generation);
-                    if (IsCurrentEditor() && imported is { } entry)
-                        editor.ApplyImportedFields(entry.Fields, entry.Generation);
-                }
+                if (IsLoading) metadata.ApplyFullDetails(snapshot);
+                if (!cached.IsFresh)
+                    ApplyLoadedDetailsAsync(metadata.RefreshCachedDetailsAsync()).SafeFireAndForget("RefreshCachedTitleDetails");
+                return;
             }
-            finally
+
+            var load = ApplyLoadedDetailsAsync(metadata.FetchFullDetailsAsync());
+            if (IsLoading)
+                await load;
+            else
+                load.SafeFireAndForget("LoadTitleDetails");
+        }
+        finally
+        {
+            if (IsCurrentEditor())
             {
-                if (IsCurrentEditor()) IsLoading = false;
+                IsLoading = false;
+                _ = LoadFranchiseAndRelationsAsync();
             }
         }
-
-        if (IsCurrentEditor()) _ = LoadFranchiseAndRelationsAsync();
     }
 
     public void Dispose()

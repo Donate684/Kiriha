@@ -52,31 +52,29 @@ public partial class MalApiService
     public async Task<List<AnimeEntity>> GetSeasonalAnimeAsync(int year, string season, CancellationToken ct = default)
     {
         var list = new List<AnimeEntity>();
-        string? nextUrl = $"anime/season/{year}/{season}?limit=100&fields={AnimeFields}&nsfw=true";
+        string? nextUrl = $"anime/season/{year}/{season}?limit=100&fields={AnimeCatalogFields}&nsfw=true";
 
         try
         {
             while (!string.IsNullOrEmpty(nextUrl))
             {
-                var bytes = await GetWithCacheAsync(nextUrl, ct);
-                if (bytes is null) break;
+                var response = await GetCatalogResponseAsync(nextUrl, ct);
+                if (response.Body is null || response.IsStaleFallback) return [];
 
-                using var json = JsonDocument.Parse(bytes);
+                using var json = JsonDocument.Parse(response.Body);
 
                 var root = json.RootElement;
-                if (root.TryGetProperty("data", out var data))
+                if (!root.TryGetProperty("data", out var data)) return [];
+                foreach (var node in data.EnumerateArray())
                 {
-                    foreach (var node in data.EnumerateArray())
-                    {
-                        list.Add(MalMapper.MapJsonToAnimeEntity(node.GetProperty("node")));
-                    }
+                    list.Add(MalMapper.MapJsonToAnimeEntity(node.GetProperty("node")));
                 }
                 nextUrl = root.TryGetProperty("paging", out var paging) && paging.TryGetProperty("next", out var next) ? next.GetString() : null;
             }
             return list;
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { Log.Warning(ex, "MalApiService: GetSeasonalAnimeAsync failed"); return list; }
+        catch (Exception ex) { Log.Warning(ex, "MalApiService: GetSeasonalAnimeAsync failed"); return []; }
     }
 
     public async Task<List<AnimeEntity>?> GetUserMangaListAsync(CancellationToken ct = default)

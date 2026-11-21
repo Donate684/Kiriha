@@ -17,7 +17,7 @@ internal sealed class AiringInfoCache(
     LibrarySyncGate? gate)
 {
     internal async Task SaveAsync(
-        MediaKey key, long generation, EpisodeAiringInfo? airing, DateTime requestedAt, CancellationToken ct)
+        MediaKey key, long generation, EpisodeAiringInfo airing, DateTime requestedAt, CancellationToken ct)
     {
         using var write = gate != null ? await gate.AcquireProgressWriteAsync(ct) : null;
         if (library.GetEntryGeneration(key.Id, key.Kind) != generation ||
@@ -28,7 +28,7 @@ internal sealed class AiringInfoCache(
         if (draft.Status != UserAnimeStatus.Watching || draft.LastEpisodesSync >= requestedAt)
             return;
 
-        int? notifyEpisode = airing == null ? null : ApplyAiring(draft, airing, requestedAt);
+        int? notifyEpisode = ApplyAiring(draft, airing, requestedAt);
         draft.LastEpisodesSync = requestedAt;
         if (!await store.UpdateAiringAsync(draft, ct)) return;
 

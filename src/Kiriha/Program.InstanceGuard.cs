@@ -1,4 +1,5 @@
 using Kiriha.Infrastructure.Player;
+using Kiriha.Services.AppLifecycle;
 
 namespace Kiriha;
 
@@ -17,8 +18,17 @@ static partial class Program
             playerMutex = new System.Threading.Mutex(true, Kiriha.Infrastructure.Player.PlayerProcessBridge.MutexName, out var playerCreatedNew);
             if (!playerCreatedNew)
             {
-                Kiriha.Infrastructure.Player.PlayerProcessBridge.TryForward(args, 3000);
-                return false;
+                if (ForwardPlayerCommand(args))
+                    return false;
+
+                // The existing owner may have exited while handling the request.
+                playerMutex.Dispose();
+                playerMutex = new System.Threading.Mutex(true, PlayerProcessBridge.MutexName, out playerCreatedNew);
+                if (!playerCreatedNew)
+                {
+                    Environment.ExitCode = 1;
+                    return false;
+                }
             }
         }
 
@@ -41,5 +51,41 @@ static partial class Program
         }
 
         return true;
+    }
+
+    private static bool ForwardPlayerCommand(string[] args)
+    {
+        // Its parent still owns the playback command and will use the existing player's pipe.
+        if (args.Contains(PlayerPlaybackProtocol.BootstrapArg, StringComparer.OrdinalIgnoreCase))
+            return true;
+
+        if (PlayerProcessBridge.IsResident(args) ||
+            args.Contains(PlayerProcessBridge.ShutdownArg, StringComparer.OrdinalIgnoreCase) ||
+            args.Contains(PlayerProcessBridge.UpdateMetadataArg, StringComparer.OrdinalIgnoreCase))
+        {
+            PlayerProcessBridge.TryForward(args);
+            return true;
+        }
+
+        var id = PlayerModeCoordinator.GetPlaybackRequestId(args);
+        if (id == null)
+        {
+            id = Guid.NewGuid().ToString("N");
+            args = [.. args, PlayerProcessBridge.PlaybackRequestArg, id];
+        }
+
+        var command = PlayerPlaybackProtocol.CreateOpen(id, args);
+        var result = PlayerProcessBridge.ExchangePlaybackAsync(command).GetAwaiter().GetResult();
+        if (result == PlayerLaunchStatus.Unconfirmed)
+            result = PlayerProcessBridge.ExchangePlaybackAsync(command).GetAwaiter().GetResult();
+        if (result is PlayerLaunchStatus.Accepted or PlayerLaunchStatus.Ready)
+            return true;
+
+        if (result is PlayerLaunchStatus.Failed or PlayerLaunchStatus.Superseded)
+        {
+            Environment.ExitCode = 1;
+            return true;
+        }
+        return false;
     }
 }

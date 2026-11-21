@@ -1,199 +1,223 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Utils.Async;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
 
-/// <summary>
-/// Result envelope for <see cref="HttpConditionalCache.SendAsync"/>.
-/// </summary>
-/// <param name="Body">Response body bytes, or <c>null</c> on hard failure.</param>
-/// <param name="StatusCode">HTTP status of the live response. <c>null</c> when
-/// the body comes from a cache replay (304 hit or stale-on-error fallback).</param>
-/// <param name="FromCache"><c>true</c> when <see cref="Body"/> was replayed
-/// from the persisted cache (either via 304 or stale-on-error).</param>
-public readonly record struct HttpCacheResult(byte[]? Body, HttpStatusCode? StatusCode, bool FromCache);
+/// <summary>Body and origin status of a cached or live HTTP response.</summary>
+public readonly record struct HttpCacheResult(byte[]? Body, HttpStatusCode? StatusCode, bool FromCache,
+    bool IsStaleFallback = false, bool BodyChanged = false);
 
-/// <summary>
-/// Reusable HTTP conditional-GET wrapper backed by
-/// <see cref="HttpCacheEntry"/> (table <c>http_response_cache</c>, 30 d TTL).
-///
-/// Usage: build a fresh <see cref="HttpRequestMessage"/> per call (with all
-/// caller-specific headers — User-Agent, auth, etc.) inside
-/// <c>requestFactory</c>. The helper attaches <c>If-None-Match</c> /
-/// <c>If-Modified-Since</c> from the cache, sends the request, replays the
-/// cached body on <c>304 Not Modified</c>, and persists fresh <c>200</c>
-/// responses for next time.
-///
-/// Caveat: only call for endpoints whose body is safe to replay across the
-/// same auth context (no per-call user-specific fields, or fields that the
-/// caller already overrides downstream from a separate user store).
-///
-/// Persist is fire-and-forget — a transient DB hiccup costs at most one
-/// extra full payload on the next call.
-/// </summary>
+/// <summary>Conditional requests for public payloads with optional local freshness and shared refreshes.</summary>
 public sealed class HttpConditionalCache
 {
+    private static readonly TimeSpan RequestBudget = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan MinimumValidationWriteInterval = TimeSpan.FromMinutes(15);
     private readonly HttpClient _http;
     private readonly IHttpCacheRepository _cache;
     private readonly string _logTag;
+    private readonly TimeProvider _clock;
     private readonly Func<HttpClient, HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _sendAsync;
+    private static readonly ConditionalWeakTable<IHttpCacheRepository, SharedAsyncWork<(string Key, TimeSpan? Freshness), HttpCacheResult>> SharedRefreshes = new();
+    private readonly SharedAsyncWork<(string Key, TimeSpan? Freshness), HttpCacheResult> _refreshes;
 
-    /// <summary>Constructs a helper bound to the given <see cref="HttpClient"/>.</summary>
-    /// <param name="http">Client used to send requests. The handler may add its own
-    /// retry / resilience policy; that's orthogonal to this cache.</param>
-    /// <param name="cache">Repository fronting the http_response_cache table.</param>
-    /// <param name="logTag">Short tag used in log messages to identify the caller
-    /// (e.g. <c>"MalApi"</c>, <c>"AniList"</c>). Saves grepping logs later.</param>
-    public HttpConditionalCache(HttpClient http, IHttpCacheRepository cache, string logTag)
-        : this(http, cache, logTag, static (client, request, ct) => client.SendAsync(request, ct))
+    public HttpConditionalCache(HttpClient http, IHttpCacheRepository cache, string logTag, TimeProvider? clock = null)
+        : this(http, cache, logTag, static (client, request, ct) => client.SendAsync(request, ct), clock)
     {
     }
 
-    /// <summary>
-    /// Constructs a helper with a custom send delegate. Intended for services
-    /// that need request routing around <see cref="HttpClient.SendAsync"/>,
-    /// such as Shikimori mirror resolution.
-    /// </summary>
     public HttpConditionalCache(
-        HttpClient http,
-        IHttpCacheRepository cache,
-        string logTag,
-        Func<HttpClient, HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendAsync)
+        HttpClient http, IHttpCacheRepository cache, string logTag,
+        Func<HttpClient, HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendAsync,
+        TimeProvider? clock = null)
     {
         _http = http;
         _cache = cache;
         _logTag = logTag;
         _sendAsync = sendAsync;
+        _clock = clock ?? TimeProvider.System;
+        _refreshes = SharedRefreshes.GetValue(cache, static _ => new());
     }
 
-    /// <summary>
-    /// Send a GET (or any safe verb) and return the response body bytes,
-    /// replaying the cached body on 304. Returns <c>null</c> on a hard
-    /// failure (4xx/5xx with no usable cache, or network error with no
-    /// usable cache).
-    /// </summary>
-    /// <param name="requestFactory">Builds a fresh request (async to allow auth-token
-    /// refresh inline). Called exactly once per invocation. Must set the absolute URI;
-    /// cache key is derived from <see cref="HttpRequestMessage.RequestUri"/>.</param>
-    /// <param name="throttle">Optional pre-send hook (e.g. per-service rate limiter).
-    /// Awaited *after* the cache lookup but *before* the network call, so cache
-    /// hits don't pay the throttle cost.</param>
+    public async Task<byte[]?> SendAsync(
+        string url, Func<CancellationToken, Task<HttpRequestMessage>> requestFactory,
+        Func<CancellationToken, Task>? throttle = null, CancellationToken ct = default, TimeSpan? localTtl = null) =>
+        (await SendForResultAsync(url, requestFactory, throttle, ct, localTtl)).Body;
+
     public async Task<byte[]?> SendAsync(
         Func<CancellationToken, Task<HttpRequestMessage>> requestFactory,
-        Func<CancellationToken, Task>? throttle = null,
-        CancellationToken ct = default,
-        TimeSpan? localTtl = null)
+        Func<CancellationToken, Task>? throttle = null, CancellationToken ct = default, TimeSpan? localTtl = null) =>
+        (await SendForResultAsync(requestFactory, throttle, ct, localTtl)).Body;
+
+    /// <summary>The URL determines the cache key before request construction, token refresh, or throttling.</summary>
+    public Task<HttpCacheResult> SendForResultAsync(
+        string url, Func<CancellationToken, Task<HttpRequestMessage>> requestFactory,
+        Func<CancellationToken, Task>? throttle = null, CancellationToken ct = default, TimeSpan? localTtl = null,
+        Func<byte[], TimeSpan?>? getFreshness = null)
     {
-        var result = await SendForResultAsync(requestFactory, throttle, ct, localTtl);
-        return result.Body;
+        var key = HashUrl(new Uri(url, UriKind.Absolute).AbsoluteUri);
+        return _refreshes.RunAsync((key, localTtl), async () =>
+        {
+            using var deadline = new CancellationTokenSource(RequestBudget);
+            var token = deadline.Token;
+            HttpCacheEntry? cached = null;
+            try
+            {
+                cached = await ReadAsync(key, token);
+                var ttl = localTtl;
+                if (cached is { Body.Length: > 0 } && getFreshness is not null)
+                {
+                    ttl = getFreshness(cached.Body);
+                    if (ttl is null) cached = null;
+                }
+                if (IsFresh(cached, ttl))
+                    return new HttpCacheResult(cached?.Body, null, FromCache: true);
+
+                using var request = await requestFactory(token);
+                return await RefreshAsync(key, request, cached, throttle, ttl, token, getFreshness);
+            }
+            catch (OperationCanceledException ex) when (token.IsCancellationRequested)
+            {
+                Log.Debug(ex, "{Tag}: HTTP cache refresh timed out", _logTag);
+                return StaleOrFailure(cached, null);
+            }
+        }, ct);
     }
 
-    /// <summary>
-    /// Same as <see cref="SendAsync"/> but returns the full <see cref="HttpCacheResult"/>
-    /// so callers can distinguish e.g. 404 (terminal — anime not on the source)
-    /// from a transient network error.
-    /// </summary>
     public async Task<HttpCacheResult> SendForResultAsync(
         Func<CancellationToken, Task<HttpRequestMessage>> requestFactory,
-        Func<CancellationToken, Task>? throttle = null,
-        CancellationToken ct = default,
-        TimeSpan? localTtl = null)
+        Func<CancellationToken, Task>? throttle = null, CancellationToken ct = default, TimeSpan? localTtl = null)
     {
         using var request = await requestFactory(ct);
-        var fullUrl = request.RequestUri?.ToString() ?? string.Empty;
-        var urlHash = HashUrl(fullUrl);
+        var key = HashUrl(request.RequestUri?.AbsoluteUri ?? string.Empty);
+        var cached = await ReadAsync(key, ct);
+        return IsFresh(cached, localTtl)
+            ? new HttpCacheResult(cached?.Body, null, FromCache: true)
+            : await RefreshAsync(key, request, cached, throttle, localTtl, ct);
+    }
 
-        HttpCacheEntry? cached = null;
-        try { cached = await _cache.GetAsync(urlHash, ct); }
-        catch (Exception ex) { Log.Debug(ex, "{Tag}: HTTP cache lookup failed for {Url}", _logTag, fullUrl); }
+    private bool IsFresh(HttpCacheEntry? cached, TimeSpan? ttl) =>
+        cached is { Body.Length: > 0 } && ttl is { } age && Age(cached) < age;
 
-        if (cached != null)
-        {
-            if (localTtl.HasValue && DateTime.UtcNow - cached.CreatedAt < localTtl.Value)
-            {
-                Log.Debug("{Tag}: local TTL hit, serving cache for {Url}", _logTag, fullUrl);
-                return new HttpCacheResult(cached.Body, null, FromCache: true);
-            }
+    private TimeSpan Age(HttpCacheEntry cached) => _clock.GetUtcNow().UtcDateTime - cached.CreatedAt;
 
-            // Both validators are independent — sending both lets the server
-            // pick whichever it currently honours.
-            if (!string.IsNullOrEmpty(cached.ETag))
-            {
-                try { request.Headers.IfNoneMatch.Add(EntityTagHeaderValue.Parse(cached.ETag)); }
-                catch { /* malformed stored ETag — ignore and refetch */ }
-            }
-            if (!string.IsNullOrEmpty(cached.LastModified)
-                && DateTimeOffset.TryParse(cached.LastModified, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AdjustToUniversal, out var lm))
-            {
-                request.Headers.IfModifiedSince = lm;
-            }
-        }
+    internal async Task<(byte[]? Body, TimeSpan Age)> ReadCachedResponseAsync(string url, CancellationToken ct)
+    {
+        var cached = await ReadAsync(HashUrl(new Uri(url, UriKind.Absolute).AbsoluteUri), ct);
+        return cached is null ? (null, default) : (cached.Body, Age(cached));
+    }
 
-        if (throttle != null) await throttle(ct);
-
-        HttpResponseMessage response;
-        try
-        {
-            response = await _sendAsync(_http, request, ct);
-        }
-        catch (OperationCanceledException) { throw; }
-        catch (Exception ex)
-        {
-            // Network blip — serve stale cache rather than failing the call.
-            if (cached != null)
-            {
-                Log.Debug(ex, "{Tag}: network error, serving stale cache for {Url}", _logTag, fullUrl);
-                return new HttpCacheResult(cached.Body, null, FromCache: true);
-            }
-            if (ex is HttpRequestException or TimeoutException || ex.InnerException is System.Net.Sockets.SocketException)
-            {
-                Log.Warning("{Tag}: Network request failed for {Url} ({Reason})", _logTag, fullUrl, ex.Message);
-                Log.Debug(ex, "{Tag}: Detailed network failure for {Url}", _logTag, fullUrl);
-            }
-            else
-            {
-                Log.Warning(ex, "{Tag}: HttpConditionalCache send failed for {Url}", _logTag, fullUrl);
-            }
-            return new HttpCacheResult(null, null, FromCache: false);
-        }
+    private async Task<HttpCacheResult> RefreshAsync(string key, HttpRequestMessage request, HttpCacheEntry? cached,
+        Func<CancellationToken, Task>? throttle, TimeSpan? localTtl, CancellationToken ct,
+        Func<byte[], TimeSpan?>? getFreshness = null)
+    {
+        ApplyValidators(request, cached);
+        if (throttle != null)
+            await throttle(ct);
 
         try
         {
-            if (response.StatusCode == HttpStatusCode.NotModified && cached != null)
+            using var response = await _sendAsync(_http, request, ct);
+            var status = response.StatusCode;
+            var cacheControl = response.Headers.CacheControl;
+            bool requiresNetwork = cacheControl is { NoStore: true } or { NoCache: true };
+            if (status == HttpStatusCode.NotModified && cached != null)
             {
-                return new HttpCacheResult(cached.Body, HttpStatusCode.NotModified, FromCache: true);
+                if (requiresNetwork)
+                    await TryWriteAsync(() => _cache.RemoveAsync(key, ct));
+                else
+                    await RefreshTimestampAsync(key, cached, localTtl, ct);
+                return new HttpCacheResult(cached.Body, status, FromCache: true);
             }
 
             if (!response.IsSuccessStatusCode)
             {
-                // 4xx/5xx without a usable replay — propagate the failure with
-                // the status code so callers can react (e.g. 404 → sentinel).
-                Log.Debug("{Tag}: {Url} returned {Status}", _logTag, fullUrl, response.StatusCode);
-                return new HttpCacheResult(null, response.StatusCode, FromCache: false);
+                if ((int)status >= 500 || status is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests)
+                    return StaleOrFailure(cached, status);
+                if (cached != null && status is HttpStatusCode.NotFound or HttpStatusCode.Gone)
+                    await TryWriteAsync(() => _cache.RemoveAsync(key, ct));
+                return new HttpCacheResult(null, status, FromCache: false);
             }
 
             var body = await response.Content.ReadAsByteArrayAsync(ct);
-            var etag = response.Headers.ETag?.ToString();
-            var lmHeader = response.Content.Headers.LastModified?.ToString("R");
+            if (status == HttpStatusCode.OK && getFreshness is not null && getFreshness(body) is null)
+                return StaleOrFailure(cached, status);
 
-            // Persist asynchronously: caller doesn't need to wait. A failure here
-            // just means the next call pays a full payload instead of 304.
-            _ = Task.Run(async () =>
+            bool bodyChanged = cached is null || !cached.Body.AsSpan().SequenceEqual(body);
+            if (requiresNetwork && cached != null)
+                await TryWriteAsync(() => _cache.RemoveAsync(key, ct));
+            if (status == HttpStatusCode.OK && body.Length != 0 && !requiresNetwork)
             {
-                try { await _cache.UpsertAsync(urlHash, etag, lmHeader, body, CancellationToken.None); }
-                catch (Exception ex) { Log.Debug(ex, "{Tag}: failed to persist HTTP cache for {Url}", _logTag, fullUrl); }
-            }, CancellationToken.None);
+                var etag = response.Headers.ETag?.ToString();
+                var modified = response.Content.Headers.LastModified?.ToString("R");
+                if (cached != null && etag == cached.ETag && modified == cached.LastModified && !bodyChanged)
+                {
+                    await RefreshTimestampAsync(key, cached, localTtl, ct);
+                }
+                else
+                {
+                    await TryWriteAsync(() => _cache.UpsertAsync(key, etag, modified, body, ct));
+                }
+            }
 
-            return new HttpCacheResult(body, response.StatusCode, FromCache: false);
+            return new HttpCacheResult(body, status, FromCache: false, BodyChanged: bodyChanged);
         }
-        finally
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            response.Dispose();
+            Log.Debug(ex, "{Tag}: HTTP request failed", _logTag);
+            return StaleOrFailure(cached, null);
+        }
+    }
+
+    private Task RefreshTimestampAsync(string key, HttpCacheEntry entry, TimeSpan? ttl, CancellationToken ct) =>
+        Age(entry) >= (ttl.GetValueOrDefault() > TimeSpan.Zero ? ttl.GetValueOrDefault() : MinimumValidationWriteInterval)
+            ? TryWriteAsync(() => _cache.TouchAsync(key, ct))
+            : Task.CompletedTask;
+
+    private static HttpCacheResult StaleOrFailure(HttpCacheEntry? cached, HttpStatusCode? status) =>
+        cached is { Body.Length: > 0 }
+            ? new HttpCacheResult(cached.Body, status, FromCache: true, IsStaleFallback: true)
+            : new HttpCacheResult(null, status, FromCache: false);
+
+    private static void ApplyValidators(HttpRequestMessage request, HttpCacheEntry? entry)
+    {
+        if (EntityTagHeaderValue.TryParse(entry?.ETag, out var tag))
+            request.Headers.IfNoneMatch.Add(tag);
+        if (DateTimeOffset.TryParse(entry?.LastModified, System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AdjustToUniversal, out var modified))
+        {
+            request.Headers.IfModifiedSince = modified;
+        }
+    }
+
+    private async Task<HttpCacheEntry?> ReadAsync(string key, CancellationToken ct)
+    {
+        try
+        {
+            return await _cache.GetAsync(key, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Log.Debug(ex, "{Tag}: HTTP cache lookup failed", _logTag);
+            return null;
+        }
+    }
+
+    private async Task TryWriteAsync(Func<Task> persist)
+    {
+        try
+        {
+            await persist();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Log.Debug(ex, "{Tag}: HTTP cache write failed", _logTag);
         }
     }
 
@@ -224,58 +248,24 @@ public sealed class HttpConditionalCache
         return Convert.ToHexString(hash);
     }
 
-    /// <summary>
-    /// Updates the cached body for a URL in SQLite without clobbering its ETag/LastModified.
-    /// Useful for persisting enriched responses (e.g. adding GraphQL posters to cached REST payloads).
-    /// </summary>
     public async Task UpdateCachedBodyAsync(string fullUrl, byte[] newBody, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(fullUrl) || newBody is null) return;
-        var urlHash = HashUrl(fullUrl);
-        try
-        {
-            var existing = await _cache.GetAsync(urlHash, ct);
-            await _cache.UpsertAsync(urlHash, existing?.ETag, existing?.LastModified, newBody, ct);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "{Tag}: Failed to update cached body for {Url}", _logTag, fullUrl);
-        }
+        var key = HashUrl(new Uri(fullUrl, UriKind.Absolute).AbsoluteUri);
+        var existing = await ReadAsync(key, ct);
+        if (existing == null || !existing.Body.AsSpan().SequenceEqual(newBody))
+            await TryWriteAsync(() => _cache.UpsertAsync(key, existing?.ETag, existing?.LastModified, newBody, ct));
     }
 
-    /// <summary>
-    /// Retrieves a cached payload directly by key.
-    /// </summary>
-    public async Task<byte[]?> GetCachedBodyAsync(string key, CancellationToken ct = default)
-    {
-        if (string.IsNullOrEmpty(key)) return null;
-        var urlHash = HashUrl(key);
-        try
-        {
-            var entry = await _cache.GetAsync(urlHash, ct);
-            return entry?.Body;
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "{Tag}: Cache lookup failed for key {Key}", _logTag, key);
-            return null;
-        }
-    }
+    public async Task<byte[]?> GetCachedBodyAsync(string key, CancellationToken ct = default) =>
+        string.IsNullOrEmpty(key) ? null : (await ReadAsync(HashUrl(key), ct))?.Body;
 
-    /// <summary>
-    /// Persists an arbitrary payload directly by key into SQLite http_response_cache.
-    /// </summary>
     public async Task SetCachedBodyAsync(string key, byte[] body, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(key) || body is null) return;
-        var urlHash = HashUrl(key);
-        try
-        {
-            await _cache.UpsertAsync(urlHash, null, null, body, ct);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "{Tag}: Failed to set cached body for key {Key}", _logTag, key);
-        }
+        var hash = HashUrl(key);
+        var existing = await ReadAsync(hash, ct);
+        if (existing == null || !existing.Body.AsSpan().SequenceEqual(body))
+            await TryWriteAsync(() => _cache.UpsertAsync(hash, null, null, body, ct));
     }
 }

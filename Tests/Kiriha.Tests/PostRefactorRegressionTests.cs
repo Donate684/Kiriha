@@ -158,6 +158,7 @@ public sealed class PostRefactorRegressionTests
             launchedHash = tHash;
             launchedTcs.TrySetResult(true);
         };
+        PlayerProcessHelper.OpeningOverrideForTests = WaitForCancelledOpeningAsync;
 
         try
         {
@@ -190,7 +191,7 @@ public sealed class PostRefactorRegressionTests
             vm.CloseEpisodeSelectorCommand.Execute(null);
             lease.Verify(x => x.Dispose(), Times.Never);
 
-            // Explicitly cancelling player launch while awaiting wakeup MUST drop the launched torrent
+            // Explicitly cancelling while the source is opening must release the preparation.
             vm.CancelPlayerLaunchingCommand.Execute(null);
             await released.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
@@ -199,6 +200,7 @@ public sealed class PostRefactorRegressionTests
         }
         finally
         {
+            PlayerProcessHelper.OpeningOverrideForTests = null;
             PlayerProcessHelper.LaunchOverrideForTests = null;
         }
     }
@@ -236,6 +238,7 @@ public sealed class PostRefactorRegressionTests
             launchedHashes.Add(hash);
             newLaunch.TrySetResult(hash);
         };
+        PlayerProcessHelper.OpeningOverrideForTests = WaitForCancelledOpeningAsync;
 
         try
         {
@@ -254,8 +257,15 @@ public sealed class PostRefactorRegressionTests
         finally
         {
             lateFiles.TrySetResult([]);
+            PlayerProcessHelper.OpeningOverrideForTests = null;
             PlayerProcessHelper.LaunchOverrideForTests = null;
         }
+    }
+
+    private static async Task<bool> WaitForCancelledOpeningAsync(CancellationToken ct)
+    {
+        await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        return false;
     }
 
     [Fact]
@@ -580,6 +590,58 @@ public sealed class PostRefactorRegressionTests
         Assert.Equal(UserAnimeStatus.Watching, clone.Status);
         Assert.Equal(6, clone.Progress);
         Assert.False(editor.HasChanges);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnimeDetailsViewModel_ShowsSnapshotImmediatelyAndRefreshesOnlyIfStale(bool isFresh)
+    {
+        var original = new AnimeEntity
+        {
+            Id = 909, MediaKind = MediaKind.Anime, Title = "Frieren", Status = UserAnimeStatus.Watching, Progress = 6
+        };
+        var cached = new AnimeEntity { Id = original.Id, Title = original.Title, Synopsis = "Saved synopsis", MeanScore = "8.00" };
+        var refresh = new TaskCompletionSource<AnimeEntity?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var applied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var mal = new Mock<IMalApiService>();
+        mal.Setup(x => x.ReadCachedDetailsAsync(original.Id, MediaKind.Anime, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((cached, isFresh));
+        mal.Setup(x => x.RefreshCachedDetailsAsync(original.Id, MediaKind.Anime, It.IsAny<CancellationToken>()))
+            .Returns(refresh.Task);
+        var repo = new Mock<IAnimeRepository>();
+        repo.SetupGet(x => x.Collection).Returns(new ObservableCollection<AnimeEntity>());
+        repo.Setup(x => x.RefreshEditorDetailsAsync(original, It.IsAny<AnimeEntity>(), 0, It.IsAny<CancellationToken>()))
+            .Callback(() => applied.TrySetResult())
+            .ReturnsAsync(((AnimeEditFields Fields, long Generation)?)null);
+        var listActions = Mock.Of<IAnimeListActionService>();
+        var clone = original.Clone();
+        var editor = new AnimeEditViewModel(original, clone, listActions);
+        var metadata = new AnimeMetadataViewModel(clone, mal.Object);
+        using var vm = new AnimeDetailsViewModel(clone, original, editor, metadata, CreateMockSettings().Object,
+            Mock.Of<IDialogService>(), Mock.Of<IShikiApiService>(), repo.Object, mal.Object, Mock.Of<IFranchiseService>(), listActions);
+
+        try
+        {
+            Assert.Equal("Saved synopsis", clone.Synopsis);
+            Assert.False(vm.IsLoading);
+            Assert.False(applied.Task.IsCompleted);
+            mal.Verify(x => x.GetAnimeDetailsAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+            mal.Verify(x => x.RefreshCachedDetailsAsync(original.Id, MediaKind.Anime, It.IsAny<CancellationToken>()),
+                isFresh ? Times.Never() : Times.Once());
+            if (isFresh) return;
+
+            refresh.SetResult(new AnimeEntity { Id = original.Id, Title = original.Title, MeanScore = "9.00" });
+
+            await applied.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal("9.00", clone.MeanScore);
+            Assert.Equal(6, clone.Progress);
+            Assert.False(editor.HasChanges);
+        }
+        finally
+        {
+            refresh.TrySetResult(null);
+        }
     }
 
     [Fact]

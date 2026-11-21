@@ -17,6 +17,7 @@ internal sealed class PlayerLoadingPipeline
     public PlayerLoadingPipeline(PlayerViewModel viewModel, MpvOpenGlVideoView videoView)
     {
         _viewModel = viewModel;
+        _viewModel.WaitForRenderContext();
         _videoView = videoView;
     }
 
@@ -47,19 +48,19 @@ internal sealed class PlayerLoadingPipeline
     {
         if (!_uiSubscribed ||
             !_renderContextReady ||
-            _mediaLoadStarted ||
-            string.IsNullOrWhiteSpace(_viewModel.VideoUrl))
+            _mediaLoadStarted)
             return;
 
         _mediaLoadStarted = true;
-        Log.Information("Loading video: {Url}", _viewModel.VideoUrl);
+        if (!string.IsNullOrWhiteSpace(_viewModel.VideoUrl))
+            Log.Information("Loading video: {Url}", _viewModel.VideoUrl);
         _viewModel.StartInitialPlayback();
         TryRequestInitialFrame();
     }
 
     private void TryRequestInitialFrame()
     {
-        if (_initialFrameRequested || !_mediaLoadStarted || !_renderContextReady)
+        if (_initialFrameRequested || !_mediaLoadStarted || !_renderContextReady || string.IsNullOrWhiteSpace(_viewModel.VideoUrl))
             return;
 
         _initialFrameRequested = true;

@@ -7,4 +7,8 @@ public sealed record EpisodeAiringInfo(
     int? NextEpisode,
     DateTime? NextEpisodeAt,
     int? TotalEpisodes,
-    int? EpisodesAired = null);
+    int? EpisodesAired = null)
+{
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsStaleFallback { get; init; }
+}

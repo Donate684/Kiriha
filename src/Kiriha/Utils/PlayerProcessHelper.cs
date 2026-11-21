@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 using Kiriha.Infrastructure.Player;
 
 namespace Kiriha.Utils;
@@ -7,6 +6,7 @@ namespace Kiriha.Utils;
 public static class PlayerProcessHelper
 {
     internal static Action<string?, string?, string?, string?, int?, string?, string?, string?, IReadOnlyDictionary<string, string>?>? LaunchOverrideForTests { get; set; }
+    internal static Func<CancellationToken, Task<bool>>? OpeningOverrideForTests { get; set; }
 
     public static void LaunchPlayer() => LaunchPlayer(videoUrl: null);
 
@@ -33,96 +33,35 @@ public static class PlayerProcessHelper
         if (LaunchOverrideForTests is { } testHook)
         {
             testHook(videoUrl, titleRu, titleEn, episode, animeId, torrentHash, originalTitle, subtitleUrl, headers);
-            return true;
+            return OpeningOverrideForTests is not { } opening || await opening(ct).ConfigureAwait(false);
         }
-        var canonicalOriginal = !string.IsNullOrWhiteSpace(originalTitle)
-            ? originalTitle
-            : (titleEn ?? titleRu ?? string.Empty);
-
-        // 1. If resident player instance is running, forward playback and metadata through pipe
-        var forwardArgs = new List<string> { "--player" };
-        if (!string.IsNullOrWhiteSpace(videoUrl))
-        {
-            forwardArgs.Add(videoUrl);
-            if (!string.IsNullOrWhiteSpace(subtitleUrl))
-            {
-                forwardArgs.Add("--sub-file");
-                forwardArgs.Add(subtitleUrl);
-            }
-            if (!string.IsNullOrWhiteSpace(canonicalOriginal))
-            {
-                forwardArgs.Add("--original-title");
-                forwardArgs.Add(canonicalOriginal);
-            }
-            if (!string.IsNullOrWhiteSpace(titleRu))
-            {
-                forwardArgs.Add("--title-ru");
-                forwardArgs.Add(titleRu);
-            }
-            if (!string.IsNullOrWhiteSpace(titleEn))
-            {
-                forwardArgs.Add("--title-en");
-                forwardArgs.Add(titleEn);
-            }
-            if (!string.IsNullOrWhiteSpace(episode))
-            {
-                forwardArgs.Add("--episode");
-                forwardArgs.Add(episode);
-            }
-            if (animeId.HasValue)
-            {
-                forwardArgs.Add("--anime-id");
-                forwardArgs.Add(animeId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            }
-            if (!string.IsNullOrWhiteSpace(torrentHash))
-            {
-                forwardArgs.Add("--torrent-hash");
-                forwardArgs.Add(torrentHash);
-            }
-            if (headers != null)
-            {
-                foreach (var kvp in headers)
-                {
-                    forwardArgs.Add("--http-header");
-                    forwardArgs.Add($"{kvp.Key}={kvp.Value}");
-                }
-            }
-        }
-
-        if (requestId != null)
-            forwardArgs.AddRange([PlayerProcessBridge.PlaybackRequestArg, requestId]);
-
-        if (PlayerProcessBridge.IsPlayerInstanceRunning() &&
-            await PlayerProcessBridge.TryForwardAsync([.. forwardArgs], ct: ct).ConfigureAwait(false))
-            return true;
-
-        ct.ThrowIfCancellationRequested();
-        // 2. Otherwise launch a standalone player process
         var processPath = Environment.ProcessPath;
         if (string.IsNullOrEmpty(processPath)) return false;
 
         var assemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
-        var isDotnet = System.IO.Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+        var isDotnet = Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
         if (isDotnet && string.IsNullOrEmpty(assemblyPath)) return false;
 
-        var startInfo = CreatePlayerStartInfo(
-            processPath,
-            assemblyPath,
-            videoUrl,
-            titleRu,
-            titleEn,
-            episode,
-            animeId,
-            torrentHash,
-            canonicalOriginal,
-            subtitleUrl,
-            headers);
-        if (requestId != null)
-        {
-            startInfo.ArgumentList.Add(PlayerProcessBridge.PlaybackRequestArg);
-            startInfo.ArgumentList.Add(requestId);
-        }
+        requestId ??= Guid.NewGuid().ToString("N");
+        if (!PlayerPlaybackProtocol.IsValidRequestId(requestId))
+            return false;
 
+        var startInfo = CreatePlayerStartInfo(processPath, assemblyPath, videoUrl, titleRu, titleEn, episode,
+            animeId, torrentHash, originalTitle, subtitleUrl, headers);
+        startInfo.ArgumentList.Add(PlayerProcessBridge.PlaybackRequestArg);
+        startInfo.ArgumentList.Add(requestId);
+        startInfo.ArgumentList.Add(PlayerPlaybackProtocol.AdmissionDeadlineArg);
+        startInfo.ArgumentList.Add(PlayerPlaybackProtocol.CreateAdmissionDeadline());
+        var command = startInfo.ArgumentList.Skip(isDotnet ? 1 : 0).ToArray();
+        var bootstrap = CreatePlayerStartInfo(processPath, assemblyPath, videoUrl: null);
+        bootstrap.ArgumentList.Add(PlayerPlaybackProtocol.BootstrapArg);
+        var client = new PlayerLaunchClient(PlayerProcessBridge.IsPlayerInstanceRunning,
+            () => TryStartPlayer(bootstrap), PlayerProcessBridge.ExchangePlaybackAsync);
+        return await client.OpenAsync(requestId, command, ct).ConfigureAwait(false) == PlayerLaunchStatus.Ready;
+    }
+
+    private static bool TryStartPlayer(ProcessStartInfo startInfo)
+    {
         try
         {
             using var process = Process.Start(startInfo);

@@ -81,6 +81,12 @@ public partial class AnimeMetadataViewModel : ObservableObject
         ? _malApiService.GetMangaDetailsAsync(_anime.Id)
         : _malApiService.GetAnimeDetailsAsync(_anime.Id);
 
+    internal Task<(AnimeEntity? Details, bool IsFresh)> ReadCachedDetailsAsync() =>
+        _malApiService.ReadCachedDetailsAsync(_anime.Id, _anime.MediaKind);
+
+    internal Task<AnimeEntity?> RefreshCachedDetailsAsync() =>
+        _malApiService.RefreshCachedDetailsAsync(_anime.Id, _anime.MediaKind);
+
     internal void ApplyFullDetails(AnimeEntity full)
     {
         _anime.MergeFullDetails(full, metadataOnly: true);

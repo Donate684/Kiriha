@@ -12,8 +12,9 @@ public partial class SeasonalViewModel
     private List<AnimeEntity> _allSeasonalItems = new();
     private volatile IReadOnlyDictionary<int, UserAnimeStatus> _userAnimeStore = new Dictionary<int, UserAnimeStatus>();
     private HashSet<int> _hiddenSeasonalIds = new();
-    private static readonly ConcurrentDictionary<(int, string), List<AnimeEntity>> _seasonalCache = new();
-    private static int _diskHydrated;
+    private readonly ConcurrentDictionary<(int, string), (List<AnimeEntity> Items, DateTime ValidatedAt)> _seasonalCache = new();
+    private readonly ConcurrentDictionary<(int, string), DateTime> _seasonalRetryAfter = new();
+    private static readonly TimeSpan SeasonalRetryDelay = TimeSpan.FromMinutes(5);
     private bool _isInitializing = true;
 
     private CancellationTokenSource? _loadCts;

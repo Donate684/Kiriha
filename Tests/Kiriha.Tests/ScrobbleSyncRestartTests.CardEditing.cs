@@ -134,6 +134,14 @@ public sealed partial class ScrobbleSyncRestartTests
         Assert.Equal(details.Synopsis, canonical.Synopsis);
         Assert.False(editor.HasChanges);
         Assert.Equal(2, (await scenario.History.GetHistoryAsync(ct: ct)).Count);
+
+        await using var db = CreateFactory().CreateDbContext();
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE TRIGGER reject_unchanged_metadata_write
+            BEFORE UPDATE ON user_anime
+            BEGIN SELECT RAISE(ABORT, 'identical metadata must not be written'); END;
+            """, ct);
+        Assert.Null(await scenario.Library.RefreshEditorDetailsAsync(item, details, editor.EntryGeneration, ct));
     }
 
     [Fact]

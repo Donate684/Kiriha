@@ -174,22 +174,21 @@ public partial class MalApiService
 
     /// <summary>
     /// GET wrapper that performs an HTTP-conditional request via
-    /// <see cref="HttpConditionalCache"/>. Used for endpoints whose body is
-    /// safe to replay across the same access token (seasonal / search where
-    /// embedded user-specific fields like <c>my_list_status</c> are overridden
-    /// at the ViewModel layer from the synced user store).
+    /// <see cref="HttpConditionalCache"/>. Cached catalog requests use public
+    /// fields. Personal list status comes from the synced user store.
     /// </summary>
-    private Task<byte[]?> GetWithCacheAsync(string url, CancellationToken ct = default, TimeSpan? localTtl = null)
+    private Task<HttpCacheResult> GetCatalogResponseAsync(string url, CancellationToken ct, Func<byte[], TimeSpan?>? getFreshness = null)
     {
-        var fullUrl = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : MalBaseUrl + url.TrimStart('/');
+        var fullUrl = GetCatalogUrl(url);
 
-        return _httpCache.SendAsync(
+        return _httpCache.SendForResultAsync(
+            fullUrl,
             requestFactory: async innerCt =>
             {
+                var token = await EnsureValidTokenAsync(innerCt);
                 var request = new HttpRequestMessage(HttpMethod.Get, fullUrl);
                 request.Headers.Add("User-Agent", AppInfo.UserAgent);
 
-                var token = await EnsureValidTokenAsync(innerCt);
                 if (!string.IsNullOrEmpty(token))
                     request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 else
@@ -199,6 +198,10 @@ public partial class MalApiService
             },
             throttle: InteractiveThrottleAsync,
             ct: ct,
-            localTtl: localTtl);
+            getFreshness: getFreshness);
     }
+
+    private static string GetCatalogUrl(string url) =>
+        url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : MalBaseUrl + url.TrimStart('/');
+
 }

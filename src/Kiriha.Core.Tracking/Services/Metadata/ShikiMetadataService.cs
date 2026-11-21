@@ -8,6 +8,7 @@ using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Sync;
 using Serilog;
@@ -30,6 +31,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     private readonly ShikiStateCache? _stateCache;
     private readonly SemaphoreSlim _concurrentFetches = new(2, 2);
     private readonly ConcurrentDictionary<MediaKey, byte> _activeFetches = new();
+    private readonly SharedAsyncWork<(MediaKey Key, TimeSpan? MaxAge), ShikiMetadata?> _metadataRefreshes = new();
 
     public ShikiMetadataService(
         IHttpClientFactory httpClientFactory,
@@ -42,7 +44,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
         ShikiRateLimiter rateLimiter,
         ShikiStateCache? stateCache = null,
         IAnimeRepository? library = null,
-        LibrarySyncGate? syncGate = null)
+        LibrarySyncGate? syncGate = null,
+        TimeProvider? clock = null)
     {
         _httpClient = httpClientFactory.CreateClient("ShikiClient");
         _settingsService = settingsService;
@@ -58,7 +61,8 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
             _httpClient,
             httpCacheRepo,
             "ShikiMeta",
-            (client, request, innerCt) => ShikiHttp.SendShikiAsync(client, request, _hostResolver, innerCt));
+            (client, request, innerCt) => ShikiHttp.SendShikiAsync(client, request, _hostResolver, innerCt),
+            clock);
     }
 
     // Resolved per-call so a mid-session mirror switch is honoured immediately.
@@ -68,6 +72,13 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
     public async Task<ShikiMetadata?> GetOrFetchMetadataAsync(int animeId, TimeSpan? maxAge = null, Func<ShikiMetadata, Task>? onFetched = null, MediaKind mediaKind = MediaKind.Anime)
     {
         var cacheKey = new MediaKey(animeId, mediaKind);
+        var result = await _metadataRefreshes.RunAsync((cacheKey, maxAge), () => ReadOrRefreshMetadataAsync(animeId, mediaKind, maxAge));
+        if (result is not null && onFetched is not null) await onFetched(result);
+        return result;
+    }
+
+    private async Task<ShikiMetadata?> ReadOrRefreshMetadataAsync(int animeId, MediaKind mediaKind, TimeSpan? maxAge)
+    {
         var cached = await _metadataRepo.GetAsync(animeId, mediaKind);
         // When a TTL is requested, treat both genuinely-old entries and pre-TTL
         // legacy rows (FetchedAt == default after the schema migration) as stale —
@@ -88,65 +99,46 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
                 await _metadataRepo.UpsertAsync(cached);
             }
 
-            if (onFetched != null) await onFetched(cached);
-            return cached;
-        }
-
-        if (!_activeFetches.TryAdd(cacheKey, 0))
-        {
-            // Another fetch is already in flight; serve whatever we have
-            // (possibly stale) rather than spinning a duplicate request.
             return cached;
         }
 
         try
         {
-            var fetched = await FetchMetadataFromApiAsync(animeId, CancellationToken.None, mediaKind);
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+            var fetched = await FetchMetadataFromApiAsync(animeId, deadline.Token, mediaKind, maxAge);
             if (fetched != null)
             {
-                await _metadataRepo.UpsertAsync(fetched);
-                if (onFetched != null) await onFetched(fetched);
+                await _metadataRepo.UpsertAsync(fetched, deadline.Token);
                 return fetched;
             }
-
-            // Live fetch failed but we still have a stale entry — better to
-            // return it than nothing, the caller can apply best-effort.
-            if (cached != null)
-            {
-                if (onFetched != null) await onFetched(cached);
-                return cached;
-            }
-            return null;
+            return cached;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Background check for metadata failed for {Id}", animeId);
             return cached;
         }
-        finally
-        {
-            _activeFetches.TryRemove(cacheKey, out _);
-        }
     }
 
-    private async Task<ShikiMetadata?> FetchMetadataFromApiAsync(int animeId, CancellationToken ct = default, MediaKind mediaKind = MediaKind.Anime)
+    private async Task<ShikiMetadata?> FetchMetadataFromApiAsync(int animeId, CancellationToken ct, MediaKind mediaKind, TimeSpan? maxAge)
     {
-        // Conditional GET via http_response_cache: on a 304 we skip JSON parse
-        // entirely (the helper replays the persisted body, which we then parse).
-        // ResilientHttpHandler still handles 429s with backoff, so the manual
-        // retry loop the original code carried is no longer needed.
+        // The raw Shikimori response is shared with the airing endpoint.
+        // A transient failure must not extend the derived metadata lifetime.
         try
         {
+            string endpoint = mediaKind == MediaKind.Anime ? "animes" : "mangas";
+            var url = $"{ShikiBaseUrl}{endpoint}/{animeId}";
             var result = await _httpCache.SendForResultAsync(
-                requestFactory: innerCt =>
+                url,
+                requestFactory: _ =>
                 {
-                    string endpoint = mediaKind == MediaKind.Anime ? "animes" : "mangas";
-                    var request = new HttpRequestMessage(HttpMethod.Get, $"{ShikiBaseUrl}{endpoint}/{animeId}");
+                    var request = new HttpRequestMessage(HttpMethod.Get, url);
                     request.Headers.Add("User-Agent", AppInfo.UserAgent);
                     return Task.FromResult(request);
                 },
                 throttle: ct => _rateLimiter.ThrottleAsync(ct),
-                ct: ct);
+                ct: ct,
+                localTtl: maxAge ?? TimeSpan.FromHours(6));
 
             // 404: anime not on Shikimori. Persist a sentinel so we don't
             // re-attempt on every sync tick (matches the original behaviour
@@ -156,7 +148,7 @@ public partial class ShikiMetadataService : IShikiMetadataService, IDisposable
                 return new ShikiMetadata { Id = animeId, MediaKind = mediaKind, Russian = "", Description = "", PosterUrl = "" };
             }
 
-            if (result.Body is null) return null; // transient failure — retry next tick
+            if (result.Body is null || result.IsStaleFallback) return null;
 
             var metadata = System.Text.Json.JsonSerializer.Deserialize<ShikiMetadata>(result.Body);
             if (metadata != null)

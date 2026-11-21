@@ -124,7 +124,7 @@ internal static class ShikiGraphQlPosterFetcher
                                 }
                                 posterMap[id] = url;
                                 if (posterMemoryCache != null) posterMemoryCache[$"{entityType}_{id}"] = url;
-                                _ = httpCache.SetCachedBodyAsync($"shiki_poster_{entityType}_{id}", Encoding.UTF8.GetBytes(url), CancellationToken.None);
+                                await httpCache.SetCachedBodyAsync($"shiki_poster_{entityType}_{id}", Encoding.UTF8.GetBytes(url), ct);
                             }
                         }
                     }

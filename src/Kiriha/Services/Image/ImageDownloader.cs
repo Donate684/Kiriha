@@ -1,7 +1,8 @@
-using System.Collections.Concurrent;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.Core.Streaming.Constants;
 using Serilog;
 
@@ -13,7 +14,7 @@ public class ImageDownloader : IDisposable
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IImageUrlRewriter? _urlRewriter;
     private readonly SemaphoreSlim _downloadSemaphore = new(6, 6);
-    private readonly ConcurrentDictionary<string, Task<string>> _activeDownloads = new();
+    private readonly SharedAsyncWork<string, string> _activeDownloads = new();
 
     public ImageDownloader(IHttpClientFactory httpClientFactory, string cacheRoot, IImageUrlRewriter? urlRewriter = null)
     {
@@ -28,45 +29,20 @@ public class ImageDownloader : IDisposable
 
         // Rewrite the URL before everything else so that the cache key, the
         // dedup dictionary, and the actual HTTP request all use the same host.
-        url = _urlRewriter?.Rewrite(url) ?? url;
-
-        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var addedTask = _activeDownloads.GetOrAdd(url, tcs.Task);
-
-        if (ReferenceEquals(addedTask, tcs.Task))
-        {
-            // Run the shared deduplicated download without binding it to a single caller's token
-            // so one cancelled viewport request does not abort the download for other callers.
-            _ = ExecuteDownloadAsync(url, tcs, CancellationToken.None);
-        }
-
-        return ct.CanBeCanceled ? addedTask.WaitAsync(ct) : addedTask;
+        var resolvedUrl = _urlRewriter?.Rewrite(url) ?? url;
+        return _activeDownloads.RunAsync(resolvedUrl, () => DownloadAsync(resolvedUrl), ct);
     }
 
-    private async Task ExecuteDownloadAsync(string url, TaskCompletionSource<string> tcs, CancellationToken ct = default)
+    private async Task<string> DownloadAsync(string url)
     {
         try
         {
-            var result = string.Empty;
-            try
-            {
-                result = await DownloadCoreAsync(url, ct);
-            }
-            catch (Exception)
-            {
-                result = string.Empty;
-            }
-            tcs.SetResult(result);
+            return await DownloadCoreAsync(url);
         }
         catch (Exception ex)
         {
-            tcs.TrySetException(ex);
-        }
-        finally
-        {
-            // Always remove from active downloads unconditionally.
-            // It only serves as a concurrent deduplicator.
-            _activeDownloads.TryRemove(url, out _);
+            Log.Debug(ex, "Image download failed for {Url}", url);
+            return string.Empty;
         }
     }
 
@@ -111,8 +87,12 @@ public class ImageDownloader : IDisposable
                         using var client = _httpClientFactory.CreateClient("ImageClient");
                         using var request = CreateImageRequest(url);
                         using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, cts.Token);
+                        if ((int)response.StatusCode is >= 400 and < 500 &&
+                            response.StatusCode is not (HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests))
+                            return string.Empty;
                         response.EnsureSuccessStatusCode();
                         var bytes = await response.Content.ReadAsByteArrayAsync(cts.Token);
+                        if (bytes.Length == 0) return string.Empty;
                         await File.WriteAllBytesAsync(tmpPath, bytes, cts.Token);
 
                         File.Move(tmpPath, localPath, true);

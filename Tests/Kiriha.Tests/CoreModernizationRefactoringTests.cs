@@ -97,13 +97,12 @@ public sealed class CoreModernizationRefactoringTests
         Assert.NotNull(entry);
         Assert.Equal(sampleBody, entry.Body);
 
-        // Advance 20 days -> still within 30-day TTL
-        clock.Advance(TimeSpan.FromDays(20));
+        // The same row remains available after the freshness window expires.
+        clock.Advance(TimeSpan.FromDays(60));
         entry = await repo.GetAsync("hash123");
         Assert.NotNull(entry);
 
-        // Advance another 15 days (total 35 days) -> exceeds 30-day TTL, must return null
-        clock.Advance(TimeSpan.FromDays(15));
+        clock.Advance(TimeSpan.FromSeconds(1));
         entry = await repo.GetAsync("hash123");
         Assert.Null(entry);
 
@@ -131,20 +130,20 @@ public sealed class CoreModernizationRefactoringTests
 
         // Positive cache (animeId > 0, 30 days TTL)
         await repo.UpsertAsync("naruto", 20, 1.0f);
-        // Negative cache (animeId = 0, 7 days TTL)
+        // Negative cache (animeId = 0, 24 hours TTL)
         await repo.UpsertAsync("nonexistent", 0, 0f);
 
         // Valid immediately
         Assert.NotNull(await repo.GetAsync("naruto"));
         Assert.NotNull(await repo.GetAsync("nonexistent"));
 
-        // Advance 8 days -> negative cache expires, positive cache remains
-        clock.Advance(TimeSpan.FromDays(8));
+        clock.Advance(TimeSpan.FromHours(24));
+        Assert.NotNull(await repo.GetAsync("nonexistent"));
+        clock.Advance(TimeSpan.FromSeconds(1));
         Assert.NotNull(await repo.GetAsync("naruto"));
         Assert.Null(await repo.GetAsync("nonexistent"));
 
-        // Advance 25 days more (total 33 days) -> positive cache also expires
-        clock.Advance(TimeSpan.FromDays(25));
+        clock.Advance(TimeSpan.FromDays(29));
         Assert.Null(await repo.GetAsync("naruto"));
 
         try { File.Delete(dbPath); } catch { }

@@ -8,13 +8,16 @@ namespace Kiriha.Core.Abstractions.Repositories;
 /// alongside the body keyed by URL hash so subsequent requests can validate
 /// cheaply via <c>If-None-Match</c> / <c>If-Modified-Since</c>.
 ///
-/// TTL: 30 days hard-stop for entries the server stopped revalidating. Lookups
-/// re-validate against the origin on every call, so even "old" cache entries
-/// remain correct as long as the server confirms them via 304.
+/// Entries expire 60 days after successful validation. The validation
+/// timestamp can be refreshed independently of the response body.
 /// </summary>
 public interface IHttpCacheRepository
 {
     Task<HttpCacheEntry?> GetAsync(string urlHash, CancellationToken ct = default);
 
     Task UpsertAsync(string urlHash, string? etag, string? lastModified, byte[] body, CancellationToken ct = default);
+
+    Task TouchAsync(string urlHash, CancellationToken ct = default) => Task.CompletedTask;
+
+    Task RemoveAsync(string urlHash, CancellationToken ct = default) => Task.CompletedTask;
 }

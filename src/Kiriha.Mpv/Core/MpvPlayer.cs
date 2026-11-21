@@ -22,7 +22,9 @@ public partial class MpvPlayer : IDisposable
     private readonly MpvEventLoop _eventLoop;
     private IntPtr _mpvHandle;
     private volatile bool _disposed;
-    internal Task ShutdownCompletion { get; private set; } = Task.CompletedTask;
+    private readonly TaskCompletionSource<bool> _shutdownCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    /// <summary>Completes after disposal has stopped the native player, or reports a shutdown failure.</summary>
+    public Task<bool> ShutdownCompletion => _shutdownCompletion.Task;
 
     internal Lock Gate => _gate;
     internal bool IsDisposed => _disposed;
@@ -257,10 +259,28 @@ public partial class MpvPlayer : IDisposable
             _mpvHandle = IntPtr.Zero;
         }
 
-        OpenGlRenderer.Dispose();
+        try
+        {
+            OpenGlRenderer.Dispose();
+        }
+        finally
+        {
+            _ = CompleteShutdownAsync(handle);
+        }
+    }
 
-        ShutdownCompletion = Task.Run(() => MpvPlayerLifecycle.Dispose(
-            handle, _commandQueue, _eventLoop, UnobservePlaybackProperties));
+    private async Task CompleteShutdownAsync(IntPtr handle)
+    {
+        try
+        {
+            var stopped = await Task.Run(() => MpvPlayerLifecycle.Dispose(
+                handle, _commandQueue, _eventLoop, UnobservePlaybackProperties)).ConfigureAwait(false);
+            _shutdownCompletion.TrySetResult(stopped);
+        }
+        catch (Exception ex)
+        {
+            _shutdownCompletion.TrySetException(ex);
+        }
     }
 
     public void FreeRenderContext() => OpenGlRenderer.ResetRenderContext();

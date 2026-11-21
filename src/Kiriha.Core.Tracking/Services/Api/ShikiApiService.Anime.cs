@@ -25,8 +25,10 @@ public partial class ShikiApiService
 
         try
         {
+            var url = ShikiBaseUrl + $"animes/{malId}";
             var result = await _httpCache.SendForResultAsync(
-                requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, ShikiBaseUrl + $"animes/{malId}")),
+                url,
+                requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, url)),
                 ct: ct,
                 localTtl: force ? TimeSpan.Zero : TimeSpan.FromHours(6));
 
@@ -42,7 +44,8 @@ public partial class ShikiApiService
             }
 
             using var doc = JsonDocument.Parse(result.Body);
-            return ShikiParser.ParseAiringInfo(doc.RootElement, malId);
+            var airing = ShikiParser.ParseAiringInfo(doc.RootElement, malId);
+            return airing is not null && result.IsStaleFallback ? airing with { IsStaleFallback = true } : airing;
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
@@ -66,6 +69,7 @@ public partial class ShikiApiService
     {
         var franchiseUrl = ShikiBaseUrl + $"animes/{animeId}/franchise";
         var bytes = await _httpCache.SendAsync(
+            franchiseUrl,
             requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, franchiseUrl)),
             ct: ct,
             localTtl: TimeSpan.FromDays(30));

@@ -13,6 +13,7 @@ internal sealed class TorrServerUsage(
     private static readonly TimeSpan ReleaseTimeout = TimeSpan.FromSeconds(5);
     private readonly Lock _pendingGate = new();
     private readonly HashSet<Task> _pendingReleases = [];
+    private readonly HashSet<string> _failedReleases = new(StringComparer.Ordinal);
 
     internal async Task<FileStream> LockEndpointAsync(string endpoint, CancellationToken ct)
     {
@@ -64,6 +65,7 @@ internal sealed class TorrServerUsage(
         }
         catch (FileNotFoundException) when (requireMarker)
         {
+            SetReleaseFailure(path, false);
             return true;
         }
         catch (FileNotFoundException)
@@ -73,14 +75,19 @@ internal sealed class TorrServerUsage(
         }
         catch (IOException ex) when (IsSharingViolation(ex))
         {
+            SetReleaseFailure(path, false);
             return true;
         }
 
         // The endpoint gate keeps new leases and additions out until removal has finished.
         if (!await remove(endpoint, hash, ct).ConfigureAwait(false))
+        {
+            SetReleaseFailure(path, true);
             return false;
+        }
 
         File.Delete(path);
+        SetReleaseFailure(path, false);
         return true;
     }
 
@@ -91,6 +98,22 @@ internal sealed class TorrServerUsage(
             pending = [.. _pendingReleases];
 
         await Task.WhenAll(pending).WaitAsync(ct).ConfigureAwait(false);
+        lock (_pendingGate)
+        {
+            if (_failedReleases.Any(File.Exists))
+                throw new IOException("Some TorrServer torrents could not be released.");
+        }
+    }
+
+    private void SetReleaseFailure(string path, bool failed)
+    {
+        lock (_pendingGate)
+        {
+            if (failed)
+                _failedReleases.Add(path);
+            else
+                _failedReleases.Remove(path);
+        }
     }
 
     private void ScheduleRelease(string endpoint, string hash)
@@ -123,6 +146,7 @@ internal sealed class TorrServerUsage(
         }
         catch (Exception ex)
         {
+            SetReleaseFailure(GetUsagePath(endpoint, hash), true);
             Log.Warning(ex, "Failed to release torrent {Hash} at {Endpoint}", hash, endpoint);
         }
     }

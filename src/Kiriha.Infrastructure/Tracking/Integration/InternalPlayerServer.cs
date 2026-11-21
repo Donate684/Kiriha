@@ -37,7 +37,7 @@ public partial class InternalPlayerServer : BackgroundService, IInternalPlayerSe
     }
 
     private PlayerMediaMetadata? _latestMetadata;
-    private PlayerMediaMetadata? _pendingPlaybackMetadata;
+    private readonly Dictionary<string, PlayerMediaMetadata> _pendingPlaybackMetadata = new(StringComparer.Ordinal);
     private bool _sendLegacyMetadataOnAccept;
     private InternalPlayerState? _latestState;
     private ClientSession? _activeSession;

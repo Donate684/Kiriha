@@ -7,13 +7,12 @@ namespace Kiriha.Core.Tracking.Feed;
 
 public class NyaaFeedClient
 {
-    private readonly HttpClient _httpClient;
+    private static readonly TimeSpan FeedSearchTtl = TimeSpan.FromMinutes(1);
     private readonly HttpConditionalCache _httpCache;
 
-    public NyaaFeedClient(IHttpClientFactory httpClientFactory, IHttpCacheRepository httpCacheRepo)
+    public NyaaFeedClient(IHttpClientFactory httpClientFactory, IHttpCacheRepository httpCacheRepo, TimeProvider? clock = null)
     {
-        _httpClient = httpClientFactory.CreateClient("RssClient");
-        _httpCache = new HttpConditionalCache(_httpClient, httpCacheRepo, "Nyaa");
+        _httpCache = new HttpConditionalCache(httpClientFactory.CreateClient("RssClient"), httpCacheRepo, "Nyaa", clock);
     }
 
     public Task<XDocument?> FetchSearchAsync(string query, CancellationToken ct)
@@ -24,12 +23,10 @@ public class NyaaFeedClient
     private async Task<XDocument?> FetchRssDocumentAsync(string url, CancellationToken ct)
     {
         var bytes = await _httpCache.SendAsync(
-            requestFactory: innerCt =>
-            {
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-                return Task.FromResult(request);
-            },
-            ct: ct);
+            url,
+            requestFactory: _ => Task.FromResult(new HttpRequestMessage(HttpMethod.Get, url)),
+            ct: ct,
+            localTtl: FeedSearchTtl);
 
         if (bytes is null || bytes.Length == 0) return null;
 

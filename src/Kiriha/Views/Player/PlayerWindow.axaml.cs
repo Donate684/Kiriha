@@ -126,6 +126,8 @@ public partial class PlayerWindow : Window
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to initialize MPV player");
+            if (DataContext is PlayerViewModel playerViewModel)
+                playerViewModel.ReportPlaybackInitializationFailure();
         }
     }
 
@@ -140,12 +142,16 @@ public partial class PlayerWindow : Window
         VideoHost.RequestNextFrameRendering();
     }
 
+    internal Task<bool> ShutdownCompletion { get; private set; } = Task.FromResult(true);
+
     protected override void OnClosed(EventArgs e)
     {
         VideoHost.RenderContextReady -= OnVideoRenderContextReady;
 
         var dataContext = DataContext;
         DataContext = null;
+        var nativePlayer = _player;
+        bool cleanupSucceeded = true;
 
         try
         {
@@ -179,6 +185,7 @@ public partial class PlayerWindow : Window
         }
         catch (Exception ex)
         {
+            cleanupSucceeded = false;
             Log.Error(ex, "Failed to clean up overlay resources");
         }
         finally
@@ -187,21 +194,25 @@ public partial class PlayerWindow : Window
 
             try
             {
-                if (dataContext is IDisposable disposable)
+                if (dataContext is PlayerViewModel playerViewModel)
+                    playerViewModel.DisposeAfterPlaybackStops(nativePlayer?.ShutdownCompletion ?? Task.CompletedTask);
+                else if (dataContext is IDisposable disposable)
                     disposable.Dispose();
             }
             catch (Exception ex)
             {
+                cleanupSucceeded = false;
                 Log.Error(ex, "Failed to dispose PlayerViewModel");
             }
             finally
             {
                 try
                 {
-                    _player?.Dispose();
+                    nativePlayer?.Dispose();
                 }
                 catch (Exception ex)
                 {
+                    cleanupSucceeded = false;
                     Log.Error(ex, "Failed to dispose MpvPlayer");
                 }
                 finally
@@ -211,23 +222,15 @@ public partial class PlayerWindow : Window
             }
         }
 
+        ShutdownCompletion = FinishPlayerCleanupAsync(dataContext as PlayerViewModel, nativePlayer, cleanupSucceeded);
         base.OnClosed(e);
+    }
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            if (desktop.MainWindow == this)
-            {
-                var nextPlayerWindow = desktop.Windows.OfType<PlayerWindow>().FirstOrDefault(w => w != this && w.IsVisible);
-                if (nextPlayerWindow != null)
-                {
-                    desktop.MainWindow = nextPlayerWindow;
-                }
-                else
-                {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
-                }
-            }
-        }
+    private static async Task<bool> FinishPlayerCleanupAsync(PlayerViewModel? viewModel, MpvPlayer? player, bool succeeded)
+    {
+        var native = player?.ShutdownCompletion ?? Task.FromResult(true);
+        await Task.WhenAll(viewModel?.ShutdownCompletion ?? Task.CompletedTask, native).ConfigureAwait(false);
+        return succeeded && await native.ConfigureAwait(false);
     }
 
     private void CacheOverlayControls()
@@ -264,7 +267,7 @@ public partial class PlayerWindow : Window
             if (ext is ".ass" or ".srt")
                 vm.LoadSubtitle(path);
             else
-                vm.LoadVideo(path);
+                vm.LoadVideo(path, requestId: Guid.NewGuid().ToString("N"));
                 
             ShowControls();
         }

@@ -19,6 +19,7 @@ public sealed partial class AppStartupCoordinator
     {
         var sw = Stopwatch.StartNew();
         var services = new ServiceCollection();
+        services.AddSingleton<PlayerWindowShutdown>();
         if (isPlayerMode)
             ConfigurePlayerServices(services);
         else

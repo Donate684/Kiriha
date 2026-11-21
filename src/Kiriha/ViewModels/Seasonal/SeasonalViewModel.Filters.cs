@@ -1,5 +1,4 @@
 using Avalonia.Collections;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Models.Entities;
 
@@ -40,7 +39,7 @@ public partial class SeasonalViewModel
         var result = await Task.Run(() => SeasonalFilterEngine.Apply(request), CancellationToken.None);
         if (requestId != _applyFiltersRequestCount) return;
 
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        await _uiDispatcher.InvokeAsync(() =>
         {
             if (requestId != _applyFiltersRequestCount) return;
             ApplyFilterResult(result, userStore);
@@ -60,8 +59,6 @@ public partial class SeasonalViewModel
             DisplayItems = new AvaloniaList<AnimeEntity>(result.Items);
         }
 
-        // Mutate Status/IsHidden ONLY on DisplayItems — not on cached source items.
-        // This prevents corrupting the static _seasonalCache when switching seasons.
         foreach (var item in DisplayItems)
         {
             item.Status = userStore.TryGetValue(item.Id, out var status) ? status : UserAnimeStatus.None;
@@ -94,7 +91,7 @@ public partial class SeasonalViewModel
         if (DisplayItems.Count != items.Count) return false;
         for (int i = 0; i < items.Count; i++)
         {
-            if (DisplayItems[i].Id != items[i].Id) return false;
+            if (!ReferenceEquals(DisplayItems[i], items[i])) return false;
         }
         return true;
     }

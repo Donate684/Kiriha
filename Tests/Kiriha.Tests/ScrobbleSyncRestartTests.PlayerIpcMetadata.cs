@@ -9,6 +9,53 @@ namespace Kiriha.Tests;
 public sealed partial class ScrobbleSyncRestartTests
 {
     [Fact]
+    public async Task PlayerIpcMetadata_ConcurrentPreparedRequestsKeepTheirOwnMetadata()
+    {
+        using var timeout = new CancellationTokenSource(Timeout);
+        var ct = timeout.Token;
+        string pipeName = $"Kiriha.MetadataPrepared.{Guid.NewGuid():N}";
+        using var server = new InternalPlayerServer(pipeName);
+        await server.StartAsync(ct);
+        try
+        {
+            var firstMeta = Metadata("episode-01.mkv", "1", "first");
+            var secondMeta = Metadata("episode-02.mkv", "2", "second");
+            server.StagePlaybackMetadata(firstMeta);
+            server.StagePlaybackMetadata(secondMeta);
+            await using var first = await PlaybackPipe.ConnectAsync(pipeName, ct);
+            await using var second = await PlaybackPipe.ConnectAsync(pipeName, ct);
+
+            Assert.Equal(firstMeta, await first.HandshakeAsync(PlaybackState(firstMeta), ct));
+            await first.FenceAsync(ct);
+            Assert.Equal(secondMeta, await second.HandshakeAsync(PlaybackState(secondMeta), ct));
+            await second.FenceAsync(ct);
+            Assert.Equal(secondMeta.PlaybackRequestId, server.LatestState?.PlaybackRequestId);
+        }
+        finally
+        {
+            await server.StopAsync(CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public void NewExplicitRequestForSameUrlClearsPreviousHeadersSubtitleAndMetadata()
+    {
+        const string url = "https://example.test/media";
+        var headers = new Dictionary<string, string> { ["Referer"] = "https://example.test/previous" };
+        var metadata = Metadata("episode-01.mkv", "1", "first") with { AnimeId = 77 };
+        using var player = new PlayerViewModel(url, metadata, null, null, ILocalizer.Passthrough,
+            subtitleUrl: "previous.ass", headers: headers, requestId: "first");
+
+        player.LoadVideo(url, requestId: "second");
+
+        Assert.Null(player.StreamHeaders);
+        Assert.Null(player.PendingSubtitleUrl);
+        Assert.Null(player.AnimeId);
+        Assert.Equal(PlaybackOpeningState.Superseded, player.GetOpeningState("first"));
+        Assert.Equal(PlaybackOpeningState.Pending, player.GetOpeningState("second"));
+    }
+
+    [Fact]
     public async Task PlayerIpcMetadata_RoutesOnlyToTheMatchingOpenRequest()
     {
         using var timeout = new CancellationTokenSource(Timeout);

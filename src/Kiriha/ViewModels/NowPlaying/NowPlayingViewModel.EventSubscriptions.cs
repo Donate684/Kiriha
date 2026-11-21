@@ -56,7 +56,7 @@ public partial class NowPlayingViewModel
         // intermediate AnimeMatched(null) event clobber the user's choice.
         var prev = CurrentMedia;
         bool sameFile = media != null && prev != null
-            && string.Equals(prev.OriginalTitle, media.OriginalTitle, StringComparison.Ordinal);
+            && prev.HasSamePlaybackSource(media) && prev.HasSameSourceFile(media);
         if (!sameFile) Volatile.Write(ref _pendingManualMatchId, 0);
 
         CurrentMedia = media;
@@ -82,9 +82,9 @@ public partial class NowPlayingViewModel
 
     private Task EnsureLocalizedSafeAsync(AnimeEntity anime) =>
         EnsureLocalizedSafeAsync(anime, new MediaKey(anime.Id, anime.MediaKind),
-            _animeRepo.GetEntryGeneration(anime.Id, anime.MediaKind), _disposeCts.Token);
+            _animeRepo.GetEntryGeneration(anime.Id, anime.MediaKind), Volatile.Read(ref _matchRevision), _disposeCts.Token);
 
-    private async Task EnsureLocalizedSafeAsync(AnimeEntity anime, MediaKey key, long generation, CancellationToken ct)
+    private async Task EnsureLocalizedSafeAsync(AnimeEntity anime, MediaKey key, long generation, long revision, CancellationToken ct)
     {
         try
         {
@@ -99,7 +99,7 @@ public partial class NowPlayingViewModel
             Log.Debug(ex, "NowPlaying: EnsureLocalizedAsync failed for {Id}", anime.Id);
         }
 
-        if (!IsCurrentMatch(anime, key, generation, ct)) return;
+        if (!IsCurrentMatch(anime, key, generation, revision, ct)) return;
 
         UpdateAlternativeTitles(anime);
         UpdateCustomShareLinks(anime);

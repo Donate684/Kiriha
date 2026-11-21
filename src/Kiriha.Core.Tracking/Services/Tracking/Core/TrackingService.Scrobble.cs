@@ -28,12 +28,22 @@ public partial class TrackingService
             UpdateDiscordPresence(media, currentMatched);
     }
 
-    private void ApplyMatchedMedia(long version, AnimeEntity? matched)
+    private void ApplyMatchedMedia(long version, AnimeEntity? matched, AnimeEntity? details = null, AnimeEntity? previousMatch = null)
     {
         lock (_state)
         {
             if (!IsCurrentMediaVersion(version) || _currentMedia is not { } actualMedia)
                 return;
+
+            if (matched != null && details != null && matched.Id == details.Id && matched.MediaKind == details.MediaKind)
+                matched.MergeFullDetails(details, metadataOnly: true);
+            if (matched != null && previousMatch != null && matched.Id == previousMatch.Id && matched.MediaKind == previousMatch.MediaKind)
+            {
+                if (string.IsNullOrEmpty(matched.RussianTitle))
+                    matched.RussianTitle = previousMatch.RussianTitle;
+                if (string.IsNullOrEmpty(matched.RussianSynopsis))
+                    matched.RussianSynopsis = previousMatch.RussianSynopsis;
+            }
 
             _matchedAnime = matched;
             PostForMedia(version, () => _eventBus.Publish(new AnimeMatchedMessage(matched)));
@@ -119,11 +129,12 @@ public partial class TrackingService
                 }
             }
 
-            if (matched is null && existingMatched != null && existingMatched.Id == animeId)
+            if (matched is null && existingMatched != null && existingMatched.Id == animeId && existingMatched.MediaKind == MediaKind.Anime)
             {
                 matched = existingMatched;
             }
 
+            AnimeEntity? details = null;
             if (matched is null)
             {
                 var fetched = await FetchDetailsFromTrackersAsync(animeId);
@@ -135,22 +146,10 @@ public partial class TrackingService
             }
             else if (matched.IsMissingDetails || (matched.MediaKind == MediaKind.Anime && matched.TotalEpisodes <= 0))
             {
-                var fetched = await FetchDetailsFromTrackersAsync(animeId);
-                if (fetched != null)
-                {
-                    matched.MergeFullDetails(fetched);
-                }
+                details = await FetchDetailsFromTrackersAsync(animeId);
             }
 
-            if (matched != null && existingMatched != null && existingMatched.Id == matched.Id)
-            {
-                if (string.IsNullOrEmpty(matched.RussianTitle) && !string.IsNullOrEmpty(existingMatched.RussianTitle))
-                    matched.RussianTitle = existingMatched.RussianTitle;
-                if (string.IsNullOrEmpty(matched.RussianSynopsis) && !string.IsNullOrEmpty(existingMatched.RussianSynopsis))
-                    matched.RussianSynopsis = existingMatched.RussianSynopsis;
-            }
-
-            ApplyMatchedMedia(version, matched);
+            ApplyMatchedMedia(version, matched, details, existingMatched);
         }
         catch (Exception ex)
         {
