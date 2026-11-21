@@ -1,5 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Tracking.Auth;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
@@ -114,7 +115,8 @@ public partial class MalApiService
 
         // If 401 occurs but we still have credentials configured in settings,
         // token refresh might have suffered a transient network error. Allow SyncManager to retry.
-        if (status == System.Net.HttpStatusCode.Unauthorized && IsEnabled)
+        if (status == System.Net.HttpStatusCode.Unauthorized &&
+            (IsEnabled || TrackerRequestAccount.Pinned(TrackerId) != null))
         {
             Log.Warning("MalApiService: 401 Unauthorized with active credentials; treating as transient failure");
             return SyncOutcome.TransientFailure;

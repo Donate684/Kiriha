@@ -258,6 +258,8 @@ public partial class SettingsAuthViewModel : ObservableObject
         }
         else
         {
+            acc.Id = Guid.NewGuid().ToString("N");
+            acc.Username = string.Empty;
             acc.IsEnabled = true;
             if (shouldBePrimary)
             {
@@ -267,6 +269,13 @@ public partial class SettingsAuthViewModel : ObservableObject
         }
 
         acc.Tokens = tokens;
+        acc.AuthenticatedUserId = tokens switch
+        {
+            MalTokens mal => mal.UserId,
+            ShikiTokens shiki => shiki.UserId,
+            AniListTokens aniList => aniList.UserId,
+            _ => null
+        };
         if (!string.IsNullOrEmpty(username)) acc.Username = username;
         if (shouldBePrimary)
         {

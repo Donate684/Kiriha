@@ -49,6 +49,7 @@ public class HistoryActionConverter : IValueConverter
                 10 => "PauseCircleOutline",   // OnHold
                 11 => "Repeat",               // Rewatching
                 12 => "PlaylistPlus",         // AddedToList
+                13 => "PencilOutline",        // Edited
                 _ => "CheckCircleOutline"
             };
         }
@@ -74,6 +75,7 @@ public class HistoryActionConverter : IValueConverter
             10 => "history.actions.on_hold",
             11 => "history.actions.rewatching",
             12 => "history.actions.added_to_list",
+            13 => "history.actions.edited",
             _ => "history.actions.watched"
         };
 

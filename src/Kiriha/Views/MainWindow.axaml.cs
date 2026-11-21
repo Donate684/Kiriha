@@ -151,8 +151,10 @@ public partial class MainWindow : KirihaWindowBase
 #if DEBUG
         if (e.Key == Avalonia.Input.Key.F9 && DataContext is Kiriha.ViewModels.Main.MainWindowViewModel debugVm)
         {
-            debugVm.TestPlayer();
             e.Handled = true;
+            var command = debugVm.TestPlayerCommand;
+            if (command.CanExecute(null))
+                command.Execute(null);
         }
 #endif
     }

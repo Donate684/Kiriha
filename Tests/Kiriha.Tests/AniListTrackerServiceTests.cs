@@ -13,6 +13,48 @@ namespace Kiriha.Tests;
 
 public sealed class AniListTrackerServiceTests
 {
+    [Theory]
+    [InlineData(MediaKind.Anime, "Edited note")]
+    [InlineData(MediaKind.Manga, "")]
+    public async Task SaveFullListStatusAsync_IncludesNotesAndClearsThemWhenEmpty(MediaKind kind, string notes)
+    {
+        var config = new AppSettings();
+        config.Api.Accounts.Add(new TrackerAccount
+        {
+            TrackerId = TrackerConstants.Ids.AniList,
+            Tokens = new AniListTokens { AccessToken = "test-token" }
+        });
+        var settings = Mock.Of<ISettingsService>(service => service.Current == config);
+        using var handler = new ListMutationHandler();
+        using var client = new HttpClient(handler);
+        using var api = new AniListApiService(client, Mock.Of<IHttpCacheRepository>(), settings);
+        await api.CacheMediaMappingAsync(777, kind == MediaKind.Anime ? "ANIME" : "MANGA", 987, false);
+
+        var outcome = await api.SaveFullListStatusAsync(new AnimeEntity
+        {
+            Id = 777, MediaKind = kind, Notes = notes, Status = UserAnimeStatus.OnHold
+        });
+
+        Assert.Equal(SyncOutcome.Success, outcome);
+        using var json = JsonDocument.Parse(Assert.IsType<string>(handler.Body));
+        Assert.Contains("notes: $notes", json.RootElement.GetProperty("query").GetString());
+        Assert.Equal(notes, json.RootElement.GetProperty("variables").GetProperty("notes").GetString());
+    }
+
+    private sealed class ListMutationHandler : HttpMessageHandler
+    {
+        public string? Body { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Body = await Assert.IsAssignableFrom<HttpContent>(request.Content).ReadAsStringAsync(ct);
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"data":{"SaveMediaListEntry":{"id":987}}}""")
+            };
+        }
+    }
+
     [Fact]
     public void AniListApiService_IdentifiesAsAniListTracker_AndChecksEnabledState()
     {

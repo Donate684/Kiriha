@@ -77,19 +77,13 @@ public partial class AnimeMetadataViewModel : ObservableObject
         OnPropertyChanged(nameof(AllAlternativeTitles));
     }
 
-    public async Task<AnimeEntity?> LoadFullDetailsAsync()
+    internal Task<AnimeEntity?> FetchFullDetailsAsync() => _anime.Presentation.IsManga
+        ? _malApiService.GetMangaDetailsAsync(_anime.Id)
+        : _malApiService.GetAnimeDetailsAsync(_anime.Id);
+
+    internal void ApplyFullDetails(AnimeEntity full)
     {
-        var full = _anime.Presentation.IsManga
-            ? await _malApiService.GetMangaDetailsAsync(_anime.Id)
-            : await _malApiService.GetAnimeDetailsAsync(_anime.Id);
-
-        if (full != null)
-        {
-            _anime.MergeFullDetails(full);
-            _anime.RefreshMetadata();
-            NotifyMetadataChanged();
-        }
-
-        return full;
+        _anime.MergeFullDetails(full, metadataOnly: true);
+        NotifyMetadataChanged();
     }
 }

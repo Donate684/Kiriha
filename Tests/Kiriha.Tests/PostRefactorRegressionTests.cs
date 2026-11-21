@@ -12,6 +12,7 @@ using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Models.TorrServer;
 using Kiriha.Core.Streaming.Abstractions;
+using Kiriha.Core.Streaming.Models;
 using Kiriha.Core.Streaming.Services;
 using Kiriha.Core.Tracking.Api;
 using Kiriha.Core.Tracking.Core;
@@ -31,6 +32,63 @@ namespace Kiriha.Tests;
 [Collection("Sequential")]
 public sealed class PostRefactorRegressionTests
 {
+    [Fact]
+    public async Task OnlinePlayback_ChangingEpisodeCancelsOlderExtractionAndOpensOnlyTheNewSource()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var oldExtraction = new TaskCompletionSource<IReadOnlyList<StreamingVideo>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var streaming = new Mock<IStreamingService>();
+        const string firstUrl = "https://fixture.example/embed/first";
+        const string secondUrl = "https://fixture.example/video/second.m3u8";
+        streaming.Setup(s => s.ResolveStreamAsync(firstUrl, It.IsAny<CancellationToken>())).Returns(oldExtraction.Task);
+        streaming.Setup(s => s.ResolveStreamAsync(secondUrl, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        streaming.Setup(s => s.GetEpisodeSourcesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(),
+            It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        var animeRepo = new Mock<IAnimeRepository>();
+        animeRepo.SetupGet(r => r.Collection).Returns(new ObservableCollection<AnimeEntity>());
+        var filters = new Mock<ITorrentFilterRepository>();
+        filters.Setup(f => f.GetHiddenAnimeIds()).Returns(new HashSet<int>());
+        var viewModel = new TorrentsViewModel(Mock.Of<IRssFeedService>(), animeRepo.Object,
+            CreateMockSettings().Object, filters.Object, Mock.Of<ITorrServerService>(),
+            CreateMockLocalizer().Object, streaming.Object);
+        var first = new OnlineEpisodeItem(new StreamingEpisode { EpisodeNumber = 1, Title = "First" });
+        var second = new OnlineEpisodeItem(new StreamingEpisode { EpisodeNumber = 2, Title = "Second" });
+        var previousSource = new OnlineSourceItem(new StreamingSource { Title = "First source", PlayerUrl = firstUrl });
+        var currentSource = new OnlineSourceItem(new StreamingSource { Title = "Second source", PlayerUrl = secondUrl });
+        viewModel.ActiveOnlineAnime = new OnlineAnimeItem(new StreamingSearchResult
+        {
+            Id = "series", Title = "Fixture anime", ProviderName = "Fixture", Url = "https://fixture.example/series"
+        });
+        viewModel.SelectedOnlineEpisode = first;
+        viewModel.OnlineEpisodes.Add(first);
+        viewModel.OnlineEpisodes.Add(second);
+        viewModel.OnlineSources.Add(previousSource);
+
+        var launched = new List<string?>();
+        PlayerProcessHelper.LaunchOverrideForTests = (url, _, _, _, _, _, _, _, _) => launched.Add(url);
+        try
+        {
+            var firstLaunch = viewModel.PlayOnlineSourceAsync(previousSource);
+            Assert.True(viewModel.IsPlayerLaunching);
+            await viewModel.SelectOnlineEpisodeAsync(second).WaitAsync(timeout.Token);
+            Assert.False(viewModel.IsPlayerLaunching);
+            oldExtraction.SetResult([new StreamingVideo { Url = "https://fixture.example/video/old.mp4", VideoType = "mp4" }]);
+            await firstLaunch.WaitAsync(timeout.Token);
+            Assert.Empty(launched);
+            Assert.Same(second, viewModel.SelectedOnlineEpisode);
+
+            viewModel.OnlineSources.Add(currentSource);
+            await viewModel.PlayOnlineSourceAsync(currentSource).WaitAsync(timeout.Token);
+            Assert.Equal(new[] { secondUrl }, launched);
+        }
+        finally
+        {
+            oldExtraction.TrySetResult([]);
+            viewModel.CloseOnlineEpisodeSelector();
+            PlayerProcessHelper.LaunchOverrideForTests = null;
+        }
+    }
+
     private sealed class DelegatingHandlerStub(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
@@ -142,6 +200,59 @@ public sealed class PostRefactorRegressionTests
         }
         finally
         {
+            PlayerProcessHelper.LaunchOverrideForTests = null;
+        }
+    }
+
+    [Fact]
+    public async Task TorrentsViewModel_LateMetadataFromReplacedLaunch_DoesNotOpenPreviousFile()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var firstWaiting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lateFiles = new TaskCompletionSource<IReadOnlyList<TorrServerFileItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var newLaunch = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tracker = new Mock<ITorrServerService>();
+        tracker.Setup(t => t.EnsureRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        tracker.Setup(t => t.AddTorrentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string _, string title, CancellationToken _) => new TorrServerTorrentStatus { Hash = title });
+        tracker.Setup(t => t.WaitForFilesAsync("previous", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                firstWaiting.TrySetResult();
+                return lateFiles.Task; // A delayed response can still arrive after cancellation.
+            });
+        tracker.Setup(t => t.WaitForFilesAsync("current", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        tracker.Setup(t => t.GetStreamUrl(It.IsAny<string>(), -1, It.IsAny<string>())).Returns("http://127.0.0.1/stream");
+        var library = new Mock<IAnimeRepository>();
+        library.SetupGet(r => r.Collection).Returns(new ObservableCollection<AnimeEntity>());
+        var filters = Mock.Of<ITorrentFilterRepository>(repository => repository.GetHiddenAnimeIds() == new HashSet<int>());
+        var viewModel = new TorrentsViewModel(Mock.Of<IRssFeedService>(), library.Object, CreateMockSettings().Object,
+            filters, tracker.Object, CreateMockLocalizer().Object);
+        var launchedHashes = new List<string?>();
+        PlayerProcessHelper.LaunchOverrideForTests = (_, _, _, _, _, hash, _, _, _) =>
+        {
+            launchedHashes.Add(hash);
+            newLaunch.TrySetResult(hash);
+        };
+
+        try
+        {
+            var first = viewModel.PlayTorrentAsync(new TorrentEntity { Title = "previous", MagnetLink = "magnet:?previous" });
+            await firstWaiting.Task.WaitAsync(timeout.Token);
+            var second = viewModel.PlayTorrentAsync(new TorrentEntity { Title = "current", MagnetLink = "magnet:?current" });
+            Assert.Equal("current", await newLaunch.Task.WaitAsync(timeout.Token));
+            lateFiles.SetResult([]);
+            await first.WaitAsync(timeout.Token);
+            Assert.Equal(new[] { "current" }, launchedHashes);
+            Assert.True(viewModel.IsPlayerLaunching);
+            Assert.Null(viewModel.StreamingErrorMessage);
+            viewModel.CancelPlayerLaunching();
+            await second.WaitAsync(timeout.Token);
+        }
+        finally
+        {
+            lateFiles.TrySetResult([]);
             PlayerProcessHelper.LaunchOverrideForTests = null;
         }
     }
@@ -436,6 +547,8 @@ public sealed class PostRefactorRegressionTests
         var shikiApiMock = new Mock<IShikiApiService>();
         var animeRepoMock = new Mock<IAnimeRepository>();
         animeRepoMock.SetupGet(x => x.Collection).Returns(new ObservableCollection<AnimeEntity>());
+        animeRepoMock.Setup(x => x.RefreshEditorDetailsAsync(original, fullFromApi, 0, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AnimeEditFields.From(fullFromApi), 1L));
         var franchiseMock = new Mock<IFranchiseService>();
         var listActionMock = new Mock<IAnimeListActionService>();
         var dialogsMock = new Mock<IDialogService>();

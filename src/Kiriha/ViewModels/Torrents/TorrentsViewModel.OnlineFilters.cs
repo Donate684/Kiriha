@@ -345,6 +345,11 @@ public partial class TorrentsViewModel
 
     partial void OnIsOnlineModeChanged(bool value)
     {
+        _searchCts?.Cancel();
+        IsLoading = false;
+        if (!value && IsOnlineEpisodeSelectorVisible)
+            CloseOnlineEpisodeSelector();
+
         if (!_suppressOnlineFilterPersist)
         {
             _settingsService.Update(settings => settings.Torrents.IsOnlineMode = value, SettingsSection.Torrents);

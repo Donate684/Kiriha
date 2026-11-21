@@ -1,4 +1,6 @@
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Tracking.Auth;
 using Serilog;
 
@@ -9,8 +11,6 @@ public class MalTokenManager : IDisposable
     private readonly ISettingsService _settingsService;
     private readonly MalAuthService _authService;
     private readonly SemaphoreSlim _tokenRefreshLock = new(1, 1);
-    private int _refreshFailures;
-    private const int MaxRefreshFailures = 3;
 
     public MalTokenManager(ISettingsService settingsService, MalAuthService authService)
     {
@@ -20,15 +20,23 @@ public class MalTokenManager : IDisposable
 
     public async Task<string?> EnsureValidTokenAsync(CancellationToken ct = default, bool forceRefresh = false, string? failedToken = null)
     {
-        var tokens = _settingsService.Current.Api.Mal;
+        var account = TrackerRequestAccount.Pinned(TrackerConstants.Ids.Mal);
+        var api = _settingsService.Current.Api;
+        var loginId = account?.Id ?? api.GetAccount(TrackerConstants.Ids.Mal)?.Id;
+        var tokens = account is null ? api.Mal : account.Tokens as MalTokens;
         if (tokens is null) return null;
         if (!forceRefresh && !tokens.IsExpired) return tokens.AccessToken;
 
         await _tokenRefreshLock.WaitAsync(ct);
         try
         {
-            tokens = _settingsService.Current.Api.Mal;
-            if (tokens is null) return null;
+            api = _settingsService.Current.Api;
+            if (api.GetAccount(TrackerConstants.Ids.Mal)?.Id == loginId && api.Mal is { } current)
+            {
+                tokens = current;
+                if (account != null)
+                    account.Tokens = current.Clone();
+            }
 
             // If another thread already refreshed the token while we were waiting for the lock,
             // we can use the freshly obtained token if it is not expired and differs from the failed token.
@@ -40,24 +48,35 @@ public class MalTokenManager : IDisposable
             var newTokens = await _authService.RefreshTokenAsync(tokens.RefreshToken, ct);
             if (newTokens != null)
             {
-                _refreshFailures = 0;
-                _settingsService.Update(settings => settings.Api.Mal = newTokens, SettingsSection.Api, save: false);
-                _settingsService.SaveImmediate();
+                newTokens.UserId = tokens.UserId;
+                SaveReplacement(loginId, tokens, newTokens);
+                if (account != null)
+                    account.Tokens = newTokens;
                 return newTokens.AccessToken;
             }
 
-            _refreshFailures++;
-            Log.Warning("MalTokenManager: refresh attempt failed ({Count}/{Max})", _refreshFailures, MaxRefreshFailures);
-            if (_refreshFailures >= MaxRefreshFailures)
-            {
-                Log.Warning("MalTokenManager: clearing saved tokens after {Count} consecutive refresh failures. User must re-authenticate.", _refreshFailures);
-                _settingsService.Update(settings => settings.Api.Mal = null, SettingsSection.Api, save: false);
-                _settingsService.SaveImmediate();
-                _refreshFailures = 0;
-            }
+            // A failed refresh can be a network outage. Keep the login and its queued edits.
+            Log.Warning("MalTokenManager: refresh failed; keeping saved credentials");
             return null;
         }
         finally { _tokenRefreshLock.Release(); }
+    }
+
+    private void SaveReplacement(string? loginId, MalTokens previous, MalTokens replacement)
+    {
+        bool changed = false;
+        _settingsService.Update(settings =>
+        {
+            if (settings.Api.GetAccount(TrackerConstants.Ids.Mal)?.Id != loginId ||
+                settings.Api.Mal is not { } current || current.AccessToken != previous.AccessToken ||
+                current.RefreshToken != previous.RefreshToken)
+                return;
+
+            settings.Api.Mal = replacement;
+            changed = true;
+        }, SettingsSection.Api, save: false);
+        if (changed)
+            _settingsService.SaveImmediate();
     }
 
     public void Dispose()

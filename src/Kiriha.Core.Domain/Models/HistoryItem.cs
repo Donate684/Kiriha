@@ -58,7 +58,7 @@ public class HistoryItem
         }
     }
 
-    public void SetTrackerStatus(string trackerName, TrackerSyncState state, string? error = null)
+    public void SetTrackerStatus(string trackerName, TrackerSyncState state, string? error = null, SyncTaskEntity? originalTask = null)
     {
         var dict = TrackerStatuses;
         if (!dict.TryGetValue(trackerName, out var info))
@@ -69,6 +69,8 @@ public class HistoryItem
         info.State = state;
         info.ErrorMessage = error;
         info.UpdatedAt = DateTime.UtcNow;
+        if (originalTask != null)
+            info.OriginalTask = originalTask;
         TrackerStatusJson = JsonSerializer.Serialize(dict);
     }
 }

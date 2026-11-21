@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using System.Text;
 using Serilog;
 
 namespace Kiriha.Infrastructure.Player;
@@ -10,37 +11,41 @@ public static class PlayerProcessBridge
     public const string ResidentArg = "--player-resident";
     public const string ShutdownArg = "--shutdown-player";
     public const string UpdateMetadataArg = "--player-update-metadata";
+    public const string PlaybackRequestArg = "--playback-request";
 
     public static bool IsResident(string[] args) =>
         Array.Exists(args, arg => arg.Equals(ResidentArg, StringComparison.OrdinalIgnoreCase));
 
-    public static bool TryForward(string[] args, int timeoutMs = 3000)
+    private const int ForwardTimeoutMs = 3000;
+    private const int ShutdownTimeoutMs = 500;
+
+    public static bool TryForward(string[] args, int timeoutMs = ForwardTimeoutMs) =>
+        TryForwardAsync(args, timeoutMs).GetAwaiter().GetResult();
+
+    public static Task<bool> TryForwardAsync(string[] args, int timeoutMs = ForwardTimeoutMs, CancellationToken ct = default) =>
+        SendCommandAsync(PipeName, args, TimeSpan.FromMilliseconds(timeoutMs), ct);
+
+    internal static async Task<bool> SendCommandAsync(string pipeName, string[] args, TimeSpan timeout, CancellationToken ct)
     {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(timeout);
         try
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < timeoutMs)
-            {
-                try
-                {
-                    using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
-                    var remaining = (int)Math.Max(50, timeoutMs - sw.ElapsedMilliseconds);
-                    client.Connect(Math.Min(remaining, 250));
-
-                    using var writer = new StreamWriter(client) { AutoFlush = true };
-                    writer.WriteLine(PipeArgumentSerializer.Serialize(args));
-                    writer.Flush();
-                    try { client.WaitForPipeDrain(); } catch { }
-                    return true;
-                }
-                catch (TimeoutException) { }
-                catch (IOException) { Thread.Sleep(50); }
-                catch { Thread.Sleep(50); }
-            }
+            using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.Out,
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+            var frame = Encoding.UTF8.GetBytes(PipeArgumentSerializer.Serialize(args) + "\n");
+            await client.ConnectAsync(deadline.Token).ConfigureAwait(false);
+            await client.WriteAsync(frame.AsMemory(), deadline.Token).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
             return false;
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            ct.ThrowIfCancellationRequested();
+            Log.Debug(ex, "Player command pipe unavailable");
             return false;
         }
     }
@@ -167,7 +172,7 @@ public static class PlayerProcessBridge
         {
             s_lastForwardedKey = null;
         }
-        return Task.Run(() => TryForward(["--player", ShutdownArg], timeoutMs: 500));
+        return TryForwardAsync(["--player", ShutdownArg], timeoutMs: ShutdownTimeoutMs);
     }
 
     private static string? s_lastForwardedKey;
@@ -222,7 +227,7 @@ public static class PlayerProcessBridge
         {
             for (int attempt = 0; attempt < 5; attempt++)
             {
-                if (TryForward(args, timeoutMs: 1000))
+                if (await TryForwardAsync(args, timeoutMs: 1000).ConfigureAwait(false))
                 {
                     lock (s_forwardGate)
                     {

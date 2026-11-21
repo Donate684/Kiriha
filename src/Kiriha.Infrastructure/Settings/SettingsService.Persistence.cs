@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using Kiriha.Core.Domain.Models;
 using Serilog;
 
@@ -6,6 +8,8 @@ namespace Kiriha.Infrastructure.Settings;
 
 public partial class SettingsService
 {
+    private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+
     public void SaveImmediate()
     {
         bool lockTaken = false;
@@ -64,9 +68,12 @@ public partial class SettingsService
 
     private void InternalSaveSync()
     {
-        if (CanSkipSave())
-            return;
+        if (!CanSkipSave())
+            WithFileLock(SaveFiles);
+    }
 
+    private void SaveFiles()
+    {
         EnsureDirectory();
 
         AppSettings snapshot;
@@ -77,80 +84,64 @@ public partial class SettingsService
             versions = GetVersions();
         }
 
-        bool forceAll = !File.Exists(_appSettingsPath)
-            && !File.Exists(_playerSettingsPath)
-            && !File.Exists(_torrentsSettingsPath)
-            && !File.Exists(_authSettingsPath)
-            && !File.Exists(_windowSettingsPath);
-
-        // 1. app.json
-        if (forceAll || versions.Ui != 0 || versions.System != 0 || versions.CustomLinks != 0 || !File.Exists(_appSettingsPath))
-        {
-            var appJson = SerializeAppConfig(snapshot);
-            if (!string.Equals(appJson, _lastSavedAppJson, StringComparison.Ordinal) || !File.Exists(_appSettingsPath))
-            {
-                AtomicWrite(_appSettingsPath, appJson);
-                _lastSavedAppJson = appJson;
-            }
-        }
-
-        // 2. player.json
-        if (forceAll || versions.Player != 0 || !File.Exists(_playerSettingsPath))
-        {
-            var playerJson = JsonSerializer.Serialize(snapshot.Player, AppSettingsJsonContext.Default.PlayerConfig);
-            if (!string.Equals(playerJson, _lastSavedPlayerJson, StringComparison.Ordinal) || !File.Exists(_playerSettingsPath))
-            {
-                AtomicWrite(_playerSettingsPath, playerJson);
-                _lastSavedPlayerJson = playerJson;
-            }
-        }
-
-        // 3. torrents.json
-        if (forceAll || versions.Torrents != 0 || !File.Exists(_torrentsSettingsPath))
-        {
-            var torrentsJson = SerializeTorrents(snapshot.Torrents);
-            if (!string.Equals(torrentsJson, _lastSavedTorrentsJson, StringComparison.Ordinal) || !File.Exists(_torrentsSettingsPath))
-            {
-                AtomicWrite(_torrentsSettingsPath, torrentsJson);
-                _lastSavedTorrentsJson = torrentsJson;
-            }
-        }
-
-        // 4. auth.json
-        if (forceAll || versions.Api != 0 || !File.Exists(_authSettingsPath))
-        {
-            var authJson = SerializeAuth(snapshot.Api);
-            if (!string.Equals(authJson, _lastSavedAuthJson, StringComparison.Ordinal) || !File.Exists(_authSettingsPath))
-            {
-                AtomicWrite(_authSettingsPath, authJson);
-                _lastSavedAuthJson = authJson;
-            }
-        }
-
-        // 5. window.json
-        if (forceAll || versions.Window != 0 || !File.Exists(_windowSettingsPath))
-        {
-            var windowJson = JsonSerializer.Serialize(snapshot.UI.Window, AppSettingsJsonContext.Default.WindowPlacement);
-            if (!string.Equals(windowJson, _lastSavedWindowJson, StringComparison.Ordinal) || !File.Exists(_windowSettingsPath))
-            {
-                AtomicWrite(_windowSettingsPath, windowJson);
-                _lastSavedWindowJson = windowJson;
-            }
-        }
+        var json = AppSettingsJsonContext.Default;
+        if (versions.Ui != 0 || versions.System != 0 || versions.CustomLinks != 0 || !File.Exists(_appSettingsPath))
+            SaveDocument(_appSettingsPath, GetAppConfig(snapshot), json.AppConfigFile, ref _savedApp);
+        if (versions.Player != 0 || !File.Exists(_playerSettingsPath))
+            SaveDocument(_playerSettingsPath, snapshot.Player, json.PlayerConfig, ref _savedPlayer);
+        if (versions.Torrents != 0 || !File.Exists(_torrentsSettingsPath))
+            SaveDocument(_torrentsSettingsPath, snapshot.Torrents, json.TorrentConfig, ref _savedTorrents, SerializeTorrents);
+        if (versions.Api != 0 || !File.Exists(_authSettingsPath))
+            SaveDocument(_authSettingsPath, snapshot.Api, json.ApiConfig, ref _savedAuth, SerializeAuth);
+        if (versions.Window != 0 || !File.Exists(_windowSettingsPath))
+            SaveDocument(_windowSettingsPath, snapshot.UI.Window, json.WindowPlacement, ref _savedWindow);
 
         MarkVersionsSaved(versions);
     }
 
-    private static string SerializeAppConfig(AppSettings settings)
+    private void SaveDocument<T>(string path, T snapshot, JsonTypeInfo<T> typeInfo, ref JsonObject? baseline,
+        Func<T, string>? serializeProtected = null) where T : class
     {
-        var file = new AppConfigFile
+        var current = ToJsonObject(snapshot, typeInfo);
+        if (JsonNode.DeepEquals(baseline, current) && File.Exists(path))
+            return;
+
+        var latest = ReadDocument(path, typeInfo, out bool hasValidPrimary);
+        if (latest != null && baseline == null)
         {
-            UI = settings.UI,
-            System = settings.System,
-            CustomLinks = settings.CustomLinks
-        };
-        return JsonSerializer.Serialize(file, AppSettingsJsonContext.Default.AppConfigFile);
+            // A document already initialized by another process wins over our defaults.
+            baseline = current;
+            return;
+        }
+
+        var encoded = serializeProtected == null
+            ? current
+            : JsonNode.Parse(serializeProtected(snapshot))?.AsObject() ?? throw new JsonException("Could not serialize protected settings.");
+        if (latest != null && baseline != null)
+        {
+            if (ApplyLocalChanges(baseline, current, encoded, latest) || !hasValidPrimary)
+                AtomicWrite(path, latest.ToJsonString(IndentedJson), hasValidPrimary);
+        }
+        else
+        {
+            AtomicWrite(path, encoded.ToJsonString(IndentedJson), hasValidPrimary);
+        }
+
+        // Advance each baseline only after its own write. Retrying another file must
+        // not overwrite a value that a different process changed after this write.
+        baseline = current;
     }
+
+    private static AppConfigFile GetAppConfig(AppSettings settings) => new()
+    {
+        UI = settings.UI,
+        System = settings.System,
+        CustomLinks = settings.CustomLinks
+    };
+
+    private static JsonObject ToJsonObject<T>(T settings, JsonTypeInfo<T> typeInfo) =>
+        JsonSerializer.SerializeToNode(settings, typeInfo)?.AsObject()
+            ?? throw new JsonException("Could not serialize settings.");
 
     private string SerializeAuth(AppSettings.ApiConfig api)
     {

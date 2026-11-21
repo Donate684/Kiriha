@@ -52,7 +52,15 @@ public partial class ShikiAuthService
         if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;
 
         var tokens = await ExchangeCodeForTokenAsync(code, targetMirror);
-        if (tokens != null) tokens.Mirror = targetMirror;
+        if (tokens != null)
+        {
+            tokens.Mirror = targetMirror;
+            using var request = new HttpRequestMessage(HttpMethod.Get, ShikiEndpoints.BaseUrl(targetMirror) + ShikiEndpoints.CurrentUserPath);
+            request.Headers.Add("User-Agent", AppInfo.UserAgent);
+            tokens.UserId = await TrackerAuthProfile.ReadUserIdAsync(
+                request, tokens.AccessToken, ct => ShikiHttp.SendShikiAsync(_httpClient, request, _hostResolver, ct),
+                cancellationToken);
+        }
         return tokens;
     }
 

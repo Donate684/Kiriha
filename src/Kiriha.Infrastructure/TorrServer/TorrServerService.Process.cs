@@ -8,32 +8,38 @@ namespace Kiriha.Infrastructure.TorrServer;
 
 public sealed partial class TorrServerService
 {
-    internal async Task<bool> PingServerAsync(CancellationToken ct)
+    private enum ServerProbe { Unreachable, OtherService, Ready }
+
+    internal async Task<bool> PingServerAsync(CancellationToken ct) =>
+        await ProbeServerAsync(ServerUrl, ct).ConfigureAwait(false) == ServerProbe.Ready;
+
+    private async Task<ServerProbe> ProbeServerAsync(string url, CancellationToken ct)
     {
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(EchoPingTimeout);
-            var response = await _httpClient.GetAsync($"{ServerUrl}/echo", cts.Token).ConfigureAwait(false);
+            using var response = await _httpClient.GetAsync($"{url}/echo", cts.Token).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
-                return false;
+                return ServerProbe.OtherService;
 
             var body = await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
-            return body.Contains("MatriX", StringComparison.OrdinalIgnoreCase);
+            return body.Contains("MatriX", StringComparison.OrdinalIgnoreCase) ? ServerProbe.Ready : ServerProbe.OtherService;
         }
-        catch
+        catch (Exception ex) when (ex is HttpRequestException ||
+            ex is OperationCanceledException && !ct.IsCancellationRequested)
         {
-            return false;
+            return ServerProbe.Unreachable;
         }
     }
 
-    private async Task ApplyMemorySettingsAsync(CancellationToken ct, bool isExternalInstance = false)
+    private async Task ApplyMemorySettingsAsync(string url, CancellationToken ct, bool isExternalInstance)
     {
         try
         {
-            if (isExternalInstance && await HasActiveTorrentsAsync(ct).ConfigureAwait(false))
+            if (isExternalInstance && !await IsServerIdleAsync(url, ct).ConfigureAwait(false))
             {
-                Logger.Debug("TorrServerService: Active torrents detected on running TorrServer instance. Skipping settings reset.");
+                Logger.Debug("TorrServerService: External server is busy or its torrent list is unavailable. Skipping settings reset.");
                 return;
             }
 
@@ -43,13 +49,13 @@ public sealed partial class TorrServerService
             JsonObject? setsObj = null;
             try
             {
-                var getResp = await _httpClient.PostAsJsonAsync($"{ServerUrl}/settings", new { action = "get" }, ct).ConfigureAwait(false);
+                using var getResp = await _httpClient.PostAsJsonAsync($"{url}/settings", new { action = "get" }, ct).ConfigureAwait(false);
                 if (getResp.IsSuccessStatusCode)
                 {
                     setsObj = await getResp.Content.ReadFromJsonAsync<JsonObject>(cancellationToken: ct).ConfigureAwait(false);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 Logger.Debug(ex, "TorrServerService: Could not query current settings before applying memory limits");
             }
@@ -115,7 +121,7 @@ public sealed partial class TorrServerService
                 sets = setsObj
             };
 
-            var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/settings", payload, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{url}/settings", payload, ct).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
                 Logger.Information("TorrServerService: RAM streaming cache configured to {Mb} MB (0 disk bytes, public trackers restored)", cacheMb);
@@ -123,26 +129,66 @@ public sealed partial class TorrServerService
                 await Task.Delay(800, ct).ConfigureAwait(false);
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             Logger.Warning(ex, "TorrServerService: Could not update TorrServer memory cache settings");
         }
     }
 
-    private async Task<bool> HasActiveTorrentsAsync(CancellationToken ct)
+    private async Task<bool> IsServerIdleAsync(string url, CancellationToken ct)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", new { action = "list" }, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{url}/torrents", new { action = "list" }, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return false;
 
             var array = await response.Content.ReadFromJsonAsync<JsonArray>(cancellationToken: ct).ConfigureAwait(false);
-            return array is { Count: > 0 };
+            return array is { Count: 0 };
         }
-        catch
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
+            Logger.Debug(ex, "TorrServerService: Cannot confirm external server is idle");
             return false;
+        }
+    }
+
+    private static Process? StartLocalProcess(int port)
+    {
+        var exePath = LocateExecutable();
+        if (exePath == null)
+        {
+            Logger.Error("TorrServerService: torrserver.exe was not found. Please run scripts/download-torrserver.ps1");
+            return null;
+        }
+
+        var dataDir = Platform.PathHelper.GetTorrServerDataPath();
+        Directory.CreateDirectory(dataDir);
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = exePath,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            WorkingDirectory = dataDir
+        };
+        foreach (var argument in new[] { "-p", port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                     "-d", dataDir, "-i", AppConstants.Api.TorrServer.DefaultHost })
+            startInfo.ArgumentList.Add(argument);
+
+        if (OperatingSystem.IsWindows())
+            startInfo.KillOnParentExit = true;
+
+        Logger.Information("TorrServerService: Launching local TorrServer on port {Port} from {Path}", port, exePath);
+        try
+        {
+            return Process.Start(startInfo);
+        }
+        catch (Exception ex) when (OperatingSystem.IsWindows() && startInfo.KillOnParentExit)
+        {
+            Logger.Warning(ex, "TorrServerService: Process.Start with KillOnParentExit failed; retrying without JobObject binding");
+            startInfo.KillOnParentExit = false;
+            return Process.Start(startInfo);
         }
     }
 

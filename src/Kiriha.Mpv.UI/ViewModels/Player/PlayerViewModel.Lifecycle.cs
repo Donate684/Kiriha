@@ -9,6 +9,10 @@ public partial class PlayerViewModel
 {
     public void Dispose()
     {
+        if (_playbackDisposed)
+            return;
+        _playbackDisposed = true;
+        CancelSourceStartup();
         try { _updateTracksCts?.Cancel(); } catch (Exception ex) { Log.Debug(ex, "Error canceling tracks CTS"); }
         try { _updateTracksCts?.Dispose(); } catch (Exception ex) { Log.Debug(ex, "Error disposing tracks CTS"); }
 
@@ -107,6 +111,8 @@ public partial class PlayerViewModel
             IsPlaying = IsPlaying,
             IsBuffering = IsBuffering,
             IsLoading = IsLoading,
+            HasPlaybackError = HasPlaybackError,
+            PlaybackRequestId = _activePlaybackRequestId,
             TorrentHash = TorrentHash
         };
     }

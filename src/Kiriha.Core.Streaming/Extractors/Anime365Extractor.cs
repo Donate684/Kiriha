@@ -59,7 +59,10 @@ public sealed partial class Anime365Extractor : IVideoExtractor
 
             if (string.IsNullOrWhiteSpace(transId))
             {
-                return [new StreamingVideo { Url = playerUrl, Quality = 1080, VideoType = DetectVideoType(playerUrl) }];
+                return StreamingMediaUrl.TryParse(playerUrl, out var directUri) &&
+                    StreamingMediaUrl.GetFileType(directUri) is { } directType
+                    ? [new StreamingVideo { Url = playerUrl, Quality = 1080, VideoType = directType }]
+                    : [];
             }
 
             var webEmbedUrl = $"{StreamingConstants.Anime365.EmbedWebUrlPrefix}{transId}";

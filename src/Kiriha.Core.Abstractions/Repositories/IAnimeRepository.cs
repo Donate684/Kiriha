@@ -11,6 +11,9 @@ public interface IAnimeRepository
     IEnumerable<AnimeEntity> GetCollection();
     AnimeEntity? FindById(int animeId, MediaKind kind = MediaKind.Anime) =>
         Collection?.FirstOrDefault(x => x.Id == animeId && x.MediaKind == kind);
+    long GetEntryGeneration(int animeId, MediaKind kind);
+    Task<(AnimeEditFields Fields, long Generation)?> RefreshEditorDetailsAsync(
+        AnimeEntity original, AnimeEntity details, long generation, CancellationToken ct = default);
 
     bool IsRecentlyDeleted(int animeId, MediaKind kind);
     Task AddOrUpdateAnimeAsync(AnimeEntity anime);

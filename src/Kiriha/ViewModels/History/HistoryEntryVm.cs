@@ -14,6 +14,7 @@ namespace Kiriha.ViewModels.History;
 public sealed class HistoryEntryVm : HistoryTimelineItem
 {
     public const string NotLoggedInLocKey = "history.tracker.not_logged_in";
+    public const string OriginalAccountLocKey = "history.tracker.original_account_required";
 
     public bool IsFirstInGroup { get; set; }
     public bool IsLastInGroup { get; set; }
@@ -62,7 +63,8 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
         Dictionary<string, TrackerSyncInfo> statuses,
         Func<string, Task>? onSync = null,
         Func<string, bool>? isTrackerEnabled = null,
-        IEnumerable<string>? orderedTrackers = null)
+        IEnumerable<string>? orderedTrackers = null,
+        Func<TrackerSyncInfo?, bool>? canRetry = null)
     {
         _onSync = onSync;
         _isTrackerEnabled = isTrackerEnabled;
@@ -75,7 +77,18 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
         }
 
         List<string> trackersToDisplay;
-        if (orderedTrackers != null)
+        var recordedTrackers = statuses.Where(entry => entry.Value.OriginalTask != null).Select(entry => entry.Key).ToList();
+        bool hasOriginalDestinations = recordedTrackers.Count > 0;
+        if (hasOriginalDestinations)
+        {
+            var order = (orderedTrackers ?? []).ToList();
+            trackersToDisplay = recordedTrackers.OrderBy(name =>
+            {
+                var index = order.FindIndex(candidate => string.Equals(candidate, name, StringComparison.OrdinalIgnoreCase));
+                return index >= 0 ? index : int.MaxValue;
+            }).ToList();
+        }
+        else if (orderedTrackers != null)
         {
             trackersToDisplay = orderedTrackers.ToList();
         }
@@ -102,28 +115,32 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
         {
             bool isEnabled = _isTrackerEnabled == null || _isTrackerEnabled(trackerName);
             // Strict rule: if the tracker is not logged in / not enabled, no badge is displayed at all.
-            if (!isEnabled) continue;
+            if (!isEnabled && !hasOriginalDestinations) continue;
 
             var shortName = GetDisplayName(trackerName);
             var state = TrackerSyncState.NotSynced;
             string? error = null;
 
-            var syncInfo = FindSyncInfo(statuses, trackerName);
+            var syncInfo = hasOriginalDestinations ? statuses[trackerName] : FindSyncInfo(statuses, trackerName);
             if (syncInfo != null)
             {
                 state = syncInfo.State;
                 error = syncInfo.ErrorMessage;
             }
 
-            string tooltip = FormatTooltip(trackerName, state, error, true);
+            bool maySend = canRetry?.Invoke(syncInfo) ?? true;
+            string tooltip = FormatTooltip(trackerName, state, error, isEnabled);
+            if (!maySend && state == TrackerSyncState.Failed && syncInfo?.OriginalTask != null)
+                tooltip = _localizer.GetLoc(OriginalAccountLocKey, trackerName);
 
             TrackerBadges.Add(new TrackerStatusBadgeVm(
                 trackerName,
                 shortName,
                 state,
                 tooltip,
-                true,
-                _onSync != null ? () => _onSync(trackerName) : null));
+                isEnabled,
+                _onSync != null && maySend ? () => _onSync(trackerName) : null,
+                setPendingOnClick: canRetry == null));
         }
 
         OnPropertyChanged(nameof(HasTrackerBadges));
@@ -234,6 +251,7 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
                 ? _localizer.GetLoc("history.tracker.failed", trackerName, error)
                 : _localizer.GetLoc("history.tracker.failed_generic", trackerName),
             TrackerSyncState.NotSynced => _localizer.GetLoc("history.tracker.not_synced", trackerName),
+            TrackerSyncState.Superseded => _localizer.GetLoc("history.tracker.superseded", trackerName),
             _ => trackerName
         };
     }
@@ -242,6 +260,7 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
 public sealed partial class TrackerStatusBadgeVm : ObservableObject
 {
     private readonly Func<Task>? _syncAction;
+    private readonly bool _setPendingOnClick;
 
     public string TrackerName { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
@@ -267,7 +286,8 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
     [ObservableProperty]
     private string _tooltip = string.Empty;
 
-    public bool IsClickable => IsEnabled && State != TrackerSyncState.Pending && State != TrackerSyncState.Success;
+    public bool IsClickable => IsEnabled && _syncAction != null &&
+        State is TrackerSyncState.NotSynced or TrackerSyncState.Failed or TrackerSyncState.Retrying;
     public string CursorKind => IsClickable ? "Hand" : "Arrow";
 
     public TrackerStatusBadgeVm() { }
@@ -278,7 +298,8 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
         TrackerSyncState state,
         string tooltip,
         bool isEnabled,
-        Func<Task>? syncAction = null)
+        Func<Task>? syncAction = null,
+        bool setPendingOnClick = true)
     {
         TrackerName = trackerName;
         DisplayName = displayName;
@@ -286,6 +307,7 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
         _tooltip = tooltip;
         _isEnabled = isEnabled;
         _syncAction = syncAction;
+        _setPendingOnClick = setPendingOnClick;
     }
 
     [RelayCommand(CanExecute = nameof(CanSync))]
@@ -294,7 +316,8 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
         if (!IsClickable) return;
         if (_syncAction != null)
         {
-            State = TrackerSyncState.Pending;
+            if (_setPendingOnClick)
+                State = TrackerSyncState.Pending;
             await _syncAction();
         }
     }
@@ -325,6 +348,7 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
         TrackerSyncState.Pending => "ClockOutline",
         TrackerSyncState.Failed => "CloseCircle",
         TrackerSyncState.NotSynced => IsEnabled ? "CloudUploadOutline" : "CloudOffOutline",
+        TrackerSyncState.Superseded => "History",
         _ => "HelpCircleOutline"
     };
 

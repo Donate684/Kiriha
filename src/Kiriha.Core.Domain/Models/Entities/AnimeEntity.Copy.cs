@@ -99,11 +99,14 @@ public partial class AnimeEntity
     /// preserving user progress/status unless the target had none.
     /// </summary>
     public void MergeFullDetails(AnimeEntity source)
+        => MergeFullDetails(source, metadataOnly: false);
+
+    public void MergeFullDetails(AnimeEntity source, bool metadataOnly)
     {
         if (source is null) return;
 
         if (!string.IsNullOrEmpty(source.Type)) Type = source.Type;
-        MediaKind = source.MediaKind;
+        if (!metadataOnly) MediaKind = source.MediaKind;
         if (!string.IsNullOrEmpty(source.StatusDetailed)) StatusDetailed = source.StatusDetailed;
         if (source.TotalEpisodes > 0 && TotalEpisodes <= 0) TotalEpisodes = source.TotalEpisodes;
         if (source.Chapters > 0 && Chapters <= 0) Chapters = source.Chapters;
@@ -156,7 +159,7 @@ public partial class AnimeEntity
             }
         }
 
-        if (Status == UserAnimeStatus.None && source.Status != UserAnimeStatus.None)
+        if (!metadataOnly && Status == UserAnimeStatus.None && source.Status != UserAnimeStatus.None)
         {
             Status = source.Status;
             PreserveUserFieldsFrom(source);

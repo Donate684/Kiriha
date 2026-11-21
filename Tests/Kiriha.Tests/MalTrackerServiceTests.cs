@@ -19,6 +19,7 @@ public sealed class MalTrackerServiceTests
         public string? LastRequestBody { get; private set; }
         public HttpStatusCode ResponseStatus { get; set; } = HttpStatusCode.OK;
         public string ResponseContent { get; set; } = "{}";
+        public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>? RespondAsync { get; set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -28,11 +29,70 @@ public sealed class MalTrackerServiceTests
                 LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             }
 
+            if (RespondAsync is { } respond)
+                return await respond(request, cancellationToken);
+
             return new HttpResponseMessage(ResponseStatus)
             {
                 Content = new StringContent(ResponseContent)
             };
         }
+    }
+
+    [Fact]
+    public async Task QueuedUpdate_RefreshCompletingAfterAccountSwitch_KeepsOriginalAuthorization()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseRefresh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var original = new TrackerAccount
+        {
+            TrackerId = TrackerConstants.Ids.Mal, AuthenticatedUserId = 11,
+            Tokens = new MalTokens { AccessToken = "old-a", RefreshToken = "refresh-a" }
+        };
+        var replacement = new TrackerAccount
+        {
+            TrackerId = TrackerConstants.Ids.Mal, AuthenticatedUserId = 22,
+            Tokens = new MalTokens { AccessToken = "current-b", RefreshToken = "refresh-b" }
+        };
+        var current = new AppSettings { Api = new AppSettings.ApiConfig { Accounts = [original] } };
+        var settings = new Mock<ISettingsService>();
+        settings.SetupGet(s => s.Current).Returns(() => Volatile.Read(ref current));
+        settings.Setup(s => s.Update(It.IsAny<Action<AppSettings>>(), SettingsSection.Api, false))
+            .Callback((Action<AppSettings> action, SettingsSection _, bool _) => action(Volatile.Read(ref current)));
+        var headers = new List<string?>();
+        using var handler = new CaptureHandler();
+        handler.RespondAsync = async (request, ct) =>
+        {
+            if (request.Method == HttpMethod.Post)
+            {
+                Assert.Contains("refresh_token=refresh-a", handler.LastRequestBody);
+                refreshStarted.SetResult();
+                await releaseRefresh.Task.WaitAsync(ct);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""{"access_token":"new-a","refresh_token":"new-refresh-a","expires_in":3600}""")
+                };
+            }
+
+            var token = request.Headers.Authorization?.Parameter;
+            headers.Add(token);
+            return new HttpResponseMessage(token == "new-a" ? HttpStatusCode.OK : HttpStatusCode.Unauthorized);
+        };
+        using var client = new HttpClient(handler);
+        using var tokenManager = new MalTokenManager(settings.Object, new MalAuthService(client));
+        using var api = new MalApiService(client, settings.Object, tokenManager, Mock.Of<IHttpCacheRepository>());
+        using var pinned = new TrackerRequestAccount(original);
+
+        var send = api.UpdateProgressAsync(777, 8, ct: timeout.Token);
+        await refreshStarted.Task.WaitAsync(timeout.Token);
+        Volatile.Write(ref current, new AppSettings { Api = new AppSettings.ApiConfig { Accounts = [replacement] } });
+        releaseRefresh.SetResult();
+
+        Assert.Equal(SyncOutcome.Success, await send);
+        Assert.Equal(new[] { "old-a", "new-a" }, headers);
+        Assert.Equal("current-b", current.Api.Mal?.AccessToken);
+        settings.Verify(s => s.SaveImmediate(), Times.Never);
     }
 
     private static (MalApiService service, CaptureHandler handler) CreateService(bool authenticated = true)
@@ -94,6 +154,22 @@ public sealed class MalTrackerServiceTests
         Assert.Contains("finish_date=2026-11-18", body);
         Assert.DoesNotContain("start_date", body);
         Assert.DoesNotContain("notes=", body);
+    }
+
+    [Fact]
+    public async Task SaveFullListStatusAsync_IncludesExplicitlyClearedComment()
+    {
+        var (service, handler) = CreateService();
+        using (service)
+        {
+            var result = await service.SaveFullListStatusAsync(new AnimeEntity
+            {
+                Id = 777, Status = UserAnimeStatus.Watching, Notes = string.Empty
+            });
+
+            Assert.Equal(SyncOutcome.Success, result);
+            Assert.Contains("comments=", handler.LastRequestBody?.Split('&') ?? []);
+        }
     }
 
     [Fact]

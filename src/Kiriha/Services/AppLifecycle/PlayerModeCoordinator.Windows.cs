@@ -11,25 +11,27 @@ public sealed partial class PlayerModeCoordinator
 {
     private PlayerWindow CreatePlayerWindow(string[] args)
     {
+        var player = CreatePlayerViewModel(args, _serviceProvider);
+        return new PlayerWindow(_serviceProvider.GetRequiredService<SettingsService>()) { DataContext = player };
+    }
+
+    internal static PlayerViewModel CreatePlayerViewModel(string[] args, IServiceProvider serviceProvider)
+    {
         var videoUrl = GetPlayerVideoUrl(args);
         var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
 
-        var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
-        var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
-        var localizer = _serviceProvider.GetRequiredService<ILocalizer>();
-        var torrServer = _serviceProvider.GetService<ITorrServerService>();
-        if (torrServer != null && !torrServer.IsRunning && Utils.PlayerProcessHelper.IsTorrentStream(videoUrl, args))
-        {
-            _ = torrServer.EnsureRunningAsync();
-        }
+        var metadataResolver = serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
+        var settingsService = serviceProvider.GetRequiredService<SettingsService>();
+        var localizer = serviceProvider.GetRequiredService<ILocalizer>();
+        var torrServer = serviceProvider.GetService<ITorrServerService>();
 
         var cliMetadata = ExtractMetadataFromArgs(args);
         var initialMetadata = cliMetadata ?? metadataResolver.Resolve(videoUrl);
         var headers = ExtractHeadersFromArgs(args);
-        var resumeStore = _serviceProvider.GetService<IPlaybackResumeStore>();
+        var resumeStore = serviceProvider.GetService<IPlaybackResumeStore>();
 
-        var playerVm = new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer, torrServer, subtitleUrl, headers, resumeStore);
-        return new PlayerWindow(settingsService) { DataContext = playerVm };
+        return new PlayerViewModel(videoUrl, initialMetadata, metadataResolver, settingsService, localizer,
+            torrServer, subtitleUrl, headers, resumeStore, GetPlaybackRequestId(args));
     }
 
     private bool TryReplacePlayerWindow(string[] args)
@@ -49,16 +51,10 @@ public sealed partial class PlayerModeCoordinator
             return true;
         }
 
-        var torrServer = _serviceProvider.GetService<ITorrServerService>();
-        if (torrServer != null && !torrServer.IsRunning && Utils.PlayerProcessHelper.IsTorrentStream(videoUrl, args))
-        {
-            _ = torrServer.EnsureRunningAsync();
-        }
-
         var subtitleUrl = GetArgValue(args, "--sub-file") ?? GetArgValue(args, "--subtitle");
         var cliMetadata = ExtractMetadataFromArgs(args);
         var headers = ExtractHeadersFromArgs(args);
-        vm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
+        vm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers, GetPlaybackRequestId(args));
 
         window.Show();
         window.Activate();

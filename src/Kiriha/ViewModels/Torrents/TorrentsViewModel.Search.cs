@@ -120,13 +120,15 @@ public partial class TorrentsViewModel
     [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task PerformSearch()
     {
-        if (_searchCts != null)
-        {
-            await _searchCts.CancelAsync();
-            _searchCts.Dispose();
-        }
+        var previousSearch = _searchCts;
         _searchCts = new CancellationTokenSource();
         var ct = _searchCts.Token;
+        if (previousSearch != null)
+        {
+            await previousSearch.CancelAsync();
+            previousSearch.Dispose();
+        }
+        if (ct.IsCancellationRequested) return;
 
         if (IsOnlineMode)
         {
@@ -156,6 +158,7 @@ public partial class TorrentsViewModel
         {
             Log.Debug("Torrents: Query is empty, clearing results");
             Torrents.Clear();
+            IsLoading = false;
             return;
         }
 

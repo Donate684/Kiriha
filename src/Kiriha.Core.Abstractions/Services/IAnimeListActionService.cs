@@ -2,11 +2,21 @@ using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Abstractions.Services;
 
+public enum AnimeEditConflict
+{
+    None,
+    EntryChanged,
+    FieldsChanged
+}
+
 public record ListActionResult(
     bool Success,
     bool HasActiveTrackers,
     string? Message = null)
 {
+    public AnimeEditConflict Conflict { get; init; }
+    public (AnimeEditFields Fields, long Generation)? CommittedEdit { get; init; }
+
     public static ListActionResult Ok(bool hasActiveTrackers = true, string? message = null)
         => new(true, hasActiveTrackers, message);
 
@@ -26,6 +36,16 @@ public interface IAnimeListActionService
         AnimeEntity originalItem,
         AnimeEntity updatedItem,
         CancellationToken ct = default);
+
+    Task<ListActionResult> SaveEditorChangesAsync(
+        int id, MediaKind kind, long generation, AnimeEditFields baseline, AnimeEditFields proposed,
+        CancellationToken ct = default);
+
+    Task<ListActionResult> AddFromEditorAsync(
+        AnimeEntity item, UserAnimeStatus status, long generation, CancellationToken ct = default);
+
+    Task<ListActionResult> RemoveFromEditorAsync(
+        int id, MediaKind kind, long generation, CancellationToken ct = default);
 
     Task<ListActionResult> RemoveFromListAsync(
         int animeId,

@@ -1,3 +1,6 @@
+using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Models;
+
 namespace Kiriha.ViewModels.History;
 
 public partial class HistoryViewModel
@@ -51,6 +54,7 @@ public partial class HistoryViewModel
                     run.AnimeId == item.AnimeId &&
                     run.MediaKind == item.MediaKind &&
                     run.ActionType == item.ActionType &&
+                    !HasUnresolvedDelivery(item) && (run.Primary is not { } primary || !HasUnresolvedDelivery(primary)) &&
                     (item.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Watched ||
                      item.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Scrobbled ||
                      item.ActionType == (int)Kiriha.Core.Domain.Models.HistoryActionType.Completed) &&
@@ -87,7 +91,8 @@ public partial class HistoryViewModel
                         item.TrackerStatuses,
                         trackerName => HandleTrackerSyncAsync(currentRun, trackerName),
                         trackerName => IsTrackerEnabled(trackerName),
-                        orderedTrackers);
+                        orderedTrackers,
+                        _settingsService != null ? CanRetryDelivery : null);
                 }
 
             }
@@ -120,6 +125,21 @@ public partial class HistoryViewModel
         HasResults = timeline.Count > 0;
     }
 
+    private static bool HasUnresolvedDelivery(HistoryItem item) =>
+        item.TrackerStatuses.Values.Any(status => status.OriginalTask != null &&
+            status.State != TrackerSyncState.Success);
+
+    private bool CanRetryDelivery(TrackerSyncInfo? status)
+    {
+        if (status is not { State: TrackerSyncState.Failed, OriginalTask: { } task } ||
+            OwnedSyncTaskPayload.Read(task.Payload) is not { } payload)
+            return false;
+
+        var account = _settingsService?.Current.Api.GetAccount(payload.Owner.TrackerId);
+        return account is { IsEnabled: true, Tokens.AccessToken.Length: > 0 } &&
+            SyncTaskOwner.FromAccount(account) == payload.Owner;
+    }
+
     private string GetFriendlyDate(DateTime date)
     {
         var now = DateTime.Today;
@@ -132,6 +152,31 @@ public partial class HistoryViewModel
     private async Task HandleTrackerSyncAsync(HistoryEntryVm entry, string trackerName)
     {
         if (_syncManager == null) return;
+
+        if (_settingsService != null)
+        {
+            if (entry.Primary is not { } source)
+                return;
+
+            try
+            {
+                var result = await _syncManager.RetryHistoryDeliveryAsync(source.Id, trackerName);
+                if (result == HistoryRetryResult.Queued)
+                    return;
+
+                var locKey = result == HistoryRetryResult.AccountUnavailable
+                    ? HistoryEntryVm.OriginalAccountLocKey
+                    : "history.tracker.retry_unavailable";
+                _notificationService?.NotifySyncFailed(entry.AnimeTitle, trackerName, _localizer.GetLoc(locKey, trackerName), false);
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Could not retry history entry {HistoryId}", source.Id);
+                _notificationService?.NotifySyncFailed(entry.AnimeTitle, trackerName,
+                    _localizer.GetLoc("history.tracker.retry_unavailable", trackerName), false);
+            }
+            return;
+        }
 
         var tracker = _trackers.FirstOrDefault(t =>
             string.Equals(t.Name, trackerName, StringComparison.OrdinalIgnoreCase) ||

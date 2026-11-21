@@ -1,6 +1,7 @@
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Auth;
 using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
 
@@ -27,6 +28,10 @@ public partial class SyncManager
                         {
                             await _syncTaskRepo.RemoveAsync(task.Id, ct);
                             Log.Information("Sync task {TaskId} completed successfully.", task.Id);
+                        }
+                        else if (!didExecute && task.Owner != null)
+                        {
+                            ScheduleRetry(task, AccountRetryDelay);
                         }
                         else
                         {
@@ -56,11 +61,33 @@ public partial class SyncManager
 
     private async Task<(bool Success, bool Executed)> ExecuteTaskAsync(SyncTask task, CancellationToken ct)
     {
-        if (_latestTaskIds.TryGetValue((task.AnimeId, task.MediaKind), out var latest) && latest.Id > task.Id)
+        TrackerAccount? account = null;
+        List<ITrackerService> activeTrackers;
+        if (task.Owner is { } owner)
+        {
+            var tracker = GetOwnerTracker(owner);
+            if (tracker != null && task.SuccessfulTrackers.Contains(tracker.Name))
+                return (true, false);
+
+            account = GetActiveOwner(owner, task.IsDirect);
+            if (account is null || tracker is null)
+                return (false, false);
+
+            activeTrackers = [tracker];
+        }
+        else
+        {
+            if (_settingsService != null)
+                return (false, false);
+            activeTrackers = GetTaskTrackers(task);
+        }
+
+        if (_latestTaskIds.TryGetValue((task.AnimeId, task.MediaKind, task.Owner), out var latest) && latest.Id > task.Id)
         {
             if (latest.Type == SyncTaskType.Remove)
             {
                 Log.Information("SyncManager: Skipping outdated task {TaskId} ({TaskType}) for Anime {AnimeId} because newer task {LatestId} is Remove.", task.Id, task.Type, task.AnimeId, latest.Id);
+                await MarkSupersededAsync(task, ct);
                 return (true, false);
             }
 
@@ -69,15 +96,20 @@ public partial class SyncManager
                 // User re-added or updated this anime after deleting it earlier.
                 // The earlier delayed Remove task must NOT run because it would delete the re-added title.
                 Log.Information("SyncManager: Skipping outdated Remove task {TaskId} for Anime {AnimeId} because newer task {LatestId} ({LatestType}) exists.", task.Id, task.AnimeId, latest.Id, latest.Type);
+                await MarkSupersededAsync(task, ct);
                 return (true, false);
             }
 
             if (latest.Type == SyncTaskType.FullUpdate || task.Type != SyncTaskType.FullUpdate)
             {
                 Log.Information("SyncManager: Skipping outdated task {TaskId} for Anime {AnimeId} because newer task {LatestId} is pending.", task.Id, task.AnimeId, latest.Id);
-                if (task.Progress.HasValue)
+                if (task.HistoryId.HasValue)
                 {
-                    foreach (var tracker in GetTaskTrackers(task))
+                    await MarkSupersededAsync(task, ct);
+                }
+                else if (task.Owner is null && task.Progress.HasValue)
+                {
+                    foreach (var tracker in activeTrackers)
                     {
                         UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Success);
                     }
@@ -113,7 +145,6 @@ public partial class SyncManager
         }
 
         bool overallSuccess = true;
-        var activeTrackers = GetTaskTrackers(task);
 
         if (activeTrackers.Count == 0)
         {
@@ -140,9 +171,12 @@ public partial class SyncManager
             }
 
             executedAny = true;
+            SyncOutcome outcome;
+            string? requestError = null;
             try
             {
-                SyncOutcome outcome = task.Type switch
+                using var credentials = new TrackerRequestAccount(account);
+                outcome = task.Type switch
                 {
                     SyncTaskType.UpdateProgress => task.MediaKind != MediaKind.Anime
                         ? await tracker.UpdateMangaProgressAsync(
@@ -168,35 +202,6 @@ public partial class SyncManager
                         : await tracker.RemoveAnimeAsync(task.AnimeId, ct),
                     _ => SyncOutcome.PermanentFailure
                 };
-
-
-                // Both Success and PermanentFailure are "resolved" - add the tracker
-                // to SuccessfulTrackers so the next retry pass skips it. The DB schema
-                // calls the column SuccessfulTrackers but the semantic is really
-                // "trackers we should not call again for this task".
-                if (outcome == SyncOutcome.Success)
-                {
-                    task.SuccessfulTrackers.Add(tracker.Name);
-                    UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Success);
-                }
-                else if (outcome == SyncOutcome.PermanentFailure)
-                {
-                    task.SuccessfulTrackers.Add(tracker.Name);
-                    UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Failed, "Permanent failure");
-                    _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, "Permanent failure", willRetry: false);
-                }
-                else
-                {
-                    // TransientFailure - leave out of SuccessfulTrackers, mark task for retry.
-                    overallSuccess = false;
-                    UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Retrying, "Transient failure (will retry)");
-                    if (task.RetryCount == 0)
-                    {
-                        _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, "Network error", willRetry: true);
-                    }
-                }
-
-                Log.Information("{Tracker} sync for {Id}: {Outcome}", tracker.Name, task.AnimeId, outcome);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -205,20 +210,39 @@ public partial class SyncManager
             catch (Exception ex)
             {
                 Log.Error(ex, "Error syncing with {Tracker}", tracker.Name);
-                overallSuccess = false;
-                UpdateHistoryTrackerStatus(task, tracker.Name, TrackerSyncState.Retrying, ex.Message);
-                if (task.RetryCount == 0)
-                {
-                    _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name, ex.Message, willRetry: true);
-                }
+                outcome = SyncOutcome.TransientFailure;
+                requestError = ex.Message;
             }
 
-            if (task.SuccessfulTrackers.Contains(tracker.Name))
+            var (state, error) = outcome switch
             {
-                // A later request may be cancelled during shutdown. Persist this tracker’s
-                // resolved outcome before moving on, even if shutdown has already started.
-                await _syncTaskRepo.UpdateAsync(MapToEntity(task), CancellationToken.None);
+                SyncOutcome.Success => (TrackerSyncState.Success, (string?)null),
+                SyncOutcome.PermanentFailure => (TrackerSyncState.Failed, "Permanent failure"),
+                _ => (TrackerSyncState.Retrying, requestError ?? "Transient failure (will retry)")
+            };
+            bool resolved = outcome is SyncOutcome.Success or SyncOutcome.PermanentFailure;
+            if (resolved)
+                task.SuccessfulTrackers.Add(tracker.Name);
+            else
+                overallSuccess = false;
+
+            // Keep an acknowledgement and its history status in one commit, even during shutdown.
+            if (task.HistoryId.HasValue)
+                await CheckpointDeliveryAsync(MapToEntity(task), tracker.Name, state, error, CancellationToken.None);
+            else
+            {
+                UpdateHistoryTrackerStatus(task, tracker.Name, state, error);
+                if (resolved)
+                    await _syncTaskRepo.UpdateAsync(MapToEntity(task), CancellationToken.None);
             }
+
+            if (outcome == SyncOutcome.PermanentFailure || (!resolved && task.RetryCount == 0))
+            {
+                _notificationService?.NotifySyncFailed(task.FullItem?.Title ?? $"ID {task.AnimeId}", tracker.Name,
+                    resolved ? "Permanent failure" : requestError ?? "Network error", willRetry: !resolved);
+            }
+
+            Log.Information("{Tracker} sync for {Id}: {Outcome}", tracker.Name, task.AnimeId, outcome);
         }
 
 
@@ -227,8 +251,14 @@ public partial class SyncManager
 
     private void UpdateHistoryTrackerStatus(SyncTask task, string trackerName, TrackerSyncState state, string? error = null)
     {
+        if (task.Owner != null)
+            return;
+
         _historyService.UpdateTrackerStatus(task.AnimeId, task.MediaKind, task.Progress, trackerName, state, error);
     }
+
+    private Task MarkSupersededAsync(SyncTask task, CancellationToken ct) =>
+        task.HistoryId.HasValue ? RecordDiscardedDeliveryAsync(MapToEntity(task), ct) : Task.CompletedTask;
 
     private List<ITrackerService> GetTaskTrackers(SyncTask task)
     {
@@ -237,27 +267,11 @@ public partial class SyncManager
             var targeted = _trackers
                 .Where(t => t.IsEnabled && string.Equals(t.Name, task.TargetTracker, StringComparison.OrdinalIgnoreCase))
                 .ToList();
-            if (targeted.Count > 0) return targeted;
+            return targeted;
         }
 
         return GetDestinationTrackers();
     }
 
-    private List<ITrackerService> GetDestinationTrackers()
-    {
-        var active = _trackers.Where(t => t.IsEnabled).ToList();
-        if (_settingsService == null) return active;
-
-        var api = _settingsService.Current.Api;
-        var primary = api.GetPrimaryAccount();
-        var mirrors = api.GetMirrorAccounts().ToList();
-
-        return active.Where(tracker =>
-        {
-            if (primary != null && string.Equals(tracker.TrackerId, primary.TrackerId, StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            return mirrors.Any(m => string.Equals(tracker.TrackerId, m.TrackerId, StringComparison.OrdinalIgnoreCase));
-        }).ToList();
-    }
+    private List<ITrackerService> GetDestinationTrackers() => _trackers.Where(t => t.IsEnabled).ToList();
 }

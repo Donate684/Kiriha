@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Auth;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
@@ -13,24 +14,29 @@ public partial class ShikiApiService
     private async Task<int?> GetEffectiveUserIdAsync(CancellationToken ct)
     {
         var trackerId = TrackerId;
-        var acc = _settingsService.Current.Api.GetAccount(trackerId);
+        var acc = TrackerRequestAccount.Get(_settingsService, trackerId);
         if (acc?.Tokens is ShikiTokens accTokens && accTokens.UserId.HasValue)
         {
             return accTokens.UserId.Value;
         }
 
         var userId = await GetCurrentUserIdAsync(ct);
-        if (userId.HasValue)
+        if (userId.HasValue && acc?.Tokens is ShikiTokens previous)
         {
+            bool changed = false;
             _settingsService.Update(settings =>
             {
                 var targetAcc = settings.Api.GetAccount(trackerId);
-                if (targetAcc?.Tokens is ShikiTokens st)
+                if (targetAcc?.Id == acc.Id && targetAcc.Tokens is ShikiTokens st && st.AccessToken == previous.AccessToken)
                 {
                     st.UserId = userId;
+                    changed = true;
                 }
             }, SettingsSection.Api, save: false);
-            _settingsService.SaveImmediate();
+            if (TrackerRequestAccount.Pinned(trackerId) != null)
+                previous.UserId = userId;
+            if (changed)
+                _settingsService.SaveImmediate();
         }
 
         return userId;
@@ -144,10 +150,10 @@ public partial class ShikiApiService
                         {
                             var typeKey = targetType.Equals("Manga", StringComparison.OrdinalIgnoreCase) ? "Manga" : "Anime";
                             var mirror = EffectiveMirror;
-                            _stateCache.SetUserRateId(mirror, typeKey, anime.Id, rateId);
+                            _stateCache.SetUserRateId(mirror, userId.Value, typeKey, anime.Id, rateId);
                             if (element.TryGetProperty("target_id", out var tidProp) && tidProp.TryGetInt32(out var tid))
                             {
-                                _stateCache.SetUserRateId(mirror, typeKey, tid, rateId);
+                                _stateCache.SetUserRateId(mirror, userId.Value, typeKey, tid, rateId);
                             }
                         }
                     }
@@ -182,7 +188,7 @@ public partial class ShikiApiService
     public async Task<SyncOutcome> UpdateProgressAsync(int animeId, int episodes, UserAnimeStatus? status = null, int? score = null, bool? isRewatching = null, int? rewatchCount = null, CancellationToken ct = default)
     {
         var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
-        if (string.IsNullOrEmpty(token)) return SyncOutcome.PermanentFailure;
+        if (string.IsNullOrEmpty(token)) return MissingCredentialsOutcome;
 
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
@@ -203,13 +209,13 @@ public partial class ShikiApiService
         if (rewatchCount.HasValue) userRate["rewatches"] = rewatchCount.Value;
 
         var payload = new { user_rate = userRate };
-        return await PostAsync("v2/user_rates", payload, ct);
+        return await PostAsync("v2/user_rates", payload, userId.Value, ct);
     }
 
     public async Task<SyncOutcome> SaveFullListStatusAsync(AnimeEntity item, CancellationToken ct = default)
     {
         var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
-        if (string.IsNullOrEmpty(token)) return SyncOutcome.PermanentFailure;
+        if (string.IsNullOrEmpty(token)) return MissingCredentialsOutcome;
 
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
@@ -243,13 +249,13 @@ public partial class ShikiApiService
         userRate["rewatches"] = item.RewatchCount;
 
         var payload = new { user_rate = userRate };
-        return await PostAsync("v2/user_rates", payload, ct);
+        return await PostAsync("v2/user_rates", payload, userId.Value, ct);
     }
 
     public async Task<SyncOutcome> UpdateMangaProgressAsync(int mangaId, int chapters, int? volumes = null, UserAnimeStatus? status = null, int? score = null, CancellationToken ct = default)
     {
         var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
-        if (string.IsNullOrEmpty(token)) return SyncOutcome.PermanentFailure;
+        if (string.IsNullOrEmpty(token)) return MissingCredentialsOutcome;
 
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
@@ -271,7 +277,7 @@ public partial class ShikiApiService
         if (score.HasValue) userRate["score"] = score.Value;
 
         var payload = new { user_rate = userRate };
-        return await PostAsync("v2/user_rates", payload, ct);
+        return await PostAsync("v2/user_rates", payload, userId.Value, ct);
     }
 
     public Task<SyncOutcome> RemoveAnimeAsync(int animeId, CancellationToken ct = default) =>
@@ -283,18 +289,18 @@ public partial class ShikiApiService
     private async Task<SyncOutcome> RemoveRateByTargetAsync(int primaryId, string targetType, CancellationToken ct)
     {
         var token = await _tokenService.EnsureValidTokenAsync(_fixedMirror, ct);
-        if (string.IsNullOrEmpty(token)) return SyncOutcome.PermanentFailure;
+        if (string.IsNullOrEmpty(token)) return MissingCredentialsOutcome;
 
         var userId = await GetEffectiveUserIdAsync(ct);
         if (userId is null) return SyncOutcome.TransientFailure;
 
         var targetId = ResolveShikiTargetId(primaryId, targetType);
 
-        // 1. Check shared mirror-scoped user_rate map
+        // 1. Check the user's rate IDs on this mirror.
         var mirror = EffectiveMirror;
         int? userRateId = null;
-        if (_stateCache.TryGetUserRateId(mirror, targetType, targetId, out var cachedRateId) ||
-            _stateCache.TryGetUserRateId(mirror, targetType, primaryId, out cachedRateId))
+        if (_stateCache.TryGetUserRateId(mirror, userId.Value, targetType, targetId, out var cachedRateId) ||
+            _stateCache.TryGetUserRateId(mirror, userId.Value, targetType, primaryId, out cachedRateId))
         {
             userRateId = cachedRateId;
         }
@@ -324,8 +330,8 @@ public partial class ShikiApiService
         var outcome = await DeleteAsync($"v2/user_rates/{userRateId.Value}", ct);
         if (outcome == SyncOutcome.Success)
         {
-            _stateCache.RemoveUserRateId(mirror, targetType, targetId);
-            _stateCache.RemoveUserRateId(mirror, targetType, primaryId);
+            _stateCache.RemoveUserRateId(mirror, userId.Value, targetType, targetId);
+            _stateCache.RemoveUserRateId(mirror, userId.Value, targetType, primaryId);
         }
 
         return outcome;

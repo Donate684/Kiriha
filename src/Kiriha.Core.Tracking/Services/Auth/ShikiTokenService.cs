@@ -24,9 +24,13 @@ public class ShikiTokenService
         var trackerId = mirror == ShikiMirror.Net 
             ? TrackerConstants.Ids.ShikiFork 
             : (mirror == ShikiMirror.One ? TrackerConstants.Ids.ShikiOrig : null);
+        var pinned = trackerId == null ? null : TrackerRequestAccount.Pinned(trackerId);
 
         ShikiTokens? GetTokens()
         {
+            if (pinned != null)
+                return pinned.Tokens as ShikiTokens;
+
             if (trackerId != null)
             {
                 return _settingsService.Current.Api.GetAccount(trackerId)?.Tokens as ShikiTokens;
@@ -51,26 +55,37 @@ public class ShikiTokenService
                 newTokens.UserId = tokens.UserId;
                 newTokens.Mirror = targetMirror;
 
+                bool changed = false;
                 _settingsService.Update(settings =>
                 {
                     if (trackerId != null)
                     {
                         var acc = settings.Api.GetAccount(trackerId);
-                        if (acc != null)
+                        if (acc is { IsEnabled: true, Tokens: ShikiTokens current } &&
+                            (pinned is null || acc.Id == pinned.Id) && SameCredentials(current, tokens))
                         {
                             acc.Tokens = newTokens;
+                            changed = true;
                         }
                     }
-                    else
+                    else if (settings.Api.Shiki is { } current && SameCredentials(current, tokens) &&
+                        settings.Api.ShikiMirror == targetMirror)
                     {
                         settings.Api.Shiki = newTokens;
+                        changed = true;
                     }
                 }, SettingsSection.Api, save: false);
-                _settingsService.SaveImmediate();
+                if (changed)
+                    _settingsService.SaveImmediate();
+                if (pinned != null)
+                    pinned.Tokens = newTokens;
                 return newTokens.AccessToken;
             }
             return null;
         }
         finally { _tokenLock.Release(); }
     }
+
+    private static bool SameCredentials(ShikiTokens current, ShikiTokens previous) =>
+        current.AccessToken == previous.AccessToken && current.RefreshToken == previous.RefreshToken;
 }

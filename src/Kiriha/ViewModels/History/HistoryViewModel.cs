@@ -78,8 +78,23 @@ public partial class HistoryViewModel : ViewModelBase, IDisposable
 
         _historyService.TrackerStatusUpdated += OnTrackerStatusUpdated;
         _historyService.EntryAdded += OnHistoryEntryAdded;
+        _historyService.EntryUpdated += OnHistoryEntryUpdated;
 
         RefreshHistory().SafeFireAndForget("HistoryInit");
+    }
+
+    private void OnHistoryEntryUpdated(HistoryItem updated)
+    {
+        RunOnUi(() =>
+        {
+            var index = _rawItems.FindIndex(item => item.Id == updated.Id);
+            if (index < 0)
+                return;
+
+            updated.PosterUrl ??= _rawItems[index].PosterUrl;
+            _rawItems[index] = updated;
+            ApplyFilters();
+        });
     }
 
     private void OnTrackerStatusUpdated(int animeId, MediaKind mediaKind, int? episode, string trackerName, TrackerSyncState state, string? error)
@@ -373,6 +388,7 @@ public partial class HistoryViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         _historyService.TrackerStatusUpdated -= OnTrackerStatusUpdated;
+        _historyService.EntryUpdated -= OnHistoryEntryUpdated;
         _historyService.EntryAdded -= OnHistoryEntryAdded;
     }
 }

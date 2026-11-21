@@ -130,7 +130,10 @@ public sealed partial class DatabaseInitializerTests
     private static Task<int> CountMigrationLocksAsync(AppDbContext context) =>
         context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM __EFMigrationsLock").SingleAsync();
 
-    private static Process StartMigrationProcess(string databasePath, string mode)
+    private static Process StartMigrationProcess(string databasePath, string mode) =>
+        StartTestProcess(MigrationTestProcess.Command, databasePath, mode);
+
+    private static Process StartTestProcess(params string[] args)
     {
         var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet")
         {
@@ -140,10 +143,9 @@ public sealed partial class DatabaseInitializerTests
             RedirectStandardError = true
         };
         start.ArgumentList.Add(typeof(MigrationTestProcess).Assembly.Location);
-        start.ArgumentList.Add(MigrationTestProcess.Command);
-        start.ArgumentList.Add(databasePath);
-        start.ArgumentList.Add(mode);
-        return Process.Start(start) ?? throw new InvalidOperationException("Could not start the migration test process.");
+        foreach (var arg in args)
+            start.ArgumentList.Add(arg);
+        return Process.Start(start) ?? throw new InvalidOperationException("Could not start the test process.");
     }
 
     private static async Task StopMigrationProcessAsync(Process process)

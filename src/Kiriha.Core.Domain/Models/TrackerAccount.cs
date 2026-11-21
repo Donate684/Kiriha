@@ -15,6 +15,9 @@ public class TrackerAccount
     [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;
 
+    [JsonPropertyName("authenticated_user_id")]
+    public int? AuthenticatedUserId { get; set; }
+
     [JsonPropertyName("is_enabled")]
     public bool IsEnabled { get; set; } = true;
 
@@ -37,6 +40,7 @@ public class TrackerAccount
         Id = Id,
         TrackerId = TrackerId,
         Username = Username,
+        AuthenticatedUserId = AuthenticatedUserId,
         IsEnabled = IsEnabled,
         IsPrimary = IsPrimary,
         IsMirror = IsMirror,

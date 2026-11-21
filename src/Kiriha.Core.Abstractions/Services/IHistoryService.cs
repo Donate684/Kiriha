@@ -7,9 +7,11 @@ public interface IHistoryService
 {
     /// <summary>Fired (on the calling thread) whenever a new history entry is committed to the DB.</summary>
     event Action<HistoryItem>? EntryAdded;
+    event Action<HistoryItem>? EntryUpdated;
     event Action<int, MediaKind, int?, string, TrackerSyncState, string?>? TrackerStatusUpdated;
 
     void PublishCommittedEntry(HistoryItem entry);
+    void PublishUpdatedEntry(HistoryItem entry);
 
     /// <summary>Awaitable entry append – guarantees the DB row exists before returning.</summary>
     Task AddEntryAsync(

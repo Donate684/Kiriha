@@ -18,4 +18,13 @@ public interface ISyncManager
     Task EnqueueFullUpdateAsync(AnimeEntity item);
     Task<bool> CommitProgressChangeAsync(
         AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, bool onlyAdvance, CancellationToken ct);
+
+    Task<HistoryRetryResult> RetryHistoryDeliveryAsync(int historyId, string trackerName, CancellationToken ct = default);
+}
+
+public enum HistoryRetryResult
+{
+    NotRetryable,
+    AccountUnavailable,
+    Queued
 }

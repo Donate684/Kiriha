@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
@@ -30,11 +31,16 @@ public partial class SettingsService : IDisposable, ISettingsService
     private readonly SemaphoreSlim _saveLock = new(1, 1);
     private readonly Lock _stateLock = new();
 
-    private string? _lastSavedAppJson;
-    private string? _lastSavedPlayerJson;
-    private string? _lastSavedTorrentsJson;
-    private string? _lastSavedAuthJson;
-    private string? _lastSavedWindowJson;
+    private readonly string _fileLockName;
+    private readonly Action<string>? _beforeReplace;
+
+    // Baselines reflect this instance's last observed or saved values. Keeping them
+    // separate from the latest disk document identifies which fields this instance changed.
+    private JsonObject? _savedApp;
+    private JsonObject? _savedPlayer;
+    private JsonObject? _savedTorrents;
+    private JsonObject? _savedAuth;
+    private JsonObject? _savedWindow;
 
     private long _uiVersion;
     private long _systemVersion;
@@ -48,9 +54,16 @@ public partial class SettingsService : IDisposable, ISettingsService
     public AppSettings Current => Volatile.Read(ref _current);
 
     public SettingsService(string? settingsPathOrDir = null)
+        : this(settingsPathOrDir, beforeReplace: null)
+    {
+    }
+
+    internal SettingsService(string? settingsPathOrDir, Action<string>? beforeReplace)
     {
         var sw = Stopwatch.StartNew();
         ResolvePaths(settingsPathOrDir);
+        _fileLockName = GetFileLockName(_settingsDir);
+        _beforeReplace = beforeReplace;
         _debouncer = new Debouncer(TimeSpan.FromMilliseconds(500), async (_) => await SaveAsync());
         Load();
         Log.Information("StartupTiming: settings service initialized elapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
@@ -160,20 +173,6 @@ public partial class SettingsService : IDisposable, ISettingsService
             if (sections.HasFlag(SettingsSection.Api)) _apiVersion++;
             if (sections.HasFlag(SettingsSection.CustomLinks)) _customLinksVersion++;
             if (sections.HasFlag(SettingsSection.Window)) _windowVersion++;
-        }
-    }
-
-    private void MarkAllSectionsChanged()
-    {
-        lock (_stateLock)
-        {
-            _uiVersion++;
-            _systemVersion++;
-            _playerVersion++;
-            _torrentsVersion++;
-            _apiVersion++;
-            _customLinksVersion++;
-            _windowVersion++;
         }
     }
 

@@ -190,6 +190,7 @@ public static class TrackingServicesRegistration
 
         // --- Cross-tracker orchestration ---
         services.AddSingleton<LibrarySyncGate>();
+        services.AddSingleton<LibraryEntryWriter>();
         services.AddSingleton<LibraryMutationService>(sp =>
             new LibraryMutationService(
                 sp.GetRequiredService<IAnimeRepository>(),

@@ -100,21 +100,11 @@ public partial class PlayerViewModel
             ? TorrentStatusText
             : _localizer.GetLoc("player.state.loading");
 
-        if (!_playback.HasPlayer)
-            return;
-
-        if (!PlayerAutoPlay)
-            _playback.Pause();
-
-        _playback.Load(VideoUrl, StreamHeaders);
-
-        if (PlayerAutoPlay)
-            _playback.Play();
-
-        _statePublisher.Publish();
+        BeginSourcePlayback(VideoUrl, StreamHeaders);
     }
 
-    public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null, IReadOnlyDictionary<string, string>? headers = null)
+    public void LoadVideo(string videoUrl, string? subtitleUrl = null, PlayerMediaMetadata? metadata = null,
+        IReadOnlyDictionary<string, string>? headers = null, string? requestId = null)
     {
         StreamHeaders = headers;
         if (subtitleUrl != null)
@@ -128,6 +118,7 @@ public partial class PlayerViewModel
 
         if (string.IsNullOrWhiteSpace(videoUrl))
             return;
+        _pendingPlaybackRequestId = requestId;
 
         videoUrl = videoUrl.Trim().Trim('"');
         try
@@ -200,18 +191,7 @@ public partial class PlayerViewModel
         PlaybackErrorMessage = string.Empty;
         PlaybackStatusMessage = _localizer.GetLoc("player.state.loading");
 
-        if (!_playback.HasPlayer)
-            return;
-
-        if (!PlayerAutoPlay)
-            _playback.Pause();
-
-        _playback.Load(videoUrl, StreamHeaders);
-
-        if (PlayerAutoPlay)
-            _playback.Play();
-
-        _statePublisher.Publish();
+        BeginSourcePlayback(videoUrl, StreamHeaders);
     }
 
     private double _lastPublishedPosition = -1;
@@ -219,7 +199,7 @@ public partial class PlayerViewModel
 
     private void OnTimerTick(object? sender, EventArgs e)
     {
-        if (!_playback.HasPlayer) return;
+        if (!_playback.HasPlayer || _sourceStartup != null) return;
 
         if (IsPlaying)
         {

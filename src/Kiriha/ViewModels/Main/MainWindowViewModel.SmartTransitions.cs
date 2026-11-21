@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Domain.Models.Entities;
+using Serilog;
 
 namespace Kiriha.ViewModels.Main;
 
@@ -64,7 +65,15 @@ public partial class MainWindowViewModel :
         if (QuickRatingAnime != null && score >= 1 && score <= 10)
         {
             SelectedRatingScore = score;
-            await _progressService.SetScoreAsync(QuickRatingAnime, score);
+            try
+            {
+                await _progressService.SetScoreAsync(QuickRatingAnime, score);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to save the quick rating");
+                return;
+            }
         }
         CloseQuickRating();
     }
@@ -81,7 +90,15 @@ public partial class MainWindowViewModel :
     {
         if (RewatchPromptAnime != null)
         {
-            await _progressService.ConfirmRewatchAsync(RewatchPromptAnime, RewatchEpisode);
+            try
+            {
+                await _progressService.ConfirmRewatchAsync(RewatchPromptAnime, RewatchEpisode);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to save the rewatch");
+                return;
+            }
         }
         CloseRewatchPrompt();
     }

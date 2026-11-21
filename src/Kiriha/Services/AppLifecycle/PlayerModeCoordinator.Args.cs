@@ -5,6 +5,9 @@ public sealed partial class PlayerModeCoordinator
     public static bool IsPlayerMode(string[] args) =>
         args.Any(arg => arg.Equals("--player", StringComparison.OrdinalIgnoreCase));
 
+    internal static string? GetPlaybackRequestId(string[] args) =>
+        GetArgValue(args, Kiriha.Infrastructure.Player.PlayerProcessBridge.PlaybackRequestArg);
+
     private static string? GetArgValue(string[] args, string name)
     {
         var index = Array.FindIndex(args, arg => arg.Equals(name, StringComparison.OrdinalIgnoreCase));

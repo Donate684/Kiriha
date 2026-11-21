@@ -3,6 +3,7 @@ using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
+using Kiriha.Core.Domain.Models.Api;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync;
 
@@ -10,6 +11,30 @@ namespace Kiriha.Tests;
 
 public sealed class TrackerOrchestrationTests
 {
+    [Fact]
+    public async Task TrackerRefresh_DoesNotReAddEntry_WhenRemovalIsAcknowledgedDuringFetch()
+    {
+        var anime = new AnimeEntity { Id = 51, Title = "Deleted entry", Status = UserAnimeStatus.Watching };
+        var library = new Mock<IAnimeRepository>();
+        library.Setup(r => r.GetSnapshotAsync(It.IsAny<MediaKind[]>())).ReturnsAsync([]);
+        var repository = new Mock<IUserAnimeRepository>();
+        var queue = new Mock<ISyncTaskRepository>();
+        queue.SetupSequence(r => r.GetPendingAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new SyncTaskEntity { Id = 1, AnimeId = anime.Id, Type = "Remove" }])
+            .ReturnsAsync([]);
+        var tracker = new Mock<ITrackerService>();
+        tracker.SetupGet(t => t.IsEnabled).Returns(true);
+        tracker.Setup(t => t.GetUserAnimeListAsync(It.IsAny<CancellationToken>())).ReturnsAsync([anime]);
+        var sync = new AnimeSyncOrchestrator(library.Object, repository.Object, [tracker.Object],
+            Mock.Of<IRecognitionCache>(), syncTaskRepo: queue.Object);
+
+        Assert.True(await sync.SyncWithTrackersAsync());
+        library.Verify(r => r.ApplySyncBatchAsync(It.IsAny<List<AnimeEntity>>(), It.IsAny<List<Action>>()), Times.Never);
+        repository.Verify(r => r.SyncFromRemoteAsync(
+            It.Is<IEnumerable<AnimeEntity>>(items => !items.Any()),
+            It.IsAny<MediaKind[]>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Fact]
     public async Task AnimeSyncOrchestrator_SelectsConfiguredPrimaryTracker()
     {
@@ -43,6 +68,7 @@ public sealed class TrackerOrchestrationTests
         settings.Api.Accounts.Add(new TrackerAccount
         {
             TrackerId = TrackerConstants.Ids.Mal,
+            Tokens = new MalTokens { AccessToken = "mal" },
             IsEnabled = true,
             IsPrimary = false,
             IsMirror = true
@@ -50,6 +76,7 @@ public sealed class TrackerOrchestrationTests
         settings.Api.Accounts.Add(new TrackerAccount
         {
             TrackerId = TrackerConstants.Ids.ShikiOrig,
+            Tokens = new ShikiTokens { AccessToken = "shiki" },
             IsEnabled = true,
             IsPrimary = true,
             IsMirror = false
@@ -73,6 +100,53 @@ public sealed class TrackerOrchestrationTests
         // Verify that Shiki was called (because it is Primary), and MAL was NOT called for library fetch
         mockShiki.Verify(t => t.GetUserAnimeListAsync(It.IsAny<CancellationToken>()), Times.Once);
         mockMal.Verify(t => t.GetUserAnimeListAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AnimeSyncOrchestrator_DiscardsResponseFromPreviousAccount()
+    {
+        var library = new Mock<IAnimeRepository>();
+        library.Setup(r => r.GetSnapshotAsync(It.IsAny<MediaKind[]>()))
+            .ReturnsAsync([]);
+        var repository = new Mock<IUserAnimeRepository>(MockBehavior.Strict);
+        var tracker = new Mock<ITrackerService>();
+        tracker.SetupGet(t => t.TrackerId).Returns(TrackerConstants.Ids.Mal);
+        tracker.SetupGet(t => t.Name).Returns("MyAnimeList");
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var response = new TaskCompletionSource<List<AnimeEntity>?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        tracker.Setup(t => t.GetUserAnimeListAsync(It.IsAny<CancellationToken>()))
+            .Returns((CancellationToken ct) =>
+            {
+                requestStarted.SetResult();
+                return response.Task.WaitAsync(ct);
+            });
+        var current = AccountSettings("first-user");
+        var settings = new Mock<ISettingsService>();
+        settings.SetupGet(s => s.Current).Returns(() => Volatile.Read(ref current));
+        var sync = new AnimeSyncOrchestrator(library.Object, repository.Object, [tracker.Object],
+            Mock.Of<IRecognitionCache>(), settings.Object);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+        var refresh = sync.SyncWithTrackersAsync(ct: timeout.Token);
+        await requestStarted.Task.WaitAsync(timeout.Token);
+        Volatile.Write(ref current, AccountSettings("second-user"));
+        response.SetResult([new AnimeEntity { Id = 1, Title = "Previous user's list" }]);
+
+        Assert.False(await refresh);
+        repository.VerifyNoOtherCalls();
+        library.Verify(r => r.ApplySyncBatchAsync(It.IsAny<List<AnimeEntity>>(), It.IsAny<List<Action>>()), Times.Never);
+
+        static AppSettings AccountSettings(string id) => new()
+        {
+            Api = new AppSettings.ApiConfig
+            {
+                Accounts = [new TrackerAccount
+                {
+                    Id = id, TrackerId = TrackerConstants.Ids.Mal,
+                    IsPrimary = true, Tokens = new MalTokens { AccessToken = id }
+                }]
+            }
+        };
     }
 
     [Fact]

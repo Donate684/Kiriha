@@ -19,12 +19,21 @@ public static class PlayerProcessHelper
         string? torrentHash = null,
         string? originalTitle = null,
         string? subtitleUrl = null,
-        IReadOnlyDictionary<string, string>? headers = null)
+        IReadOnlyDictionary<string, string>? headers = null) =>
+        LaunchPlayerAsync(videoUrl, titleRu, titleEn, episode, animeId, torrentHash, originalTitle, subtitleUrl, headers)
+            .GetAwaiter().GetResult();
+
+    public static async Task<bool> LaunchPlayerAsync(
+        string? videoUrl, string? titleRu = null, string? titleEn = null, string? episode = null,
+        int? animeId = null, string? torrentHash = null, string? originalTitle = null,
+        string? subtitleUrl = null, IReadOnlyDictionary<string, string>? headers = null, CancellationToken ct = default,
+        string? requestId = null)
     {
+        ct.ThrowIfCancellationRequested();
         if (LaunchOverrideForTests is { } testHook)
         {
             testHook(videoUrl, titleRu, titleEn, episode, animeId, torrentHash, originalTitle, subtitleUrl, headers);
-            return;
+            return true;
         }
         var canonicalOriginal = !string.IsNullOrWhiteSpace(originalTitle)
             ? originalTitle
@@ -80,18 +89,21 @@ public static class PlayerProcessHelper
             }
         }
 
-        if (PlayerProcessBridge.IsPlayerInstanceRunning() && PlayerProcessBridge.TryForward(forwardArgs.ToArray()))
-        {
-            return;
-        }
+        if (requestId != null)
+            forwardArgs.AddRange([PlayerProcessBridge.PlaybackRequestArg, requestId]);
 
+        if (PlayerProcessBridge.IsPlayerInstanceRunning() &&
+            await PlayerProcessBridge.TryForwardAsync([.. forwardArgs], ct: ct).ConfigureAwait(false))
+            return true;
+
+        ct.ThrowIfCancellationRequested();
         // 2. Otherwise launch a standalone player process
         var processPath = Environment.ProcessPath;
-        if (string.IsNullOrEmpty(processPath)) return;
+        if (string.IsNullOrEmpty(processPath)) return false;
 
         var assemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
         var isDotnet = System.IO.Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
-        if (isDotnet && string.IsNullOrEmpty(assemblyPath)) return;
+        if (isDotnet && string.IsNullOrEmpty(assemblyPath)) return false;
 
         var startInfo = CreatePlayerStartInfo(
             processPath,
@@ -105,14 +117,21 @@ public static class PlayerProcessHelper
             canonicalOriginal,
             subtitleUrl,
             headers);
+        if (requestId != null)
+        {
+            startInfo.ArgumentList.Add(PlayerProcessBridge.PlaybackRequestArg);
+            startInfo.ArgumentList.Add(requestId);
+        }
 
         try
         {
-            Process.StartAndForget(startInfo);
+            using var process = Process.Start(startInfo);
+            return process != null;
         }
         catch (Exception ex)
         {
             Serilog.Log.Error(ex, "Failed to launch player process");
+            return false;
         }
     }
 

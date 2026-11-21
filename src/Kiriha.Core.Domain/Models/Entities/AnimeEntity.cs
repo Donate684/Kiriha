@@ -282,7 +282,8 @@ public partial class AnimeEntity : DomainObservableObject
         }
         return false;
     }
-    public string? Notes { get; set; }
+    private string? _notes;
+    public string? Notes { get => _notes; set => SetProperty(ref _notes, value); }
     private bool _isRewatching;
     public bool IsRewatching { get => _isRewatching; set { if (SetProperty(ref _isRewatching, value)) OnPropertyChanged("Presentation"); } }
     public int RewatchCount { get; set; }

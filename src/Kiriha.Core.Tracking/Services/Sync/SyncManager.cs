@@ -2,6 +2,7 @@ using System.Text.Json;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Tracking.Sync.Models;
 using Microsoft.Extensions.Hosting;
@@ -32,13 +33,15 @@ public partial class SyncManager : ISyncManager, IHostedService
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly INotificationService? _notificationService;
     private readonly ISettingsService? _settingsService;
-    private readonly ILocalizer _localizer;
+    private readonly TimeProvider _retryClock;
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _highPriorityQueue = new();
     private readonly System.Collections.Concurrent.ConcurrentQueue<SyncTask> _lowPriorityQueue = new();
     private readonly SemaphoreSlim _queueSignal = new(0);
+    private readonly SemaphoreSlim _queuePersistenceGate = new(1, 1);
     private readonly CancellationTokenSource _cts = new();
+    private bool _restoreFinished;
     private Task? _loopTask;
-    private const int MaxRetries = 5;
+    private const int RetryBackoffLimit = 5;
     private const int DelayBetweenRequestsMs = 1500;
 
     public SyncManager(
@@ -49,8 +52,8 @@ public partial class SyncManager : ISyncManager, IHostedService
         IBackgroundTaskSupervisor backgroundTasks,
         INotificationService? notificationService = null,
         ISettingsService? settingsService = null,
-        ILocalizer? localizer = null,
-        IProgressChangeRepository? progressChangeRepository = null)
+        IProgressChangeRepository? progressChangeRepository = null,
+        TimeProvider? retryClock = null)
     {
         _trackers = trackers.ToList();
         _syncTaskRepo = syncTaskRepo;
@@ -60,7 +63,7 @@ public partial class SyncManager : ISyncManager, IHostedService
         _backgroundTasks = backgroundTasks;
         _notificationService = notificationService;
         _settingsService = settingsService;
-        _localizer = localizer ?? ILocalizer.Passthrough;
+        _retryClock = retryClock ?? TimeProvider.System;
     }
 
 
@@ -96,72 +99,17 @@ public partial class SyncManager : ISyncManager, IHostedService
     {
         try
         {
-            ct.ThrowIfCancellationRequested();
-            await _dbInit.InitializationTask;
-            ct.ThrowIfCancellationRequested();
-            var pendingTasks = await _syncTaskRepo.GetPendingAsync(ct);
-
-            var deduplicated = DeduplicateStartupTasks(pendingTasks);
-
-            int restoredCount = 0;
-            foreach (var entity in deduplicated)
+            await _dbInit.InitializationTask.WaitAsync(ct);
+            await _queuePersistenceGate.WaitAsync(ct);
+            try
             {
-                try
-                {
-                    if (!Enum.TryParse<SyncTaskType>(entity.Type, out var type))
-                    {
-                        Log.Warning("Skipping sync task {Id} due to invalid type {Type}", entity.Id, entity.Type);
-                        continue;
-                    }
-
-                    var resolvedKind = entity.MediaKind != MediaKind.Anime
-                        ? entity.MediaKind
-                        : ExtractPayloadMediaKind(entity.Payload);
-
-                    var task = new SyncTask
-                    {
-                        Id = entity.Id,
-                        AnimeId = entity.AnimeId,
-                        MediaKind = resolvedKind,
-                        Type = type,
-                        Progress = entity.Progress,
-                        Status = entity.Status != null ? StatusMapper.FromDbString(entity.Status) : null,
-                        Score = entity.Score,
-                        RetryCount = entity.RetryCount
-                    };
-                    if (!string.IsNullOrEmpty(entity.SuccessfulTrackersJson))
-                    {
-                        var trackers = JsonSerializer.Deserialize<HashSet<string>>(entity.SuccessfulTrackersJson);
-                        if (trackers != null) task.SuccessfulTrackers = trackers;
-                    }
-                    if (!string.IsNullOrEmpty(entity.Payload))
-                    {
-                        task.FullItem = JsonSerializer.Deserialize<AnimeEntity>(entity.Payload);
-                        if (task.FullItem != null && entity.MediaKind == MediaKind.Anime)
-                        {
-                            task.MediaKind = task.FullItem.MediaKind;
-                        }
-                    }
-                    RecordLatestTask(task);
-                    _lowPriorityQueue.Enqueue(task);
-                    _queueSignal.Release();
-                    restoredCount++;
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Failed to parse sync task {Id}", entity.Id);
-                }
+                await RestorePendingTasksAsync(ct);
             }
-
-            // Remove the tasks we skipped via deduplication
-            var skippedIds = pendingTasks.Select(x => x.Id).Except(deduplicated.Select(x => x.Id)).ToList();
-            if (skippedIds.Count > 0)
+            finally
             {
-                ct.ThrowIfCancellationRequested();
-                await _syncTaskRepo.RemoveManyAsync(skippedIds, ct);
+                _restoreFinished = true;
+                _queuePersistenceGate.Release();
             }
-
-            if (restoredCount > 0) Log.Information("Restored {Count} pending sync tasks from database.", restoredCount);
         }
         catch (OperationCanceledException)
         {
@@ -175,6 +123,88 @@ public partial class SyncManager : ISyncManager, IHostedService
         await ProcessQueueAsync(ct);
     }
 
+    private async Task RestorePendingTasksAsync(CancellationToken ct)
+    {
+        var pendingTasks = await _syncTaskRepo.GetPendingAsync(ct);
+
+        var replayable = _settingsService is null
+            ? pendingTasks
+            : pendingTasks.Where(entity => OwnedSyncTaskPayload.Read(entity.Payload) is not null).ToList();
+        if (replayable.Count < pendingTasks.Count)
+        {
+            Log.Warning("SyncManager: retained {Count} pending tasks with no verified recipient", pendingTasks.Count - replayable.Count);
+        }
+        var deduplicated = DeduplicateStartupTasks(replayable);
+
+        int restoredCount = 0;
+        foreach (var entity in deduplicated)
+        {
+            try
+            {
+                if (!Enum.TryParse<SyncTaskType>(entity.Type, out var type))
+                {
+                    Log.Warning("Skipping sync task {Id} due to invalid type {Type}", entity.Id, entity.Type);
+                    continue;
+                }
+
+                var payload = OwnedSyncTaskPayload.Read(entity.Payload);
+                var resolvedKind = ResolveEntityMediaKind(entity);
+
+                var task = new SyncTask
+                {
+                    Id = entity.Id,
+                    AnimeId = entity.AnimeId,
+                    MediaKind = resolvedKind,
+                    Type = type,
+                    Progress = entity.Progress,
+                    Status = entity.Status != null ? StatusMapper.FromDbString(entity.Status) : null,
+                    Score = entity.Score,
+                    RetryCount = entity.RetryCount,
+                    Owner = payload?.Owner,
+                    IsDirect = payload?.IsDirect ?? false,
+                    HistoryId = payload?.HistoryId
+                };
+                if (!string.IsNullOrEmpty(entity.SuccessfulTrackersJson))
+                {
+                    var trackers = JsonSerializer.Deserialize<HashSet<string>>(entity.SuccessfulTrackersJson);
+                    if (trackers != null) task.SuccessfulTrackers = trackers;
+                }
+                if (payload != null)
+                {
+                    task.FullItem = payload.Item;
+                }
+                else if (!string.IsNullOrEmpty(entity.Payload))
+                {
+                    task.FullItem = JsonSerializer.Deserialize<AnimeEntity>(entity.Payload);
+                    if (task.FullItem != null && entity.MediaKind == MediaKind.Anime)
+                    {
+                        task.MediaKind = task.FullItem.MediaKind;
+                    }
+                }
+                RecordLatestTask(task);
+                _lowPriorityQueue.Enqueue(task);
+                _queueSignal.Release();
+                restoredCount++;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to parse sync task {Id}", entity.Id);
+            }
+        }
+
+        // Remove the tasks we skipped via deduplication
+        var keptIds = deduplicated.Select(x => x.Id).ToHashSet();
+        var skipped = replayable.Where(x => !keptIds.Contains(x.Id)).ToList();
+        if (skipped.Count > 0)
+        {
+            foreach (var entity in skipped)
+                await RecordDiscardedDeliveryAsync(entity, ct);
+            await _syncTaskRepo.RemoveManyAsync(skipped.Select(x => x.Id), ct);
+        }
+
+        if (restoredCount > 0) Log.Information("Restored {Count} pending sync tasks from database.", restoredCount);
+    }
+
     private SyncTaskEntity MapToEntity(SyncTask task)
     {
         return new SyncTaskEntity
@@ -186,7 +216,9 @@ public partial class SyncManager : ISyncManager, IHostedService
             Progress = task.Progress,
             Status = task.Status != null ? StatusMapper.ToDbString(task.Status.Value) : null,
             Score = task.Score,
-            Payload = task.FullItem != null ? JsonSerializer.Serialize(task.FullItem, (JsonSerializerOptions?)null) : null,
+            Payload = task.Owner is { } owner
+                ? JsonSerializer.Serialize(new OwnedSyncTaskPayload(owner, task.FullItem, task.IsDirect, task.HistoryId))
+                : task.FullItem != null ? JsonSerializer.Serialize(task.FullItem) : null,
             RetryCount = task.RetryCount,
             SuccessfulTrackersJson = task.SuccessfulTrackers.Count > 0 ? JsonSerializer.Serialize(task.SuccessfulTrackers, (JsonSerializerOptions?)null) : null
         };

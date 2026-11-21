@@ -1,5 +1,4 @@
 using System.Data;
-using Kiriha.Core.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -33,7 +32,6 @@ public sealed class DatabaseMaintenance
             using var context = await _contextFactory.CreateDbContextAsync();
 
             await CleanOrphanedMetadataAsync(context);
-            await CleanFailedSyncTasksAsync(context);
             await CleanOldHistoryAsync(context);
             await CleanCacheTablesAsync(context);
             await OptimizeDatabaseAsync(context);
@@ -62,33 +60,6 @@ public sealed class DatabaseMaintenance
             """);
         if (orphanedMetadataCount > 0)
             Log.Information("DatabaseMaintenance: Removed {Count} orphaned metadata entries", orphanedMetadataCount);
-    }
-
-    private async Task CleanFailedSyncTasksAsync(AppDbContext context)
-    {
-        var stuckTasks = await context.SyncTasks
-            .Where(t => t.RetryCount >= 5)
-            .ToListAsync();
-        if (stuckTasks.Count > 0)
-        {
-            foreach (var t in stuckTasks)
-            {
-                context.History.Add(new HistoryItem
-                {
-                    AnimeId = t.AnimeId,
-                    MediaKind = t.MediaKind,
-                    AnimeTitle = $"ID {t.AnimeId}",
-                    RussianTitle = null,
-                    Episode = t.Progress ?? 0,
-                    Timestamp = DateTime.UtcNow,
-                    ActionType = (int)HistoryActionType.SyncFailed,
-                    Detail = "SyncFailed (max retries exceeded)"
-                });
-            }
-            context.SyncTasks.RemoveRange(stuckTasks);
-            await context.SaveChangesAsync();
-            Log.Information("DatabaseMaintenance: Removed {Count} permanently failed sync tasks", stuckTasks.Count);
-        }
     }
 
     private async Task CleanOldHistoryAsync(AppDbContext context)

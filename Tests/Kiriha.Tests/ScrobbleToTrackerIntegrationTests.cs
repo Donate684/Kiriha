@@ -118,9 +118,10 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
 
         SyncTask? enqueuedTask = null;
         _mockProgressChanges
-            .Setup(r => r.SaveAsync(It.IsAny<AnimeEntity>(), null, It.IsAny<HistoryItem>(), It.IsAny<SyncTaskEntity>(), true, It.IsAny<CancellationToken>()))
-            .Callback<AnimeEntity, UserAnimeStatus?, HistoryItem, SyncTaskEntity, bool, CancellationToken>((_, _, _, entity, _, _) =>
+            .Setup(r => r.SaveAsync(It.IsAny<AnimeEntity>(), null, It.IsAny<HistoryItem>(), It.IsAny<IReadOnlyList<SyncTaskEntity>>(), true, It.IsAny<CancellationToken>()))
+            .Callback<AnimeEntity, UserAnimeStatus?, HistoryItem, IReadOnlyList<SyncTaskEntity>, bool, CancellationToken>((_, _, _, entities, _, _) =>
             {
+                var entity = Assert.Single(entities);
                 entity.Id = 1;
                 enqueuedTask = new SyncTask
                 {
@@ -143,7 +144,7 @@ public class ScrobbleToTrackerIntegrationTests : IDisposable
         _mockProgressChanges.Verify(r => r.SaveAsync(
             It.Is<AnimeEntity>(item => item.Id == 777 && item.Progress == 8), null,
             It.Is<HistoryItem>(entry => entry.Episode == 8 && entry.ActionType == (int)HistoryActionType.Scrobbled),
-            It.Is<SyncTaskEntity>(task => task.AnimeId == 777 && task.Progress == 8),
+            It.Is<IReadOnlyList<SyncTaskEntity>>(tasks => tasks.Count == 1 && tasks[0].AnimeId == 777 && tasks[0].Progress == 8),
             true, It.IsAny<CancellationToken>()), Times.Once);
         _mockHistoryService.Verify(h => h.PublishCommittedEntry(
             It.Is<HistoryItem>(entry => entry.TrackerStatuses["Shikimori"].State == TrackerSyncState.Pending)), Times.Once);

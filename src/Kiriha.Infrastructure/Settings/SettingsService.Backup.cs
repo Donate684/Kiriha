@@ -48,51 +48,34 @@ public partial class SettingsService
 
     private static string GetBackupPath(string path) => path + ".bak";
 
-    private static void AtomicWrite(string path, string content)
+    private void AtomicWrite(string path, string content, bool hasValidPrimary)
     {
-        var dir = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-            Directory.CreateDirectory(dir);
-
+        // Only the process holding the directory mutex may write these temporary files.
         var tmp = path + ".tmp";
-        File.WriteAllText(tmp, content);
-        if (File.Exists(path))
-        {
-            File.Replace(tmp, path, CanBackupCurrentSettings(path) ? GetBackupPath(path) : null);
-        }
-        else
-        {
-            File.Move(tmp, path);
-        }
-    }
-
-    private static bool CanBackupCurrentSettings(string path)
-    {
         try
         {
-            var info = new FileInfo(path);
-            if (!info.Exists || info.Length == 0)
-                return false;
-
-            using var stream = new FileStream(
-                path,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete);
-            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-
-            int ch;
-            while ((ch = reader.Read()) != -1)
+            using (var stream = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                if (!char.IsWhiteSpace((char)ch))
-                    return ch == '{';
+                stream.Write(Encoding.UTF8.GetBytes(content));
+                stream.Flush(flushToDisk: true);
             }
 
-            return false;
+            _beforeReplace?.Invoke(path);
+            if (File.Exists(path))
+                File.Replace(tmp, path, hasValidPrimary ? GetBackupPath(path) : null);
+            else
+                File.Move(tmp, path);
         }
-        catch
+        finally
         {
-            return false;
+            try
+            {
+                File.Delete(tmp);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Debug(ex, "Could not remove temporary settings file {Path}", tmp);
+            }
         }
     }
 

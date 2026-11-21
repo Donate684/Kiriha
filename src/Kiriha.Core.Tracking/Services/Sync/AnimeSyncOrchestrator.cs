@@ -3,6 +3,8 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
+using Kiriha.Core.Tracking.Auth;
+using Kiriha.Core.Tracking.Sync.Models;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
@@ -46,27 +48,25 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
 
     private string FormatLoc(string key, params object?[] args) => _localizer.GetLoc(key, args);
 
-    private ITrackerService? GetPrimaryTracker()
+    private (ITrackerService? Tracker, TrackerAccount? Account) GetPrimaryDestination()
     {
-        if (_settingsService != null)
-        {
-            var primaryAccount = _settingsService.Current.Api.GetPrimaryAccount();
-            if (primaryAccount != null)
-            {
-                var matched = _trackers.FirstOrDefault(t =>
-                    string.Equals(t.TrackerId, primaryAccount.TrackerId, StringComparison.OrdinalIgnoreCase) && t.IsEnabled);
-                if (matched != null) return matched;
-            }
-        }
+        if (_settingsService is null)
+            return (_trackers.FirstOrDefault(t => t.IsEnabled), null);
 
-        return _trackers.FirstOrDefault(t => t.IsEnabled);
+        var account = _settingsService.Current.Api.GetPrimaryAccount();
+        if (account is not { Tokens.AccessToken.Length: > 0 })
+            return (null, null);
+
+        var tracker = _trackers.FirstOrDefault(t =>
+            string.Equals(t.TrackerId, account.TrackerId, StringComparison.OrdinalIgnoreCase));
+        return (tracker, account);
     }
 
     public async Task<bool> SyncWithTrackersAsync(IProgress<string>? status = null, CancellationToken ct = default, bool isMigration = false)
     {
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0) return false;
 
-        var primaryTracker = GetPrimaryTracker();
+        var (primaryTracker, account) = GetPrimaryDestination();
         if (primaryTracker is null)
         {
             Log.Warning("No active trackers found for synchronization.");
@@ -77,12 +77,14 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         try
         {
             using var gateScope = _syncGate != null ? await _syncGate.AcquireFullSyncAsync(ct) : null;
-            var pendingAtFetchStart = await GetPendingTasksAsync(ct);
+            using var credentials = new TrackerRequestAccount(account);
+            var owner = account is null ? null : SyncTaskOwner.FromAccount(account);
+            var pendingAtFetchStart = await GetPendingTasksAsync(owner, ct);
             status?.Report(FormatLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserAnimeListAsync(ct);
             if (apiList is null) return false;
 
-            var snapshot = await ApplyTrackerListAsync(apiList, [MediaKind.Anime], pendingAtFetchStart, isMigration, status, ct);
+            var snapshot = await ApplyTrackerListAsync(apiList, [MediaKind.Anime], pendingAtFetchStart, owner, isMigration, status, ct);
             if (snapshot is null) return false;
 
             Log.Information("AnimeSyncOrchestrator: building recognition cache for {Count} anime items", snapshot.Count);
@@ -109,7 +111,7 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
     {
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0) return false;
 
-        var primaryTracker = GetPrimaryTracker();
+        var (primaryTracker, account) = GetPrimaryDestination();
         if (primaryTracker is null)
         {
             Log.Warning("No active trackers found for synchronization.");
@@ -120,13 +122,15 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         try
         {
             using var gateScope = _syncGate != null ? await _syncGate.AcquireFullSyncAsync(ct) : null;
-            var pendingAtFetchStart = await GetPendingTasksAsync(ct);
+            using var credentials = new TrackerRequestAccount(account);
+            var owner = account is null ? null : SyncTaskOwner.FromAccount(account);
+            var pendingAtFetchStart = await GetPendingTasksAsync(owner, ct);
             status?.Report(FormatLoc("sync.syncing.with", primaryTracker.Name));
             var apiList = await primaryTracker.GetUserMangaListAsync(ct);
             if (apiList is null) return false;
 
             var snapshot = await ApplyTrackerListAsync(
-                apiList, [MediaKind.Manga, MediaKind.LightNovel], pendingAtFetchStart, isMigration, status, ct);
+                apiList, [MediaKind.Manga, MediaKind.LightNovel], pendingAtFetchStart, owner, isMigration, status, ct);
             if (snapshot is null) return false;
 
             _eventBus.Publish(new AnimeListRefreshMessage());
@@ -143,12 +147,19 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
         }
     }
 
-    private async Task<List<SyncTaskEntity>> GetPendingTasksAsync(CancellationToken ct) =>
-        _syncTaskRepo != null ? await _syncTaskRepo.GetPendingAsync(ct) : [];
+    private async Task<List<SyncTaskEntity>> GetPendingTasksAsync(SyncTaskOwner? owner, CancellationToken ct)
+    {
+        if (_syncTaskRepo is null)
+            return [];
+
+        var tasks = await _syncTaskRepo.GetPendingAsync(ct);
+        return _settingsService is null ? tasks :
+            tasks.Where(task => owner != null && OwnedSyncTaskPayload.Read(task.Payload)?.Owner == owner).ToList();
+    }
 
     private async Task<List<AnimeEntity>?> ApplyTrackerListAsync(
         List<AnimeEntity> apiList, MediaKind[] kinds, List<SyncTaskEntity> pendingAtFetchStart,
-        bool isMigration, IProgress<string>? status, CancellationToken ct)
+        SyncTaskOwner? owner, bool isMigration, IProgress<string>? status, CancellationToken ct)
     {
         // Local progress can be saved during the request. Serialize reconciliation and its
         // SQLite write with progress commits once the response arrives.
@@ -169,9 +180,16 @@ public partial class AnimeSyncOrchestrator : IAnimeSyncOrchestrator
                 return null;
         }
 
-        var pendingTasks = await GetPendingTasksAsync(ct);
-        var protectedItems = _syncGate?.GetProgressChangesDuringSync() ?? [];
-        await ProcessSyncResults(apiList, currentItems, pendingTasks, pendingAtFetchStart, protectedItems, status, ct);
+        var pendingTasks = await GetPendingTasksAsync(owner, ct);
+        if (owner != null)
+        {
+            var (_, currentAccount) = GetPrimaryDestination();
+            if (currentAccount is null || SyncTaskOwner.FromAccount(currentAccount) != owner)
+                return null;
+        }
+
+        var localChanges = _syncGate?.GetEntryChangesDuringSync() ?? [];
+        await ProcessSyncResults(apiList, currentItems, pendingTasks, pendingAtFetchStart, localChanges, status, ct);
 
         status?.Report(FormatLoc("sync.saving.to_db"));
         var snapshot = await _animeRepository.GetSnapshotAsync(kinds);

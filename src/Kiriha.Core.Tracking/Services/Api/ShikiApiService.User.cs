@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Kiriha.Core.Domain.Models.Api;
 using Serilog;
 
 namespace Kiriha.Core.Tracking.Api;
@@ -9,7 +10,7 @@ public partial class ShikiApiService
     {
         try
         {
-            var response = await GetAsync("users/whoami", ct);
+            using var response = await GetAsync(ShikiEndpoints.CurrentUserPath, ct);
             if (!response.IsSuccessStatusCode) return null;
 
             using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -23,7 +24,7 @@ public partial class ShikiApiService
 
             return null;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             Log.Warning(ex, "ShikiApiService ({Tracker}): failed to parse whoami response", Name);
             return null;

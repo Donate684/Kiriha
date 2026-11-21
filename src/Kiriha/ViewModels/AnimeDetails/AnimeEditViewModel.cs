@@ -1,10 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Models;
+using Serilog;
 
 namespace Kiriha.ViewModels.AnimeDetails;
 
@@ -14,10 +16,25 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
     private readonly AnimeEntity _anime;
     private readonly IAnimeListActionService _listActionService;
     private readonly System.ComponentModel.PropertyChangedEventHandler _animePropertyChanged;
-    private bool _isRemoving;
+    private AnimeEditFields _baseline;
+    internal long EntryGeneration { get; private set; }
+
+    [ObservableProperty]
+    private bool _isBusy;
 
     [ObservableProperty]
     private bool _isDeleteConfirmationVisible;
+
+    [ObservableProperty]
+    private bool _hasSaveError;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasEntryConflict))]
+    [NotifyPropertyChangedFor(nameof(HasFieldConflict))]
+    private AnimeEditConflict _conflict;
+
+    public bool HasEntryConflict => Conflict == AnimeEditConflict.EntryChanged;
+    public bool HasFieldConflict => Conflict == AnimeEditConflict.FieldsChanged;
 
     public bool IsInList => _anime.Status != UserAnimeStatus.None;
 
@@ -48,11 +65,14 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
     public AnimeEditViewModel(
         AnimeEntity originalAnime,
         AnimeEntity cloneAnime,
-        IAnimeListActionService listActionService)
+        IAnimeListActionService listActionService,
+        IAnimeRepository? repository = null)
     {
         _originalAnime = originalAnime;
         _anime = cloneAnime;
         _listActionService = listActionService;
+        _baseline = AnimeEditFields.From(cloneAnime);
+        EntryGeneration = repository?.GetEntryGeneration(originalAnime.Id, originalAnime.MediaKind) ?? 0;
 
         _animePropertyChanged = (s, e) =>
         {
@@ -72,6 +92,18 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
             SaveCommand.NotifyCanExecuteChanged();
         };
         _anime.PropertyChanged += _animePropertyChanged;
+    }
+
+    internal static AnimeEntity ResolveEntry(IAnimeRepository repository, AnimeEntity item)
+    {
+        var current = repository.FindById(item.Id, item.MediaKind);
+        if (current != null) return current;
+        if (repository.GetEntryGeneration(item.Id, item.MediaKind) == 0) return item;
+
+        // Navigation may still hold a reference to an entry removed from the library.
+        var untracked = item.Clone();
+        new AnimeEditFields(UserAnimeStatus.None, 0, 0, 0, "-", null, false, 0, null, null).ApplyTo(untracked);
+        return untracked;
     }
 
     public int MaxEpisodes => _anime.TotalEpisodes > 0 ? _anime.TotalEpisodes : 9999;
@@ -104,6 +136,8 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
     private void CancelDelete()
     {
         IsDeleteConfirmationVisible = false;
+        HasSaveError = false;
+        Conflict = AnimeEditConflict.None;
     }
 
     [RelayCommand]
@@ -181,90 +215,131 @@ public partial class AnimeEditViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task AddToList()
     {
+        if (IsBusy) return;
+
         var targetStatus = AppConstants.AiringStatus.IsNotYetAired(_anime.StatusDetailed)
             ? UserAnimeStatus.PlanToWatch
             : UserAnimeStatus.Watching;
 
-        _anime.Status = targetStatus;
-        if (_anime.MediaKind == MediaKind.Anime)
-            _anime.Progress = 0;
+        var submitted = AnimeEditFields.From(_anime);
+        var candidate = _anime.Clone();
+        if (candidate.MediaKind == MediaKind.Anime)
+            candidate.Progress = 0;
         else
-            _anime.ChaptersRead = 0;
+            candidate.ChaptersRead = 0;
 
-        await _listActionService.AddToListAsync(_anime, targetStatus, 0);
-
-        _anime.CopyTo(_originalAnime);
-        OnPropertyChanged(nameof(IsInList));
-        OnPropertyChanged(nameof(HasChanges));
-        SaveCommand.NotifyCanExecuteChanged();
-    }
-
-    public bool HasChanges
-    {
-        get
+        IsBusy = true;
+        try
         {
-            if (_originalAnime is null || _anime is null) return false;
-
-            var currentScore = GetCleanScore(_anime.Score);
-            var origScore = GetCleanScore(_originalAnime.Score);
-
-            return _originalAnime.Status != _anime.Status ||
-                   _originalAnime.Progress != _anime.Progress ||
-                   _originalAnime.ChaptersRead != _anime.ChaptersRead ||
-                   _originalAnime.VolumesRead != _anime.VolumesRead ||
-                   !MemoryExtensions.SequenceEqual(origScore, currentScore) ||
-                   _originalAnime.IsRewatching != _anime.IsRewatching ||
-                   _originalAnime.RewatchCount != _anime.RewatchCount ||
-                   _originalAnime.Notes != _anime.Notes ||
-                   _originalAnime.DateStarted != _anime.DateStarted ||
-                   _originalAnime.DateCompleted != _anime.DateCompleted;
+            var result = await _listActionService.AddFromEditorAsync(candidate, targetStatus, EntryGeneration);
+            SetResult(result);
+            if (result.CommittedEdit is { } committed)
+                ApplyCommittedFields(submitted, committed.Fields, committed.Generation);
+        }
+        catch (Exception ex)
+        {
+            SetFailure(ex, "add");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
-    private static ReadOnlySpan<char> GetCleanScore(string? score)
-    {
-        if (string.IsNullOrEmpty(score) || score == "-") return ReadOnlySpan<char>.Empty;
-        var span = score.AsSpan().Trim();
-        int idx = span.IndexOf(' ');
-        return idx >= 0 ? span[..idx] : span;
-    }
+    public bool HasChanges => AnimeEditFields.From(_anime) != _baseline;
 
     [RelayCommand(CanExecute = nameof(HasChanges))]
     private async Task Save(object? window)
     {
-        if (_isRemoving) return;
-
-        if (HasChanges)
-        {
-            await _listActionService.SaveAnimeAsync(_originalAnime, _anime);
-        }
+        if (!await TrySaveAsync() || HasChanges) return;
 
         if (window is Avalonia.Controls.Window w) w.Close(true);
+    }
+
+    internal async Task<bool> TrySaveAsync()
+    {
+        if (IsBusy) return false;
+        if (!HasChanges) return true;
+
+        var submitted = AnimeEditFields.From(_anime);
+        IsBusy = true;
+        try
+        {
+            var result = await _listActionService.SaveEditorChangesAsync(
+                _originalAnime.Id, _originalAnime.MediaKind, EntryGeneration, _baseline, submitted);
+            SetResult(result);
+            if (result.CommittedEdit is { } committed)
+                ApplyCommittedFields(submitted, committed.Fields, committed.Generation);
+            return result.Success;
+        }
+        catch (Exception ex)
+        {
+            SetFailure(ex, "save");
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]
     public async Task RemoveFromList(object window)
     {
+        if (IsBusy) return;
+
         if (!IsDeleteConfirmationVisible)
         {
             IsDeleteConfirmationVisible = true;
             return;
         }
 
-        _isRemoving = true;
-        if (_originalAnime.MediaKind == MediaKind.Anime)
-            await _listActionService.RemoveFromListAsync(_originalAnime.Id);
-        else
-            await _listActionService.RemoveFromListAsync(_originalAnime.Id, _originalAnime.MediaKind);
-
-        if (window is Avalonia.Controls.Window w) w.Close(true);
+        IsBusy = true;
+        try
+        {
+            var result = await _listActionService.RemoveFromEditorAsync(
+                _originalAnime.Id, _originalAnime.MediaKind, EntryGeneration);
+            SetResult(result);
+            if (result.Success && window is Avalonia.Controls.Window w)
+                w.Close(true);
+        }
+        catch (Exception ex)
+        {
+            SetFailure(ex, "remove");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
-    public void RefreshBaselineState()
+    internal void ApplyImportedFields(AnimeEditFields fields, long generation)
     {
-        OnPropertyChanged(nameof(IsInList));
+        ApplyCommittedFields(_baseline, fields, generation);
+    }
+
+    private void ApplyCommittedFields(AnimeEditFields submitted, AnimeEditFields committed, long generation)
+    {
+        // Keep any input received after the operation started.
+        submitted.TryMerge(AnimeEditFields.From(_anime), committed, out var updatedDraft);
+        _baseline = committed;
+        EntryGeneration = generation;
+        updatedDraft.ApplyTo(_anime);
         OnPropertyChanged(nameof(HasChanges));
         SaveCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SetResult(ListActionResult result)
+    {
+        Conflict = result.Conflict;
+        HasSaveError = !result.Success && Conflict == AnimeEditConflict.None;
+    }
+
+    private void SetFailure(Exception error, string operation)
+    {
+        Log.Error(error, "Failed to {Operation} library entry {Id} from the editor", operation, _originalAnime.Id);
+        Conflict = AnimeEditConflict.None;
+        HasSaveError = true;
     }
 
     public void Dispose()

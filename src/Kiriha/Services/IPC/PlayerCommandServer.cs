@@ -4,118 +4,137 @@ using Serilog;
 
 namespace Kiriha.Services;
 
-public sealed class PlayerCommandServer : IDisposable
+public sealed class PlayerCommandServer : IDisposable, IAsyncDisposable
 {
+    private static readonly TimeSpan CommandReadTimeout = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(200);
     private readonly Action<string[]> _handleCommand;
+    private readonly string _pipeName;
+    private readonly TimeSpan _readTimeout;
     private readonly CancellationTokenSource _cts = new();
     private readonly Lock _pipeGate = new();
     private NamedPipeServerStream? _currentPipe;
     private Task? _loopTask;
+    private Task? _stopTask;
 
     public PlayerCommandServer(Action<string[]> handleCommand)
+        : this(handleCommand, PlayerProcessBridge.PipeName, CommandReadTimeout)
+    {
+    }
+
+    internal PlayerCommandServer(Action<string[]> handleCommand, string pipeName, TimeSpan readTimeout)
     {
         _handleCommand = handleCommand;
+        _pipeName = pipeName;
+        _readTimeout = readTimeout;
     }
 
     public void Start()
     {
-        _loopTask ??= Task.Run(RunAsync, _cts.Token);
+        lock (_pipeGate)
+        {
+            if (_stopTask == null)
+                _loopTask ??= Task.Run(() => RunAsync(_cts.Token), _cts.Token);
+        }
     }
 
-    private async Task RunAsync()
+    private async Task RunAsync(CancellationToken ct)
     {
-        while (!_cts.IsCancellationRequested)
+        while (!ct.IsCancellationRequested)
         {
-            NamedPipeServerStream? pipe = null;
             try
             {
-                pipe = new NamedPipeServerStream(
-                    PlayerProcessBridge.PipeName,
-                    PipeDirection.In,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte,
-                    PipeOptions.Asynchronous);
-
-                lock (_pipeGate) _currentPipe = pipe;
-
-                await pipe.WaitForConnectionAsync(_cts.Token);
-
-                var connectedPipe = pipe;
-                pipe = null;
+                using var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte,
+                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                 lock (_pipeGate)
                 {
-                    if (ReferenceEquals(_currentPipe, connectedPipe))
-                        _currentPipe = null;
+                    ct.ThrowIfCancellationRequested();
+                    _currentPipe = pipe;
                 }
 
-                _ = HandleClientAsync(connectedPipe);
+                await ServeConnectionsAsync(pipe, ct).ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (ObjectDisposedException) when (_cts.IsCancellationRequested)
+            catch (Exception ex) when (ct.IsCancellationRequested && ex is OperationCanceledException or ObjectDisposedException or IOException)
             {
                 break;
             }
             catch (Exception ex)
             {
                 Log.Warning(ex, "PlayerCommandServer: command loop failed");
+                try { await Task.Delay(RetryDelay, ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
             }
             finally
             {
                 lock (_pipeGate)
+                    _currentPipe = null;
+            }
+        }
+    }
+
+    private async Task ServeConnectionsAsync(NamedPipeServerStream pipe, CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            await pipe.WaitForConnectionAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await ReadCommandAsync(pipe, ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                // Release the connection even if the client kept its handle open after a read timeout.
+                lock (_pipeGate)
                 {
-                    if (ReferenceEquals(_currentPipe, pipe))
-                        _currentPipe = null;
-                }
-                if (pipe != null)
-                {
-                    await pipe.DisposeAsync();
+                    if (!ct.IsCancellationRequested)
+                        pipe.Disconnect();
                 }
             }
         }
     }
 
-    private async Task HandleClientAsync(NamedPipeServerStream pipe)
+    private async Task ReadCommandAsync(NamedPipeServerStream pipe, CancellationToken ct)
     {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(_readTimeout);
+        using var reader = new StreamReader(pipe, leaveOpen: true);
         try
         {
-            using (pipe)
-            using (var reader = new StreamReader(pipe))
-            {
-                var line = await reader.ReadLineAsync(_cts.Token);
-                if (string.IsNullOrWhiteSpace(line))
-                    return;
-
-                var args = PipeArgumentSerializer.Deserialize(line);
-                _handleCommand(args);
-            }
+            var line = await reader.ReadLineAsync(deadline.Token).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            if (!string.IsNullOrWhiteSpace(line))
+                _handleCommand(PipeArgumentSerializer.Deserialize(line));
         }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
+        catch (OperationCanceledException ex) when (!ct.IsCancellationRequested)
         {
-            Log.Debug(ex, "PlayerCommandServer: failed reading client command");
+            Log.Debug(ex, "PlayerCommandServer: ignored an incomplete command after read timeout");
         }
     }
 
-    public void Dispose()
+    public void Dispose() => _ = DisposeAsync();
+
+    public ValueTask DisposeAsync()
     {
-        _cts.Cancel();
         lock (_pipeGate)
         {
-            _currentPipe?.Dispose();
-            _currentPipe = null;
+            if (_stopTask == null)
+            {
+                _cts.Cancel();
+                _currentPipe?.Dispose();
+                _stopTask = FinishAsync(_loopTask);
+            }
+            return new ValueTask(_stopTask);
         }
+    }
 
+    private async Task FinishAsync(Task? loop)
+    {
         try
         {
-            if (_loopTask?.Wait(500, CancellationToken.None) != false)
-            {
-                _cts.Dispose();
-            }
+            if (loop != null)
+                await loop.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
-        catch
+        finally
         {
             _cts.Dispose();
         }

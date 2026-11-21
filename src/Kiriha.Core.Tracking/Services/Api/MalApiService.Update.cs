@@ -56,7 +56,7 @@ public partial class MalApiService
         int scoreVal = int.TryParse(item.Score, out int s) && s > 0 ? s : 0;
         values.Add(new("score", scoreVal.ToString()));
 
-        if (!string.IsNullOrWhiteSpace(item.Notes))
+        if (item.Notes != null)
         {
             values.Add(new("comments", item.Notes));
         }

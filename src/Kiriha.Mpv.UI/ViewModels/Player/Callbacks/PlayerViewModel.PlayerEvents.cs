@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Mpv.UI.Services.Player;
 
 namespace Kiriha.Mpv.UI.ViewModels.Player;
@@ -8,12 +9,17 @@ public partial class PlayerViewModel
     private int _isPlaybackStateUpdatePending;
     private readonly Lock _playbackStateLock = new();
     private PlaybackState? _pendingPlaybackState;
+    private int _pendingStateSourceVersion;
     private bool _isEofReached;
 
     private void OnPlayerFileLoaded(object? sender, EventArgs e)
     {
+        var sourceVersion = Volatile.Read(ref _sourceVersion);
         Dispatcher.UIThread.Post(() =>
         {
+            if (_playbackDisposed || _sourceStartup != null || sourceVersion != _sourceVersion)
+                return;
+
             _isEofReached = false;
             IsLoading = false;
             HasPlaybackError = false;
@@ -99,8 +105,12 @@ public partial class PlayerViewModel
         if (!e.StopsPlayback)
             return;
 
+        var sourceVersion = Volatile.Read(ref _sourceVersion);
         Dispatcher.UIThread.Post(() =>
         {
+            if (_playbackDisposed || _sourceStartup != null || sourceVersion != _sourceVersion)
+                return;
+
             _isEofReached = true;
             Overlay.DismissResumePrompt();
             Overlay.DismissSkipPrompt(smooth: false);
@@ -117,7 +127,7 @@ public partial class PlayerViewModel
             {
                 HasPlaybackError = true;
                 PlaybackErrorMessage = string.IsNullOrWhiteSpace(e.ErrorMessage)
-                    ? _localizer.GetLoc("player.state.error_open")
+                    ? _localizer.GetLoc(AppConstants.Player.OpenFailedLocKey)
                     : e.ErrorMessage;
                 PlaybackStatusMessage = _localizer.GetLoc("player.state.error_playback");
             }
@@ -154,6 +164,7 @@ public partial class PlayerViewModel
         lock (_playbackStateLock)
         {
             _pendingPlaybackState = state;
+            _pendingStateSourceVersion = Volatile.Read(ref _sourceVersion);
         }
 
         if (System.Threading.Interlocked.CompareExchange(ref _isPlaybackStateUpdatePending, 1, 0) == 0)
@@ -162,12 +173,14 @@ public partial class PlayerViewModel
             {
                 System.Threading.Interlocked.Exchange(ref _isPlaybackStateUpdatePending, 0);
                 PlaybackState? pendingState;
+                int pendingVersion;
                 lock (_playbackStateLock)
                 {
                     pendingState = _pendingPlaybackState;
+                    pendingVersion = _pendingStateSourceVersion;
                 }
 
-                if (pendingState != null)
+                if (pendingState != null && !_playbackDisposed && _sourceStartup == null && pendingVersion == _sourceVersion)
                 {
                     ApplyPlaybackState(pendingState);
                 }

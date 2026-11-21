@@ -51,12 +51,14 @@ public sealed class AvaloniaDialogService : IDialogService
         // Resolve dependencies via DI scope. Note the dialog's VM is currently
         // not registered in the container (it carries a load of per-call state),
         // so we new it up explicitly with services pulled from the provider.
+        item = AnimeEditViewModel.ResolveEntry(_animeRepo, item);
         var clone = item.Clone();
 
         var editVm = new AnimeEditViewModel(
             item,
             clone,
-            _listActionService);
+            _listActionService,
+            _animeRepo);
             
         var metaVm = new AnimeMetadataViewModel(
             clone,

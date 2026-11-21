@@ -12,8 +12,10 @@ namespace Kiriha.ViewModels.Torrents;
 
 public partial class TorrentsViewModel
 {
-    private async Task PerformOnlineSearchAsync(string queryText, CancellationToken ct = default)
+    private async Task PerformOnlineSearchAsync(string queryText, CancellationToken ct)
     {
+        if (ct.IsCancellationRequested) return;
+        OnlineResults.Clear();
         var query = queryText.Trim();
         if (string.IsNullOrEmpty(query))
         {
@@ -25,34 +27,11 @@ public partial class TorrentsViewModel
             }
         }
 
-        if (string.IsNullOrEmpty(query))
-        {
-            OnlineResults.Clear();
-            return;
-        }
-
         var enabledProviders = GetEnabledOnlineProviders();
-        if (enabledProviders.Count == 0)
+        if (string.IsNullOrEmpty(query) || enabledProviders.Count == 0 || _streamingService == null)
         {
-            OnlineResults.Clear();
+            IsLoading = false;
             return;
-        }
-
-        if (_streamingService == null)
-        {
-            Log.Warning("[Torrents] StreamingService is not registered");
-            return;
-        }
-
-        if (ct == default)
-        {
-            if (_searchCts != null)
-            {
-                await _searchCts.CancelAsync();
-                _searchCts.Dispose();
-            }
-            _searchCts = new CancellationTokenSource();
-            ct = _searchCts.Token;
         }
 
         try
@@ -110,10 +89,11 @@ public partial class TorrentsViewModel
         }
         finally
         {
-            if (!ct.IsCancellationRequested)
+            Dispatcher.UIThread.Post(() =>
             {
-                Dispatcher.UIThread.Post(() => IsLoading = false);
-            }
+                if (!ct.IsCancellationRequested)
+                    IsLoading = false;
+            });
         }
     }
 

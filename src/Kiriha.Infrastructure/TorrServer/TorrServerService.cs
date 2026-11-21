@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Domain.Constants;
 using Serilog;
@@ -9,158 +11,223 @@ public sealed partial class TorrServerService : ITorrServerService
 {
     private static readonly ILogger Logger = Log.ForContext<TorrServerService>();
     private static readonly TimeSpan EchoPingTimeout = TimeSpan.FromSeconds(1);
-    private const int StartupReadyTimeoutSeconds = 12;
+    private static readonly TimeSpan StartupReadyTimeout = TimeSpan.FromSeconds(12);
+    private static readonly TimeSpan StartupPollInterval = TimeSpan.FromMilliseconds(150);
+    private const int ProcessExitTimeoutMs = 1000;
 
     private readonly ISettingsService _settingsService;
     private readonly HttpClient _httpClient;
     private readonly bool _ownsHttpClient;
     private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
+    private readonly Lock _processLock = new();
+    private readonly Func<int, Process?> _startProcess;
+    private readonly TimeSpan _startupTimeout;
 
     private Process? _process;
+    private string? _managedUrl;
+    private string? _readyUrl;
+    private CancellationTokenSource? _startup;
+    private int _stopGeneration;
     private bool _isDisposed;
 
-    public bool IsRunning { get; private set; }
+    public bool IsRunning
+    {
+        get
+        {
+            lock (_processLock)
+                return _readyUrl == ServerUrl && (_process == null || !_process.HasExited);
+        }
+    }
 
     public string ServerUrl
     {
         get
         {
-            var url = _settingsService.Current.Torrents.Streaming.ServerUrl;
-            var port = _settingsService.Current.Torrents.Streaming.ServerPort;
+            var streaming = _settingsService.Current.Torrents.Streaming;
+            var url = streaming.ServerUrl;
+            var port = streaming.ServerPort;
             if (string.IsNullOrWhiteSpace(url))
                 return $"{AppConstants.Api.TorrServer.LoopbackScheme}{AppConstants.Api.TorrServer.DefaultHost}:{port}";
 
             url = url.TrimEnd('/');
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-                (uri.Host == "127.0.0.1" || string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase)) &&
-                uri.Port != port && port > 0)
-            {
-                var builder = new UriBuilder(uri) { Port = port };
-                return builder.Uri.ToString().TrimEnd('/');
-            }
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.IsLoopback && uri.Port != port && port > 0)
+                return new UriBuilder(uri) { Port = port }.Uri.ToString().TrimEnd('/');
             return url;
         }
     }
 
     public TorrServerService(ISettingsService settingsService, HttpClient? httpClient = null)
+        : this(settingsService, httpClient, StartLocalProcess, StartupReadyTimeout)
+    {
+    }
+
+    internal TorrServerService(ISettingsService settingsService, HttpClient? httpClient,
+        Func<int, Process?> startProcess, TimeSpan startupTimeout)
     {
         _settingsService = settingsService;
         _ownsHttpClient = httpClient is null;
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        _startProcess = startProcess;
+        _startupTimeout = startupTimeout;
     }
 
     public async Task<bool> EnsureRunningAsync(CancellationToken ct = default)
     {
-        if (IsRunning)
+        int generation;
+        lock (_processLock)
         {
-            if (await PingServerAsync(ct).ConfigureAwait(false))
-                return true;
-
-            IsRunning = false;
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+            generation = _stopGeneration;
         }
 
         await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
+        using var startup = CancellationTokenSource.CreateLinkedTokenSource(ct);
         try
         {
-            if (IsRunning && await PingServerAsync(ct).ConfigureAwait(false))
-                return true;
-
-            // 1. Check if external or existing TorrServer is already running at ServerUrl
-            if (await PingServerAsync(ct).ConfigureAwait(false))
+            lock (_processLock)
             {
-                Logger.Information("TorrServerService: External TorrServer detected at {Url}", ServerUrl);
-                IsRunning = true;
-                await ApplyMemorySettingsAsync(ct, isExternalInstance: true).ConfigureAwait(false);
-                return true;
-            }
-
-            // 2. Start local process if enabled
-            if (!_settingsService.Current.Torrents.Streaming.AutoStartServer)
-            {
-                Logger.Warning("TorrServerService: Server is not running and AutoStartServer is disabled");
-                return false;
-            }
-
-            var exePath = LocateExecutable();
-            if (string.IsNullOrEmpty(exePath) || !File.Exists(exePath))
-            {
-                Logger.Error("TorrServerService: torrserver.exe was not found. Please run scripts/download-torrserver.ps1");
-                return false;
-            }
-
-            var port = _settingsService.Current.Torrents.Streaming.ServerPort;
-            var dataDir = Platform.PathHelper.GetTorrServerDataPath();
-            Directory.CreateDirectory(dataDir);
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = exePath,
-                Arguments = $"-p {port} -d \"{dataDir}\" -i 127.0.0.1",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                WorkingDirectory = dataDir
-            };
-
-            if (OperatingSystem.IsWindows())
-            {
-                psi.KillOnParentExit = true;
-            }
-
-            Logger.Information("TorrServerService: Launching local TorrServer on port {Port} from {Path}", port, exePath);
-            try
-            {
-                _process = Process.Start(psi);
-            }
-            catch (Exception startEx) when (OperatingSystem.IsWindows() && psi.KillOnParentExit)
-            {
-                Logger.Warning(startEx, "TorrServerService: Process.Start with KillOnParentExit failed; retrying without JobObject binding");
-                psi.KillOnParentExit = false;
-                _process = Process.Start(psi);
-            }
-
-            if (_process == null)
-            {
-                Logger.Error("TorrServerService: Failed to start TorrServer process");
-                return false;
-            }
-
-            // Wait up to StartupReadyTimeoutSeconds for the server to become responsive
-            var deadline = DateTime.UtcNow.AddSeconds(StartupReadyTimeoutSeconds);
-            while (DateTime.UtcNow < deadline && !ct.IsCancellationRequested)
-            {
-                if (_process.HasExited)
-                {
-                    Logger.Error("TorrServerService: TorrServer process exited prematurely with code {Code} (Path: {Path})", _process.ExitCode, exePath);
-                    _process.Dispose();
-                    _process = null;
+                if (generation != _stopGeneration)
                     return false;
-                }
-
-                if (await PingServerAsync(ct).ConfigureAwait(false))
-                {
-                    IsRunning = true;
-                    Logger.Information("TorrServerService: Local TorrServer started successfully");
-                    await ApplyMemorySettingsAsync(ct, isExternalInstance: false).ConfigureAwait(false);
-                    return true;
-                }
-
-                await Task.Delay(150, ct).ConfigureAwait(false);
+                _startup = startup;
             }
 
-            Logger.Error("TorrServerService: Timed out or canceled waiting for TorrServer to respond on {Url}", ServerUrl);
-            Stop();
+            return await EnsureEndpointAsync(ServerUrl, startup.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (startup.IsCancellationRequested)
+        {
+            ct.ThrowIfCancellationRequested();
             return false;
         }
         catch (Exception ex)
         {
             Logger.Error(ex, "TorrServerService: Failed to ensure TorrServer is running");
-            Stop();
             return false;
         }
         finally
         {
+            lock (_processLock)
+            {
+                if (ReferenceEquals(_startup, startup))
+                    _startup = null;
+            }
             _lifecycleLock.Release();
+        }
+    }
+
+    private async Task<bool> EnsureEndpointAsync(string url, CancellationToken ct)
+    {
+        lock (_processLock)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (_process != null && (_managedUrl != url || _process.HasExited))
+                StopProcess();
+        }
+
+        var probe = await ProbeServerAsync(url, ct).ConfigureAwait(false);
+        if (probe == ServerProbe.Ready)
+            return await MarkReadyAsync(url, ct).ConfigureAwait(false);
+
+        lock (_processLock)
+        {
+            _readyUrl = null;
+            ct.ThrowIfCancellationRequested();
+            // Leave a running process available if a single probe failed during startup or load.
+            if (_process == null)
+            {
+                if (probe == ServerProbe.OtherService ||
+                    !_settingsService.Current.Torrents.Streaming.AutoStartServer ||
+                    !Uri.TryCreate(url, UriKind.Absolute, out var uri) || !CanStartLocally(uri) ||
+                    !IsPortAvailable(uri.Port))
+                {
+                    Logger.Warning("TorrServerService: Cannot start a local server for {Url}", url);
+                    return false;
+                }
+
+                _process = _startProcess(uri.Port);
+                if (_process == null)
+                    return false;
+                _managedUrl = url;
+            }
+        }
+
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(_startupTimeout);
+        bool ready = false;
+        try
+        {
+            while (!deadline.IsCancellationRequested)
+            {
+                lock (_processLock)
+                {
+                    if (_process == null || _process.HasExited)
+                    {
+                        Logger.Warning("TorrServerService: Local server exited before becoming ready at {Url}", url);
+                        return false;
+                    }
+                }
+
+                if (await ProbeServerAsync(url, deadline.Token).ConfigureAwait(false) == ServerProbe.Ready)
+                    return ready = await MarkReadyAsync(url, deadline.Token).ConfigureAwait(false);
+
+                await Task.Delay(StartupPollInterval, deadline.Token).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException ex) when (!ct.IsCancellationRequested && deadline.IsCancellationRequested)
+        {
+            Logger.Warning(ex, "TorrServerService: Local server startup timed out at {Url}", url);
+        }
+        finally
+        {
+            if (!ready)
+            {
+                lock (_processLock)
+                    StopProcess();
+            }
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return false;
+    }
+
+    private async Task<bool> MarkReadyAsync(string url, CancellationToken ct)
+    {
+        bool external;
+        bool needsSettings;
+        lock (_processLock)
+        {
+            external = _process == null;
+            needsSettings = _readyUrl != url;
+        }
+
+        if (needsSettings)
+            await ApplyMemorySettingsAsync(url, ct, external).ConfigureAwait(false);
+
+        lock (_processLock)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (ServerUrl != url || (!external && (_process == null || _process.HasExited)))
+                return false;
+            _readyUrl = url;
+            return true;
+        }
+    }
+
+    private static bool CanStartLocally(Uri uri) =>
+        uri.Scheme == Uri.UriSchemeHttp && uri.Port > 0 &&
+        (uri.Host == AppConstants.Api.TorrServer.DefaultHost || uri.Host == "localhost") &&
+        uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment);
+
+    private static bool IsPortAvailable(int port)
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, port) { ExclusiveAddressUse = true };
+        try
+        {
+            listener.Start();
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
         }
     }
 
@@ -173,37 +240,49 @@ public sealed partial class TorrServerService : ITorrServerService
 
     public void Stop()
     {
+        lock (_processLock)
+        {
+            _stopGeneration++;
+            _startup?.Cancel();
+            StopProcess();
+        }
+    }
+
+    private void StopProcess()
+    {
+        using var process = _process;
+        _process = null;
+        _managedUrl = null;
+        _readyUrl = null;
+        if (process == null)
+            return;
+
         try
         {
-            if (_process != null && !_process.HasExited)
+            if (!process.HasExited)
             {
-                Logger.Information("TorrServerService: Stopping TorrServer process (PID: {Pid})", _process.Id);
-                _process.Kill(entireProcessTree: true);
-                _process.Dispose();
+                Logger.Information("TorrServerService: Stopping TorrServer process (PID: {Pid})", process.Id);
+                process.Kill(entireProcessTree: true);
+                if (!process.WaitForExit(ProcessExitTimeoutMs))
+                    Logger.Warning("TorrServerService: Timed out waiting for process {Pid} to exit", process.Id);
             }
         }
         catch (Exception ex)
         {
             Logger.Warning(ex, "TorrServerService: Error terminating TorrServer process");
         }
-        finally
-        {
-            _process = null;
-            IsRunning = false;
-        }
     }
 
     public void Dispose()
     {
-        if (_isDisposed)
-            return;
-
-        _isDisposed = true;
-        Stop();
-        _lifecycleLock.Dispose();
-        if (_ownsHttpClient)
+        lock (_processLock)
         {
-            _httpClient.Dispose();
+            if (_isDisposed)
+                return;
+            _isDisposed = true;
+            Stop();
+            if (_ownsHttpClient)
+                _httpClient.Dispose();
         }
     }
 }

@@ -21,8 +21,10 @@ public sealed partial class PlayerModeCoordinator
                 foreach (var playerWindow in desktop.Windows.OfType<PlayerWindow>().ToArray())
                     playerWindow.Close();
 
-                _playerCommandServer?.Dispose();
+                var commandServer = _playerCommandServer;
                 _playerCommandServer = null;
+                if (commandServer != null)
+                    await commandServer.DisposeAsync();
 
                 if (_shutdownCoordinator != null)
                 {

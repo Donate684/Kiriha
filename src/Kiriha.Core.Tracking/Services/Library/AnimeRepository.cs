@@ -4,6 +4,7 @@ using Kiriha.Core.Abstractions.Services;
 using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Domain.Collections;
+using Kiriha.Core.Tracking.Sync;
 
 namespace Kiriha.Core.Tracking.Library;
 
@@ -14,12 +15,15 @@ public partial class AnimeRepository : IAnimeRepository
     private readonly IBackgroundTaskSupervisor _backgroundTasks;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IRecognitionCache _recognitionCache;
+    private readonly LibrarySyncGate? _syncGate;
 
     private readonly TaskCompletionSource _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _initStarted;
     private readonly Dictionary<(int Id, MediaKind Kind), CancellationTokenSource> _recentlyDeletedIds = new();
     private readonly Lock _recentlyDeletedLock = new();
     private readonly Dictionary<(int Id, MediaKind Kind), AnimeEntity> _idIndex = new();
+    private readonly Dictionary<(int Id, MediaKind Kind), long> _entryGenerations = new();
+    private long _nextEntryGeneration;
     private readonly Lock _indexLock = new();
 
     public Task InitializationTask => _initTcs.Task;
@@ -44,18 +48,26 @@ public partial class AnimeRepository : IAnimeRepository
         }
     }
 
+    public long GetEntryGeneration(int animeId, MediaKind kind)
+    {
+        lock (_indexLock)
+            return _entryGenerations.GetValueOrDefault((animeId, kind));
+    }
+
     public AnimeRepository(
         IUserAnimeRepository userAnimeRepo,
         IDatabaseInitializer dbInit,
         IBackgroundTaskSupervisor backgroundTasks,
         IUiDispatcher uiDispatcher,
-        IRecognitionCache recognitionCache)
+        IRecognitionCache recognitionCache,
+        LibrarySyncGate? syncGate = null)
     {
         _userAnimeRepo = userAnimeRepo;
         _dbInit = dbInit;
         _backgroundTasks = backgroundTasks;
         _uiDispatcher = uiDispatcher;
         _recognitionCache = recognitionCache;
+        _syncGate = syncGate;
 
         Collection.CollectionChanged += (s, e) =>
         {
@@ -68,19 +80,27 @@ public partial class AnimeRepository : IAnimeRepository
             {
                 if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
                 {
+                    var previous = _idIndex.ToDictionary();
                     _idIndex.Clear();
                     foreach (var item in Collection)
                     {
-                        _idIndex[(item.Id, item.MediaKind)] = item;
+                        var key = (item.Id, item.MediaKind);
+                        _idIndex[key] = item;
+                        if (!previous.Remove(key, out var old) || !ReferenceEquals(old, item))
+                            _entryGenerations[key] = ++_nextEntryGeneration;
                     }
+                    foreach (var key in previous.Keys)
+                        _entryGenerations[key] = ++_nextEntryGeneration;
                 }
-                else
+                else if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Move)
                 {
                     if (e.OldItems != null)
                     {
                         foreach (AnimeEntity oldItem in e.OldItems)
                         {
-                            _idIndex.Remove((oldItem.Id, oldItem.MediaKind));
+                            var key = (oldItem.Id, oldItem.MediaKind);
+                            _idIndex.Remove(key);
+                            _entryGenerations[key] = ++_nextEntryGeneration;
                         }
                     }
 
@@ -88,7 +108,9 @@ public partial class AnimeRepository : IAnimeRepository
                     {
                         foreach (AnimeEntity newItem in e.NewItems)
                         {
-                            _idIndex[(newItem.Id, newItem.MediaKind)] = newItem;
+                            var key = (newItem.Id, newItem.MediaKind);
+                            _idIndex[key] = newItem;
+                            _entryGenerations[key] = ++_nextEntryGeneration;
                         }
                     }
                 }

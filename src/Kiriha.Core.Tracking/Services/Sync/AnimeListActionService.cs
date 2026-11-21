@@ -1,4 +1,3 @@
-using Kiriha.Core.Domain.Utils.Async;
 using Kiriha.Core.Abstractions.Infrastructure;
 using Kiriha.Core.Abstractions.Messages;
 using Kiriha.Core.Abstractions.Repositories;
@@ -10,7 +9,7 @@ using Serilog;
 
 namespace Kiriha.Core.Tracking.Sync;
 
-public class AnimeListActionService : IAnimeListActionService
+public partial class AnimeListActionService : IAnimeListActionService
 {
     private readonly IAnimeRepository _animeRepository;
     private readonly ISyncManager _syncManager;
@@ -23,6 +22,7 @@ public class AnimeListActionService : IAnimeListActionService
     private readonly IAiringInfoService? _airingInfoService;
     private readonly ILibraryMutationService _mutations;
     private readonly ICoreEventBus _eventBus;
+    private readonly LibraryEntryWriter? _entryWriter;
 
     public AnimeListActionService(
         IAnimeRepository animeRepository,
@@ -37,7 +37,8 @@ public class AnimeListActionService : IAnimeListActionService
         IAiringInfoService? airingInfoService = null,
         ILibraryMutationService? mutations = null,
         ICoreEventBus? eventBus = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        LibraryEntryWriter? entryWriter = null)
     {
         _animeRepository = animeRepository;
         _syncManager = syncManager;
@@ -49,6 +50,7 @@ public class AnimeListActionService : IAnimeListActionService
         _notificationService = notificationService;
         _airingInfoService = airingInfoService;
         _eventBus = eventBus ?? CoreEventBus.Default;
+        _entryWriter = entryWriter;
         _mutations = mutations ?? new LibraryMutationService(
             animeRepository,
             userAnimeRepo,
@@ -58,11 +60,19 @@ public class AnimeListActionService : IAnimeListActionService
             clock);
     }
 
-    public async Task<ListActionResult> AddToListAsync(
+    public Task<ListActionResult> AddToListAsync(
         AnimeEntity item,
         UserAnimeStatus status,
         int progress = 0,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        AddToListAsync(item, status, progress, null, ct);
+
+    public Task<ListActionResult> AddFromEditorAsync(
+        AnimeEntity item, UserAnimeStatus status, long generation, CancellationToken ct = default) =>
+        AddToListAsync(item, status, 0, generation, ct);
+
+    private async Task<ListActionResult> AddToListAsync(
+        AnimeEntity item, UserAnimeStatus status, int progress, long? generation, CancellationToken ct)
     {
         if (item == null || item.Id <= 0 || string.IsNullOrWhiteSpace(item.Title))
         {
@@ -82,53 +92,50 @@ public class AnimeListActionService : IAnimeListActionService
             return ListActionResult.Fail($"Cannot set '{item.Title}' to {status} because it has not aired yet.");
         }
 
-        // Check if this anime already exists in local collection or DB to preserve user tracking data
+        using var write = _entryWriter != null ? await _entryWriter.AcquireWriteAsync(ct) : null;
         var existing = await _mutations.FindExistingAsync(item.Id, item.MediaKind, ct);
-        if (existing != null)
-        {
-            item.PreserveUserFieldsFrom(existing);
-            if (item.IsMissingDetails)
-            {
-                item.MergeFullDetails(existing);
-            }
-        }
+        if (generation is { } expected && (existing != null || !HasGeneration(item.Id, item.MediaKind, expected)))
+            return EntryChanged();
 
-        bool isManga = item.MediaKind != MediaKind.Anime;
+        AnimeEntity draft = item.Clone();
+        bool isManga = draft.MediaKind != MediaKind.Anime;
 
-        // Apply state changes to entity on UI thread
         await _uiDispatcher.InvokeAsync(() =>
         {
-            item.Status = status;
+            if (existing != null)
+            {
+                draft.PreserveUserFieldsFrom(existing);
+                if (draft.IsMissingDetails)
+                    draft.MergeFullDetails(existing);
+            }
+
+            draft.Status = status;
             if (isManga)
             {
-                if (progress > 0) item.ChaptersRead = progress;
-                else if (item.ChaptersRead == 0 && existing != null && existing.ChaptersRead > 0) item.ChaptersRead = existing.ChaptersRead;
+                if (progress > 0) draft.ChaptersRead = progress;
+                else if (draft.ChaptersRead == 0 && existing != null && existing.ChaptersRead > 0) draft.ChaptersRead = existing.ChaptersRead;
             }
             else
             {
-                if (progress > 0) item.Progress = progress;
-                else if (item.Progress == 0 && existing != null && existing.Progress > 0) item.Progress = existing.Progress;
+                if (progress > 0) draft.Progress = progress;
+                else if (draft.Progress == 0 && existing != null && existing.Progress > 0) draft.Progress = existing.Progress;
             }
 
-            _mutations.StampStatusDates(item, status, isStarting: status == UserAnimeStatus.Watching, existing);
+            _mutations.StampStatusDates(draft, status, isStarting: status == UserAnimeStatus.Watching, existing);
             if (status == UserAnimeStatus.Completed)
             {
-                if (!isManga && item.TotalEpisodes > 0 && item.Progress < item.TotalEpisodes)
+                if (!isManga && draft.TotalEpisodes > 0 && draft.Progress < draft.TotalEpisodes)
                 {
-                    item.Progress = item.TotalEpisodes;
+                    draft.Progress = draft.TotalEpisodes;
                 }
-                else if (isManga && item.Chapters > 0 && item.ChaptersRead < item.Chapters)
+                else if (isManga && draft.Chapters > 0 && draft.ChaptersRead < draft.Chapters)
                 {
-                    item.ChaptersRead = item.Chapters;
+                    draft.ChaptersRead = draft.Chapters;
                 }
             }
         });
 
-        // Save locally to Repository & DB
-        await _animeRepository.AddOrUpdateAnimeAsync(item);
-
-        // Record history entry
-        int displayProgress = isManga ? item.ChaptersRead : item.Progress;
+        int displayProgress = isManga ? draft.ChaptersRead : draft.Progress;
         var actionType = status switch
         {
             UserAnimeStatus.Completed => HistoryActionType.Completed,
@@ -139,56 +146,9 @@ public class AnimeListActionService : IAnimeListActionService
             _ => HistoryActionType.AddedToList
         };
 
-        try
-        {
-            await _historyService.AddEntryAsync(
-                item.Id,
-                item.MediaKind,
-                item.Title,
-                item.RussianTitle,
-                displayProgress,
-                actionType,
-                detail: null,
-                posterUrl: item.MainPictureUrl,
-                ct: ct);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "AnimeListActionService: Failed to write history entry for {Title} ({Id})", item.Title, item.Id);
-        }
-
-        // Notify UI immediately (optimistic UI)
-        _eventBus.Publish(new AnimeListRefreshMessage());
-
-        // Check trackers and enqueue sync
-        bool hasActiveTrackers = CheckHasActiveTrackers();
-        if (hasActiveTrackers)
-        {
-            try
-            {
-                await _syncManager.EnqueueFullUpdateAsync(item);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "AnimeListActionService: Failed to enqueue FullUpdate sync task for {Title} ({Id})", item.Title, item.Id);
-            }
-        }
-        else
-        {
-            Log.Warning("AnimeListActionService: Added {Title} ({Id}) locally only. No active or logged-in trackers connected.", item.Title, item.Id);
-            _notificationService?.NotifySyncFailed(
-                item.Title,
-                "Trackers",
-                "Added locally: no active tracker accounts connected",
-                willRetry: false);
-        }
-
-        // Trigger immediate airing info & timer sync if anime is ongoing
-        TriggerAiringSyncIfOngoing(item);
-
-        return ListActionResult.Ok(
-            hasActiveTrackers: hasActiveTrackers,
-            message: hasActiveTrackers ? null : "Added locally: no active tracker accounts connected");
+        var result = await SaveAndPublishAsync(item, draft, [(actionType, null)], progressChanged: false,
+            "Added locally: no active tracker accounts connected", ct);
+        return generation.HasValue ? WithCommittedEdit(result, draft) : result;
     }
 
     public async Task<ListActionResult> SaveAnimeAsync(
@@ -206,7 +166,7 @@ public class AnimeListActionService : IAnimeListActionService
             return ListActionResult.Fail("Invalid updated anime");
         }
 
-        if (originalItem.Id != updatedItem.Id)
+        if (originalItem.Id != updatedItem.Id || originalItem.MediaKind != updatedItem.MediaKind)
         {
             return ListActionResult.Fail("Mismatched anime IDs");
         }
@@ -216,116 +176,82 @@ public class AnimeListActionService : IAnimeListActionService
             return await RemoveFromListAsync(originalItem.Id, originalItem.MediaKind, ct);
         }
 
+        using var write = _entryWriter != null ? await _entryWriter.AcquireWriteAsync(ct) : null;
+        var draft = originalItem.Clone();
+        updatedItem.CopyTo(draft);
+        return await PersistEditAsync(originalItem, draft, null, ct);
+    }
+
+    private async Task<ListActionResult> PersistEditAsync(
+        AnimeEntity originalItem, AnimeEntity draft, AnimeEditFields? editorBaseline, CancellationToken ct)
+    {
         bool isManga = originalItem.MediaKind != MediaKind.Anime;
         int oldProgress = isManga ? originalItem.ChaptersRead : originalItem.Progress;
-        int newProgress = isManga ? updatedItem.ChaptersRead : updatedItem.Progress;
+        int newProgress = isManga ? draft.ChaptersRead : draft.Progress;
         bool progressChanged = oldProgress != newProgress;
 
-        bool markedAsDropped = originalItem.Status != UserAnimeStatus.Dropped && updatedItem.Status == UserAnimeStatus.Dropped;
-        bool markedAsCompleted = originalItem.Status != UserAnimeStatus.Completed && updatedItem.Status == UserAnimeStatus.Completed;
-        bool statusChanged = originalItem.Status != updatedItem.Status;
+        bool markedAsDropped = originalItem.Status != UserAnimeStatus.Dropped && draft.Status == UserAnimeStatus.Dropped;
+        bool markedAsCompleted = originalItem.Status != UserAnimeStatus.Completed && draft.Status == UserAnimeStatus.Completed;
+        bool statusChanged = originalItem.Status != draft.Status;
 
         if (statusChanged &&
-            (updatedItem.Status == UserAnimeStatus.Watching || updatedItem.Status == UserAnimeStatus.Completed) &&
-            AppConstants.AiringStatus.IsNotYetAired(updatedItem.StatusDetailed))
+            (draft.Status == UserAnimeStatus.Watching || draft.Status == UserAnimeStatus.Completed) &&
+            AppConstants.AiringStatus.IsNotYetAired(draft.StatusDetailed))
         {
-            Log.Warning("AnimeListActionService: Cannot set {Title} to {Status} - it has not aired yet.", updatedItem.Title, updatedItem.Status);
-            return ListActionResult.Fail($"Cannot set '{updatedItem.Title}' to {updatedItem.Status} because it has not aired yet.");
+            Log.Warning("AnimeListActionService: Cannot set {Title} to {Status} - it has not aired yet.", draft.Title, draft.Status);
+            return ListActionResult.Fail($"Cannot set '{draft.Title}' to {draft.Status} because it has not aired yet.");
         }
 
-        bool scoreChanged = originalItem.UserScore != updatedItem.UserScore && updatedItem.UserScore is > 0;
+        bool scoreChanged = originalItem.UserScore != draft.UserScore;
 
-        await _uiDispatcher.InvokeAsync(() =>
+        if (editorBaseline == null || statusChanged)
         {
-            _mutations.StampStatusDates(
-                updatedItem,
-                markedAsCompleted ? UserAnimeStatus.Completed : null,
-                isStarting: updatedItem.Status == UserAnimeStatus.Watching);
-
-            updatedItem.CopyTo(originalItem);
-            if (progressChanged)
+            var selected = AnimeEditFields.From(draft);
+            _mutations.StampStatusDates(draft, markedAsCompleted ? UserAnimeStatus.Completed : null,
+                isStarting: draft.Status == UserAnimeStatus.Watching);
+            if (editorBaseline is { } baseline)
             {
-                _eventBus.Publish(new AnimeProgressChangedMessage(originalItem, newProgress));
-            }
-        });
-
-        await _animeRepository.AddOrUpdateAnimeAsync(originalItem);
-
-        int displayProgress = newProgress;
-
-        try
-        {
-            if (markedAsCompleted)
-            {
-                await _historyService.AddEntryAsync(originalItem.Id, originalItem.MediaKind, originalItem.Title, originalItem.RussianTitle, displayProgress, HistoryActionType.Completed, null, originalItem.MainPictureUrl, ct);
-            }
-            else
-            {
-                if (progressChanged)
-                {
-                    var progressAction = newProgress > oldProgress
-                        ? HistoryActionType.Watched
-                        : HistoryActionType.Reverted;
-                    await _historyService.AddEntryAsync(originalItem.Id, originalItem.MediaKind, originalItem.Title, originalItem.RussianTitle, displayProgress, progressAction, null, originalItem.MainPictureUrl, ct);
-                }
-
-                if (markedAsDropped)
-                {
-                    await _historyService.AddEntryAsync(originalItem.Id, originalItem.MediaKind, originalItem.Title, originalItem.RussianTitle, displayProgress, HistoryActionType.Dropped, null, originalItem.MainPictureUrl, ct);
-                }
-                else if (statusChanged)
-                {
-                    bool alreadyRecordedProgress = progressChanged && newProgress > oldProgress && updatedItem.Status == UserAnimeStatus.Watching;
-                    if (!alreadyRecordedProgress)
-                    {
-                        var statusAction = updatedItem.Status switch
-                        {
-                            UserAnimeStatus.Watching => displayProgress == 0 ? HistoryActionType.AddedToList : HistoryActionType.Watched,
-                            UserAnimeStatus.PlanToWatch => HistoryActionType.PlanToWatch,
-                            UserAnimeStatus.OnHold => HistoryActionType.OnHold,
-                            _ => HistoryActionType.AddedToList
-                        };
-
-                        await _historyService.AddEntryAsync(originalItem.Id, originalItem.MediaKind, originalItem.Title, originalItem.RussianTitle, displayProgress, statusAction, null, originalItem.MainPictureUrl, ct);
-                    }
-                }
-            }
-
-            if (scoreChanged)
-            {
-                await _historyService.AddEntryAsync(originalItem.Id, originalItem.MediaKind, originalItem.Title, originalItem.RussianTitle, displayProgress, HistoryActionType.ScoreSet, originalItem.Score, originalItem.MainPictureUrl, ct);
+                if (selected.DateStarted != baseline.DateStarted || originalItem.DateStarted != baseline.DateStarted)
+                    draft.DateStarted = selected.DateStarted;
+                if (selected.DateCompleted != baseline.DateCompleted || originalItem.DateCompleted != baseline.DateCompleted)
+                    draft.DateCompleted = selected.DateCompleted;
+                if (selected.IsRewatching != baseline.IsRewatching || originalItem.IsRewatching != baseline.IsRewatching)
+                    draft.IsRewatching = selected.IsRewatching;
             }
         }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "AnimeListActionService: Failed to record history during SaveAnimeAsync for {Id}", originalItem.Id);
-        }
 
-        _eventBus.Publish(new AnimeListRefreshMessage());
-
-        bool hasActiveTrackers = CheckHasActiveTrackers();
-        if (hasActiveTrackers)
+        var history = new List<(HistoryActionType Action, string? Detail)>();
+        if (markedAsCompleted)
         {
-            await _syncManager.EnqueueFullUpdateAsync(originalItem);
+            history.Add((HistoryActionType.Completed, null));
         }
         else
         {
-            Log.Warning("AnimeListActionService: Saved {Title} ({Id}) locally only. No active trackers connected.", originalItem.Title, originalItem.Id);
-            _notificationService?.NotifySyncFailed(
-                originalItem.Title,
-                "Trackers",
-                "Saved locally: no active tracker accounts connected",
-                willRetry: false);
+            if (progressChanged)
+                history.Add((newProgress > oldProgress ? HistoryActionType.Watched : HistoryActionType.Reverted, null));
+
+            if (markedAsDropped)
+            {
+                history.Add((HistoryActionType.Dropped, null));
+            }
+            else if (statusChanged && !(progressChanged && newProgress > oldProgress && draft.Status == UserAnimeStatus.Watching))
+            {
+                var statusAction = draft.Status switch
+                {
+                    UserAnimeStatus.Watching => newProgress == 0 ? HistoryActionType.AddedToList : HistoryActionType.Watched,
+                    UserAnimeStatus.PlanToWatch => HistoryActionType.PlanToWatch,
+                    UserAnimeStatus.OnHold => HistoryActionType.OnHold,
+                    _ => HistoryActionType.AddedToList
+                };
+                history.Add((statusAction, null));
+            }
         }
 
-        if (originalItem.Status == UserAnimeStatus.Watching)
-        {
-            TriggerAiringSyncIfOngoing(originalItem);
-        }
+        if (scoreChanged)
+            history.Add((HistoryActionType.ScoreSet, draft.Score));
 
-        return ListActionResult.Ok(
-            hasActiveTrackers: hasActiveTrackers,
-            message: hasActiveTrackers ? null : "Saved locally: no active tracker accounts connected");
+        return await SaveAndPublishAsync(originalItem, draft, history, progressChanged,
+            "Saved locally: no active tracker accounts connected", ct);
     }
 
     private void TriggerAiringSyncIfOngoing(AnimeEntity item)
@@ -343,12 +269,42 @@ public class AnimeListActionService : IAnimeListActionService
         CancellationToken ct = default) =>
         RemoveFromListAsync(animeId, MediaKind.Anime, ct);
 
-    public async Task<ListActionResult> RemoveFromListAsync(
+    public Task<ListActionResult> RemoveFromListAsync(
         int animeId,
         MediaKind mediaKind,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        RemoveFromListAsync(animeId, mediaKind, null, ct);
+
+    public Task<ListActionResult> RemoveFromEditorAsync(
+        int id, MediaKind kind, long generation, CancellationToken ct = default) =>
+        RemoveFromListAsync(id, kind, generation, ct);
+
+    private async Task<ListActionResult> RemoveFromListAsync(
+        int animeId, MediaKind mediaKind, long? generation, CancellationToken ct)
     {
         if (animeId <= 0) return ListActionResult.Fail("Invalid anime ID");
+
+        if (_entryWriter is { } writer)
+        {
+            using var write = await writer.AcquireWriteAsync(ct);
+            var item = await _mutations.FindExistingAsync(animeId, mediaKind, ct);
+            if (generation is { } expected && (item == null || !HasGeneration(animeId, mediaKind, expected)))
+                return EntryChanged();
+            try
+            {
+                var hasDestinations = await writer.RemoveAsync(animeId, mediaKind, item, ct);
+                _eventBus.Publish(new AnimeListRefreshMessage());
+                return ListActionResult.Ok(hasDestinations);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                Log.Error(ex, "Could not remove library entry {Id} ({MediaKind})", animeId, mediaKind);
+                return ListActionResult.Fail("Could not remove the library entry");
+            }
+        }
+
+        if (generation is { } fallback && !HasGeneration(animeId, mediaKind, fallback))
+            return EntryChanged();
 
         if (mediaKind == MediaKind.Anime)
             await _progressService.RemoveAnimeAsync(animeId);

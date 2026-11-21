@@ -33,7 +33,15 @@ public class MalAuthService
 
         if (string.IsNullOrEmpty(code) || cancellationToken.IsCancellationRequested) return null;
 
-        return await ExchangeCodeForTokenAsync(code, codeVerifier);
+        var tokens = await ExchangeCodeForTokenAsync(code, codeVerifier);
+        if (tokens != null)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, AppConstants.Api.Mal.BaseUrl + "users/@me");
+            request.Headers.Add("User-Agent", AppInfo.UserAgent);
+            tokens.UserId = await TrackerAuthProfile.ReadUserIdAsync(
+                request, tokens.AccessToken, ct => _httpClient.SendAsync(request, ct), cancellationToken);
+        }
+        return tokens;
     }
 
     /// <summary>

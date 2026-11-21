@@ -124,6 +124,8 @@
     "tv_special": "Special"
   },
   "list_actions": {
+    "entry_conflict": "This library entry was removed or added again. Reopen its details before making changes.",
+    "field_conflict": "Some of the same fields changed in the library. Your draft is still here. Copy any changes you want to keep before reopening the details.",
     "in_my_list": "In My List",
     "not_in_my_list": "This anime is not in your list",
     "add_to_list": "Add to list",

@@ -1,3 +1,4 @@
+using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
 namespace Kiriha.Core.Tracking.Sync.Models;
@@ -21,5 +22,8 @@ public class SyncTask
     public AnimeEntity? FullItem { get; set; }
     public int RetryCount { get; set; } = 0;
     public string? TargetTracker { get; set; }
+    internal SyncTaskOwner? Owner { get; set; }
+    internal bool IsDirect { get; set; }
+    internal int? HistoryId { get; set; }
     public HashSet<string> SuccessfulTrackers { get; set; } = new();
 }

@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Repositories;
+using System.Text.Json;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Data.Core;
@@ -8,8 +9,33 @@ namespace Kiriha.Data.Repository;
 
 public sealed class ProgressChangeRepository(IDbContextFactory<AppDbContext> contextFactory) : IProgressChangeRepository
 {
+    public async Task SaveEntryAsync(int id, MediaKind kind, AnimeEntity? item, IReadOnlyList<HistoryItem> history,
+        IReadOnlyList<SyncTaskEntity> tasks, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        if (item is null)
+        {
+            await context.UserAnime.Where(row => row.Id == id && row.MediaKind == kind).ExecuteDeleteAsync(ct);
+        }
+        else
+        {
+            if (item.Id != id || item.MediaKind != kind || item.Status == UserAnimeStatus.None ||
+                id <= 0 || string.IsNullOrWhiteSpace(item.Title))
+                throw new InvalidOperationException("Cannot save an invalid library entry.");
+
+            await UserAnimeRepository.UpsertInContextAsync(context, item, ct);
+        }
+
+        context.History.AddRange(history);
+        await context.SaveChangesAsync(ct);
+        await SaveQueueAsync(context, tasks, history.LastOrDefault(), ct);
+        await transaction.CommitAsync(ct);
+    }
+
     public async Task<bool> SaveAsync(
-        AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, SyncTaskEntity task, bool onlyAdvance, CancellationToken ct)
+        AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, IReadOnlyList<SyncTaskEntity> tasks,
+        bool onlyAdvance, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         await using var transaction = await context.Database.BeginTransactionAsync(ct);
@@ -36,9 +62,24 @@ public sealed class ProgressChangeRepository(IDbContextFactory<AppDbContext> con
         }
 
         context.History.Add(history);
-        context.SyncTasks.Add(task);
         await context.SaveChangesAsync(ct);
+        await SaveQueueAsync(context, tasks, history, ct);
         await transaction.CommitAsync(ct);
         return true;
+    }
+
+    private static async Task SaveQueueAsync(
+        AppDbContext context, IReadOnlyList<SyncTaskEntity> tasks, HistoryItem? history, CancellationToken ct)
+    {
+        if (tasks.Count == 0)
+            return;
+
+        foreach (var task in tasks)
+        {
+            if (history != null && OwnedSyncTaskPayload.Read(task.Payload) is { } payload)
+                task.Payload = JsonSerializer.Serialize(payload with { HistoryId = history.Id });
+        }
+        context.SyncTasks.AddRange(tasks);
+        await context.SaveChangesAsync(ct);
     }
 }

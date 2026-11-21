@@ -1,3 +1,4 @@
+using Kiriha.Core.Tracking.Auth;
 using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -41,7 +42,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService
     {
         get
         {
-            var acc = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList);
+            var acc = TrackerRequestAccount.Get(_settingsService, TrackerConstants.Ids.AniList);
             return acc != null && acc.IsEnabled && acc.Tokens != null;
         }
     }
@@ -74,7 +75,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService
         };
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
 
-        var token = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
+        var token = TrackerRequestAccount.Get(_settingsService, TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
         if (!string.IsNullOrEmpty(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -154,7 +155,7 @@ public partial class AniListApiService : IDisposable, IAniListApiService
         };
         request.Headers.Add("User-Agent", AppInfo.UserAgent);
 
-        var token = _settingsService.Current.Api.GetAccount(TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
+        var token = TrackerRequestAccount.Get(_settingsService, TrackerConstants.Ids.AniList)?.Tokens?.AccessToken;
         if (!string.IsNullOrEmpty(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

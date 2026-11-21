@@ -14,6 +14,7 @@ public class HistoryService : IHistoryService
     private readonly ConcurrentDictionary<Task, byte> _pendingWrites = new();
 
     public event Action<HistoryItem>? EntryAdded;
+    public event Action<HistoryItem>? EntryUpdated;
     public event Action<int, MediaKind, int?, string, TrackerSyncState, string?>? TrackerStatusUpdated;
 
     public HistoryService(IHistoryRepository repo)
@@ -79,6 +80,18 @@ public class HistoryService : IHistoryService
         catch (Exception ex)
         {
             Log.Error(ex, "Failed to publish committed history entry {HistoryId}", entry.Id);
+        }
+    }
+
+    public void PublishUpdatedEntry(HistoryItem entry)
+    {
+        try
+        {
+            EntryUpdated?.Invoke(entry);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to publish tracker status for history entry {HistoryId}", entry.Id);
         }
     }
 

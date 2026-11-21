@@ -3,14 +3,14 @@ using Kiriha.Core.Domain.Models.Entities;
 namespace Kiriha.Core.Tracking.Sync;
 
 /// <summary>
-/// Coordinates full list reconciliation, background metadata updates, and local progress writes.
+/// Coordinates full list reconciliation, background metadata updates, and local library writes.
 /// </summary>
 public sealed class LibrarySyncGate : IDisposable
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly SemaphoreSlim _progressGate = new(1, 1);
     private readonly Lock _progressChangesLock = new();
-    private HashSet<(int Id, MediaKind Kind)>? _progressChangesDuringSync;
+    private Dictionary<(int Id, MediaKind Kind), bool>? _entryChangesDuringSync;
     private int _fullSyncRequests;
 
     public bool IsFullSyncActive => Volatile.Read(ref _fullSyncRequests) > 0;
@@ -28,7 +28,7 @@ public sealed class LibrarySyncGate : IDisposable
             throw;
         }
         lock (_progressChangesLock)
-            _progressChangesDuringSync = [];
+            _entryChangesDuringSync = [];
         return new ReleaseScope(_gate, EndFullSync);
     }
 
@@ -58,19 +58,25 @@ public sealed class LibrarySyncGate : IDisposable
     internal void RecordProgressChange(int id, MediaKind kind)
     {
         lock (_progressChangesLock)
-            _progressChangesDuringSync?.Add((id, kind));
+            _entryChangesDuringSync?[(id, kind)] = false;
     }
 
-    internal HashSet<(int Id, MediaKind Kind)> GetProgressChangesDuringSync()
+    internal void RecordEntryRemoval(int id, MediaKind kind)
     {
         lock (_progressChangesLock)
-            return _progressChangesDuringSync is { } changes ? [.. changes] : [];
+            _entryChangesDuringSync?[(id, kind)] = true;
+    }
+
+    internal Dictionary<(int Id, MediaKind Kind), bool> GetEntryChangesDuringSync()
+    {
+        lock (_progressChangesLock)
+            return _entryChangesDuringSync is { } changes ? new(changes) : [];
     }
 
     private void EndFullSync()
     {
         lock (_progressChangesLock)
-            _progressChangesDuringSync = null;
+            _entryChangesDuringSync = null;
         Interlocked.Decrement(ref _fullSyncRequests);
     }
 

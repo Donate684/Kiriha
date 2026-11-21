@@ -31,7 +31,7 @@ public sealed partial class TorrServerService
                 save_to_db = false
             };
 
-            var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.Warning("TorrServerService: AddTorrent failed with HTTP {Status}", response.StatusCode);
@@ -43,9 +43,10 @@ public sealed partial class TorrServerService
                 return null;
 
             var hash = ReadString(json["hash"], string.Empty);
-            return await GetTorrentAsync(hash, ct).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(hash) ? null
+                : await GetTorrentAsync(hash, ct).ConfigureAwait(false) ?? new TorrServerTorrentStatus { Hash = hash, Title = title };
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             Logger.Error(ex, "TorrServerService: Error adding torrent '{Title}'", title);
             return null;
@@ -60,7 +61,7 @@ public sealed partial class TorrServerService
         try
         {
             var payload = new { action = "get", hash };
-            var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -105,7 +106,7 @@ public sealed partial class TorrServerService
                 Files = files
             };
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             Logger.Warning(ex, "TorrServerService: Error querying torrent {Hash}", hash);
             return null;
@@ -114,17 +115,24 @@ public sealed partial class TorrServerService
 
     public async Task<IReadOnlyList<TorrServerFileItem>> WaitForFilesAsync(string hash, TimeSpan timeout, CancellationToken ct = default)
     {
-        var deadline = DateTime.UtcNow.Add(timeout);
-        while (DateTime.UtcNow < deadline && !ct.IsCancellationRequested)
+        const int filesPollIntervalMs = 300;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(timeout);
+        try
         {
-            var status = await GetTorrentAsync(hash, ct).ConfigureAwait(false);
-            if (status != null && status.Files.Count > 0)
-                return status.Files;
-
-            await Task.Delay(300, ct).ConfigureAwait(false);
+            while (true)
+            {
+                deadline.Token.ThrowIfCancellationRequested();
+                var status = await GetTorrentAsync(hash, deadline.Token).ConfigureAwait(false);
+                if (status != null && status.Files.Count > 0)
+                    return status.Files;
+                await Task.Delay(filesPollIntervalMs, deadline.Token).ConfigureAwait(false);
+            }
         }
-
-        return [];
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return [];
+        }
     }
 
     public async Task DropTorrentAsync(string hash, CancellationToken ct = default)
@@ -135,7 +143,8 @@ public sealed partial class TorrServerService
         try
         {
             var payload = new { action = "rem", hash };
-            await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
+            using var response = await _httpClient.PostAsJsonAsync($"{ServerUrl}/torrents", payload, ct).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             Logger.Information("TorrServerService: Dropped torrent {Hash} from RAM cache", hash);
         }
         catch (Exception ex)

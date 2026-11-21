@@ -28,6 +28,51 @@ public partial class AnimeRepository
             return;
         }
 
+        var existing = await PublishSavedEntryAsync(anime);
+        if (existing != null)
+            await _userAnimeRepo.UpdateAsync(existing);
+        else
+            await _userAnimeRepo.UpsertAsync(anime);
+    }
+
+    public async Task<(AnimeEditFields Fields, long Generation)?> RefreshEditorDetailsAsync(
+        AnimeEntity original, AnimeEntity details, long generation, CancellationToken ct = default)
+    {
+        if (original.Id != details.Id ||
+            (original.MediaKind == MediaKind.Anime) != (details.MediaKind == MediaKind.Anime))
+            return null;
+
+        using var write = _syncGate != null ? await _syncGate.AcquireProgressWriteAsync(ct) : null;
+        var id = original.Id;
+        var kind = original.MediaKind;
+        if (GetEntryGeneration(id, kind) != generation)
+            return null;
+
+        var current = FindById(id, kind);
+        if (current != null)
+        {
+            if (await _userAnimeRepo.MergeDetailsMetadataAsync(id, kind, details, ct))
+                await _uiDispatcher.InvokeAsync(() => current.MergeFullDetails(details, metadataOnly: true));
+            return null;
+        }
+
+        // A details lookup may discover an entry before its first list sync. A
+        // title already removed this session must await normal list reconciliation.
+        if (generation != 0 || details.Status == UserAnimeStatus.None || IsRecentlyDeleted(id, kind) ||
+            await _userAnimeRepo.GetByIdAsync(id, kind, ct) != null)
+            return null;
+
+        var imported = original.Clone();
+        imported.MergeFullDetails(details, metadataOnly: true);
+        AnimeEditFields.From(details).ApplyTo(imported);
+        await _userAnimeRepo.UpsertAsync(imported, ct);
+        _syncGate?.RecordProgressChange(id, kind);
+        await PublishSavedEntryAsync(original, imported);
+        return (AnimeEditFields.From(imported), GetEntryGeneration(id, kind));
+    }
+
+    internal Task<AnimeEntity?> PublishSavedEntryAsync(AnimeEntity anime, AnimeEntity? committedEntry = null)
+    {
         var key = (anime.Id, anime.MediaKind);
         lock (_recentlyDeletedLock)
         {
@@ -38,8 +83,9 @@ public partial class AnimeRepository
             }
         }
 
-        var existing = await _uiDispatcher.InvokeAsync(() =>
+        return _uiDispatcher.InvokeAsync(() =>
         {
+            committedEntry?.CopyTo(anime);
             AnimeEntity? found;
             lock (_indexLock)
             {
@@ -64,15 +110,17 @@ public partial class AnimeRepository
             return found;
         });
 
-        if (existing != null)
-            await _userAnimeRepo.UpdateAsync(existing);
-        else
-            await _userAnimeRepo.UpsertAsync(anime);
     }
 
     public Task RemoveAnimeLocalAsync(int animeId) => RemoveAnimeLocalAsync(animeId, MediaKind.Anime);
 
     public async Task RemoveAnimeLocalAsync(int animeId, MediaKind kind)
+    {
+        await PublishRemovedEntryAsync(animeId, kind);
+        await _userAnimeRepo.DeleteAsync(animeId, kind);
+    }
+
+    internal async Task PublishRemovedEntryAsync(int animeId, MediaKind kind)
     {
         var key = (animeId, kind);
         var newCts = new CancellationTokenSource();
@@ -111,17 +159,13 @@ public partial class AnimeRepository
             AnimeEntity? item;
             lock (_indexLock)
             {
-                if (_idIndex.TryGetValue(key, out item))
-                {
-                    _idIndex.Remove(key);
-                }
+                if (!_idIndex.TryGetValue(key, out item))
+                    _entryGenerations[key] = ++_nextEntryGeneration;
             }
             if (item != null)
             {
                 Collection.Remove(item);
             }
         });
-
-        await _userAnimeRepo.DeleteAsync(animeId, kind);
     }
 }

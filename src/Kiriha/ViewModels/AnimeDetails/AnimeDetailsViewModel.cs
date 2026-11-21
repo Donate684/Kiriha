@@ -86,7 +86,8 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
     private AnimeEntity _originalAnime;
     private readonly IAnimeListActionService _listActionService;
-    private readonly Stack<(AnimeEntity Original, AnimeEntity Clone)> _navigationHistory = new();
+    private readonly Stack<AnimeEntity> _navigationHistory = new();
+    private bool _disposed;
 
     private readonly ISettingsService _settingsService;
     private readonly IDialogService _dialogs;
@@ -157,46 +158,15 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
         IsPosterPreviewOpen = false;
 
-        if (Editor.HasChanges)
-        {
-            try
-            {
-                await _listActionService.SaveAnimeAsync(_originalAnime, Anime);
-                HasAnySavedChanges = true;
-            }
-            catch (Exception ex)
-            {
-                Serilog.Log.Warning(ex, "Failed to auto-save anime {Id} before navigating", Anime.Id);
-            }
-        }
+        if (!await TryLeaveEditorAsync()) return;
 
         if (addToHistory)
         {
-            _navigationHistory.Push((_originalAnime, Anime));
+            _navigationHistory.Push(_originalAnime);
             CanGoBack = _navigationHistory.Count > 0;
         }
 
-        Anime.PropertyChanged -= _animePropertyChanged;
-        Editor.Dispose();
-
-        var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == target.Id && x.MediaKind == target.MediaKind);
-        _originalAnime = existing ?? target;
-        Anime = _originalAnime.Clone();
-
-        Editor = new AnimeEditViewModel(_originalAnime, Anime, _listActionService);
-        Metadata = new AnimeMetadataViewModel(Anime, _malApiService);
-
-        Anime.PropertyChanged += _animePropertyChanged;
-
-        BuildCustomShareLinks();
-
-        Relations.Clear();
-        FranchiseTimeline.Clear();
-        HasFranchiseTimeline = false;
-        HasStandardRelations = false;
-        HasAnyRelationsOrTimeline = false;
-
-        await InitializationAsync();
+        await OpenEditorAsync(target);
     }
 
     [CommunityToolkit.Mvvm.Input.RelayCommand(CanExecute = nameof(CanGoBack))]
@@ -206,30 +176,33 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
         IsPosterPreviewOpen = false;
 
-        if (Editor.HasChanges)
-        {
-            try
-            {
-                await _listActionService.SaveAnimeAsync(_originalAnime, Anime);
-                HasAnySavedChanges = true;
-            }
-            catch (Exception ex)
-            {
-                Serilog.Log.Warning(ex, "Failed to auto-save anime {Id} before going back", Anime.Id);
-            }
-        }
+        if (!await TryLeaveEditorAsync()) return;
 
         var prev = _navigationHistory.Pop();
         CanGoBack = _navigationHistory.Count > 0;
+        await OpenEditorAsync(prev);
+    }
 
+    private async Task<bool> TryLeaveEditorAsync()
+    {
+        if (_disposed || Editor.IsBusy) return false;
+        if (!Editor.HasChanges) return true;
+
+        var editor = Editor;
+        if (!await editor.TrySaveAsync()) return false;
+        HasAnySavedChanges = true;
+        return !_disposed && ReferenceEquals(Editor, editor) && !editor.HasChanges;
+    }
+
+    private async Task OpenEditorAsync(AnimeEntity item)
+    {
         Anime.PropertyChanged -= _animePropertyChanged;
         Editor.Dispose();
 
-        var existing = _animeRepo.Collection.FirstOrDefault(x => x.Id == prev.Original.Id && x.MediaKind == prev.Original.MediaKind);
-        _originalAnime = existing ?? prev.Original;
+        _originalAnime = AnimeEditViewModel.ResolveEntry(_animeRepo, item);
         Anime = _originalAnime.Clone();
 
-        Editor = new AnimeEditViewModel(_originalAnime, Anime, _listActionService);
+        Editor = new AnimeEditViewModel(_originalAnime, Anime, _listActionService, _animeRepo);
         Metadata = new AnimeMetadataViewModel(Anime, _malApiService);
 
         Anime.PropertyChanged += _animePropertyChanged;
@@ -263,36 +236,44 @@ public partial class AnimeDetailsViewModel : ViewModelBase, IDisposable
 
     private async Task InitializationAsync()
     {
-        Anime.RefreshMetadata();
-        Metadata.NotifyMetadataChanged();
+        var editor = Editor;
+        var metadata = Metadata;
+        var original = _originalAnime;
+        var generation = editor.EntryGeneration;
+        bool IsCurrentEditor() => !_disposed && ReferenceEquals(editor, Editor);
 
-        if (Anime.Genres.Count == 0 || string.IsNullOrEmpty(Anime.Synopsis) || (Anime.Presentation.IsAnime && Anime.Studios.Count == 0))
+        Anime.RefreshMetadata();
+        metadata.NotifyMetadataChanged();
+
+        IsLoading = Anime.Genres.Count == 0 || string.IsNullOrEmpty(Anime.Synopsis) ||
+            (Anime.Presentation.IsAnime && Anime.Studios.Count == 0);
+        if (IsLoading)
         {
-            IsLoading = true;
             try
             {
-                var loadedFull = await Metadata.LoadFullDetailsAsync();
-                if (loadedFull != null && !ReferenceEquals(_originalAnime, Anime))
+                var loadedFull = await metadata.FetchFullDetailsAsync();
+                if (!IsCurrentEditor()) return;
+                if (loadedFull != null && loadedFull.Id == original.Id &&
+                    (loadedFull.MediaKind == MediaKind.Anime) == (original.MediaKind == MediaKind.Anime))
                 {
-                    _originalAnime.MergeFullDetails(loadedFull);
-                    if (_originalAnime.Status != UserAnimeStatus.None)
-                    {
-                        await _animeRepo.AddOrUpdateAnimeAsync(_originalAnime);
-                    }
-                    Editor.RefreshBaselineState();
+                    metadata.ApplyFullDetails(loadedFull);
+                    var imported = await _animeRepo.RefreshEditorDetailsAsync(original, loadedFull, generation);
+                    if (IsCurrentEditor() && imported is { } entry)
+                        editor.ApplyImportedFields(entry.Fields, entry.Generation);
                 }
             }
             finally
             {
-                IsLoading = false;
+                if (IsCurrentEditor()) IsLoading = false;
             }
         }
 
-        _ = LoadFranchiseAndRelationsAsync();
+        if (IsCurrentEditor()) _ = LoadFranchiseAndRelationsAsync();
     }
 
     public void Dispose()
     {
+        _disposed = true;
         Anime.PropertyChanged -= _animePropertyChanged;
         Editor.Dispose();
         Relations.Clear();

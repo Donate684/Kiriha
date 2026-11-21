@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Kiriha.Core.Abstractions.Repositories;
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Abstractions.Services.AppLifecycle;
 using Kiriha.Core.Tracking.Sync;
 using Kiriha.Infrastructure.Player;
 using Kiriha.Infrastructure.Tracking.Integration;
@@ -22,6 +23,7 @@ public sealed class AppReadinessService
     private readonly ISeasonalHiddenRepository _seasonalHiddenRepo;
     private readonly ITorrentFilterRepository _torrentFilterRepo;
     private readonly IEnumerable<IHostedService> _hostedServices;
+    private readonly IBackgroundTaskSupervisor _backgroundTasks;
 
     private readonly TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Lock _gate = new();
@@ -37,7 +39,8 @@ public sealed class AppReadinessService
         ISettingsService settingsService,
         ISeasonalHiddenRepository seasonalHiddenRepo,
         ITorrentFilterRepository torrentFilterRepo,
-        IEnumerable<IHostedService> hostedServices)
+        IEnumerable<IHostedService> hostedServices,
+        IBackgroundTaskSupervisor backgroundTasks)
     {
         _databaseInitializer = databaseInitializer;
         _animeRepo = animeRepo;
@@ -48,6 +51,7 @@ public sealed class AppReadinessService
         _seasonalHiddenRepo = seasonalHiddenRepo;
         _torrentFilterRepo = torrentFilterRepo;
         _hostedServices = hostedServices;
+        _backgroundTasks = backgroundTasks;
     }
 
     public event EventHandler<AppReadinessState>? StateChanged;
@@ -87,10 +91,7 @@ public sealed class AppReadinessService
             stage.Restart();
             await _animeRepo.InitializeAsync();
 
-            if (_animeRepo.Collection.Count == 0)
-            {
-                await _refreshService.RefreshAnimeListAsync();
-            }
+            bool needsInitialRefresh = _animeRepo.Collection.Count == 0;
             Log.Information("StartupTiming: readiness anime stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
 
             stage.Restart();
@@ -116,6 +117,12 @@ public sealed class AppReadinessService
             if (_settingsService.Current.System.KeepPlayerProcessAlive)
                 PlayerProcessBridge.StartResident();
             Log.Information("StartupTiming: readiness resident player stage elapsedMs={ElapsedMs}", stage.ElapsedMilliseconds);
+
+            if (needsInitialRefresh)
+            {
+                _ = _backgroundTasks.Run("AppReadiness.InitialLibraryRefresh",
+                    ct => _refreshService.RefreshAnimeListAsync(ct: ct));
+            }
 
             SetState(AppReadinessState.Ready);
             _readyTcs.TrySetResult();

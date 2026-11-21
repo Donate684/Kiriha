@@ -66,7 +66,8 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         ITorrServerService? torrServer = null,
         string? subtitleUrl = null,
         IReadOnlyDictionary<string, string>? headers = null,
-        IPlaybackResumeStore? resumeStore = null)
+        IPlaybackResumeStore? resumeStore = null,
+        string? requestId = null)
     {
         _isInitializing = true;
         _metadataResolver = metadataResolver;
@@ -74,6 +75,7 @@ public partial class PlayerViewModel : ObservableObject, IDisposable
         _localizer = localizer;
         _torrServer = torrServer;
         _resumeStore = resumeStore;
+        _pendingPlaybackRequestId = requestId;
         _pendingSubtitleUrl = subtitleUrl;
         StreamHeaders = headers;
         InitializeOptions();

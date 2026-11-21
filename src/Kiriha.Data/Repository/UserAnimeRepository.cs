@@ -69,6 +69,12 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         }
 
         using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await UpsertInContextAsync(context, item, ct);
+        await context.SaveChangesAsync(ct);
+    }
+
+    internal static async Task UpsertInContextAsync(AppDbContext context, AnimeEntity item, CancellationToken ct)
+    {
         var existing = await context.UserAnime.AsTracking().FirstOrDefaultAsync(x => x.Id == item.Id && x.MediaKind == item.MediaKind, ct);
         if (existing is null)
         {
@@ -79,7 +85,6 @@ public sealed partial class UserAnimeRepository : IUserAnimeRepository
         {
             context.Entry(existing).CurrentValues.SetValues(item);
         }
-        await context.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(AnimeEntity item, CancellationToken ct = default)

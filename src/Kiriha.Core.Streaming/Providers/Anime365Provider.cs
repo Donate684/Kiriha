@@ -201,14 +201,10 @@ public sealed partial class Anime365Provider : IStreamingProvider
             bool looksLikeSeriesUrl = animeId.Contains("/catalog/", StringComparison.OrdinalIgnoreCase)
                                    || animeId.Contains("/series/", StringComparison.OrdinalIgnoreCase);
 
-            // 1. Primary path when an EpisodeId (bare integer) is passed directly: fetch translations in a single request
-            //    without risking collision with an unrelated seriesId of the same integer value.
+            // Episode and series ids share the same numeric range. Keep episode requests
+            // scoped to that episode even when its translation list is empty.
             if (!looksLikeSeriesUrl)
-            {
-                var directSources = await FetchTranslationsForEpisodeAsync(parsedId, ct).ConfigureAwait(false);
-                if (directSources.Count > 0)
-                    return directSources;
-            }
+                return await FetchTranslationsForEpisodeAsync(parsedId, ct).ConfigureAwait(false);
 
             // 2. Series lookup path: animeId is a series URL or seriesId; locate target episodeId for episodeNumber.
             var detailUrl = $"{StreamingConstants.Anime365.SeriesEndpoint}/{cleanId}";

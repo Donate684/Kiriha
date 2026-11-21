@@ -17,7 +17,8 @@ public enum HistoryActionType
     PlanToWatch = 9,
     OnHold = 10,
     Rewatching = 11,
-    AddedToList = 12
+    AddedToList = 12,
+    Edited = 13
 }
 
 public static class HistoryActionTypeExtensions
@@ -36,6 +37,7 @@ public static class HistoryActionTypeExtensions
         "OnHold" or "On_Hold" => HistoryActionType.OnHold,
         "Rewatching" => HistoryActionType.Rewatching,
         "AddedToList" or "Added" => HistoryActionType.AddedToList,
+        "Edited" => HistoryActionType.Edited,
         _ => HistoryActionType.Watched
     };
 
@@ -53,6 +55,7 @@ public static class HistoryActionTypeExtensions
         HistoryActionType.OnHold => "OnHold",
         HistoryActionType.Rewatching => "Rewatching",
         HistoryActionType.AddedToList => "AddedToList",
+        HistoryActionType.Edited => "Edited",
         _ => "Watched"
     };
 }

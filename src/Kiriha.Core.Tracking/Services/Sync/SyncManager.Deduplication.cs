@@ -14,13 +14,13 @@ public partial class SyncManager
         UserAnimeStatus? Status,
         int? Score);
 
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<(int AnimeId, MediaKind Kind), LatestSyncTaskSnapshot> _latestTaskIds = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(int AnimeId, MediaKind Kind, SyncTaskOwner? Owner), LatestSyncTaskSnapshot> _latestTaskIds = new();
 
     private void RecordLatestTask(SyncTask task)
     {
         var snap = new LatestSyncTaskSnapshot(task.Id, task.Type, task.Progress, task.Status, task.Score);
         _latestTaskIds.AddOrUpdate(
-            (task.AnimeId, task.MediaKind),
+            (task.AnimeId, task.MediaKind, task.Owner),
             snap,
             (_, existing) => snap.Id >= existing.Id ? snap : existing);
     }
@@ -56,10 +56,9 @@ public partial class SyncManager
 
     private List<SyncTaskEntity> DeduplicateStartupTasks(List<SyncTaskEntity> pendingTasks)
     {
-        // Deduplicate: take the LATEST task of each type per (AnimeId, MediaKind) to avoid redundant work.
-        // If a 'Remove' task exists, it supersedes all prior tasks for that (AnimeId, MediaKind).
+        // A Remove supersedes earlier edits for the same title and recipient.
         return pendingTasks
-            .GroupBy(t => (t.AnimeId, Kind: ResolveEntityMediaKind(t)))
+            .GroupBy(t => (t.AnimeId, Kind: ResolveEntityMediaKind(t), Owner: OwnedSyncTaskPayload.Read(t.Payload)?.Owner))
             .SelectMany(g =>
             {
                 var tasks = g.OrderBy(x => x.Id).ToList();
@@ -87,6 +86,11 @@ public partial class SyncManager
     public async Task EnqueueUpdateAsync(int animeId, MediaKind mediaKind, int progress, UserAnimeStatus? status = null, int? score = null, string? targetTracker = null)
     {
         var task = CreateProgressTask(animeId, mediaKind, progress, status, score, targetTracker);
+        if (_settingsService != null)
+        {
+            await EnqueueOwnedMutationAsync(task);
+            return;
+        }
 
         var destinationTrackers = GetDestinationTrackers().Select(t => t.Name).ToList();
         var allEnabledTrackers = _trackers.Where(t => t.IsEnabled).Select(t => t.Name).ToList();
@@ -137,6 +141,11 @@ public partial class SyncManager
             Type = SyncTaskType.Remove,
             FullItem = mediaKind != MediaKind.Anime ? new AnimeEntity { Id = animeId, MediaKind = mediaKind } : null
         };
+        if (_settingsService != null)
+        {
+            await EnqueueOwnedMutationAsync(task);
+            return;
+        }
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity, _cts.Token);
 
@@ -156,6 +165,11 @@ public partial class SyncManager
     public async Task EnqueueFullUpdateAsync(AnimeEntity item)
     {
         var task = CreateFullUpdateTask(item);
+        if (_settingsService != null)
+        {
+            await EnqueueOwnedMutationAsync(task);
+            return;
+        }
         var entity = MapToEntity(task);
         task.Id = await _syncTaskRepo.AddAsync(entity, _cts.Token);
 
@@ -184,24 +198,53 @@ public partial class SyncManager
         AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, bool onlyAdvance, CancellationToken ct)
     {
         var repository = _progressChangeRepository ?? throw new InvalidOperationException("Progress persistence is not configured.");
-        await _dbInit.InitializationTask.WaitAsync(ct);
-
         var task = item.MediaKind != MediaKind.Anime || nextStatus.HasValue
             ? CreateFullUpdateTask(item)
             : CreateProgressTask(item.Id, item.MediaKind, history.Episode,
                 item.Status == UserAnimeStatus.None ? null : item.Status);
-        foreach (var tracker in GetDestinationTrackers())
-            history.SetTrackerStatus(tracker.Name, TrackerSyncState.Pending);
-
-        var entity = MapToEntity(task);
-        if (!await repository.SaveAsync(item, nextStatus, history, entity, onlyAdvance, ct))
-            return false;
-
-        task.Id = entity.Id;
-        RecordLatestTask(task);
-        _historyService.PublishCommittedEntry(history);
-        if (!_isStopped)
+        var destinations = BindDestinations(task);
+        AttachOriginalDeliveries(history, destinations);
+        if (_settingsService == null)
         {
+            foreach (var tracker in GetDestinationTrackers())
+                history.SetTrackerStatus(tracker.Name, TrackerSyncState.Pending);
+        }
+
+        var entities = destinations.Select(x => MapToEntity(x.Task)).ToArray();
+        await _dbInit.InitializationTask.WaitAsync(ct);
+        await _queuePersistenceGate.WaitAsync(ct);
+        try
+        {
+            if (!await repository.SaveAsync(item, nextStatus, history, entities, onlyAdvance, ct))
+                return false;
+
+            _historyService.PublishCommittedEntry(history);
+            QueueCommittedDestinations(destinations, entities);
+            return true;
+        }
+        finally
+        {
+            _queuePersistenceGate.Release();
+        }
+    }
+
+    private void QueueCommittedDestinations(
+        IReadOnlyList<(SyncTask Task, string? Name)> destinations, IReadOnlyList<SyncTaskEntity> entities)
+    {
+        // Before startup restoration, SQLite is the only source of work. This prevents
+        // queuing the same row twice if a write lands as the worker starts.
+        if (_settingsService != null && !_restoreFinished)
+            return;
+
+        for (var index = 0; index < entities.Count; index++)
+        {
+            var task = destinations[index].Task;
+            task.Id = entities[index].Id;
+            task.HistoryId = OwnedSyncTaskPayload.Read(entities[index].Payload)?.HistoryId;
+            RecordLatestTask(task);
+            if (_isStopped)
+                continue;
+
             _highPriorityQueue.Enqueue(task);
             try { _queueSignal.Release(); }
             catch (ObjectDisposedException) when (_isStopped)
@@ -209,7 +252,6 @@ public partial class SyncManager
                 // The committed task will be restored when the application next starts.
             }
         }
-        return true;
     }
 
     private static SyncTask CreateProgressTask(

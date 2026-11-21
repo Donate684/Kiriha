@@ -14,10 +14,26 @@
             <StackPanel Margin="16,18,14,20" Spacing="16">
 
                 <!--  ══ IN LIST: User editing controls ══  -->
-                <details:AnimeDetailsSidebarEditor />
+                <details:AnimeDetailsSidebarEditor IsEnabled="{Binding !Editor.IsBusy}" />
 
                 <!--  ══ NOT IN LIST: Add to List button ══  -->
-                <details:AnimeDetailsSidebarAddButton />
+                <details:AnimeDetailsSidebarAddButton IsEnabled="{Binding !Editor.IsBusy}" />
+
+                <TextBlock
+                    Foreground="{DynamicResource OrangeredAccentBrush}"
+                    IsVisible="{Binding Editor.HasSaveError}"
+                    Text="{DynamicResource l.common.errors.generic}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Foreground="{DynamicResource OrangeredAccentBrush}"
+                    IsVisible="{Binding Editor.HasEntryConflict}"
+                    Text="{DynamicResource l.anime.list_actions.entry_conflict}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Foreground="{DynamicResource OrangeredAccentBrush}"
+                    IsVisible="{Binding Editor.HasFieldConflict}"
+                    Text="{DynamicResource l.anime.list_actions.field_conflict}"
+                    TextWrapping="Wrap" />
 
             </StackPanel>
         </ScrollViewer>

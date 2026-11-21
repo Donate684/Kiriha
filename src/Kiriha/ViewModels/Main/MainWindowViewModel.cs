@@ -68,9 +68,9 @@ public partial class MainWindowViewModel : ViewModelBase, IRecipient<NavigationM
     }
 
     [RelayCommand]
-    public void TestPlayer()
+    public async Task TestPlayer()
     {
-        Kiriha.Utils.PlayerProcessHelper.LaunchPlayer();
+        await Kiriha.Utils.PlayerProcessHelper.LaunchPlayerAsync(videoUrl: null);
     }
 
     protected virtual void Dispose(bool disposing)

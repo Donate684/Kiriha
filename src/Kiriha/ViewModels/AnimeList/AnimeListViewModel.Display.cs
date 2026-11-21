@@ -106,13 +106,25 @@ public partial class AnimeListViewModel
     {
         if (ActiveItem is null || rating is null) return;
         _ = int.TryParse(rating.Value, out int score);
-        await _progressService.SetScoreAsync(ActiveItem, score);
+        await SetLibraryScoreAsync(ActiveItem, score);
     }
 
     [RelayCommand]
     public async Task SetScore(AnimeEntity item)
     {
         if (item is null) return;
-        await _progressService.SetScoreAsync(item, item.UserScore ?? 0);
+        await SetLibraryScoreAsync(item, item.UserScore ?? 0);
+    }
+
+    private async Task SetLibraryScoreAsync(AnimeEntity item, int score)
+    {
+        try
+        {
+            await _progressService.SetScoreAsync(item, score);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to save the score for library entry {Id}", item.Id);
+        }
     }
 }

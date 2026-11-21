@@ -159,23 +159,26 @@ public sealed class CoreArchitectureImprovementsTests
     }
 
     [Fact]
-    public void ShikiStateCache_SharesMappingsAndPostersWhileScopingUserRatesByMirror()
+    public void ShikiStateCache_SharesMappingsAndPostersWhileScopingUserRatesByMirrorAndUser()
     {
         var cache = new ShikiStateCache();
         cache.MalToShikiMap[(52991, "Anime")] = 52991;
         cache.PosterMemoryCache["animes_52991"] = "https://shikimori.one/posters/52991.jpg";
 
-        cache.SetUserRateId(ShikiMirror.One, "Anime", 52991, 1001);
-        cache.SetUserRateId(ShikiMirror.Net, "Anime", 52991, 2002);
+        cache.SetUserRateId(ShikiMirror.One, 42, "Anime", 52991, 1001);
+        cache.SetUserRateId(ShikiMirror.Net, 42, "Anime", 52991, 2002);
+        cache.SetUserRateId(ShikiMirror.One, 75, "Anime", 52991, 3003);
 
-        Assert.True(cache.TryGetUserRateId(ShikiMirror.One, "Anime", 52991, out int oneRate));
-        Assert.True(cache.TryGetUserRateId(ShikiMirror.Net, "Anime", 52991, out int netRate));
+        Assert.True(cache.TryGetUserRateId(ShikiMirror.One, 42, "Anime", 52991, out int oneRate));
+        Assert.True(cache.TryGetUserRateId(ShikiMirror.Net, 42, "Anime", 52991, out int netRate));
         Assert.Equal(1001, oneRate);
         Assert.Equal(2002, netRate);
 
-        cache.RemoveUserRateId(ShikiMirror.One, "Anime", 52991);
-        Assert.False(cache.TryGetUserRateId(ShikiMirror.One, "Anime", 52991, out _));
-        Assert.True(cache.TryGetUserRateId(ShikiMirror.Net, "Anime", 52991, out _));
+        cache.RemoveUserRateId(ShikiMirror.One, 42, "Anime", 52991);
+        Assert.False(cache.TryGetUserRateId(ShikiMirror.One, 42, "Anime", 52991, out _));
+        Assert.True(cache.TryGetUserRateId(ShikiMirror.Net, 42, "Anime", 52991, out _));
+        Assert.True(cache.TryGetUserRateId(ShikiMirror.One, 75, "Anime", 52991, out int otherRate));
+        Assert.Equal(3003, otherRate);
     }
 
     [Fact]

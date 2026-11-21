@@ -428,7 +428,9 @@ public sealed class Wave1BugfixTests
             .ReturnsAsync(fullDetails);
 
         var vm = new AnimeMetadataViewModel(anime, mockMal.Object);
-        await vm.LoadFullDetailsAsync();
+        var loaded = await vm.FetchFullDetailsAsync();
+        Assert.NotNull(loaded);
+        vm.ApplyFullDetails(loaded);
 
         // User fields must be preserved
         Assert.Equal(UserAnimeStatus.Watching, anime.Status);
@@ -925,6 +927,7 @@ public sealed class Wave1BugfixTests
         {
             TrackerId = TrackerConstants.Ids.Mal,
             IsEnabled = true,
+            Tokens = new MalTokens { AccessToken = "test-mal" },
             IsPrimary = true
         });
         var mockSettings = new Mock<ISettingsService>();

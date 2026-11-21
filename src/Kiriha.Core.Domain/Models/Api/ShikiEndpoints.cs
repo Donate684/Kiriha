@@ -10,6 +10,8 @@ namespace Kiriha.Core.Domain.Models.Api;
 /// </summary>
 public static class ShikiEndpoints
 {
+    public const string CurrentUserPath = "users/whoami";
+
     /// <summary>
     /// Resolves the endpoint bundle (URLs only — no secrets) for the active mirror.
     /// All four URL accessors below funnel through this single switch so adding a

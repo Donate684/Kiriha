@@ -14,6 +14,12 @@ internal static class MigrationTestProcess
 
     private static async Task<int> Main(string[] args)
     {
+        if (args is [PlayerIsolationTestProcess.Command, var appDirectory, .. var playerArgs])
+            return await PlayerIsolationTestProcess.RunAsync(appDirectory, playerArgs);
+
+        if (args is [SettingsTestProcess.Command, var settingsDirectory, var operation])
+            return SettingsTestProcess.Run(settingsDirectory, operation);
+
         if (args is not [Command, var databasePath, "pause" or "resume"])
             return 2;
 

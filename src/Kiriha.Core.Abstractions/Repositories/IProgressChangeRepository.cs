@@ -5,7 +5,12 @@ namespace Kiriha.Core.Abstractions.Repositories;
 
 public interface IProgressChangeRepository
 {
-    /// <summary>Saves progress, history and the tracker task together. An advance-only change can be skipped if already recorded.</summary>
+    /// <summary>Saves progress, history and tracker tasks together. An advance-only change can be skipped if already recorded.</summary>
     Task<bool> SaveAsync(
-        AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, SyncTaskEntity task, bool onlyAdvance, CancellationToken ct);
+        AnimeEntity item, UserAnimeStatus? nextStatus, HistoryItem history, IReadOnlyList<SyncTaskEntity> tasks,
+        bool onlyAdvance, CancellationToken ct);
+
+    /// <summary>An absent item deletes the library entry for the supplied key.</summary>
+    Task SaveEntryAsync(int id, MediaKind kind, AnimeEntity? item, IReadOnlyList<HistoryItem> history,
+        IReadOnlyList<SyncTaskEntity> tasks, CancellationToken ct);
 }

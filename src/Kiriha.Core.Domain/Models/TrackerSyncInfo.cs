@@ -1,3 +1,5 @@
+using Kiriha.Core.Domain.Models.Entities;
+
 namespace Kiriha.Core.Domain.Models;
 
 public enum TrackerSyncState
@@ -6,7 +8,8 @@ public enum TrackerSyncState
     Pending,
     Success,
     Retrying,
-    Failed
+    Failed,
+    Superseded
 }
 
 public class TrackerSyncInfo
@@ -14,5 +17,6 @@ public class TrackerSyncInfo
     public TrackerSyncState State { get; set; } = TrackerSyncState.NotSynced;
     public string? ErrorMessage { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public SyncTaskEntity? OriginalTask { get; set; }
 }
 

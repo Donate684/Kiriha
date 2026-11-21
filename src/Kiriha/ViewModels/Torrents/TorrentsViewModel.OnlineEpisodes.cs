@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models.Entities;
 using Kiriha.Core.Streaming.Constants;
+using Kiriha.Core.Streaming.Services;
 using Kiriha.Models;
 using Serilog;
 
@@ -10,12 +11,18 @@ namespace Kiriha.ViewModels.Torrents;
 
 public partial class TorrentsViewModel
 {
-    [RelayCommand]
+    private CancellationTokenSource? _onlineSelection;
+    private string? _onlineDetailsId;
+
+    [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task OpenOnlineAnimeAsync(OnlineAnimeItem? item)
     {
         if (item == null || _streamingService == null) return;
+        var ct = BeginOnlineSelection();
 
         ActiveOnlineAnime = item;
+        _onlineDetailsId = null;
+        SetActiveMatchedAnime(null);
         OnlineEpisodes.Clear();
         OnlineSources.Clear();
         DisplayedOnlineSources.Clear();
@@ -24,16 +31,9 @@ public partial class TorrentsViewModel
         SelectedOnlineEpisode = null;
         IsOnlineEpisodeSelectorVisible = true;
         IsOnlineEpisodeSelectorLoading = true;
+        IsOnlineSourcesLoading = false;
         OnlineEpisodeSelectorError = null;
         OnlineEpisodeSelectorCountText = string.Empty;
-
-        if (_modalCts != null)
-        {
-            await _modalCts.CancelAsync();
-            _modalCts.Dispose();
-        }
-        _modalCts = new CancellationTokenSource();
-        var ct = _modalCts.Token;
 
         try
         {
@@ -53,30 +53,22 @@ public partial class TorrentsViewModel
                 return;
             }
 
-            var matchedAnime = ResolveMatchedAnime(item.Title);
             Dispatcher.UIThread.Post(() =>
             {
                 if (ct.IsCancellationRequested) return;
+                _onlineDetailsId = details.Id;
+                var matchedAnime = ResolveMatchedAnime(item.Title);
                 SetActiveMatchedAnime(matchedAnime);
-            });
-            var watchedProgress = matchedAnime?.Progress ?? 0;
-            var isCompleted = matchedAnime?.Status == UserAnimeStatus.Completed;
-            var isWatching = matchedAnime?.Status == UserAnimeStatus.Watching;
-
-            var episodes = details.Episodes.Select(e =>
-            {
-                var isWatched = isCompleted || (watchedProgress > 0 && e.EpisodeNumber <= watchedProgress);
-                var isNew = !isWatched && !isCompleted && ((watchedProgress > 0 && e.EpisodeNumber > watchedProgress) || (isWatching && watchedProgress == 0 && (matchedAnime?.Presentation.HasNewEpisodes == true || matchedAnime?.EpisodesAired > 0)));
-                return new OnlineEpisodeItem(e, _localizer, isWatched, isNew);
-            }).ToList();
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (ct.IsCancellationRequested) return;
+                var watchedProgress = matchedAnime?.Progress ?? 0;
+                var isCompleted = matchedAnime?.Status == UserAnimeStatus.Completed;
+                var isWatching = matchedAnime?.Status == UserAnimeStatus.Watching;
                 OnlineEpisodes.Clear();
-                foreach (var ep in episodes)
+                foreach (var episode in details.Episodes)
                 {
-                    OnlineEpisodes.Add(ep);
+                    var isWatched = isCompleted || (watchedProgress > 0 && episode.EpisodeNumber <= watchedProgress);
+                    var isNew = !isWatched && (watchedProgress > 0 ||
+                        (isWatching && (matchedAnime?.Presentation.HasNewEpisodes == true || matchedAnime?.EpisodesAired > 0)));
+                    OnlineEpisodes.Add(new OnlineEpisodeItem(episode, _localizer, isWatched, isNew));
                 }
                 OnlineEpisodeSelectorCountText = _localizer.GetLoc(EpisodesCountLocKey, OnlineEpisodes.Count);
                 IsOnlineEpisodeSelectorLoading = false;
@@ -88,7 +80,7 @@ public partial class TorrentsViewModel
                 }
             });
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Cancelled
         }
@@ -102,19 +94,14 @@ public partial class TorrentsViewModel
                 IsOnlineEpisodeSelectorLoading = false;
             });
         }
-        finally
-        {
-            if (!ct.IsCancellationRequested)
-            {
-                Dispatcher.UIThread.Post(() => IsOnlineEpisodeSelectorLoading = false);
-            }
-        }
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task SelectOnlineEpisodeAsync(OnlineEpisodeItem? episodeItem)
     {
-        if (episodeItem == null || ActiveOnlineAnime == null || _streamingService == null) return;
+        if (episodeItem == null || ActiveOnlineAnime is not { } anime || _streamingService == null ||
+            !OnlineEpisodes.Contains(episodeItem)) return;
+        var ct = BeginOnlineSelection();
 
         foreach (var ep in OnlineEpisodes)
         {
@@ -127,23 +114,23 @@ public partial class TorrentsViewModel
         DisplayedOnlineSources.Clear();
         IsOnlineSourcesLoading = true;
         OnlineEpisodeSelectorError = null;
-
-        if (_modalCts != null)
-        {
-            await _modalCts.CancelAsync();
-            _modalCts.Dispose();
-        }
-        _modalCts = new CancellationTokenSource();
-        var ct = _modalCts.Token;
+        NotifySourceCounts();
 
         try
         {
-            var targetId = !string.IsNullOrWhiteSpace(episodeItem.Episode.EpisodeId) ? episodeItem.Episode.EpisodeId : ActiveOnlineAnime.Id;
+            var episodeId = episodeItem.Episode.EpisodeId;
+            var targetId = (anime.IsAniLibria, anime.IsAnime365, episodeId) switch
+            {
+                (true, _, _) => _onlineDetailsId ?? anime.Id,
+                (_, _, { Length: > 0 } id) when !string.IsNullOrWhiteSpace(id) => id,
+                (_, true, _) when !string.IsNullOrWhiteSpace(anime.Url) => anime.Url,
+                _ => anime.Id
+            };
             var sources = episodeItem.Episode.Sources.Count > 0
                 ? episodeItem.Episode.Sources
-                : await _streamingService.GetEpisodeSourcesAsync(ActiveOnlineAnime.ProviderName, targetId, episodeItem.EpisodeNumber, ct).ConfigureAwait(false);
+                : await _streamingService.GetEpisodeSourcesAsync(anime.ProviderName, targetId, episodeItem.EpisodeNumber, ct).ConfigureAwait(false);
 
-            var sourceItems = sources.Select(s => new OnlineSourceItem(s)).ToList();
+            var sourceItems = sources.Where(s => StreamingMediaUrl.IsHttp(s.PlayerUrl)).Select(s => new OnlineSourceItem(s));
 
             // Sort by Direct MP4 first, then 1080p FHD, then 720p HD, then others
             var sorted = sourceItems
@@ -183,7 +170,7 @@ public partial class TorrentsViewModel
                 IsOnlineSourcesLoading = false;
             });
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Cancelled
         }
@@ -197,32 +184,34 @@ public partial class TorrentsViewModel
                 IsOnlineSourcesLoading = false;
             });
         }
-        finally
-        {
-            if (!ct.IsCancellationRequested)
-            {
-                Dispatcher.UIThread.Post(() => IsOnlineSourcesLoading = false);
-            }
-        }
     }
 
-    internal static bool IsDirectMediaUrl(string? url)
+    internal static bool IsDirectMediaUrl(string? url) => StreamingMediaUrl.IsDirect(url);
+
+    private CancellationToken BeginOnlineSelection()
     {
-        if (string.IsNullOrWhiteSpace(url)) return false;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
-        var path = uri.AbsolutePath;
-        return path.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) ||
-               path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
-               path.EndsWith(".mpd", StringComparison.OrdinalIgnoreCase) ||
-               path.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
-               path.EndsWith(".webm", StringComparison.OrdinalIgnoreCase) ||
-               path.EndsWith(".ts", StringComparison.OrdinalIgnoreCase);
+        CancelOnlineSelection();
+        _onlineSelection = new CancellationTokenSource();
+        return _onlineSelection.Token;
+    }
+
+    private void CancelOnlineSelection()
+    {
+        _onlineSelection?.Cancel();
+        _onlineSelection?.Dispose();
+        _onlineSelection = null;
+        if (_onlineLaunchToken is { } active && _launchCts?.Token == active)
+        {
+            _launchCts.Cancel();
+            IsPlayerLaunching = false;
+        }
+        _onlineLaunchToken = null;
     }
 
     [RelayCommand]
     public void CloseOnlineEpisodeSelector()
     {
-        _modalCts?.Cancel();
+        CancelOnlineSelection();
         SetActiveMatchedAnime(null);
         _selectedEpisodeWasWatchedWhenSelected = false;
         IsOnlineEpisodeSelectorVisible = false;
@@ -235,6 +224,7 @@ public partial class TorrentsViewModel
         OnlineSourceFilter = _settingsService.Current.Torrents.OnlineStreaming.PreferredSourceType ?? "dub";
         SelectedOnlineEpisode = null;
         ActiveOnlineAnime = null;
+        _onlineDetailsId = null;
         OnlineEpisodeSelectorCountText = string.Empty;
         NotifySourceCounts();
     }

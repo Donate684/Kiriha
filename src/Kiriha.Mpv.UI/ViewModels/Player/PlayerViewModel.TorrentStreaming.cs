@@ -140,7 +140,11 @@ public partial class PlayerViewModel
                     var status = await _torrServer.GetTorrentAsync(hash, ct).ConfigureAwait(false);
                     if (status != null)
                     {
-                        Dispatcher.UIThread.Post(() => ApplyTorrentStatus(status));
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (!ct.IsCancellationRequested)
+                                ApplyTorrentStatus(status);
+                        });
                     }
 
                     var delayMs = (IsLoading || IsBuffering) ? 600 : 1200;

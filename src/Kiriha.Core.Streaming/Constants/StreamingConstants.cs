@@ -91,6 +91,7 @@ public static class StreamingConstants
     {
         public const int HttpClientTimeoutSeconds = 12;
         public const int ProviderSearchTimeoutSeconds = 8;
+        public const int ProviderRequestTimeoutSeconds = 20;
         public const int MirrorProbeTimeoutSeconds = 2;
     }
 

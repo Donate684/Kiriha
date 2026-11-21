@@ -12,5 +12,7 @@ public class InternalPlayerState
     public bool IsClosed { get; set; }
     public bool IsBuffering { get; set; }
     public bool IsLoading { get; set; }
+    public bool HasPlaybackError { get; set; }
+    public string? PlaybackRequestId { get; set; }
     public string TorrentHash { get; set; } = string.Empty;
 }

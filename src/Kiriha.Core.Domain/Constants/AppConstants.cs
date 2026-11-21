@@ -291,6 +291,8 @@ public static class AppConstants
 
     public static class Player
     {
+        public const string OpenFailedLocKey = "player.state.error_open";
+        public const string TorrServerStartFailedLocKey = "torrents.streaming.start_failed";
         public const string DefaultSubtitleFont = "Lato ExtraBold";
     }
 

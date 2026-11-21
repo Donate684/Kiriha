@@ -120,4 +120,21 @@ public sealed partial class UserAnimeRepository
             Log.Debug("Skipping metadata-only update for non-user anime {Title} (ID: {Id})", item.Title, item.Id);
         }
     }
+
+    public async Task<bool> MergeDetailsMetadataAsync(int id, MediaKind kind, AnimeEntity details, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        var existing = await context.UserAnime.AsTracking()
+            .FirstOrDefaultAsync(x => x.Id == id && x.MediaKind == kind, ct);
+        if (existing == null) return false;
+
+        existing.MergeFullDetails(details, metadataOnly: true);
+        // The JSON converters track list references. The merge edits their contents in place.
+        var entry = context.Entry(existing);
+        entry.Property(item => item.Genres).IsModified = details.Genres.Count > 0;
+        entry.Property(item => item.Studios).IsModified = details.Studios.Count > 0;
+        entry.Property(item => item.AlternativeTitles).IsModified = details.AlternativeTitles.Count > 0;
+        await context.SaveChangesAsync(ct);
+        return true;
+    }
 }

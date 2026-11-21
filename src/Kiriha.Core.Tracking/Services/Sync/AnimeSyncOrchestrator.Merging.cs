@@ -10,28 +10,30 @@ public partial class AnimeSyncOrchestrator
         List<AnimeEntity> currentItems,
         List<SyncTaskEntity> pendingTasks,
         List<SyncTaskEntity> pendingAtFetchStart,
-        HashSet<(int Id, MediaKind Kind)> protectedItems,
+        Dictionary<(int Id, MediaKind Kind), bool> localChanges,
         IProgress<string>? status,
         CancellationToken ct)
     {
         var pendingRemoves = new HashSet<(int Id, MediaKind Kind)>();
+        var protectedItems = new HashSet<(int Id, MediaKind Kind)>();
         // A task pending at request time may be acknowledged before the stale list arrives.
-        foreach (var task in GetLatestTasksByTitle(pendingAtFetchStart))
-        {
-            if (!IsRemove(task))
-                protectedItems.Add((task.AnimeId, task.MediaKind));
-        }
+        foreach (var task in GetLatestTasksByTitle([.. pendingAtFetchStart, .. pendingTasks]))
+            RecordChange((task.AnimeId, task.MediaKind), IsRemove(task));
+        foreach (var change in localChanges)
+            RecordChange(change.Key, change.Value);
 
-        foreach (var task in GetLatestTasksByTitle(pendingTasks))
+        void RecordChange((int Id, MediaKind Kind) key, bool removed)
         {
-            var key = (task.AnimeId, task.MediaKind);
-            if (IsRemove(task))
+            if (removed)
             {
                 pendingRemoves.Add(key);
                 protectedItems.Remove(key);
             }
             else
+            {
+                pendingRemoves.Remove(key);
                 protectedItems.Add(key);
+            }
         }
 
         var distinctApiList = apiList

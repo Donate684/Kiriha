@@ -49,6 +49,8 @@ public partial class ShikiApiService : IShikiApiService
     }
 
     private ShikiMirror EffectiveMirror => _fixedMirror ?? _settingsService.Current.Api.ShikiMirror;
+    private SyncOutcome MissingCredentialsOutcome => TrackerRequestAccount.Pinned(TrackerId) != null
+        ? SyncOutcome.TransientFailure : SyncOutcome.PermanentFailure;
     private string ShikiBaseUrl => ShikiEndpoints.BaseUrl(EffectiveMirror);
 
     private readonly ShikiStateCache _stateCache;
@@ -114,7 +116,7 @@ public partial class ShikiApiService : IShikiApiService
         return await SendRequestAsync(request, ct);
     }
 
-    private async Task<SyncOutcome> PostAsync(string url, object payload, CancellationToken ct)
+    private async Task<SyncOutcome> PostAsync(string url, object payload, int userId, CancellationToken ct)
     {
         var json = JsonSerializer.Serialize(payload);
         using var request = new HttpRequestMessage(HttpMethod.Post, ShikiBaseUrl + url.TrimStart('/'))
@@ -137,14 +139,14 @@ public partial class ShikiApiService : IShikiApiService
                         var targetType = doc.RootElement.TryGetProperty("target_type", out var typeProp) ? typeProp.GetString() : "Anime";
                         if (targetId.HasValue && !string.IsNullOrEmpty(targetType))
                         {
-                            _stateCache.SetUserRateId(EffectiveMirror, targetType, targetId.Value, rateId);
+                            _stateCache.SetUserRateId(EffectiveMirror, userId, targetType, targetId.Value, rateId);
                         }
                     }
                 }
                 catch { /* Ignore extraction failures */ }
                 return SyncOutcome.Success;
             }
-            if (status >= 500 || response.StatusCode == System.Net.HttpStatusCode.RequestTimeout || response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            if (IsTransientMutationStatus(response.StatusCode))
             {
                 Log.Warning("ShikiApiService: transient {Status} for POST {Uri}", status, request.RequestUri);
                 return SyncOutcome.TransientFailure;
@@ -172,7 +174,7 @@ public partial class ShikiApiService : IShikiApiService
             {
                 return SyncOutcome.Success;
             }
-            if (status >= 500 || response.StatusCode == System.Net.HttpStatusCode.RequestTimeout || response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            if (IsTransientMutationStatus(response.StatusCode))
             {
                 Log.Warning("ShikiApiService: transient {Status} for DELETE {Uri}", status, request.RequestUri);
                 return SyncOutcome.TransientFailure;
@@ -187,6 +189,10 @@ public partial class ShikiApiService : IShikiApiService
             return SyncOutcome.TransientFailure;
         }
     }
+
+    private bool IsTransientMutationStatus(System.Net.HttpStatusCode status) =>
+        (int)status >= 500 || status is System.Net.HttpStatusCode.RequestTimeout or System.Net.HttpStatusCode.TooManyRequests ||
+        (status == System.Net.HttpStatusCode.Unauthorized && TrackerRequestAccount.Pinned(TrackerId) != null);
 
     private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, CancellationToken ct)
     {

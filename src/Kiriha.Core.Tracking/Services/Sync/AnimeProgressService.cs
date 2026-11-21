@@ -20,6 +20,7 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
     private readonly TimeProvider _clock;
     private readonly LibrarySyncGate _syncGate;
     private readonly bool _ownsSyncGate;
+    private readonly LibraryEntryWriter? _entryWriter;
 
     public AnimeProgressService(
         IAnimeRepository animeRepository,
@@ -30,7 +31,8 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
         ILibraryMutationService? mutations = null,
         ICoreEventBus? eventBus = null,
         TimeProvider? clock = null,
-        LibrarySyncGate? syncGate = null)
+        LibrarySyncGate? syncGate = null,
+        LibraryEntryWriter? entryWriter = null)
     {
         _animeRepository = animeRepository;
         _userAnimeRepo = userAnimeRepo;
@@ -41,6 +43,7 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
         _clock = clock ?? TimeProvider.System;
         _syncGate = syncGate ?? new LibrarySyncGate();
         _ownsSyncGate = syncGate == null;
+        _entryWriter = entryWriter;
         _mutations = mutations ?? new LibraryMutationService(
             animeRepository,
             userAnimeRepo,
@@ -54,6 +57,14 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
 
     public async Task RemoveAnimeAsync(int animeId, MediaKind mediaKind)
     {
+        if (_entryWriter is { } writer)
+        {
+            using var write = await writer.AcquireWriteAsync(CancellationToken.None);
+            var existing = await _mutations.FindExistingAsync(animeId, mediaKind);
+            await writer.RemoveAsync(animeId, mediaKind, existing, CancellationToken.None);
+            return;
+        }
+
         bool isManga = mediaKind != MediaKind.Anime;
         var item = await _mutations.FindExistingAsync(animeId, mediaKind);
 
@@ -158,6 +169,16 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
 
     public async Task SetScoreAsync(AnimeEntity item, int score)
     {
+        if (_entryWriter is { } writer)
+        {
+            using var write = await writer.AcquireWriteAsync(CancellationToken.None);
+            var draft = (await _mutations.FindExistingAsync(item.Id, item.MediaKind) ?? item).Clone();
+            draft.UserScore = score > 0 ? score : null;
+            await writer.SaveAsync(draft, [writer.CreateHistory(draft, HistoryActionType.ScoreSet, score.ToString())],
+                CancellationToken.None, item);
+            return;
+        }
+
         await _uiDispatcher.InvokeAsync(() =>
         {
             item.UserScore = score > 0 ? score : null;
@@ -192,14 +213,19 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
     public async Task ConfirmRewatchAsync(AnimeEntity item, int episode = 1)
     {
         var today = _clock.GetLocalNow().Date;
+        if (_entryWriter is { } writer)
+        {
+            using var write = await writer.AcquireWriteAsync(CancellationToken.None);
+            var draft = (await _mutations.FindExistingAsync(item.Id, item.MediaKind) ?? item).Clone();
+            ApplyRewatch(draft);
+            await writer.SaveAsync(draft, [writer.CreateHistory(draft, HistoryActionType.Rewatching)], CancellationToken.None, item);
+            await _uiDispatcher.InvokeAsync(() => _eventBus.Publish(new AnimeProgressChangedMessage(item, episode)));
+            return;
+        }
+
         await _uiDispatcher.InvokeAsync(() =>
         {
-            item.IsRewatching = true;
-            item.RewatchCount++;
-            item.Progress = episode;
-            item.Status = UserAnimeStatus.Watching;
-            item.DateStarted = today;
-            item.DateCompleted = null;
+            ApplyRewatch(item);
             _eventBus.Publish(new AnimeProgressChangedMessage(item, episode));
         });
 
@@ -214,6 +240,16 @@ public class AnimeProgressService : IProgressUpdateService, IDisposable
             null,
             item.MainPictureUrl);
         await _syncManager.EnqueueFullUpdateAsync(item);
+
+        void ApplyRewatch(AnimeEntity entry)
+        {
+            entry.IsRewatching = true;
+            entry.RewatchCount++;
+            entry.Progress = episode;
+            entry.Status = UserAnimeStatus.Watching;
+            entry.DateStarted = today;
+            entry.DateCompleted = null;
+        }
     }
 
     public void Dispose()

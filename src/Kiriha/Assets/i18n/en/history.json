@@ -27,18 +27,22 @@
     "plan_to_watch": "Plan to Watch",
     "on_hold": "On Hold",
     "rewatching": "Rewatching",
-    "added_to_list": "Added to list"
+    "added_to_list": "Added to list",
+    "edited": "List entry updated"
   },
   "already_scrobbled": "Already scrobbled",
   "count_format": "×{0}",
   "tracker": {
     "success": "{0}: Successfully synced",
     "pending": "{0}: Queued for sync...",
-    "retrying": "{0}: Network error, retrying in a few minutes (click to retry now)",
+    "retrying": "{0}: Network error, retry scheduled",
     "failed": "{0}: Sync failed: {1} (click to retry)",
     "failed_generic": "{0}: Sync failed (click to retry)",
-    "not_synced": "{0}: Not synced (click to sync)",
-    "not_logged_in": "{0}: Not logged in (check Settings > Accounts)"
+    "not_synced": "{0}: Not synced",
+    "not_logged_in": "{0}: Not logged in (check Settings > Accounts)",
+    "original_account_required": "{0}: Sign in to the original account to retry",
+    "retry_unavailable": "{0}: This history entry cannot be retried",
+    "superseded": "{0}: Replaced by a newer change"
   }
 }
 

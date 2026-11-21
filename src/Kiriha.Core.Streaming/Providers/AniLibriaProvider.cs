@@ -3,113 +3,73 @@ using System.Text.Json;
 using Kiriha.Core.Streaming.Abstractions;
 using Kiriha.Core.Streaming.Constants;
 using Kiriha.Core.Streaming.Models;
+using Kiriha.Core.Streaming.Services;
 using Serilog;
 
 namespace Kiriha.Core.Streaming.Providers;
 
-/// <summary>
-/// Online streaming provider backed by AniLibria (Aniliberty REST API).
-/// Provides official Russian dubs with direct 1080p/720p/480p HLS streams.
-/// </summary>
-public sealed class AniLibriaProvider : IStreamingProvider
+/// <summary>Provides AniLibria catalog entries, episode lists and direct HLS streams.</summary>
+public sealed class AniLibriaProvider(HttpClient httpClient) : IStreamingProvider
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
     public string ProviderName => StreamingConstants.Providers.AniLibria;
-
-    public AniLibriaProvider(HttpClient httpClient)
-    {
-        ArgumentNullException.ThrowIfNull(httpClient);
-        _httpClient = httpClient;
-    }
 
     public async Task<IReadOnlyList<StreamingSearchResult>> SearchAsync(string query, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(query))
             return [];
 
+        var encodedQuery = WebUtility.UrlEncode(query);
         try
         {
-            var searchUrl = $"{StreamingConstants.AniLibria.SearchEndpoint}?query={WebUtility.UrlEncode(query)}";
-            using var request = new HttpRequestMessage(HttpMethod.Get, searchUrl);
-            request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Accept, "application/json");
-            request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.UserAgent, StreamingConstants.Headers.DefaultUserAgent);
-
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            using var results = await GetJsonAsync(
+                $"{StreamingConstants.AniLibria.SearchEndpoint}?query={encodedQuery}", ct).ConfigureAwait(false);
+            if (results?.RootElement.ValueKind == JsonValueKind.Array)
             {
-                // Fallback to catalog search endpoint if dedicated search is unavailable
-                return await SearchViaCatalogAsync(query, ct).ConfigureAwait(false);
+                var parsed = ParseSearchResults(results.RootElement, ct);
+                if (parsed.Count > 0 || results.RootElement.GetArrayLength() == 0)
+                    return parsed;
             }
-
-            var content = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            using var doc = JsonDocument.Parse(content);
-
-            if (doc.RootElement.ValueKind != JsonValueKind.Array)
-                return [];
-
-            var results = new List<StreamingSearchResult>();
-            foreach (var item in doc.RootElement.EnumerateArray())
-            {
-                var id = item.GetProperty("id").ToString();
-                var mainTitle = item.TryGetProperty("name", out var nameProp) && nameProp.TryGetProperty("main", out var mainProp)
-                    ? mainProp.GetString() ?? ""
-                    : "";
-
-                var thumb = ExtractPosterUrl(item);
-
-                results.Add(new StreamingSearchResult
-                {
-                    Id = id,
-                    Title = mainTitle,
-                    ThumbnailUrl = thumb,
-                    Url = $"{StreamingConstants.AniLibria.ReleaseDetailEndpoint}/{id}",
-                    ProviderName = ProviderName
-                });
-            }
-
-            return results;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is JsonException or HttpRequestException)
         {
-            Log.Warning(ex, "[AniLibria] Search failed for query '{Query}'", query);
+            Log.Debug(ex, "[AniLibria] Dedicated search unavailable. Trying the catalog.");
+        }
+
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            using var catalog = await GetJsonAsync(
+                $"{StreamingConstants.AniLibria.CatalogReleasesEndpoint}?f[search]={encodedQuery}", ct).ConfigureAwait(false);
+            return catalog != null && Property(catalog.RootElement, "data").ValueKind == JsonValueKind.Array
+                ? ParseSearchResults(Property(catalog.RootElement, "data"), ct)
+                : [];
+        }
+        catch (Exception ex) when (ex is JsonException or HttpRequestException)
+        {
+            Log.Warning(ex, "[AniLibria] Catalog search failed");
             return [];
         }
     }
 
-    private async Task<IReadOnlyList<StreamingSearchResult>> SearchViaCatalogAsync(string query, CancellationToken ct)
+    private IReadOnlyList<StreamingSearchResult> ParseSearchResults(JsonElement rows, CancellationToken ct)
     {
-        var catalogUrl = $"{StreamingConstants.AniLibria.CatalogReleasesEndpoint}?f[search]={WebUtility.UrlEncode(query)}";
-        using var request = new HttpRequestMessage(HttpMethod.Get, catalogUrl);
-        request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Accept, "application/json");
-        request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.UserAgent, StreamingConstants.Headers.DefaultUserAgent);
-
-        using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
-            return [];
-
-        var content = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-        using var doc = JsonDocument.Parse(content);
-
-        if (!doc.RootElement.TryGetProperty("data", out var dataProp) || dataProp.ValueKind != JsonValueKind.Array)
-            return [];
-
         var results = new List<StreamingSearchResult>();
-        foreach (var item in dataProp.EnumerateArray())
+        foreach (var item in rows.EnumerateArray())
         {
-            var id = item.GetProperty("id").ToString();
-            var mainTitle = item.TryGetProperty("name", out var nameProp) && nameProp.TryGetProperty("main", out var mainProp)
-                ? mainProp.GetString() ?? ""
-                : "";
-
-                var thumb = ExtractPosterUrl(item);
+            ct.ThrowIfCancellationRequested();
+            var id = ReadId(item);
+            var title = ReadString(Property(item, "name"), "main");
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(title))
+                continue;
 
             results.Add(new StreamingSearchResult
             {
                 Id = id,
-                Title = mainTitle,
-                ThumbnailUrl = thumb,
-                Url = $"{StreamingConstants.AniLibria.ReleaseDetailEndpoint}/{id}",
+                Title = title,
+                ThumbnailUrl = ExtractPosterUrl(item),
+                Url = $"{StreamingConstants.AniLibria.ReleaseDetailEndpoint}/{Uri.EscapeDataString(id)}",
                 ProviderName = ProviderName
             });
         }
@@ -120,105 +80,77 @@ public sealed class AniLibriaProvider : IStreamingProvider
     public async Task<StreamingAnimeDetails?> GetAnimeDetailsAsync(string animeUrlOrId, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(animeUrlOrId);
+        var path = Uri.TryCreate(animeUrlOrId, UriKind.Absolute, out var uri) ? uri.AbsolutePath : animeUrlOrId;
+        var id = path.TrimEnd('/').Split('/').LastOrDefault();
+        if (string.IsNullOrWhiteSpace(id))
+            return null;
 
         try
         {
-            var id = ExtractReleaseId(animeUrlOrId);
-            var detailUrl = $"{StreamingConstants.AniLibria.ReleaseDetailEndpoint}/{id}";
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, detailUrl);
-            request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Accept, "application/json");
-            request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.UserAgent, StreamingConstants.Headers.DefaultUserAgent);
-
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            using var doc = await GetJsonAsync(
+                $"{StreamingConstants.AniLibria.ReleaseDetailEndpoint}/{Uri.EscapeDataString(id)}", ct).ConfigureAwait(false);
+            if (doc?.RootElement.ValueKind != JsonValueKind.Object)
                 return null;
 
-            var content = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            using var doc = JsonDocument.Parse(content);
             var root = doc.RootElement;
-
-            var title = root.TryGetProperty("name", out var nameProp) && nameProp.TryGetProperty("main", out var mainProp)
-                ? mainProp.GetString() ?? ""
-                : "";
-
-            var description = root.TryGetProperty("description", out var descProp) ? descProp.GetString() : null;
-
-            var thumb = ExtractPosterUrl(root);
-
             var episodes = new List<StreamingEpisode>();
-            if (root.TryGetProperty("episodes", out var episodesProp) && episodesProp.ValueKind == JsonValueKind.Array)
+            var rows = Property(root, "episodes");
+            if (rows.ValueKind == JsonValueKind.Array)
             {
-                foreach (var ep in episodesProp.EnumerateArray())
+                int position = 0;
+                foreach (var row in rows.EnumerateArray())
                 {
-                    var ordinal = ep.TryGetProperty("ordinal", out var ordProp) && ordProp.TryGetInt32(out var ord) ? ord : episodes.Count + 1;
-                    var epTitle = ep.TryGetProperty("name", out var epNameProp) && epNameProp.GetString() is { } name && !string.IsNullOrWhiteSpace(name)
-                        ? name
-                        : $"Episode {ordinal}";
-
-                    var sources = new List<StreamingSource>();
-
-                    if (ep.TryGetProperty("hls_1080", out var hls1080) && hls1080.GetString() is { } s1080 && !string.IsNullOrWhiteSpace(s1080))
-                    {
-                        sources.Add(new StreamingSource
-                        {
-                            Title = "AniLibria (1080p)",
-                            PlayerUrl = s1080,
-                            Dubber = "AniLibria",
-                            Language = "ru",
-                            Provider = ProviderName
-                        });
-                    }
-
-                    if (ep.TryGetProperty("hls_720", out var hls720) && hls720.GetString() is { } s720 && !string.IsNullOrWhiteSpace(s720))
-                    {
-                        sources.Add(new StreamingSource
-                        {
-                            Title = "AniLibria (720p)",
-                            PlayerUrl = s720,
-                            Dubber = "AniLibria",
-                            Language = "ru",
-                            Provider = ProviderName
-                        });
-                    }
-
-                    if (ep.TryGetProperty("hls_480", out var hls480) && hls480.GetString() is { } s480 && !string.IsNullOrWhiteSpace(s480))
-                    {
-                        sources.Add(new StreamingSource
-                        {
-                            Title = "AniLibria (480p)",
-                            PlayerUrl = s480,
-                            Dubber = "AniLibria",
-                            Language = "ru",
-                            Provider = ProviderName
-                        });
-                    }
-
-                    episodes.Add(new StreamingEpisode
-                    {
-                        EpisodeNumber = ordinal,
-                        Title = epTitle,
-                        EpisodeId = ep.TryGetProperty("id", out var idProp) ? idProp.ToString() : null,
-                        Sources = sources
-                    });
+                    ct.ThrowIfCancellationRequested();
+                    position++;
+                    if (row.ValueKind == JsonValueKind.Object)
+                        episodes.Add(ParseEpisode(row, position));
                 }
             }
 
             return new StreamingAnimeDetails
             {
-                Id = id,
-                Title = title,
-                Description = description,
-                ThumbnailUrl = thumb,
+                Id = ReadId(root) ?? id,
+                Title = ReadString(Property(root, "name"), "main") ?? string.Empty,
+                Description = ReadString(root, "description"),
+                ThumbnailUrl = ExtractPosterUrl(root),
                 ProviderName = ProviderName,
                 Episodes = episodes
             };
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is JsonException or HttpRequestException)
         {
-            Log.Warning(ex, "[AniLibria] Failed to get details for {UrlOrId}", animeUrlOrId);
+            Log.Warning(ex, "[AniLibria] Failed to load release details");
             return null;
         }
+    }
+
+    private StreamingEpisode ParseEpisode(JsonElement row, int position)
+    {
+        var ordinal = Property(row, "ordinal");
+        var number = ordinal.ValueKind == JsonValueKind.Number && ordinal.TryGetInt32(out var parsed) ? parsed : position;
+        var title = ReadString(row, "name");
+        var sources = new List<StreamingSource>();
+        foreach (int quality in new[] { 1080, 720, 480 })
+        {
+            var url = ReadString(row, $"hls_{quality}");
+            if (StreamingMediaUrl.TryParse(url, out _))
+                sources.Add(new StreamingSource
+                {
+                    Title = $"AniLibria ({quality}p)",
+                    PlayerUrl = StreamingMediaUrl.Normalize(url),
+                    Dubber = ProviderName,
+                    Language = "ru",
+                    Provider = ProviderName
+                });
+        }
+
+        return new StreamingEpisode
+        {
+            EpisodeNumber = number,
+            Title = string.IsNullOrWhiteSpace(title) ? $"Episode {number}" : title,
+            EpisodeId = ReadId(row),
+            Sources = sources
+        };
     }
 
     public async Task<IReadOnlyList<StreamingSource>> GetEpisodeSourcesAsync(string animeId, int episodeNumber, CancellationToken ct = default)
@@ -228,50 +160,47 @@ public sealed class AniLibriaProvider : IStreamingProvider
         return episode?.Sources ?? [];
     }
 
-    private static string ExtractReleaseId(string animeUrlOrId)
+    private async Task<JsonDocument?> GetJsonAsync(string url, CancellationToken ct)
     {
-        var parts = animeUrlOrId.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        return parts[^1];
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.Accept, StreamingConstants.Headers.JsonMediaType);
+        request.Headers.TryAddWithoutValidation(StreamingConstants.Headers.UserAgent, StreamingConstants.Headers.DefaultUserAgent);
+        using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+        return await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+    }
+
+    private static JsonElement Property(JsonElement item, string name) =>
+        item.ValueKind == JsonValueKind.Object && item.TryGetProperty(name, out var value) ? value : default;
+
+    private static string? ReadString(JsonElement item, string name)
+    {
+        var value = Property(item, name);
+        return value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+    }
+
+    private static string? ReadId(JsonElement item)
+    {
+        var id = Property(item, "id");
+        return id.ValueKind is JsonValueKind.Number or JsonValueKind.String ? id.ToString() : null;
     }
 
     private static string? ExtractPosterUrl(JsonElement item)
     {
-        if (!item.TryGetProperty("poster", out var posterProp))
-            return null;
-
-        string? raw = null;
-
-        if (posterProp.TryGetProperty("optimized", out var optProp))
-        {
-            if (optProp.TryGetProperty("preview", out var optPrevProp))
-                raw = optPrevProp.GetString();
-            else if (optProp.TryGetProperty("src", out var optSrcProp))
-                raw = optSrcProp.GetString();
-            else if (optProp.TryGetProperty("thumbnail", out var optThumbProp))
-                raw = optThumbProp.GetString();
-        }
-
+        var poster = Property(item, "poster");
+        var optimized = Property(poster, "optimized");
+        var raw = ReadString(optimized, "preview") ?? ReadString(optimized, "src") ?? ReadString(optimized, "thumbnail");
         if (string.IsNullOrWhiteSpace(raw))
-        {
-            if (posterProp.TryGetProperty("preview", out var prevProp))
-                raw = prevProp.GetString();
-            else if (posterProp.TryGetProperty("src", out var srcProp))
-                raw = srcProp.GetString();
-            else if (posterProp.TryGetProperty("thumbnail", out var thumbProp))
-                raw = thumbProp.GetString();
-        }
+            raw = ReadString(poster, "preview") ?? ReadString(poster, "src") ?? ReadString(poster, "thumbnail");
 
         if (string.IsNullOrWhiteSpace(raw))
             return null;
-
-        if (raw.StartsWith(StreamingConstants.HttpPrefix, StringComparison.OrdinalIgnoreCase) ||
-            raw.StartsWith(StreamingConstants.HttpsPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return raw;
-        }
-
-        return raw.StartsWith('/')
-            ? $"{StreamingConstants.AniLibria.StaticHost}{raw}"
-            : $"{StreamingConstants.AniLibria.StaticHost}/{raw}";
+        if (StreamingMediaUrl.TryParse(raw, out _))
+            return StreamingMediaUrl.Normalize(raw);
+        return Uri.TryCreate(new Uri(StreamingConstants.AniLibria.StaticHost), raw, out var resolved) &&
+            StreamingMediaUrl.IsHttp(resolved.AbsoluteUri) ? resolved.AbsoluteUri : null;
     }
 }

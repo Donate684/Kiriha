@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiriha.Data.Repository;
 
-public sealed class SyncTaskRepository : ISyncTaskRepository
+public sealed partial class SyncTaskRepository : ISyncTaskRepository
 {
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
@@ -26,6 +26,13 @@ public sealed class SyncTaskRepository : ISyncTaskRepository
     {
         using var context = await _contextFactory.CreateDbContextAsync(ct);
         return await context.SyncTasks.OrderBy(t => t.Id).ToListAsync(ct);
+    }
+
+    public async Task AddRangeAsync(IReadOnlyList<SyncTaskEntity> tasks, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        context.SyncTasks.AddRange(tasks);
+        await context.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(SyncTaskEntity task, CancellationToken ct = default)

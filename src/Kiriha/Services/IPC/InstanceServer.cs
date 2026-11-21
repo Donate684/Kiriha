@@ -125,16 +125,13 @@ public class InstanceServer : BackgroundService
         {
             string videoUrl = candidateMediaUrl ?? string.Empty;
             var torrServer = _serviceProvider.GetService<ITorrServerService>();
-            if (torrServer != null && !torrServer.IsRunning && Utils.PlayerProcessHelper.IsTorrentStream(videoUrl, args))
-            {
-                _ = torrServer.EnsureRunningAsync();
-            }
             _uiDispatcher.Post(() =>
             {
                 var metadataResolver = _serviceProvider.GetRequiredService<Kiriha.Mpv.UI.Services.Player.IPlayerMediaMetadataResolver>();
                 var settingsService = _serviceProvider.GetService<SettingsService>();
                 var cliMetadata = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractMetadataFromArgs(args);
                 var headers = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.ExtractHeadersFromArgs(args);
+                var requestId = Kiriha.Services.AppLifecycle.PlayerModeCoordinator.GetPlaybackRequestId(args);
                 string? subtitleUrl = null;
                 var subIndex = Array.FindIndex(args, a => a.Equals("--sub-file", StringComparison.OrdinalIgnoreCase) || a.Equals("--subtitle", StringComparison.OrdinalIgnoreCase));
                 if (subIndex >= 0 && subIndex + 1 < args.Length && !args[subIndex + 1].StartsWith("--", StringComparison.Ordinal))
@@ -150,7 +147,7 @@ public class InstanceServer : BackgroundService
                     {
                         if (!string.IsNullOrWhiteSpace(videoUrl))
                         {
-                            existingVm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers);
+                            existingVm.LoadVideo(videoUrl, subtitleUrl, cliMetadata, headers, requestId);
                         }
                         existingWindow.Show();
                         existingWindow.Activate();
@@ -164,10 +161,11 @@ public class InstanceServer : BackgroundService
                     metadataResolver,
                     settingsService,
                     _serviceProvider.GetRequiredService<ILocalizer>(),
-                    _serviceProvider.GetService<ITorrServerService>(),
+                    torrServer,
                     subtitleUrl,
                     headers,
-                    _serviceProvider.GetService<IPlaybackResumeStore>());
+                    _serviceProvider.GetService<IPlaybackResumeStore>(),
+                    requestId);
                 var window = new PlayerWindow(settingsService!) { DataContext = playerVm };
                 window.Show();
                 window.Activate();
