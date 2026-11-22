@@ -1,4 +1,5 @@
 using Kiriha.Core.Abstractions.Services;
+using Kiriha.Core.Domain.Constants;
 using Kiriha.Core.Domain.Models;
 using Kiriha.Core.Domain.Models.Entities;
 
@@ -23,7 +24,7 @@ public class AiringInfoFetcher
     public async Task<(EpisodeAiringInfo? Airing, int AiredCount, DateTime? NextSlot)> FetchAndResolveAsync(AnimeEntity anime, bool force, CancellationToken ct)
     {
         var airing = await FetchAsync(anime.Id, force, ct);
-        if (airing is null) return (null, anime.EpisodesAired, anime.NextEpisodeAt);
+        if (airing is null || airing.IsStaleFallback) return (airing, anime.EpisodesAired, anime.NextEpisodeAt);
 
         var (aired, nextSlot) = ResolveAired(anime, airing);
         return (airing, aired, nextSlot);
@@ -39,38 +40,19 @@ public class AiringInfoFetcher
 
     public static (int aired, DateTime? nextSlot) ResolveAired(AnimeEntity anime, EpisodeAiringInfo airing)
     {
-        int aired = anime.EpisodesAired;
-        DateTime? nextSlot = airing.NextEpisodeAt;
+        if (airing.IsStaleFallback) return (anime.EpisodesAired, anime.NextEpisodeAt);
 
-        if (airing.NextEpisode.HasValue)
-        {
-            if (airing.NextEpisodeAt.HasValue && airing.NextEpisodeAt.Value <= DateTime.UtcNow)
-            {
-                aired = airing.NextEpisode.Value;
-                nextSlot = null;
-            }
-            else
-            {
-                aired = Math.Max(0, airing.NextEpisode.Value - 1);
-            }
-        }
-        else if (airing.Status is "FINISHED" or "released")
-        {
-            if (airing.TotalEpisodes.HasValue && airing.TotalEpisodes > 0)
-                aired = airing.TotalEpisodes.Value;
-            else if (anime.TotalEpisodes > 0)
-                aired = anime.TotalEpisodes;
-            else if (airing.EpisodesAired.HasValue && airing.EpisodesAired > 0)
-                aired = airing.EpisodesAired.Value;
-        }
-        else if (anime.NextEpisodeAt.HasValue && anime.NextEpisodeAt.Value <= DateTime.UtcNow)
-        {
-            aired = Math.Max(aired, anime.EpisodesAired + 1);
-        }
-
-        if (anime.TotalEpisodes > 0 && aired > anime.TotalEpisodes)
-            aired = anime.TotalEpisodes;
-
+        bool finished = AppConstants.AiringStatus.IsFinishedAiring(airing.Status);
+        int total = Math.Max(anime.TotalEpisodes, airing.TotalEpisodes.GetValueOrDefault());
+        // The provider confirms release by reporting an aired count or advancing the next episode.
+        int confirmed = finished && total > 0
+            ? total
+            : airing.EpisodesAired ?? (airing.NextEpisode is > 0 ? airing.NextEpisode.Value - 1 : 0);
+        if (total > 0) confirmed = Math.Min(total, confirmed);
+        int aired = Math.Max(anime.EpisodesAired, confirmed);
+        DateTime? nextSlot = finished
+            ? null
+            : airing.NextEpisodeAt ?? (aired == anime.EpisodesAired ? anime.NextEpisodeAt : null);
         return (aired, nextSlot);
     }
 }

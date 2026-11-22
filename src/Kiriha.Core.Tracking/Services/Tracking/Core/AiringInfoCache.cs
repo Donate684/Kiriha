@@ -71,13 +71,16 @@ internal sealed class AiringInfoCache(
         if (airing.TotalEpisodes is { } total && total > draft.TotalEpisodes)
             draft.TotalEpisodes = total;
 
-        if (!string.IsNullOrEmpty(airing.Status) && string.IsNullOrEmpty(draft.StatusDetailed))
+        if (AppConstants.AiringStatus.IsFinishedAiring(airing.Status))
+        {
+            draft.StatusDetailed = AppConstants.AiringStatus.FinishedAiring;
+        }
+        else if (!string.IsNullOrEmpty(airing.Status) && string.IsNullOrEmpty(draft.StatusDetailed))
         {
             draft.StatusDetailed = airing.Status.ToUpperInvariant() switch
             {
                 "RELEASING" => AppConstants.AiringStatus.CurrentlyAiring,
                 "NOT_YET_RELEASED" => AppConstants.AiringStatus.NotYetAired,
-                "FINISHED" => AppConstants.AiringStatus.FinishedAiring,
                 _ => airing.Status
             };
         }

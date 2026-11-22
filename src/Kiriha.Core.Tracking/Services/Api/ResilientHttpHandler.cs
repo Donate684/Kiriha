@@ -9,6 +9,7 @@ namespace Kiriha.Core.Tracking.Api;
 /// </summary>
 public class ResilientHttpHandler : DelegatingHandler
 {
+    internal static readonly HttpRequestOptionsKey<bool> ReturnRateLimitResponse = new("Kiriha.ReturnRateLimitResponse");
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(20);
     private const int MaxRetries = 3;
     private static readonly TimeSpan[] Delays = {
@@ -38,6 +39,7 @@ public class ResilientHttpHandler : DelegatingHandler
 
         // Keep a reference to the "original" template request to clone from
         var templateRequest = request;
+        bool returnRateLimit = request.Options.TryGetValue(ReturnRateLimitResponse, out var configured) && configured;
 
         for (int attempt = 0; attempt <= MaxRetries; attempt++)
         {
@@ -51,7 +53,8 @@ public class ResilientHttpHandler : DelegatingHandler
             {
                 var response = await base.SendAsync(currentRequest, timeoutCts.Token);
 
-                if (response.IsSuccessStatusCode || !IsTransient(response.StatusCode) || attempt == MaxRetries)
+                if (response.IsSuccessStatusCode || !IsTransient(response.StatusCode) || attempt == MaxRetries ||
+                    returnRateLimit && response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     // Restore the original request before returning
                     response.RequestMessage = templateRequest;

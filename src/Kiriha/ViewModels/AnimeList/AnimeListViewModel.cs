@@ -21,7 +21,6 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
     private readonly IAnimeRefreshService _refreshService;
     private readonly IProgressUpdateService _progressService;
     private readonly ILoadQueueService _queueService;
-    private readonly IAiringInfoService _airingInfoService;
     private readonly AppReadinessService _readinessService;
     private readonly IDialogService _dialogService;
     private readonly IShikiMetadataService _shikiMetadataService;
@@ -40,7 +39,6 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         IAnimeRefreshService refreshService,
         IProgressUpdateService progressService,
         ILoadQueueService queueService,
-        IAiringInfoService airingInfoService,
         AppReadinessService readinessService,
         IDialogService dialogService,
         IShikiMetadataService shikiMetadataService,
@@ -51,7 +49,6 @@ public partial class AnimeListViewModel : ViewModelBase, IDisposable
         _refreshService = refreshService;
         _progressService = progressService;
         _queueService = queueService;
-        _airingInfoService = airingInfoService;
         _readinessService = readinessService;
         _dialogService = dialogService;
         _shikiMetadataService = shikiMetadataService;

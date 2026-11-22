@@ -7,11 +7,17 @@ public static class AniListParser
 {
     public static EpisodeAiringInfo? ParseAiringInfo(JsonElement root, int requestedMalId)
     {
-        if (!root.TryGetProperty("data", out var data)
+        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("data", out var data)
+            || data.ValueKind != JsonValueKind.Object
             || !data.TryGetProperty("Media", out var media)
-            || media.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            || media.ValueKind != JsonValueKind.Object)
             return null;
 
+        return ParseAiringMedia(media, requestedMalId);
+    }
+
+    internal static EpisodeAiringInfo ParseAiringMedia(JsonElement media, int requestedMalId)
+    {
         var status = media.TryGetProperty("status", out var statusElement) && statusElement.ValueKind == JsonValueKind.String
             ? statusElement.GetString()
             : null;
@@ -19,12 +25,13 @@ public static class AniListParser
         int? episode = null;
         DateTime? nextAt = null;
 
-        if (media.TryGetProperty("nextAiringEpisode", out var next) && next.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined)
+        if (media.TryGetProperty("nextAiringEpisode", out var next) && next.ValueKind == JsonValueKind.Object)
         {
             if (next.TryGetProperty("episode", out var epElement) && epElement.ValueKind == JsonValueKind.Number && epElement.TryGetInt32(out var ep) && ep > 0)
                 episode = ep;
 
-            if (next.TryGetProperty("airingAt", out var atElement) && atElement.ValueKind == JsonValueKind.Number && atElement.TryGetInt64(out var airingAt) && airingAt > 0)
+            if (next.TryGetProperty("airingAt", out var atElement) && atElement.ValueKind == JsonValueKind.Number &&
+                atElement.TryGetInt64(out var airingAt) && airingAt > 0 && airingAt <= DateTimeOffset.MaxValue.ToUnixTimeSeconds())
                 nextAt = DateTimeOffset.FromUnixTimeSeconds(airingAt).UtcDateTime;
         }
 

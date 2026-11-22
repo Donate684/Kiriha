@@ -1,5 +1,4 @@
 using Kiriha.Core.Abstractions.Services;
-using Serilog;
 
 namespace Kiriha.Services.Maintenance;
 
@@ -13,11 +12,8 @@ public class AiringSyncMaintenanceTask : IMaintenanceTask
     }
 
     public TimeSpan InitialDelay => TimeSpan.FromSeconds(10);
-    public TimeSpan Interval => TimeSpan.FromHours(6);
+    public TimeSpan Interval => TimeSpan.FromMinutes(1);
 
-    public async Task ExecuteAsync(CancellationToken ct)
-    {
-        Log.Debug("MaintenanceTask: Triggering Airing Info sync...");
-        await _airingService.SyncOngoingEpisodesAsync(false, null, ct);
-    }
+    public Task ExecuteAsync(CancellationToken ct) =>
+        _airingService.SyncOngoingEpisodesAsync(false, null, ct);
 }

@@ -106,7 +106,7 @@ public class ShikiAiringParserTests
     }
 
     [Fact]
-    public void ResolveAired_WithShikiOngoing_NextEpisodeInPast_IncrementsAiredCount()
+    public void ResolveAired_WithShikiOngoing_OverdueEpisodeDoesNotIncreaseCount()
     {
         var anime = new AnimeEntity { EpisodesAired = 10 };
         var airing = new EpisodeAiringInfo(
@@ -120,8 +120,8 @@ public class ShikiAiringParserTests
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
-        Assert.Equal(11, aired);
-        Assert.Null(nextSlot);
+        Assert.Equal(10, aired);
+        Assert.Equal(airing.NextEpisodeAt, nextSlot);
     }
 
     [Fact]

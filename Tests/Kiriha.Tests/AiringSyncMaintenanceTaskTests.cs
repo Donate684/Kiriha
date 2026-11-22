@@ -12,7 +12,7 @@ public class AiringSyncMaintenanceTaskTests
         var mock = new Mock<IAiringInfoService>();
         var task = new AiringSyncMaintenanceTask(mock.Object);
         Assert.Equal(TimeSpan.FromSeconds(10), task.InitialDelay);
-        Assert.Equal(TimeSpan.FromHours(6), task.Interval);
+        Assert.Equal(TimeSpan.FromMinutes(1), task.Interval);
     }
 
     [Fact]

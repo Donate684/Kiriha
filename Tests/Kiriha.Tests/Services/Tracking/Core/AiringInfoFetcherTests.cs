@@ -21,15 +21,15 @@ public class AiringInfoFetcherTests
     }
 
     [Fact]
-    public void ResolveAired_NextEpisodeInPast_IncrementsAired()
+    public void ResolveAired_OverdueDateKeepsProviderEpisodeAndDate()
     {
         var anime = new AnimeEntity { EpisodesAired = 5 };
         var airing = new EpisodeAiringInfo(1, 1, null, 7, DateTime.UtcNow.AddDays(-1), null);
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
-        Assert.Equal(7, aired);
-        Assert.Null(nextSlot);
+        Assert.Equal(6, aired);
+        Assert.Equal(airing.NextEpisodeAt, nextSlot);
     }
 
     [Fact]
@@ -56,8 +56,8 @@ public class AiringInfoFetcherTests
 
         var (aired, nextSlot) = AiringInfoFetcher.ResolveAired(anime, airing);
 
-        Assert.Equal(6, aired);
-        Assert.Null(nextSlot);
+        Assert.Equal(5, aired);
+        Assert.Equal(anime.NextEpisodeAt, nextSlot);
     }
 
     [Fact]
