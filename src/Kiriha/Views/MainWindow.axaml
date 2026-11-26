@@ -26,6 +26,10 @@
         <vmMain:MainWindowViewModel />
     </Design.DataContext>
 
+    <Window.KeyBindings>
+        <KeyBinding Command="{Binding TestPlayerCommand}" Gesture="F9" />
+    </Window.KeyBindings>
+
     <!--  ═══════════════ Global Styles ═══════════════  -->
     <Window.Styles>
         <!--  Nav items: pill-shape, left-rounded  -->

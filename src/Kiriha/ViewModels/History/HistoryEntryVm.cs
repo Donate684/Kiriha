@@ -139,8 +139,15 @@ public sealed class HistoryEntryVm : HistoryTimelineItem
                 state,
                 tooltip,
                 isEnabled,
-                _onSync != null && maySend ? () => _onSync(trackerName) : null,
-                setPendingOnClick: canRetry == null));
+                _onSync != null ? () => _onSync(trackerName) : null,
+                setPendingOnClick: canRetry == null,
+                canRetry: canRetry == null ? null : state => canRetry(new TrackerSyncInfo
+                {
+                    State = state,
+                    OriginalTask = syncInfo?.OriginalTask,
+                    ErrorMessage = syncInfo?.ErrorMessage,
+                    UpdatedAt = syncInfo?.UpdatedAt
+                })));
         }
 
         OnPropertyChanged(nameof(HasTrackerBadges));
@@ -261,6 +268,7 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
 {
     private readonly Func<Task>? _syncAction;
     private readonly bool _setPendingOnClick;
+    private readonly Func<TrackerSyncState, bool>? _canRetry;
 
     public string TrackerName { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
@@ -287,7 +295,8 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
     private string _tooltip = string.Empty;
 
     public bool IsClickable => IsEnabled && _syncAction != null &&
-        State is TrackerSyncState.NotSynced or TrackerSyncState.Failed or TrackerSyncState.Retrying;
+        State is TrackerSyncState.NotSynced or TrackerSyncState.Failed or TrackerSyncState.Retrying &&
+        (_canRetry?.Invoke(State) ?? true);
     public string CursorKind => IsClickable ? "Hand" : "Arrow";
 
     public TrackerStatusBadgeVm() { }
@@ -299,7 +308,8 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
         string tooltip,
         bool isEnabled,
         Func<Task>? syncAction = null,
-        bool setPendingOnClick = true)
+        bool setPendingOnClick = true,
+        Func<TrackerSyncState, bool>? canRetry = null)
     {
         TrackerName = trackerName;
         DisplayName = displayName;
@@ -308,6 +318,9 @@ public sealed partial class TrackerStatusBadgeVm : ObservableObject
         _isEnabled = isEnabled;
         _syncAction = syncAction;
         _setPendingOnClick = setPendingOnClick;
+        // A pending receipt may become failed while history remains open. Keep
+        // the action and check eligibility against the current state on each use.
+        _canRetry = canRetry;
     }
 
     [RelayCommand(CanExecute = nameof(CanSync))]

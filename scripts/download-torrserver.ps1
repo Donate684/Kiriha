@@ -16,8 +16,8 @@ $exeExists = Test-Path $exePath
 # Known pinned MatriX release fallback in case dynamic metadata fetching fails.
 # IMPORTANT: Only MatriX.* tags are compatible with Kiriha's CLI flags (-p, -d, -i) and HTTP API (/echo, /torrents, /settings).
 # Do NOT use /releases/latest blindly — YouROK/TorrServer also publishes incompatible Silo.* releases in the same repository.
-$fallbackVersion = "MatriX.150"
-$fallbackUrl = "https://github.com/YouROK/TorrServer/releases/download/MatriX.150/TorrServer-windows-amd64.exe"
+$fallbackVersion = "MatriX.151"
+$fallbackUrl = "https://github.com/YouROK/TorrServer/releases/download/MatriX.151/TorrServer-windows-amd64.exe"
 
 $currentVersion = ""
 if (Test-Path $versionFile) {

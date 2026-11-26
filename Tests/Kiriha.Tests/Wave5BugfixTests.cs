@@ -472,11 +472,14 @@ public class Wave5BugfixTests
     // ─── 5.5 Keyboard, Security, Search Badge & Toasts ───────────────────────
 
     [Fact]
-    public void MainWindowXaml_DoesNotBindReleaseF9CrashShortcut()
+    public void MainWindowXaml_BindsF9ToPlayerLaunchCommand()
     {
         var xamlPath = Path.Combine(FindRepoRoot(), "src", "Kiriha", "Views", "MainWindow.axaml");
-        var xaml = File.ReadAllText(xamlPath);
-        Assert.DoesNotContain("Gesture=\"F9\"", xaml);
+        var xaml = System.Xml.Linq.XDocument.Load(xamlPath);
+        System.Xml.Linq.XNamespace ns = "https://github.com/avaloniaui";
+        var binding = Assert.Single(xaml.Descendants(ns + "KeyBinding"),
+            element => (string?)element.Attribute("Gesture") == "F9");
+        Assert.Equal("{Binding TestPlayerCommand}", (string?)binding.Attribute("Command"));
     }
 
     [Fact]

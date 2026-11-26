@@ -13,8 +13,8 @@ $versionFile = Join-Path $mpvDir "version.txt"
 $dllExists = Test-Path (Join-Path $mpvDir "libmpv-2.dll")
 
 # Known pinned release fallback in case dynamic metadata fetching fails
-$fallbackVersion = "mpv-dev-x86_64-v3-20260911-git-14f2d48cbc.7z"
-$fallbackUrl = "https://github.com/zhongfly/mpv-winbuild/releases/download/2026-09-11-14f2d48cbc/mpv-dev-x86_64-v3-20260911-git-14f2d48cbc.7z"
+$fallbackVersion = "mpv-dev-x86_64-v3-20261126-git-1eab28e7b5.7z"
+$fallbackUrl = "https://github.com/zhongfly/mpv-winbuild/releases/download/2026-11-26-1eab28e7b5/mpv-dev-x86_64-v3-20261126-git-1eab28e7b5.7z"
 
 $latestVersion = $null
 $downloadUrl = $null

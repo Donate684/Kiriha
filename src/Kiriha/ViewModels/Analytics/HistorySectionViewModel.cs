@@ -60,13 +60,21 @@ public partial class HistorySectionViewModel : ViewModelBase
         MonthlyHistory.Clear();
         YearDistribution.Clear();
         ReleaseYearCompletions.Clear();
+        RecentHistoryEpisodes = 0;
+        RecentHistoryTitles = 0;
+        HasMonthlyHistory = false;
+        CloseHistoryPopup();
 
-        if (items.Count == 0) return;
+        // The library and activity log contain both anime and manga. This
+        // section reports watched episodes and completed anime only.
+        var animeItems = items.Where(x => x.MediaKind == MediaKind.Anime).ToList();
+        var completedAnime = completed.Where(x => x.MediaKind == MediaKind.Anime).ToList();
+        if (animeItems.Count == 0) return;
 
-        AddRecentHistory(history, items);
-        AddMonthlyHistory(completed);
-        AddYearDistribution(completed);
-        AddReleaseYearCompletions(completed);
+        AddRecentHistory(history.Where(x => x.MediaKind == MediaKind.Anime), animeItems);
+        AddMonthlyHistory(completedAnime);
+        AddYearDistribution(completedAnime);
+        AddReleaseYearCompletions(completedAnime);
     }
 
     [RelayCommand]
